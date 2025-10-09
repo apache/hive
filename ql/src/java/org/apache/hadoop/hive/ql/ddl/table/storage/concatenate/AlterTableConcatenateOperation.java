@@ -76,7 +76,9 @@ public class AlterTableConcatenateOperation extends DDLOperation<AlterTableConca
 
     Map<Path, List<String>> pathToAliases = new LinkedHashMap<>();
     List<String> inputDirStr = Lists.newArrayList(inputDirList.toString());
-    pathToAliases.put(desc.getInputDir(), inputDirStr);
+    for (Path path: mergeWork.getInputPaths()) {
+      pathToAliases.put(path, inputDirStr);
+    }
     mergeWork.setPathToAliases(pathToAliases);
 
     FileMergeDesc fmd = getFileMergeDesc();

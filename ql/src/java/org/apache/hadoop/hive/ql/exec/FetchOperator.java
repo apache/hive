@@ -227,7 +227,11 @@ public class FetchOperator implements Serializable {
     if (format == null) {
       try {
         format = ReflectionUtil.newInstance(inputFormatClass, conf);
-        inputFormats.put(inputFormatClass.getName(), format);
+        // HBase input formats are not thread safe today. See HIVE-8808.
+        String inputFormatName = inputFormatClass.getName().toLowerCase();
+        if (!inputFormatName.contains("hbase")) {
+          inputFormats.put(inputFormatClass.getName(), format);
+        }
       } catch (Exception e) {
         throw new IOException("Cannot create an instance of InputFormat class "
                                   + inputFormatClass.getName() + " as specified in mapredWork!", e);
@@ -430,16 +434,18 @@ public class FetchOperator implements Serializable {
 
   private void generateWrappedSplits(InputFormat inputFormat, List<FetchInputFormatSplit> inputSplits, JobConf job)
       throws IOException {
-    InputSplit[] splits;
+    InputSplit[] splits = new InputSplit[0];
     try {
       splits = inputFormat.getSplits(job, 1);
+    } catch (InvalidInputException iie) {
+      LOG.warn("Input path " + currPath + " is empty", iie);
     } catch (Exception ex) {
       Throwable t = ExceptionUtils.getRootCause(ex);
       if (t instanceof FileNotFoundException || t instanceof InvalidInputException) {
-        LOG.warn("Input path " + currPath + " is empty", t.getMessage());
-        return;
+        LOG.warn("Input path " + currPath + " is empty", t);
+      } else {
+        throw ex;
       }
-      throw ex;
     }
     for (int i = 0; i < splits.length; i++) {
       inputSplits.add(new FetchInputFormatSplit(splits[i], inputFormat));
@@ -480,7 +486,7 @@ public class FetchOperator implements Serializable {
     if (currDesc.getTableName() == null || !org.apache.commons.lang3.StringUtils.isBlank(currDesc.getTableName())) {
       String txnString = job.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       LOG.debug("FetchOperator get writeIdStr: " + txnString);
-      return txnString == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+      return txnString == null ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(txnString);
     }
     return null;  // not fetching from a table directly but from a temp location
   }

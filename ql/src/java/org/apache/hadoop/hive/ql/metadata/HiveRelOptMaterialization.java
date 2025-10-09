@@ -24,11 +24,12 @@ import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.IncrementalRebuildMode;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 
 import java.util.EnumSet;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.Set;
 
 import static org.apache.commons.collections.CollectionUtils.intersection;
 
@@ -37,35 +38,7 @@ import static org.apache.commons.collections.CollectionUtils.intersection;
  */
 public class HiveRelOptMaterialization extends RelOptMaterialization {
 
-  /**
-   * Enumeration of Materialized view query rewrite algorithms.
-   */
-  public enum RewriteAlgorithm {
-    /**
-     * Query sql text is compared to stored materialized view definition sql texts.
-     */
-    TEXT,
-    /**
-     * Use rewriting algorithm provided by Calcite.
-     */
-    CALCITE;
-
-    public static final EnumSet<RewriteAlgorithm> ALL = EnumSet.allOf(RewriteAlgorithm.class);
-
-    public static final Predicate<EnumSet<RewriteAlgorithm>> ANY =
-            rewriteAlgorithms -> true;
-    public static final Predicate<EnumSet<RewriteAlgorithm>> NON_CALCITE =
-            rewriteAlgorithms -> !rewriteAlgorithms.contains(HiveRelOptMaterialization.RewriteAlgorithm.CALCITE);
-  }
-
-  public enum IncrementalRebuildMode {
-    AVAILABLE,
-    INSERT_ONLY,
-    NOT_AVAILABLE,
-    UNKNOWN
-  }
-
-  private final EnumSet<RewriteAlgorithm> scope;
+  private final Set<RewriteAlgorithm> scope;
   private final boolean sourceTablesUpdateDeleteModified;
   private final boolean sourceTablesCompacted;
   private final IncrementalRebuildMode rebuildMode;
@@ -73,13 +46,13 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
 
   public HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
                                    RelOptTable starRelOptTable, List<String> qualifiedTableName,
-                                   EnumSet<RewriteAlgorithm> scope, IncrementalRebuildMode rebuildMode, ASTNode ast) {
+                                   Set<RewriteAlgorithm> scope, IncrementalRebuildMode rebuildMode, ASTNode ast) {
     this(tableRel, queryRel, starRelOptTable, qualifiedTableName, scope, false, false, rebuildMode, ast);
   }
 
   private HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
                                     RelOptTable starRelOptTable, List<String> qualifiedTableName,
-                                    EnumSet<RewriteAlgorithm> scope,
+                                    Set<RewriteAlgorithm> scope,
                                     boolean sourceTablesUpdateDeleteModified, boolean sourceTablesCompacted, IncrementalRebuildMode rebuildMode, ASTNode ast) {
     super(tableRel, queryRel, starRelOptTable, qualifiedTableName);
     this.scope = scope;
@@ -89,7 +62,7 @@ public class HiveRelOptMaterialization extends RelOptMaterialization {
     this.ast = ast;
   }
 
-  public EnumSet<RewriteAlgorithm> getScope() {
+  public Set<RewriteAlgorithm> getScope() {
     return scope;
   }
 

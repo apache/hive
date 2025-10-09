@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.apache.hive.storage.jdbc.conf.DatabaseType;
+import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +101,10 @@ public class JdbcStorageHandler implements HiveStorageHandler {
   @Override
   public URI getURIForAuth(Table table) throws URISyntaxException {
     Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
-    String host_url = tableProperties.get(Constants.JDBC_URL);
+    DatabaseType dbType = DatabaseType.valueOf(
+      tableProperties.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
+    String host_url = DatabaseType.METASTORE == dbType ?
+      "jdbc:metastore://" : tableProperties.get(Constants.JDBC_URL);
     String table_name = tableProperties.get(Constants.JDBC_TABLE);
     return new URI(host_url+"/"+table_name);
   }

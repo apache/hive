@@ -31,7 +31,6 @@ import com.google.common.collect.Iterables;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -46,8 +45,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 public enum VirtualColumn {
   FILENAME("INPUT__FILE__NAME", TypeInfoFactory.stringTypeInfo),
   BLOCKOFFSET("BLOCK__OFFSET__INSIDE__FILE", TypeInfoFactory.longTypeInfo),
-  ROWOFFSET("ROW__OFFSET__INSIDE__BLOCK", TypeInfoFactory.longTypeInfo),
-
   RAWDATASIZE("RAW__DATA__SIZE", TypeInfoFactory.longTypeInfo),
   /**
    * {@link org.apache.hadoop.hive.ql.io.RecordIdentifier}
@@ -58,6 +55,8 @@ public enum VirtualColumn {
   PARTITION_HASH("PARTITION__HASH", TypeInfoFactory.longTypeInfo),
   FILE_PATH("FILE__PATH", TypeInfoFactory.stringTypeInfo),
   ROW_POSITION("ROW__POSITION", TypeInfoFactory.longTypeInfo),
+  SNAPSHOT_ID("SNAPSHOT__ID", TypeInfoFactory.longTypeInfo),
+  PARTITION_PROJECTION("PARTITION__PROJECTION", TypeInfoFactory.stringTypeInfo),
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.
@@ -69,9 +68,10 @@ public enum VirtualColumn {
   GROUPINGID("GROUPING__ID", TypeInfoFactory.longTypeInfo);
 
   public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
-      ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),
+      ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(),
           RAWDATASIZE.getName(), GROUPINGID.getName(), ROWID.getName(), ROWISDELETED.getName(),
-          PARTITION_SPEC_ID.getName(), PARTITION_HASH.getName(), FILE_PATH.getName(), ROW_POSITION.getName());
+          PARTITION_SPEC_ID.getName(), PARTITION_HASH.getName(), FILE_PATH.getName(), ROW_POSITION.getName(),
+          PARTITION_PROJECTION.getName());
 
   public static final ImmutableMap<String, VirtualColumn> VIRTUAL_COLUMN_NAME_MAP =
        new ImmutableMap.Builder<String, VirtualColumn>().putAll(getColumnNameMap()).build();
@@ -107,13 +107,10 @@ public enum VirtualColumn {
     return l;
   }
 
-  public static List<VirtualColumn> getRegistry(Configuration conf) {
+  public static List<VirtualColumn> getRegistry() {
     ArrayList<VirtualColumn> l = new ArrayList<VirtualColumn>();
     l.add(BLOCKOFFSET);
     l.add(FILENAME);
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEROWOFFSET)) {
-      l.add(ROWOFFSET);
-    }
     l.add(ROWID);
     l.add(ROWISDELETED);
 

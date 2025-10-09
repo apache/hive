@@ -27,36 +27,39 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import jline.console.ConsoleReader;
-import jline.console.completer.ArgumentCompleter;
-import jline.console.completer.Completer;
-
-
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.util.ExitUtil;
+import org.jline.reader.Candidate;
+import org.jline.reader.Completer;
+import org.jline.reader.impl.LineReaderImpl;
+import org.jline.reader.impl.completer.ArgumentCompleter;
+import org.jline.terminal.impl.DumbTerminal;
 import org.junit.Test;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
@@ -72,20 +75,22 @@ import org.junit.After;
  */
 public class TestCliDriverMethods {
 
-  SecurityManager securityManager;
 
   // Some of these tests require intercepting System.exit() using the SecurityManager.
   // It is safer to  register/unregister our SecurityManager during setup/teardown instead
   // of doing it within the individual test cases.
   @Before
   public void setUp() {
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager(securityManager));
+    ExitUtil.disableSystemExit();
+    ExitUtil.disableSystemHalt();
+    ExitUtil.resetFirstExitException();
+    ExitUtil.resetFirstHaltException();
   }
 
   @After
   public void tearDown() {
-    System.setSecurityManager(securityManager);
+      ExitUtil.resetFirstExitException();
+      ExitUtil.resetFirstHaltException();
   }
 
   // If the command has an associated schema, make sure it gets printed to use
@@ -130,7 +135,8 @@ public class TestCliDriverMethods {
     SessionStream err = new SessionStream(dataErr);
     System.setErr(err);
 
-    CliSessionState ss = new CliSessionState(new HiveConf());
+    HiveConf hiveConf = getHiveConf();
+    CliSessionState ss = new CliSessionState(hiveConf);
     ss.out = out;
     ss.err = err;
 
@@ -142,7 +148,7 @@ public class TestCliDriverMethods {
       CliDriver cliDriver = new CliDriver();
       // issue a command with bad options
       cliDriver.processCmd("!ls --abcdefghijklmnopqrstuvwxyz123456789");
-      assertTrue("Comments with '--; should not have been stripped, so command should fail", false);
+      fail("Comments with '--; should not have been stripped, so command should fail");
     } catch (CommandProcessorException e) {
       // this is expected to happen
     } finally {
@@ -165,8 +171,6 @@ public class TestCliDriverMethods {
    *          Schema to throw against test
    * @return Output that would have been sent to the user
    * @throws CommandProcessorException
-   * @throws CommandNeedRetryException
-   *           won't actually be thrown
    */
   private PrintStream headerPrintingTestDriver(Schema mockSchema) throws CommandProcessorException {
     CliDriver cliDriver = new CliDriver();
@@ -199,23 +203,25 @@ public class TestCliDriverMethods {
 
 
   @Test
-  public void testGetCommandCompletor() {
-    Completer[] completors = CliDriver.getCommandCompleter();
-    assertEquals(2, completors.length);
-    assertTrue(completors[0] instanceof ArgumentCompleter);
-    assertTrue(completors[1] instanceof Completer);
+  public void testGetCommandCompleter() {
+    Completer[] completers = CliDriver.getCommandCompleter();
+    assertEquals(2, completers.length);
+    assertTrue(completers[0] instanceof ArgumentCompleter);
+    assertNotNull(completers[1]);
 
-    List<CharSequence> testList = Arrays.asList(")");
-    completors[1].complete("fdsdfsdf", 0, testList);
-    assertEquals(")", testList.get(0));
-    testList=new ArrayList<CharSequence>();
-    completors[1].complete("len", 0, testList);
-    assertTrue(testList.get(0).toString().endsWith("length("));
+    final List<Candidate> candidates1 = new ArrayList<>();
+    candidates1.add(new Candidate(")"));
+    completers[1].complete(null, CliDriver.getDefaultParser().parse("fdsdfsdf", 0), candidates1);
+    assertEquals(")", candidates1.getFirst().value());
 
-    testList=new ArrayList<CharSequence>();
-    completors[0].complete("set f", 0, testList);
-    assertEquals("set", testList.get(0));
+    final List<Candidate> candidates2 = new ArrayList<>();
+    completers[1].complete(null,  CliDriver.getDefaultParser().parse("length", 0), candidates2);
+    System.out.printf("--- --> %s%n", candidates2.getFirst().value());
+    assertTrue(candidates2.getFirst().value().endsWith("length("));
 
+    final List<Candidate> candidates3 = new ArrayList<>();
+    completers[0].complete(null, CliDriver.getDefaultParser().parse("set f", 0), candidates3);
+    assertEquals("set", candidates3.getFirst().value());
   }
 
   @Test
@@ -226,7 +232,7 @@ public class TestCliDriverMethods {
       File historyFile = new File(historyDirectory + File.separator + ".hivehistory");
       historyFile.delete();
     }
-    HiveConf configuration = new HiveConf();
+    HiveConf configuration = getHiveConf();
     configuration.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
     PrintStream oldOut = System.out;
     ByteArrayOutputStream dataOut = new ByteArrayOutputStream();
@@ -239,7 +245,7 @@ public class TestCliDriverMethods {
     String[] args = {};
 
     try {
-      new FakeCliDriver().run(args);
+      new FakeCliDriver(configuration).run(args);
       assertTrue(dataOut.toString(), dataOut.toString().contains("test message"));
       assertTrue(dataErr.toString(), dataErr.toString().contains("Hive history file="));
       assertTrue(dataErr.toString(), dataErr.toString().contains("File: fakeFile is not a file."));
@@ -251,7 +257,6 @@ public class TestCliDriverMethods {
       System.setErr(oldErr);
 
     }
-
   }
 
   /**
@@ -260,7 +265,7 @@ public class TestCliDriverMethods {
   @Test
   public void testQuit() throws Exception {
 
-    CliSessionState ss = new CliSessionState(new HiveConf());
+    CliSessionState ss = new CliSessionState(getHiveConf());
     ss.err = new SessionStream(System.err);
     ss.out = new SessionStream(System.out);
 
@@ -269,8 +274,8 @@ public class TestCliDriverMethods {
       CliDriver cliDriver = new CliDriver();
       cliDriver.processCmd("quit");
       fail("should be exit");
-    } catch (ExitException e) {
-      assertEquals(0, e.getStatus());
+    } catch (ExitUtil.ExitException e) {
+      assertEquals(0, e.getExitCode());
 
     } catch (Exception e) {
       throw e;
@@ -281,8 +286,8 @@ public class TestCliDriverMethods {
       CliDriver cliDriver = new CliDriver();
       cliDriver.processCmd("exit");
       fail("should be exit");
-    } catch (ExitException e) {
-      assertEquals(0, e.getStatus());
+    } catch (ExitUtil.ExitException e) {
+      assertEquals(0, e.getExitCode());
 
     }
 
@@ -290,19 +295,19 @@ public class TestCliDriverMethods {
 
   @Test
   public void testProcessSelectDatabase() throws Exception {
-    CliSessionState sessinState = new CliSessionState(new HiveConf());
-    CliSessionState.start(sessinState);
+    CliSessionState sessionState = new CliSessionState(getHiveConf());
+    CliSessionState.start(sessionState);
     ByteArrayOutputStream data = new ByteArrayOutputStream();
-    sessinState.err = new SessionStream(data);
-    sessinState.database = "database";
+    sessionState.err = new SessionStream(data);
+    sessionState.database = "database";
     CliDriver driver = new CliDriver();
 
     try {
-      driver.processSelectDatabase(sessinState);
+      driver.processSelectDatabase(sessionState);
       fail("shuld be exit");
-    } catch (ExitException e) {
+    } catch (ExitUtil.ExitException e) {
       e.printStackTrace();
-      assertEquals(40000, e.getStatus());
+      assertEquals(40000, e.getExitCode());
     }
 
     assertTrue(data.toString().contains(
@@ -325,7 +330,7 @@ public class TestCliDriverMethods {
     FileUtils.write(homeFile, "-- init hive file for test ");
     setEnv("HIVE_HOME", homeFile.getParentFile().getParentFile().getAbsolutePath());
     setEnv("HIVE_CONF_DIR", homeFile.getParentFile().getAbsolutePath());
-    CliSessionState sessionState = new CliSessionState(new HiveConf());
+    CliSessionState sessionState = new CliSessionState(getHiveConf());
 
     ByteArrayOutputStream data = new ByteArrayOutputStream();
 
@@ -344,15 +349,15 @@ public class TestCliDriverMethods {
       try {
         cliDriver.processInitFiles(sessionState);
         fail("should be exit");
-      } catch (ExitException e) {
-        assertEquals(40000, e.getStatus());
+      } catch (ExitUtil.ExitException e) {
+        assertEquals(40000, e.getExitCode());
       }
       setEnv("HIVE_HOME", null);
       try {
         cliDriver.processInitFiles(sessionState);
         fail("should be exit");
-      } catch (ExitException e) {
-        assertEquals(40000, e.getStatus());
+      } catch (ExitUtil.ExitException e) {
+        assertEquals(40000, e.getExitCode());
       }
 
     } finally {
@@ -369,8 +374,8 @@ public class TestCliDriverMethods {
       CliDriver cliDriver = new CliDriver();
       cliDriver.processInitFiles(sessionState);
       fail("should be exit");
-    } catch (ExitException e) {
-      assertEquals(40000, e.getStatus());
+    } catch (ExitUtil.ExitException e) {
+      assertEquals(40000, e.getExitCode());
       assertTrue(data.toString().contains("cannot recognize input near 'bla' 'bla' 'bla'"));
 
     }
@@ -380,21 +385,21 @@ public class TestCliDriverMethods {
   public void testCommandSplits() {
     // Test double quote in the string
     String cmd1 = "insert into escape1 partition (ds='1', part='\"') values (\"!\")";
-    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1).get(0));
-    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1 + ";").get(0));
+    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1).getFirst());
+    assertEquals(cmd1, CliDriver.splitSemiColon(cmd1 + ";").getFirst());
 
     // Test escape
     String cmd2 = "insert into escape1 partition (ds='1', part='\"\\'') values (\"!\")";
-    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2).get(0));
-    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2 + ";").get(0));
+    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2).getFirst());
+    assertEquals(cmd2, CliDriver.splitSemiColon(cmd2 + ";").getFirst());
 
     // Test multiple commands
     List<String> results = CliDriver.splitSemiColon(cmd1 + ";" + cmd2);
-    assertEquals(cmd1, results.get(0));
+    assertEquals(cmd1, results.getFirst());
     assertEquals(cmd2, results.get(1));
 
     results = CliDriver.splitSemiColon(cmd1 + ";" + cmd2 + ";");
-    assertEquals(cmd1, results.get(0));
+    assertEquals(cmd1, results.getFirst());
     assertEquals(cmd2, results.get(1));
   }
 
@@ -417,101 +422,77 @@ public class TestCliDriverMethods {
   }
 
   private static class FakeCliDriver extends CliDriver {
+    private final HiveConf conf;
 
-    @Override
-    protected void setupConsoleReader() throws IOException {
-      reader = new FakeConsoleReader();
+    public FakeCliDriver(HiveConf conf) throws IOException {
+      this.conf = conf;
+
+      reader = new LineReaderImpl(new DumbTerminal(new ByteArrayInputStream(new byte[0]), System.err)) {
+
+        File temp = null;
+        private int counter = 0;
+
+        @Override
+        public String readLine(String prompt) {
+          FileWriter writer;
+          try {
+            switch (counter++) {
+              case 0:
+                return "!echo test message;";
+              case 1:
+                temp = File.createTempFile("hive", "test");
+                temp.deleteOnExit();
+                return "source  " + temp.getAbsolutePath() + ";";
+              case 2:
+                temp = File.createTempFile("hive", "test");
+                temp.deleteOnExit();
+                writer = new FileWriter(temp);
+                writer.write("bla bla bla");
+                writer.close();
+                return "list file file://" + temp.getAbsolutePath() + ";";
+              case 3:
+                return "!echo ";
+              case 4:
+                return "test message;";
+              case 5:
+                return "source  fakeFile;";
+              case 6:
+                temp = File.createTempFile("hive", "test");
+                temp.deleteOnExit();
+                writer = new FileWriter(temp);
+                writer.write("source  fakeFile;");
+                writer.close();
+                return "list file file://" + temp.getAbsolutePath() + ";";
+              default:
+                return null;
+            }
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      };
     }
 
-  }
-
-  private static class FakeConsoleReader extends ConsoleReader {
-    private int counter = 0;
-    File temp = null;
-
-    public FakeConsoleReader() throws IOException {
-      super();
-
+    protected HiveConf getConf() {
+      return conf;
     }
 
     @Override
-    public String readLine(String prompt) throws IOException {
-      FileWriter writer;
-      switch (counter++) {
-      case 0:
-        return "!echo test message;";
-      case 1:
-        temp = File.createTempFile("hive", "test");
-        temp.deleteOnExit();
-        return "source  " + temp.getAbsolutePath() + ";";
-      case 2:
-        temp = File.createTempFile("hive", "test");
-        temp.deleteOnExit();
-        writer = new FileWriter(temp);
-        writer.write("bla bla bla");
-        writer.close();
-        return "list file file://" + temp.getAbsolutePath() + ";";
-      case 3:
-        return "!echo ";
-      case 4:
-        return "test message;";
-      case 5:
-        return "source  fakeFile;";
-      case 6:
-        temp = File.createTempFile("hive", "test");
-        temp.deleteOnExit();
-        writer = new FileWriter(temp);
-        writer.write("source  fakeFile;");
-        writer.close();
-        return "list file file://" + temp.getAbsolutePath() + ";";
+    protected void setupLineReader() {
+      // NO-OP: let's use the reader created early in the constructor to prevent NPEs
+    }
 
-
-        // drop table over10k;
-      default:
-        return null;
+    @Override
+    protected CliDriver newCliDriver() {
+      try {
+        return new FakeCliDriver(conf);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
     }
   }
 
-  private static class NoExitSecurityManager extends SecurityManager {
-
-    public SecurityManager parentSecurityManager;
-
-    public NoExitSecurityManager(SecurityManager parent) {
-      super();
-      parentSecurityManager = parent;
-      System.setSecurityManager(this);
-    }
-
-    @Override
-    public void checkPermission(Permission perm, Object context) {
-      if (parentSecurityManager != null) {
-        parentSecurityManager.checkPermission(perm, context);
-      }
-    }
-
-    @Override
-    public void checkPermission(Permission perm) {
-      if (parentSecurityManager != null) {
-        parentSecurityManager.checkPermission(perm);
-      }
-    }
-
-    @Override
-    public void checkExit(int status) {
-      throw new ExitException(status);
-    }
-  }
-
-  private static class ExitException extends RuntimeException {
-    int status;
-
-    public ExitException(int status) {
-      this.status = status;
-    }
-
-    public int getStatus() {
-      return status;
-    }
+  private HiveConf getHiveConf() {
+    return new HiveConfForTest(this.getClass());
   }
 }

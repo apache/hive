@@ -13,17 +13,20 @@ package org.apache.hadoop.hive.metastore.api;
 
   private static final org.apache.thrift.protocol.TField WORKER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("workerId", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField WORKER_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("workerVersion", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField POOL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("poolName", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new FindNextCompactRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new FindNextCompactRequestTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.lang.String workerId; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String workerVersion; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String poolName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     WORKER_ID((short)1, "workerId"),
-    WORKER_VERSION((short)2, "workerVersion");
+    WORKER_VERSION((short)2, "workerVersion"),
+    POOL_NAME((short)3, "poolName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -43,6 +46,8 @@ package org.apache.hadoop.hive.metastore.api;
           return WORKER_ID;
         case 2: // WORKER_VERSION
           return WORKER_VERSION;
+        case 3: // POOL_NAME
+          return POOL_NAME;
         default:
           return null;
       }
@@ -84,13 +89,15 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.WORKER_ID,_Fields.WORKER_VERSION};
+  private static final _Fields optionals[] = {_Fields.WORKER_ID,_Fields.WORKER_VERSION,_Fields.POOL_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.WORKER_ID, new org.apache.thrift.meta_data.FieldMetaData("workerId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.WORKER_VERSION, new org.apache.thrift.meta_data.FieldMetaData("workerVersion", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.POOL_NAME, new org.apache.thrift.meta_data.FieldMetaData("poolName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FindNextCompactRequest.class, metaDataMap);
@@ -109,6 +116,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetWorkerVersion()) {
       this.workerVersion = other.workerVersion;
     }
+    if (other.isSetPoolName()) {
+      this.poolName = other.poolName;
+    }
   }
 
   public FindNextCompactRequest deepCopy() {
@@ -119,6 +129,7 @@ package org.apache.hadoop.hive.metastore.api;
   public void clear() {
     this.workerId = null;
     this.workerVersion = null;
+    this.poolName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -169,6 +180,30 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getPoolName() {
+    return this.poolName;
+  }
+
+  public void setPoolName(@org.apache.thrift.annotation.Nullable java.lang.String poolName) {
+    this.poolName = poolName;
+  }
+
+  public void unsetPoolName() {
+    this.poolName = null;
+  }
+
+  /** Returns true if field poolName is set (has been assigned a value) and false otherwise */
+  public boolean isSetPoolName() {
+    return this.poolName != null;
+  }
+
+  public void setPoolNameIsSet(boolean value) {
+    if (!value) {
+      this.poolName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case WORKER_ID:
@@ -187,6 +222,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case POOL_NAME:
+      if (value == null) {
+        unsetPoolName();
+      } else {
+        setPoolName((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -198,6 +241,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case WORKER_VERSION:
       return getWorkerVersion();
+
+    case POOL_NAME:
+      return getPoolName();
 
     }
     throw new java.lang.IllegalStateException();
@@ -214,6 +260,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetWorkerId();
     case WORKER_VERSION:
       return isSetWorkerVersion();
+    case POOL_NAME:
+      return isSetPoolName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -249,6 +297,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_poolName = true && this.isSetPoolName();
+    boolean that_present_poolName = true && that.isSetPoolName();
+    if (this_present_poolName || that_present_poolName) {
+      if (!(this_present_poolName && that_present_poolName))
+        return false;
+      if (!this.poolName.equals(that.poolName))
+        return false;
+    }
+
     return true;
   }
 
@@ -263,6 +320,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetWorkerVersion()) ? 131071 : 524287);
     if (isSetWorkerVersion())
       hashCode = hashCode * 8191 + workerVersion.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetPoolName()) ? 131071 : 524287);
+    if (isSetPoolName())
+      hashCode = hashCode * 8191 + poolName.hashCode();
 
     return hashCode;
   }
@@ -291,6 +352,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetWorkerVersion()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.workerVersion, other.workerVersion);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetPoolName(), other.isSetPoolName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPoolName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.poolName, other.poolName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -332,6 +403,16 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         sb.append(this.workerVersion);
+      }
+      first = false;
+    }
+    if (isSetPoolName()) {
+      if (!first) sb.append(", ");
+      sb.append("poolName:");
+      if (this.poolName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.poolName);
       }
       first = false;
     }
@@ -394,6 +475,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // POOL_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.poolName = iprot.readString();
+              struct.setPoolNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -421,6 +510,13 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.poolName != null) {
+        if (struct.isSetPoolName()) {
+          oprot.writeFieldBegin(POOL_NAME_FIELD_DESC);
+          oprot.writeString(struct.poolName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -445,19 +541,25 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetWorkerVersion()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetPoolName()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetWorkerId()) {
         oprot.writeString(struct.workerId);
       }
       if (struct.isSetWorkerVersion()) {
         oprot.writeString(struct.workerVersion);
       }
+      if (struct.isSetPoolName()) {
+        oprot.writeString(struct.poolName);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, FindNextCompactRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.workerId = iprot.readString();
         struct.setWorkerIdIsSet(true);
@@ -465,6 +567,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(1)) {
         struct.workerVersion = iprot.readString();
         struct.setWorkerVersionIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.poolName = iprot.readString();
+        struct.setPoolNameIsSet(true);
       }
     }
   }

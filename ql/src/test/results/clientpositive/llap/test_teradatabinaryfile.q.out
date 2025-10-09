@@ -1,19 +1,27 @@
 PREHOOK: query: DROP TABLE if exists teradata_binary_table_64kb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE if exists teradata_binary_table_64kb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE if exists teradata_binary_table_1mb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE if exists teradata_binary_table_1mb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE if exists teradata_binary_table_64kb_insert
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE if exists teradata_binary_table_64kb_insert
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE if exists teradata_binary_table_1mb_insert
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE if exists teradata_binary_table_1mb_insert
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE `teradata_binary_table_64kb`(
   `test_tinyint` tinyint,
   `test_smallint` smallint,
@@ -452,7 +460,7 @@ Table Parameters:
 	teradata.char.charset	LATIN               
 	teradata.row.length 	64KB                
 	teradata.timestamp.precision	0                   
-	totalSize           	1800                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -490,7 +498,7 @@ Table Parameters:
 	teradata.char.charset	UNICODE             
 	teradata.row.length 	1MB                 
 	teradata.timestamp.precision	6                   
-	totalSize           	11                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -506,32 +514,40 @@ Storage Desc Params:
 PREHOOK: query: DROP TABLE if exists teradata_binary_table_64kb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@teradata_binary_table_64kb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@teradata_binary_table_64kb
 POSTHOOK: query: DROP TABLE if exists teradata_binary_table_64kb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@teradata_binary_table_64kb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@teradata_binary_table_64kb
 PREHOOK: query: DROP TABLE if exists teradata_binary_table_1mb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@teradata_binary_table_1mb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@teradata_binary_table_1mb
 POSTHOOK: query: DROP TABLE if exists teradata_binary_table_1mb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@teradata_binary_table_1mb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@teradata_binary_table_1mb
 PREHOOK: query: DROP TABLE if exists teradata_binary_table_64kb_insert
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@teradata_binary_table_64kb_insert
+PREHOOK: Output: database:default
 PREHOOK: Output: default@teradata_binary_table_64kb_insert
 POSTHOOK: query: DROP TABLE if exists teradata_binary_table_64kb_insert
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@teradata_binary_table_64kb_insert
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@teradata_binary_table_64kb_insert
 PREHOOK: query: DROP TABLE if exists teradata_binary_table_1mb_insert
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@teradata_binary_table_1mb_insert
+PREHOOK: Output: database:default
 PREHOOK: Output: default@teradata_binary_table_1mb_insert
 POSTHOOK: query: DROP TABLE if exists teradata_binary_table_1mb_insert
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@teradata_binary_table_1mb_insert
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@teradata_binary_table_1mb_insert

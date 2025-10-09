@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE src_a_data
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE src_a_data
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE src_a_data (
     key int,
     value string)
@@ -28,7 +30,6 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/smbbucket_1.txt' INTO 
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@src_a_data
-Warning: Shuffle Join JOIN[12][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: SELECT /*+ MAPJOIN(src1, src2) */ *
 FROM src_a_data src1
 RIGHT OUTER JOIN src_a_data src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)

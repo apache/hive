@@ -56,7 +56,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col5 (type: double)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col5 (type: double)
                       Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
@@ -296,7 +296,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col5 (type: double)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col5 (type: double)
                       Statistics: Num rows: 1 Data size: 352 Basic stats: COMPLETE Column stats: NONE
@@ -667,9 +667,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Concatenate
+      table name: default.orc_merge5a_n0
       partition spec:
         st 80.0
-      table name: default.orc_merge5a_n0
 
   Stage: Stage-1
     Move Operator

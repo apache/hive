@@ -1,3 +1,21 @@
+<!--
+{% comment %}
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to you under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+{% endcomment %}
+-->
 Apache Hive (TM)
 ================
 [![Master Build Status](https://travis-ci.org/apache/hive.svg?branch=master)](https://travis-ci.org/apache/hive/branches)
@@ -16,7 +34,8 @@ using SQL. Built on top of Apache Hadoop (TM), it provides:
 * Access to files stored either directly in Apache HDFS (TM) or in other
   data storage systems such as Apache HBase (TM)
 
-* Query execution using Apache Hadoop MapReduce or Apache Tez frameworks.
+* Query execution using Apache Tez framework, designed for interactive query, 
+  and has substantially reduced overheads versus MapReduce.
 
 Hive provides standard SQL functionality, including many of the later
 2003 and 2011 features for analytics.  These include OLAP functions,
@@ -24,22 +43,9 @@ subqueries, common table expressions, and more.  Hive's SQL can also be
 extended with user code via user defined functions (UDFs), user defined
 aggregates (UDAFs), and user defined table functions (UDTFs).
 
-Hive users have a choice of 3 runtimes when executing SQL queries.
-Users can choose between Apache Hadoop MapReduce or Apache Tez
-frameworks as their execution backend. MapReduce is a
-mature framework that is proven at large scales. However, MapReduce
-is a purely batch framework, and queries using it may experience
-higher latencies (tens of seconds), even over small datasets. Apache
-Tez is designed for interactive query, and has substantially reduced
-overheads versus MapReduce.
-
-Users are free to switch back and forth between these frameworks
-at any time. In each case, Hive is best suited for use cases
-where the amount of data processed is large enough to require a
-distributed system.
-
 Hive is not designed for online transaction processing. It is best used
-for traditional data warehousing tasks.  Hive is designed to maximize
+for traditional data warehousing tasks where the amount of data processed 
+is large enough to require a distributed system. Hive is designed to maximize
 scalability (scale out with more machines added dynamically to the Hadoop
 cluster), performance, extensibility, fault-tolerance, and
 loose-coupling with its input formats.
@@ -57,16 +63,17 @@ Getting Started
 ===============
 
 - Installation Instructions and a quick tutorial:
-  https://cwiki.apache.org/confluence/display/Hive/GettingStarted
+  https://hive.apache.org/development/gettingstarted-latest
+  https://hive.apache.org/development/quickstart
 
 - Instructions to build Hive from source:
-  https://cwiki.apache.org/confluence/display/Hive/GettingStarted#GettingStarted-BuildingHivefromSource
+  https://hive.apache.org/development/gettingstarted-latest/#building-hive-from-source
 
 - A longer tutorial that covers more features of HiveQL:
-  https://cwiki.apache.org/confluence/display/Hive/Tutorial
+  https://hive.apache.org/docs/latest/user/tutorial
 
 - The HiveQL Language Manual:
-  https://cwiki.apache.org/confluence/display/Hive/LanguageManual
+  https://hive.apache.org/docs/latest/language/languagemanual
 
 
 Requirements
@@ -77,19 +84,15 @@ Java
 
 | Hive Version  | Java Version  |
 | ------------- |:-------------:|
-| Hive 1.0      | Java 6        |
-| Hive 1.1      | Java 6        |
-| Hive 1.2      | Java 7        |
-| Hive 2.x      | Java 7        |
-| Hive 3.x      | Java 8        |
-| Hive 4.x      | Java 8        |
+| Hive 4.0.1      | Java 8        |
+| Hive 4.1.x      | Java 17        |
+| Hive 4.2.x      | Java 21        |
 
 
 Hadoop
 ------
 
-- Hadoop 1.x, 2.x
-- Hadoop 3.x (Hive 3.x)
+- Hadoop 3.x
 
 
 Upgrading from older versions of Hive

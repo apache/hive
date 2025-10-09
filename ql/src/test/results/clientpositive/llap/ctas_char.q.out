@@ -1,11 +1,15 @@
 PREHOOK: query: drop table ctas_char_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table ctas_char_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table ctas_char_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table ctas_char_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop view ctas_char_3
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view ctas_char_3
@@ -98,18 +102,22 @@ POSTHOOK: Input: default@ctas_char_3
 PREHOOK: query: drop table ctas_char_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ctas_char_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas_char_1
 POSTHOOK: query: drop table ctas_char_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ctas_char_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_char_1
 PREHOOK: query: drop table ctas_char_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ctas_char_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ctas_char_2
 POSTHOOK: query: drop table ctas_char_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ctas_char_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ctas_char_2
 PREHOOK: query: drop view ctas_char_3
 PREHOOK: type: DROPVIEW

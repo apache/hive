@@ -40,7 +40,7 @@ public class CastDecimalToLong extends FuncDecimalToLong {
   protected void func(LongColumnVector outV, DecimalColumnVector inV,  int i) {
     HiveDecimalWritable decWritable = inV.vector[i];
 
-    // Check based on the Hive integer type we need to test with isByte, isShort, isInt, isLong
+    // Check based on the Hive integer type we need to test with isByte, isShort, isInt, isLong,
     // so we do not use corrupted (truncated) values for the Hive integer type.
     boolean isInRange;
     switch (integerPrimitiveCategory) {

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.OptionalInt;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -33,7 +34,6 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -172,6 +171,15 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       return inputFormatClassName;
     }
 
+    public OptionalInt getBucketId() {
+      if (inputSplit instanceof PartitionAwareSplit) {
+        return ((PartitionAwareSplit) inputSplit).getBucketId();
+      }
+
+      final int bucketId = Utilities.parseSplitBucket(inputSplit);
+      return bucketId == -1 ? OptionalInt.empty() : OptionalInt.of(bucketId);
+    }
+
     @Override
     public Path getPath() {
       if (inputSplit instanceof FileSplit) {
@@ -258,6 +266,18 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         byte[] allBytes = new byte[pathBytes.length + 8];
         System.arraycopy(pathBytes, 0, allBytes, 0, pathBytes.length);
         SerDeUtils.writeLong(allBytes, pathBytes.length, getStart() >> 3);
+        return allBytes;
+      }
+    }
+
+    public byte[] getBytesForEquality() {
+      if (inputSplit instanceof HashableInputSplit) {
+        return ((HashableInputSplit) inputSplit).getBytesForHash();
+      } else {
+        byte[] pathBytes = getPath().toString().getBytes();
+        byte[] allBytes = new byte[pathBytes.length + 8];
+        System.arraycopy(pathBytes, 0, allBytes, 0, pathBytes.length);
+        SerDeUtils.writeLong(allBytes, pathBytes.length, getStart());
         return allBytes;
       }
     }
@@ -454,8 +474,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         LOG.info("Ignoring exception while getting record reader as limit is reached", rootCause);
         innerReader = new NullRowsRecordReader(job, split);
       } else {
-        innerReader = HiveIOExceptionHandlerUtil
-            .handleRecordReaderCreationException(e, job);
+        throw new IOException("Exception caught while creating the inner reader", e);
       }
     }
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
@@ -554,7 +573,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         } else {
           // if the input is Compressed OR not text we have no way of splitting them!
           // In that case RecordReader should take care of header/footer skipping!
-          HiveConf.setLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, Long.MAX_VALUE);
+          HiveConf.setLongVar(conf, ConfVars.MAPRED_MIN_SPLIT_SIZE, Long.MAX_VALUE);
         }
       }
     }
@@ -696,7 +715,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     // We need to iterate to detect original directories, that are supported in MM but not ACID.
     boolean hasOriginalFiles = false, hasAcidDirs = false;
     List<Path> originalDirectories = new ArrayList<>();
-    for (FileStatus file : fs.listStatus(dir, AcidUtils.hiddenFileFilter)) {
+    for (FileStatus file : fs.listStatus(dir, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
       Path currDir = file.getPath();
       Utilities.FILE_OP_LOGGER.trace("Checking {} for being an input", currDir);
       if (!file.isDirectory()) {
@@ -812,6 +831,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
           pushDownProjection = true;
           // push down filters and as of information
           pushFiltersAndAsOf(newjob, tableScan, this.mrwork);
+          addGroupingDetails(newjob, tableScan);
         }
       } else {
         if (LOG.isDebugEnabled()) {
@@ -918,6 +938,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     Utilities.addTableSchemaToConf(jobConf, tableScan);
+    Utilities.setPartitionColumnNames(jobConf, tableScan);
 
     // construct column name list and types for reference by filter push down
     Utilities.setColumnNameList(jobConf, tableScan);
@@ -986,13 +1007,20 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (scanDesc.getAsOfTimestamp() != null) {
       ZoneId timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() :
           SessionState.get().getConf().getLocalTimeZone();
-      TimestampTZ time = TimestampTZUtil.parse(PlanUtils.stripQuotes(scanDesc.getAsOfTimestamp()), timeZone);
-
+      TimestampTZ time = TimestampTZUtil.parse(scanDesc.getAsOfTimestamp(), timeZone);
       jobConf.set(TableScanDesc.AS_OF_TIMESTAMP, Long.toString(time.toEpochMilli()));
     }
 
     if (scanDesc.getAsOfVersion() != null) {
       jobConf.set(TableScanDesc.AS_OF_VERSION, scanDesc.getAsOfVersion());
+    }
+
+    if (scanDesc.getVersionIntervalFrom() != null) {
+      jobConf.set(TableScanDesc.FROM_VERSION, scanDesc.getVersionIntervalFrom());
+    }
+
+    if (scanDesc.getSnapshotRef() != null) {
+      jobConf.set(TableScanDesc.SNAPSHOT_REF, scanDesc.getSnapshotRef());
     }
   }
 
@@ -1059,6 +1087,14 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             ts.getConf().getAcidOperationalProperties());
         AcidUtils.setValidWriteIdList(job, ts.getConf());
       }
+    }
+  }
+
+  private void addGroupingDetails(JobConf conf, TableScanOperator tableScan) {
+    final List<String> groupingPartitionColumns = tableScan.getConf().getGroupingPartitionColumns();
+    if (groupingPartitionColumns != null) {
+      conf.setStrings(TableScanDesc.GROUPING_PARTITION_COLUMNS, groupingPartitionColumns.toArray(new String[0]));
+      conf.setInt(TableScanDesc.GROUPING_NUM_BUCKETS, tableScan.getConf().getGroupingNumBuckets());
     }
   }
 }

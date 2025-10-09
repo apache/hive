@@ -1,0 +1,485 @@
+PREHOOK: query: create table ice_date (a int, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: create table ice_date (a int, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: insert into table ice_date values (1, '2021-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: insert into table ice_date values (1, '2021-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: insert into table ice_date values (2, '2022-02-02'), (3, '2022-03-03')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: insert into table ice_date values (2, '2022-02-02'), (3, '2022-03-03')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: delete from ice_date where b = '2022-02-02'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: delete from ice_date where b = '2022-02-02'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: delete from ice_date where a = 1 and b = '2021-01-01'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: delete from ice_date where a = 1 and b = '2021-01-01'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select * from ice_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	2022-03-03
+PREHOOK: query: create table ice_date_year (a int, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_year
+POSTHOOK: query: create table ice_date_year (a int, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_year
+PREHOOK: query: insert into table ice_date_year values (1, '2021-01-01')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_year
+POSTHOOK: query: insert into table ice_date_year values (1, '2021-01-01')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_year
+PREHOOK: query: insert into table ice_date_year values (2, '2022-02-02'), (3, '2022-03-03')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_date_year
+POSTHOOK: query: insert into table ice_date_year values (2, '2022-02-02'), (3, '2022-03-03')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_date_year
+PREHOOK: query: delete from ice_date_year where year(b) = 2022
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date_year
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: delete from ice_date_year where year(b) = 2022
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date_year
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select * from ice_date_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_date_year
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_date_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_date_year
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2021-01-01
+PREHOOK: query: create table ice_str_name (first_name string, last_name string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: create table ice_str_name (first_name string, last_name string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: insert into table ice_str_name values ('Alex', 'Clark')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: insert into table ice_str_name values ('Alex', 'Clark')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: insert into table ice_str_name values ('Bob', 'Bob')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: insert into table ice_str_name values ('Bob', 'Bob')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: delete from ice_str_name where first_name = last_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_name
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: delete from ice_str_name where first_name = last_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_name
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: select * from ice_str_name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_str_name
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_str_name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_str_name
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Alex	Clark
+PREHOOK: query: create table ice_int_id (first_id int, last_id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: create table ice_int_id (first_id int, last_id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_int_id
+PREHOOK: query: insert into table ice_int_id values (7, 9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: insert into table ice_int_id values (7, 9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_id
+PREHOOK: query: insert into table ice_int_id values (8, 8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: insert into table ice_int_id values (8, 8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_int_id
+PREHOOK: query: delete from ice_int_id where first_id = last_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_int_id
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: delete from ice_int_id where first_id = last_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_int_id
+POSTHOOK: Output: default@ice_int_id
+PREHOOK: query: select * from ice_int_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_int_id
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_int_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_int_id
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+7	9
+PREHOOK: query: create table ice_branch_metadata_delete (a int, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_branch_metadata_delete
+POSTHOOK: query: create table ice_branch_metadata_delete (a int, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_branch_metadata_delete
+PREHOOK: query: insert into table ice_branch_metadata_delete values (1, 'ABC')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_branch_metadata_delete
+POSTHOOK: query: insert into table ice_branch_metadata_delete values (1, 'ABC')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_branch_metadata_delete
+PREHOOK: query: insert into table ice_branch_metadata_delete values (2, 'DEF')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_branch_metadata_delete
+POSTHOOK: query: insert into table ice_branch_metadata_delete values (2, 'DEF')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_branch_metadata_delete
+PREHOOK: query: insert into table ice_branch_metadata_delete values (3, 'GHI')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_branch_metadata_delete
+POSTHOOK: query: insert into table ice_branch_metadata_delete values (3, 'GHI')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_branch_metadata_delete
+PREHOOK: query: insert into table ice_branch_metadata_delete values (4, 'JKL')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_branch_metadata_delete
+POSTHOOK: query: insert into table ice_branch_metadata_delete values (4, 'JKL')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_branch_metadata_delete
+PREHOOK: query: alter table ice_branch_metadata_delete create branch test01
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice_branch_metadata_delete
+POSTHOOK: query: alter table ice_branch_metadata_delete create branch test01
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice_branch_metadata_delete
+PREHOOK: query: delete from default.ice_branch_metadata_delete.branch_test01 where a = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_branch_metadata_delete
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: delete from default.ice_branch_metadata_delete.branch_test01 where a = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_branch_metadata_delete
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select * from default.ice_branch_metadata_delete.branch_test01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_branch_metadata_delete
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice_branch_metadata_delete.branch_test01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_branch_metadata_delete
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	DEF
+3	GHI
+4	JKL
+PREHOOK: query: alter table ice_branch_metadata_delete drop branch test01
+PREHOOK: type: ALTERTABLE_DROPBRANCH
+PREHOOK: Input: default@ice_branch_metadata_delete
+POSTHOOK: query: alter table ice_branch_metadata_delete drop branch test01
+POSTHOOK: type: ALTERTABLE_DROPBRANCH
+POSTHOOK: Input: default@ice_branch_metadata_delete
+PREHOOK: query: create table ice_delete_multiple_table1 (a int, b string) stored by iceberg stored as orc tblproperties ('format-version' = '2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_delete_multiple_table1
+POSTHOOK: query: create table ice_delete_multiple_table1 (a int, b string) stored by iceberg stored as orc tblproperties ('format-version' = '2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_delete_multiple_table1
+PREHOOK: query: create table ice_delete_multiple_table2 (a int, b string) stored by iceberg stored as orc tblproperties ('format-version' = '2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_delete_multiple_table2
+POSTHOOK: query: create table ice_delete_multiple_table2 (a int, b string) stored by iceberg stored as orc tblproperties ('format-version' = '2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_delete_multiple_table2
+PREHOOK: query: insert into table ice_delete_multiple_table1 values (1, 'ABC'), (2, 'DEF'), (3, 'GHI')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_delete_multiple_table1
+POSTHOOK: query: insert into table ice_delete_multiple_table1 values (1, 'ABC'), (2, 'DEF'), (3, 'GHI')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_delete_multiple_table1
+PREHOOK: query: insert into table ice_delete_multiple_table1 values (4, 'GHI'), (5, 'JKL'), (6, 'PQR')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_delete_multiple_table1
+POSTHOOK: query: insert into table ice_delete_multiple_table1 values (4, 'GHI'), (5, 'JKL'), (6, 'PQR')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_delete_multiple_table1
+PREHOOK: query: insert into table ice_delete_multiple_table2 values (1, 'ABC'), (2, 'DEF'), (3, 'GHI')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_delete_multiple_table2
+POSTHOOK: query: insert into table ice_delete_multiple_table2 values (1, 'ABC'), (2, 'DEF'), (3, 'GHI')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_delete_multiple_table2
+PREHOOK: query: insert into table ice_delete_multiple_table2 values (4, 'GHI'), (5, 'JKL'), (6, 'PQR')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_delete_multiple_table2
+POSTHOOK: query: insert into table ice_delete_multiple_table2 values (4, 'GHI'), (5, 'JKL'), (6, 'PQR')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_delete_multiple_table2
+PREHOOK: query: delete from ice_delete_multiple_table2 where ice_delete_multiple_table2.a in (select ice_delete_multiple_table1.a from ice_delete_multiple_table1 where ice_delete_multiple_table1.b = 'GHI')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_delete_multiple_table1
+PREHOOK: Input: default@ice_delete_multiple_table2
+PREHOOK: Output: default@ice_delete_multiple_table2
+POSTHOOK: query: delete from ice_delete_multiple_table2 where ice_delete_multiple_table2.a in (select ice_delete_multiple_table1.a from ice_delete_multiple_table1 where ice_delete_multiple_table1.b = 'GHI')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_delete_multiple_table1
+POSTHOOK: Input: default@ice_delete_multiple_table2
+POSTHOOK: Output: default@ice_delete_multiple_table2
+PREHOOK: query: select * from ice_delete_multiple_table2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_delete_multiple_table2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_delete_multiple_table2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_delete_multiple_table2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	ABC
+2	DEF
+5	JKL
+6	PQR
+PREHOOK: query: create table test_delete_config (a int, b int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_delete_config
+POSTHOOK: query: create table test_delete_config (a int, b int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_delete_config
+PREHOOK: query: insert into table test_delete_config values (1,2), (3,4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_delete_config
+POSTHOOK: query: insert into table test_delete_config values (1,2), (3,4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_delete_config
+PREHOOK: query: explain delete from test_delete_config where b < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_config
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain delete from test_delete_config where b < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_config
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Execute operation
+      table name: default.test_delete_config
+      spec: AlterTableExecuteSpec{operationType=DELETE_METADATA, operationParams=org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec$#Masked#
+
+PREHOOK: query: explain delete from test_delete_config where b < 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete_config
+PREHOOK: Output: default@test_delete_config
+POSTHOOK: query: explain delete from test_delete_config where b < 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete_config
+POSTHOOK: Output: default@test_delete_config
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_delete_config
+                  filterExpr: (b < 5) (type: boolean)
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (b < 5) (type: boolean)
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string), a (type: int), b (type: int)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                      Statistics: Num rows: 2 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.test_delete_config
+            Execution mode: vectorized
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.test_delete_config
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: drop table ice_date
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_date
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date
+POSTHOOK: query: drop table ice_date
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_date
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date
+PREHOOK: query: drop table ice_date_year
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_date_year
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_date_year
+POSTHOOK: query: drop table ice_date_year
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_date_year
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_date_year
+PREHOOK: query: drop table ice_str_name
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_str_name
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_str_name
+POSTHOOK: query: drop table ice_str_name
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_str_name
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_str_name
+PREHOOK: query: drop table ice_int_id
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_int_id
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_int_id
+POSTHOOK: query: drop table ice_int_id
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_int_id
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_int_id
+PREHOOK: query: drop table ice_branch_metadata_delete
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_branch_metadata_delete
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_branch_metadata_delete
+POSTHOOK: query: drop table ice_branch_metadata_delete
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_branch_metadata_delete
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_branch_metadata_delete
+PREHOOK: query: drop table ice_delete_multiple_table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_delete_multiple_table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_delete_multiple_table1
+POSTHOOK: query: drop table ice_delete_multiple_table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_delete_multiple_table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_delete_multiple_table1
+PREHOOK: query: drop table ice_delete_multiple_table2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_delete_multiple_table2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_delete_multiple_table2
+POSTHOOK: query: drop table ice_delete_multiple_table2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_delete_multiple_table2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_delete_multiple_table2
+PREHOOK: query: drop table test_delete_config
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_delete_config
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_delete_config
+POSTHOOK: query: drop table test_delete_config
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_delete_config
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_delete_config

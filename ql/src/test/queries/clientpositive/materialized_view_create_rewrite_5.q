@@ -12,6 +12,8 @@ create table cmv_basetable_n6 (a int, b varchar(256), c decimal(10,2), d int) st
 
 insert into cmv_basetable_n6 values
  (1, 'alfred', 10.30, 2),
+ (1, 'alfred', 10.30, 2),
+ (1, 'alfred', 10.30, 2),
  (2, 'bob', 3.14, 3),
  (2, 'bonnie', 172342.2, 3),
  (3, 'calvin', 978.76, 3),
@@ -20,6 +22,7 @@ insert into cmv_basetable_n6 values
 create table cmv_basetable_2_n3 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
 
 insert into cmv_basetable_2_n3 values
+ (1, 'alfred', 10.30, 2),
  (1, 'alfred', 10.30, 2),
  (3, 'calvin', 978.76, 3);
 

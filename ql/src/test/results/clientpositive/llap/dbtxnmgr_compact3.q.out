@@ -28,25 +28,37 @@ POSTHOOK: Output: D1@T2_n71
 POSTHOOK: Output: database:d1
 PREHOOK: query: alter table T1_n71 compact 'major'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: d1@t1_n71
+PREHOOK: Output: d1@t1_n71
 POSTHOOK: query: alter table T1_n71 compact 'major'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: d1@t1_n71
+POSTHOOK: Output: d1@t1_n71
 PREHOOK: query: alter table T2_n71 compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: d1@t2_n71
+PREHOOK: Output: d1@t2_n71
 POSTHOOK: query: alter table T2_n71 compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: d1@t2_n71
+POSTHOOK: Output: d1@t2_n71
 PREHOOK: query: drop table T1_n71
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: d1@t1_n71
 PREHOOK: Output: d1@t1_n71
+PREHOOK: Output: database:d1
 POSTHOOK: query: drop table T1_n71
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: d1@t1_n71
 POSTHOOK: Output: d1@t1_n71
+POSTHOOK: Output: database:d1
 PREHOOK: query: drop table T2_n71
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: d1@t2_n71
 PREHOOK: Output: d1@t2_n71
+PREHOOK: Output: database:d1
 POSTHOOK: query: drop table T2_n71
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: d1@t2_n71
 POSTHOOK: Output: d1@t2_n71
+POSTHOOK: Output: database:d1

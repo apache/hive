@@ -1,7 +1,9 @@
 PREHOOK: query: drop table load0_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table load0_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table load0_mm (key string, value string) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -64,15 +66,19 @@ POSTHOOK: Input: default@load0_mm
 PREHOOK: query: drop table load0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@load0_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@load0_mm
 POSTHOOK: query: drop table load0_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@load0_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load0_mm
 PREHOOK: query: drop table intermediate2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table intermediate2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table intermediate2 (key string, value string) stored as textfile
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
@@ -111,8 +117,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@intermediate2
 PREHOOK: query: drop table load1_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table load1_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table load1_mm (key string, value string) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -215,15 +223,19 @@ POSTHOOK: Input: default@load1_mm
 PREHOOK: query: drop table load1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@load1_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@load1_mm
 POSTHOOK: query: drop table load1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@load1_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load1_mm
 PREHOOK: query: drop table load2_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table load2_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table load2_mm (key string, value string)
   partitioned by (k int, l int) stored as textfile tblproperties("transactional"="true", "transactional_properties"="insert_only")
 PREHOOK: type: CREATETABLE
@@ -281,16 +293,20 @@ POSTHOOK: Input: default@load2_mm@k=5/l=5
 PREHOOK: query: drop table load2_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@load2_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@load2_mm
 POSTHOOK: query: drop table load2_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@load2_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load2_mm
 PREHOOK: query: drop table intermediate2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@intermediate2
 POSTHOOK: query: drop table intermediate2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermediate2

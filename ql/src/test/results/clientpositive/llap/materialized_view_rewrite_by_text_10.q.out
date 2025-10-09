@@ -1,0 +1,40 @@
+PREHOOK: query: CREATE TABLE EMPS (ENAME STRING, BIRTH_EPOCH_SECS INT) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@EMPS
+POSTHOOK: query: CREATE TABLE EMPS (ENAME STRING, BIRTH_EPOCH_SECS INT) STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@EMPS
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+Cannot enable automatic rewriting for materialized view. UNIX_TIMESTAMP is not a deterministic function
+PREHOOK: query: CREATE MATERIALIZED VIEW v_emp AS SELECT * FROM EMPS WHERE BIRTH_EPOCH_SECS <= UNIX_TIMESTAMP()
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v_emp
+POSTHOOK: query: CREATE MATERIALIZED VIEW v_emp AS SELECT * FROM EMPS WHERE BIRTH_EPOCH_SECS <= UNIX_TIMESTAMP()
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v_emp
+POSTHOOK: Lineage: v_emp.birth_epoch_secs SIMPLE [(emps)emps.FieldSchema(name:birth_epoch_secs, type:int, comment:null), ]
+POSTHOOK: Lineage: v_emp.ename SIMPLE [(emps)emps.FieldSchema(name:ename, type:string, comment:null), ]
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+unix_timestamp(void) is deprecated. Use current_timestamp instead.
+PREHOOK: query: explain cbo
+SELECT * FROM EMPS WHERE BIRTH_EPOCH_SECS <= UNIX_TIMESTAMP()
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+SELECT * FROM EMPS WHERE BIRTH_EPOCH_SECS <= UNIX_TIMESTAMP()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(ename=[$0], birth_epoch_secs=[$1])
+  HiveFilter(condition=[<=(CAST($1):BIGINT, 1746205503)])
+    HiveTableScan(table=[[default, emps]], table:alias=[emps])
+

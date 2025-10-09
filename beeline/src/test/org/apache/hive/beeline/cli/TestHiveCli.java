@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 
 public class TestHiveCli {
   private static final Logger LOG = LoggerFactory.getLogger(TestHiveCli.class.getName());
@@ -169,8 +170,11 @@ public class TestHiveCli {
 
   @Test
   public void testSqlFromCmdWithEmbeddedQuotes() {
+  // In Beeline.java, after upgrading the Maven SureFire plugin to 3.0.0-M5, InputStream inputStream = System.in
+  // no longer contains an EOT byte[]. This change causes an indefinite loop when calling
+  // beeLine.getConsoleReader().readLine(prompt.toString()). To resolve this, a delimiter has been added.
     verifyCMD(null, "hive", out,
-        new String[] { "-e", "select \"hive\"" }, ERRNO_OK, true);
+        new String[] { "-e", "select \"hive\";" }, ERRNO_OK, true);
   }
 
   @Test
@@ -245,7 +249,7 @@ public class TestHiveCli {
     int ret = 0;
     try {
       if (input != null) {
-        inputStream = IOUtils.toInputStream(input);
+        inputStream = IOUtils.toInputStream(input, Charset.defaultCharset());
       }
       ret = cli.runWithArgs(args, inputStream);
     } catch (Throwable e) {
@@ -267,11 +271,11 @@ public class TestHiveCli {
     String output = os.toString();
     LOG.debug(output);
     if (contains) {
-      Assert.assertTrue("The expected keyword \"" + keywords + "\" occur in the output: " + output,
+      Assert.assertTrue("The expected keyword \"" + keywords + "\" should appear in the output: " + output,
           output.contains(keywords));
     } else {
       Assert.assertFalse(
-          "The expected keyword \"" + keywords + "\" should be excluded occurred in the output: "
+          "The expected keyword \"" + keywords + "\" should not appear in the output: "
               + output, output.contains(keywords));
     }
   }
@@ -280,7 +284,7 @@ public class TestHiveCli {
   public static void init(){
     // something changed scratch dir permissions, so test can't execute
     HiveConf hiveConf = new HiveConf();
-    String scratchDir = hiveConf.get(HiveConf.ConfVars.SCRATCHDIR.varname);
+    String scratchDir = hiveConf.get(HiveConf.ConfVars.SCRATCH_DIR.varname);
     File file = new File(scratchDir);
     if (file.exists()) {
       file.setWritable(true, false);
@@ -290,9 +294,9 @@ public class TestHiveCli {
   @Before
   public void setup() throws IOException, URISyntaxException {
     System.setProperty("datanucleus.schema.autoCreateAll", "true");
-    cli = new HiveCli();
-    initFromFile();
+    cli = new HiveCliForTest();
     redirectOutputStream();
+    initFromFile();
   }
 
   private void redirectOutputStream() {

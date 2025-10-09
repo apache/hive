@@ -10,4 +10,4 @@ POSTHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1
-FAILED: SemanticException 1:693 Input format must implement InputFormat. Error encountered near token 'dest1'
+FAILED: SemanticException 1:692 Input format must implement InputFormat. Error encountered near token 'dest1'

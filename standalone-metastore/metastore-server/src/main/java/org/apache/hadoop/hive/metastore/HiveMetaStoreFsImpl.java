@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.io.FileNotFoundException;
-
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
@@ -41,15 +39,9 @@ public class HiveMetaStoreFsImpl implements MetaStoreFS {
       if (FileUtils.moveToTrash(fs, f, conf, ifPurge)) {
         return true;
       }
-      if (fs.exists(f)) {
-        throw new MetaException("Unable to delete directory: " + f);
-      }
-      return true;
-    } catch (FileNotFoundException e) {
-      return true; // ok even if there is not data
     } catch (Exception e) {
       MetaStoreUtils.throwMetaException(e);
     }
-    return false;
+    throw new MetaException("Unable to delete directory: " + f);
   }
 }

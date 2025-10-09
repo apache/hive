@@ -35,17 +35,22 @@ public class MySQLExternalDB extends AbstractExternalDB {
 
     @Override
     public String getJdbcUrl() {
-        return "jdbc:mysql://" + getContainerHostAddress() + ":3306/" + dbName;
+        return "jdbc:mysql://" + getContainerHostAddress() + ":" + getPort() + "/" + dbName;
     }
 
     public String getJdbcDriver() {
         return "com.mysql.jdbc.Driver";
     }
 
-    public String getDockerImageName() { return "mysql:5.7.37"; }
+    @Override
+    protected int getPort() {
+        return 3306;
+    }
+
+    public String getDockerImageName() { return "mysql:8.4.3"; }
 
     public String[] getDockerAdditionalArgs() {
-        return new String[] {"-p", "3306:3306",
+        return new String[] { "-p", getPort() + ":3306",
                           "-e", "MYSQL_ROOT_PASSWORD=" + getRootPassword(),
                           "-e", "MYSQL_DATABASE=" + dbName,
                           "-d"
@@ -53,8 +58,8 @@ public class MySQLExternalDB extends AbstractExternalDB {
     }
 
     public boolean isContainerReady(ProcessResults pr) {
-        Pattern pat = Pattern.compile("ready for connections");
+        Pattern pat = Pattern.compile("mysqld.*ready for connections.*port.*3306");
         Matcher m = pat.matcher(pr.stderr);
-        return m.find() && m.find();
+        return m.find();
     }
 }

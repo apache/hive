@@ -1,7 +1,9 @@
 PREHOOK: query: drop table timestamp_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table timestamp_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table timestamp_3 (t timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -82,7 +84,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_3 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_3
 #### A masked pattern was here ####
-1.30413517E9
+1.3041352E9
 PREHOOK: query: select cast(t as double) from timestamp_3 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_3
@@ -154,7 +156,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_3 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_3
 #### A masked pattern was here ####
-1.30411008E9
+1.3041101E9
 PREHOOK: query: select cast(t as double) from timestamp_3 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_3
@@ -185,8 +187,10 @@ POSTHOOK: Input: default@timestamp_3
 PREHOOK: query: drop table timestamp_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@timestamp_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamp_3
 POSTHOOK: query: drop table timestamp_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamp_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_3

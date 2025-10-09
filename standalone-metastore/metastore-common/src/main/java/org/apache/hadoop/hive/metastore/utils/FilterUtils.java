@@ -78,6 +78,7 @@ public class FilterUtils {
    * Filter the list of databases if filtering is enabled. Otherwise, return original list
    * @param isFilterEnabled true: filtering is enabled; false: filtring is disabled.
    * @param filterHook: the object that does filtering
+   * @param catName: the catalog name of the databases
    * @param dbNames: the list of database names to filter
    * @return the list of database names that current user has access if filtering is enabled;
    *         otherwise, the original list
@@ -97,6 +98,28 @@ public class FilterUtils {
   }
 
   /**
+   * Filter the list of database objects if filtering is enabled. Otherwise, return original list
+   *
+   * @param isFilterEnabled true: filtering is enabled; false: filtering is disabled.
+   * @param filterHook:     the object that does filtering
+   * @param databases:      the list of database objects to filter
+   * @return the list of database objects that current user has access if filtering is enabled;
+   * otherwise, the original list
+   * @throws MetaException
+   */
+  public static List<Database> filterDatabaseObjectsIfEnabled(
+      boolean isFilterEnabled,
+      MetaStoreFilterHook filterHook,
+      List<Database> databases) throws MetaException {
+
+    if (isFilterEnabled) {
+      return filterHook.filterDatabaseObjects(databases);
+    }
+
+    return databases;
+  }
+
+  /**
    * Filter the list of dataconnectors if filtering is enabled. Otherwise, return original list
    * @param isFilterEnabled true: filtering is enabled; false: filtring is disabled.
    * @param filterHook: the object that does filtering
@@ -111,7 +134,7 @@ public class FilterUtils {
       List<String> connectorNames) throws MetaException {
 
     if (isFilterEnabled) {
-      return filterHook.filterDatabases(null, connectorNames); // TODO add a new ATZ call
+      return filterHook.filterDataConnectors(connectorNames);
     }
     return connectorNames;
   }
@@ -187,25 +210,20 @@ public class FilterUtils {
    * Filter list of meta data of tables if filtering is enabled. Otherwise, return original list
    * @param isFilterEnabled true: filtering is enabled; false: filtring is disabled.
    * @param filterHook: the object that does filtering
-   * @param catName: the catalog name
-   * @param dbName: the database name
    * @param tableMetas: the list of meta data of tables
    * @return the list of table meta data that current user has access if filtering is enabled;
    *         otherwise, the original list
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  public static List<TableMeta> filterTableMetasIfEnabled(
-      boolean isFilterEnabled, MetaStoreFilterHook filterHook,
-      String catName, String dbName, List<TableMeta> tableMetas)
-      throws MetaException, NoSuchObjectException {
+  public static List<TableMeta> filterTableMetasIfEnabled(boolean isFilterEnabled, MetaStoreFilterHook filterHook,
+      List<TableMeta> tableMetas) throws MetaException, NoSuchObjectException {
     if (tableMetas == null || tableMetas.isEmpty()) {
       return tableMetas;
     }
 
     if (isFilterEnabled) {
-      return filterHook.filterTableMetas(
-          catName, dbName, tableMetas);
+      return filterHook.filterTableMetas(tableMetas);
     }
 
     return tableMetas;

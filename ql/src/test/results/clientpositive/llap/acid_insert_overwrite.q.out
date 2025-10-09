@@ -31,8 +31,10 @@ i	9
 j	10
 PREHOOK: query: drop table if exists acidtbl1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acidtbl1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table acidtbl1 (key char(1), value int) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -160,8 +162,10 @@ k	11
 l	12
 PREHOOK: query: drop table if exists acidtbl2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acidtbl2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table acidtbl2 (key char(1), value int) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -172,8 +176,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidtbl2
 PREHOOK: query: drop table if exists acidtbl3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acidtbl3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table acidtbl3 (key char(1), value int) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -269,31 +275,39 @@ p	16
 PREHOOK: query: drop table acidtbl1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acidtbl1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acidtbl1
 POSTHOOK: query: drop table acidtbl1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acidtbl1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidtbl1
 PREHOOK: query: drop table acidtbl2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acidtbl2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acidtbl2
 POSTHOOK: query: drop table acidtbl2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acidtbl2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidtbl2
 PREHOOK: query: drop table acidtbl3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acidtbl3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acidtbl3
 POSTHOOK: query: drop table acidtbl3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acidtbl3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidtbl3
 PREHOOK: query: drop table if exists acidparttbl
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acidparttbl
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table acidparttbl (key char(1), value int) partitioned by (p int) clustered by (value) into 2 buckets stored as orc TBLPROPERTIES ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -410,8 +424,10 @@ POSTHOOK: Input: default@acidparttbl@p=200
 PREHOOK: query: drop table acidparttbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acidparttbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acidparttbl
 POSTHOOK: query: drop table acidparttbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acidparttbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidparttbl

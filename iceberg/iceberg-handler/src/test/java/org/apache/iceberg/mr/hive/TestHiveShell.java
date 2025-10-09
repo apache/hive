@@ -23,7 +23,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory;
 import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
@@ -54,8 +56,9 @@ public class TestHiveShell {
   private final HiveServer2 hs2;
   private final HiveConf hs2Conf;
   private CLIService client;
-  private HiveSession session;
   private boolean started;
+
+  private ThreadLocal<HiveSession> session = ThreadLocal.withInitial(this::openSession);
 
   public TestHiveShell() {
     metastore = new TestHiveMetastore();
@@ -69,9 +72,9 @@ public class TestHiveShell {
   }
 
   public void setHiveSessionValue(String key, String value) {
-    Preconditions.checkState(session != null, "There is no open session for setting variables.");
+    Preconditions.checkState(session.get() != null, "There is no open session for setting variables.");
     try {
-      session.getSessionConf().set(key, value);
+      session.get().getSessionConf().set(key, value);
     } catch (Exception e) {
       throw new RuntimeException("Unable to set Hive session variable: ", e);
     }
@@ -84,9 +87,11 @@ public class TestHiveShell {
   public void start() {
     // Create a copy of the HiveConf for the metastore
     metastore.start(new HiveConf(hs2Conf), 20);
-    hs2Conf.setVar(HiveConf.ConfVars.METASTOREURIS, metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREURIS));
-    hs2Conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
-        metastore.hiveConf().getVar(HiveConf.ConfVars.METASTOREWAREHOUSE));
+    hs2Conf.setVar(HiveConf.ConfVars.METASTORE_URIS, metastore.hiveConf().getVar(HiveConf.ConfVars.METASTORE_URIS));
+    hs2Conf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE,
+        metastore.hiveConf().getVar(HiveConf.ConfVars.METASTORE_WAREHOUSE));
+    hs2Conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL,
+        metastore.hiveConf().getVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL));
 
     // Initializing RpcMetrics in a single JVM multiple times can cause issues
     DefaultMetricsSystem.setMiniClusterMode(true);
@@ -114,32 +119,33 @@ public class TestHiveShell {
     return metastore;
   }
 
-  public void openSession() {
+  private HiveSession openSession() {
     Preconditions.checkState(started, "You have to start TestHiveShell first, before opening a session.");
     try {
       SessionHandle sessionHandle = client.getSessionManager().openSession(
-          CLIService.SERVER_VERSION, "", "", "127.0.0.1", Collections.emptyMap());
-      session = client.getSessionManager().getSession(sessionHandle);
+          CLIService.SERVER_VERSION, "", "", IPStackUtils.resolveLoopbackAddress(), Collections.emptyMap());
+      return client.getSessionManager().getSession(sessionHandle);
     } catch (Exception e) {
       throw new RuntimeException("Unable to open new Hive session: ", e);
     }
   }
 
   public void closeSession() {
-    Preconditions.checkState(session != null, "There is no open session to be closed.");
+    Preconditions.checkState(session.get() != null, "There is no open session to be closed.");
     try {
-      session.close();
-      session = null;
+      session.get().close();
+      session.remove();
     } catch (Exception e) {
       throw new RuntimeException("Unable to close Hive session: ", e);
     }
   }
 
   public List<Object[]> executeStatement(String statement) {
-    Preconditions.checkState(session != null,
+    Preconditions.checkState(session.get() != null,
             "You have to start TestHiveShell and open a session first, before running a query.");
     try {
-      OperationHandle handle = client.executeStatement(session.getSessionHandle(), statement, Collections.emptyMap());
+      OperationHandle handle = client.executeStatement(session.get().getSessionHandle(), statement,
+          Collections.emptyMap());
       List<Object[]> resultSet = Lists.newArrayList();
       if (handle.hasResultSet()) {
         RowSet rowSet;
@@ -170,10 +176,14 @@ public class TestHiveShell {
 
   public Configuration getHiveConf() {
     if (session != null) {
-      return session.getHiveConf();
+      return session.get().getHiveConf();
     } else {
       return hs2Conf;
     }
+  }
+
+  public HiveSession getSession() {
+    return session.get();
   }
 
   private HiveConf initializeConf() {
@@ -187,20 +197,21 @@ public class TestHiveShell {
     // Switch off optimizers in order to contain the map reduction within this JVM
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CBO_ENABLED, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTINDEXFILTER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESKEWJOIN, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_METADATA_ONLY_QUERIES, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SKEW_JOIN, false);
 
     // Speed up test execution
-    hiveConf.setLongVar(HiveConf.ConfVars.HIVECOUNTERSPULLINTERVAL, 1L);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    hiveConf.setLongVar(HiveConf.ConfVars.HIVE_COUNTERS_PULL_INTERVAL, 1L);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
 
     // Resource configuration
     hiveConf.setInt("mapreduce.map.memory.mb", 1024);
 
     // Tez configuration
     hiveConf.setBoolean("tez.local.mode", true);
+    hiveConf.setBoolean("tez.local.mode.without.network", true);
 
     // Disable vectorization for HiveIcebergInputFormat
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
@@ -218,6 +229,9 @@ public class TestHiveShell {
     // set lifecycle hooks
     hiveConf.setVar(HiveConf.ConfVars.HIVE_QUERY_LIFETIME_HOOKS, HiveIcebergQueryLifeTimeHook.class.getName());
 
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.TRY_DIRECT_SQL, true);
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
     return hiveConf;
   }
 }

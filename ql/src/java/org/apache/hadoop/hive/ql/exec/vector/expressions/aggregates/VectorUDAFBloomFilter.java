@@ -47,6 +47,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.common.util.BloomKFilter;
 
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
+
 public class VectorUDAFBloomFilter extends VectorAggregateExpression {
 
   private static final long serialVersionUID = 1L;
@@ -65,7 +67,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
     BloomKFilter bf;
 
     public Aggregation(long expectedEntries) {
-      bf = new BloomKFilter(expectedEntries);
+      bf = BloomKFilter.build(expectedEntries);
     }
 
     @Override
@@ -458,7 +460,7 @@ public class VectorUDAFBloomFilter extends VectorAggregateExpression {
      * Just modes (PARTIAL1, COMPLETE).
      */
     return
-        name.equals("bloom_filter") &&
+        name.equals(BLOOM_FILTER_FUNCTION) &&
         outputColVectorType == ColumnVector.Type.BYTES &&
         (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE);
   }

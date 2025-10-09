@@ -18,19 +18,18 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.TimeUnit;
+
+import javax.jdo.JDOException;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -40,40 +39,19 @@ import org.datanucleus.exceptions.NucleusException;
 
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
-public class RetryingHMSHandler implements InvocationHandler {
-
+public class RetryingHMSHandler extends AbstractHMSHandlerProxy {
   private static final Logger LOG = LoggerFactory.getLogger(RetryingHMSHandler.class);
-  private static final String CLASS_NAME = RetryingHMSHandler.class.getName();
 
-  private static class Result {
-    private final Object result;
-    private final int numRetries;
+  private final long retryInterval;
+  private final int retryLimit;
 
-    public Result(Object result, int numRetries) {
-      this.result = result;
-      this.numRetries = numRetries;
-    }
-  }
+  public RetryingHMSHandler(Configuration conf, IHMSHandler baseHandler, boolean local)
+      throws MetaException {
+    super(conf, baseHandler, local);
+    retryInterval = MetastoreConf.getTimeVar(origConf,
+        ConfVars.HMS_HANDLER_INTERVAL, TimeUnit.MILLISECONDS);
+    retryLimit = MetastoreConf.getIntVar(origConf, ConfVars.HMS_HANDLER_ATTEMPTS);
 
-  private final IHMSHandler baseHandler;
-  private final MetaStoreInit.MetaStoreInitData metaStoreInitData =
-    new MetaStoreInit.MetaStoreInitData();
-
-  private final Configuration origConf;            // base configuration
-  private final Configuration activeConf;  // active configuration
-
-  private RetryingHMSHandler(Configuration origConf, IHMSHandler baseHandler, boolean local) throws MetaException {
-    this.origConf = origConf;
-    this.baseHandler = baseHandler;
-    if (local) {
-      baseHandler.setConf(origConf); // tests expect configuration changes applied directly to metastore
-    }
-    activeConf = baseHandler.getConf();
-    // This has to be called before initializing the instance of HMSHandler
-    // Using the hook on startup ensures that the hook always has priority
-    // over settings in *.xml.  The thread local conf needs to be used because at this point
-    // it has already been initialized using hiveConf.
-    MetaStoreInit.updateConnectionURL(origConf, getActiveConf(), null, metaStoreInitData);
     try {
       //invoking init method of baseHandler this way since it adds the retry logic
       //in case of transient failures in init method
@@ -87,46 +65,13 @@ public class RetryingHMSHandler implements InvocationHandler {
     }
   }
 
-  public static IHMSHandler getProxy(Configuration conf, IHMSHandler baseHandler, boolean local)
-      throws MetaException {
-
-    RetryingHMSHandler handler = new RetryingHMSHandler(conf, baseHandler, local);
-
-    return (IHMSHandler) Proxy.newProxyInstance(
-      RetryingHMSHandler.class.getClassLoader(),
-      new Class[] { IHMSHandler.class }, handler);
-  }
-
   @Override
-  public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-    int retryCount = -1;
-    boolean error = true;
-    PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.perfLogBegin(CLASS_NAME, method.getName());
-    try {
-      Result result = invokeInternal(proxy, method, args);
-      retryCount = result.numRetries;
-      error = false;
-      return result.result;
-    } finally {
-      StringBuilder additionalInfo = new StringBuilder();
-      additionalInfo.append("retryCount=").append(retryCount)
-        .append(" error=").append(error);
-      perfLogger.perfLogEnd(CLASS_NAME, method.getName(), additionalInfo.toString());
-    }
+  protected void initBaseHandler() throws MetaException {
+    // init operation has finished in constructor. noop here.
   }
 
   public Result invokeInternal(final Object proxy, final Method method, final Object[] args) throws Throwable {
-
     boolean gotNewConnectUrl = false;
-    boolean reloadConf = MetastoreConf.getBoolVar(origConf, ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF);
-    long retryInterval = MetastoreConf.getTimeVar(origConf,
-        ConfVars.HMS_HANDLER_INTERVAL, TimeUnit.MILLISECONDS);
-    int retryLimit = MetastoreConf.getIntVar(origConf, ConfVars.HMS_HANDLER_ATTEMPTS);
-    long timeout = MetastoreConf.getTimeVar(origConf,
-        ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
-
-    Deadline.registerIfNot(timeout);
 
     if (reloadConf) {
       MetaStoreInit.updateConnectionURL(origConf, getActiveConf(),
@@ -149,8 +94,10 @@ public class RetryingHMSHandler implements InvocationHandler {
             Deadline.stopTimer();
           }
         }
-        return new Result(object, retryCount);
-
+        StringBuilder additionalInfo = new StringBuilder();
+        additionalInfo.append("retryCount=").append(retryCount)
+            .append(" error=").append(false);
+        return new Result(object, additionalInfo.toString());
       } catch (UndeclaredThrowableException e) {
         if (e.getCause() != null) {
           if (e.getCause() instanceof javax.jdo.JDOException) {
@@ -203,11 +150,12 @@ public class RetryingHMSHandler implements InvocationHandler {
         }
       }
 
-      if (retryCount >= retryLimit) {
+      Throwable rootCause = ExceptionUtils.getRootCause(caughtException);
+      String errorMessage = ExceptionUtils.getMessage(caughtException) +
+              (rootCause == null ? "" : ("\nRoot cause: " + rootCause));
+      if (retryCount >= retryLimit || !isRecoverableException(caughtException)) {
         LOG.error("HMSHandler Fatal error: " + ExceptionUtils.getStackTrace(caughtException));
-        MetaException me = new MetaException(caughtException.toString());
-        me.initCause(caughtException);
-        throw me;
+        throw new MetaException(errorMessage);
       }
 
       assert (retryInterval >= 0);
@@ -226,7 +174,10 @@ public class RetryingHMSHandler implements InvocationHandler {
     }
   }
 
-  public Configuration getActiveConf() {
-    return activeConf;
+  private boolean isRecoverableException(Throwable t) {
+    if (!(t instanceof JDOException || t instanceof NucleusException)) {
+      return false;
+    }
+    return DatabaseProduct.isRecoverableException(t);
   }
 }

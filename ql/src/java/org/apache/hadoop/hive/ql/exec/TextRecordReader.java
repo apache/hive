@@ -60,7 +60,7 @@ public class TextRecordReader implements RecordReader {
 
     int bytesConsumed = lineReader.readLine((Text) row);
 
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESCRIPTESCAPE)) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SCRIPT_ESCAPE)) {
       return HiveUtils.unescapeText((Text) row);
     }
     return bytesConsumed;

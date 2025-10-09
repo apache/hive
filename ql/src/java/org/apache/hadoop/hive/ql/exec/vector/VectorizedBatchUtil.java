@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -69,6 +71,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.stream.Collectors.toList;
 
 public class VectorizedBatchUtil {
   private static final Logger LOG = LoggerFactory.getLogger(VectorizedBatchUtil.class);
@@ -113,7 +117,7 @@ public class VectorizedBatchUtil {
     typeName = typeName.toLowerCase();
 
     // Allow undecorated CHAR and VARCHAR to support scratch column type names.
-    if (typeName.equals("char") || typeName.equals("varchar")) {
+    if (typeName.equals(serdeConstants.CHAR_TYPE_NAME) || typeName.equals(serdeConstants.VARCHAR_TYPE_NAME)) {
       return new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     }
 
@@ -998,5 +1002,17 @@ public class VectorizedBatchUtil {
       int index = (batch.selectedInUse ? batch.selected[i] : i);
       debugDisplayOneRow(batch, index, prefix);
     }
+  }
+
+  /**
+   * Reset all columns other than Partition columns
+   * @param rowBatch VectorizedRowBatch to reset
+   */
+  public static void resetNonPartitionColumns(VectorizedRowBatch rowBatch) {
+    List<Integer> columnsToReset = IntStream.concat(
+            IntStream.range(0, rowBatch.getDataColumnCount()),
+            IntStream.range(rowBatch.getDataColumnCount() + rowBatch.getPartitionColumnCount(), rowBatch.cols.length)
+    ).boxed().collect(toList());
+    rowBatch.reset(columnsToReset);
   }
 }

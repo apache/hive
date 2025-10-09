@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,6 +72,7 @@ import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionsEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
+import org.apache.hadoop.hive.metastore.events.ReloadEvent;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddCheckConstraintMessage;
@@ -109,6 +110,7 @@ import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterPartitionsMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitCompactionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
@@ -133,6 +135,7 @@ import org.apache.hadoop.hive.metastore.messaging.UpdateTableColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.DeleteTableColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.UpdatePartitionColumnStatMessage;
 import org.apache.hadoop.hive.metastore.messaging.DeletePartitionColumnStatMessage;
+import org.apache.hadoop.hive.metastore.messaging.ReloadMessage;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -479,6 +482,25 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     process(event, partitionEvent);
   }
 
+  @Override
+  public void onAlterPartitions(AlterPartitionsEvent event) throws MetaException {
+    Table table = event.getTable();
+    Iterator<List<Partition>> iterator = event.getNewPartsIterator(maxBatchSize);
+    while (iterator.hasNext()) {
+      List<Partition> partitions = iterator.next();
+      AlterPartitionsMessage msg = MessageBuilder.getInstance()
+          .buildAlterPartitionsMessage(event.getTable(), partitions,
+              event.getIsTruncateOp(), partitions.get(0).getWriteId());
+      NotificationEvent notification =
+          new NotificationEvent(0, now(), EventType.ALTER_PARTITIONS.toString(),
+              msgEncoder.getSerializer().serialize(msg));
+      notification.setCatName(table.isSetCatName() ? table.getCatName() : getDefaultCatalog(conf));
+      notification.setDbName(table.getDbName());
+      notification.setTableName(table.getTableName());
+      process(notification, event);
+    }
+  }
+
   /**
    * @param dbEvent database event
    * @throws MetaException
@@ -646,7 +668,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       return;
     }
     CommitTxnMessage msg =
-        MessageBuilder.getInstance().buildCommitTxnMessage(commitTxnEvent.getTxnId());
+        MessageBuilder.getInstance().buildCommitTxnMessage(commitTxnEvent.getTxnId(), commitTxnEvent.getDatabases(), commitTxnEvent.getWriteId());
 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.COMMIT_TXN.toString(),
@@ -666,7 +688,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       return;
     }
     AbortTxnMessage msg =
-        MessageBuilder.getInstance().buildAbortTxnMessage(abortTxnEvent.getTxnId(), abortTxnEvent.getDbsUpdated());
+        MessageBuilder.getInstance().buildAbortTxnMessage(abortTxnEvent.getTxnId(), abortTxnEvent.getDbsUpdated(), abortTxnEvent.getWriteId());
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ABORT_TXN.toString(),
             msgEncoder.getSerializer().serialize(msg));
@@ -849,6 +871,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         );
     event.setTableName(tableName);
     event.setDbName(dbName);
+    event.setCatName(getDefaultCatalog(conf));
     try {
       addNotificationLog(event, allocWriteIdEvent, dbConn, sqlGenerator);
     } catch (SQLException e) {
@@ -997,6 +1020,20 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   @Override
+  public void onReload(ReloadEvent reloadEvent) throws MetaException {
+    Table tableObj = reloadEvent.getTableObj();
+    ReloadMessage msg = MessageBuilder.getInstance().buildReloadMessage(tableObj,
+            reloadEvent.getPartitions(), reloadEvent.isRefreshEvent());
+    NotificationEvent event =
+            new NotificationEvent(0, now(), EventType.RELOAD.toString(),
+                    msgEncoder.getSerializer().serialize(msg));
+    event.setCatName(tableObj.isSetCatName() ? tableObj.getCatName() : getDefaultCatalog(conf));
+    event.setDbName(tableObj.getDbName());
+    event.setTableName(tableObj.getTableName());
+    process(event, reloadEvent);
+  }
+
+  @Override
   public void onCommitCompaction(CommitCompactionEvent commitCompactionEvent, Connection dbConn, SQLGenerator sqlGenerator)
       throws MetaException {
 
@@ -1006,7 +1043,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         msgEncoder.getSerializer().serialize(msg));
     event.setDbName(commitCompactionEvent.getDbname());
     event.setTableName(commitCompactionEvent.getTableName());
-
+    event.setCatName(getDefaultCatalog(conf));
     try {
       addNotificationLog(event, commitCompactionEvent, dbConn, sqlGenerator);
     } catch (SQLException e) {
@@ -1169,7 +1206,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     String select = sqlGenerator.addForUpdateClause("select \"WNL_ID\", \"WNL_FILES\" from" +
             " \"TXN_WRITE_NOTIFICATION_LOG\" " +
             "where \"WNL_DATABASE\" = ? " +
-            "and \"WNL_TABLE\" = ? " + " and \"WNL_PARTITION\" = ? " +
+            "and \"WNL_TABLE\" = ? " + " and (\"WNL_PARTITION\" = ? OR (? IS NULL AND \"WNL_PARTITION\" IS NULL)) " +
             "and \"WNL_TXNID\" = ? ");
     List<Integer> insertList = new ArrayList<>();
     Map<Integer, Pair<Long, String>> updateMap = new HashMap<>();
@@ -1185,7 +1222,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         pst.setString(1, dbName);
         pst.setString(2, tblName);
         pst.setString(3, partition);
-        pst.setLong(4, txnId);
+        pst.setString(4, partition);
+        pst.setLong(5, txnId);
         rs = pst.executeQuery();
         if (!rs.next()) {
           insertList.add(i);

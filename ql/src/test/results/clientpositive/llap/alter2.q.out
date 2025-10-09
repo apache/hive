@@ -93,10 +93,12 @@ insertdate=2008-01-02
 PREHOOK: query: drop table alter2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter2
 POSTHOOK: query: drop table alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: create external table alter2(a int, b int) partitioned by (insertdate string)
 PREHOOK: type: CREATETABLE
@@ -193,10 +195,12 @@ insertdate=2008-01-02
 PREHOOK: query: DROP TABLE alter2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter2
 POSTHOOK: query: DROP TABLE alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter2
 PREHOOK: query: SHOW TABLES LIKE "alter%"
 PREHOOK: type: SHOWTABLES
@@ -318,10 +322,12 @@ PREHOOK: query: DROP TABLE alter2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter2_db@alter2
 PREHOOK: Output: alter2_db@alter2
+PREHOOK: Output: database:alter2_db
 POSTHOOK: query: DROP TABLE alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
 PREHOOK: query: CREATE EXTERNAL TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: alter2_db@alter2
@@ -418,10 +424,12 @@ PREHOOK: query: DROP TABLE alter2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: alter2_db@alter2
 PREHOOK: Output: alter2_db@alter2
+PREHOOK: Output: database:alter2_db
 POSTHOOK: query: DROP TABLE alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: alter2_db@alter2
 POSTHOOK: Output: alter2_db@alter2
+POSTHOOK: Output: database:alter2_db
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default

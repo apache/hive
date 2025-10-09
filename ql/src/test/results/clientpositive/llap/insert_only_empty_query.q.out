@@ -37,10 +37,12 @@ POSTHOOK: Lineage: source_table.gpa SCRIPT []
 POSTHOOK: Lineage: source_table.name SCRIPT []
 PREHOOK: query: explain insert into table src_emptybucket_partitioned_1 partition(year=2015) select * from source_table limit 0
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@source_table
 PREHOOK: Output: default@src_emptybucket_partitioned_1@year=2015
 POSTHOOK: query: explain insert into table src_emptybucket_partitioned_1 partition(year=2015) select * from source_table limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@source_table
 POSTHOOK: Output: default@src_emptybucket_partitioned_1@year=2015
 STAGE DEPENDENCIES:
@@ -61,21 +63,22 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: source_table
-                  Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 0
-                    Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: name (type: string), age (type: int), gpa (type: decimal(3,2))
+                      expressions: null (type: string), null (type: int), null (type: decimal(3,2))
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col2 (type: decimal(3,2))
             Execution mode: vectorized, llap
             LLAP IO: no inputs
@@ -85,10 +88,10 @@ STAGE PLANS:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY.reducesinkkey0 (type: int), VALUE._col1 (type: decimal(3,2))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -98,7 +101,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col0 (type: string), _col1 (type: int), _col2 (type: decimal(3,2)), UDFToInteger('2015') (type: int)
                   outputColumnNames: name, age, gpa, year
-                  Statistics: Num rows: 1 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: max(length(name)), avg(COALESCE(length(name),0)), count(1), count(name), compute_bit_vector_hll(name), min(age), max(age), count(age), compute_bit_vector_hll(age), min(gpa), max(gpa), count(gpa), compute_bit_vector_hll(gpa)
                     keys: year (type: int)
@@ -161,15 +164,17 @@ STAGE PLANS:
 
 PREHOOK: query: insert into table src_emptybucket_partitioned_1 partition(year=2015) select * from source_table limit 0
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@source_table
 PREHOOK: Output: default@src_emptybucket_partitioned_1@year=2015
 POSTHOOK: query: insert into table src_emptybucket_partitioned_1 partition(year=2015) select * from source_table limit 0
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@source_table
 POSTHOOK: Output: default@src_emptybucket_partitioned_1@year=2015
-POSTHOOK: Lineage: src_emptybucket_partitioned_1 PARTITION(year=2015).age SIMPLE [(source_table)source_table.FieldSchema(name:age, type:int, comment:null), ]
-POSTHOOK: Lineage: src_emptybucket_partitioned_1 PARTITION(year=2015).gpa SIMPLE [(source_table)source_table.FieldSchema(name:gpa, type:decimal(3,2), comment:null), ]
-POSTHOOK: Lineage: src_emptybucket_partitioned_1 PARTITION(year=2015).name SIMPLE [(source_table)source_table.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: src_emptybucket_partitioned_1 PARTITION(year=2015).age SIMPLE []
+POSTHOOK: Lineage: src_emptybucket_partitioned_1 PARTITION(year=2015).gpa SIMPLE []
+POSTHOOK: Lineage: src_emptybucket_partitioned_1 PARTITION(year=2015).name SIMPLE []
 PREHOOK: query: insert into table src_emptybucket_partitioned_1 partition(year=2015) select * from source_table limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source_table
@@ -195,16 +200,20 @@ name	56	4.00	2015
 PREHOOK: query: drop table src_emptybucket_partitioned_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_emptybucket_partitioned_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_emptybucket_partitioned_1
 POSTHOOK: query: drop table src_emptybucket_partitioned_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_emptybucket_partitioned_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_emptybucket_partitioned_1
 PREHOOK: query: drop table source_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@source_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@source_table
 POSTHOOK: query: drop table source_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@source_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@source_table

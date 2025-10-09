@@ -47,7 +47,7 @@ Partition Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -94,7 +94,7 @@ Partition Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -141,7 +141,7 @@ Partition Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -182,7 +182,7 @@ Table Parameters:
 	numPartitions       	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -198,8 +198,10 @@ Storage Desc Params:
 PREHOOK: query: drop table alter_table_partition_clusterby_sortby
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_table_partition_clusterby_sortby
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_table_partition_clusterby_sortby
 POSTHOOK: query: drop table alter_table_partition_clusterby_sortby
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_table_partition_clusterby_sortby
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_table_partition_clusterby_sortby

@@ -46,6 +46,15 @@ class NotificationEventsCountRequest
             'isRequired' => false,
             'type' => TType::I64,
         ),
+        6 => array(
+            'var' => 'tableNames',
+            'isRequired' => false,
+            'type' => TType::LST,
+            'etype' => TType::STRING,
+            'elem' => array(
+                'type' => TType::STRING,
+                ),
+        ),
     );
 
     /**
@@ -68,6 +77,10 @@ class NotificationEventsCountRequest
      * @var int
      */
     public $limit = null;
+    /**
+     * @var string[]
+     */
+    public $tableNames = null;
 
     public function __construct($vals = null)
     {
@@ -86,6 +99,9 @@ class NotificationEventsCountRequest
             }
             if (isset($vals['limit'])) {
                 $this->limit = $vals['limit'];
+            }
+            if (isset($vals['tableNames'])) {
+                $this->tableNames = $vals['tableNames'];
             }
         }
     }
@@ -144,6 +160,22 @@ class NotificationEventsCountRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 6:
+                    if ($ftype == TType::LST) {
+                        $this->tableNames = array();
+                        $_size897 = 0;
+                        $_etype900 = 0;
+                        $xfer += $input->readListBegin($_etype900, $_size897);
+                        for ($_i901 = 0; $_i901 < $_size897; ++$_i901) {
+                            $elem902 = null;
+                            $xfer += $input->readString($elem902);
+                            $this->tableNames []= $elem902;
+                        }
+                        $xfer += $input->readListEnd();
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -181,6 +213,18 @@ class NotificationEventsCountRequest
         if ($this->limit !== null) {
             $xfer += $output->writeFieldBegin('limit', TType::I64, 5);
             $xfer += $output->writeI64($this->limit);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->tableNames !== null) {
+            if (!is_array($this->tableNames)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('tableNames', TType::LST, 6);
+            $output->writeListBegin(TType::STRING, count($this->tableNames));
+            foreach ($this->tableNames as $iter903) {
+                $xfer += $output->writeString($iter903);
+            }
+            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

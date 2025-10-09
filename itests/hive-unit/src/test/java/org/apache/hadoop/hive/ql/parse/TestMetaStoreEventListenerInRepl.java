@@ -19,14 +19,13 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.shims.Utils;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -62,7 +61,7 @@ public class TestMetaStoreEventListenerInRepl {
 
   @BeforeClass
   public static void internalBeforeClassSetup() throws Exception {
-    TestMetaStoreEventListenerInRepl.conf = new HiveConf(TestMetaStoreEventListenerInRepl.class);
+    TestMetaStoreEventListenerInRepl.conf = new HiveConfForTest(TestMetaStoreEventListenerInRepl.class);
     TestMetaStoreEventListenerInRepl.conf.set("dfs.client.use.datanode.hostname", "true");
     TestMetaStoreEventListenerInRepl.conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniDFSCluster =

@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
@@ -333,7 +332,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
   public static void raiseAcidTablesMustBeReadWithAcidReaderException(Configuration conf)
       throws IOException {
-    String hiveInputFormat = HiveConf.getVar(conf, ConfVars.HIVEINPUTFORMAT);
+    String hiveInputFormat = HiveConf.getVar(conf, ConfVars.HIVE_INPUT_FORMAT);
     if (hiveInputFormat.equals(HiveInputFormat.class.getName())) {
       throw new IOException(ErrorMsg.ACID_TABLES_MUST_BE_READ_WITH_ACID_READER.getErrorCodedMsg());
     } else {
@@ -717,8 +716,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       this.isVectorMode = Utilities.getIsVectorized(conf);
       this.forceThreadpool = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
       this.sarg = ConvertAstToSearchArg.createFromConf(conf);
-      minSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMINSPLITSIZE, DEFAULT_MIN_SPLIT_SIZE);
-      maxSize = HiveConf.getLongVar(conf, ConfVars.MAPREDMAXSPLITSIZE, DEFAULT_MAX_SPLIT_SIZE);
+      minSize = HiveConf.getLongVar(conf, ConfVars.MAPRED_MIN_SPLIT_SIZE, DEFAULT_MIN_SPLIT_SIZE);
+      maxSize = HiveConf.getLongVar(conf, ConfVars.MAPRED_MAX_SPLIT_SIZE, DEFAULT_MAX_SPLIT_SIZE);
       String ss = conf.get(ConfVars.HIVE_ORC_SPLIT_STRATEGY.varname);
       if (ss == null || ss.equals(SplitStrategyKind.HYBRID.name())) {
         splitStrategyKind = SplitStrategyKind.HYBRID;
@@ -787,7 +786,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           ? AcidOperationalProperties.parseString(txnProperties) : null;
 
       String value = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-      writeIdList = value == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(value);
+      writeIdList = value == null ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(value);
       LOG.info("Context:: " +
           "isAcid: {} " +
           "isVectorMode: {} " +
@@ -1726,33 +1725,19 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private long computeProjectionSize(List<OrcProto.Type> fileTypes,
-        List<OrcProto.ColumnStatistics> stats, boolean[] fileIncluded) throws FileFormatException {
-      List<Integer> internalColIds = Lists.newArrayList();
+          List<OrcProto.ColumnStatistics> stats, boolean[] fileIncluded) throws FileFormatException {
+      // Exclude ORC <root> and ACID <row> struct elements to avoid full schema size estimation  
+      final List<Integer> internalColIds;
       if (fileIncluded == null) {
-        // Add all.
-        for (int i = 0; i < fileTypes.size(); i++) {
-          internalColIds.add(i);
-        }
+        internalColIds = IntStream.range(1, fileTypes.size())
+            .boxed().collect(Collectors.toList());
       } else {
-        for (int i = 0; i < fileIncluded.length; i++) {
-          if (fileIncluded[i]) {
-            internalColIds.add(i);
-          }
-        }
+        internalColIds = IntStream.range(1, fileTypes.size()).filter(i -> fileIncluded[i])
+            .filter(i -> i != OrcRecordUpdater.ROW + 1 || isOriginal) 
+            .boxed().collect(Collectors.toList());
       }
       return ReaderImpl.getRawDataSizeFromColIndices(internalColIds, fileTypes, stats);
     }
-  }
-
-  public static boolean[] shiftReaderIncludedForAcid(boolean[] included) {
-    // We always need the base row
-    included[0] = true;
-    boolean[] newIncluded = new boolean[included.length + OrcRecordUpdater.FIELDS];
-    Arrays.fill(newIncluded, 0, OrcRecordUpdater.FIELDS, true);
-    for (int i = 0; i < included.length; ++i) {
-      newIncluded[i + OrcRecordUpdater.FIELDS] = included[i];
-    }
-    return newIncluded;
   }
 
   /** Class intended to update two values from methods... Java-related cruft. */
@@ -2112,7 +2097,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
 
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
     ValidWriteIdList validWriteIdList
-            = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+            = (txnString == null) ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(txnString);
     if (LOG.isDebugEnabled()) {
       LOG.debug("getReader:: Read ValidWriteIdList: " + validWriteIdList.toString()
             + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
@@ -2540,6 +2525,8 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             return TypeDescription.createDate();
           case TIMESTAMP:
             return TypeDescription.createTimestamp();
+          case TIMESTAMPLOCALTZ:
+            return TypeDescription.createTimestampInstant();
           case BINARY:
             return TypeDescription.createBinary();
           case DECIMAL: {

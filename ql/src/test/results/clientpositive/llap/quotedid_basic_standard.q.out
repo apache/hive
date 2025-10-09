@@ -294,8 +294,8 @@ PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 POSTHOOK: query: show create table " ""%&'()*+,-/:;<=>?[]_|{}$^!~#@`"
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
-CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@``(
-  ` "%&'()*+,-/;<=>?[]_|{}$^!~#@`` string)
+CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@```(
+  ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` string)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -318,10 +318,12 @@ POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 PREHOOK: query: drop table " ""%&'()*+,-/:;<=>?[]_|{}$^!~#@`"
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+PREHOOK: Output: database:default
 PREHOOK: Output: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 POSTHOOK: query: drop table " ""%&'()*+,-/:;<=>?[]_|{}$^!~#@`"
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 PREHOOK: query: create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```(` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` string)
 PREHOOK: type: CREATETABLE
@@ -344,8 +346,8 @@ PREHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
 POSTHOOK: query: show create table ` "%&'()*+,-/:;<=>?[]_|{}$^!~#@```
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@"%&'()*+,-/:;<=>?[]_|{}$^!~#@`
-CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@``(
-  ` "%&'()*+,-/;<=>?[]_|{}$^!~#@`` string)
+CREATE TABLE `"%&'()*+,-/:;<=>?[]_|{}$^!~#@```(
+  ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` string)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -647,3 +649,99 @@ POSTHOOK: Input: default@lv_table
 POSTHOOK: Input: default@lv~!@#$%^&*()_q<>
 POSTHOOK: Output: default@lv~!@#$%^&*()_q<>
 POSTHOOK: Output: default@lv~!@#$%^&*()_q<>@c2=a
+PREHOOK: query: create table test (
+    col1 int,
+    " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" int check (" ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" > 10) enable novalidate rely,
+    constraint check_constraint check (col1 + " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" > 15) enable novalidate rely
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test (
+    col1 int,
+    " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" int check (" ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" > 10) enable novalidate rely,
+    constraint check_constraint check (col1 + " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" > 15) enable novalidate rely
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: describe formatted test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@test
+POSTHOOK: query: describe formatted test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@test
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+ "%&'()*+,-/;<=>?[]_|{}$^!~#@`	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\" \\\"%&'()*+,-/;<=>?[]_|{}$^!~#@`\":\"true\",\"col1\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Check Constraints	 	 
+Table:              	default.test        	 
+Constraint Name:    	check_constraint    	 
+Column Name:null    	Check Value:`col1` + ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` > 15	 
+	 	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:null    	Check Value:` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` > 10	 
+	 	 
+PREHOOK: query: select 1 as ` "%&'()*+,-/;<=>?[]_|{}$^!~#@```
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1 as ` "%&'()*+,-/;<=>?[]_|{}$^!~#@```
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze
+select 1 as " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze
+select 1 as " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 1 (type: int)
+            outputColumnNames: _col0
+            ListSink
+

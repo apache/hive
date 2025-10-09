@@ -43,7 +43,7 @@ public class DefaultFetchFormatter<T> implements FetchFormatter<String> {
   }
 
   private AbstractSerDe initializeSerde(Configuration conf, Properties props) throws SerDeException {
-    String serdeName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEFETCHOUTPUTSERDE);
+    String serdeName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_FETCH_OUTPUT_SERDE);
     Class<? extends AbstractSerDe> serdeClass;
     try {
       serdeClass =

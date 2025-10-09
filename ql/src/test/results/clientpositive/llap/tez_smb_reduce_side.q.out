@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists src_10
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists src_10
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists src1_10
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists src1_10
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_10 as select * from src limit 2
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -217,18 +221,22 @@ POSTHOOK: Input: default@src_10
 PREHOOK: query: drop table if exists src_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_10
 POSTHOOK: query: drop table if exists src_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_10
 PREHOOK: query: drop table if exists src1_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src1_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src1_10
 POSTHOOK: query: drop table if exists src1_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src1_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src1_10
 PREHOOK: query: create table src_10 as select * from src limit 3
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -298,18 +306,22 @@ POSTHOOK: Input: default@src_10
 PREHOOK: query: drop table if exists src_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_10
 POSTHOOK: query: drop table if exists src_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_10
 PREHOOK: query: drop table if exists src1_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src1_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src1_10
 POSTHOOK: query: drop table if exists src1_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src1_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src1_10
 PREHOOK: query: create table src_10 as select * from src limit 4
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -380,18 +392,22 @@ POSTHOOK: Input: default@src_10
 PREHOOK: query: drop table if exists src_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_10
 POSTHOOK: query: drop table if exists src_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_10
 PREHOOK: query: drop table if exists src1_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src1_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src1_10
 POSTHOOK: query: drop table if exists src1_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src1_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src1_10
 PREHOOK: query: create table src_10 as select * from src limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -463,18 +479,22 @@ POSTHOOK: Input: default@src_10
 PREHOOK: query: drop table if exists src_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_10
 POSTHOOK: query: drop table if exists src_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_10
 PREHOOK: query: drop table if exists src1_10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src1_10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src1_10
 POSTHOOK: query: drop table if exists src1_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src1_10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src1_10
 PREHOOK: query: create table src_10 as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -695,7 +715,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3, _col4
                 Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col2 is null or (_col2 = 0L) or (_col4 is not null or _col0 is null or (_col3 < _col2)) is not true) (type: boolean)
+                  predicate: (_col2 is null or (_col2 = 0L) or (_col0 is null or _col4 is not null or (_col3 < _col2)) is not true) (type: boolean)
                   Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
@@ -765,10 +785,12 @@ POSTHOOK: Input: default@t2
 PREHOOK: query: drop table t2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2
 POSTHOOK: query: drop table t2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2
 PREHOOK: query: CREATE TABLE t2 (c1 INT)
 PREHOOK: type: CREATETABLE
@@ -896,7 +918,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3, _col4
                 Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col2 is null or (_col2 = 0L) or (_col4 is not null or _col0 is null or (_col3 < _col2)) is not true) (type: boolean)
+                  predicate: (_col2 is null or (_col2 = 0L) or (_col0 is null or _col4 is not null or (_col3 < _col2)) is not true) (type: boolean)
                   Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)

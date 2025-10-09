@@ -15,6 +15,7 @@ load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1;
 load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1;
 load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1;
 
+dfs -touchz ${hiveconf:hive.metastore.warehouse.dir}/gl_src1/_SUCCESS;
 
 
 

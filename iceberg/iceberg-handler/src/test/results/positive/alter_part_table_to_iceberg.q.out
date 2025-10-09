@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_orc(a int) partitioned by (b string) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -37,7 +39,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -111,12 +113,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	three
 8	three
 9	four
-PREHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table tbl_orc convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_orc
-PREHOOK: Output: default@tbl_orc
-POSTHOOK: query: alter table tbl_orc set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table tbl_orc convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_orc
+Stage-0
+  Convert operation{"table name:":"default.tbl_orc","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_orc convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_orc
+POSTHOOK: query: alter table tbl_orc convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@tbl_orc
 POSTHOOK: Output: default@tbl_orc
 PREHOOK: query: describe formatted tbl_orc
@@ -143,11 +153,18 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
-	engine.hive.enabled 	true                
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"4\",\"added-records\":\"9\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"9\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
 	numRows             	9                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	schema.name-mapping.default	[ {                 
 	                           	  \"field-id\" : 1, 
@@ -156,12 +173,16 @@ Table Parameters:
 	                           	  \"field-id\" : 2, 
 	                           	  \"names\" : [ \"b\" ]
 	                           	} ]                 
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -189,15 +210,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tbl_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_orc
 POSTHOOK: query: drop table tbl_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_orc
 PREHOOK: query: drop table if exists tbl_parquet
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_parquet
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_parquet(a int) partitioned by (b string) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -233,7 +258,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -282,9 +307,59 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_parquet@b=four
 POSTHOOK: Lineage: tbl_parquet PARTITION(b=four).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet values (10, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: insert into table tbl_parquet values (10, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet
+POSTHOOK: Output: default@tbl_parquet@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet values (11, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: insert into table tbl_parquet values (11, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet
+POSTHOOK: Output: default@tbl_parquet@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet values (12, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: insert into table tbl_parquet values (12, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet
+POSTHOOK: Output: default@tbl_parquet@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet PARTITION(b=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: select count(*) from tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Input: default@tbl_parquet@b=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Input: default@tbl_parquet@b=four
+PREHOOK: Input: default@tbl_parquet@b=one
+PREHOOK: Input: default@tbl_parquet@b=three
+PREHOOK: Input: default@tbl_parquet@b=two
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Input: default@tbl_parquet@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Input: default@tbl_parquet@b=four
+POSTHOOK: Input: default@tbl_parquet@b=one
+POSTHOOK: Input: default@tbl_parquet@b=three
+POSTHOOK: Input: default@tbl_parquet@b=two
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12
 PREHOOK: query: select * from tbl_parquet order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_parquet
+PREHOOK: Input: default@tbl_parquet@b=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Input: default@tbl_parquet@b=four
 PREHOOK: Input: default@tbl_parquet@b=one
 PREHOOK: Input: default@tbl_parquet@b=three
@@ -293,6 +368,7 @@ PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from tbl_parquet order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Input: default@tbl_parquet@b=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Input: default@tbl_parquet@b=four
 POSTHOOK: Input: default@tbl_parquet@b=one
 POSTHOOK: Input: default@tbl_parquet@b=three
@@ -307,12 +383,23 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	three
 8	three
 9	four
-PREHOOK: query: alter table tbl_parquet set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+10	__HIVE_DEFAULT_PARTITION__
+11	__HIVE_DEFAULT_PARTITION__
+12	__HIVE_DEFAULT_PARTITION__
+PREHOOK: query: explain alter table tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_parquet
-PREHOOK: Output: default@tbl_parquet
-POSTHOOK: query: alter table tbl_parquet set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet
+Stage-0
+  Convert operation{"table name:":"default.tbl_parquet","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet
+POSTHOOK: query: alter table tbl_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@tbl_parquet
 POSTHOOK: Output: default@tbl_parquet
 PREHOOK: query: describe formatted tbl_parquet
@@ -339,11 +426,18 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
-	engine.hive.enabled 	true                
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"7\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"5\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
-	numFiles            	4                   
-	numRows             	9                   
+	numFiles            	7                   
+	numRows             	12                  
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	schema.name-mapping.default	[ {                 
 	                           	  \"field-id\" : 1, 
@@ -352,12 +446,16 @@ Table Parameters:
 	                           	  \"field-id\" : 2, 
 	                           	  \"names\" : [ \"b\" ]
 	                           	} ]                 
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -365,6 +463,15 @@ InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
 Sort Columns:       	[]                  	 
+PREHOOK: query: select count(*) from tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12
 PREHOOK: query: select * from tbl_parquet order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tbl_parquet
@@ -382,18 +489,790 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	three
 8	three
 9	four
+10	NULL
+11	NULL
+12	NULL
+PREHOOK: query: insert into table tbl_parquet partition (b='five') values (13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet@b=five
+POSTHOOK: query: insert into table tbl_parquet partition (b='five') values (13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet@b=five
+PREHOOK: query: insert into table tbl_parquet values (14, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: insert into table tbl_parquet values (14, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: insert into table tbl_parquet values (15, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: insert into table tbl_parquet values (15, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: insert into table tbl_parquet values (16, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet
+POSTHOOK: query: insert into table tbl_parquet values (16, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: select count(*) from tbl_parquet
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+16
+PREHOOK: query: select * from tbl_parquet order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	one
+2	one
+3	one
+4	two
+5	two
+6	three
+7	three
+8	three
+9	four
+10	NULL
+11	NULL
+12	NULL
+13	five
+14	
+15	NULL
+16	NULL
 PREHOOK: query: drop table tbl_parquet
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_parquet
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_parquet
 POSTHOOK: query: drop table tbl_parquet
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_parquet
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_parquet
+PREHOOK: query: drop table if exists tbl_parquet_int
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_parquet_int
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_parquet_int(a int) partitioned by (b int) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet_int
+POSTHOOK: query: create external table tbl_parquet_int(a int) partitioned by (b int) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet_int
+PREHOOK: query: describe formatted tbl_parquet_int
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet_int
+POSTHOOK: query: describe formatted tbl_parquet_int
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet_int
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_parquet_int partition (b=1) values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int@b=1
+POSTHOOK: query: insert into table tbl_parquet_int partition (b=1) values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int@b=1
+POSTHOOK: Lineage: tbl_parquet_int PARTITION(b=1).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_int partition (b=2) values (4), (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int@b=2
+POSTHOOK: query: insert into table tbl_parquet_int partition (b=2) values (4), (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int@b=2
+POSTHOOK: Lineage: tbl_parquet_int PARTITION(b=2).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_int partition (b=3) values (6), (7), (8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int@b=3
+POSTHOOK: query: insert into table tbl_parquet_int partition (b=3) values (6), (7), (8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int@b=3
+POSTHOOK: Lineage: tbl_parquet_int PARTITION(b=3).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_int partition (b=4) values (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int@b=4
+POSTHOOK: query: insert into table tbl_parquet_int partition (b=4) values (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int@b=4
+POSTHOOK: Lineage: tbl_parquet_int PARTITION(b=4).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_int values (10, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int
+POSTHOOK: query: insert into table tbl_parquet_int values (10, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int
+POSTHOOK: Output: default@tbl_parquet_int@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_int PARTITION(b=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_int values (11, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int
+POSTHOOK: query: insert into table tbl_parquet_int values (11, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int
+POSTHOOK: Output: default@tbl_parquet_int@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_int PARTITION(b=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_int values (12, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int
+POSTHOOK: query: insert into table tbl_parquet_int values (12, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int
+POSTHOOK: Output: default@tbl_parquet_int@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_int PARTITION(b=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: select count(*) from tbl_parquet_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_int
+PREHOOK: Input: default@tbl_parquet_int@b=1
+PREHOOK: Input: default@tbl_parquet_int@b=2
+PREHOOK: Input: default@tbl_parquet_int@b=3
+PREHOOK: Input: default@tbl_parquet_int@b=4
+PREHOOK: Input: default@tbl_parquet_int@b=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_int
+POSTHOOK: Input: default@tbl_parquet_int@b=1
+POSTHOOK: Input: default@tbl_parquet_int@b=2
+POSTHOOK: Input: default@tbl_parquet_int@b=3
+POSTHOOK: Input: default@tbl_parquet_int@b=4
+POSTHOOK: Input: default@tbl_parquet_int@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12
+PREHOOK: query: select * from tbl_parquet_int order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_int
+PREHOOK: Input: default@tbl_parquet_int@b=1
+PREHOOK: Input: default@tbl_parquet_int@b=2
+PREHOOK: Input: default@tbl_parquet_int@b=3
+PREHOOK: Input: default@tbl_parquet_int@b=4
+PREHOOK: Input: default@tbl_parquet_int@b=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet_int order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_int
+POSTHOOK: Input: default@tbl_parquet_int@b=1
+POSTHOOK: Input: default@tbl_parquet_int@b=2
+POSTHOOK: Input: default@tbl_parquet_int@b=3
+POSTHOOK: Input: default@tbl_parquet_int@b=4
+POSTHOOK: Input: default@tbl_parquet_int@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1
+2	1
+3	1
+4	2
+5	2
+6	3
+7	3
+8	3
+9	4
+10	NULL
+11	NULL
+12	NULL
+PREHOOK: query: explain alter table tbl_parquet_int convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet_int
+POSTHOOK: query: explain alter table tbl_parquet_int convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet_int
+Stage-0
+  Convert operation{"table name:":"default.tbl_parquet_int","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_parquet_int convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet_int
+POSTHOOK: query: alter table tbl_parquet_int convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet_int
+POSTHOOK: Output: default@tbl_parquet_int
+PREHOOK: query: describe formatted tbl_parquet_int
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet_int
+POSTHOOK: query: describe formatted tbl_parquet_int
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet_int
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	int                 	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"int\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"7\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"5\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	7                   
+	numRows             	12                  
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select count(*) from tbl_parquet_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12
+PREHOOK: query: select * from tbl_parquet_int order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet_int order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1
+2	1
+3	1
+4	2
+5	2
+6	3
+7	3
+8	3
+9	4
+10	NULL
+11	NULL
+12	NULL
+PREHOOK: query: insert into table tbl_parquet_int partition (b=5) values (13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int@b=5
+POSTHOOK: query: insert into table tbl_parquet_int partition (b=5) values (13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int@b=5
+PREHOOK: query: insert into table tbl_parquet_int values (14, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int
+POSTHOOK: query: insert into table tbl_parquet_int values (14, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int
+PREHOOK: query: insert into table tbl_parquet_int values (15, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int
+POSTHOOK: query: insert into table tbl_parquet_int values (15, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int
+PREHOOK: query: insert into table tbl_parquet_int values (16, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_int
+POSTHOOK: query: insert into table tbl_parquet_int values (16, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_int
+PREHOOK: query: select count(*) from tbl_parquet_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+16
+PREHOOK: query: select * from tbl_parquet_int order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet_int order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1
+2	1
+3	1
+4	2
+5	2
+6	3
+7	3
+8	3
+9	4
+10	NULL
+11	NULL
+12	NULL
+13	5
+14	NULL
+15	NULL
+16	NULL
+PREHOOK: query: drop table tbl_parquet_int
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_parquet_int
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet_int
+POSTHOOK: query: drop table tbl_parquet_int
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_parquet_int
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet_int
+PREHOOK: query: drop table if exists tbl_parquet_double
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_parquet_double
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table tbl_parquet_double(a int) partitioned by (b double) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet_double
+POSTHOOK: query: create external table tbl_parquet_double(a int) partitioned by (b double) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet_double
+PREHOOK: query: describe formatted tbl_parquet_double
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet_double
+POSTHOOK: query: describe formatted tbl_parquet_double
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet_double
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	double              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: insert into table tbl_parquet_double partition (b=1.1) values (1), (2), (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double@b=1.1
+POSTHOOK: query: insert into table tbl_parquet_double partition (b=1.1) values (1), (2), (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double@b=1.1
+POSTHOOK: Lineage: tbl_parquet_double PARTITION(b=1.1).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_double partition (b=2.22) values (4), (5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double@b=2.22
+POSTHOOK: query: insert into table tbl_parquet_double partition (b=2.22) values (4), (5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double@b=2.22
+POSTHOOK: Lineage: tbl_parquet_double PARTITION(b=2.22).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_double partition (b=3.333) values (6), (7), (8)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double@b=3.333
+POSTHOOK: query: insert into table tbl_parquet_double partition (b=3.333) values (6), (7), (8)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double@b=3.333
+POSTHOOK: Lineage: tbl_parquet_double PARTITION(b=3.333).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_double partition (b=4.4444) values (9)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double@b=4.4444
+POSTHOOK: query: insert into table tbl_parquet_double partition (b=4.4444) values (9)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double@b=4.4444
+POSTHOOK: Lineage: tbl_parquet_double PARTITION(b=4.4444).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_double values (10, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double
+POSTHOOK: query: insert into table tbl_parquet_double values (10, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double
+POSTHOOK: Output: default@tbl_parquet_double@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_double PARTITION(b=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_double values (11, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double
+POSTHOOK: query: insert into table tbl_parquet_double values (11, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double
+POSTHOOK: Output: default@tbl_parquet_double@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_double PARTITION(b=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: insert into table tbl_parquet_double values (12, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double
+POSTHOOK: query: insert into table tbl_parquet_double values (12, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double
+POSTHOOK: Output: default@tbl_parquet_double@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_parquet_double PARTITION(b=__HIVE_DEFAULT_PARTITION__).a SCRIPT []
+PREHOOK: query: select count(*) from tbl_parquet_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_double
+PREHOOK: Input: default@tbl_parquet_double@b=1.1
+PREHOOK: Input: default@tbl_parquet_double@b=2.22
+PREHOOK: Input: default@tbl_parquet_double@b=3.333
+PREHOOK: Input: default@tbl_parquet_double@b=4.4444
+PREHOOK: Input: default@tbl_parquet_double@b=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_double
+POSTHOOK: Input: default@tbl_parquet_double@b=1.1
+POSTHOOK: Input: default@tbl_parquet_double@b=2.22
+POSTHOOK: Input: default@tbl_parquet_double@b=3.333
+POSTHOOK: Input: default@tbl_parquet_double@b=4.4444
+POSTHOOK: Input: default@tbl_parquet_double@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12
+PREHOOK: query: select * from tbl_parquet_double order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_double
+PREHOOK: Input: default@tbl_parquet_double@b=1.1
+PREHOOK: Input: default@tbl_parquet_double@b=2.22
+PREHOOK: Input: default@tbl_parquet_double@b=3.333
+PREHOOK: Input: default@tbl_parquet_double@b=4.4444
+PREHOOK: Input: default@tbl_parquet_double@b=__HIVE_DEFAULT_PARTITION__
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet_double order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_double
+POSTHOOK: Input: default@tbl_parquet_double@b=1.1
+POSTHOOK: Input: default@tbl_parquet_double@b=2.22
+POSTHOOK: Input: default@tbl_parquet_double@b=3.333
+POSTHOOK: Input: default@tbl_parquet_double@b=4.4444
+POSTHOOK: Input: default@tbl_parquet_double@b=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1
+2	1.1
+3	1.1
+4	2.22
+5	2.22
+6	3.333
+7	3.333
+8	3.333
+9	4.4444
+10	NULL
+11	NULL
+12	NULL
+PREHOOK: query: explain alter table tbl_parquet_double convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet_double
+POSTHOOK: query: explain alter table tbl_parquet_double convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet_double
+Stage-0
+  Convert operation{"table name:":"default.tbl_parquet_double","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_parquet_double convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_parquet_double
+POSTHOOK: query: alter table tbl_parquet_double convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_parquet_double
+POSTHOOK: Output: default@tbl_parquet_double
+PREHOOK: query: describe formatted tbl_parquet_double
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_parquet_double
+POSTHOOK: query: describe formatted tbl_parquet_double
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_parquet_double
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	double              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	EXTERNAL            	TRUE                
+	MIGRATED_TO_ICEBERG 	true                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"double\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"7\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"5\",\"total-records\":\"12\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"7\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+#### A masked pattern was here ####
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	7                   
+	numRows             	12                  
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	schema.name-mapping.default	[ {                 
+	                           	  \"field-id\" : 1, 
+	                           	  \"names\" : [ \"a\" ]
+	                           	}, {                
+	                           	  \"field-id\" : 2, 
+	                           	  \"names\" : [ \"b\" ]
+	                           	} ]                 
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	parquet             
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select count(*) from tbl_parquet_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12
+PREHOOK: query: select * from tbl_parquet_double order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet_double order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1
+2	1.1
+3	1.1
+4	2.22
+5	2.22
+6	3.333
+7	3.333
+8	3.333
+9	4.4444
+10	NULL
+11	NULL
+12	NULL
+PREHOOK: query: insert into table tbl_parquet_double partition (b=5.55555) values (13)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double@b=5.55555
+POSTHOOK: query: insert into table tbl_parquet_double partition (b=5.55555) values (13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double@b=5.55555
+PREHOOK: query: insert into table tbl_parquet_double values (14, '')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double
+POSTHOOK: query: insert into table tbl_parquet_double values (14, '')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double
+PREHOOK: query: insert into table tbl_parquet_double values (15, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double
+POSTHOOK: query: insert into table tbl_parquet_double values (15, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double
+PREHOOK: query: insert into table tbl_parquet_double values (16, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parquet_double
+POSTHOOK: query: insert into table tbl_parquet_double values (16, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parquet_double
+PREHOOK: query: select count(*) from tbl_parquet_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from tbl_parquet_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+16
+PREHOOK: query: select * from tbl_parquet_double order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parquet_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from tbl_parquet_double order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parquet_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	1.1
+2	1.1
+3	1.1
+4	2.22
+5	2.22
+6	3.333
+7	3.333
+8	3.333
+9	4.4444
+10	NULL
+11	NULL
+12	NULL
+13	5.55555
+14	NULL
+15	NULL
+16	NULL
+PREHOOK: query: drop table tbl_parquet_double
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_parquet_double
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parquet_double
+POSTHOOK: query: drop table tbl_parquet_double
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_parquet_double
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parquet_double
 PREHOOK: query: drop table if exists tbl_avro
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_avro
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_avro(a int) partitioned by (b string) stored as avro
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -429,7 +1308,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	#Masked#                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -503,12 +1382,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	three
 8	three
 9	four
-PREHOOK: query: alter table tbl_avro set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table tbl_avro convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@tbl_avro
-PREHOOK: Output: default@tbl_avro
-POSTHOOK: query: alter table tbl_avro set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table tbl_avro convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@tbl_avro
+Stage-0
+  Convert operation{"table name:":"default.tbl_avro","spec:":"AlterTableConvertSpec{ConvertTo=iceberg, TBLProperties={}}"}
+
+PREHOOK: query: alter table tbl_avro convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@tbl_avro
+POSTHOOK: query: alter table tbl_avro convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@tbl_avro
 POSTHOOK: Output: default@tbl_avro
 PREHOOK: query: describe formatted tbl_avro
@@ -535,11 +1422,18 @@ Table Parameters:
 	EXTERNAL            	TRUE                
 	MIGRATED_TO_ICEBERG 	true                
 	bucketing_version   	2                   
-	engine.hive.enabled 	true                
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"4\",\"added-records\":\"9\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"9\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"4\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"b\",\"transform\":\"identity\",\"source-id\":2,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
 #### A masked pattern was here ####
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	4                   
 	numRows             	9                   
+	parquet.compression 	zstd                
 	previous_metadata_location	hdfs://### HDFS PATH ###
 	schema.name-mapping.default	[ {                 
 	                           	  \"field-id\" : 1, 
@@ -548,12 +1442,16 @@ Table Parameters:
 	                           	  \"field-id\" : 2, 
 	                           	  \"names\" : [ \"b\" ]
 	                           	} ]                 
+	snapshot-count      	1                   
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG             
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
 	write.format.default	avro                
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -581,8 +1479,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tbl_avro
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl_avro
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl_avro
 POSTHOOK: query: drop table tbl_avro
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl_avro
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_avro

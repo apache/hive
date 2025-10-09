@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
 
 import org.apache.hadoop.hive.ql.parse.EximUtil.DataCopyPath;
 
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +74,7 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
   }
 
   private void copyFunctionBinaries(List<DataCopyPath> functionBinaryCopyPaths, HiveConf hiveConf)
-          throws MetaException, IOException, LoginException, HiveFatalException {
+          throws IOException, HiveFatalException {
     if (!functionBinaryCopyPaths.isEmpty()) {
       String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
       List<ReplChangeManager.FileInfo> filePaths = new ArrayList<>();

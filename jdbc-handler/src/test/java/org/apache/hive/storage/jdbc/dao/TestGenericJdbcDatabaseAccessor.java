@@ -16,10 +16,15 @@ package org.apache.hive.storage.jdbc.dao;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfig;
 import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
+
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +47,47 @@ public class TestGenericJdbcDatabaseAccessor {
     assertThat(columnNames.get(0), is(equalToIgnoringCase("strategy_id")));
   }
 
+  @Test
+  public void testGetColumnTypes_starQuery_allTypes() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    conf.set(JdbcStorageConfig.QUERY.getPropertyName(), "select * from all_types_table");
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+
+    List<TypeInfo> expectedTypes = new ArrayList<>();
+    expectedTypes.add(TypeInfoFactory.getCharTypeInfo(1));
+    expectedTypes.add(TypeInfoFactory.getCharTypeInfo(20));
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.varcharTypeInfo);
+    expectedTypes.add(TypeInfoFactory.getVarcharTypeInfo(1024));
+    expectedTypes.add(TypeInfoFactory.varcharTypeInfo);
+    expectedTypes.add(TypeInfoFactory.booleanTypeInfo);
+    expectedTypes.add(TypeInfoFactory.byteTypeInfo);
+    expectedTypes.add(TypeInfoFactory.shortTypeInfo);
+    expectedTypes.add(TypeInfoFactory.intTypeInfo);
+    expectedTypes.add(TypeInfoFactory.longTypeInfo);
+    expectedTypes.add(TypeInfoFactory.getDecimalTypeInfo(38, 0));
+    expectedTypes.add(TypeInfoFactory.getDecimalTypeInfo(9, 3));
+    expectedTypes.add(TypeInfoFactory.floatTypeInfo);
+    expectedTypes.add(TypeInfoFactory.doubleTypeInfo);
+    expectedTypes.add(TypeInfoFactory.getDecimalTypeInfo(38, 0));
+    expectedTypes.add(TypeInfoFactory.dateTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.timestampTypeInfo);
+    expectedTypes.add(TypeInfoFactory.timestampTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    expectedTypes.add(TypeInfoFactory.getListTypeInfo(TypeInfoFactory.unknownTypeInfo));
+    expectedTypes.add(TypeInfoFactory.unknownTypeInfo);
+    Assert.assertEquals(expectedTypes, accessor.getColumnTypes(conf));
+  }
 
   @Test
   public void testGetColumnNames_fieldListQuery() throws HiveJdbcDatabaseAccessException {
@@ -53,6 +99,18 @@ public class TestGenericJdbcDatabaseAccessor {
     assertThat(columnNames, is(notNullValue()));
     assertThat(columnNames.size(), is(equalTo(2)));
     assertThat(columnNames.get(0), is(equalToIgnoringCase("name")));
+  }
+
+  @Test
+  public void testGetColumnTypes_fieldListQuery() throws HiveJdbcDatabaseAccessException {
+    Configuration conf = buildConfiguration();
+    conf.set(JdbcStorageConfig.QUERY.getPropertyName(), "select name,referrer from test_strategy");
+    DatabaseAccessor accessor = DatabaseAccessorFactory.getAccessor(conf);
+
+    List<TypeInfo> expectedTypes = new ArrayList<>(2);
+    expectedTypes.add(TypeInfoFactory.getVarcharTypeInfo(50));
+    expectedTypes.add(TypeInfoFactory.getVarcharTypeInfo(1024));
+    Assert.assertEquals(expectedTypes, accessor.getColumnTypes(conf));
   }
 
 

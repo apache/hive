@@ -320,4 +320,12 @@ cume_dist(7) WITHIN GROUP (ORDER BY col1),
 cume_dist(8) WITHIN GROUP (ORDER BY col1)
 from t_test;
 
+set hive.cbo.enable=false;
+
+select
+cume_dist(7) WITHIN GROUP (ORDER BY col1),
+dense_rank(2, 1) WITHIN GROUP (ORDER BY col1, col2)
+from t_test;
+
 DROP TABLE t_test;
+

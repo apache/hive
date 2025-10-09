@@ -334,7 +334,7 @@ public final class TypeInfoUtils {
             || !isTypeChar(typeInfoString.charAt(end))) {
           Token t = new Token();
           t.position = begin;
-          t.text = typeInfoString.substring(begin, end);
+          t.text = typeInfoString.substring(begin, end).trim();
           t.isType = isTypeChar(typeInfoString.charAt(begin));
           tokens.add(t);
           begin = end;
@@ -398,6 +398,7 @@ public final class TypeInfoUtils {
             && !serdeConstants.MAP_TYPE_NAME.equals(t.text)
             && !serdeConstants.STRUCT_TYPE_NAME.equals(t.text)
             && !serdeConstants.UNION_TYPE_NAME.equals(t.text)
+            && !serdeConstants.VARIANT_TYPE_NAME.equals(t.text)
             && null == PrimitiveObjectInspectorUtils
             .getTypeEntryFromTypeName(t.text)
             && !t.text.equals(alternative)) {
@@ -566,6 +567,11 @@ public final class TypeInfoUtils {
         } while (true);
 
         return TypeInfoFactory.getUnionTypeInfo(objectTypeInfos);
+      }
+
+      // Is this a variant type?
+      if (serdeConstants.VARIANT_TYPE_NAME.equals(t.text)) {
+        return TypeInfoFactory.getVariantTypeInfo();
       }
 
       throw new RuntimeException("Internal error parsing position "
@@ -1008,5 +1014,37 @@ public final class TypeInfoUtils {
           ((PrimitiveTypeInfo) to).getPrimitiveCategory());
     }
     return false;
+  }
+
+  public static String convertStringToLiteralForSQL(String value, PrimitiveCategory category) {
+    if (shouldEncloseQuotes(category)) {
+      return "'" + value.replace("'", "\\'") + "'";
+    }
+    return value;
+  }
+
+  private static boolean shouldEncloseQuotes(PrimitiveCategory category) {
+    switch(category) {
+      case STRING:
+      case DATE:
+      case TIMESTAMP:
+      case TIMESTAMPLOCALTZ:
+      case BINARY:
+      case INTERVAL_DAY_TIME:
+      case INTERVAL_YEAR_MONTH:
+        return true;
+      case VOID:
+      case BOOLEAN:
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+      case FLOAT:
+      case DOUBLE:
+      case DECIMAL:
+      case UNKNOWN:
+      default:
+        return false;
+    }
   }
 }

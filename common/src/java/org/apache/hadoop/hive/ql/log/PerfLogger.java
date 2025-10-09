@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * PerfLogger.
@@ -39,10 +40,32 @@ import java.util.Map;
 public class PerfLogger {
   public static final String ACQUIRE_READ_WRITE_LOCKS = "acquireReadWriteLocks";
   public static final String COMPILE = "compile";
+  public static final String COMPILE_STEP = "Compile Step";
   public static final String WAIT_COMPILE = "waitCompile";
   public static final String PARSE = "parse";
   public static final String ANALYZE = "semanticAnalyze";
   public static final String OPTIMIZER = "optimizer";
+  public static final String GENERATE_RESOLVED_PARSETREE = "Generate Resolved ParseTree";
+  public static final String LOGICALPLAN_AND_HIVE_OPERATOR_TREE = "Logical Plan and hive Operator Tree";
+  public static final String DEDUCE_RESULTSET_SCHEMA = "Deduce ResultsetSchema";
+  public static final String PARSE_CONTEXT_GENERATION = "Parse Context generation";
+  public static final String SAVE_AND_VALIDATE_VIEW = "Save and Validate View Creation";
+  public static final String LOGICAL_OPTIMIZATION = "Logical Optimization";
+  public static final String PHYSICAL_OPTIMIZATION = "Physical Optimization";
+  public static final String POST_PROCESSING = "Post Processing";
+  public static final String GENERATE_LOGICAL_PLAN = "Generate Logical Plan";
+  public static final String GENERATE_OPERATOR_TREE = "Generate Operator Tree";
+  public static final String VIEW_REWRITING = "Calcite: View-based rewriting";
+  public static final String PLAN_GENERATION = "Calcite: Plan generation";
+  public static final String MV_REWRITE_FIELD_TRIMMER = "MV Rewrite and Field Trimmer";
+  public static final String REMOVING_SUBQUERY = "Removing SubQuery";
+  public static final String DECORRELATION = "Decorrelation";
+  public static final String VALIDATE_QUERY_MATERIALIZATION = "Validate Query Materialization";
+  public static final String PREJOIN_ORDERING = "Calcite: Prejoin ordering transformation";
+  public static final String MV_REWRITING = "MV Rewriting";
+  public static final String JOIN_REORDERING = "Calcite: Join Reordering";
+  public static final String POSTJOIN_ORDERING = "Calcite: Postjoin ordering transformation";
+  public static final String HIVE_SORT_PREDICATES = "Hive Sort Predicates";
   public static final String MATERIALIZED_VIEWS_REGISTRY_REFRESH = "MaterializedViewsRegistryRefresh";
   public static final String DO_AUTHORIZATION = "doAuthorization";
   public static final String DRIVER_EXECUTE = "Driver.execute";
@@ -72,13 +95,17 @@ public class PerfLogger {
   public static final String LOAD_HASHTABLE = "LoadHashtable";
   public static final String TEZ_GET_SESSION = "TezGetSession";
   public static final String SAVE_TO_RESULTS_CACHE = "saveToResultsCache";
+  public static final String SEARCH_TRANSFORMER = "transformSearch";
 
   public static final String FILE_MOVES = "FileMoves";
   public static final String LOAD_TABLE = "LoadTable";
   public static final String LOAD_PARTITION = "LoadPartition";
   public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
 
+  public static final String STATS_TASK = "StatsTask";
+
   public static final String HIVE_GET_TABLE = "getTablesByType";
+  public static final String HIVE_GET_CATALOG = "getCatalog";
   public static final String HIVE_GET_DATABASE = "getDatabase";
   public static final String HIVE_GET_DATABASE_2 = "getDatabase2";
   public static final String HIVE_GET_PARTITIONS = "getPartitions";
@@ -89,12 +116,11 @@ public class PerfLogger {
   public static final String HIVE_GET_NOT_NULL_CONSTRAINT = "getNotNullConstraints";
   public static final String HIVE_GET_TABLE_CONSTRAINTS = "getTableConstraints";
 
-  protected final Map<String, Long> startTimes = new HashMap<String, Long>();
-  protected final Map<String, Long> endTimes = new HashMap<String, Long>();
+  protected final Map<String, Long> startTimes = new ConcurrentHashMap<>();
+  protected final Map<String, Long> endTimes = new ConcurrentHashMap<>();
 
-  static final private Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
-  protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
-
+  private static final Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
+  protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<>();
 
   private PerfLogger() {
     // Use getPerfLogger to get an instance of PerfLogger
@@ -119,10 +145,6 @@ public class PerfLogger {
     return result;
   }
 
-  public static void setPerfLogger(PerfLogger resetPerfLogger) {
-    perfLogger.set(resetPerfLogger);
-  }
-
   /**
    * Call this function when you start to measure time spent by a piece of code.
    * @param callerName the logging object to be used.
@@ -134,6 +156,7 @@ public class PerfLogger {
     LOG.debug("<PERFLOG method={} from={}>", method, callerName);
     beginMetrics(method);
   }
+
   /**
    * Call this function in correspondence of PerfLogBegin to mark the end of the measurement.
    * @param callerName
@@ -151,18 +174,18 @@ public class PerfLogger {
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
   public long perfLogEnd(String callerName, String method, String additionalInfo) {
-    Long startTime = startTimes.get(method);
+    long startTime = startTimes.getOrDefault(method, -1L);
     long endTime = System.currentTimeMillis();
+    long duration = startTime < 0 ? -1 : endTime - startTime;
     endTimes.put(method, Long.valueOf(endTime));
-    long duration = startTime == null ? -1 : endTime - startTime.longValue();
 
     if (LOG.isDebugEnabled()) {
       StringBuilder sb = new StringBuilder("</PERFLOG method=").append(method);
-      if (startTime != null) {
+      if (startTime >= 0) {
         sb.append(" start=").append(startTime);
       }
       sb.append(" end=").append(endTime);
-      if (startTime != null) {
+      if (duration >= 0) {
         sb.append(" duration=").append(duration);
       }
       sb.append(" from=").append(callerName);
@@ -176,22 +199,12 @@ public class PerfLogger {
     return duration;
   }
 
-  public Long getStartTime(String method) {
-    long startTime = 0L;
-
-    if (startTimes.containsKey(method)) {
-      startTime = startTimes.get(method);
-    }
-    return startTime;
+  public long getStartTime(String method) {
+    return startTimes.getOrDefault(method, 0L);
   }
 
-  public Long getEndTime(String method) {
-    long endTime = 0L;
-
-    if (endTimes.containsKey(method)) {
-      endTime = endTimes.get(method);
-    }
-    return endTime;
+  public long getEndTime(String method) {
+    return endTimes.getOrDefault(method, 0L);
   }
 
   public boolean startTimeHasMethod(String method) {
@@ -202,12 +215,13 @@ public class PerfLogger {
     return endTimes.containsKey(method);
   }
 
-  public Long getDuration(String method) {
-    long duration = 0;
-    if (startTimes.containsKey(method) && endTimes.containsKey(method)) {
-      duration = endTimes.get(method) - startTimes.get(method);
+  public long getDuration(String method) {
+    Long startTime = startTimes.get(method);
+    Long endTime = endTimes.get(method);
+    if (startTime != null && endTime != null) {
+      return endTime - startTime;
     }
-    return duration;
+    return 0L;
   }
 
 
@@ -219,14 +233,43 @@ public class PerfLogger {
     return ImmutableMap.copyOf(endTimes);
   }
 
+  /**
+   * Helper method for getting the time spent with total DAG preparation.
+   */
+  public long getPreparePlanDuration() {
+    long dagSubmitStartTime = getStartTime(PerfLogger.TEZ_SUBMIT_DAG);
+    long compileEndTime = getEndTime(PerfLogger.COMPILE);
+    long getSessionDuration = getDuration(PerfLogger.TEZ_GET_SESSION);
+
+    // no DAG was running with this query
+    if (dagSubmitStartTime == 0){
+      // so no plan preparation happened
+      return 0;
+    }
+
+    return dagSubmitStartTime - compileEndTime - getSessionDuration;
+  }
+
+  /**
+   * Helper method for getting the time spent to actually run the DAG.
+   */
+  public long getRunDagDuration() {
+    long submitToRunningDuration = getDuration(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+
+    return submitToRunningDuration == 0 ? getDuration(PerfLogger.TEZ_RUN_DAG) : getEndTime(PerfLogger.TEZ_RUN_DAG) -
+        getEndTime(PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+  }
+
   //Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.
-  transient Map<String, MetricsScope> openScopes = new HashMap<String, MetricsScope>();
+  private final transient Map<String, MetricsScope> openScopes = new HashMap<>();
 
   private void beginMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
       MetricsScope scope = metrics.createScope(MetricsConstant.API_PREFIX + method);
-      openScopes.put(method, scope);
+      synchronized (openScopes) {
+        openScopes.put(method, scope);
+      }
     }
 
   }
@@ -234,7 +277,10 @@ public class PerfLogger {
   private void endMetrics(String method) {
     Metrics metrics = MetricsFactory.getInstance();
     if (metrics != null) {
-      MetricsScope scope = openScopes.remove(method);
+      final MetricsScope scope;
+      synchronized(openScopes) {
+        scope = openScopes.remove(method);
+      }
       if (scope != null) {
         metrics.endScope(scope);
       }
@@ -246,11 +292,13 @@ public class PerfLogger {
    */
   public void cleanupPerfLogMetrics() {
     Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      for (MetricsScope openScope : openScopes.values()) {
-        metrics.endScope(openScope);
+    synchronized(openScopes) {
+      if (metrics != null) {
+        for (MetricsScope openScope : openScopes.values()) {
+          metrics.endScope(openScope);
+        }
       }
+      openScopes.clear();
     }
-    openScopes.clear();
   }
 }

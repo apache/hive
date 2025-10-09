@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE rcfile_createas1a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE rcfile_createas1a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE rcfile_createas1b
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE rcfile_createas1b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE rcfile_createas1a (key INT, value STRING)
     PARTITIONED BY (ds string)
 PREHOOK: type: CREATETABLE
@@ -216,16 +220,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE rcfile_createas1a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@rcfile_createas1a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@rcfile_createas1a
 POSTHOOK: query: DROP TABLE rcfile_createas1a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@rcfile_createas1a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_createas1a
 PREHOOK: query: DROP TABLE rcfile_createas1b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@rcfile_createas1b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@rcfile_createas1b
 POSTHOOK: query: DROP TABLE rcfile_createas1b
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@rcfile_createas1b
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_createas1b

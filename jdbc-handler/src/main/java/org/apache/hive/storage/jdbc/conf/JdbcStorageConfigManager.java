@@ -45,6 +45,7 @@ public class JdbcStorageConfigManager {
   public static final String CONFIG_PWD_KEYSTORE = Constants.JDBC_KEYSTORE;
   public static final String CONFIG_PWD_KEY = Constants.JDBC_KEY;
   public static final String CONFIG_PWD_URI = Constants.JDBC_PASSWORD_URI;
+
   private static final EnumSet<JdbcStorageConfig> DEFAULT_REQUIRED_PROPERTIES =
     EnumSet.of(JdbcStorageConfig.DATABASE_TYPE,
                JdbcStorageConfig.JDBC_URL,
@@ -66,7 +67,9 @@ public class JdbcStorageConfigManager {
       if (!key.equals(CONFIG_PWD) &&
           !key.equals(CONFIG_PWD_KEYSTORE) &&
           !key.equals(CONFIG_PWD_KEY) &&
-          !key.equals(CONFIG_PWD_URI)) {
+          !key.equals(CONFIG_PWD_URI) &&
+          !key.equals(CONFIG_USERNAME)
+      ) {
         jobProps.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
       }
     }
@@ -192,11 +195,11 @@ public class JdbcStorageConfigManager {
   }
 
   private static String getMetastoreDatabaseType(HiveConf conf) {
-    return conf.getVar(HiveConf.ConfVars.METASTOREDBTYPE);
+    return conf.getVar(HiveConf.ConfVars.METASTORE_DB_TYPE);
   }
 
   private static String getMetastoreConnectionURL(HiveConf conf) {
-    return conf.getVar(HiveConf.ConfVars.METASTORECONNECTURLKEY);
+    return conf.getVar(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY);
   }
 
   private static String getMetastoreDriver(HiveConf conf) {
@@ -209,6 +212,6 @@ public class JdbcStorageConfigManager {
 
   private static String getMetastoreJdbcPasswd(HiveConf conf) throws IOException {
     return ShimLoader.getHadoopShims().getPassword(conf,
-        HiveConf.ConfVars.METASTOREPWD.varname);
+        HiveConf.ConfVars.METASTORE_PWD.varname);
   }
 }

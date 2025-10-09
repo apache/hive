@@ -73,7 +73,8 @@ select
   ,Cos(cdecimal1)
   ,ACos(cdecimal1)
   ,Atan(cdecimal1)
-  ,Degrees(cdecimal1)
+  -- Round to avoid decimal precision difference due to JDK-4477961
+  ,Round(Degrees(cdecimal1), 9)
   ,Radians(cdecimal1)
   ,Positive(cdecimal1)
   ,Negative(cdecimal1)
@@ -150,8 +151,9 @@ select
   ,Cos(cdecimal1)
   ,ACos(cdecimal1)
   ,Atan(cdecimal1)
-  ,Degrees(cdecimal1)
-  ,Radians(cdecimal1)
+  -- Round to avoid decimal precision difference due to JDK-4477961
+  ,Round(Degrees(cdecimal1), 9)
+  ,Round(Radians(cdecimal1), 12)
   ,Positive(cdecimal1)
   ,Negative(cdecimal1)
   ,Sign(cdecimal1)

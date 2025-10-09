@@ -1,0 +1,256 @@
+PREHOOK: query: CREATE EXTERNAL TABLE `table1`(
+  `name` string,
+  `number` string)
+PARTITIONED BY (
+  `part_col` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table1
+POSTHOOK: query: CREATE EXTERNAL TABLE `table1`(
+  `name` string,
+  `number` string)
+PARTITIONED BY (
+  `part_col` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table1
+PREHOOK: query: CREATE EXTERNAL TABLE `table2`(
+  `name` string,
+  `number` string)
+PARTITIONED BY (
+  `part_col` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table2
+POSTHOOK: query: CREATE EXTERNAL TABLE `table2`(
+  `name` string,
+  `number` string)
+PARTITIONED BY (
+  `part_col` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table2
+PREHOOK: query: insert into table table1 values ('a', '10', 'part1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: insert into table table1 values ('a', '10', 'part1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
+POSTHOOK: Output: default@table1@part_col=part1
+POSTHOOK: Lineage: table1 PARTITION(part_col=part1).name SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(part_col=part1).number SCRIPT []
+PREHOOK: query: insert into table table1 values ('b', '11', 'part1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: insert into table table1 values ('b', '11', 'part1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
+POSTHOOK: Output: default@table1@part_col=part1
+POSTHOOK: Lineage: table1 PARTITION(part_col=part1).name SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(part_col=part1).number SCRIPT []
+PREHOOK: query: insert into table table1 values ('a2', '2', 'part2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table1
+POSTHOOK: query: insert into table table1 values ('a2', '2', 'part2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table1
+POSTHOOK: Output: default@table1@part_col=part2
+POSTHOOK: Lineage: table1 PARTITION(part_col=part2).name SCRIPT []
+POSTHOOK: Lineage: table1 PARTITION(part_col=part2).number SCRIPT []
+PREHOOK: query: insert into table table2 values ('x', '100', 'part1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table table2 values ('x', '100', 'part1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2@part_col=part1
+POSTHOOK: Lineage: table2 PARTITION(part_col=part1).name SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(part_col=part1).number SCRIPT []
+PREHOOK: query: insert into table table2 values ('y', '101', 'part1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table table2 values ('y', '101', 'part1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2@part_col=part1
+POSTHOOK: Lineage: table2 PARTITION(part_col=part1).name SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(part_col=part1).number SCRIPT []
+PREHOOK: query: insert into table table2 values ('z', '102', 'part1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table table2 values ('z', '102', 'part1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2@part_col=part1
+POSTHOOK: Lineage: table2 PARTITION(part_col=part1).name SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(part_col=part1).number SCRIPT []
+PREHOOK: query: insert into table table2 values ('x2', '200', 'part2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table table2 values ('x2', '200', 'part2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2@part_col=part2
+POSTHOOK: Lineage: table2 PARTITION(part_col=part2).name SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(part_col=part2).number SCRIPT []
+PREHOOK: query: insert into table table2 values ('y2', '201', 'part2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table table2 values ('y2', '201', 'part2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2@part_col=part2
+POSTHOOK: Lineage: table2 PARTITION(part_col=part2).name SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(part_col=part2).number SCRIPT []
+PREHOOK: query: insert into table table2 values ('x3', '300', 'part3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table2
+POSTHOOK: query: insert into table table2 values ('x3', '300', 'part3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2@part_col=part3
+POSTHOOK: Lineage: table2 PARTITION(part_col=part3).name SCRIPT []
+POSTHOOK: Lineage: table2 PARTITION(part_col=part3).number SCRIPT []
+PREHOOK: query: alter table table2 drop partition(part_col='part1')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@table2
+PREHOOK: Output: default@table2@part_col=part1
+POSTHOOK: query: alter table table2 drop partition(part_col='part1')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: default@table2@part_col=part1
+PREHOOK: query: select count(*) from table2 where part_col='part1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from table2 where part_col='part1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+0
+Found 3 items
+#### A masked pattern was here ####
+PREHOOK: query: insert overwrite table table2 partition(part_col='part1') select name, number from table1 where part_col='part1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Input: default@table1@part_col=part1
+PREHOOK: Output: default@table2@part_col=part1
+POSTHOOK: query: insert overwrite table table2 partition(part_col='part1') select name, number from table1 where part_col='part1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Input: default@table1@part_col=part1
+POSTHOOK: Output: default@table2@part_col=part1
+POSTHOOK: Lineage: table2 PARTITION(part_col=part1).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: table2 PARTITION(part_col=part1).number SIMPLE [(table1)table1.FieldSchema(name:number, type:string, comment:null), ]
+PREHOOK: query: select count(*) from table2 where part_col='part1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2@part_col=part1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from table2 where part_col='part1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2@part_col=part1
+#### A masked pattern was here ####
+2
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: alter table table2 drop partition(part_col='part2')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@table2
+PREHOOK: Output: default@table2@part_col=part2
+POSTHOOK: query: alter table table2 drop partition(part_col='part2')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: default@table2@part_col=part2
+PREHOOK: query: select count(*) from table2 where part_col='part2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from table2 where part_col='part2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+0
+Found 2 items
+#### A masked pattern was here ####
+PREHOOK: query: insert overwrite table table2 partition(part_col='part2') select name, number from table1 where part_col='dummy_part'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table1
+PREHOOK: Output: default@table2@part_col=part2
+POSTHOOK: query: insert overwrite table table2 partition(part_col='part2') select name, number from table1 where part_col='dummy_part'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table1
+POSTHOOK: Output: default@table2@part_col=part2
+POSTHOOK: Lineage: table2 PARTITION(part_col=part2).name SIMPLE [(table1)table1.FieldSchema(name:name, type:string, comment:null), ]
+POSTHOOK: Lineage: table2 PARTITION(part_col=part2).number SIMPLE [(table1)table1.FieldSchema(name:number, type:string, comment:null), ]
+PREHOOK: query: select count(*) from table2 where part_col='part2'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2@part_col=part2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from table2 where part_col='part2'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2@part_col=part2
+#### A masked pattern was here ####
+0
+PREHOOK: query: alter table table2 drop partition(part_col='part3')
+PREHOOK: type: ALTERTABLE_DROPPARTS
+PREHOOK: Input: default@table2
+PREHOOK: Output: default@table2@part_col=part3
+POSTHOOK: query: alter table table2 drop partition(part_col='part3')
+POSTHOOK: type: ALTERTABLE_DROPPARTS
+POSTHOOK: Input: default@table2
+POSTHOOK: Output: default@table2@part_col=part3
+PREHOOK: query: select count(*) from table2 where part_col='part3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from table2 where part_col='part3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+#### A masked pattern was here ####
+0
+Found 1 items
+#### A masked pattern was here ####
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv5.txt' OVERWRITE INTO TABLE table2 PARTITION(part_col='part3')
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@table2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv5.txt' OVERWRITE INTO TABLE table2 PARTITION(part_col='part3')
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@table2
+POSTHOOK: Output: default@table2@part_col=part3
+PREHOOK: query: select count(*) from table2 where part_col='part3'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table2
+PREHOOK: Input: default@table2@part_col=part3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from table2 where part_col='part3'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table2
+POSTHOOK: Input: default@table2@part_col=part3
+#### A masked pattern was here ####
+24
+Found 1 items
+#### A masked pattern was here ####

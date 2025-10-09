@@ -310,9 +310,9 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT COUNT(*)
-FROM src1 x JOIN srcpart z ON (x.key = z.key)
-JOIN srcpart w ON (x.key = w.key)
-JOIN src y ON (y.key = x.key)
+FROM `src1` `x` JOIN `srcpart` `z` ON (`x`.`key` = `z`.`key`)
+JOIN `srcpart` `w` ON (`x`.`key` = `w`.`key`)
+JOIN `src` `y` ON (`y`.`key` = `x`.`key`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
@@ -323,9 +323,9 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*)
-FROM src1 x JOIN srcpart z ON (x.key = z.key)
-JOIN srcpart w ON (x.key = w.key)
-JOIN src y ON (y.key = x.key)
+FROM `src1` `x` JOIN `srcpart` `z` ON (`x`.`key` = `z`.`key`)
+JOIN `srcpart` `w` ON (`x`.`key` = `w`.`key`)
+JOIN `src` `y` ON (`y`.`key` = `x`.`key`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
@@ -965,18 +965,18 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE), Map 8 (BROADCAST_EDGE)
-        Map 6 <- Map 1 (BROADCAST_EDGE), Map 8 (BROADCAST_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
+        Map 8 <- Map 10 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE)
         Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
         Reducer 5 <- Union 4 (SIMPLE_EDGE)
-        Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (key is not null or value is not null) (type: boolean)
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -987,15 +987,22 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: y
+                  filterExpr: value is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -1023,7 +1030,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 key (type: string)
                         input vertices:
-                          1 Map 8
+                          1 Map 6
                         Statistics: Num rows: 250 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
@@ -1040,6 +1047,38 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
+                  alias: y
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  filterExpr: value is not null (type: boolean)
+                  Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 8 
+            Map Operator Tree:
+                TableScan
                   alias: z
                   filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1054,7 +1093,7 @@ STAGE PLANS:
                         1 value (type: string)
                       outputColumnNames: _col1
                       input vertices:
-                        0 Map 1
+                        0 Map 7
                       Statistics: Num rows: 162 Data size: 14418 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
                         condition map:
@@ -1063,7 +1102,7 @@ STAGE PLANS:
                           0 _col1 (type: string)
                           1 value (type: string)
                         input vertices:
-                          1 Map 8
+                          1 Map 10
                         Statistics: Num rows: 263 Data size: 2104 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count()
@@ -1076,31 +1115,6 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-        Map 8 
-            Map Operator Tree:
-                TableScan
-                  alias: y
-                  filterExpr: (value is not null or key is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: value (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 3 
             Execution mode: vectorized
@@ -1137,7 +1151,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 7 
+        Reducer 9 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -1243,18 +1257,18 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE), Map 8 (BROADCAST_EDGE)
-        Map 6 <- Map 1 (BROADCAST_EDGE), Map 8 (BROADCAST_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
+        Map 8 <- Map 10 (BROADCAST_EDGE), Map 7 (BROADCAST_EDGE)
         Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
         Reducer 5 <- Union 4 (SIMPLE_EDGE)
-        Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 9 <- Map 8 (CUSTOM_SIMPLE_EDGE), Union 4 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (key is not null or value is not null) (type: boolean)
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -1265,15 +1279,22 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: y
+                  filterExpr: value is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: value (type: string)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Map 2 
             Map Operator Tree:
@@ -1302,7 +1323,7 @@ STAGE PLANS:
                           0 _col0 (type: string)
                           1 key (type: string)
                         input vertices:
-                          1 Map 8
+                          1 Map 6
                         Statistics: Num rows: 250 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Group By Operator
@@ -1320,6 +1341,38 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
+                  alias: y
+                  filterExpr: key is not null (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: key (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: key (type: string)
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  filterExpr: value is not null (type: boolean)
+                  Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 25 Data size: 2225 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 8 
+            Map Operator Tree:
+                TableScan
                   alias: z
                   filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1334,7 +1387,7 @@ STAGE PLANS:
                         1 value (type: string)
                       outputColumnNames: _col1
                       input vertices:
-                        0 Map 1
+                        0 Map 7
                       Statistics: Num rows: 162 Data size: 14418 Basic stats: COMPLETE Column stats: COMPLETE
                       HybridGraceHashJoin: true
                       Map Join Operator
@@ -1344,7 +1397,7 @@ STAGE PLANS:
                           0 _col1 (type: string)
                           1 value (type: string)
                         input vertices:
-                          1 Map 8
+                          1 Map 10
                         Statistics: Num rows: 263 Data size: 2104 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Group By Operator
@@ -1358,31 +1411,6 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: bigint)
-            Execution mode: vectorized
-        Map 8 
-            Map Operator Tree:
-                TableScan
-                  alias: y
-                  filterExpr: (value is not null or key is not null) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: value (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: key (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: key (type: string)
-                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 3 
             Execution mode: vectorized
@@ -1419,7 +1447,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 7 
+        Reducer 9 
             Execution mode: vectorized
             Reduce Operator Tree:
               Group By Operator
@@ -1536,9 +1564,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE), Reducer 5 (BROADCAST_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
         Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1585,7 +1612,7 @@ STAGE PLANS:
                           1 key (type: string)
                         outputColumnNames: _col1
                         input vertices:
-                          1 Reducer 5
+                          1 Map 4
                         Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -1595,7 +1622,7 @@ STAGE PLANS:
                             1 value (type: string)
                           outputColumnNames: _col1
                           input vertices:
-                            1 Map 6
+                            1 Map 5
                           Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
@@ -1604,7 +1631,7 @@ STAGE PLANS:
                               0 _col1 (type: string)
                               1 value (type: string)
                             input vertices:
-                              1 Map 4
+                              1 Map 6
                             Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
@@ -1622,7 +1649,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y1
-                  filterExpr: (((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) or (value < 'zzzzzzzzzz')) (type: boolean)
+                  filterExpr: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
@@ -1633,17 +1660,8 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (value < 'zzzzzzzzzz') (type: boolean)
-                    Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: value (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
-        Map 6 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: z2
@@ -1658,6 +1676,22 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 222 Data size: 39516 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: y2
+                  filterExpr: (value < 'zzzzzzzzzz') (type: boolean)
+                  Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (value < 'zzzzzzzzzz') (type: boolean)
+                    Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 3 
             Execution mode: vectorized
@@ -1674,18 +1708,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string)
-                outputColumnNames: key
-                Reduce Output Operator
-                  key expressions: key (type: string)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: key (type: string)
-                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator
@@ -1773,9 +1795,8 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE), Reducer 5 (BROADCAST_EDGE)
+        Map 2 <- Map 1 (BROADCAST_EDGE), Map 4 (BROADCAST_EDGE), Map 5 (BROADCAST_EDGE), Map 6 (BROADCAST_EDGE)
         Reducer 3 <- Map 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1823,7 +1844,7 @@ STAGE PLANS:
                           1 key (type: string)
                         outputColumnNames: _col1
                         input vertices:
-                          1 Reducer 5
+                          1 Map 4
                         Statistics: Num rows: 18 Data size: 1602 Basic stats: COMPLETE Column stats: COMPLETE
                         HybridGraceHashJoin: true
                         Map Join Operator
@@ -1834,7 +1855,7 @@ STAGE PLANS:
                             1 value (type: string)
                           outputColumnNames: _col1
                           input vertices:
-                            1 Map 6
+                            1 Map 5
                           Statistics: Num rows: 114 Data size: 10146 Basic stats: COMPLETE Column stats: COMPLETE
                           HybridGraceHashJoin: true
                           Map Join Operator
@@ -1844,7 +1865,7 @@ STAGE PLANS:
                               0 _col1 (type: string)
                               1 value (type: string)
                             input vertices:
-                              1 Map 4
+                              1 Map 6
                             Statistics: Num rows: 185 Data size: 1480 Basic stats: COMPLETE Column stats: COMPLETE
                             HybridGraceHashJoin: true
                             Group By Operator
@@ -1863,7 +1884,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y1
-                  filterExpr: (((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) or (value < 'zzzzzzzzzz')) (type: boolean)
+                  filterExpr: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((value < 'zzzzzzzz') and (key < 'zzzzzzzz')) (type: boolean)
@@ -1874,17 +1895,8 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: key (type: string)
                       Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (value < 'zzzzzzzzzz') (type: boolean)
-                    Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: value (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: value (type: string)
-                      Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
-        Map 6 
+        Map 5 
             Map Operator Tree:
                 TableScan
                   alias: z2
@@ -1899,6 +1911,22 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: value (type: string)
                       Statistics: Num rows: 222 Data size: 39516 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: y2
+                  filterExpr: (value < 'zzzzzzzzzz') (type: boolean)
+                  Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (value < 'zzzzzzzzzz') (type: boolean)
+                    Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: value (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: value (type: string)
+                      Statistics: Num rows: 166 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized
         Reducer 3 
             Execution mode: vectorized
@@ -1915,18 +1943,6 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
-            Execution mode: vectorized
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string)
-                outputColumnNames: key
-                Reduce Output Operator
-                  key expressions: key (type: string)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: key (type: string)
-                  Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator

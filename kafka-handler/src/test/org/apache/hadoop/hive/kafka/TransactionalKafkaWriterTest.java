@@ -58,7 +58,7 @@ import java.util.stream.IntStream;
 /**
  * Test Transactional Writer.
  */
-@org.junit.Ignore("HIVE-24771")
+@Ignore("HIVE-28348: TransactionalKafkaWriterTest hangs in precommit")
 public class TransactionalKafkaWriterTest {
 
   private static final String TOPIC = "TOPIC_TEST";
@@ -119,7 +119,7 @@ public class TransactionalKafkaWriterTest {
     temporaryFolder.create();
     Path tableLocation = new Path(temporaryFolder.newFolder().toURI());
     queryWorkingPath = new Path(tableLocation, queryId);
-    configuration.set(HiveConf.ConfVars.HIVEQUERYID.varname, queryId);
+    configuration.set(HiveConf.ConfVars.HIVE_QUERY_ID.varname, queryId);
     String taskId = "attempt_m_0001_0";
     configuration.set("mapred.task.id", taskId);
     configuration.set(KafkaTableProperties.HIVE_KAFKA_BOOTSTRAP_SERVERS.getName(), KafkaBrokerResource.BROKER_IP_PORT);

@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 2:50 Argument type mismatch '99.9': This argument takes only constant STRING or INT, got decimal(3,1)

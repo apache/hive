@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-alpha-2-SNAPSHOT</version>
+    <version>4.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-packaging</artifactId>
@@ -96,6 +96,103 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>create-bin-license</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <concat destfile="${project.build.directory}/generated-resources/LICENSE" force="yes">
+                      <fileset dir="../">
+                        <include name="LICENSE"/>
+                        <include name="LICENSE-binary"/>
+                      </fileset>
+                    </concat>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <version>${maven.license.plugin.version}</version>
+            <executions>
+              <execution>
+                <id>license-fetch</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>download-licenses</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <includeOptional>false</includeOptional>
+              <artifactFiltersUrl>${project.baseUri}/src/license/artifact-filters.txt</artifactFiltersUrl>
+              <excludeTransitiveDependencies>true</excludeTransitiveDependencies>
+              <useDefaultUrlReplacements>true</useDefaultUrlReplacements>
+              <licenseUrlReplacements>
+                <licenseUrlReplacements>
+                  <regexp>https?://glassfish(.dev)?\.java\.net/.*CDDL.*</regexp>
+                  <replacement>https://spdx.org/licenses/CDDL-1.1.html</replacement>
+                </licenseUrlReplacements>
+                <licenseUrlReplacement>
+                  <regexp>https?://asm\.objectweb\.org/license.html</regexp>
+                  <replacement>https://asm.ow2.io/license.html</replacement>
+                </licenseUrlReplacement>
+                <licenseUrlReplacement>
+                  <regexp>http://(www\.)?antlr.org/license.html</regexp>
+                  <replacement>http://www.antlr.org/license.html</replacement>
+                </licenseUrlReplacement>
+              </licenseUrlReplacements>
+              <licenseUrlFileNames>
+                <APACHE-2.0>
+                  https?://www\.apache\.org/licenses/LICENSE-2\.0.*
+                  \Qhttps://aws.amazon.com/apache2.0\E
+                  \Qhttps://opensource.org/licenses/Apache-2.0\E
+                  \Qhttp://www.apache.org/licenses/\E
+                </APACHE-2.0>
+                <BSD-2-CLAUSE>
+                  https?://(www\.)?opensource.org/licenses/bsd-license.php
+                  https?://(www\.)?opensource.org/licenses/BSD-2-Clause
+                </BSD-2-CLAUSE>
+                <BSD-3-CLAUSE>
+                  https?://(www\.)?opensource.org/licenses/BSD-3-Clause
+                </BSD-3-CLAUSE>
+                <LGPL-3.0-only>
+                  \Qhttp://www.fsf.org/licensing/licenses/lgpl.txt\E
+                  \Qhttp://www.gnu.org/licenses/lgpl-3.0.txt\E
+                </LGPL-3.0-only>
+                <EPL-1.0>
+                  \Qhttps://www.eclipse.org/org/documents/epl-v10.php\E
+                  \Qhttp://www.eclipse.org/org/documents/epl-v10.php\E
+                </EPL-1.0>
+                <EPL-2.0>
+                  \Qhttps://raw.githubusercontent.com/locationtech/jts/master/LICENSE_EPLv2.txt\E
+                  \Qhttps://www.eclipse.org/org/documents/epl-2.0/EPL-2.0.txt\E
+                </EPL-2.0>
+                <EDL-1.0>
+                  \Qhttps://www.eclipse.org/org/documents/edl-v10.php\E
+                  \Qhttp://www.eclipse.org/org/documents/edl-v10.php\E
+                </EDL-1.0>
+                <MIT>
+                  https?://(www\.)?opensource\.org/licenses/mit(-license.php)?
+                </MIT>
+              </licenseUrlFileNames>
+              <licenseUrlFileNameSanitizers>
+                <licenseUrlFileNameSanitizer>
+                  <regexp>[\s-_,]+</regexp>
+                  <replacement>-</replacement>
+                </licenseUrlFileNameSanitizer>
+              </licenseUrlFileNameSanitizers>
+            </configuration>
+          </plugin>
         </plugins>
       </build>
     </profile>
@@ -142,16 +239,35 @@
         </plugins>
       </build>
     </profile>
-    <!-- Add iceberg dependencies only with iceberg build -->
     <profile>
-      <id>iceberg</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-iceberg-handler</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
+      <id>docker</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <executable>bash</executable>
+              <environmentVariables>
+                <SOURCE_DIR>${hive.path.to.root}</SOURCE_DIR>
+              </environmentVariables>
+              <arguments>
+                <argument>src/docker/build.sh</argument>
+                <argument>-hadoop ${hadoop.version}</argument>
+                <argument>-tez ${tez.version}</argument>
+              </arguments>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
   <dependencies>
@@ -234,6 +350,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
+      <artifactId>hive-iceberg-handler</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
       <artifactId>kafka-handler</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -295,6 +416,12 @@
       <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hive-hcatalog-pig-adapter</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>jline</groupId>
+          <artifactId>jline</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
@@ -312,6 +439,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-standalone-metastore-rest-catalog</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs-client</artifactId>
       <version>${hadoop.version}</version>
@@ -320,6 +452,14 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-reload4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.reload4j</groupId>
+          <artifactId>reload4j</artifactId>
         </exclusion>
         <exclusion>
           <groupId>commons-logging</groupId>

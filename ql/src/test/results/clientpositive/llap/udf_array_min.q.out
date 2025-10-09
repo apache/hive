@@ -1,0 +1,69 @@
+PREHOOK: query: DESCRIBE FUNCTION array_min
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION array_min
+POSTHOOK: type: DESCFUNCTION
+array_min(array(obj1, obj2,...)) - The function returns the minimum value in array with elements for which order is supported
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED array_min
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED array_min
+POSTHOOK: type: DESCFUNCTION
+array_min(array(obj1, obj2,...)) - The function returns the minimum value in array with elements for which order is supported
+Example:
+  > SELECT array_min(array(1, 3, 0, NULL)) FROM src LIMIT 1;
+  0
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayMin
+Function type:BUILTIN
+PREHOOK: query: SELECT array_min(array(1, 2, 3, null)) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_min(array(1, 2, 3, null)) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT array_min(array()) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_min(array()) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT array_min(array(null)) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_min(array(null)) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT array_min(array(1.12, 2.23, 3.34, null)) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_min(array(1.12, 2.23, 3.34, null)) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.12
+PREHOOK: query: SELECT array_min(array(1.1234567890, 2.234567890, 3.34567890, null)) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_min(array(1.1234567890, 2.234567890, 3.34567890, null)) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+1.123456789
+PREHOOK: query: SELECT array_min(array(11234567890, 2234567890, 334567890, null)) FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_min(array(11234567890, 2234567890, 334567890, null)) FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+334567890

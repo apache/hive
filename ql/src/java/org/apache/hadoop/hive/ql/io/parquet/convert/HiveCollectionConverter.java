@@ -31,6 +31,8 @@ import org.apache.parquet.io.api.Converter;
 import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.Type;
 
+import static org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME;
+
 public class HiveCollectionConverter extends HiveGroupConverter {
   private final GroupType collectionType;
   private final ConverterParent parent;
@@ -184,7 +186,7 @@ public class HiveCollectionConverter extends HiveGroupConverter {
     if (repeatedType.isPrimitive() ||
         (repeatedType.asGroupType().getFieldCount() != 1)) {
       return true;
-    } else if (repeatedType.getName().equals("array")) {
+    } else if (repeatedType.getName().equals(LIST_TYPE_NAME)) {
       return true; // existing avro data
     } else if (repeatedType.getName().equals(parentName + "_tuple")) {
       return true; // existing thrift data

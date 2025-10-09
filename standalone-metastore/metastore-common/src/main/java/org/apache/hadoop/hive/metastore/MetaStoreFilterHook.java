@@ -78,14 +78,6 @@ public interface MetaStoreFilterHook {
 
   /**
    * Filter given list of tables
-   * @param dbName database name
-   * @param tableList list of table returned by the metastore
-   * @return List of filtered table names
-   */
-  List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException;
-
-  /**
-   * Filter given list of tables
    * @param catName catalog name
    * @param dbName database name
    * @param tableList list of table returned by the metastore
@@ -94,15 +86,24 @@ public interface MetaStoreFilterHook {
   List<String> filterTableNames(String catName, String dbName, List<String> tableList)
       throws MetaException;
 
-  // Previously this was handled by filterTableNames.  But it can't be anymore because we can no
-  // longer depend on a 1-1 mapping between table name and entry in the list.
+  /**
+   * Filter given list of TableMeta objects
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tableMetas list of table returned by the metastore
+   * @deprecated Replaced by {@link #filterTableMetas(List)}
+   * @return List of filtered table names
+   */
+  @Deprecated
+  List<TableMeta> filterTableMetas(String catName, String dbName, List<TableMeta> tableMetas) throws MetaException;
+
   /**
    * Filter a list of TableMeta objects.
    * @param tableMetas list of TableMetas to filter
    * @return filtered table metas
    * @throws MetaException something went wrong
    */
-  List<TableMeta> filterTableMetas(String catName,String dbName,List<TableMeta> tableMetas) throws MetaException;
+  List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException;
 
   /**
    * filter to given table object if applicable
@@ -144,15 +145,6 @@ public interface MetaStoreFilterHook {
 
   /**
    * Filter given list of partition names
-   * @param dbName database name
-   * @param tblName table name
-   * @param partitionNames list of partition names
-   * @return list of filtered partition names
-   */
-  List<String> filterPartitionNames(String dbName, String tblName, List<String> partitionNames) throws MetaException;
-
-  /**
-   * Filter given list of partition names
    * @param catName catalog name.
    * @param dbName database name.
    * @param tblName table name.
@@ -161,5 +153,23 @@ public interface MetaStoreFilterHook {
    */
   List<String> filterPartitionNames(String catName, String dbName, String tblName,
       List<String> partitionNames) throws MetaException;
+
+  /**
+   * Filter given list of data connectors
+   * @param dcList
+   * @return List of filtered Dc names
+   */
+  List<String> filterDataConnectors(List<String> dcList) throws MetaException;
+
+  /**
+   * Filter given list of database objects
+   *
+   * @param databases List of database objects
+   * @return List of filtered database objects
+   * @throws MetaException
+   */
+  default List<Database> filterDatabaseObjects(List<Database> databases) throws MetaException {
+    return databases;
+  }
 }
 

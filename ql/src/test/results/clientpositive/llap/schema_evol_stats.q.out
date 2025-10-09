@@ -84,7 +84,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	8                   
 	rawDataSize         	96                  
-	totalSize           	104                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -121,7 +121,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	4                   
 	rawDataSize         	40                  
-	totalSize           	44                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -160,7 +160,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	4                   
 	rawDataSize         	56                  
-	totalSize           	60                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -203,10 +203,12 @@ POSTHOOK: Input: default@partitioned1_n0
 PREHOOK: query: drop table partitioned1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partitioned1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned1_n0
 POSTHOOK: query: drop table partitioned1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned1_n0
 PREHOOK: query: CREATE TABLE partitioned1_n0(a INT, b STRING) PARTITIONED BY(part INT) STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -294,7 +296,7 @@ Table Parameters:
 	numPartitions       	2                   
 	numRows             	8                   
 	rawDataSize         	1148                
-	totalSize           	852                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -331,7 +333,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	4                   
 	rawDataSize         	400                 
-	totalSize           	325                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -370,7 +372,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	4                   
 	rawDataSize         	748                 
-	totalSize           	527                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

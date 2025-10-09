@@ -99,8 +99,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`c_custkey`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -116,7 +116,7 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey;
 CBO PLAN:HiveProject(c_custkey=[$0])
-  HiveFilter(condition=[IN($4, _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
     HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -133,9 +133,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: customer_removal_n0
-          filterExpr: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+          filterExpr: (c_nation) IN ('INDIA', 'USA') (type: boolean)
           Filter Operator
-            predicate: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+            predicate: (c_nation) IN ('INDIA', 'USA') (type: boolean)
             Select Operator
               expressions: c_custkey (type: bigint)
               outputColumnNames: _col0
@@ -170,8 +170,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`c_custkey`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -187,7 +187,7 @@ EXPLAIN CBO SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 
 
 EXPLAIN VECTORIZED SELECT c_custkey from customer_removal_n0 where c_nation IN ('USA', 'INDIA') group by c_custkey, c_nation;
 CBO PLAN:HiveProject(c_custkey=[$0])
-  HiveFilter(condition=[IN($4, _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+  HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
     HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -204,9 +204,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: customer_removal_n0
-          filterExpr: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+          filterExpr: (c_nation) IN ('INDIA', 'USA') (type: boolean)
           Filter Operator
-            predicate: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+            predicate: (c_nation) IN ('INDIA', 'USA') (type: boolean)
             Select Operator
               expressions: c_custkey (type: bigint)
               outputColumnNames: _col0
@@ -251,8 +251,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`dates_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`d_datekey`,`d_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -334,8 +334,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`dates_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`d_datekey`,`d_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -480,8 +480,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`dates_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`d_datekey`,`d_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -626,8 +626,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`dates_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`d_datekey`,`d_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -897,62 +897,62 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
-ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='2','rawDataSize'='102' );
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_address SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_address BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_city SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_city BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_custkey SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_custkey BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_mktsegment SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_mktsegment BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_name SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_name BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_nation SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_nation BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_phone SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_phone BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_region SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_region BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_date SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_date BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_datekey SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_datekey BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminmonth SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminmonth BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminweek SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminweek BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminyear BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_dayofweek SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_dayofweek BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_holidayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_holidayfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_id SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_id BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SIDgz8///////wE= 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinmonthfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinmonthfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinweekfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinweekfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_month SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_month BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_monthnuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_monthnuminyear BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_sellingseason SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_sellingseason BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_weekdayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_weekdayfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_weeknuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_weeknuminyear BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_year SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_yearmonth SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_yearmonth BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_yearmonthnum SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_yearmonthnum BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`c_custkey`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
+ALTER TABLE `default`.`dates_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`d_datekey`,`d_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS SET('numRows'='2','rawDataSize'='102' );
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_custkey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_custkey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_name` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_name` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_address` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_address` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_city` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_city` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_nation` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_nation` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_region` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_region` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_phone` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_phone` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_mktsegment` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_mktsegment` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_datekey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_datekey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_id` SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_id` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SIDgz8///////wE= 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_date` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_date` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_dayofweek` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_dayofweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_month` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_month` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_year` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonthnum` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonthnum` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonth` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminweek` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminmonth` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_monthnuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_monthnuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weeknuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weeknuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_sellingseason` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_sellingseason` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinweekfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinweekfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinmonthfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinmonthfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_holidayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_holidayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weekdayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weekdayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 
 
 
@@ -1107,44 +1107,44 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dates_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (d_datekey,d_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS SET('numRows'='2','rawDataSize'='102' );
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_date SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_date BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_datekey SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_datekey BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminmonth SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminmonth BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminweek SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminweek BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_daynuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_daynuminyear BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_dayofweek SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_dayofweek BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_holidayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_holidayfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_id SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_id BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SIDgz8///////wE= 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinmonthfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinmonthfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_lastdayinweekfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_lastdayinweekfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_month SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_month BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_monthnuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_monthnuminyear BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_sellingseason SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_sellingseason BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_weekdayfl SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_weekdayfl BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_weeknuminyear SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_weeknuminyear BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_year SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_yearmonth SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_yearmonth BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.dates_removal_n0 UPDATE STATISTICS FOR COLUMN d_yearmonthnum SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.dates_removal_n0 FOR COLUMN d_yearmonthnum BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`d_datekey`,`d_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS SET('numRows'='2','rawDataSize'='102' );
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_datekey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_datekey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_id` SET('lowValue'='0','highValue'='1','numNulls'='0','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_id` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SIDgz8///////wE= 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_date` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_date` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_dayofweek` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_dayofweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_month` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_month` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_year` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonthnum` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonthnum` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_yearmonth` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_yearmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminweek` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminweek` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminmonth` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminmonth` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_daynuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_daynuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_monthnuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_monthnuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weeknuminyear` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weeknuminyear` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_sellingseason` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_sellingseason` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinweekfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinweekfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_lastdayinmonthfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_lastdayinmonthfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_holidayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_holidayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`dates_removal_n0` UPDATE STATISTICS FOR COLUMN `d_weekdayfl` SET('lowValue'='0','highValue'='0','numNulls'='2','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`dates_removal_n0` FOR COLUMN `d_weekdayfl` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 
 
 
@@ -1310,24 +1310,24 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.customer_removal_n0 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (c_custkey) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_address SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_address BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_city SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_city BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_custkey SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_custkey BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_mktsegment SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_mktsegment BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_name SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_name BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_nation SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_nation BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_phone SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_phone BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
-ALTER TABLE default.customer_removal_n0 UPDATE STATISTICS FOR COLUMN c_region SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.customer_removal_n0 FOR COLUMN c_region BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`c_custkey`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS SET('numRows'='1','rawDataSize'='22' );
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_custkey` SET('lowValue'='3','highValue'='3','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_custkey` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBgq/rqgE= 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_name` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_name` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_address` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_address` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_city` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_city` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_nation` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_nation` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_region` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_region` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_phone` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_phone` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
+ALTER TABLE `default`.`customer_removal_n0` UPDATE STATISTICS FOR COLUMN `c_mktsegment` SET('avgColLen'='0.0','maxColLen'='0','numNulls'='1','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`customer_removal_n0` FOR COLUMN `c_mktsegment` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEA 
 
 
 
@@ -1349,7 +1349,7 @@ EXPLAIN VECTORIZED SELECT count(c_custkey) from customer_removal_n0 where c_nati
 group by c_custkey, c_nation;
 CBO PLAN:HiveProject(_o__c0=[$1])
   HiveAggregate(group=[{0}], agg#0=[count()])
-    HiveFilter(condition=[IN($4, _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+    HiveFilter(condition=[IN($4, _UTF-16LE'INDIA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'USA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
       HiveTableScan(table=[[default, customer_removal_n0]], table:alias=[customer_removal_n0])
 
 PLAN VECTORIZATION:
@@ -1372,10 +1372,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer_removal_n0
-                  filterExpr: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+                  filterExpr: (c_nation) IN ('INDIA', 'USA') (type: boolean)
                   Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (c_nation) IN ('USA', 'INDIA') (type: boolean)
+                    predicate: (c_nation) IN ('INDIA', 'USA') (type: boolean)
                     Statistics: Num rows: 1 Data size: 92 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_custkey (type: bigint)
@@ -1442,18 +1442,22 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE customer_removal_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer_removal_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@customer_removal_n0
 POSTHOOK: query: DROP TABLE customer_removal_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@customer_removal_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_removal_n0
 PREHOOK: query: DROP TABLE dates_removal_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dates_removal_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dates_removal_n0
 POSTHOOK: query: DROP TABLE dates_removal_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dates_removal_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dates_removal_n0
 PREHOOK: query: create table dest_g21 (key1 int, value1 double, primary key(key1) disable rely)
 PREHOOK: type: CREATETABLE
@@ -1496,12 +1500,12 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `key1` SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `key1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `value1` SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `value1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1560,12 +1564,12 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `key1` SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `key1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `value1` SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `value1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1625,12 +1629,12 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `key1` SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `key1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `value1` SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `value1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1690,12 +1694,12 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `key1` SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `key1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `value1` SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `value1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1819,12 +1823,12 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `key1` SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `key1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `value1` SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `value1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -1950,12 +1954,12 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `key1` SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `key1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `value1` SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `value1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -2100,12 +2104,12 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `key1` SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `key1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `value1` SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `value1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -2282,12 +2286,12 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `key1` SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `key1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `value1` SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `value1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -2350,12 +2354,12 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN key1 SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN key1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
-ALTER TABLE default.dest_g21 UPDATE STATISTICS FOR COLUMN value1 SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
--- BIT VECTORS PRESENT FOR default.dest_g21 FOR COLUMN value1 BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='6','rawDataSize'='28' );
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `key1` SET('lowValue'='1','highValue'='6','numNulls'='0','numDVs'='6' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `key1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAYGwfO+SIGmu+f//////wHC9+jHAf6diLP//////wG/9IJOg97xwAI= 
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS FOR COLUMN `value1` SET('numNulls'='2','numDVs'='3','highValue'='4.0','lowValue'='1.0' );
+-- BIT VECTORS PRESENT FOR `default`.`dest_g21` FOR COLUMN `value1` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwvmagwOBp7a0Av65vtz9/////wE= 
 
 
 
@@ -2459,10 +2463,12 @@ STAGE PLANS:
 PREHOOK: query: DROP table dest_g21
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g21
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g21
 POSTHOOK: query: DROP table dest_g21
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g21
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g21
 PREHOOK: query: CREATE TABLE tconst(i int NOT NULL disable rely, j INT NOT NULL disable norely, d_year string)
 PREHOOK: type: CREATETABLE
@@ -2507,14 +2513,14 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
-ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -2636,14 +2642,14 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
-ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -2766,14 +2772,14 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
-ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -2895,14 +2901,14 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
-ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -3084,14 +3090,14 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.tconst UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
-ALTER TABLE default.tconst CHANGE COLUMN i i int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN d_year SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN d_year BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN i SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN i BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
-ALTER TABLE default.tconst UPDATE STATISTICS FOR COLUMN j SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
--- BIT VECTORS PRESENT FOR default.tconst FOR COLUMN j BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS SET('numRows'='3','rawDataSize'='25' );
+ALTER TABLE `default`.`tconst` CHANGE COLUMN `i` `i` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `i` SET('lowValue'='1','highValue'='3','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `i` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwfO+SMG7rGLC0vSOAw== 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `j` SET('lowValue'='1','highValue'='3','numNulls'='1','numDVs'='2' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `j` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAICwfO+SMG7rGI= 
+ALTER TABLE `default`.`tconst` UPDATE STATISTICS FOR COLUMN `d_year` SET('avgColLen'='4.0','maxColLen'='4','numNulls'='0','numDVs'='3' );
+-- BIT VECTORS PRESENT FOR `default`.`tconst` FOR COLUMN `d_year` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAMDwrjb8gb/vrr2+f////8BgaCT+///////AQ== 
 
 
 
@@ -3247,10 +3253,12 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE tconst
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tconst
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tconst
 POSTHOOK: query: DROP TABLE tconst
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tconst
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tconst
 PREHOOK: query: create table dest_g21 (key1 int NOT NULL disable rely, value1 double, UNIQUE(key1) disable rely)
 PREHOOK: type: CREATETABLE
@@ -3283,9 +3291,9 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g21 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.dest_g21 ADD CONSTRAINT #### A masked pattern was here #### UNIQUE (key1) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.dest_g21 CHANGE COLUMN key1 key1 int CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`dest_g21` ADD CONSTRAINT `#### A masked pattern was here ####` UNIQUE (`key1`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g21` CHANGE COLUMN `key1` `key1` int CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select key1 from dest_g21 group by key1, value1;
@@ -3346,8 +3354,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.dest_g24 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.dest_g24 ADD CONSTRAINT #### A masked pattern was here #### UNIQUE (key1) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`dest_g24` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`dest_g24` ADD CONSTRAINT `#### A masked pattern was here ####` UNIQUE (`key1`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select key1 from dest_g24 group by key1, value1;
@@ -3442,18 +3450,22 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE dest_g21
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g21
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g21
 POSTHOOK: query: DROP TABLE dest_g21
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g21
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g21
 PREHOOK: query: DROP TABLE dest_g24
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g24
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g24
 POSTHOOK: query: DROP TABLE dest_g24
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g24
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g24
 PREHOOK: query: CREATE TABLE `customer`(
   `c_customer_sk` int,
@@ -3626,6 +3638,36 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 CREATE TABLE `default`.`store_sales`(
   `ss_sold_date_sk` int, 
   `ss_sold_time_sk` int, 
@@ -3661,43 +3703,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-CREATE TABLE `default`.`customer`(
-  `c_customer_sk` int, 
-  `c_customer_id` string, 
-  `c_current_cdemo_sk` int, 
-  `c_current_hdemo_sk` int, 
-  `c_current_addr_sk` int, 
-  `c_first_shipto_date_sk` int, 
-  `c_first_sales_date_sk` int, 
-  `c_salutation` string, 
-  `c_first_name` string, 
-  `c_last_name` string, 
-  `c_preferred_cust_flag` string, 
-  `c_birth_day` int, 
-  `c_birth_month` int, 
-  `c_birth_year` int, 
-  `c_birth_country` string, 
-  `c_login` string, 
-  `c_email_address` string, 
-  `c_last_review_date` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
-ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `pk_c` PRIMARY KEY (`c_customer_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `uk1` UNIQUE (`c_customer_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` CHANGE COLUMN `c_customer_id` `c_customer_id` string CONSTRAINT `cid_nn` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `ss_c` FOREIGN KEY (`ss_customer_sk`) REFERENCES `default`.`customer`(`c_customer_sk`) DISABLE NOVALIDATE RELY;
 
 
 
@@ -3910,6 +3922,36 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 CREATE TABLE `default`.`store_sales`(
   `ss_sold_date_sk` int, 
   `ss_sold_time_sk` int, 
@@ -3945,43 +3987,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-CREATE TABLE `default`.`customer`(
-  `c_customer_sk` int, 
-  `c_customer_id` string, 
-  `c_current_cdemo_sk` int, 
-  `c_current_hdemo_sk` int, 
-  `c_current_addr_sk` int, 
-  `c_first_shipto_date_sk` int, 
-  `c_first_sales_date_sk` int, 
-  `c_salutation` string, 
-  `c_first_name` string, 
-  `c_last_name` string, 
-  `c_preferred_cust_flag` string, 
-  `c_birth_day` int, 
-  `c_birth_month` int, 
-  `c_birth_year` int, 
-  `c_birth_country` string, 
-  `c_login` string, 
-  `c_email_address` string, 
-  `c_last_review_date` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
-ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `pk_c` PRIMARY KEY (`c_customer_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `uk1` UNIQUE (`c_customer_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` CHANGE COLUMN `c_customer_id` `c_customer_id` string CONSTRAINT `cid_nn` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `ss_c` FOREIGN KEY (`ss_customer_sk`) REFERENCES `default`.`customer`(`c_customer_sk`) DISABLE NOVALIDATE RELY;
 
 
 
@@ -4224,6 +4236,36 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 CREATE TABLE `default`.`store_sales`(
   `ss_sold_date_sk` int, 
   `ss_sold_time_sk` int, 
@@ -4259,43 +4301,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-CREATE TABLE `default`.`customer`(
-  `c_customer_sk` int, 
-  `c_customer_id` string, 
-  `c_current_cdemo_sk` int, 
-  `c_current_hdemo_sk` int, 
-  `c_current_addr_sk` int, 
-  `c_first_shipto_date_sk` int, 
-  `c_first_sales_date_sk` int, 
-  `c_salutation` string, 
-  `c_first_name` string, 
-  `c_last_name` string, 
-  `c_preferred_cust_flag` string, 
-  `c_birth_day` int, 
-  `c_birth_month` int, 
-  `c_birth_year` int, 
-  `c_birth_country` string, 
-  `c_login` string, 
-  `c_email_address` string, 
-  `c_last_review_date` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
-ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `pk_c` PRIMARY KEY (`c_customer_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `uk1` UNIQUE (`c_customer_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` CHANGE COLUMN `c_customer_id` `c_customer_id` string CONSTRAINT `cid_nn` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `ss_c` FOREIGN KEY (`ss_customer_sk`) REFERENCES `default`.`customer`(`c_customer_sk`) DISABLE NOVALIDATE RELY;
 
 
 
@@ -4390,7 +4402,7 @@ CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
       HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
           HiveTableScan(table=[[default, customer]], table:alias=[customer])
-        HiveProject(ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+        HiveProject(ss_customer_sk=[$3], $f7=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
           HiveFilter(condition=[IS NOT NULL($3)])
             HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
@@ -4619,6 +4631,36 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 CREATE TABLE `default`.`store_sales`(
   `ss_sold_date_sk` int, 
   `ss_sold_time_sk` int, 
@@ -4654,43 +4696,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-CREATE TABLE `default`.`customer`(
-  `c_customer_sk` int, 
-  `c_customer_id` string, 
-  `c_current_cdemo_sk` int, 
-  `c_current_hdemo_sk` int, 
-  `c_current_addr_sk` int, 
-  `c_first_shipto_date_sk` int, 
-  `c_first_sales_date_sk` int, 
-  `c_salutation` string, 
-  `c_first_name` string, 
-  `c_last_name` string, 
-  `c_preferred_cust_flag` string, 
-  `c_birth_day` int, 
-  `c_birth_month` int, 
-  `c_birth_year` int, 
-  `c_birth_country` string, 
-  `c_login` string, 
-  `c_email_address` string, 
-  `c_last_review_date` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
-ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `pk_c` PRIMARY KEY (`c_customer_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `uk1` UNIQUE (`c_customer_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` CHANGE COLUMN `c_customer_id` `c_customer_id` string CONSTRAINT `cid_nn` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `ss_c` FOREIGN KEY (`ss_customer_sk`) REFERENCES `default`.`customer`(`c_customer_sk`) DISABLE NOVALIDATE RELY;
 
 
 
@@ -4788,7 +4800,7 @@ CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
       HiveJoin(condition=[=($0, $8)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
           HiveTableScan(table=[[default, customer]], table:alias=[customer])
-        HiveProject(ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+        HiveProject(ss_customer_sk=[$3], $f7=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
           HiveFilter(condition=[IS NOT NULL($3)])
             HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
 
@@ -5101,30 +5113,25 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 
-CREATE TABLE `default`.`store_sales`(
-  `ss_sold_date_sk` int, 
-  `ss_sold_time_sk` int, 
-  `ss_item_sk` int, 
-  `ss_customer_sk` int, 
-  `ss_cdemo_sk` int, 
-  `ss_hdemo_sk` int, 
-  `ss_addr_sk` int, 
-  `ss_store_sk` int, 
-  `ss_promo_sk` int, 
-  `ss_ticket_number` int, 
-  `ss_quantity` int, 
-  `ss_wholesale_cost` decimal(7,2), 
-  `ss_list_price` decimal(7,2), 
-  `ss_sales_price` decimal(7,2), 
-  `ss_ext_discount_amt` decimal(7,2), 
-  `ss_ext_sales_price` decimal(7,2), 
-  `ss_ext_wholesale_cost` decimal(7,2), 
-  `ss_ext_list_price` decimal(7,2), 
-  `ss_ext_tax` decimal(7,2), 
-  `ss_coupon_amt` decimal(7,2), 
-  `ss_net_paid` decimal(7,2), 
-  `ss_net_paid_inc_tax` decimal(7,2), 
-  `ss_net_profit` decimal(7,2))
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -5176,25 +5183,30 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-CREATE TABLE `default`.`customer`(
-  `c_customer_sk` int, 
-  `c_customer_id` string, 
-  `c_current_cdemo_sk` int, 
-  `c_current_hdemo_sk` int, 
-  `c_current_addr_sk` int, 
-  `c_first_shipto_date_sk` int, 
-  `c_first_sales_date_sk` int, 
-  `c_salutation` string, 
-  `c_first_name` string, 
-  `c_last_name` string, 
-  `c_preferred_cust_flag` string, 
-  `c_birth_day` int, 
-  `c_birth_month` int, 
-  `c_birth_year` int, 
-  `c_birth_country` string, 
-  `c_login` string, 
-  `c_email_address` string, 
-  `c_last_review_date` string)
+CREATE TABLE `default`.`store_sales`(
+  `ss_sold_date_sk` int, 
+  `ss_sold_time_sk` int, 
+  `ss_item_sk` int, 
+  `ss_customer_sk` int, 
+  `ss_cdemo_sk` int, 
+  `ss_hdemo_sk` int, 
+  `ss_addr_sk` int, 
+  `ss_store_sk` int, 
+  `ss_promo_sk` int, 
+  `ss_ticket_number` int, 
+  `ss_quantity` int, 
+  `ss_wholesale_cost` decimal(7,2), 
+  `ss_list_price` decimal(7,2), 
+  `ss_sales_price` decimal(7,2), 
+  `ss_ext_discount_amt` decimal(7,2), 
+  `ss_ext_sales_price` decimal(7,2), 
+  `ss_ext_wholesale_cost` decimal(7,2), 
+  `ss_ext_list_price` decimal(7,2), 
+  `ss_ext_tax` decimal(7,2), 
+  `ss_coupon_amt` decimal(7,2), 
+  `ss_net_paid` decimal(7,2), 
+  `ss_net_paid_inc_tax` decimal(7,2), 
+  `ss_net_profit` decimal(7,2))
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
@@ -5206,14 +5218,14 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.date_dim UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `pk_c` PRIMARY KEY (`c_customer_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`date_dim` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `uk1` UNIQUE (`c_customer_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` CHANGE COLUMN `c_customer_id` `c_customer_id` string CONSTRAINT `cid_nn` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `ss_c` FOREIGN KEY (`ss_customer_sk`) REFERENCES `default`.`customer`(`c_customer_sk`) DISABLE NOVALIDATE RELY;
 
 
 
@@ -5341,7 +5353,7 @@ CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
             HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
               HiveTableScan(table=[[default, customer]], table:alias=[customer])
             HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-              HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+              HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], $f8=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
                 HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
                   HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
               HiveProject(d_date_sk=[$0])
@@ -5354,7 +5366,7 @@ CBO PLAN:HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
               HiveProject(c_customer_sk=[$0], c_customer_id=[$1], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10], c_birth_country=[$14], c_login=[$15], c_email_address=[$16])
                 HiveTableScan(table=[[default, customer]], table:alias=[customer])
               HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-                HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], /=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
+                HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], $f8=[/(+(-(-($17, $16), $14), $15), 2:DECIMAL(10, 0))])
                   HiveFilter(condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
                     HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
                 HiveProject(d_date_sk=[$0])
@@ -5753,6 +5765,36 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 CREATE TABLE `default`.`store_sales`(
   `ss_sold_date_sk` int, 
   `ss_sold_time_sk` int, 
@@ -5788,43 +5830,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-CREATE TABLE `default`.`customer`(
-  `c_customer_sk` int, 
-  `c_customer_id` string, 
-  `c_current_cdemo_sk` int, 
-  `c_current_hdemo_sk` int, 
-  `c_current_addr_sk` int, 
-  `c_first_shipto_date_sk` int, 
-  `c_first_sales_date_sk` int, 
-  `c_salutation` string, 
-  `c_first_name` string, 
-  `c_last_name` string, 
-  `c_preferred_cust_flag` string, 
-  `c_birth_day` int, 
-  `c_birth_month` int, 
-  `c_birth_year` int, 
-  `c_birth_country` string, 
-  `c_login` string, 
-  `c_email_address` string, 
-  `c_last_review_date` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
-ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `pk_c` PRIMARY KEY (`c_customer_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `uk1` UNIQUE (`c_customer_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` CHANGE COLUMN `c_customer_id` `c_customer_id` string CONSTRAINT `cid_nn` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `ss_c` FOREIGN KEY (`ss_customer_sk`) REFERENCES `default`.`customer`(`c_customer_sk`) DISABLE NOVALIDATE RELY;
 
 
 
@@ -6045,6 +6057,36 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 CREATE TABLE `default`.`store_sales`(
   `ss_sold_date_sk` int, 
   `ss_sold_time_sk` int, 
@@ -6080,43 +6122,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-CREATE TABLE `default`.`customer`(
-  `c_customer_sk` int, 
-  `c_customer_id` string, 
-  `c_current_cdemo_sk` int, 
-  `c_current_hdemo_sk` int, 
-  `c_current_addr_sk` int, 
-  `c_first_shipto_date_sk` int, 
-  `c_first_sales_date_sk` int, 
-  `c_salutation` string, 
-  `c_first_name` string, 
-  `c_last_name` string, 
-  `c_preferred_cust_flag` string, 
-  `c_birth_day` int, 
-  `c_birth_month` int, 
-  `c_birth_year` int, 
-  `c_birth_country` string, 
-  `c_login` string, 
-  `c_email_address` string, 
-  `c_last_review_date` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
-ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `pk_c` PRIMARY KEY (`c_customer_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `uk1` UNIQUE (`c_customer_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` CHANGE COLUMN `c_customer_id` `c_customer_id` string CONSTRAINT `cid_nn` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `ss_c` FOREIGN KEY (`ss_customer_sk`) REFERENCES `default`.`customer`(`c_customer_sk`) DISABLE NOVALIDATE RELY;
 
 
 
@@ -6372,6 +6384,36 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 CREATE TABLE `default`.`store_sales`(
   `ss_sold_date_sk` int, 
   `ss_sold_time_sk` int, 
@@ -6407,43 +6449,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-CREATE TABLE `default`.`customer`(
-  `c_customer_sk` int, 
-  `c_customer_id` string, 
-  `c_current_cdemo_sk` int, 
-  `c_current_hdemo_sk` int, 
-  `c_current_addr_sk` int, 
-  `c_first_shipto_date_sk` int, 
-  `c_first_sales_date_sk` int, 
-  `c_salutation` string, 
-  `c_first_name` string, 
-  `c_last_name` string, 
-  `c_preferred_cust_flag` string, 
-  `c_birth_day` int, 
-  `c_birth_month` int, 
-  `c_birth_year` int, 
-  `c_birth_country` string, 
-  `c_login` string, 
-  `c_email_address` string, 
-  `c_last_review_date` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
-ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `pk_c` PRIMARY KEY (`c_customer_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `uk1` UNIQUE (`c_customer_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` CHANGE COLUMN `c_customer_id` `c_customer_id` string CONSTRAINT `cid_nn` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `ss_c` FOREIGN KEY (`ss_customer_sk`) REFERENCES `default`.`customer`(`c_customer_sk`) DISABLE NOVALIDATE RELY;
 
 
 
@@ -6696,6 +6708,36 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 
+CREATE TABLE `default`.`customer`(
+  `c_customer_sk` int, 
+  `c_customer_id` string, 
+  `c_current_cdemo_sk` int, 
+  `c_current_hdemo_sk` int, 
+  `c_current_addr_sk` int, 
+  `c_first_shipto_date_sk` int, 
+  `c_first_sales_date_sk` int, 
+  `c_salutation` string, 
+  `c_first_name` string, 
+  `c_last_name` string, 
+  `c_preferred_cust_flag` string, 
+  `c_birth_day` int, 
+  `c_birth_month` int, 
+  `c_birth_year` int, 
+  `c_birth_country` string, 
+  `c_login` string, 
+  `c_email_address` string, 
+  `c_last_review_date` string)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
 CREATE TABLE `default`.`store_sales`(
   `ss_sold_date_sk` int, 
   `ss_sold_time_sk` int, 
@@ -6731,43 +6773,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-CREATE TABLE `default`.`customer`(
-  `c_customer_sk` int, 
-  `c_customer_id` string, 
-  `c_current_cdemo_sk` int, 
-  `c_current_hdemo_sk` int, 
-  `c_current_addr_sk` int, 
-  `c_first_shipto_date_sk` int, 
-  `c_first_sales_date_sk` int, 
-  `c_salutation` string, 
-  `c_first_name` string, 
-  `c_last_name` string, 
-  `c_preferred_cust_flag` string, 
-  `c_birth_day` int, 
-  `c_birth_month` int, 
-  `c_birth_year` int, 
-  `c_birth_country` string, 
-  `c_login` string, 
-  `c_email_address` string, 
-  `c_last_review_date` string)
-ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-#### A masked pattern was here ####
-TBLPROPERTIES (
-  'bucketing_version'='2', 
-#### A masked pattern was here ####
-ALTER TABLE default.store_sales ADD CONSTRAINT pk_ss PRIMARY KEY (ss_item_sk,ss_ticket_number) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.store_sales UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.customer ADD CONSTRAINT pk_c PRIMARY KEY (c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.store_sales ADD CONSTRAINT ss_c FOREIGN KEY (ss_customer_sk) REFERENCES default.customer(c_customer_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer ADD CONSTRAINT uk1 UNIQUE (c_customer_id) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.customer CHANGE COLUMN c_customer_id c_customer_id string CONSTRAINT cid_nn NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `pk_c` PRIMARY KEY (`c_customer_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`,`ss_ticket_number`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`customer` ADD CONSTRAINT `uk1` UNIQUE (`c_customer_id`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`customer` CHANGE COLUMN `c_customer_id` `c_customer_id` string CONSTRAINT `cid_nn` NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`store_sales` ADD CONSTRAINT `ss_c` FOREIGN KEY (`ss_customer_sk`) REFERENCES `default`.`customer`(`c_customer_sk`) DISABLE NOVALIDATE RELY;
 
 
 
@@ -7021,14 +7033,14 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.web_sales ADD CONSTRAINT pk1 PRIMARY KEY (ws_order_number,ws_item_sk) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.web_sales UPDATE STATISTICS SET('numRows'='2','rawDataSize'='14' );
-ALTER TABLE default.web_sales UPDATE STATISTICS FOR COLUMN ws_item_sk SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.web_sales FOR COLUMN ws_item_sk BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfO+SA== 
-ALTER TABLE default.web_sales UPDATE STATISTICS FOR COLUMN ws_order_number SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
--- BIT VECTORS PRESENT FOR default.web_sales FOR COLUMN ws_order_number BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfO+SA== 
-ALTER TABLE default.web_sales UPDATE STATISTICS FOR COLUMN ws_price SET('numNulls'='0','numDVs'='1','highValue'='1.2000000476837158','lowValue'='1.2000000476837158' );
--- BIT VECTORS PRESENT FOR default.web_sales FOR COLUMN ws_price BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwbaGtAM= 
+ALTER TABLE `default`.`web_sales` ADD CONSTRAINT `pk1` PRIMARY KEY (`ws_order_number`,`ws_item_sk`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`web_sales` UPDATE STATISTICS SET('numRows'='2','rawDataSize'='14' );
+ALTER TABLE `default`.`web_sales` UPDATE STATISTICS FOR COLUMN `ws_order_number` SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`web_sales` FOR COLUMN `ws_order_number` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfO+SA== 
+ALTER TABLE `default`.`web_sales` UPDATE STATISTICS FOR COLUMN `ws_item_sk` SET('lowValue'='1','highValue'='1','numNulls'='0','numDVs'='1' );
+-- BIT VECTORS PRESENT FOR `default`.`web_sales` FOR COLUMN `ws_item_sk` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwfO+SA== 
+ALTER TABLE `default`.`web_sales` UPDATE STATISTICS FOR COLUMN `ws_price` SET('numNulls'='0','numDVs'='1','highValue'='1.2000000476837158','lowValue'='1.2000000476837158' );
+-- BIT VECTORS PRESENT FOR `default`.`web_sales` FOR COLUMN `ws_price` BUT THEY ARE NOT SUPPORTED YET. THE BASE64 VALUE FOR THE BITVECTOR IS SExMoAEBwbaGtAM= 
 
 
 EXPLAIN select count(distinct ws_order_number) from web_sales;
@@ -7148,10 +7160,12 @@ STAGE PLANS:
 PREHOOK: query: drop table web_sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@web_sales
+PREHOOK: Output: database:default
 PREHOOK: Output: default@web_sales
 POSTHOOK: query: drop table web_sales
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@web_sales
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@web_sales
 PREHOOK: query: CREATE TABLE table1_n13 (a STRING, b STRING, PRIMARY KEY (a) DISABLE)
 PREHOOK: type: CREATETABLE
@@ -7358,7 +7372,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table1_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table1_n13` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7418,7 +7432,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table2_n8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7471,7 +7485,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table3_n1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7525,7 +7539,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table4_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7578,7 +7592,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table5_n4 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table5_n4` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7632,7 +7646,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table6_n3` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7686,8 +7700,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table7_n3 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table7_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table7_n3` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`a`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table7_n3` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7741,7 +7755,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7795,8 +7809,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table9 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a,b) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table9 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table9` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`a`,`b`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table9` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7850,7 +7864,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table10 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table10` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7905,8 +7919,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table11 ADD CONSTRAINT pk11 PRIMARY KEY (a) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table11 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table11` ADD CONSTRAINT `pk11` PRIMARY KEY (`a`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table11` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -7960,7 +7974,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table12` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8015,8 +8029,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table13 CHANGE COLUMN a a string CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table13` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table13` CHANGE COLUMN `a` `a` string CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table13;
@@ -8069,8 +8083,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table14 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table14 CHANGE COLUMN a a string CONSTRAINT nn14_1 NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table14` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table14` CHANGE COLUMN `a` `a` string CONSTRAINT `nn14_1` NOT NULL DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table14;
@@ -8123,7 +8137,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table15 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table15` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8177,7 +8191,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table16` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8231,8 +8245,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table17 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table17 ADD CONSTRAINT uk17_1 UNIQUE (a) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table17` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table17` ADD CONSTRAINT `uk17_1` UNIQUE (`a`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table17;
@@ -8286,8 +8300,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table18 ADD CONSTRAINT uk18_1 UNIQUE (b) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table18` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table18` ADD CONSTRAINT `uk18_1` UNIQUE (`b`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table18;
@@ -8340,9 +8354,9 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table19 ADD CONSTRAINT pk19_1 PRIMARY KEY (b) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table19 ADD CONSTRAINT fk19_2 FOREIGN KEY (a) REFERENCES default.table19(b) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table19` ADD CONSTRAINT `pk19_1` PRIMARY KEY (`b`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table19` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table19` ADD CONSTRAINT `fk19_2` FOREIGN KEY (`a`) REFERENCES `default`.`table19`(`b`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table19;
@@ -8395,8 +8409,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table20 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table20 ADD CONSTRAINT uk20_1 UNIQUE (b) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table20` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table20` ADD CONSTRAINT `uk20_1` UNIQUE (`b`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table20;
@@ -8450,7 +8464,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table21 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table21` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8504,7 +8518,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table22 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table22` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8558,7 +8572,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table1_n13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table1_n13` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8615,7 +8629,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table2_n8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8668,7 +8682,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table3_n1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8722,7 +8736,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table4_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8775,7 +8789,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table5_n4 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table5_n4` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8829,7 +8843,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table6_n3` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8883,8 +8897,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table7_n3 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table7_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table7_n3` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`a`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table7_n3` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8938,7 +8952,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -8992,8 +9006,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table9 ADD CONSTRAINT #### A masked pattern was here #### PRIMARY KEY (a,b) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table9 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table9` ADD CONSTRAINT `#### A masked pattern was here ####` PRIMARY KEY (`a`,`b`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table9` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9047,7 +9061,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table10 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table10` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9102,8 +9116,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table11 ADD CONSTRAINT pk11 PRIMARY KEY (a) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table11 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table11` ADD CONSTRAINT `pk11` PRIMARY KEY (`a`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table11` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9157,7 +9171,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table12` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9212,8 +9226,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table13 CHANGE COLUMN a a string CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table13` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table13` CHANGE COLUMN `a` `a` string CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table13;
@@ -9266,8 +9280,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table14 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table14 CHANGE COLUMN a a string CONSTRAINT nn14_1 NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table14` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table14` CHANGE COLUMN `a` `a` string CONSTRAINT `nn14_1` NOT NULL DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table14;
@@ -9320,7 +9334,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table15 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table15` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9374,7 +9388,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table16` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9428,8 +9442,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table17 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table17 ADD CONSTRAINT uk17_1 UNIQUE (a) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table17` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table17` ADD CONSTRAINT `uk17_1` UNIQUE (`a`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table17;
@@ -9483,8 +9497,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table18 ADD CONSTRAINT uk18_1 UNIQUE (b) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table18` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table18` ADD CONSTRAINT `uk18_1` UNIQUE (`b`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table18;
@@ -9537,9 +9551,9 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table19 ADD CONSTRAINT pk19_1 PRIMARY KEY (b) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table19 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table19 ADD CONSTRAINT fk19_2 FOREIGN KEY (a) REFERENCES default.table19(b) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table19` ADD CONSTRAINT `pk19_1` PRIMARY KEY (`b`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table19` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table19` ADD CONSTRAINT `fk19_2` FOREIGN KEY (`a`) REFERENCES `default`.`table19`(`b`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table19;
@@ -9592,8 +9606,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table20 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table20 ADD CONSTRAINT uk20_1 UNIQUE (b) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table20` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table20` ADD CONSTRAINT `uk20_1` UNIQUE (`b`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table20;
@@ -9647,7 +9661,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table21 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table21` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9701,7 +9715,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table22 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table22` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9811,7 +9825,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table2_n8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9867,7 +9881,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table3_n1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9921,7 +9935,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table4_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -9975,7 +9989,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table6_n3` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10029,7 +10043,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10083,7 +10097,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table16` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10138,7 +10152,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table18` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10192,7 +10206,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table2_n8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10248,7 +10262,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table3_n1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10302,7 +10316,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table4_n0 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table4_n0` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10356,7 +10370,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table6_n3` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10410,7 +10424,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10464,7 +10478,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table16` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10519,7 +10533,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table18` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10621,7 +10635,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table2_n8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table2_n8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10677,8 +10691,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table3_n1 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table3_n1 ADD CONSTRAINT fk1 FOREIGN KEY (x) REFERENCES default.table2_n8(a) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table3_n1` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table3_n1` ADD CONSTRAINT `fk1` FOREIGN KEY (`x`) REFERENCES `default`.`table2_n8`(`a`) DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table3_n1;
@@ -10731,7 +10745,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table6_n3 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table6_n3` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10785,8 +10799,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table8 ADD CONSTRAINT pk8_2 PRIMARY KEY (a,b) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table8 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table8` ADD CONSTRAINT `pk8_2` PRIMARY KEY (`a`,`b`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table8` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10840,7 +10854,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table16 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table16` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10895,7 +10909,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table18 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table18` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -10965,7 +10979,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table12` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -11023,8 +11037,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table13 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
-ALTER TABLE default.table13 CHANGE COLUMN a a string CONSTRAINT #### A masked pattern was here #### NOT NULL DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table13` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table13` CHANGE COLUMN `a` `a` string CONSTRAINT `#### A masked pattern was here ####` NOT NULL DISABLE NOVALIDATE RELY;
 
 
 EXPLAIN select * from table13;
@@ -11085,7 +11099,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table12 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table12` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -11153,7 +11167,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS dbconstraint;
+CREATE DATABASE IF NOT EXISTS `dbconstraint`;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -11168,7 +11182,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `dbconstraint`.`table2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -11210,7 +11224,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS dbconstraint;
+CREATE DATABASE IF NOT EXISTS `dbconstraint`;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -11225,7 +11239,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `dbconstraint`.`table2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -11272,7 +11286,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS dbconstraint;
+CREATE DATABASE IF NOT EXISTS `dbconstraint`;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -11287,7 +11301,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `dbconstraint`.`table2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -11329,7 +11343,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS dbconstraint;
+CREATE DATABASE IF NOT EXISTS `dbconstraint`;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -11344,7 +11358,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `dbconstraint`.`table2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -11391,7 +11405,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS dbconstraint;
+CREATE DATABASE IF NOT EXISTS `dbconstraint`;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -11406,7 +11420,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `dbconstraint`.`table2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -11453,7 +11467,7 @@ POSTHOOK: query: explain ddl select * from DbConstraint.Table2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: dbconstraint@table2
 #### A masked pattern was here ####
-CREATE DATABASE IF NOT EXISTS dbconstraint;
+CREATE DATABASE IF NOT EXISTS `dbconstraint`;
 CREATE TABLE `dbconstraint`.`table2`(
   `a` string, 
   `b` string)
@@ -11468,7 +11482,7 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE dbconstraint.table2 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `dbconstraint`.`table2` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 
@@ -11547,8 +11561,8 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
-ALTER TABLE default.table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE NOVALIDATE RELY;
-ALTER TABLE default.table23 UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
+ALTER TABLE `default`.`table23` ADD CONSTRAINT `pk23_1` PRIMARY KEY (`b`) DISABLE NOVALIDATE RELY;
+ALTER TABLE `default`.`table23` UPDATE STATISTICS SET('numRows'='0','rawDataSize'='0' );
 
 
 

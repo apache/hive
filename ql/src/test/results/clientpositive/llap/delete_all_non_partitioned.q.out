@@ -35,12 +35,10 @@ POSTHOOK: Input: default@acid_danp
 -1070551679	iUR3Q
 -1069736047	k17Am8uPHWk02cEf1jet
 PREHOOK: query: delete from acid_danp
-PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_danp
+PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@acid_danp
 POSTHOOK: query: delete from acid_danp
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_danp
+POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@acid_danp
 PREHOOK: query: select a,b from acid_danp
 PREHOOK: type: QUERY

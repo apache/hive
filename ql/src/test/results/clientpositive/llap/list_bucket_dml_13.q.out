@@ -270,7 +270,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	6312                
-	totalSize           	7094                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -304,7 +304,7 @@ POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `col1`, CAST('466' AS STRING) AS `col2`, `col3`, CAST('val_466' AS STRING) AS `col4`, `col5`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('2013-01-23+18:00:99' AS STRING) AS `hr`
 FROM `default`.`list_bucketing_mul_col`
-WHERE `col2` = '466' AND `col4` = 'val_466' AND (`ds` = '2008-04-08' AND `hr` = '2013-01-23+18:00:99')
+WHERE `col2` = '466' AND `col4` = 'val_466' AND `ds` = '2008-04-08' AND `hr` = '2013-01-23+18:00:99'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -379,8 +379,10 @@ POSTHOOK: Input: default@list_bucketing_mul_col@ds=2008-04-08/hr=2013-01-23+18%3
 PREHOOK: query: drop table list_bucketing_mul_col
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@list_bucketing_mul_col
+PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_mul_col
 POSTHOOK: query: drop table list_bucketing_mul_col
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@list_bucketing_mul_col
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_mul_col

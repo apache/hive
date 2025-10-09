@@ -1,4 +1,5 @@
 --! qt:dataset:src
+--! qt:dataset:temp_udf
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=false;
 

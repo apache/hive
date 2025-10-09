@@ -27,7 +27,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -44,10 +44,12 @@ Storage Desc Params:
 PREHOOK: query: drop table k1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@k1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@k1
 POSTHOOK: query: drop table k1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@k1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@k1
 PREHOOK: query: CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '\001'
 PREHOOK: type: CREATETABLE
@@ -78,7 +80,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -95,10 +97,12 @@ Storage Desc Params:
 PREHOOK: query: drop table k1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@k1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@k1
 POSTHOOK: query: drop table k1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@k1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@k1
 PREHOOK: query: CREATE  TABLE k1( a string)ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 PREHOOK: type: CREATETABLE
@@ -129,7 +133,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -146,8 +150,10 @@ Storage Desc Params:
 PREHOOK: query: drop table k1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@k1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@k1
 POSTHOOK: query: drop table k1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@k1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@k1

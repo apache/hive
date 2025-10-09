@@ -265,3 +265,44 @@ drop table statsdb2.testtable2;
 use default;
 drop database statsdb1;
 drop database statsdb2;
+
+-- Test for external tables with hive.metastore.try.direct.sql.ddl as false
+set hive.metastore.try.direct.sql.ddl=false;
+
+drop database if exists statsdb1;
+create database statsdb1;
+
+create external table statsdb1.testtable0 (col1 int, col2 string, col3 string) row format delimited fields terminated by ',' stored as textfile tblproperties ('external.table.purge'='true');
+insert into statsdb1.testtable0 select key, value, 'val3' from src limit 10;
+
+create external table statsdb1.testpart0 (col1 int, col2 string, col3 string) partitioned by (part string) row format delimited fields terminated by ',' stored as textfile tblproperties ('external.table.purge'='true');
+insert into statsdb1.testpart0 partition (part = 'part1') select key, value, 'val3' from src limit 10;
+
+use statsdb1;
+-- test non-partitioned table
+analyze table testtable0 compute statistics for columns;
+describe formatted statsdb1.testtable0;
+describe formatted statsdb1.testtable0 col1;
+
+-- rename non-partitioned table should not change its table and columns stats
+alter table statsdb1.testtable0 rename to statsdb1.testtable1;
+describe formatted statsdb1.testtable1;
+describe formatted statsdb1.testtable1 col1;
+
+-- test partitioned table
+analyze table testpart0 compute statistics for columns;
+describe formatted statsdb1.testpart0;
+describe formatted statsdb1.testpart0 partition (part = 'part1');
+describe formatted statsdb1.testpart0 partition (part = 'part1') col1;
+
+-- rename a partitioned table should not change its table, partition, and column stats
+alter table statsdb1.testpart0 rename to statsdb1.testpart1;
+describe formatted statsdb1.testpart1;
+describe formatted statsdb1.testpart1 partition (part = 'part1');
+describe formatted statsdb1.testpart1 partition (part = 'part1') col1;
+
+drop table statsdb1.testpart1;
+drop table statsdb1.testtable1;
+
+use default;
+drop database statsdb1;

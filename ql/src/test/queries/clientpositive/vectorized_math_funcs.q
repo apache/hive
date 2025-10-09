@@ -95,7 +95,8 @@ select
   ,ACos(cdouble)
   ,Atan(cdouble)
   ,Degrees(cdouble)
-  ,Radians(cdouble)
+  -- Round to avoid decimal precision difference due to JDK-4477961
+  ,Round(Radians(cdouble), 12)
   ,Positive(cdouble)
   ,Positive(cbigint)
   ,Negative(cdouble)

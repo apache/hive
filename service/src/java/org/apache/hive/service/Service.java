@@ -39,6 +39,12 @@ public interface Service {
     /** started and not stopped */
     STARTED,
 
+    /**
+     *  Telling the service not to run new operations from front users,
+     *  but existing queries can still be finished normally
+     */
+    DECOMMISSIONING,
+
     /** stopped. No further state transitions are permitted */
     STOPPED
   }
@@ -62,6 +68,15 @@ public interface Service {
    * operation failed and an exception was raised.
    */
   void start();
+
+  /**
+   * Imply the service not to run new requests from client.
+   *
+   * The transition should be from {@link STATE#STARTED} to {@link STATE#DECOMMISSIONING}
+   */
+  default void decommission() {
+    // no op
+  }
 
   /**
    * Stop the service.

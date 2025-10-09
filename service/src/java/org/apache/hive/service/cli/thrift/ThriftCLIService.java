@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import javax.security.auth.login.LoginException;
 import org.apache.hadoop.hive.common.ServerUtils;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -544,11 +543,10 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
    * @param res
    * @return
    * @throws HiveSQLException
-   * @throws LoginException
    * @throws IOException
    */
   private SessionHandle getSessionHandle(TOpenSessionReq req, TOpenSessionResp res, String userName)
-      throws HiveSQLException, LoginException, IOException {
+      throws HiveSQLException, IOException {
     final String ipAddress = getIpAddress();
 
     LOG.info("Creating Hive session handle for user [{}] from IP {}", req.getUsername(), ipAddress);
@@ -579,7 +577,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   }
 
   private String getDelegationToken(String userName)
-      throws HiveSQLException, LoginException, IOException {
+      throws HiveSQLException, IOException {
     try {
       return cliService.getDelegationTokenFromMetaStore(userName);
     } catch (UnsupportedOperationException e) {
@@ -794,7 +792,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
     try {
       OperationStatus operationStatus =
           cliService.getOperationStatus(operationHandle, req.isGetProgressUpdate());
-
+      HiveConf sessionConf = cliService.getHiveSessionConf(operationHandle);
       if (operationStatus.getState().equals(OperationState.FINISHED)) {
         long numModifiedRows = operationStatus.getNumModifiedRows();
         resp.setNumModifiedRows(numModifiedRows);
@@ -810,7 +808,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       }
       JobProgressUpdate progressUpdate = operationStatus.jobProgressUpdate();
       ProgressMonitorStatusMapper mapper = ProgressMonitorStatusMapper.DEFAULT;
-      if ("tez".equals(hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
+      if ("tez".equals(sessionConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
         mapper = new TezProgressMonitorStatusMapper();
       }
       TJobExecutionStatus executionStatus =

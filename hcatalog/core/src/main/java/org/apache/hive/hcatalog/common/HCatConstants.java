@@ -81,7 +81,7 @@ public final class HCatConstants {
 
   public static final String HCAT_TABLE_SCHEMA = "hcat.table.schema";
 
-  public static final String HCAT_METASTORE_URI = HiveConf.ConfVars.METASTOREURIS.varname;
+  public static final String HCAT_METASTORE_URI = HiveConf.ConfVars.METASTORE_URIS.varname;
 
   public static final String HCAT_PERMS = "hcat.perms";
 

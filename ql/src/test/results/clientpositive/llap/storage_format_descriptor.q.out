@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE stored_as_custom_text_serde
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE stored_as_custom_text_serde
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE stored_as_custom_text_serde(key string, value string) STORED AS customtextserde
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -529,8 +531,10 @@ POSTHOOK: Input: default@stored_as_custom_text_serde
 PREHOOK: query: DROP TABLE stored_as_custom_text_serde
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stored_as_custom_text_serde
+PREHOOK: Output: database:default
 PREHOOK: Output: default@stored_as_custom_text_serde
 POSTHOOK: query: DROP TABLE stored_as_custom_text_serde
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@stored_as_custom_text_serde
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@stored_as_custom_text_serde

@@ -37,11 +37,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
@@ -52,9 +54,8 @@ import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.security.authorize.ProxyUsers;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.hcatalog.DerbyPolicy;
 import org.apache.hive.hcatalog.api.repl.Command;
 import org.apache.hive.hcatalog.api.repl.ReplicationTask;
@@ -66,7 +67,6 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
-import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
 import org.junit.AfterClass;
@@ -92,14 +92,14 @@ public class TestHCatClient {
   private static boolean isReplicationTargetHCatRunning = false;
   private static int replicationTargetHCatPort;
   private static HiveConf replicationTargetHCatConf;
-  private static SecurityManager securityManager;
   private static boolean useExternalMS = false;
 
   @AfterClass
   public static void tearDown() throws Exception {
     if (!useExternalMS) {
       LOG.info("Shutting down metastore.");
-      System.setSecurityManager(securityManager);
+      ExitUtil.resetFirstExitException();
+      ExitUtil.resetFirstHaltException();
     }
   }
 
@@ -107,38 +107,40 @@ public class TestHCatClient {
   public static void startMetaStoreServer() throws Exception {
 
     hcatConf = new HiveConf(TestHCatClient.class);
-    String metastoreUri = System.getProperty("test."+HiveConf.ConfVars.METASTOREURIS.varname);
+    String metastoreUri = System.getProperty("test."+HiveConf.ConfVars.METASTORE_URIS.varname);
     if (metastoreUri != null) {
-      hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, metastoreUri);
+      hcatConf.setVar(HiveConf.ConfVars.METASTORE_URIS, metastoreUri);
       useExternalMS = true;
       return;
     }
 
-    // Set proxy user privilege and initialize the global state of ProxyUsers
-    Configuration conf = new Configuration();
-    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
-    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
+    Configuration conf = MetastoreConf.newMetastoreConf();
 
-    System.setProperty(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS.varname,
-        DbNotificationListener.class.getName()); // turn on db notification listener on metastore
-    System.setProperty(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
-            JSONMessageEncoder.class.getName());
-    msPort = MetaStoreTestUtils.startMetaStoreWithRetry();
-    securityManager = System.getSecurityManager();
-    System.setSecurityManager(new NoExitSecurityManager());
+    // Disable proxy authorization white-list for testing
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
+
+    // turn on db notification listener on metastore
+    MetastoreConf.setClass(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS, DbNotificationListener.class, TransactionalMetaStoreEventListener.class);
+    MetastoreConf.setClass(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class, MessageEncoder.class);
+
+    msPort = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
+    ExitUtil.disableSystemExit();
+    ExitUtil.disableSystemHalt();
+    ExitUtil.resetFirstExitException();
+    ExitUtil.resetFirstHaltException();
     Policy.setPolicy(new DerbyPolicy());
 
-    hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
+    hcatConf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:"
       + msPort);
-    hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
     hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
       HCatSemanticAnalyzer.class.getName());
-    hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hcatConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hcatConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname,
       "false");
-    System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
-    System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, " ");
+    System.setProperty(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, " ");
   }
 
   public static HiveConf getConf(){
@@ -817,7 +819,7 @@ public class TestHCatClient {
         .replace("metastore", "target_metastore"));
       replicationTargetHCatPort = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
       replicationTargetHCatConf = new HiveConf(hcatConf);
-      replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTOREURIS,
+      replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTORE_URIS,
                                        "thrift://localhost:" + replicationTargetHCatPort);
       isReplicationTargetHCatRunning = true;
     }

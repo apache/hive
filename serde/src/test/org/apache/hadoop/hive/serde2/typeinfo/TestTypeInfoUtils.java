@@ -47,7 +47,12 @@ public class TestTypeInfoUtils {
         "string",
         "varchar(10)",
         "char(15)",
-        "array<int>"
+        "array<int>",
+        "decimal(10,2)",
+        "decimal(10, 2)",
+        "decimal(10, 2 )",
+        "decimal( 10, 2 )",
+        "struct<user id:int,user group: int>"
     };
 
     String[] invalidTypeStrings = {

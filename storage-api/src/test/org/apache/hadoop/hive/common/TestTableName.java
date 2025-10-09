@@ -37,7 +37,7 @@ public class TestTableName {
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
     Assert.assertEquals("t", name.getTable());
-    Assert.assertEquals("meta", name.getMetaTable());
+    Assert.assertEquals("meta", name.getTableMetaRef());
     Assert.assertEquals("cat.db.t", name.toString());
     Assert.assertEquals("db.t", name.getDbTable());
   }
@@ -63,7 +63,7 @@ public class TestTableName {
     Assert.assertEquals("cat", name.getCat());
     Assert.assertEquals("db", name.getDb());
     Assert.assertEquals("tab", name.getTable());
-    Assert.assertEquals("metatable", name.getMetaTable());
+    Assert.assertEquals("metatable", name.getTableMetaRef());
 
     try {
       TableName.fromString(null, null, null, null);

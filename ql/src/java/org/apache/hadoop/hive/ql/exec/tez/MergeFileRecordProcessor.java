@@ -93,7 +93,7 @@ public class MergeFileRecordProcessor extends RecordProcessor {
           .initialize();
     }
 
-    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVE_QUERY_ID);
     cache = ObjectCacheFactory.getCache(jconf, queryId, true);
 
     try {

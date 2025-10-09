@@ -22,7 +22,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.ReplAck;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.repl.dump.EventsDumpMetadata;
 import org.apache.hadoop.hive.ql.parse.repl.load.EventDumpDirComparator;
 
 import java.io.IOException;
@@ -37,16 +40,35 @@ import java.util.NoSuchElementException;
 public class IncrementalLoadEventsIterator implements Iterator<FileStatus> {
   private FileStatus[] eventDirs;
   private int currentIndex;
+  // when events are batched numEvents denotes number of events in a given batch else numEvents = totalEventsCount
   private int numEvents;
+  private int totalEventsCount;
+  private boolean eventsBatched;
+  private Iterator<FileStatus> eventBatchDirsIterator;
+  private FileSystem fs;
 
-  public IncrementalLoadEventsIterator(String loadPath, HiveConf conf) throws IOException {
+  public IncrementalLoadEventsIterator(String loadPath, HiveConf conf) throws IOException, HiveException {
     Path eventPath = new Path(loadPath);
-    FileSystem fs = eventPath.getFileSystem(conf);
+    fs = eventPath.getFileSystem(conf);
+    Path eventsDumpAckFile = new Path(eventPath, ReplAck.EVENTS_DUMP.toString());
+
     eventDirs = fs.listStatus(eventPath, ReplUtils.getEventsDirectoryFilter(fs));
+
     if ((eventDirs == null) || (eventDirs.length == 0)) {
-      currentIndex = 0;
-      numEvents = 0;
+      currentIndex = numEvents = totalEventsCount = 0;
       return;
+    }
+    EventsDumpMetadata eventsDumpMetadata = EventsDumpMetadata.deserialize(eventsDumpAckFile, conf);
+    eventsBatched = eventsDumpMetadata.isEventsBatched();
+    totalEventsCount = eventDirs.length;
+
+    if (eventsBatched) {
+      //eventDirs will now have batches eg. events_batch_2, events_batch_1 etc.
+      Arrays.sort(eventDirs, new EventDumpDirComparator());
+      eventBatchDirsIterator = Arrays.stream(eventDirs).iterator();
+      // get all events from first batch.
+      eventDirs = fs.listStatus(eventBatchDirsIterator.next().getPath(), ReplUtils.getEventsDirectoryFilter(fs));
+      totalEventsCount = eventsDumpMetadata.getEventsDumpedCount();
     }
     // For event dump, each sub-dir is an individual event dump.
     // We need to guarantee that the directory listing we got is in order of event id.
@@ -60,16 +82,34 @@ public class IncrementalLoadEventsIterator implements Iterator<FileStatus> {
     return (eventDirs != null && currentIndex < numEvents);
   }
 
+  private boolean hasNextBatch() {
+    return eventBatchDirsIterator.hasNext();
+  }
+
   @Override
   public FileStatus next() {
-    if (hasNext()) {
+    if (eventsBatched) {
+      FileStatus event = eventDirs[currentIndex++];
+      if (hasNextBatch() && currentIndex == numEvents) {
+        try {
+          eventDirs = fs.listStatus(eventBatchDirsIterator.next().getPath(), ReplUtils.getEventsDirectoryFilter(fs));
+          Arrays.sort(eventDirs, new EventDumpDirComparator());
+          currentIndex = 0;
+          numEvents = eventDirs.length;
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return event;
+    }
+    else if (hasNext()) {
       return eventDirs[currentIndex++];
     } else {
       throw new NoSuchElementException("no more events");
     }
   }
 
-  public int getNumEvents() {
-    return numEvents;
+  public int getTotalEventsCount() {
+    return totalEventsCount;
   }
 }

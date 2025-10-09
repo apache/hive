@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.session;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -32,7 +33,7 @@ public class TestUdfClassLoaderAcrossSessions {
 
   @Test
   public void testDropDatabaseCascadeDoesNotThrow() throws CommandProcessorException, IOException {
-    HiveConf conf = new HiveConf(this.getClass());
+    HiveConf conf = new HiveConfForTest(this.getClass());
     conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(conf);
     IDriver driver = DriverFactory.newDriver(conf);
@@ -48,7 +49,7 @@ public class TestUdfClassLoaderAcrossSessions {
 
   @Test
   public void testDropFunctionDoesNotThrow() throws CommandProcessorException, IOException {
-    HiveConf conf = new HiveConf(this.getClass());
+    HiveConf conf = new HiveConfForTest(this.getClass());
     conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(conf);
     IDriver driver = DriverFactory.newDriver(conf);
@@ -65,7 +66,7 @@ public class TestUdfClassLoaderAcrossSessions {
 
   @Test
   public void testUseBeforeDropDatabaseCascadeDoesNotThrow() throws CommandProcessorException, IOException {
-    HiveConf conf = new HiveConf(this.getClass());
+    HiveConf conf = new HiveConfForTest(this.getClass());
     conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(conf);
     IDriver driver = DriverFactory.newDriver(conf);

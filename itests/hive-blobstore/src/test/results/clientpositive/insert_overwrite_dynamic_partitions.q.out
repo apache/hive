@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: ### test.blobstore.path ###/table1
@@ -103,7 +105,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1
 OPTIMIZED SQL: SELECT *
-FROM TABLE(INLINE(ARRAY[ (1, '101'),  (2, '202'),  (3, '303'),  (4, '404'),  (5, '505')]))
+FROM TABLE(INLINE(ARRAY[(1, '101'), (2, '202'), (3, '303'), (4, '404'), (5, '505')]))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -133,7 +135,7 @@ STAGE PLANS:
                   Reduce Output Operator
                     bucketingVersion: 2
                     key expressions: _col1 (type: string), _bucket_number (type: string), _col0 (type: int)
-                    null sort order: aaa
+                    null sort order: zzz
                     numBuckets: 2
                     sort order: +++
                     Map-reduce partition columns: _col1 (type: string)
@@ -367,10 +369,12 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
 POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: CREATE TABLE table1 (name string, age int) PARTITIONED BY (country string, state string)
 PREHOOK: type: CREATETABLE
@@ -544,16 +548,20 @@ Peter Mo	87	MEX	SON
 PREHOOK: query: DROP TABLE table2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table2
 POSTHOOK: query: DROP TABLE table2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
 POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1

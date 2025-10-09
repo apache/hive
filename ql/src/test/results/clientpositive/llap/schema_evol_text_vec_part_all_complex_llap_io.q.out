@@ -257,7 +257,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -269,10 +269,12 @@ STAGE PLANS:
 PREHOOK: query: drop table part_change_various_various_struct1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_change_various_various_struct1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_change_various_various_struct1
 POSTHOOK: query: drop table part_change_various_various_struct1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_change_various_various_struct1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_change_various_various_struct1
 PREHOOK: query: CREATE TABLE part_add_various_various_struct2(insert_num int, b STRING) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
@@ -667,7 +669,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -679,10 +681,12 @@ STAGE PLANS:
 PREHOOK: query: drop table part_add_various_various_struct2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_add_various_various_struct2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_add_various_various_struct2
 POSTHOOK: query: drop table part_add_various_various_struct2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_add_various_various_struct2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_add_various_various_struct2
 PREHOOK: query: CREATE TABLE part_add_to_various_various_struct4(insert_num int, b STRING, s3 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT>) PARTITIONED BY(part INT)
 PREHOOK: type: CREATETABLE
@@ -941,7 +945,7 @@ STAGE PLANS:
             Map Vectorization:
                 enabled: false
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled wbich automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
+                enabledConditionsNotMet: Could not enable vectorization. LLAP I/O is enabled which automatically deserializes into VECTORIZED_INPUT_FILE_FORMAT. A partition requires data type conversion and that is not supported IS false
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
 
   Stage: Stage-0
@@ -953,8 +957,10 @@ STAGE PLANS:
 PREHOOK: query: drop table part_add_to_various_various_struct4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_add_to_various_various_struct4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_add_to_various_various_struct4
 POSTHOOK: query: drop table part_add_to_various_various_struct4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_add_to_various_various_struct4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_add_to_various_various_struct4

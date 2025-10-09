@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS transactions
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS transactions
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS merge_source
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS merge_source
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE transactions (id int, value string, last_update_user string) PARTITIONED BY (tran_date string) CLUSTERED BY (id) into 5 buckets  STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -113,7 +117,7 @@ POSTHOOK: Output: default@transactions@tran_date=20170410
 POSTHOOK: Output: default@transactions@tran_date=20170413
 POSTHOOK: Output: default@transactions@tran_date=20170413
 POSTHOOK: Output: default@transactions@tran_date=20170415
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(transactions)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (transactions)t.FieldSchema(name:tran_date, type:string, comment:null), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(transactions)transactions.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (transactions)transactions.FieldSchema(name:tran_date, type:string, comment:null), ]
 POSTHOOK: Lineage: transactions PARTITION(tran_date=20170413).id SIMPLE [(merge_source)s.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: transactions PARTITION(tran_date=20170413).last_update_user SIMPLE []
 POSTHOOK: Lineage: transactions PARTITION(tran_date=20170413).value SIMPLE [(merge_source)s.FieldSchema(name:value, type:string, comment:null), ]
@@ -147,16 +151,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE IF EXISTS transactions
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@transactions
+PREHOOK: Output: database:default
 PREHOOK: Output: default@transactions
 POSTHOOK: query: DROP TABLE IF EXISTS transactions
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@transactions
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@transactions
 PREHOOK: query: DROP TABLE IF EXISTS merge_source
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge_source
+PREHOOK: Output: database:default
 PREHOOK: Output: default@merge_source
 POSTHOOK: query: DROP TABLE IF EXISTS merge_source
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@merge_source
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge_source

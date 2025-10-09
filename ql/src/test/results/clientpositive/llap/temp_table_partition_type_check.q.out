@@ -34,10 +34,12 @@ POSTHOOK: Input: default@tab1_n3_temp@month=June/day=2
 PREHOOK: query: drop table tab1_n3_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tab1_n3_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tab1_n3_temp
 POSTHOOK: query: drop table tab1_n3_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tab1_n3_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab1_n3_temp
 PREHOOK: query: CREATE TABLE tab1_n3_temp (id1 int,id2 string) PARTITIONED BY(month string,day int) stored as textfile
 PREHOOK: type: CREATETABLE
@@ -75,10 +77,12 @@ POSTHOOK: Input: default@tab1_n3_temp@month=June/day=2
 PREHOOK: query: drop table tab1_n3_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tab1_n3_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tab1_n3_temp
 POSTHOOK: query: drop table tab1_n3_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tab1_n3_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab1_n3_temp
 PREHOOK: query: create table tab1_n3_temp (id1 int, id2 string) PARTITIONED BY(month string,day date) stored as textfile
 PREHOOK: type: CREATETABLE
@@ -122,8 +126,10 @@ POSTHOOK: Input: default@tab1_n3_temp@month=June/day=2008-01-01
 PREHOOK: query: drop table tab1_n3_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tab1_n3_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tab1_n3_temp
 POSTHOOK: query: drop table tab1_n3_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tab1_n3_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab1_n3_temp

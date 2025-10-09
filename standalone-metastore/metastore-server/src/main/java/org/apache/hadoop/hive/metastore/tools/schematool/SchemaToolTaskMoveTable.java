@@ -57,8 +57,6 @@ class SchemaToolTaskMoveTable extends SchemaToolTask {
       conn.setAutoCommit(false);
       try (Statement stmt = conn.createStatement()) {
         updateTableId(stmt);
-        updateDbNameForTable(stmt, "TAB_COL_STATS", "TABLE_NAME", fromCat, toCat, fromDb, toDb, tableName);
-        updateDbNameForTable(stmt, "PART_COL_STATS", "TABLE_NAME", fromCat, toCat, fromDb, toDb, tableName);
         updateDbNameForTable(stmt, "PARTITION_EVENTS", "TBL_NAME", fromCat, toCat, fromDb, toDb, tableName);
         updateDbNameForTable(stmt, "NOTIFICATION_LOG", "TBL_NAME", fromCat, toCat, fromDb, toDb, tableName);
         conn.commit();

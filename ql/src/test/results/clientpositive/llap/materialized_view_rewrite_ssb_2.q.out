@@ -667,10 +667,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((UDFToDouble(lo_quantity) < 25.0D) and (UDFToInteger(d_year) = 1993) and UDFToDouble(lo_discount) BETWEEN 1.0D AND 3.0D) (type: boolean)
+                  filterExpr: ((UDFToDouble(lo_quantity) < 25.0D) and UDFToDouble(lo_discount) BETWEEN 1.0D AND 3.0D and (UDFToInteger(d_year) = 1993)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(lo_quantity) < 25.0D) and (UDFToInteger(d_year) = 1993) and UDFToDouble(lo_discount) BETWEEN 1.0D AND 3.0D) (type: boolean)
+                    predicate: ((UDFToDouble(lo_quantity) < 25.0D) and UDFToDouble(lo_discount) BETWEEN 1.0D AND 3.0D and (UDFToInteger(d_year) = 1993)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -757,10 +757,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D and UDFToDouble(lo_discount) BETWEEN 4.0D AND 6.0D) (type: boolean)
+                  filterExpr: (UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D and UDFToDouble(lo_discount) BETWEEN 4.0D AND 6.0D and (UDFToInteger(d_yearmonthnum) = 199401)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D and UDFToDouble(lo_discount) BETWEEN 4.0D AND 6.0D) (type: boolean)
+                    predicate: (UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D and UDFToDouble(lo_discount) BETWEEN 4.0D AND 6.0D and (UDFToInteger(d_yearmonthnum) = 199401)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -849,10 +849,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((UDFToInteger(d_year) = 1994) and (UDFToInteger(d_weeknuminyear) = 6) and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D and UDFToDouble(lo_discount) BETWEEN 5.0D AND 7.0D) (type: boolean)
+                  filterExpr: (UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D and UDFToDouble(lo_discount) BETWEEN 5.0D AND 7.0D and (UDFToInteger(d_year) = 1994) and (UDFToInteger(d_weeknuminyear) = 6)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToInteger(d_year) = 1994) and (UDFToInteger(d_weeknuminyear) = 6) and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D and UDFToDouble(lo_discount) BETWEEN 5.0D AND 7.0D) (type: boolean)
+                    predicate: (UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D and UDFToDouble(lo_discount) BETWEEN 5.0D AND 7.0D and (UDFToInteger(d_year) = 1994) and (UDFToInteger(d_weeknuminyear) = 6)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -1080,10 +1080,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((s_region = 'ASIA') and p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228') (type: boolean)
+                  filterExpr: (p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228' and (s_region = 'ASIA')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((s_region = 'ASIA') and p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228') (type: boolean)
+                    predicate: (p_brand1 BETWEEN 'MFGR#2221' AND 'MFGR#2228' and (s_region = 'ASIA')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), p_brand1 (type: string), lo_revenue (type: double)
@@ -1336,10 +1336,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((c_region = 'ASIA') and (s_region = 'ASIA') and UDFToInteger(d_year) BETWEEN 1992 AND 1997) (type: boolean)
+                  filterExpr: (UDFToInteger(d_year) BETWEEN 1992 AND 1997 and (c_region = 'ASIA') and (s_region = 'ASIA')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c_region = 'ASIA') and (s_region = 'ASIA') and UDFToInteger(d_year) BETWEEN 1992 AND 1997) (type: boolean)
+                    predicate: (UDFToInteger(d_year) BETWEEN 1992 AND 1997 and (c_region = 'ASIA') and (s_region = 'ASIA')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_nation (type: string), s_nation (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
@@ -1464,10 +1464,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES') and UDFToInteger(d_year) BETWEEN 1992 AND 1997) (type: boolean)
+                  filterExpr: (UDFToInteger(d_year) BETWEEN 1992 AND 1997 and (c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES') and UDFToInteger(d_year) BETWEEN 1992 AND 1997) (type: boolean)
+                    predicate: (UDFToInteger(d_year) BETWEEN 1992 AND 1997 and (c_nation = 'UNITED STATES') and (s_nation = 'UNITED STATES')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 428 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_city (type: string), s_city (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
@@ -1592,10 +1592,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5') and UDFToInteger(d_year) BETWEEN 1992 AND 1997) (type: boolean)
+                  filterExpr: (UDFToInteger(d_year) BETWEEN 1992 AND 1997 and (c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5') and UDFToInteger(d_year) BETWEEN 1992 AND 1997) (type: boolean)
+                    predicate: (UDFToInteger(d_year) BETWEEN 1992 AND 1997 and (c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 260 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: c_city (type: string), s_city (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)

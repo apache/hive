@@ -27,15 +27,23 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.hadoop.util.ExitUtil;
+import org.jline.terminal.TerminalBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jline.TerminalFactory;
 
 class HiveMetaToolCommandLine {
   private static final Logger LOGGER = LoggerFactory.getLogger(HiveMetaToolCommandLine.class.getName());
 
   @SuppressWarnings("static-access")
+  private static final Option METADATA_SUMMARY = OptionBuilder
+      .withArgName("output-format>" + " <optional-file-path>" + " <last-updated-days>" + " <nonnative-tables-limit")
+      .hasArgs(4)
+      .hasOptionalArgs(4)
+      .withDescription("print the summary of metadata in the selected format")
+      .create("metadataSummary");
+
   private static final Option LIST_FS_ROOT = OptionBuilder
       .withDescription("print the current FS root locations")
       .create("listFSRoot");
@@ -118,6 +126,7 @@ class HiveMetaToolCommandLine {
     OPTIONS.addOption(SERDE_PROP_KEY);
     OPTIONS.addOption(TABLE_PROP_KEY);
     OPTIONS.addOption(HELP);
+    OPTIONS.addOption(METADATA_SUMMARY);
   }
 
   private boolean listFSRoot;
@@ -129,6 +138,7 @@ class HiveMetaToolCommandLine {
   private String serdePropKey;
   private String tablePropKey;
   private boolean help;
+  private String[] metadataSummaryParams;
 
   public static HiveMetaToolCommandLine parseArguments(String[] args) {
     HiveMetaToolCommandLine cl = null;
@@ -137,12 +147,12 @@ class HiveMetaToolCommandLine {
     } catch (Exception e) {
       LOGGER.error("Parsing the command line arguments failed", e);
       printUsage();
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
 
     if (cl.isHelp()) {
       printUsage();
-      System.exit(0);
+      ExitUtil.terminate(0);
     }
 
     return cl;
@@ -166,12 +176,13 @@ class HiveMetaToolCommandLine {
     serdePropKey = cl.getOptionValue(SERDE_PROP_KEY.getOpt());
     tablePropKey = cl.getOptionValue(TABLE_PROP_KEY.getOpt());
     help = cl.hasOption(HELP.getOpt());
+    metadataSummaryParams = cl.getOptionValues(METADATA_SUMMARY.getOpt());
 
     int commandCount = (isListFSRoot() ? 1 : 0) + (isExecuteJDOQL() ? 1 : 0) + (isUpdateLocation() ? 1 : 0) +
-          (isListExtTblLocs() ? 1 : 0) + (isDiffExtTblLocs() ? 1 : 0);
+          (isListExtTblLocs() ? 1 : 0) + (isDiffExtTblLocs() ? 1 : 0) + (isMetadataSummary() ? 1 : 0);
     if (commandCount != 1) {
       throw new IllegalArgumentException("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, " +
-              "-listExtTblLocs, -diffExtTblLocs must be set");
+              "-listExtTblLocs, -diffExtTblLocs, -metadataSummary must be set");
     }
 
     if (updateLocationParams != null && updateLocationParams.length != 2) {
@@ -193,13 +204,18 @@ class HiveMetaToolCommandLine {
       throw new IllegalArgumentException("-dryRun, -serdePropKey, -tablePropKey may be used only for the " +
           "-updateLocation command");
     }
+
+    if (metadataSummaryParams != null && metadataSummaryParams.length < 1) {
+      throw new IllegalArgumentException("HiveMetaTool:metadataSummary takes in 1 required arguments but was passed " +
+              metadataSummaryParams.length + " arguments");
+    }
   }
 
   private static void printUsage() {
     HelpFormatter hf = new HelpFormatter();
     try {
       int width = hf.getWidth();
-      int jlineWidth = TerminalFactory.get().getWidth();
+      int jlineWidth = TerminalBuilder.terminal().getWidth();
       width = Math.min(160, Math.max(jlineWidth, width));
       hf.setWidth(width);
     } catch (Throwable t) { // Ignore
@@ -217,7 +233,8 @@ class HiveMetaToolCommandLine {
         "\tdiffExtTblLocs: " + Arrays.toString(diffExtTblLocsParams) + "\n" +
         "\tdryRun        : " + dryRun + "\n" +
         "\tserdePropKey  : " + serdePropKey + "\n" +
-        "\ttablePropKey  : " + tablePropKey);
+        "\ttablePropKey  : " + tablePropKey + "\n" +
+        "\tmetadataSummary : " + Arrays.toString(metadataSummaryParams));
   }
 
   boolean isListFSRoot() {
@@ -266,6 +283,14 @@ class HiveMetaToolCommandLine {
 
   String getTablePropKey() {
     return tablePropKey;
+  }
+
+  boolean isMetadataSummary() {
+    return metadataSummaryParams != null;
+  }
+
+  String[] getMetadataSummaryParams() {
+    return metadataSummaryParams;
   }
 
   private boolean isHelp() {

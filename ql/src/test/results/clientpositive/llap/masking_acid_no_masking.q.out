@@ -62,4 +62,4 @@ POSTHOOK: Lineage: masking_acid_no_masking.key SIMPLE [(nonacid_n0)s.FieldSchema
 POSTHOOK: Lineage: masking_acid_no_masking.key SIMPLE [(nonacid_n0)s.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: masking_acid_no_masking.value SIMPLE [(nonacid_n0)s.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: masking_acid_no_masking.value SIMPLE [(nonacid_n0)s.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(masking_acid_no_masking)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(masking_acid_no_masking)masking_acid_no_masking.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]

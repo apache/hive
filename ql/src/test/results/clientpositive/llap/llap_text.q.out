@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE text_llap
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE text_llap
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE text_llap(
     ctinyint TINYINT,
     csmallint SMALLINT,
@@ -1079,8 +1081,10 @@ POSTHOOK: Input: default@text_llap100
 PREHOOK: query: DROP TABLE text_llap
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@text_llap
+PREHOOK: Output: database:default
 PREHOOK: Output: default@text_llap
 POSTHOOK: query: DROP TABLE text_llap
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@text_llap
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@text_llap

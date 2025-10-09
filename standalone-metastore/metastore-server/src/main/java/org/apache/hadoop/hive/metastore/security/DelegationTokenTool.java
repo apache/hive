@@ -30,6 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Tool;
@@ -66,7 +67,7 @@ public class DelegationTokenTool extends Configured implements Tool {
   private DelegationTokenTool() {}
 
   public static void main(String[] args) throws Exception {
-    System.exit(ToolRunner.run(new DelegationTokenTool(), args));
+    ExitUtil.terminate(ToolRunner.run(new DelegationTokenTool(), args));
   }
 
   private void readArgs(String[] args) throws Exception {

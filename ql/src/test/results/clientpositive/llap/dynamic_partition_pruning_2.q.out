@@ -213,10 +213,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                  filterExpr: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    predicate: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
@@ -399,10 +399,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                  filterExpr: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    predicate: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
@@ -812,10 +812,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                  filterExpr: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                   Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((label) IN ('foo', 'bar') and id is not null) (type: boolean)
+                    predicate: ((label) IN ('bar', 'foo') and id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: id (type: int), label (type: string)
@@ -946,8 +946,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Map 3 <- Reducer 5 (BROADCAST_EDGE), Union 2 (CONTAINS)
-        Reducer 5 <- Map 4 (SIMPLE_EDGE)
+        Map 3 <- Map 4 (BROADCAST_EDGE), Union 2 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -997,7 +996,7 @@ STAGE PLANS:
                         1 _col0 (type: int)
                       outputColumnNames: _col0
                       input vertices:
-                        1 Reducer 5
+                        1 Map 4
                       Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1074,18 +1073,6 @@ STAGE PLANS:
                             Target Vertex: Map 1
             Execution mode: llap
             LLAP IO: all inputs
-        Reducer 5 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: int)
-                outputColumnNames: _col0
-                Reduce Output Operator
-                  key expressions: _col0 (type: int)
-                  null sort order: z
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: int)
-                  Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
         Union 2 
             Vertex: Union 2
 

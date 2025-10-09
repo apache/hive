@@ -198,10 +198,12 @@ c                   	int
 PREHOOK: query: DROP TABLE kv_rename_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@kv_rename_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@kv_rename_test
 POSTHOOK: query: DROP TABLE kv_rename_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@kv_rename_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kv_rename_test
 PREHOOK: query: SHOW TABLES LIKE "kv_rename_%"
 PREHOOK: type: SHOWTABLES
@@ -360,10 +362,12 @@ c                   	int
 PREHOOK: query: DROP TABLE kv_rename_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: kv_rename_test_db@kv_rename_test
+PREHOOK: Output: database:kv_rename_test_db
 PREHOOK: Output: kv_rename_test_db@kv_rename_test
 POSTHOOK: query: DROP TABLE kv_rename_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: kv_rename_test_db@kv_rename_test
+POSTHOOK: Output: database:kv_rename_test_db
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
 PREHOOK: query: SHOW TABLES LIKE "kv_rename_%"
 PREHOOK: type: SHOWTABLES

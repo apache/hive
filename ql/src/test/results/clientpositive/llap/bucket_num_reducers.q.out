@@ -175,8 +175,10 @@ POSTHOOK: Lineage: bucket_nr.value SIMPLE [(src)src.FieldSchema(name:value, type
 PREHOOK: query: drop table bucket_nr
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bucket_nr
+PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_nr
 POSTHOOK: query: drop table bucket_nr
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bucket_nr
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_nr

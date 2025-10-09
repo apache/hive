@@ -74,10 +74,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table s1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@s1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@s1_n0
 POSTHOOK: query: drop table s1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@s1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s1_n0
 PREHOOK: query: with q1 as (select * from src where key= '5')
 from q1
@@ -129,10 +131,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table s2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@s2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@s2
 POSTHOOK: query: drop table s2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@s2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@s2
 PREHOOK: query: create view v1_n4 as
 with q1 as ( select key from src where key = '5')

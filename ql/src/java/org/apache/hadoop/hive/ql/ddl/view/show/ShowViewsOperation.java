@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.view.show;
 import java.io.DataOutputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -48,13 +46,8 @@ public class ShowViewsOperation extends DDLOperation<ShowViewsDesc> {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, desc.getDbName());
     }
 
-    List<String> viewNames = context.getDb().getTablesByType(desc.getDbName(), null, TableType.VIRTUAL_VIEW);
-    if (desc.getPattern() != null) {
-      Pattern pattern = Pattern.compile(UDFLike.likePatternToRegExp(desc.getPattern()), Pattern.CASE_INSENSITIVE);
-      viewNames = viewNames.stream()
-          .filter(name -> pattern.matcher(name).matches())
-          .collect(Collectors.toList());
-    }
+    String pattern = UDFLike.likePatternToRegExp(desc.getPattern(), false, true);
+    List<String> viewNames = context.getDb().getTablesByType(desc.getDbName(), pattern, TableType.VIRTUAL_VIEW);
     Collections.sort(viewNames);
     LOG.debug("Found {} view(s) matching the SHOW VIEWS statement.", viewNames.size());
 

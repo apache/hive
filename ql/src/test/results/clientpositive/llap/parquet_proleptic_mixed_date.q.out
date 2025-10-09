@@ -68,8 +68,10 @@ POSTHOOK: Input: default@proleptic_table
 PREHOOK: query: drop table proleptic_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@proleptic_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@proleptic_table
 POSTHOOK: query: drop table proleptic_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@proleptic_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@proleptic_table

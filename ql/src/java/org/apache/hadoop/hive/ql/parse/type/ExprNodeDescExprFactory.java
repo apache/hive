@@ -113,36 +113,53 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
   protected ExprNodeDesc toExpr(ColumnInfo colInfo, RowResolver rowResolver, int offset)
       throws SemanticException {
     ObjectInspector inspector = colInfo.getObjectInspector();
-    if (inspector instanceof ConstantObjectInspector && inspector instanceof PrimitiveObjectInspector) {
-      return toPrimitiveConstDesc(colInfo, inspector);
-    }
-    if (inspector instanceof ConstantObjectInspector && inspector instanceof ListObjectInspector) {
-      ObjectInspector listElementOI = ((ListObjectInspector)inspector).getListElementObjectInspector();
-      if (listElementOI instanceof PrimitiveObjectInspector) {
-        return toListConstDesc(colInfo, inspector, listElementOI);
+    if (inspector instanceof ConstantObjectInspector) {
+      if (inspector instanceof PrimitiveObjectInspector) {
+        return toPrimitiveConstDesc(colInfo, inspector);
       }
-    }
-    if (inspector instanceof ConstantObjectInspector && inspector instanceof MapObjectInspector) {
-      ObjectInspector keyOI = ((MapObjectInspector)inspector).getMapKeyObjectInspector();
-      ObjectInspector valueOI = ((MapObjectInspector)inspector).getMapValueObjectInspector();
-      if (keyOI instanceof PrimitiveObjectInspector && valueOI instanceof PrimitiveObjectInspector) {
-        return toMapConstDesc(colInfo, inspector, keyOI, valueOI);
+
+      Object inputConstantValue = ((ConstantObjectInspector) inspector).getWritableConstantValue();
+      if (inputConstantValue == null) {
+        return createExprNodeConstantDesc(colInfo, null);
       }
-    }
-    if (inspector instanceof ConstantObjectInspector && inspector instanceof StructObjectInspector) {
-      boolean allPrimitive = true;
-      List<? extends StructField> fields = ((StructObjectInspector)inspector).getAllStructFieldRefs();
-      for (StructField field : fields) {
-        allPrimitive &= field.getFieldObjectInspector() instanceof PrimitiveObjectInspector;
+
+      if (inspector instanceof ListObjectInspector) {
+        ObjectInspector listElementOI = ((ListObjectInspector) inspector).getListElementObjectInspector();
+        if (listElementOI instanceof PrimitiveObjectInspector) {
+          PrimitiveObjectInspector poi = (PrimitiveObjectInspector) listElementOI;
+          return createExprNodeConstantDesc(colInfo, toListConstant((List<?>) inputConstantValue, poi));
+        }
       }
-      if (allPrimitive) {
-        return toStructConstDesc(colInfo, inspector, fields);
+      if (inspector instanceof MapObjectInspector) {
+        ObjectInspector keyOI = ((MapObjectInspector)inspector).getMapKeyObjectInspector();
+        ObjectInspector valueOI = ((MapObjectInspector)inspector).getMapValueObjectInspector();
+        if (keyOI instanceof PrimitiveObjectInspector && valueOI instanceof PrimitiveObjectInspector) {
+          return createExprNodeConstantDesc(colInfo, toMapConstant((Map<?, ?>) inputConstantValue, keyOI, valueOI));
+        }
+      }
+      if (inspector instanceof StructObjectInspector) {
+        boolean allPrimitive = true;
+        List<? extends StructField> fields = ((StructObjectInspector)inspector).getAllStructFieldRefs();
+        for (StructField field : fields) {
+          allPrimitive &= field.getFieldObjectInspector() instanceof PrimitiveObjectInspector;
+        }
+        if (allPrimitive) {
+          return createExprNodeConstantDesc(colInfo, toStructConstDesc(
+              (List<?>) ((ConstantObjectInspector) inspector).getWritableConstantValue(), fields));
+        }
       }
     }
     // non-constant or non-primitive constants
     ExprNodeColumnDesc column = new ExprNodeColumnDesc(colInfo);
     column.setSkewedCol(colInfo.isSkewedCol());
     return column;
+  }
+
+  private static ExprNodeConstantDesc createExprNodeConstantDesc(ColumnInfo colInfo, Object constantValue) {
+    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constantValue);
+    constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    constantExpr.setFoldedFromTab(colInfo.getTabAlias());
+    return constantExpr;
   }
 
   private static ExprNodeConstantDesc toPrimitiveConstDesc(ColumnInfo colInfo, ObjectInspector inspector) {
@@ -155,50 +172,33 @@ public class ExprNodeDescExprFactory extends ExprFactory<ExprNodeDesc> {
     return constantExpr;
   }
 
-  private static ExprNodeConstantDesc toListConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
-                                                      ObjectInspector listElementOI) {
-    PrimitiveObjectInspector poi = (PrimitiveObjectInspector)listElementOI;
-    List<?> values = (List<?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
-    List<Object> constant = new ArrayList<Object>();
-    for (Object o : values) {
+  private static List<Object> toListConstant(List<?> constantValue, PrimitiveObjectInspector poi) {
+    List<Object> constant = new ArrayList<>(constantValue.size());
+    for (Object o : constantValue) {
       constant.add(poi.getPrimitiveJavaObject(o));
     }
-
-    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
-    constantExpr.setFoldedFromCol(colInfo.getInternalName());
-    constantExpr.setFoldedFromTab(colInfo.getTabAlias());
-    return constantExpr;
+    return constant;
   }
 
-  private static ExprNodeConstantDesc toMapConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
-                                                     ObjectInspector keyOI, ObjectInspector valueOI) {
-    PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector)keyOI;
-    PrimitiveObjectInspector valuePoi = (PrimitiveObjectInspector)valueOI;
-    Map<?, ?> values = (Map<?, ?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
-    Map<Object, Object> constant = new LinkedHashMap<Object, Object>();
-    for (Map.Entry<?, ?> e : values.entrySet()) {
+  private static Map<Object, Object> toMapConstant(
+      Map<?, ?> constantValue, ObjectInspector keyOI, ObjectInspector valueOI) {
+    PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector) keyOI;
+    PrimitiveObjectInspector valuePoi = (PrimitiveObjectInspector) valueOI;
+    Map<Object, Object> constant = new LinkedHashMap<>(constantValue.size());
+    for (Map.Entry<?, ?> e : constantValue.entrySet()) {
       constant.put(keyPoi.getPrimitiveJavaObject(e.getKey()), valuePoi.getPrimitiveJavaObject(e.getValue()));
     }
-
-    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
-    constantExpr.setFoldedFromCol(colInfo.getInternalName());
-    constantExpr.setFoldedFromTab(colInfo.getTabAlias());
-    return constantExpr;
+    return constant;
   }
 
-  private static ExprNodeConstantDesc toStructConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
-                                                        List<? extends StructField> fields) {
-    List<?> values = (List<?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
-    List<Object> constant =  new ArrayList<Object>();
-    for (int i = 0; i < values.size(); i++) {
-      Object value = values.get(i);
+  private static List<Object> toStructConstDesc(List<?> constantValue, List<? extends StructField> fields) {
+    List<Object> constant = new ArrayList<>(constantValue.size());
+    for (int i = 0; i < constantValue.size(); i++) {
+      Object value = constantValue.get(i);
       PrimitiveObjectInspector fieldPoi = (PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector();
       constant.add(fieldPoi.getPrimitiveJavaObject(value));
     }
-    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
-    constantExpr.setFoldedFromCol(colInfo.getInternalName());
-    constantExpr.setFoldedFromTab(colInfo.getTabAlias());
-    return constantExpr;
+    return constant;
   }
 
   /**

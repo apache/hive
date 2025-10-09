@@ -40,8 +40,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorSerializeRow;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 
-import com.google.common.base.Preconditions;
-
 /*
  * Specialized class for doing a vectorized map join that is an left semi join on Multi-Key
  * using hash set.
@@ -228,7 +226,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " non-repeated");
         }
 
-        // We remember any matching rows in matchs / matchSize.  At the end of the loop,
+        // We remember any matching rows in matches / matchSize.  At the end of the loop,
         // selected / batch.size will represent both matching and non-matching rows for outer join.
         // Only deferred rows will have been removed from selected.
         int selected[] = batch.selected;
@@ -294,19 +292,19 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
               // Regardless of our matching result, we keep that information to make multiple use
               // of it for a possible series of equal keys.
               haveSaveKey = true;
-  
+
               /*
                * Multi-Key specific save key and lookup.
                */
-  
+
               temp = saveKeyOutput;
               saveKeyOutput = currentKeyOutput;
               currentKeyOutput = temp;
-  
+
               /*
                * Multi-key specific lookup key.
                */
-  
+
               byte[] keyBytes = saveKeyOutput.getData();
               int keyLength = saveKeyOutput.getLength();
               saveJoinResult = hashSet.contains(keyBytes, 0, keyLength, hashSetResults[hashSetResultCount]);
@@ -318,7 +316,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
 
             switch (saveJoinResult) {
             case MATCH:
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH isSingleValue " + equalKeySeriesIsSingleValue[equalKeySeriesCount] + " currentKey " + currentKey);
               break;
 
@@ -337,7 +335,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
 
             switch (saveJoinResult) {
             case MATCH:
-              allMatchs[allMatchCount++] = batchIndex;
+              allMatches[allMatchCount++] = batchIndex;
               // VectorizedBatchUtil.debugDisplayOneRow(batch, batchIndex, CLASS_NAME + " MATCH duplicate");
               break;
 
@@ -371,7 +369,7 @@ public class VectorMapJoinLeftSemiMultiKeyOperator extends VectorMapJoinLeftSemi
 
         if (LOG.isDebugEnabled()) {
           LOG.debug(CLASS_NAME +
-              " allMatchs " + intArrayToRangesString(allMatchs, allMatchCount) +
+              " allMatches " + intArrayToRangesString(allMatches, allMatchCount) +
               " spills " + intArrayToRangesString(spills, spillCount) +
               " spillHashMapResultIndices " + intArrayToRangesString(spillHashMapResultIndices, spillCount) +
               " hashMapResults " + Arrays.toString(Arrays.copyOfRange(hashSetResults, 0, hashSetResultCount)));

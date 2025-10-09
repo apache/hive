@@ -18,9 +18,7 @@ unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
 unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
-unix_timestamp(void) is deprecated. Use current_timestamp instead.
+Warning: Shuffle Join MERGEJOIN[11][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN CBO SELECT c.m
 FROM (
   SELECT substr(from_unixtime(unix_timestamp(), 'yyyy-MM-dd'), 1, 1) as m
@@ -42,13 +40,11 @@ POSTHOOK: Input: default@test1
 POSTHOOK: Input: default@test2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(m=[$0])
-  HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(m=[substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)])
-      HiveFilter(condition=[=(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2')])
-        HiveProject(DUMMY=[0])
-          HiveTableScan(table=[[default, test1]], table:alias=[test1])
-    HiveProject($f0=[substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)])
-      HiveFilter(condition=[AND(=($0, substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1)), =(substr(FROM_UNIXTIME(UNIX_TIMESTAMP, _UTF-16LE'yyyy-MM-dd':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), 1, 1), _UTF-16LE'2'))])
+HiveProject(m=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(DUMMY=[0])
+      HiveTableScan(table=[[default, test1]], table:alias=[test1])
+    HiveProject(m=[CAST(_UTF-16LE'2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+      HiveFilter(condition=[=(_UTF-16LE'2', $0)])
         HiveTableScan(table=[[default, test2]], table:alias=[d])
 

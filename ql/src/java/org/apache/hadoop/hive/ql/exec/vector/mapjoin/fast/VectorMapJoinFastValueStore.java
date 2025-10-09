@@ -343,7 +343,7 @@ public class VectorMapJoinFastValueStore implements MemoryEstimate {
 
         if (isNextLast) {
           /*
-           * No realativeOffsetWord in last value.  (This was the first value written.)
+           * No relativeOffsetWord in last value.  (This was the first value written.)
            */
           isNextEof = true;
 

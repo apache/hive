@@ -125,6 +125,21 @@ public final class LdapAuthenticationTestCase {
           userMembershipKey);
     }
 
+    public Builder userSearchFilter(String userSearchFilter) {
+      return setVarOnce(MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_USERSEARCHFILTER,
+          userSearchFilter);
+    }
+
+    public Builder groupSearchFilter(String groupSearchFilter) {
+      return setVarOnce(MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPSEARCHFILTER,
+          groupSearchFilter);
+    }
+
+    public Builder groupBaseDN(String groupBaseDN) {
+      return setVarOnce(MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_GROUPBASEDN,
+          groupBaseDN);
+    }
+
     private Builder setVarOnce(MetastoreConf.ConfVars confVar, String value) {
       Preconditions.checkState(!overrides.containsKey(confVar),
           "Property %s has been set already", confVar);

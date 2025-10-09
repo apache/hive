@@ -298,7 +298,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       bySessionId.put(session.getSessionId(), session);
       HiveConf conf = session.getConf();
       conf.set(ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME.varname, amRegistryName);
-      conf.set(ConfVars.HIVESESSIONID.varname, session.getSessionId());
+      conf.set(ConfVars.HIVE_SESSION_ID.varname, session.getSessionId());
     }
   }
 

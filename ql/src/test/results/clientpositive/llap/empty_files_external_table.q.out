@@ -47,24 +47,30 @@ POSTHOOK: Input: default@empty_external_table
 PREHOOK: query: drop table t5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t5
 POSTHOOK: query: drop table t5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t5
 PREHOOK: query: drop table t6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t6
 POSTHOOK: query: drop table t6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t6
 PREHOOK: query: drop table empty_external_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@empty_external_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@empty_external_table
 POSTHOOK: query: drop table empty_external_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@empty_external_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@empty_external_table

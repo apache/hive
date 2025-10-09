@@ -113,8 +113,10 @@ STAGE PLANS:
 PREHOOK: query: drop table invites_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@invites_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@invites_n0
 POSTHOOK: query: drop table invites_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@invites_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@invites_n0

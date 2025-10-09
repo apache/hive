@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,7 +49,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFBloomFilterMerge;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBatch;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperGeneral;
@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -154,12 +155,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
   private transient long maxMemory;
 
-  private float memoryThreshold;
+  private float hashTableMemoryPercentage;
 
   private boolean isLlap = false;
 
   // tracks overall access count in map agg buffer any given time.
   private long totalAccessCount;
+  private boolean batchNeedsClone;
 
   /**
    * Interface for processing mode: global, hash, unsorted streaming, or group batch
@@ -403,7 +405,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         this.maxHtEntries = HiveConf.getIntVar(hconf,
           HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_MAXENTRIES);
         this.numRowsCompareHashAggr = HiveConf.getIntVar(hconf,
-          HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL);
+          HiveConf.ConfVars.HIVE_GROUPBY_MAP_INTERVAL);
       }
       else {
         this.percentEntriesToFlush =
@@ -413,7 +415,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         this.maxHtEntries =
             HiveConf.ConfVars.HIVE_VECTORIZATION_GROUPBY_MAXENTRIES.defaultIntVal;
         this.numRowsCompareHashAggr =
-            HiveConf.ConfVars.HIVEGROUPBYMAPINTERVAL.defaultIntVal;
+            HiveConf.ConfVars.HIVE_GROUPBY_MAP_INTERVAL.defaultIntVal;
       }
 
       minReductionHashAggr = getConf().getMinReductionHashAggr();
@@ -624,20 +626,20 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
       MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
       maxMemory = isLlap ? getConf().getMaxMemoryAvailable() : memoryMXBean.getHeapMemoryUsage().getMax();
-      memoryThreshold = conf.getMemoryThreshold();
+      hashTableMemoryPercentage = conf.getGroupByMemoryUsage();
       // Tests may leave this unitialized, so better set it to 1
-      if (memoryThreshold == 0.0f) {
-        memoryThreshold = 1.0f;
+      if (hashTableMemoryPercentage == 0.0f) {
+        hashTableMemoryPercentage = 1.0f;
       }
 
-      maxHashTblMemory = (int)(maxMemory * memoryThreshold);
+      maxHashTblMemory = (int)(maxMemory * hashTableMemoryPercentage);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("GBY memory limits - isLlap: {} maxMemory: {} ({} * {}) fixSize:{} (key:{} agg:{})",
           isLlap,
           LlapUtil.humanReadableByteCount(maxHashTblMemory),
           LlapUtil.humanReadableByteCount(maxMemory),
-          memoryThreshold,
+          hashTableMemoryPercentage,
           fixedHashEntrySize,
           keyWrappersBatch.getKeysFixedSize(),
           aggregationBatchInfo.getAggregatorsFixedSize());
@@ -1128,13 +1130,11 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     isLlap = LlapProxy.isDaemon();
     VectorExpression.doTransientInit(keyExpressions, hconf);
 
-    List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
+    List<ObjectInspector> objectInspectors = new ArrayList<>();
 
     List<ExprNodeDesc> keysDesc = conf.getKeys();
     try {
-
       List<String> outputFieldNames = conf.getOutputColumnNames();
-      final int outputCount = outputFieldNames.size();
 
       for(int i = 0; i < outputKeyLength; ++i) {
         VectorExpressionWriter vew = VectorExpressionWriterFactory.
@@ -1147,11 +1147,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       aggregators = new VectorAggregateExpression[aggregateCount];
       for (int i = 0; i < aggregateCount; ++i) {
         VectorAggregationDesc vecAggrDesc = vecAggrDescs[i];
-
-        Class<? extends VectorAggregateExpression> vecAggrClass = vecAggrDesc.getVecAggrClass();
-
-        VectorAggregateExpression vecAggrExpr =
-            instantiateExpression(vecAggrDesc, hconf);
+        VectorAggregateExpression vecAggrExpr = instantiateExpression(vecAggrDesc);
         VectorExpression.doTransientInit(vecAggrExpr.getInputExpression(), hconf);
         aggregators[i] = vecAggrExpr;
 
@@ -1160,6 +1156,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
                 vecAggrDesc.getOutputTypeInfo());
         Preconditions.checkState(objInsp != null);
         objectInspectors.add(objInsp);
+      }
+
+      for (VectorAggregateExpression aggregator : aggregators) {
+        if (aggregator.batchNeedsClone()) {
+          batchNeedsClone = true;
+          break;
+        }
       }
 
       keyWrappersBatch = VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
@@ -1216,38 +1219,69 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   }
 
   @VisibleForTesting
-  VectorAggregateExpression instantiateExpression(VectorAggregationDesc vecAggrDesc,
-      Configuration hconf) throws HiveException {
-    Class<? extends VectorAggregateExpression> vecAggrClass = vecAggrDesc.getVecAggrClass();
+  VectorAggregateExpression instantiateExpression(VectorAggregationDesc vecAggrDesc) throws HiveException {
+    final Class<? extends VectorAggregateExpression> vecAggrClass = vecAggrDesc.getVecAggrClass();
+    final Constructor<? extends VectorAggregateExpression> ctor;
 
-    Constructor<? extends VectorAggregateExpression> ctor = null;
-    try {
-      if (vecAggrDesc.getVecAggrClass() == VectorUDAFBloomFilterMerge.class) {
-        // VectorUDAFBloomFilterMerge is instantiated with a number of threads of parallel processing
-        ctor = vecAggrClass.getConstructor(VectorAggregationDesc.class, int.class);
-      } else {
-        ctor = vecAggrClass.getConstructor(VectorAggregationDesc.class);
+    final List<ConstantVectorExpression> constants =
+        vecAggrDesc.getConstants() == null ? Collections.emptyList() : vecAggrDesc.getConstants();
+
+    final Class<?>[] ctorParamClasses = new Class<?>[constants.size() + 1];
+    ctorParamClasses[0] = VectorAggregationDesc.class;
+
+    final List<Object> values = new ArrayList<>(constants.size() + 1);
+    values.add(vecAggrDesc);
+
+    for (int i = 0; i < constants.size(); ++i) {
+      ConstantVectorExpression constant = constants.get(i);
+      String typeName = constant.getOutputTypeInfo().getTypeName();
+      PrimitiveObjectInspectorUtils.PrimitiveTypeEntry primitiveTypeEntry =
+          PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName);
+      if (primitiveTypeEntry == null) {
+        throw new IllegalArgumentException(
+            "Non-primitive type detected as " + i + "-th argument for a call to the vectorized aggregation class "
+                + vecAggrClass.getSimpleName() + ", only primitive types are supported");
       }
+      ctorParamClasses[i + 1] = primitiveTypeEntry.primitiveJavaType;
+
+      // this is needed to bring back to the right type the value, e.g. int-family always gets back a long,
+      // but in this way the constructor parameters won't match anymore, so we need to convert here
+      switch (primitiveTypeEntry.primitiveCategory) {
+      case BYTE:
+        values.add(constant.getBytesValue());
+        break;
+      case FLOAT:
+        values.add(new Double(constant.getDoubleValue()).floatValue());
+        break;
+      case DOUBLE:
+        values.add(constant.getDoubleValue());
+        break;
+      case INT:
+        values.add(new Long(constant.getLongValue()).intValue());
+        break;
+      case LONG:
+        values.add(constant.getLongValue());
+        break;
+      case SHORT:
+        values.add(new Long(constant.getLongValue()).shortValue());
+        break;
+      default:
+        values.add(constant.getValue());
+      }
+    }
+
+    try {
+      ctor = vecAggrClass.getConstructor(ctorParamClasses);
     } catch (Exception e) {
       throw new HiveException(
-          "Constructor " + vecAggrClass.getSimpleName() + "(VectorAggregationDesc) not available", e);
+          "Constructor " + vecAggrClass.getSimpleName() + "(" + Arrays.toString(ctorParamClasses) + ") not available", e);
     }
-    VectorAggregateExpression vecAggrExpr = null;
     try {
-      if (vecAggrDesc.getVecAggrClass() == VectorUDAFBloomFilterMerge.class) {
-        vecAggrExpr = ctor.newInstance(vecAggrDesc,
-            hconf.getInt(HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.varname,
-                HiveConf.ConfVars.TEZ_BLOOM_FILTER_MERGE_THREADS.defaultIntVal));
-      } else {
-        vecAggrExpr = ctor.newInstance(vecAggrDesc);
-      }
+      return ctor.newInstance(values.toArray(new Object[0]));
     } catch (Exception e) {
-
       throw new HiveException(
-          "Failed to create " + vecAggrClass.getSimpleName() + "(VectorAggregationDesc) object ",
-          e);
+          "Failed to create " + vecAggrClass.getSimpleName() + "(" + Arrays.toString(ctorParamClasses) + ") object ", e);
     }
-    return vecAggrExpr;
   }
 
   /**
@@ -1406,5 +1440,9 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
   public long getMaxMemory() {
     return maxMemory;
+  }
+
+  public boolean batchNeedsClone() {
+    return batchNeedsClone;
   }
 }

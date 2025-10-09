@@ -27,29 +27,25 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
-import org.apache.iceberg.util.DateTimeUtil;
 
 public class IcebergInternalRecordWrapper implements Record, StructLike {
 
   private Function<Object, Object>[] transforms;
   private StructType readSchema;
-  private StructType tableSchema;
   private Object[] values;
   private int size;
   private Map<String, Integer> fieldToPositionInReadSchema;
-  private Map<String, Integer> fieldToPositionInTableSchema;
 
-  public IcebergInternalRecordWrapper(StructType tableSchema, StructType readSchema) {
+  public IcebergInternalRecordWrapper(StructType readSchema) {
     this.readSchema = readSchema;
-    this.tableSchema = tableSchema;
     this.size = readSchema.fields().size();
     this.values = new Object[size];
     this.fieldToPositionInReadSchema = buildFieldPositionMap(readSchema);
-    this.fieldToPositionInTableSchema = buildFieldPositionMap(tableSchema);
     this.transforms = readSchema.fields().stream().map(field -> converter(field.type()))
         .toArray(length -> (Function<Object, Object>[]) Array.newInstance(Function.class, length));
   }
@@ -57,7 +53,7 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
   public IcebergInternalRecordWrapper wrap(StructLike record) {
     int idx = 0;
     for (Types.NestedField field : readSchema.fields()) {
-      int position = fieldToPositionInTableSchema.get(field.name());
+      int position = fieldToPositionInReadSchema.get(field.name());
       values[idx] = record.get(position, Object.class);
       idx++;
     }
@@ -125,7 +121,6 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
     this.size = toCopy.size;
     this.values = Arrays.copyOf(toCopy.values, toCopy.values.length);
     this.fieldToPositionInReadSchema = buildFieldPositionMap(readSchema);
-    this.fieldToPositionInTableSchema = buildFieldPositionMap(toCopy.tableSchema);
     this.transforms = readSchema.fields().stream().map(field -> converter(field.type()))
         .toArray(length -> (Function<Object, Object>[]) Array.newInstance(Function.class, length));
   }
@@ -142,22 +137,21 @@ public class IcebergInternalRecordWrapper implements Record, StructLike {
   private static Function<Object, Object> converter(Type type) {
     switch (type.typeId()) {
       case TIMESTAMP:
-        return timestamp -> DateTimeUtil.timestamptzFromMicros((Long) timestamp);
+        return timestamp -> HiveSchemaUtil.convertToWriteType(timestamp, type);
       case DATE:
-        return date -> DateTimeUtil.dateFromDays((Integer) date);
+        return date -> HiveSchemaUtil.convertToWriteType(date, type);
       case STRUCT:
         IcebergInternalRecordWrapper wrapper =
-            new IcebergInternalRecordWrapper(type.asStructType(), type.asStructType());
+            new IcebergInternalRecordWrapper(type.asStructType());
         return struct -> wrapper.wrap((StructLike) struct);
       case LIST:
         if (Type.TypeID.STRUCT.equals(type.asListType().elementType().typeId())) {
           StructType listElementSchema = type.asListType().elementType().asStructType();
           Function<Type, IcebergInternalRecordWrapper> createWrapper =
-              t -> new IcebergInternalRecordWrapper(listElementSchema, listElementSchema);
-          return list -> {
-            return ((List<?>) list).stream().map(item -> createWrapper.apply(type).wrap((StructLike) item))
+              t -> new IcebergInternalRecordWrapper(listElementSchema);
+          return list ->
+            ((List<?>) list).stream().map(item -> createWrapper.apply(type).wrap((StructLike) item))
                 .collect(Collectors.toList());
-          };
         }
         break;
       default:

@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -59,30 +60,27 @@ import com.google.common.collect.Lists;
 public class TestStatsUpdaterThread {
   @SuppressWarnings("unused")
   static final private Logger LOG = LoggerFactory.getLogger(TestStatsUpdaterThread.class);
-  private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
-    File.separator + TestStatsUpdaterThread.class.getCanonicalName()
-    + "-" + System.currentTimeMillis()
-  ).getPath().replaceAll("\\\\", "/");
-  private HiveConf hiveConf;
+
+  private HiveConfForTest hiveConf;
   private SessionState ss;
 
   String getTestDataDir() {
-    return TEST_DATA_DIR;
+    return hiveConf.getTestDataDir();
   }
 
   @SuppressWarnings("deprecation")
   @Before
   public void setUp() throws Exception {
-    this.hiveConf = new HiveConf(TestStatsUpdaterThread.class);
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getTestDataDir());
-    hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
+    hiveConf = new HiveConfForTest(getClass());
+    hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, getTestDataDir());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 //    hiveConf.setBoolVar(HiveConf.ConfVars.MERGE_CARDINALITY_VIOLATION_CHECK, true);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, true);
     hiveConf.set(MetastoreConf.ConfVars.STATS_AUTO_UPDATE.getVarname(), "all");
     TestTxnDbUtil.setConfValues(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);
@@ -93,7 +91,7 @@ public class TestStatsUpdaterThread {
     if (!(new File(getTestDataDir()).mkdirs())) {
       throw new RuntimeException("Could not create " + getTestDataDir());
     }
-    this.ss = DriverUtils.setUpSessionState(hiveConf, "hive", true);
+    this.ss = DriverUtils.setUpAndStartSessionState(hiveConf, "hive");
     cleanUp();
   }
 
@@ -299,7 +297,7 @@ public class TestStatsUpdaterThread {
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
 
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
     executeQuery("create table simple_stats (s string) partitioned by (i int)" +
             " stored as orc " +
             " TBLPROPERTIES (\"transactional\"=\"true\")");
@@ -326,8 +324,8 @@ public class TestStatsUpdaterThread {
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
 
     executeQuery("create table simple_stats (i int, s string)");
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     executeQuery("insert into simple_stats (i, s) values (1, 'test')");
     executeQuery("analyze table simple_stats compute statistics for columns i");
     verifyStatsUpToDate("simple_stats", Lists.newArrayList("s"), msClient, false);
@@ -350,8 +348,8 @@ public class TestStatsUpdaterThread {
     StatsUpdaterThread su = createUpdater();
     su.startWorkers();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     executeQuery("create table simple_stats (s string) partitioned by (i int)");
     for (int i = 0; i < PART_COUNT; ++i) {
       executeQuery("insert into simple_stats partition(i='" + i + "') values ('test')");
@@ -378,8 +376,8 @@ public class TestStatsUpdaterThread {
     final int PART_COUNT = 3;
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     executeQuery("create table simple_stats (s string) partitioned by (i int)");
     for (int i = 0; i < PART_COUNT; ++i) {
       executeQuery("insert into simple_stats partition(i='" + i + "') values ('test')");
@@ -401,14 +399,14 @@ public class TestStatsUpdaterThread {
     final int NONSTAT_PART_COUNT = 3;
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     executeQuery("create table simple_stats (s string) partitioned by (i int)");
     for (int i = 0; i < NONSTAT_PART_COUNT; ++i) {
       executeQuery("insert into simple_stats partition(i='" + i + "') values ('test')");
     }
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, true);
     executeQuery("insert into simple_stats partition(i='"
         + NONSTAT_PART_COUNT + "') values ('test')");
     verifyPartStatsUpToDate(NONSTAT_PART_COUNT, 0, msClient, "simple_stats", false);
@@ -435,8 +433,8 @@ public class TestStatsUpdaterThread {
   public void testPartitionsWithDifferentColsAll() throws Exception {
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     executeQuery("create table simple_stats (s string, t string, u string) partitioned by (i int)");
     executeQuery("insert into simple_stats partition(i=0) values ('test', '0', 'foo')");
     executeQuery("insert into simple_stats partition(i=1) values ('test', '1', 'bar')");
@@ -465,8 +463,8 @@ public class TestStatsUpdaterThread {
     hiveConf.set(MetastoreConf.ConfVars.STATS_AUTO_UPDATE.getVarname(), "existing");
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     executeQuery("create table simple_stats (s string, t string, u string) partitioned by (i int)");
     executeQuery("insert into simple_stats partition(i=0) values ('test', '0', 'foo')");
     executeQuery("insert into simple_stats partition(i=1) values ('test', '1', 'bar')");
@@ -502,16 +500,16 @@ public class TestStatsUpdaterThread {
     hiveConf.setInt(MetastoreConf.ConfVars.STATS_AUTO_UPDATE_WORKER_COUNT.getVarname(), 4);
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     executeQuery("create table simple_stats (s string)");
     executeQuery("create table simple_stats2 (s string) partitioned by (i int)");
     executeQuery("create table simple_stats3 (s string) partitioned by (i int)");
     executeQuery("insert into simple_stats values ('test')");
     executeQuery("insert into simple_stats2 partition(i=0) values ('test')");
     executeQuery("insert into simple_stats3 partition(i=0) values ('test')");
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, true);
     executeQuery("insert into simple_stats3 partition(i=1) values ('test')");
 
     assertTrue(su.runOneIteration());
@@ -526,8 +524,8 @@ public class TestStatsUpdaterThread {
     assertEquals(3, su.getQueueLength()); // Nothing new added to the queue while analyze runs.
 
     // Add another partition without stats.
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     executeQuery("insert into simple_stats3 partition(i=2) values ('test')");
 
     assertTrue(su.runOneIteration());
@@ -569,8 +567,8 @@ public class TestStatsUpdaterThread {
     executeQuery("alter database " + dbName + " set dbproperties('" + ReplConst.TARGET_OF_REPLICATION + "'='true')");
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
 
     executeQuery("create table " + tblWOStats + "(i int, s string) " + txnProperty);
     executeQuery("insert into " + tblWOStats + "(i, s) values (1, 'test')");
@@ -636,8 +634,8 @@ public class TestStatsUpdaterThread {
     String dbName = ss.getCurrentDatabase();
     StatsUpdaterThread su = createUpdater();
     IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
 
     executeQuery("create table " + tblWOStats + "(i int, s string) " + txnProperty);
     executeQuery("insert into " + tblWOStats + "(i, s) values (1, 'test')");
@@ -711,7 +709,7 @@ public class TestStatsUpdaterThread {
       IMetaStoreClient msClient, String tblName, String partName, String val) throws Exception {
     Partition part = msClient.getPartition(ss.getCurrentDatabase(), tblName, partName);
     part.getParameters().put(StatsUpdaterThread.SKIP_STATS_AUTOUPDATE_PROPERTY, val);
-    msClient.alter_partition(part.getCatName(), part.getDbName(), tblName, part);
+    msClient.alter_partition(part.getCatName(), part.getDbName(), tblName, part, null);
   }
 
   private void verifyAndUnsetColStats(
@@ -761,7 +759,7 @@ public class TestStatsUpdaterThread {
 
   private void verifyStatsUpToDate(String tbl, List<String> cols, IMetaStoreClient msClient,
       String validWriteIds, boolean isUpToDate) throws Exception {
-    Table table = msClient.getTable(ss.getCurrentCatalog(), ss.getCurrentDatabase(), tbl, validWriteIds);
+    Table table = msClient.getTable(ss.getCurrentCatalog(), ss.getCurrentDatabase(), tbl, validWriteIds, false, null);
     verifyStatsUpToDate(table.getParameters(), cols, isUpToDate);
   }
 

@@ -210,7 +210,8 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
     private final int fieldIndex;
     private final RecordInfo recordInfo = new LazyBinaryUtils.RecordInfo();
     private byte[] fieldBytes;
-    private int fieldStart, fieldLength;
+    private int fieldStart;
+    private int fieldLength;
     public SingleFieldGetter(LazyBinaryStructObjectInspector soi, int fieldIndex) {
       this.soi = soi;
       this.fieldIndex = fieldIndex;
@@ -221,7 +222,7 @@ public class LazyBinaryStruct extends LazyBinaryNonPrimitive<LazyBinaryStructObj
       fieldBytes = src.getBytes();
       int length = src.getLength();
       byte nullByte = fieldBytes[0];
-      int lastFieldByteEnd = 1, fieldStart = -1, fieldLength = -1;
+      int lastFieldByteEnd = 1;
       for (int i = 0; i <= fieldIndex; i++) {
         if ((nullByte & (1 << (i % 8))) != 0) {
           LazyBinaryUtils.checkObjectByteInfo(fieldRefs.get(i)

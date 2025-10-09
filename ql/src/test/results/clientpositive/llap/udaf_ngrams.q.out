@@ -62,8 +62,10 @@ POSTHOOK: Input: default@kafka
 PREHOOK: query: DROP TABLE kafka
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@kafka
+PREHOOK: Output: database:default
 PREHOOK: Output: default@kafka
 POSTHOOK: query: DROP TABLE kafka
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@kafka
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kafka

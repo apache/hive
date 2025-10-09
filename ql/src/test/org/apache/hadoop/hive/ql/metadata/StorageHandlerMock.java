@@ -65,12 +65,11 @@ public class StorageHandlerMock extends DefaultStorageHandler {
     };
   }
 
-  @Override public LockType getLockType(WriteEntity writeEntity
-  ) {
+  @Override public LockType getLockType(WriteEntity writeEntity) {
     if (writeEntity.getWriteType().equals(WriteEntity.WriteType.INSERT)) {
       return LockType.SHARED_READ;
     }
-    return LockType.SHARED_WRITE;
+    return super.getLockType(writeEntity);
   }
 
   @Override public Class<? extends OutputFormat> getOutputFormatClass() {

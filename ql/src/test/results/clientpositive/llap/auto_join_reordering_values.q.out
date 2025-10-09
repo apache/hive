@@ -16,8 +16,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@testsrc
 PREHOOK: query: drop table if exists orderpayment_small
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists orderpayment_small
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table orderpayment_small (`dealid` int,`date` string,`time` string, `cityid` int, `userid` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -41,8 +43,10 @@ POSTHOOK: Lineage: orderpayment_small.time SIMPLE []
 POSTHOOK: Lineage: orderpayment_small.userid SIMPLE []
 PREHOOK: query: drop table if exists user_small
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists user_small
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table user_small( userid int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -92,7 +96,7 @@ FROM `default`.`user_small`
 WHERE `userid` IS NOT NULL) AS `t0`
 INNER JOIN ((SELECT `dealid`, `date`, `cityid`, `userid`
 FROM `default`.`orderpayment_small`
-WHERE `date` IS NOT NULL AND `dealid` IS NOT NULL AND (`cityid` IS NOT NULL AND `userid` IS NOT NULL)) AS `t2` INNER JOIN (SELECT `date`
+WHERE `date` IS NOT NULL AND `dealid` IS NOT NULL AND `cityid` IS NOT NULL AND `userid` IS NOT NULL) AS `t2` INNER JOIN (SELECT `date`
 FROM `default`.`orderpayment_small`
 WHERE `date` IS NOT NULL) AS `t4` ON `t2`.`date` = `t4`.`date` INNER JOIN (SELECT `dealid`
 FROM `default`.`orderpayment_small`

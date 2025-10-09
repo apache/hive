@@ -26,8 +26,6 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -36,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -49,7 +48,9 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TServerEventHandler;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 
 
@@ -75,7 +76,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
           new ThreadFactoryWithGarbageCleanup(threadPoolName));
 
       // Thrift configs
-      hiveAuthFactory = new HiveAuthFactory(hiveConf);
+      hiveAuthFactory = new HiveAuthFactory(hiveConf, false);
       TTransportFactory transportFactory = hiveAuthFactory.getAuthTransFactory();
       TProcessorFactory processorFactory = hiveAuthFactory.getAuthProcFactory(this);
       TServerSocket serverSocket = null;
@@ -102,11 +103,15 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
 
       // Server args
       int maxMessageSize = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_MAX_MESSAGE_SIZE);
-      int requestTimeout = (int) hiveConf.getTimeVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_LOGIN_TIMEOUT,
-          TimeUnit.SECONDS);
-      int beBackoffSlotLength = (int) hiveConf
-          .getTimeVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_LOGIN_BEBACKOFF_SLOT_LENGTH, TimeUnit.MILLISECONDS);
-      TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(serverSocket).processorFactory(processorFactory)
+      TThreadPoolServer.Args sargs = new TThreadPoolServer.Args(new TServerSocket(serverSocket.getServerSocket()) {
+        @Override
+        public TSocket accept() throws TTransportException {
+          TSocket ts = super.accept();
+          int maxThriftMessageSize = (int) HiveConf.getSizeVar(
+              hiveConf, HiveConf.ConfVars.HIVE_THRIFT_CLIENT_MAX_MESSAGE_SIZE);
+          return HiveAuthUtils.configureThriftMaxMessageSize(ts, maxThriftMessageSize);
+        }
+      }).processorFactory(processorFactory)
           .transportFactory(transportFactory).protocolFactory(new TBinaryProtocol.Factory())
           .inputProtocolFactory(new TBinaryProtocol.Factory(true, true, maxMessageSize, maxMessageSize))
           .executorService(executorService);
@@ -209,7 +214,7 @@ public class ThriftBinaryCLIService extends ThriftCLIService {
         LOG.error("Exception caught by " + this.getClass().getSimpleName() +
             ". Exiting.", t);
       }
-      System.exit(-1);
+      ExitUtil.terminate(-1);
     }
   }
 

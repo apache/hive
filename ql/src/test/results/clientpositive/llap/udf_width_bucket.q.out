@@ -634,69 +634,87 @@ NULL	2	NULL
 NULL	NULL	NULL
 PREHOOK: query: drop table alldecimaltype
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table alldecimaltype
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table alltypes_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alltypes_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alltypes_n3
 POSTHOOK: query: drop table alltypes_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alltypes_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltypes_n3
 PREHOOK: query: drop table alltinyints
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alltinyints
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alltinyints
 POSTHOOK: query: drop table alltinyints
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alltinyints
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alltinyints
 PREHOOK: query: drop table allsmallints
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@allsmallints
+PREHOOK: Output: database:default
 PREHOOK: Output: default@allsmallints
 POSTHOOK: query: drop table allsmallints
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@allsmallints
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allsmallints
 PREHOOK: query: drop table allints
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@allints
+PREHOOK: Output: database:default
 PREHOOK: Output: default@allints
 POSTHOOK: query: drop table allints
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@allints
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allints
 PREHOOK: query: drop table allbigints
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@allbigints
+PREHOOK: Output: database:default
 PREHOOK: Output: default@allbigints
 POSTHOOK: query: drop table allbigints
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@allbigints
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allbigints
 PREHOOK: query: drop table allfloats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@allfloats
+PREHOOK: Output: database:default
 PREHOOK: Output: default@allfloats
 POSTHOOK: query: drop table allfloats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@allfloats
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@allfloats
 PREHOOK: query: drop table alldoubles
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alldoubles
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alldoubles
 POSTHOOK: query: drop table alldoubles
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alldoubles
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alldoubles
 PREHOOK: query: drop table testgroupingsets
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testgroupingsets
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testgroupingsets
 POSTHOOK: query: drop table testgroupingsets
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testgroupingsets
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testgroupingsets

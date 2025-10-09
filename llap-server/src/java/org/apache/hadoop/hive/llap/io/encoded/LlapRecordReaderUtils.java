@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.llap.io.encoded;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -394,13 +395,14 @@ public class LlapRecordReaderUtils {
       if (pool != null) {
         pool.clear();
       }
-      // close both zcr and file
-      try (HadoopShims.ZeroCopyReaderShim myZcr = zcr) {
-        if (file != null) {
-          file.close();
-          file = null;
-        }
-      }
+      IOUtils.close(zcr, file);
+      zcr = null;
+      file = null;
+    }
+
+    @Override
+    public boolean isOpen() {
+      return isOpen;
     }
 
     @Override

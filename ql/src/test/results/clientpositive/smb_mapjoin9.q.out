@@ -419,24 +419,30 @@ POSTHOOK: Lineage: smb_mapjoin9_results.value SIMPLE [(hive_test_smb_bucket2)b.F
 PREHOOK: query: drop table smb_mapjoin9_results
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@smb_mapjoin9_results
+PREHOOK: Output: database:default
 PREHOOK: Output: default@smb_mapjoin9_results
 POSTHOOK: query: drop table smb_mapjoin9_results
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@smb_mapjoin9_results
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smb_mapjoin9_results
 PREHOOK: query: drop table hive_test_smb_bucket1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive_test_smb_bucket1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive_test_smb_bucket1
 POSTHOOK: query: drop table hive_test_smb_bucket1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive_test_smb_bucket1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive_test_smb_bucket1
 PREHOOK: query: drop table hive_test_smb_bucket2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hive_test_smb_bucket2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hive_test_smb_bucket2
 POSTHOOK: query: drop table hive_test_smb_bucket2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hive_test_smb_bucket2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hive_test_smb_bucket2

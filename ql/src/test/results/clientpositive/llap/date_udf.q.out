@@ -1,15 +1,21 @@
 PREHOOK: query: drop table date_udf
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table date_udf
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table date_udf_string
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table date_udf_string
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table date_udf_flight
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table date_udf_flight
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table date_udf (d date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -268,32 +274,40 @@ POSTHOOK: Input: default@testdatediff
 PREHOOK: query: drop table testdatediff
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdatediff
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdatediff
 POSTHOOK: query: drop table testdatediff
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdatediff
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdatediff
 PREHOOK: query: drop table date_udf
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_udf
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_udf
 POSTHOOK: query: drop table date_udf
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_udf
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_udf
 PREHOOK: query: drop table date_udf_string
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_udf_string
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_udf_string
 POSTHOOK: query: drop table date_udf_string
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_udf_string
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_udf_string
 PREHOOK: query: drop table date_udf_flight
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_udf_flight
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_udf_flight
 POSTHOOK: query: drop table date_udf_flight
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_udf_flight
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_udf_flight

@@ -18,6 +18,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField AGENT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("agentInfo", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField ZERO_WAIT_READ_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("zeroWaitReadEnabled", org.apache.thrift.protocol.TType.BOOL, (short)6);
   private static final org.apache.thrift.protocol.TField EXCLUSIVE_CTAS_FIELD_DESC = new org.apache.thrift.protocol.TField("exclusiveCTAS", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField LOCKLESS_READS_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("locklessReadsEnabled", org.apache.thrift.protocol.TType.BOOL, (short)8);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new LockRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new LockRequestTupleSchemeFactory();
@@ -29,6 +30,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String agentInfo; // optional
   private boolean zeroWaitReadEnabled; // optional
   private boolean exclusiveCTAS; // optional
+  private boolean locklessReadsEnabled; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -38,7 +40,8 @@ package org.apache.hadoop.hive.metastore.api;
     HOSTNAME((short)4, "hostname"),
     AGENT_INFO((short)5, "agentInfo"),
     ZERO_WAIT_READ_ENABLED((short)6, "zeroWaitReadEnabled"),
-    EXCLUSIVE_CTAS((short)7, "exclusiveCTAS");
+    EXCLUSIVE_CTAS((short)7, "exclusiveCTAS"),
+    LOCKLESS_READS_ENABLED((short)8, "locklessReadsEnabled");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -68,6 +71,8 @@ package org.apache.hadoop.hive.metastore.api;
           return ZERO_WAIT_READ_ENABLED;
         case 7: // EXCLUSIVE_CTAS
           return EXCLUSIVE_CTAS;
+        case 8: // LOCKLESS_READS_ENABLED
+          return LOCKLESS_READS_ENABLED;
         default:
           return null;
       }
@@ -112,8 +117,9 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __TXNID_ISSET_ID = 0;
   private static final int __ZEROWAITREADENABLED_ISSET_ID = 1;
   private static final int __EXCLUSIVECTAS_ISSET_ID = 2;
+  private static final int __LOCKLESSREADSENABLED_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TXNID,_Fields.AGENT_INFO,_Fields.ZERO_WAIT_READ_ENABLED,_Fields.EXCLUSIVE_CTAS};
+  private static final _Fields optionals[] = {_Fields.TXNID,_Fields.AGENT_INFO,_Fields.ZERO_WAIT_READ_ENABLED,_Fields.EXCLUSIVE_CTAS,_Fields.LOCKLESS_READS_ENABLED};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -132,6 +138,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.EXCLUSIVE_CTAS, new org.apache.thrift.meta_data.FieldMetaData("exclusiveCTAS", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.LOCKLESS_READS_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("locklessReadsEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(LockRequest.class, metaDataMap);
   }
@@ -142,6 +150,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.zeroWaitReadEnabled = false;
 
     this.exclusiveCTAS = false;
+
+    this.locklessReadsEnabled = false;
 
   }
 
@@ -180,6 +190,7 @@ package org.apache.hadoop.hive.metastore.api;
     }
     this.zeroWaitReadEnabled = other.zeroWaitReadEnabled;
     this.exclusiveCTAS = other.exclusiveCTAS;
+    this.locklessReadsEnabled = other.locklessReadsEnabled;
   }
 
   public LockRequest deepCopy() {
@@ -198,6 +209,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.zeroWaitReadEnabled = false;
 
     this.exclusiveCTAS = false;
+
+    this.locklessReadsEnabled = false;
 
   }
 
@@ -379,6 +392,28 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __EXCLUSIVECTAS_ISSET_ID, value);
   }
 
+  public boolean isLocklessReadsEnabled() {
+    return this.locklessReadsEnabled;
+  }
+
+  public void setLocklessReadsEnabled(boolean locklessReadsEnabled) {
+    this.locklessReadsEnabled = locklessReadsEnabled;
+    setLocklessReadsEnabledIsSet(true);
+  }
+
+  public void unsetLocklessReadsEnabled() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __LOCKLESSREADSENABLED_ISSET_ID);
+  }
+
+  /** Returns true if field locklessReadsEnabled is set (has been assigned a value) and false otherwise */
+  public boolean isSetLocklessReadsEnabled() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __LOCKLESSREADSENABLED_ISSET_ID);
+  }
+
+  public void setLocklessReadsEnabledIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LOCKLESSREADSENABLED_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case COMPONENT:
@@ -437,6 +472,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case LOCKLESS_READS_ENABLED:
+      if (value == null) {
+        unsetLocklessReadsEnabled();
+      } else {
+        setLocklessReadsEnabled((java.lang.Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -464,6 +507,9 @@ package org.apache.hadoop.hive.metastore.api;
     case EXCLUSIVE_CTAS:
       return isExclusiveCTAS();
 
+    case LOCKLESS_READS_ENABLED:
+      return isLocklessReadsEnabled();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -489,6 +535,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetZeroWaitReadEnabled();
     case EXCLUSIVE_CTAS:
       return isSetExclusiveCTAS();
+    case LOCKLESS_READS_ENABLED:
+      return isSetLocklessReadsEnabled();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -569,6 +617,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_locklessReadsEnabled = true && this.isSetLocklessReadsEnabled();
+    boolean that_present_locklessReadsEnabled = true && that.isSetLocklessReadsEnabled();
+    if (this_present_locklessReadsEnabled || that_present_locklessReadsEnabled) {
+      if (!(this_present_locklessReadsEnabled && that_present_locklessReadsEnabled))
+        return false;
+      if (this.locklessReadsEnabled != that.locklessReadsEnabled)
+        return false;
+    }
+
     return true;
   }
 
@@ -603,6 +660,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetExclusiveCTAS()) ? 131071 : 524287);
     if (isSetExclusiveCTAS())
       hashCode = hashCode * 8191 + ((exclusiveCTAS) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetLocklessReadsEnabled()) ? 131071 : 524287);
+    if (isSetLocklessReadsEnabled())
+      hashCode = hashCode * 8191 + ((locklessReadsEnabled) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -685,6 +746,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetLocklessReadsEnabled(), other.isSetLocklessReadsEnabled());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLocklessReadsEnabled()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.locklessReadsEnabled, other.locklessReadsEnabled);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -757,6 +828,12 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.exclusiveCTAS);
       first = false;
     }
+    if (isSetLocklessReadsEnabled()) {
+      if (!first) sb.append(", ");
+      sb.append("locklessReadsEnabled:");
+      sb.append(this.locklessReadsEnabled);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -817,14 +894,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // COMPONENT
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list822 = iprot.readListBegin();
-                struct.component = new java.util.ArrayList<LockComponent>(_list822.size);
-                @org.apache.thrift.annotation.Nullable LockComponent _elem823;
-                for (int _i824 = 0; _i824 < _list822.size; ++_i824)
+                org.apache.thrift.protocol.TList _list892 = iprot.readListBegin();
+                struct.component = new java.util.ArrayList<LockComponent>(_list892.size);
+                @org.apache.thrift.annotation.Nullable LockComponent _elem893;
+                for (int _i894 = 0; _i894 < _list892.size; ++_i894)
                 {
-                  _elem823 = new LockComponent();
-                  _elem823.read(iprot);
-                  struct.component.add(_elem823);
+                  _elem893 = new LockComponent();
+                  _elem893.read(iprot);
+                  struct.component.add(_elem893);
                 }
                 iprot.readListEnd();
               }
@@ -881,6 +958,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // LOCKLESS_READS_ENABLED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.locklessReadsEnabled = iprot.readBool();
+              struct.setLocklessReadsEnabledIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -898,9 +983,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(COMPONENT_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.component.size()));
-          for (LockComponent _iter825 : struct.component)
+          for (LockComponent _iter895 : struct.component)
           {
-            _iter825.write(oprot);
+            _iter895.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -938,6 +1023,11 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeBool(struct.exclusiveCTAS);
         oprot.writeFieldEnd();
       }
+      if (struct.isSetLocklessReadsEnabled()) {
+        oprot.writeFieldBegin(LOCKLESS_READS_ENABLED_FIELD_DESC);
+        oprot.writeBool(struct.locklessReadsEnabled);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -957,9 +1047,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.component.size());
-        for (LockComponent _iter826 : struct.component)
+        for (LockComponent _iter896 : struct.component)
         {
-          _iter826.write(oprot);
+          _iter896.write(oprot);
         }
       }
       oprot.writeString(struct.user);
@@ -977,7 +1067,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetExclusiveCTAS()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetLocklessReadsEnabled()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetTxnid()) {
         oprot.writeI64(struct.txnid);
       }
@@ -990,20 +1083,23 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetExclusiveCTAS()) {
         oprot.writeBool(struct.exclusiveCTAS);
       }
+      if (struct.isSetLocklessReadsEnabled()) {
+        oprot.writeBool(struct.locklessReadsEnabled);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, LockRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list827 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.component = new java.util.ArrayList<LockComponent>(_list827.size);
-        @org.apache.thrift.annotation.Nullable LockComponent _elem828;
-        for (int _i829 = 0; _i829 < _list827.size; ++_i829)
+        org.apache.thrift.protocol.TList _list897 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.component = new java.util.ArrayList<LockComponent>(_list897.size);
+        @org.apache.thrift.annotation.Nullable LockComponent _elem898;
+        for (int _i899 = 0; _i899 < _list897.size; ++_i899)
         {
-          _elem828 = new LockComponent();
-          _elem828.read(iprot);
-          struct.component.add(_elem828);
+          _elem898 = new LockComponent();
+          _elem898.read(iprot);
+          struct.component.add(_elem898);
         }
       }
       struct.setComponentIsSet(true);
@@ -1011,7 +1107,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setUserIsSet(true);
       struct.hostname = iprot.readString();
       struct.setHostnameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(4);
+      java.util.BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.txnid = iprot.readI64();
         struct.setTxnidIsSet(true);
@@ -1027,6 +1123,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(3)) {
         struct.exclusiveCTAS = iprot.readBool();
         struct.setExclusiveCTASIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.locklessReadsEnabled = iprot.readBool();
+        struct.setLocklessReadsEnabledIsSet(true);
       }
     }
   }

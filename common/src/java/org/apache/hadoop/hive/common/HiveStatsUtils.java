@@ -81,6 +81,21 @@ public class HiveStatsUtils {
     return Lists.newArrayList(fs.globStatus(pathPattern, FileUtils.HIDDEN_FILES_PATH_FILTER));
   }
 
+  public static boolean computeHistograms(Configuration conf) {
+    return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_KLL_ENABLE,
+        HiveConf.ConfVars.HIVE_STATS_KLL_ENABLE.defaultBoolVal);
+  }
+
+  public static int getKParamForKllSketch(Configuration conf) {
+    int k = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_KLL_K_PARAM);
+
+    if (k < 8 || k > 65535) {
+      throw new IllegalArgumentException(HiveConf.ConfVars.HIVE_STATS_KLL_K_PARAM.varname +
+          " must be in the range [8, 65535], got " + k);
+    }
+    return k;
+  }
+
   public static int getNumBitVectorsForNDVEstimation(Configuration conf) throws Exception {
     int numBitVectors;
     float percentageError = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ERROR);

@@ -19,106 +19,116 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook.ExecutionMode;
+import org.apache.hadoop.hive.ql.hooks.TestHiveProtoLoggingHook;
+import org.apache.hadoop.hive.ql.hooks.proto.HiveHookEvents;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.tez.dag.history.logging.proto.ProtoMessageReader;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtil.executeStatementOnDriverAndReturnResults;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
+import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.dropTables;
 
 /**
  * Superclass for Test[Crud|Mm]CompactorOnTez, for setup and helper classes.
  */
 public abstract class CompactorOnTezTest {
-  private static final AtomicInteger RANDOM_INT = new AtomicInteger(new Random().nextInt());
-  private static final String TEST_DATA_DIR = new File(
-      System.getProperty("java.io.tmpdir") + File.separator + TestCrudCompactorOnTez.class
-          .getCanonicalName() + "-" + System.currentTimeMillis() + "_" + RANDOM_INT
-          .getAndIncrement()).getPath().replaceAll("\\\\", "/");
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   static final String CUSTOM_COMPACTION_QUEUE = "my_compaction_test_queue";
 
   protected HiveConf conf;
   protected IMetaStoreClient msClient;
   protected IDriver driver;
   protected boolean mmCompaction = false;
+  private final AtomicBoolean stop = new AtomicBoolean();
 
-  @Rule
-  public TemporaryFolder folder = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder folder = new TemporaryFolder();
+
+  public static String tmpFolder;
 
   @Before
   // Note: we create a new conf and driver object before every test
   public void setup() throws Exception {
-    HiveConf hiveConf = new HiveConf(this.getClass());
+    HiveConfForTest hiveConf = new HiveConfForTest(this.getClass());
     setupWithConf(hiveConf);
   }
 
-  protected void setupWithConf(HiveConf hiveConf) throws Exception {
-    File f = new File(TEST_WAREHOUSE_DIR);
+  @BeforeClass
+  public static void setupClass() throws Exception {
+    tmpFolder = folder.newFolder().getAbsolutePath();
+  }
+
+  protected void setupWithConf(HiveConfForTest hiveConf) throws Exception {
+    String testWarehouseDir = hiveConf.getTestDataDir() + "/warehouse";
+    File f = new File(testWarehouseDir);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
     }
-    if (!(new File(TEST_WAREHOUSE_DIR).mkdirs())) {
-      throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
+    if (!(new File(testWarehouseDir).mkdirs())) {
+      throw new RuntimeException("Could not create " + testWarehouseDir);
     }
-    hiveConf.setVar(HiveConf.ConfVars.PREEXECHOOKS, "");
-    hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
-    hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
-    hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+    hiveConf.setVar(HiveConf.ConfVars.PRE_EXEC_HOOKS, "");
+    hiveConf.setVar(HiveConf.ConfVars.POST_EXEC_HOOKS, "");
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_INPUT_FORMAT, HiveInputFormat.class.getName());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE, testWarehouseDir);
     MetastoreConf.setTimeVar(hiveConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
 
     TestTxnDbUtil.setConfValues(hiveConf);
     TestTxnDbUtil.cleanDb(hiveConf);
     TestTxnDbUtil.prepDb(hiveConf);
     conf = hiveConf;
     // Use tez as execution engine for this test class
-    setupTez(conf);
+    setupTez(hiveConf);
     msClient = new HiveMetaStoreClient(conf);
     driver = DriverFactory.newDriver(conf);
     SessionState.start(new CliSessionState(conf));
   }
 
-  private void setupTez(HiveConf conf) {
+  private void setupTez(HiveConfForTest conf) {
     conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
-    conf.setVar(HiveConf.ConfVars.HIVE_USER_INSTALL_DIR, TEST_DATA_DIR);
     conf.set("tez.am.resource.memory.mb", "128");
     conf.set("tez.am.dag.scheduler.class",
         "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
-    conf.setBoolean("tez.local.mode", true);
     conf.set("fs.defaultFS", "file:///");
     conf.setBoolean("tez.runtime.optimize.local.fetch", true);
-    conf.set("tez.staging-dir", TEST_DATA_DIR);
+    conf.set("tez.staging-dir", conf.getTestDataDir());
     conf.setBoolean("tez.ignore.lib.uris", true);
     conf.set("hive.tez.container.size", "128");
     conf.setBoolean("hive.merge.tezfiles", false);
-    conf.setBoolean("hive.in.tez.test", true);
     if (!mmCompaction) {
       // We need these settings to create a table which is not bucketed, but contains multiple files.
       // If these parameters are set when inserting 100 rows into the table, the rows will
@@ -143,18 +153,59 @@ public abstract class CompactorOnTezTest {
   }
 
   /**
-   * Verify that the expected number of transactions have run, and their state is "succeeded".
+   * Verify that the expected number of compactions have run, and their state matches the given state.
+   *
+   * @param expectedNumberOfCompactions number of compactions already run
+   * @param expectedState The expected state of all the compactions
+   * @throws MetaException
+   */
+  protected List<ShowCompactResponseElement> verifyCompaction(int expectedNumberOfCompactions, String expectedState) throws MetaException {
+    List<ShowCompactResponseElement> compacts =
+        TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
+    Assert.assertEquals("Compaction queue must contain " + expectedNumberOfCompactions + " element(s)",
+        expectedNumberOfCompactions, compacts.size());
+    compacts.forEach(
+        c -> Assert.assertEquals("Compaction state is not " + expectedState, expectedState, c.getState()));
+    return compacts;
+  }
+
+  /**
+   * Verify that the expected number of compactions have run, and their state is "succeeded".
    *
    * @param expectedSuccessfulCompactions number of compactions already run
    * @throws MetaException
    */
   protected void verifySuccessfulCompaction(int expectedSuccessfulCompactions) throws MetaException {
-    List<ShowCompactResponseElement> compacts =
-        TxnUtils.getTxnStore(conf).showCompact(new ShowCompactRequest()).getCompacts();
-    Assert.assertEquals("Completed compaction queue must contain " + expectedSuccessfulCompactions + " element(s)",
-        expectedSuccessfulCompactions, compacts.size());
-    compacts.forEach(
-        c -> Assert.assertEquals("Compaction state is not succeeded", "succeeded", c.getState()));
+    verifyCompaction(expectedSuccessfulCompactions, TxnStore.SUCCEEDED_RESPONSE);
+  }
+
+  protected HiveHookEvents.HiveHookEventProto getRelatedTezEvent(String dbTableName) throws Exception {
+    int retryCount = 3;
+    while (retryCount-- > 0) {
+      List<ProtoMessageReader<HiveHookEvents.HiveHookEventProto>> readers = TestHiveProtoLoggingHook.getTestReader(conf, tmpFolder);
+      for (ProtoMessageReader<HiveHookEvents.HiveHookEventProto> reader : readers) {
+        do {
+          HiveHookEvents.HiveHookEventProto event;
+          try {
+            if ((event = reader.readEvent()) == null) {
+              break;
+            }
+          } catch (IOException e) {
+            //IO error, or reached end of current event file. Advancing to next.
+            break;
+          }
+          if (ExecutionMode.TEZ.equals(ExecutionMode.valueOf(event.getExecutionMode())) &&
+              event.getTablesReadCount() > 0 &&
+              dbTableName.equalsIgnoreCase(event.getTablesRead(0))) {
+            return event;
+          }
+        } while (true);
+      }
+      //Since Event writing is async it may happen that the event we are looking for is not yet written out.
+      //Let's retry it after waiting a bit
+      Thread.sleep(3000);
+    }
+    return null;
   }
 
   protected class TestDataProvider {
@@ -194,7 +245,8 @@ public abstract class CompactorOnTezTest {
       if (dbName != null) {
         tblName = dbName + "." + tblName;
       }
-      executeStatementOnDriver("drop table if exists " + tblName, driver);
+      dropTables(driver, tblName);
+      
       StringBuilder query = new StringBuilder();
       query.append("create table ").append(tblName).append(" (a string, b int)");
       if (isPartitioned) {
@@ -223,6 +275,11 @@ public abstract class CompactorOnTezTest {
       executeStatementOnDriver("create database " + dbName, driver);
     }
 
+    void createDb(String dbName, String poolName) throws Exception {
+      executeStatementOnDriver("drop database if exists " + dbName + " cascade", driver);
+      executeStatementOnDriver("create database " + dbName + " WITH DBPROPERTIES('" + Constants.HIVE_COMPACTOR_WORKER_POOL + "'='" + poolName + "')", driver);
+    }
+
     /**
      * 5 txns.
      */
@@ -242,7 +299,7 @@ public abstract class CompactorOnTezTest {
     /**
      * 3 txns.
      */
-    protected void insertMmTestDataPartitioned(String tblName) throws Exception {
+    protected void insertOnlyTestDataPartitioned(String tblName) throws Exception {
       executeStatementOnDriver("insert into " + tblName
           + " values('1',2, 'today'),('1',3, 'today'),('1',4, 'yesterday'),('2',2, 'tomorrow'),"
           + "('2',3, 'yesterday'),('2',4, 'today')", driver);
@@ -253,10 +310,27 @@ public abstract class CompactorOnTezTest {
           + "('5',4, 'today'),('6',2, 'today'),('6',3, 'today'),('6',4, 'today')", driver);
     }
 
+    protected void insertTestData(String tblName, boolean isPartitioned) throws Exception {
+      if (isPartitioned) {
+        insertTestDataPartitioned(tblName);
+      } else {
+        insertTestData(tblName);
+      }
+    }
+
+
+    protected void insertOnlyTestData(String tblName, boolean isPartitioned) throws Exception {
+      if (isPartitioned) {
+        insertOnlyTestDataPartitioned(tblName);
+      } else {
+        insertOnlyTestData(tblName);
+      }
+    }
+
     /**
      * 5 txns.
      */
-    void insertTestData(String tblName) throws Exception {
+    private void insertTestData(String tblName) throws Exception {
       insertTestData(null, tblName);
     }
 
@@ -296,8 +370,8 @@ public abstract class CompactorOnTezTest {
         tblName = dbName + "." + tblName;
         tempTblName = dbName + "." + tempTblName;
       }
-
-      executeStatementOnDriver("drop table if exists " + tblName, driver);
+      dropTables(driver, tblName);
+      
       StringBuilder query = new StringBuilder();
       query.append("create table ").append(tblName).append(" (a string, b string, c string)");
       query.append(" stored as orc");
@@ -351,14 +425,14 @@ public abstract class CompactorOnTezTest {
     /**
      * 5 txns.
      */
-    void insertMmTestData(String tblName) throws Exception {
-      insertMmTestData(null, tblName);
+    void insertOnlyTestData(String tblName) throws Exception {
+      insertOnlyTestData(null, tblName);
     }
 
     /**
      * 3 txns.
      */
-    void insertMmTestData(String dbName, String tblName) throws Exception {
+    void insertOnlyTestData(String dbName, String tblName) throws Exception {
       if (dbName != null) {
         tblName = dbName + "." + tblName;
       }
@@ -385,7 +459,7 @@ public abstract class CompactorOnTezTest {
     /**
      * i txns.
      */
-    protected void insertMmTestData(String tblName, int iterations) throws Exception {
+    protected void insertOnlyTestData(String tblName, int iterations) throws Exception {
       for (int i = 0; i < iterations; i++) {
         executeStatementOnDriver("insert into " + tblName + " values('" + i + "'," + i + ")", driver);
       }
@@ -453,7 +527,7 @@ public abstract class CompactorOnTezTest {
           actualFileName = m.group(2);
         }
 
-        if (expectedFileName == null || actualFileName == null || !expectedFileName.equals(actualFileName)) {
+        if (expectedFileName == null || !expectedFileName.equals(actualFileName)) {
           return false;
         }
       }
@@ -468,5 +542,23 @@ public abstract class CompactorOnTezTest {
     protected void dropTable(String tblName) throws Exception {
       executeStatementOnDriver("drop table " + tblName, driver);
     }
+  }
+
+  protected Initiator createInitiator() throws Exception {
+    TestTxnDbUtil.setConfValues(conf);
+    Initiator t = new Initiator();
+    t.setConf(conf);
+    stop.set(true);
+    t.init(stop);
+    return t;
+  }
+
+  static Worker createWorker(HiveConf conf) throws  Exception {
+    HiveConf hiveConf = new HiveConf(conf);
+    hiveConf.setBoolVar(HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED, true);
+    Worker t = new Worker();
+    t.setConf(hiveConf);
+    t.init(new AtomicBoolean(true));
+    return t;
   }
 }

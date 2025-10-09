@@ -65,7 +65,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
       hcatConf
       .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
           "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-      hcatConf.set(HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE.varname,
+      hcatConf.set(HiveConf.ConfVars.HIVE_DEFAULT_RCFILE_SERDE.varname,
           "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe");
       hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
           HCatSemanticAnalyzer.class.getName());

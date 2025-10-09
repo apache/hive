@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.authorization;
 import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -132,7 +133,7 @@ public class TestSessionUserName {
    * that captures the given user name
    */
   private HiveConf getAuthV2HiveConf() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         HiveAuthorizerStoringUserNameFactory.class.getName());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER,

@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -51,9 +52,9 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private static transient final Logger LOG = LoggerFactory.getLogger(ReplCopyTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ReplCopyTask.class);
 
-  public ReplCopyTask(){
+  public ReplCopyTask() {
     super();
   }
 
@@ -64,6 +65,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     Path toPath = null;
 
     try {
+      initializeFromDeferredContext();
+
       // Note: CopyWork supports copying multiple files, but ReplCopyWork doesn't.
       //       Not clear of ReplCopyWork should inherit from CopyWork.
       if (work.getFromPaths().length > 1 || work.getToPaths().length > 1) {
@@ -86,10 +89,16 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       if (ReplChangeManager.isCMFileUri(fromPath)) {
         String[] result = ReplChangeManager.decodeFileUri(fromPath.toString());
         ReplChangeManager.FileInfo sourceInfo = ReplChangeManager
-            .getFileInfo(new Path(result[0]), result[1], result[2], result[3], conf);
+          .getFileInfo(new Path(result[0]), result[1], result[2], result[3], conf);
+        DataCopyStatistics copyStatistics = new DataCopyStatistics();
         if (FileUtils.copy(
-            sourceInfo.getSrcFs(), sourceInfo.getSourcePath(),
-            dstFs, toPath, false, false, conf)) {
+          sourceInfo.getSrcFs(), sourceInfo.getSourcePath(),
+          dstFs, toPath, false, false, conf, copyStatistics)) {
+          // increment total bytes replicated count
+          if (work.getMetricCollector() != null) {
+            work.getMetricCollector().incrementSizeOfDataReplicated(copyStatistics.getBytesCopied());
+            LOG.debug("ReplCopyTask copied {} bytes", copyStatistics.getBytesCopied());
+          }
           return 0;
         } else {
           console.printError("Failed to copy: '" + fromPath.toString() + "to: '" + toPath.toString()
@@ -157,12 +166,24 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       // This is needed to avoid having duplicate files in target if same event is applied twice
       // where the first event refers to source path and  second event refers to CM path
       copyUtils.renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
+
+      // increment total bytes replicated count
+      if (work.getMetricCollector() != null) {
+        work.getMetricCollector().incrementSizeOfDataReplicated(copyUtils.getTotalBytesCopied());
+        LOG.debug("ReplCopyTask copied {} bytes", copyUtils.getTotalBytesCopied());
+      }
       return 0;
     } catch (Exception e) {
       LOG.error("Failed to execute", e);
       setException(e);
       return ReplUtils.handleException(true, e, work.getDumpDirectory(), work.getMetricCollector(),
               getName(), conf);
+    }
+  }
+
+  private void initializeFromDeferredContext() throws HiveException {
+    if (null != getDeferredWorkContext()) {
+      work.initializeFromDeferredContext(getDeferredWorkContext());
     }
   }
 
@@ -189,10 +210,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           ReplChangeManager.FileInfo f = ReplChangeManager
               .getFileInfo(new Path(fragments[0]), fragments[1], fragments[2], fragments[3], conf);
           filePaths.add(f);
-        } catch (MetaException e) {
+        } catch (IOException ioe) {
           // issue warning for missing file and throw exception
           LOG.warn("Cannot find {} in source repo or cmroot", fragments[0]);
-          throw new IOException(e.getMessage());
+          throw ioe;
         }
         // Note - we need srcFs rather than fs, because it is possible that the _files lists files
         // which are from a different filesystem than the fs where the _files file itself was loaded
@@ -217,7 +238,6 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   public String getName() {
     return "REPL_COPY";
   }
-
 
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf, boolean isAutoPurge, boolean needRecycle,

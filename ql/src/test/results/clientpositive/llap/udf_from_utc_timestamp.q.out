@@ -39,8 +39,6 @@ from_utc_timestamp('2012-02-11 04:30:00', 'PST'),
 from_utc_timestamp('2012-02-11 04:30:00', 'Europe/Moscow'),
 from_utc_timestamp('2012-02-11 04:30:00', 'GMT+8'),
 from_utc_timestamp('2012-02-11 04:30:00', 'GMT'),
-from_utc_timestamp('2012-02-11 04:30:00', ''),
-from_utc_timestamp('2012-02-11 04:30:00', '---'),
 from_utc_timestamp(cast(null as string), 'PST'),
 from_utc_timestamp('2012-02-11 04:30:00', cast(null as string))
 PREHOOK: type: QUERY
@@ -51,21 +49,17 @@ from_utc_timestamp('2012-02-11 04:30:00', 'PST'),
 from_utc_timestamp('2012-02-11 04:30:00', 'Europe/Moscow'),
 from_utc_timestamp('2012-02-11 04:30:00', 'GMT+8'),
 from_utc_timestamp('2012-02-11 04:30:00', 'GMT'),
-from_utc_timestamp('2012-02-11 04:30:00', ''),
-from_utc_timestamp('2012-02-11 04:30:00', '---'),
 from_utc_timestamp(cast(null as string), 'PST'),
 from_utc_timestamp('2012-02-11 04:30:00', cast(null as string))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-2012-02-10 20:30:00	2012-02-11 08:30:00	2012-02-11 12:30:00	2012-02-11 04:30:00	2012-02-11 04:30:00	2012-02-11 04:30:00	NULL	NULL
+2012-02-10 20:30:00	2012-02-11 08:30:00	2012-02-11 12:30:00	2012-02-11 04:30:00	NULL	NULL
 PREHOOK: query: select
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), 'PST'),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), 'Europe/Moscow'),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), 'GMT+8'),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), 'GMT'),
-from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), ''),
-from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), '---'),
 from_utc_timestamp(cast(null as timestamp), 'PST'),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), cast(null as string))
 PREHOOK: type: QUERY
@@ -76,14 +70,12 @@ from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), 'PST'),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), 'Europe/Moscow'),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), 'GMT+8'),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), 'GMT'),
-from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), ''),
-from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), '---'),
 from_utc_timestamp(cast(null as timestamp), 'PST'),
 from_utc_timestamp(cast('2012-02-11 04:30:00' as timestamp), cast(null as string))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-2012-02-10 20:30:00	2012-02-11 08:30:00	2012-02-11 12:30:00	2012-02-11 04:30:00	2012-02-11 04:30:00	2012-02-11 04:30:00	NULL	NULL
+2012-02-10 20:30:00	2012-02-11 08:30:00	2012-02-11 12:30:00	2012-02-11 04:30:00	NULL	NULL
 PREHOOK: query: select
 from_utc_timestamp('2012-02-11-04:30:00', 'UTC'),
 from_utc_timestamp('2012-02-11-04:30:00', 'PST')

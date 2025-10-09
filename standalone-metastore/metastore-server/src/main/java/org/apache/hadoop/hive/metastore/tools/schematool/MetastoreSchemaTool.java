@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.MetaStoreConnectionInfo;
 import org.apache.hadoop.hive.metastore.tools.schematool.HiveSchemaHelper.NestedScriptParser;
+import org.apache.hadoop.util.ExitUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +77,7 @@ public class MetastoreSchemaTool {
 
   private static String homeDir;
 
-  private static String findHomeDir() {
+  protected static String findHomeDir() {
     // If METASTORE_HOME is set, use it, else use HIVE_HOME for backwards compatibility.
     homeDir = homeDir == null ? System.getenv("METASTORE_HOME") : homeDir;
     return homeDir == null ? System.getenv("HIVE_HOME") : homeDir;
@@ -122,7 +124,7 @@ public class MetastoreSchemaTool {
     if (cmdLine.hasOption("userName")) {
       setUserName(cmdLine.getOptionValue("userName"));
     } else {
-      setUserName(getConf().get(MetastoreConf.ConfVars.CONNECTION_USER_NAME.getVarname()));
+      setUserName(MetastoreConf.getAsString(getConf(), MetastoreConf.ConfVars.CONNECTION_USER_NAME));
     }
     if (cmdLine.hasOption("passWord")) {
       setPassWord(cmdLine.getOptionValue("passWord"));
@@ -345,6 +347,10 @@ public class MetastoreSchemaTool {
 
   // Quote if the database requires it
   protected String quote(String stmt) {
+    return quote(stmt, needsQuotedIdentifier, quoteCharacter);
+  }
+
+  public static String quote(String stmt, boolean needsQuotedIdentifier, String quoteCharacter) {
     stmt = stmt.replace("<q>", needsQuotedIdentifier ? quoteCharacter : "");
     stmt = stmt.replace("<qa>", quoteCharacter);
     return stmt;
@@ -418,7 +424,7 @@ public class MetastoreSchemaTool {
 
   public static void main(String[] args) {
     MetastoreSchemaTool tool = new MetastoreSchemaTool();
-    System.exit(tool.run(args));
+    ExitUtil.terminate(tool.run(args));
   }
 
   public int run(String[] args) {

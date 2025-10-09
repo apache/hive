@@ -102,6 +102,9 @@ STAGE PLANS:
   Stage: Stage-4
     Create Materialized View
       columns: key int
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
       name: default.masking_test_view_n_mv
       original text: select key from masking_test_n_mv
@@ -160,7 +163,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	2000                
-	totalSize           	976                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -179,8 +182,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.masking_test_n_mv	0/0/0               	 
+Table name          	Snapshot            	 
+default.masking_test_n_mv	:1:9223372036854775807::	 
 PREHOOK: query: explain cbo
 select key from `masking_test_n_mv`
 PREHOOK: type: QUERY
@@ -265,8 +268,10 @@ POSTHOOK: Output: default@masking_test_view_n_mv_masked
 PREHOOK: query: drop table `masking_test_n_mv`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_n_mv
 POSTHOOK: query: drop table `masking_test_n_mv`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_n_mv

@@ -100,11 +100,33 @@ public abstract class GenericUDF implements Closeable {
 
     @Override
     public void prepare(int version) throws HiveException {
+      // This implementation doesn't need to be prepared
     }
 
     @Override
     public Object get() throws HiveException {
       return value;
+    }
+  }
+
+  /**
+   * A basic implementation of DeferredObject which allows to set or get a Java Object reference.
+   */
+  public static class SettableDeferredJavaObject implements DeferredObject {
+    private Object value;
+
+    @Override
+    public void prepare(int version) throws HiveException {
+      // This implementation doesn't need to be prepared
+    }
+
+    @Override
+    public Object get() throws HiveException {
+      return value;
+    }
+
+    public void set(Object value) {
+      this.value = value;
     }
   }
 

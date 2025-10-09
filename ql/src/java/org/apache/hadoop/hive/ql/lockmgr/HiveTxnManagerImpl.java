@@ -72,6 +72,11 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   }
 
   @Override
+  public void clearCaches() {
+    // no op - implementations should override as needed
+  }
+
+  @Override
   public void acquireLocks(QueryPlan plan, Context ctx, String username, DriverState driverState) throws LockException {
     acquireLocks(plan, ctx, username);
   }

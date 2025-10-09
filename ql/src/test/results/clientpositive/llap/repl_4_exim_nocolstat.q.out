@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists replsrc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists replsrc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists repldst
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists repldst
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table replsrc (emp_id int comment "employee id")
         partitioned by (emp_country string, emp_state string)
         stored as textfile
@@ -50,10 +54,12 @@ POSTHOOK: Input: default@replsrc@emp_country=zx/emp_state=ka
 PREHOOK: query: drop table replsrc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@replsrc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@replsrc
 POSTHOOK: query: drop table replsrc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@replsrc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@replsrc
 PREHOOK: query: import table repldst from 'ql/test/data/exports/repldst'
 PREHOOK: type: IMPORT
@@ -93,9 +99,9 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:1
-totalFileSize:11
-maxFileSize:11
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show create table repldst
@@ -142,8 +148,10 @@ POSTHOOK: Input: default@repldst@emp_country=zx/emp_state=ka
 PREHOOK: query: drop table repldst
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@repldst
+PREHOOK: Output: database:default
 PREHOOK: Output: default@repldst
 POSTHOOK: query: drop table repldst
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@repldst
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@repldst

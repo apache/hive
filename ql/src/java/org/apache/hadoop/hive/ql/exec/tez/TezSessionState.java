@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hadoop.registry.client.api.RegistryOperations;
 
 import java.io.File;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -37,7 +39,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.security.auth.login.LoginException;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -47,6 +48,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -79,6 +81,8 @@ import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.UserPayload;
+import org.apache.tez.dag.api.client.DAGStatus;
+import org.apache.tez.dag.api.client.Progress;
 import org.apache.tez.mapreduce.hadoop.DeprecatedKeys;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
@@ -92,6 +96,7 @@ import org.apache.hadoop.hive.ql.exec.tez.monitoring.TezJobMonitor;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -152,6 +157,9 @@ public class TezSessionState {
   private KillQuery killQuery;
 
   private static final Cache<String, String> shaCache = CacheBuilder.newBuilder().maximumSize(100).build();
+
+  private DAGStatus dagStatus;
+
   /**
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
@@ -227,7 +235,7 @@ public class TezSessionState {
     return UUID.randomUUID().toString();
   }
 
-  public void open() throws IOException, LoginException, URISyntaxException, TezException {
+  public void open() throws IOException, URISyntaxException, TezException {
     String[] noFiles = null;
     open(noFiles);
   }
@@ -237,24 +245,24 @@ public class TezSessionState {
    * submit multiple DAGs against a session (as long as they are executed serially).
    */
   public void open(String[] additionalFilesNotFromConf)
-      throws IOException, LoginException, URISyntaxException, TezException {
+      throws IOException, URISyntaxException, TezException {
     openInternal(additionalFilesNotFromConf, false, null, null);
   }
 
 
   public void open(HiveResources resources)
-      throws LoginException, IOException, URISyntaxException, TezException {
+      throws IOException, URISyntaxException, TezException {
     openInternal(null, false, null, resources);
   }
 
   public void beginOpen(String[] additionalFiles, LogHelper console)
-      throws IOException, LoginException, URISyntaxException, TezException {
+      throws IOException, URISyntaxException, TezException {
     openInternal(additionalFiles, true, console, null);
   }
 
   protected void openInternal(String[] additionalFilesNotFromConf,
       boolean isAsync, LogHelper console, HiveResources resources)
-          throws IOException, LoginException, URISyntaxException, TezException {
+          throws IOException, URISyntaxException, TezException {
     // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
     String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
     if (queueName != null && !queueName.equals(confQueueName)) {
@@ -281,7 +289,7 @@ public class TezSessionState {
     } else {
       this.resources = new HiveResources(createTezDir(sessionId, "resources"));
       ensureLocalResources(conf, additionalFilesNotFromConf);
-      LOG.info("Created new resources: " + resources);
+      LOG.info("Created new resources: " + this.resources);
     }
 
     // unless already installed on all the cluster nodes, we'll have to
@@ -361,7 +369,7 @@ public class TezSessionState {
      */
     HiveConfUtil.updateCredentialProviderPasswordForJobs(tezConfig);
 
-    String tezJobNameFormat = HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME);
+    String tezJobNameFormat = HiveConf.getVar(conf, ConfVars.HIVE_TEZ_JOB_NAME);
     final TezClient session = TezClient.newBuilder(String.format(tezJobNameFormat, sessionId), tezConfig)
         .setIsSession(true).setLocalResources(commonLocalResources)
         .setCredentials(llapCredentials).setServicePluginDescriptor(servicePluginsDescriptor)
@@ -488,7 +496,10 @@ public class TezSessionState {
       // Unset this after opening the session so that reopening of session uses the correct queue
       // names i.e, if client has not died and if the user has explicitly set a queue name
       // then reopened session will use user specified queue name else default cluster queue names.
-      conf.unset(TezConfiguration.TEZ_QUEUE_NAME);
+      if (conf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
+        LOG.debug("Unsetting tez.queue.name (from: {})", conf.get(TezConfiguration.TEZ_QUEUE_NAME));
+        conf.unset(TezConfiguration.TEZ_QUEUE_NAME);
+      }
       return session;
     } finally {
       if (isOnThread && !isSuccessful) {
@@ -542,8 +553,8 @@ public class TezSessionState {
       conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_ENV, env);
     }
 
-    conf.setIfUnset(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS,
-        org.apache.tez.mapreduce.hadoop.MRHelpers.getJavaOptsForMRAM(conf));
+    String mrAmJavaOpts = conf.get(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, MRHelpers.getJavaOptsForMRAM(conf));
+    conf.set(TezConfiguration.TEZ_AM_LAUNCH_CMD_OPTS, mrAmJavaOpts + JavaVersionUtils.getAddOpensFlagsIfNeeded());
 
     String queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
     conf.setIfUnset(TezConfiguration.TEZ_QUEUE_NAME, queueName);
@@ -593,7 +604,6 @@ public class TezSessionState {
       }
     }
   }
-
   private void setupSessionAcls(Configuration tezConf, HiveConf hiveConf) throws
       IOException {
 
@@ -603,7 +613,7 @@ public class TezSessionState {
     String loginUser =
         loginUserUgi == null ? null : loginUserUgi.getShortUserName();
     boolean addHs2User =
-        HiveConf.getBoolVar(hiveConf, ConfVars.HIVETEZHS2USERACCESS);
+        HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_TEZ_HS2_USER_ACCESS);
 
     String viewStr = Utilities.getAclStringWithHiveModification(tezConf,
             TezConfiguration.TEZ_AM_VIEW_ACLS, addHs2User, user, loginUser);
@@ -623,7 +633,7 @@ public class TezSessionState {
 
   /** This is called in openInternal and in TezTask.updateSession to localize conf resources. */
   public void ensureLocalResources(Configuration conf, String[] newFilesNotFromConf)
-          throws IOException, LoginException, URISyntaxException, TezException {
+          throws IOException, URISyntaxException, TezException {
     if (resources == null) {
       throw new AssertionError("Ensure called on an unitialized (or closed) session " + sessionId);
     }
@@ -789,12 +799,12 @@ public class TezSessionState {
     // tez needs its own scratch dir (per session)
     // TODO: De-link from SessionState. A TezSession can be linked to different Hive Sessions via the pool.
     SessionState sessionState = SessionState.get();
-    String hdfsScratchDir = sessionState == null ? HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) : sessionState
+    String hdfsScratchDir = sessionState == null ? HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR) : sessionState
       .getHdfsScratchDirURIString();
     Path tezDir = new Path(hdfsScratchDir, TEZ_DIR);
     tezDir = new Path(tezDir, sessionId + ((suffix == null) ? "" : ("-" + suffix)));
     FileSystem fs = tezDir.getFileSystem(conf);
-    FsPermission fsPermission = new FsPermission(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION));
+    FsPermission fsPermission = new FsPermission(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR_PERMISSION));
     fs.mkdirs(tezDir, fsPermission);
     // Make sure the path is normalized (we expect validation to pass since we just created it).
     tezDir = DagUtils.validateTargetDir(tezDir, conf).getPath();
@@ -809,18 +819,18 @@ public class TezSessionState {
    * @param localJarPath Local path to the jar to be localized.
    * @return LocalResource corresponding to the localized hive exec resource.
    * @throws IOException when any file system related call fails.
-   * @throws LoginException when we are unable to determine the user.
    * @throws URISyntaxException when current jar location cannot be determined.
    */
-  private LocalResource createJarLocalResource(String localJarPath)
-      throws IOException, LoginException, IllegalArgumentException {
+  @VisibleForTesting
+  LocalResource createJarLocalResource(String localJarPath)
+      throws IOException, IllegalArgumentException {
     // TODO Reduce the number of lookups that happen here. This shouldn't go to HDFS for each call.
     // The hiveJarDir can be determined once per client.
     FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
     assert destDirStatus != null;
     Path destDirPath = destDirStatus.getPath();
 
-    Path localFile = new Path(localJarPath);
+    Path localFile = FileUtils.resolveSymlinks(new Path(localJarPath), conf);
     String sha = getSha(localFile);
 
     String destFileName = localFile.getName();
@@ -842,19 +852,7 @@ public class TezSessionState {
     return fileStatus.getPath() + ":" + fileStatus.getLen() + ":" + fileStatus.getModificationTime();
   }
 
-  private void addJarLRByClassName(String className, final Map<String, LocalResource> lrMap) throws
-      IOException, LoginException {
-    Class<?> clazz;
-    try {
-      clazz = Class.forName(className);
-    } catch (ClassNotFoundException e) {
-      throw new IOException("Cannot find " + className + " in classpath", e);
-    }
-    addJarLRByClass(clazz, lrMap);
-  }
-
-  private void addJarLRByClass(Class<?> clazz, final Map<String, LocalResource> lrMap) throws IOException,
-      LoginException {
+  private void addJarLRByClass(Class<?> clazz, final Map<String, LocalResource> lrMap) throws IOException {
     String jarPath = Utilities.jarFinderGetJar(clazz);
     if (jarPath == null) {
       throw new IOException("Can't find jar for: " + clazz);
@@ -1000,5 +998,40 @@ public class TezSessionState {
     }
     this.resources = resources;
     return dir;
+  }
+
+  public String getAppMasterUri() {
+    return Optional.of(getSession()).map(
+            tezClient -> tezClient.getAmHost() + ":" + tezClient.getAmPort())
+        .get();
+  }
+
+  /**
+   * This method makes a best-effort attempt to retrieve data from the most recent dagStatus.
+   * An alternative approach would be for Tez to expose a dedicated metrics endpoint for this purpose.
+   * However, as long as TezJobMonitor continues polling the DAG states from the Tez AM, this method
+   * will remain a reliable solution.
+   *
+   * @return A map containing metrics for TezSessionPoolManagerMetrics.
+   */
+  public Map<String, Double> getMetrics() {
+    Map<String, Double> metrics = new HashMap<>();
+    if (dagStatus == null) {
+      return metrics;
+    }
+    Progress progress = dagStatus.getDAGProgress();
+    metrics.put(TezSessionPoolManagerMetrics.TEZ_SESSION_METRIC_RUNNING_TASKS, (double) progress.getRunningTaskCount());
+    // this logic for calculating pending tasks is inline with the one in TezProgressMonitor
+    int pendingTasks = progress.getTotalTaskCount() - progress.getSucceededTaskCount() - progress.getRunningTaskCount();
+    metrics.put(TezSessionPoolManagerMetrics.TEZ_SESSION_METRIC_PENDING_TASKS, (double) pendingTasks);
+    return metrics;
+  }
+
+  /**
+   * TezSessionState receives periodic updates from the current DAG's status.
+   * @param dagStatus status of the current DAG
+   */
+  public void updateDagStatus(DAGStatus dagStatus) {
+    this.dagStatus = dagStatus;
   }
 }

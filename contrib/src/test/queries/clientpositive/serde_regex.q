@@ -40,3 +40,31 @@ LOAD DATA LOCAL INPATH "../../data/files/apache.access.log" INTO TABLE serde_reg
 LOAD DATA LOCAL INPATH "../../data/files/apache.access.2.log" INTO TABLE serde_regex;
 
 SELECT * FROM serde_regex ORDER BY `time`;
+
+
+EXPLAIN
+CREATE TABLE serde_regex2(
+  key STRING,
+  value STRING)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
+WITH SERDEPROPERTIES (
+  "input.regex" = "([^ ]*),([^ ]*)",
+  "serialization.encoding" = "ISO8859_1"
+)
+STORED AS TEXTFILE;
+
+CREATE TABLE serde_regex2(
+  key STRING,
+  value STRING)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
+WITH SERDEPROPERTIES (
+  "input.regex" = "([^ ]*),([^ ]*)",
+  "serialization.encoding" = "ISO8859_1"
+)
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH "../../data/files/encoding_iso-8859-1.txt" INTO TABLE serde_regex2;
+
+SELECT key, value FROM serde_regex2 ORDER BY key, value;
+
+DROP TABLE serde_regex2;

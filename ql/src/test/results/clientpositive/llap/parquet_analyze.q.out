@@ -94,7 +94,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	__SOME_NUMBER__                
-	totalSize           	__SOME_NUMBER__                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -142,7 +142,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	__SOME_NUMBER__                
-	totalSize           	__SOME_NUMBER__                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -158,16 +158,20 @@ Storage Desc Params:
 PREHOOK: query: DROP TABLE parquet_create_people_staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_create_people_staging
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_create_people_staging
 POSTHOOK: query: DROP TABLE parquet_create_people_staging
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_create_people_staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_create_people_staging
 PREHOOK: query: DROP TABLE parquet_create_people
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_create_people
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_create_people
 POSTHOOK: query: DROP TABLE parquet_create_people
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_create_people
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_create_people

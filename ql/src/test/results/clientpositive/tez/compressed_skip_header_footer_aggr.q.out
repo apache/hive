@@ -360,3 +360,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testcase_gz
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
+#### A masked pattern was here ####

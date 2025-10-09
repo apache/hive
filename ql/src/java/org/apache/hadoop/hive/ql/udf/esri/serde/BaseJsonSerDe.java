@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -110,7 +111,7 @@ abstract public class BaseJsonSerDe extends AbstractSerDe {
         throw new SerDeException("Only primitive field types are accepted");
       }
 
-      if (colTypeInfo.getTypeName().equals("binary")) {
+      if (colTypeInfo.getTypeName().equals(serdeConstants.BINARY_TYPE_NAME)) {
 
         if (geometryColumn >= 0) {
           // only one column can be defined as binary for geometries

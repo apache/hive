@@ -30,6 +30,7 @@ import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -63,6 +64,8 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
     };
     hiveConf = new HiveConf();
     hiveConf.set(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
+    // this test is mr specific
+    hiveConf.set(ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     miniHS2 = new MiniHS2(hiveConf);
     confOverlay = new HashMap<String, String>();
     confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
@@ -127,6 +130,7 @@ public class TestOperationLoggingAPIWithMr extends OperationLoggingAPITestBase {
   }
 
   @Test
+  @Ignore("HIVE-27966")
   public void testFetchResultsOfLogWithOrientation() throws Exception {
     // (FETCH_FIRST) execute a sql, and fetch its sql operation log as expected value
     OperationHandle operationHandle = client.executeStatement(sessionHandle, sql, null);

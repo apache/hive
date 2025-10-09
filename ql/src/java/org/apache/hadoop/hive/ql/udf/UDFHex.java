@@ -39,7 +39,7 @@ import org.apache.hadoop.io.Text;
     + "If the argument is a number or binary, returns the hexadecimal representation.\n"
     + "Example:\n"
     + "  > SELECT _FUNC_(17) FROM src LIMIT 1;\n"
-    + "  'H1'\n"
+    + "  '11'\n"
     + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n"
     + "  '46616365626F6F6B'")
 @VectorizedExpressions({FuncHex.class})

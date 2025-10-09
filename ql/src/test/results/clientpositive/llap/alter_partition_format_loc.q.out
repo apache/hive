@@ -55,10 +55,12 @@ value               	string
 PREHOOK: query: drop table alter_partition_format_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_partition_format_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_partition_format_test
 POSTHOOK: query: drop table alter_partition_format_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_partition_format_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_partition_format_test
 PREHOOK: query: create table alter_partition_format_test (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
@@ -202,8 +204,10 @@ ds                  	string
 PREHOOK: query: drop table alter_partition_format_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_partition_format_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_partition_format_test
 POSTHOOK: query: drop table alter_partition_format_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_partition_format_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_partition_format_test

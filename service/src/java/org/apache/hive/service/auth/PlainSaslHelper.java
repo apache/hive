@@ -18,7 +18,6 @@
 package org.apache.hive.service.auth;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.security.Security;
 import java.util.HashMap;
 
@@ -160,7 +159,7 @@ public final class PlainSaslHelper {
       PasswdAuthenticationProvider provider =
         AuthenticationProviderFactory.getAuthenticationProvider(authMethod);
       try {
-        provider.Authenticate(username, password);
+        provider.authenticate(username, password);
       } catch (Exception e) {
         LOG.error("Login attempt is failed for user : " + username + ". Error Messsage : " + e.getMessage());
         throw e;

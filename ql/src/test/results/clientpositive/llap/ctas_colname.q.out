@@ -162,7 +162,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	620                 
-	totalSize           	640                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -355,7 +355,7 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x4
 POSTHOOK: Lineage: x4.key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: x4.rr SCRIPT [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: x4.rr EXPRESSION [(src1)src1.FieldSchema(name:key, type:string, comment:default), (src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: x4.value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted x4
 PREHOOK: type: DESCTABLE
@@ -380,7 +380,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	25                  
 	rawDataSize         	242                 
-	totalSize           	267                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -598,7 +598,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x5
 POSTHOOK: Lineage: x5.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: x5.lead1 SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: x5.lead1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: x5.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: describe formatted x5
 PREHOOK: type: DESCTABLE
@@ -623,7 +623,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	268                 
-	totalSize           	288                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -806,7 +806,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	25                  
 	rawDataSize         	309                 
-	totalSize           	334                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1018,7 +1018,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	309                 
 	rawDataSize         	3891                
-	totalSize           	4200                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1514,7 +1514,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	5                   
 	rawDataSize         	45                  
-	totalSize           	50                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1711,7 +1711,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	5                   
 	rawDataSize         	35                  
-	totalSize           	40                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

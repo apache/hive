@@ -43,13 +43,16 @@ import static org.mockito.Mockito.mock;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
+import org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -105,6 +108,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -149,6 +153,7 @@ public abstract class TestHiveMetaStore {
     MetastoreConf.setLongVar(conf, ConfVars.BATCH_RETRIEVE_MAX, 2);
     MetastoreConf.setLongVar(conf, ConfVars.LIMIT_PARTITION_REQUEST, DEFAULT_LIMIT_PARTITION_REQUEST);
     MetastoreConf.setVar(conf, ConfVars.STORAGE_SCHEMA_READER_IMPL, "no.such.class");
+    MetastoreConf.setBoolVar(conf, ConfVars.INTEGER_JDO_PUSHDOWN, true);
   }
 
   protected void initConf() {
@@ -168,16 +173,16 @@ public abstract class TestHiveMetaStore {
 
     try {
       List<String> testVals = client.partitionNameToVals(partName);
-      assertTrue("Values from name are incorrect", vals.equals(testVals));
+      assertTrue("Values from name are incorrect: " + testVals, vals.equals(testVals));
 
       Map<String, String> testSpec = client.partitionNameToSpec(partName);
-      assertTrue("Spec from name is incorrect", spec.equals(testSpec));
+      assertTrue("Spec from name is incorrect: " + testSpec, spec.equals(testSpec));
 
       List<String> emptyVals = client.partitionNameToVals("");
-      assertTrue("Values should be empty", emptyVals.size() == 0);
+      assertEquals("Values should be empty", 0, emptyVals.size());
 
       Map<String, String> emptySpec =  client.partitionNameToSpec("");
-      assertTrue("Spec should be empty", emptySpec.size() == 0);
+      assertEquals("Spec should be empty", 0, emptySpec.size());
     } catch (Exception e) {
       fail();
     }
@@ -282,7 +287,7 @@ public abstract class TestHiveMetaStore {
       adjust(client, part, dbName, tblName, isThriftClient);
       adjust(client, part2, dbName, tblName, isThriftClient);
       adjust(client, part3, dbName, tblName, isThriftClient);
-      assertTrue("Partitions are not same", part.equals(part_get));
+      assertTrue("Partitions are not same, got: " + part_get, part.equals(part_get));
 
       // check null cols schemas for a partition
       List<String> vals6 = makeVals("2016-02-22 00:00:00", "16");
@@ -319,7 +324,7 @@ public abstract class TestHiveMetaStore {
 
       List<Partition> partial = client.listPartitions(dbName, tblName, partialVals,
           (short) -1);
-      assertTrue("Should have returned 2 partitions", partial.size() == 2);
+      assertEquals("Should have returned 2 partitions", 2, partial.size());
       assertTrue("Not all parts returned", partial.containsAll(parts));
 
       Set<String> partNames = new HashSet<>();
@@ -327,7 +332,7 @@ public abstract class TestHiveMetaStore {
       partNames.add(part2Name);
       List<String> partialNames = client.listPartitionNames(dbName, tblName, partialVals,
           (short) -1);
-      assertTrue("Should have returned 2 partition names", partialNames.size() == 2);
+      assertEquals("Should have returned 2 partition names", 2, partialNames.size());
       assertTrue("Not all part names returned", partialNames.containsAll(partNames));
 
       partNames.add(part3Name);
@@ -335,7 +340,7 @@ public abstract class TestHiveMetaStore {
       partialVals.clear();
       partialVals.add("");
       partialNames = client.listPartitionNames(dbName, tblName, partialVals, (short) -1);
-      assertTrue("Should have returned 5 partition names", partialNames.size() == 5);
+      assertEquals("Should have returned 5 partition names", 5, partialNames.size());
       assertTrue("Not all part names returned", partialNames.containsAll(partNames));
 
       // Test partition listing with a partial spec - hr is specified but ds is not
@@ -372,21 +377,21 @@ public abstract class TestHiveMetaStore {
       Path partPath = new Path(part.getSd().getLocation());
 
 
-      assertTrue(fs.exists(partPath));
+      assertTrue(partPath + " doesn't exist", fs.exists(partPath));
       client.dropPartition(dbName, tblName, part.getValues(), true);
-      assertFalse(fs.exists(partPath));
+      assertFalse(partPath + " still exists", fs.exists(partPath));
 
       // Test append_partition_by_name
       client.appendPartition(dbName, tblName, partName);
       Partition part5 = client.getPartition(dbName, tblName, part.getValues());
       assertTrue("Append partition by name failed", part5.getValues().equals(vals));
       Path part5Path = new Path(part5.getSd().getLocation());
-      assertTrue(fs.exists(part5Path));
+      assertTrue(part5Path + " doesn't exist", fs.exists(part5Path));
 
       // Test drop_partition_by_name
       assertTrue("Drop partition by name failed",
           client.dropPartition(dbName, tblName, partName, true));
-      assertFalse(fs.exists(part5Path));
+      assertFalse(part5Path + " still exists", fs.exists(part5Path));
 
       // add the partition again so that drop table with a partition can be
       // tested
@@ -426,7 +431,7 @@ public abstract class TestHiveMetaStore {
       // create dir for /mpart5
       Path mp5Path = new Path(mpart5.getSd().getLocation());
       warehouse.mkdirs(mp5Path);
-      assertTrue(fs.exists(mp5Path));
+      assertTrue(mp5Path + " doesn't exist", fs.exists(mp5Path));
 
       // add_partitions(5,4) : err = duplicate keyvals on mpart4
       savedException = null;
@@ -439,8 +444,9 @@ public abstract class TestHiveMetaStore {
       }
 
       // check that /mpart4 does not exist, but /mpart5 still does.
-      assertTrue(fs.exists(mp5Path));
-      assertFalse(fs.exists(new Path(mpart4.getSd().getLocation())));
+      assertTrue(mp5Path + " doesn't exist", fs.exists(mp5Path));
+      Path mp4Path = new Path(mpart4.getSd().getLocation());
+      assertFalse(mp4Path + " exists", fs.exists(mp4Path));
 
       // add_partitions(5) : ok
       client.add_partitions(Arrays.asList(mpart5));
@@ -464,9 +470,9 @@ public abstract class TestHiveMetaStore {
       tbl.getParameters().put("EXTERNAL", "TRUE");
       client.createTable(tbl);
       retp = client.add_partition(part);
-      assertTrue(fs.exists(partPath));
+      assertTrue(partPath + " doesn't exist", fs.exists(partPath));
       client.dropPartition(dbName, tblName, part.getValues(), true);
-      assertTrue(fs.exists(partPath));
+      assertTrue(partPath + " still exists", fs.exists(partPath));
 
       for (String tableName : client.getTables(dbName, "*")) {
         client.dropTable(dbName, tableName);
@@ -494,7 +500,7 @@ public abstract class TestHiveMetaStore {
     assertTrue("Not all parts returned", mpartial.containsAll(expectedPartitions));
   }
 
-  private static List<String> makeVals(String ds, String id) {
+  public static List<String> makeVals(String ds, String id) {
     List <String> vals4 = new ArrayList<>(2);
     vals4.add(ds);
     vals4.add(id);
@@ -503,16 +509,22 @@ public abstract class TestHiveMetaStore {
 
   private static Partition makePartitionObject(String dbName, String tblName,
       List<String> ptnVals, Table tbl, String ptnLocationSuffix) throws MetaException {
-    Partition part4 = new Partition();
-    part4.setDbName(dbName);
-    part4.setTableName(tblName);
-    part4.setValues(ptnVals);
-    part4.setParameters(new HashMap<>());
-    part4.setSd(tbl.getSd().deepCopy());
-    part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
-    part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
-    MetaStoreServerUtils.updatePartitionStatsFast(part4, tbl, warehouse, false, false, null, true);
-    return part4;
+    String absoluteLocation = tbl.getSd().getLocation() + ptnLocationSuffix;
+    return makePartitionObjectWithAbsoluteLocation(dbName, tblName, ptnVals, tbl, absoluteLocation);
+  }
+
+  private static Partition makePartitionObjectWithAbsoluteLocation(String dbName, String tblName,
+      List<String> ptnVals, Table tbl, String absolutePartitionLocation) throws MetaException {
+    Partition part = new Partition();
+    part.setDbName(dbName);
+    part.setTableName(tblName);
+    part.setValues(ptnVals);
+    part.setParameters(new HashMap<>());
+    part.setSd(tbl.getSd().deepCopy());
+    part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
+    part.getSd().setLocation(absolutePartitionLocation);
+    MetaStoreServerUtils.updatePartitionStatsFast(part, tbl, warehouse, false, false, null, true);
+    return part;
   }
 
   @Test
@@ -551,7 +563,6 @@ public abstract class TestHiveMetaStore {
       " partitions",values.size(), partitions.size());
 
     cleanUp(dbName, tblName, typeName);
-
   }
 
   @Test
@@ -1134,6 +1145,52 @@ public abstract class TestHiveMetaStore {
     }
   }
 
+  @Test(expected = InvalidObjectException.class)
+  public void testDropTableFetchPartitions() throws Throwable {
+    String dbName = "fetchPartitionsDb";
+    String tblName = "fetchPartitionsTbl";
+    List<String> vals = new ArrayList<>(2);
+    vals.add("2011-07-11");
+    vals.add("8");
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+            .setName(dbName)
+            .setDescription("Drop table Fetch partition Test database")
+            .create(client, conf);
+
+    Table tbl = new TableBuilder()
+            .setDbName(dbName)
+            .setTableName(tblName)
+            .addCol("name", ColumnType.STRING_TYPE_NAME)
+            .addCol("income", ColumnType.INT_TYPE_NAME)
+            .addPartCol("ds", ColumnType.STRING_TYPE_NAME)
+            .addPartCol("hr", ColumnType.INT_TYPE_NAME)
+            .create(client, conf);
+
+    if (isThriftClient) {
+      // the createTable() above does not update the location in the 'tbl'
+      // object when the client is a thrift client and the code below relies
+      // on the location being present in the 'tbl' object - so get the table
+      // from the metastore
+      tbl = client.getTable(dbName, tblName);
+    }
+
+    Partition part = new Partition();
+    part.setDbName(dbName);
+    part.setTableName(tblName);
+    part.setValues(vals);
+    part.setParameters(new HashMap<>());
+    part.setSd(tbl.getSd().deepCopy());
+    part.getSd().setLocation(tbl.getSd().getLocation() + "/part1");
+
+    client.add_partition(part);
+
+    GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(dbName, tblName, vals);
+    client.dropTable(dbName, tblName, true, false);
+    List<Partition> partitionsList = client.getPartitionsByNames(req).getPartitions();
+  }
+
   @Test
   public void testDatabase() throws Throwable {
     try {
@@ -1505,7 +1562,7 @@ public abstract class TestHiveMetaStore {
       assertNotNull(fieldSchemas);
       assertEquals(fieldSchemas.size(), tbl.getSd().getCols().size());
       for (FieldSchema fs : tbl.getSd().getCols()) {
-        assertTrue(fieldSchemas.contains(fs));
+        assertTrue("fieldSchemas variable doesn't contain " + fs, fieldSchemas.contains(fs));
       }
 
       List<FieldSchema> fieldSchemasFull = client.getSchema(dbName, tblName);
@@ -1513,10 +1570,11 @@ public abstract class TestHiveMetaStore {
       assertEquals(fieldSchemasFull.size(), tbl.getSd().getCols().size()
           + tbl.getPartitionKeys().size());
       for (FieldSchema fs : tbl.getSd().getCols()) {
-        assertTrue(fieldSchemasFull.contains(fs));
+        assertTrue("fieldSchemasFull variable doesn't contain " + fs, fieldSchemasFull.contains(fs));
+
       }
       for (FieldSchema fs : tbl.getPartitionKeys()) {
-        assertTrue(fieldSchemasFull.contains(fs));
+        assertTrue("fieldSchemasFull variable doesn't contain " + fs, fieldSchemasFull.contains(fs));
       }
 
       tbl2.unsetId();
@@ -1539,7 +1597,7 @@ public abstract class TestHiveMetaStore {
       assertNotNull(fieldSchemas);
       assertEquals(fieldSchemas.size(), tbl2.getSd().getCols().size());
       for (FieldSchema fs : tbl2.getSd().getCols()) {
-        assertTrue(fieldSchemas.contains(fs));
+        assertTrue("fieldSchemas variable doesn't contain " + fs, fieldSchemas.contains(fs));
       }
 
       fieldSchemasFull = client.getSchema(dbName, tblName2);
@@ -1547,10 +1605,10 @@ public abstract class TestHiveMetaStore {
       assertEquals(fieldSchemasFull.size(), tbl2.getSd().getCols().size()
           + tbl2.getPartitionKeys().size());
       for (FieldSchema fs : tbl2.getSd().getCols()) {
-        assertTrue(fieldSchemasFull.contains(fs));
+        assertTrue("fieldSchemasFull variable doesn't contain " + fs, fieldSchemasFull.contains(fs));
       }
       for (FieldSchema fs : tbl2.getPartitionKeys()) {
-        assertTrue(fieldSchemasFull.contains(fs));
+        assertTrue("fieldSchemasFull variable doesn't contain " + fs, fieldSchemasFull.contains(fs));
       }
 
       assertEquals("Use this for comments etc", tbl2.getSd().getParameters()
@@ -1616,10 +1674,12 @@ public abstract class TestHiveMetaStore {
 
       FileSystem fs = FileSystem.get((new Path(tbl.getSd().getLocation())).toUri(), conf);
       client.dropTable(dbName, tblName);
-      assertFalse(fs.exists(new Path(tbl.getSd().getLocation())));
+      Path pathTbl = new Path(tbl.getSd().getLocation());
+      assertFalse(pathTbl + " exists", fs.exists(pathTbl));
 
       client.dropTable(dbName, tblName2);
-      assertTrue(fs.exists(new Path(tbl2.getSd().getLocation())));
+      Path pathTbl2 = new Path(tbl2.getSd().getLocation());
+      assertTrue(pathTbl2 + " doesn't exist", fs.exists(pathTbl2));
 
       client.dropType(typeName);
       client.dropDatabase(dbName);
@@ -1707,7 +1767,7 @@ public abstract class TestHiveMetaStore {
       new DatabaseBuilder()
           .setName(dbName)
           .create(client, conf);
-      createTableForTestFilter(dbName,tblName, tblOwner, lastAccessed, true);
+      createTableForTestFilter(dbName, tblName, tblOwner, lastAccessed, true);
 
       // Create a ColumnStatistics Obj
       String[] colName = new String[]{"income", "name"};
@@ -1784,8 +1844,9 @@ public abstract class TestHiveMetaStore {
       boolean status = client.deleteTableColumnStatistics(dbName, tblName, null, ENGINE);
       assertTrue(status);
       // try to query stats for a column for which stats doesn't exist
-      assertTrue(client.getTableColumnStatistics(
-          dbName, tblName, Lists.newArrayList(colName[1]), ENGINE).isEmpty());
+      List<ColumnStatisticsObj> stats = client.getTableColumnStatistics(
+          dbName, tblName, Lists.newArrayList(colName[1]), ENGINE);
+      assertTrue("stats are not empty: " + stats, stats.isEmpty());
 
       colStats.setStatsDesc(statsDesc);
       colStats.setStatsObj(statsObjs);
@@ -1794,8 +1855,18 @@ public abstract class TestHiveMetaStore {
       client.updateTableColumnStatistics(colStats);
 
       // query column stats for column whose stats were updated in the previous call
-      colStats2 = client.getTableColumnStatistics(
-          dbName, tblName, Lists.newArrayList(colName[0]), ENGINE).get(0);
+      List<ColumnStatisticsObj> colStats3 = client.getTableColumnStatistics(
+          dbName, tblName, Lists.newArrayList(colName), ENGINE);
+      assertEquals(2, colStats3.size());
+      DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tblName);
+      request.setTableLevel(true);
+      request.setEngine(ENGINE);
+      // multiple columns
+      request.setCol_names(Arrays.asList(colName));
+      assertTrue(client.deleteColumnStatistics(request));
+      colStats3 = client.getTableColumnStatistics(
+          dbName, tblName, Lists.newArrayList(colName), ENGINE);
+      assertTrue("stats are not empty: " + colStats3, colStats3.isEmpty());
 
       // partition level column statistics test
       // create a table with multiple partitions
@@ -1847,8 +1918,55 @@ public abstract class TestHiveMetaStore {
          Lists.newArrayList(partName), Lists.newArrayList(colName[0]), ENGINE).get(partName).get(0);
 
      // test get stats on a column for which stats doesn't exist
-     assertTrue(client.getPartitionColumnStatistics(dbName, tblName,
-           Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE).isEmpty());
+     Map<String, List<ColumnStatisticsObj>> stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+         Lists.newArrayList(partName), Lists.newArrayList(colName[1]), ENGINE);
+     assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
+
+     request.setTableLevel(false);
+     request.setCol_names(Arrays.asList(colName));
+     request.addToPart_names(partName);
+     // no column name set
+     request.unsetCol_names();
+     assertTrue(client.deleteColumnStatistics(request));
+     stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+          Lists.newArrayList(partName), Lists.newArrayList(colName), ENGINE);
+     assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
+
+     client.updatePartitionColumnStatistics(colStats);
+     ColumnStatistics colStats1 = new ColumnStatistics(colStats);
+     colStats1.getStatsDesc().setPartName(partitions.get(1));
+     client.updatePartitionColumnStatistics(colStats1);
+     colStats1 = new ColumnStatistics(colStats);
+     colStats1.getStatsDesc().setPartName(partitions.get(2));
+     client.updatePartitionColumnStatistics(colStats1);
+
+     request.unsetPart_names();
+     request.setPart_names(Arrays.asList(partitions.get(0), partitions.get(1)));
+     request.setCol_names(Arrays.asList(colName[0]));
+     assertTrue(client.deleteColumnStatistics(request));
+     stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+         Lists.newArrayList(partitions.get(0), partitions.get(1), partitions.get(2)), Lists.newArrayList(colName), ENGINE);
+     assertEquals(1, stats2.get(partitions.get(0)).size());
+     assertEquals(colName[1], stats2.get(partitions.get(0)).get(0).getColName());
+     assertEquals(1, stats2.get(partitions.get(1)).size());
+     assertEquals(colName[1], stats2.get(partitions.get(1)).get(0).getColName());
+     assertEquals(2, stats2.get(partitions.get(2)).size());
+
+     // no column
+     request.unsetCol_names();
+     assertTrue(client.deleteColumnStatistics(request));
+     stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+          Lists.newArrayList(partitions.get(0), partitions.get(1), partitions.get(2)), Lists.newArrayList(colName), ENGINE);
+     assertEquals(1, stats2.size());
+     assertEquals(2, stats2.get(partitions.get(2)).size());
+
+     // no partition or column name is set
+     request.unsetPart_names();
+     client.updatePartitionColumnStatistics(colStats);
+     assertTrue(client.deleteColumnStatistics(request));
+     stats2 = client.getPartitionColumnStatistics(dbName, tblName,
+          Lists.newArrayList(partitions), Lists.newArrayList(colName), ENGINE);
+     assertTrue("stats are not empty: " + stats2, stats2.isEmpty());
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
       System.err.println("testColumnStatistics() failed.");
@@ -2140,7 +2258,7 @@ public abstract class TestHiveMetaStore {
       assertNotNull(fieldSchemas);
       assertEquals(fieldSchemas.size(), tbl.getSd().getCols().size());
       for (FieldSchema fs : tbl.getSd().getCols()) {
-        assertTrue(fieldSchemas.contains(fs));
+        assertTrue("fieldSchemas variable doesn't contain " + fs, fieldSchemas.contains(fs));
       }
 
       List<FieldSchema> fieldSchemasFull = client.getSchema(dbName, tblName);
@@ -2148,10 +2266,10 @@ public abstract class TestHiveMetaStore {
       assertEquals(fieldSchemasFull.size(), tbl.getSd().getCols().size()
           + tbl.getPartitionKeys().size());
       for (FieldSchema fs : tbl.getSd().getCols()) {
-        assertTrue(fieldSchemasFull.contains(fs));
+        assertTrue("fieldSchemasFull variable doesn't contain " + fs, fieldSchemasFull.contains(fs));
       }
       for (FieldSchema fs : tbl.getPartitionKeys()) {
-        assertTrue(fieldSchemasFull.contains(fs));
+        assertTrue("fieldSchemasFull variable doesn't contain " + fs, fieldSchemasFull.contains(fs));
       }
     } catch (Exception e) {
       System.err.println(StringUtils.stringifyException(e));
@@ -2293,18 +2411,19 @@ public abstract class TestHiveMetaStore {
         .addCol("c1", ColumnType.STRING_TYPE_NAME)
         .addCol("c2", ColumnType.INT_TYPE_NAME)
         .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
-        .addPartCol("p2", ColumnType.STRING_TYPE_NAME)
+        .addPartCol("p2", "varchar(20)")
         .addPartCol("p3", ColumnType.INT_TYPE_NAME)
+        .addPartCol("p4", "char(20)")
         .create(client, conf);
 
     tbl = client.getTable(dbName, tblName);
 
-    add_partition(client, tbl, Lists.newArrayList("p11", "p21", "31"), "part1");
-    add_partition(client, tbl, Lists.newArrayList("p11", "p22", "32"), "part2");
-    add_partition(client, tbl, Lists.newArrayList("p12", "p21", "31"), "part3");
-    add_partition(client, tbl, Lists.newArrayList("p12", "p23", "32"), "part4");
-    add_partition(client, tbl, Lists.newArrayList("p13", "p24", "31"), "part5");
-    add_partition(client, tbl, Lists.newArrayList("p13", "p25", "-33"), "part6");
+    add_partition(client, tbl, Lists.newArrayList("p11", "p21", "31", "p41"), "part1");
+    add_partition(client, tbl, Lists.newArrayList("p11", "p22", "32", "p42"), "part2");
+    add_partition(client, tbl, Lists.newArrayList("p12", "p21", "31", "p43"), "part3");
+    add_partition(client, tbl, Lists.newArrayList("p12", "p23", "32", "p43"), "part4");
+    add_partition(client, tbl, Lists.newArrayList("p13", "p24", "31", "p44"), "part5");
+    add_partition(client, tbl, Lists.newArrayList("p13", "p25", "-33", "p45"), "part6");
 
     // Test equals operator for strings and integers.
     checkFilter(client, dbName, tblName, "p1 = \"p11\"", 2);
@@ -2321,6 +2440,8 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p1 = \"p11\" or p1=\"p12\"", 4);
     checkFilter(client, dbName, tblName, "p1 = \"p11\" and p3 = 31", 1);
     checkFilter(client, dbName, tblName, "p3 = -33 or p1 = \"p12\"", 3);
+    checkFilter(client, dbName, tblName, "p1 = \"p11\" and p4 = \"p41\"", 1);
+    checkFilter(client, dbName, tblName, "p1 = \"p12\" and p4 = \"p43\"", 2);
 
     // Test not-equals operator for strings and integers.
     checkFilter(client, dbName, tblName, "p1 != \"p11\"", 4);
@@ -2336,6 +2457,8 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p3 != -33 or p1 != \"p13\"", 5);
     checkFilter(client, dbName, tblName, "p1 != \"p11\" and p3 = 31", 2);
     checkFilter(client, dbName, tblName, "p3 != 31 and p1 = \"p12\"", 1);
+    checkFilter(client, dbName, tblName, "p1 != \"p11\" and p4 != \"p43\"", 2);
+    checkFilter(client, dbName, tblName, "p3 != 31 and p4 = \"p43\"", 1);
 
     // Test reverse order.
     checkFilter(client, dbName, tblName, "31 != p3 and p1 = \"p12\"", 1);
@@ -2352,6 +2475,8 @@ public abstract class TestHiveMetaStore {
        "p1=\"p12\" and (p2=\"p27\" Or p2=\"p21\")", 1);
     checkFilter(client, dbName, tblName,
        "p1=\"p12\" and p2=\"p27\" Or p2=\"p21\"", 2);
+    checkFilter(client, dbName, tblName,
+        "p1=\"p11\" and (p4=\"p41\" or p4=\"p42\")", 2);
 
     // Test gt/lt/lte/gte/like for strings.
     checkFilter(client, dbName, tblName, "p1 > \"p12\"", 2);
@@ -2360,6 +2485,7 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p1 <= \"p12\"", 4);
     checkFilter(client, dbName, tblName, "p1 like \"p1%\"", 6);
     checkFilter(client, dbName, tblName, "p2 like \"p%3\"", 1);
+    checkFilter(client, dbName, tblName, "p4 like \"p4%\"", 6);
 
     // Test gt/lt/lte/gte for numbers.
     checkFilter(client, dbName, tblName, "p3 < 0", 1);
@@ -2382,6 +2508,17 @@ public abstract class TestHiveMetaStore {
     checkFilter(client, dbName, tblName, "p3 between 1 and 3 or p3 not between 1 and 3", 6);
     checkFilter(client, dbName, tblName,
         "p3 between 31 and 32 and p1 between \"p12\" and \"p14\"", 3);
+    checkFilter(client, dbName, tblName, "p4 between \"p41\" and \"p44\"", 5);
+
+    // Test in
+    checkFilter(client, dbName, tblName, "(p1) in (\"p11\", \"p12\")", 4);
+    checkFilter(client, dbName, tblName, "(p2) in (\"p21\", \"p25\")", 3);
+    checkFilter(client, dbName, tblName, "(p3) not in (31, 33)", 3);
+    checkFilter(client, dbName, tblName, "(p4) not in ('p43', 'p44')", 3);
+
+    // Test multi-in
+    checkFilter(client, dbName, tblName, "(struct (p1, p2)) in (const struct ('p11', 'p22'), const struct ('p12', 'p22'))", 1);
+    checkFilter(client, dbName, tblName, "(struct (p1, p3)) not in (struct ('p11', 31), struct ('p12', 33))", 5);
 
     //Test for setting the maximum partition count
     List<Partition> partitions = client.listPartitionsByFilter(dbName,
@@ -2600,7 +2737,6 @@ public abstract class TestHiveMetaStore {
     client.dropDatabase(dbName);
   }
 
-
   private void checkFilter(HiveMetaStoreClient client, String dbName,
         String tblName, String filter, int expectedCount) throws TException {
     LOG.debug("Testing filter: " + filter);
@@ -2613,21 +2749,12 @@ public abstract class TestHiveMetaStore {
 
   private void add_partition(HiveMetaStoreClient client, Table table,
       List<String> vals, String location) throws TException {
-
-    Partition part = new Partition();
-    part.setDbName(table.getDbName());
-    part.setTableName(table.getTableName());
-    part.setValues(vals);
-    part.setParameters(new HashMap<>());
-    part.setSd(table.getSd().deepCopy());
-    part.getSd().setSerdeInfo(table.getSd().getSerdeInfo());
-    part.getSd().setLocation(table.getSd().getLocation() + location);
-
+    Partition part = makePartitionObject(table.getDbName(), table.getTableName(), vals, table, location);
     client.add_partition(part);
   }
 
   /**
-   * Tests {@link HiveMetaStoreClient#newSynchronizedClient}.  Does not
+   * Tests {@link SynchronizedMetaStoreClient#newSynchronizedClient}.  Does not
    * actually test multithreading, but does verify that the proxy
    * at least works correctly.
    */
@@ -2635,8 +2762,7 @@ public abstract class TestHiveMetaStore {
   public void testSynchronized() throws Exception {
     int currentNumberOfDbs = client.getAllDatabases().size();
 
-    IMetaStoreClient synchronizedClient =
-      HiveMetaStoreClient.newSynchronizedClient(client);
+    IMetaStoreClient synchronizedClient = SynchronizedMetaStoreClient.newSynchronizedClient(client);
     List<String> databases = synchronizedClient.getAllDatabases();
     assertEquals(currentNumberOfDbs, databases.size());
   }
@@ -2889,7 +3015,7 @@ public abstract class TestHiveMetaStore {
       assertEquals("function owner type", PrincipalType.USER, func.getOwnerType());
       assertEquals("function type", funcType, func.getFunctionType());
       List<ResourceUri> resources = func.getResourceUris();
-      assertTrue("function resources", resources == null || resources.size() == 0);
+      assertTrue("function resources: " + resources, resources == null || resources.size() == 0);
 
       boolean gotException = false;
       try {
@@ -2999,7 +3125,7 @@ public abstract class TestHiveMetaStore {
     stmt.executeUpdate();
   }
 
-  private void cleanUp(String dbName, String tableName, String typeName) throws Exception {
+  protected void cleanUp(String dbName, String tableName, String typeName) throws Exception {
     if(dbName != null && tableName != null) {
       client.dropTable(dbName, tableName);
     }
@@ -3011,7 +3137,7 @@ public abstract class TestHiveMetaStore {
     }
   }
 
-  private Database createDb(String dbName) throws Exception {
+  protected Database createDb(String dbName) throws Exception {
     if(null == dbName) { return null; }
     return new DatabaseBuilder()
         .setName(dbName)
@@ -3095,7 +3221,7 @@ public abstract class TestHiveMetaStore {
     return partitions;
   }
 
-  private List<Partition> createMultiPartitionTableSchema(String dbName, String tblName,
+  protected List<Partition> createMultiPartitionTableSchema(String dbName, String tblName,
       String typeName, List<List<String>> values) throws Throwable {
     return createMultiPartitionTableSchema(null, dbName, tblName, typeName, values);
   }
@@ -3191,11 +3317,75 @@ public abstract class TestHiveMetaStore {
     // Verify
     assertEquals(tableNames.size(), tableObjs.size());
     for(Table table : tableObjs) {
-      assertTrue(tableNames.contains(table.getTableName().toLowerCase()));
+      assertTrue("tableNames doesn't contain " + table.getTableName().toLowerCase() + ", " + tableNames,
+          tableNames.contains(table.getTableName().toLowerCase()));
     }
 
     // Cleanup
     client.dropDatabase(dbName, true, true, true);
+  }
+
+  @Test
+  public void testDropDatabaseWithCustomPartitionPath() throws Exception {
+    String dbName = "dropdb";
+    String tblName1 = "droptbl1";
+    String tblName2 = "droptbl2";
+    String tblName3 = "droptbl3";
+
+    // A new client to support drop these 3 tables in one batch
+    Configuration newConf = MetastoreConf.newMetastoreConf(new Configuration(conf));
+    MetastoreConf.setLongVar(newConf, ConfVars.BATCH_RETRIEVE_MAX, 3);
+    IMetaStoreClient client = RetryingMetaStoreClient.getProxy(newConf, getHookLoader(), HiveMetaStoreClient.class.getName());
+
+    // Setup
+    silentDropDatabase(dbName);
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName1)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName2)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .addPartCol("p1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    new TableBuilder()
+        .setDbName(dbName)
+        .setTableName(tblName3)
+        .addCol("c1", ColumnType.STRING_TYPE_NAME)
+        .create(client, conf);
+
+    Path rootPath = warehouse.getWhRoot();
+    Path path1 = new Path(rootPath, tblName1);
+    Table tbl1 = client.getTable(dbName, tblName1);
+    Table tbl2 = client.getTable(dbName, tblName2);
+    Table tbl3 = client.getTable(dbName, tblName3);
+    List<String> vals = Lists.newArrayList("p1");
+
+    // partition1 whose path does not belong to table1
+    Partition part1 = makePartitionObjectWithAbsoluteLocation(dbName, tblName1, vals, tbl1, path1.toString());
+    client.add_partition(part1);
+
+    // partition2 whose path belongs to table2
+    Partition part2 = makePartitionObject(dbName, tblName2, vals, tbl2, "/part2");
+    client.add_partition(part2);
+
+    client.dropDatabase(dbName, true, true, true);
+    FileSystem fs = FileSystem.get(path1.toUri(), conf);
+    assertFalse(fs.exists(new Path(tbl1.getSd().getLocation())));
+    assertFalse(fs.exists(new Path(tbl2.getSd().getLocation())));
+    assertFalse(fs.exists(new Path(tbl3.getSd().getLocation())));
+    assertFalse(fs.exists(path1));
+
+    client.close();
   }
 
   @Test
@@ -3300,37 +3490,55 @@ public abstract class TestHiveMetaStore {
     client.close();
   }
 
+  /**
+   * This method checks if persistence manager cache is cleaned up properly under some circumstances.
+   * There is a chance that cleanup process removes elements created not only by this test, so we don't check
+   * exact equality, instead check that no new elements can be seen in the cache (so newSet.removeAll(oldSet) should be empty).
+   */
   @Test
-  public void testJDOPersistanceManagerCleanup() throws Exception {
+  public void testJDOPersistenceManagerCleanup() throws Exception {
     if (isThriftClient == false) {
       return;
     }
 
-    int numObjectsBeforeClose =  getJDOPersistanceManagerCacheSize();
+    Set<JDOPersistenceManager> objectsBeforeUse = new HashSet<>(getJDOPersistenceManagerCache());
     HiveMetaStoreClient closingClient = new HiveMetaStoreClient(conf);
     closingClient.getAllDatabases();
     closingClient.close();
-    Thread.sleep(5 * 1000); // give HMS time to handle close request
-    int numObjectsAfterClose =  getJDOPersistanceManagerCacheSize();
-    assertTrue(numObjectsBeforeClose == numObjectsAfterClose);
 
+    MetaStoreTestUtils.waitForAssertion("Checking pm cachesize after client close", () -> {
+      Set<JDOPersistenceManager> objectsAfterClose = new HashSet<>(getJDOPersistenceManagerCache());
+      objectsAfterClose.removeAll(objectsBeforeUse);
+
+      assertEquals("new objects left in the cache (after closing client)", 0, objectsAfterClose.size());
+
+    }, 500, 30000);
+
+    Set<JDOPersistenceManager> objectsAfterClose = new HashSet<>(getJDOPersistenceManagerCache());
     HiveMetaStoreClient nonClosingClient = new HiveMetaStoreClient(conf);
     nonClosingClient.getAllDatabases();
     // Drop connection without calling close. HMS thread deleteContext
     // will trigger cleanup
-    nonClosingClient.getTTransport().close();
-    Thread.sleep(5 * 1000);
-    int numObjectsAfterDroppedConnection =  getJDOPersistanceManagerCacheSize();
-    assertTrue(numObjectsAfterClose == numObjectsAfterDroppedConnection);
+    nonClosingClient.getThriftClient().getTTransport().close();
+
+    MetaStoreTestUtils.waitForAssertion("Checking pm cachesize after transport close", () -> {
+      Set<JDOPersistenceManager> objectsAfterDroppedConnection = new HashSet<>(getJDOPersistenceManagerCache());
+      objectsAfterDroppedConnection.removeAll(objectsAfterClose);
+
+      assertEquals("new objects left in the cache (after dropping connection)", 0,
+          objectsAfterDroppedConnection.size());
+
+    }, 500, 30000);
+
+    nonClosingClient.close(); //let's close after unit test ran successfully
   }
 
-  private static int getJDOPersistanceManagerCacheSize() {
+  public static Set<JDOPersistenceManager> getJDOPersistenceManagerCache() {
     JDOPersistenceManagerFactory jdoPmf;
-    Set<JDOPersistenceManager> pmCacheObj;
+    Set<JDOPersistenceManager> pmCacheObj = null;
     Field pmCache;
-    Field pmf;
     try {
-      pmf = PersistenceManagerProvider.class.getDeclaredField("pmf");
+      Field pmf = PersistenceManagerProvider.class.getDeclaredField("pmf");
       if (pmf != null) {
         pmf.setAccessible(true);
         jdoPmf = (JDOPersistenceManagerFactory) pmf.get(null);
@@ -3338,15 +3546,13 @@ public abstract class TestHiveMetaStore {
         if (pmCache != null) {
           pmCache.setAccessible(true);
           pmCacheObj = (Set<JDOPersistenceManager>) pmCache.get(jdoPmf);
-          if (pmCacheObj != null) {
-            return pmCacheObj.size();
-          }
+          return pmCacheObj;
         }
       }
-    } catch (Exception ex) {
-      System.out.println(ex);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-    return -1;
+    return pmCacheObj;
   }
 
   private HiveMetaHookLoader getHookLoader() {
@@ -3572,6 +3778,30 @@ public abstract class TestHiveMetaStore {
     client.alter_table(dbName, tblName, tblUpdated);
 
     silentDropDatabase(dbName);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testAlterTableCascadeExceedsPartitionLimits() throws Throwable {
+    String dbName = "alterTblDb";
+    String tblName = "altertbl";
+    String ds = "2025-05-21 23:47:12";
+
+    cleanUp(dbName, tblName, null);
+
+    // Create too many partitions, just enough to validate over limit requests
+    List<List<String>> values = new ArrayList<>();
+    for (int i = 0; i < DEFAULT_LIMIT_PARTITION_REQUEST + 1; i++) {
+      values.add(makeVals(ds, Integer.toString(i)));
+    }
+
+    createMultiPartitionTableSchema(dbName, tblName, null, values);
+
+    Table tbl = client.getTable(dbName, tblName);
+    List<FieldSchema> cols = tbl.getSd().getCols();
+    cols.add(new FieldSchema("new_col", ColumnType.STRING_TYPE_NAME, ""));
+    tbl.getSd().setCols(cols);
+    //add new column with cascade option
+    client.alter_table(dbName, tblName, tbl, true);
   }
 
   @Test

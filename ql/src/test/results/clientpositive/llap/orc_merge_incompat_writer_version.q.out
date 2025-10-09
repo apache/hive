@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE part_orc_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE part_orc_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE part_orc_n0(
   p_partkey int,
   p_name string,

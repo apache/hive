@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS tlbtest
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS tlbtest
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tlbtest (key int, key1 int, key2 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

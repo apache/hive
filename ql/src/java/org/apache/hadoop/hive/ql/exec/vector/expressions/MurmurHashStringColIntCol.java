@@ -47,15 +47,18 @@ public class MurmurHashStringColIntCol extends MurmurHashExpression {
     BytesColumnVector inV1 = (BytesColumnVector) inputColVector1;
     LongColumnVector inV2 = (LongColumnVector) inputColVector2;
 
+    int idx1 = inputColVector1.isRepeating ? 0 : i;
+    int idx2 = inputColVector2.isRepeating ? 0 : i;
+
     // hash of value from 1. column
-    int hash = inV1.isNull[i] ? 0
-      : Murmur3.hash32(inV1.vector[i], inV1.start[i], inV1.length[i], Murmur3.DEFAULT_SEED);
+    int hash = inV1.isNull[idx1] ? 0
+      : Murmur3.hash32(inV1.vector[idx1], inV1.start[idx1], inV1.length[idx1], Murmur3.DEFAULT_SEED);
 
     // hash of value from 2. column
     int hash2 = 0;
-    if (!inV2.isNull[i]) {
+    if (!inV2.isNull[idx2]) {
       byteBuffer.clear();
-      byteBuffer.putLong(inV2.vector[i]);
+      byteBuffer.putLong(inV2.vector[idx2]);
       hash2 = Murmur3.hash32(byteBuffer.array(), 8);
     }
 

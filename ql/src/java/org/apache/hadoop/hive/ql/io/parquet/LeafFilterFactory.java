@@ -13,6 +13,8 @@
  */
 package org.apache.hadoop.hive.ql.io.parquet;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,11 @@ import static org.apache.parquet.filter2.predicate.FilterApi.intColumn;
 
 public class LeafFilterFactory {
   private static final Logger LOG = LoggerFactory.getLogger(LeafFilterFactory.class);
+
+  @VisibleForTesting
+  public static final String FILTER_PREDICATE_CONVERSION_NOT_SUPPORTED =
+      "The conversion to Parquet FilterPredicate is not supported for %s. Please try to set the following configurations at the session level\n set hive.optimize.index.filter=false;\n"
+          + " set hive.optimize.ppd=false;\n";
 
   class IntFilterPredicateLeafBuilder extends FilterPredicateLeafBuilder {
     /**
@@ -204,7 +211,7 @@ public class LeafFilterFactory {
       case DECIMAL:
       case TIMESTAMP:
       default:
-        String msg = "Conversion to Parquet FilterPredicate not supported for " + type;
+        String msg = String.format(FILTER_PREDICATE_CONVERSION_NOT_SUPPORTED, type);
         LOG.debug(msg);
         throw new HiveException(msg);
     }
@@ -231,8 +238,7 @@ public class LeafFilterFactory {
       case BOOLEAN:
         return new BooleanFilterPredicateLeafBuilder();
       default:
-        String msg = "Conversion to Parquet FilterPredicate not supported for "
-            + parquetType.asPrimitiveType().getPrimitiveTypeName();
+        String msg = String.format(FILTER_PREDICATE_CONVERSION_NOT_SUPPORTED, parquetType.asPrimitiveType().getPrimitiveTypeName());
         LOG.debug(msg);
         throw new HiveException(msg);
     }

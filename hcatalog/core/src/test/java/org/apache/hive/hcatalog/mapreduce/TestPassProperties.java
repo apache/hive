@@ -56,12 +56,14 @@ public class TestPassProperties {
   private static String[] input;
   private static HiveConf hiveConf;
 
-  public void Initialize() throws Exception {
+  public void initialize() throws Exception {
     hiveConf = new HiveConf(this.getClass());
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    //TODO: HIVE-27998: hcatalog tests on Tez
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, TEST_WAREHOUSE_DIR);
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -82,7 +84,7 @@ public class TestPassProperties {
 
   @Test
   public void testSequenceTableWriteReadMR() throws Exception {
-    Initialize();
+    initialize();
     String createTable = "CREATE TABLE bad_props_table(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
     driver.run("drop table bad_props_table");
     driver.run(createTable);
@@ -112,7 +114,7 @@ public class TestPassProperties {
       assertTrue(((InvocationTargetException)e.getCause().getCause().getCause()).getTargetException().getMessage().contains(
           "Could not connect to meta store using any of the URIs provided"));
       assertTrue(e.getCause().getMessage().contains(
-          "Unable to instantiate org.apache.hive.hcatalog.common.HiveClientCache$CacheableHiveMetaStoreClient"));
+          "Unable to instantiate org.apache.hadoop.hive.metastore.HiveClientCache$CacheableHiveMetaStoreClient"));
     }
     assertTrue(caughtException);
   }
@@ -130,7 +132,7 @@ public class TestPassProperties {
   }
 
   private HCatSchema getSchema() throws HCatException {
-    HCatSchema schema = new HCatSchema(new ArrayList<HCatFieldSchema>());
+    HCatSchema schema = new HCatSchema(new ArrayList<>());
     schema.append(new HCatFieldSchema("a0", HCatFieldSchema.Type.INT,
         ""));
     schema.append(new HCatFieldSchema("a1",
@@ -139,6 +141,5 @@ public class TestPassProperties {
         HCatFieldSchema.Type.STRING, ""));
     return schema;
   }
-
 
 }

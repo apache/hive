@@ -1,7 +1,9 @@
 PREHOOK: query: drop table timestamp_lazy
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table timestamp_lazy
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table timestamp_lazy (t timestamp, key string, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

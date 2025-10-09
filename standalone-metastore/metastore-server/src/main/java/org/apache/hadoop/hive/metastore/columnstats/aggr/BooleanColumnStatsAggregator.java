@@ -32,9 +32,11 @@ public class BooleanColumnStatsAggregator extends ColumnStatsAggregator {
   @Override
   public ColumnStatisticsObj aggregate(List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo,
       List<String> partNames, boolean areAllPartsFound) throws MetaException {
+    checkStatisticsList(colStatsWithSourceInfo);
+
     ColumnStatisticsObj statsObj = null;
-    String colType = null;
-    String colName = null;
+    String colType;
+    String colName;
     BooleanColumnStatsData aggregateData = null;
     for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
       ColumnStatisticsObj cso = csp.getColStatsObj();
@@ -53,10 +55,13 @@ public class BooleanColumnStatsAggregator extends ColumnStatsAggregator {
         aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
       }
     }
-    ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
+    ColumnStatisticsData columnStatisticsData = initColumnStatisticsData();
     columnStatisticsData.setBooleanStats(aggregateData);
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
   }
 
+  @Override protected ColumnStatisticsData initColumnStatisticsData() {
+    return new ColumnStatisticsData();
+  }
 }

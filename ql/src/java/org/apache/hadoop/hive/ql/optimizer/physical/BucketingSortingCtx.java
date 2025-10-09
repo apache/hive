@@ -107,8 +107,8 @@ public class BucketingSortingCtx implements NodeProcessorCtx {
    * Classes that implement this interface provide a way to store information about equivalent
    * columns as their names and indexes in the schema change going into and out of operators.  The
    * definition of equivalent columns is up to the class which uses these classes, e.g.
-   * BucketingSortingOpProcFactory.  For example, two columns are equivalent if they
-   * contain exactly the same data.  Though, it's possible that two columns contain exactly the
+   * BucketingSortingOpProcFactory. For example, two columns are equivalent if they
+   * contain exactly the same data. Though, it's possible that two columns contain exactly the
    * same data and are not known to be equivalent.
    *
    * E.g. SELECT key a, key b FROM (SELECT key, count(*) c FROM src GROUP BY key) s;

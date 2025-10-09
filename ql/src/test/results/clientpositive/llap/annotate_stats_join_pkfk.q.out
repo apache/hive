@@ -1,15 +1,21 @@
 PREHOOK: query: drop table store_sales_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table store_sales_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table store_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table store_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table customer_address
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table customer_address
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table store_sales_n0
 (
     ss_sold_date_sk           int,
@@ -655,17 +661,17 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((s_company_id > 0) and s_store_sk is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                    Statistics: Num rows: 6 Data size: 48 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: s_store_sk (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                      Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: PARTIAL
+                        Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: PARTIAL
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -699,10 +705,10 @@ STAGE PLANS:
                   0 _col0 (type: int)
                   1 _col0 (type: int)
                 outputColumnNames: _col0
-                Statistics: Num rows: 90 Data size: 360 Basic stats: COMPLETE Column stats: PARTIAL
+                Statistics: Num rows: 536 Data size: 2144 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 90 Data size: 360 Basic stats: COMPLETE Column stats: PARTIAL
+                  Statistics: Num rows: 536 Data size: 2144 Basic stats: COMPLETE Column stats: PARTIAL
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1510,32 +1516,40 @@ STAGE PLANS:
 PREHOOK: query: drop table store_sales_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_sales_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_sales_n0
 POSTHOOK: query: drop table store_sales_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_sales_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_sales_n0
 PREHOOK: query: drop table store_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_n0
 POSTHOOK: query: drop table store_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_n0
 PREHOOK: query: drop table store_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_bigint
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_bigint
 POSTHOOK: query: drop table store_bigint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_bigint
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_bigint
 PREHOOK: query: drop table customer_address
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@customer_address
+PREHOOK: Output: database:default
 PREHOOK: Output: default@customer_address
 POSTHOOK: query: drop table customer_address
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@customer_address
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@customer_address

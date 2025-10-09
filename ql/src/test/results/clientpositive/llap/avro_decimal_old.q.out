@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS avro_dec_old
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS avro_dec_old
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE `avro_dec_old`(
   `name` string COMMENT 'from deserializer',
   `value` decimal(4,1) COMMENT 'from deserializer')
@@ -53,8 +55,10 @@ POSTHOOK: Input: default@avro_dec_old
 PREHOOK: query: DROP TABLE avro_dec_old
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_dec_old
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_dec_old
 POSTHOOK: query: DROP TABLE avro_dec_old
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_dec_old
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_dec_old

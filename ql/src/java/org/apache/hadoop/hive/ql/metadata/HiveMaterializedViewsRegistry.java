@@ -53,14 +53,16 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.IncrementalRebuildMode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.MaterializedViewIncrementalRewritingRelVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -83,9 +85,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.collect.ImmutableList;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ALL;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.TEXT;
+import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ALL;
 
 /**
  * Registry for materialized views. The goal of this cache is to avoid parsing and creating
@@ -168,12 +168,10 @@ public final class HiveMaterializedViewsRegistry {
 
     @Override
     public void run() {
-      SessionState ss = new SessionState(db.getConf());
-      ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
-      SessionState.start(ss);
       PerfLogger perfLogger = SessionState.getPerfLogger();
-      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
       try {
+        DriverUtils.setUpAndStartSessionState(db.getConf());
+        perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
         if (initialized.get()) {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
             RelOptMaterialization existingMV = getRewritingMaterializedView(
@@ -228,7 +226,7 @@ public final class HiveMaterializedViewsRegistry {
     }
     final CBOPlan plan;
     try {
-      plan = ParseUtils.parseQuery(conf, viewQuery);
+      plan = ParseUtils.parseQuery(createContext(conf), viewQuery);
     } catch (Exception e) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
           " ignored; error parsing original query; " + e);
@@ -236,22 +234,12 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     return new HiveRelOptMaterialization(viewScan, plan.getPlan(),
-            null, viewScan.getTable().getQualifiedName(),
-        isBlank(plan.getInvalidAutomaticRewritingMaterializationReason()) ?
-            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class) : EnumSet.of(TEXT),
+            null, viewScan.getTable().getQualifiedName(), plan.getSupportedRewriteAlgorithms(),
             determineIncrementalRebuildMode(plan.getPlan()), plan.getAst());
   }
 
-  private HiveRelOptMaterialization.IncrementalRebuildMode determineIncrementalRebuildMode(RelNode definitionPlan) {
-    MaterializedViewIncrementalRewritingRelVisitor visitor = new MaterializedViewIncrementalRewritingRelVisitor();
-    visitor.go(definitionPlan);
-    if (!visitor.isRewritingAllowed()) {
-      return HiveRelOptMaterialization.IncrementalRebuildMode.NOT_AVAILABLE;
-    }
-    if (visitor.isContainsAggregate() && !visitor.hasCountStar()) {
-      return HiveRelOptMaterialization.IncrementalRebuildMode.INSERT_ONLY;
-    }
-    return HiveRelOptMaterialization.IncrementalRebuildMode.AVAILABLE;
+  private IncrementalRebuildMode determineIncrementalRebuildMode(RelNode definitionPlan) {
+    return new MaterializedViewIncrementalRewritingRelVisitor().go(definitionPlan).getIncrementalRebuildMode();
   }
 
   /**
@@ -273,7 +261,7 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     HiveRelOptMaterialization materialization = createMaterialization(conf, materializedViewTable);
-    if (materialization == null) {
+    if (materialization == null || materialization.getScope().isEmpty()) {
       return;
     }
 
@@ -348,7 +336,7 @@ public final class HiveMaterializedViewsRegistry {
    */
   List<HiveRelOptMaterialization> getRewritingMaterializedViews() {
     return materializedViewsCache.values().stream()
-            .filter(materialization -> materialization.getScope().contains(HiveRelOptMaterialization.RewriteAlgorithm.CALCITE))
+            .filter(materialization -> materialization.getScope().contains(RewriteAlgorithm.CALCITE))
             .collect(toList());
   }
 
@@ -358,7 +346,7 @@ public final class HiveMaterializedViewsRegistry {
    * @return the collection of materialized views, or the empty collection if none
    */
   public HiveRelOptMaterialization getRewritingMaterializedView(String dbName, String viewName,
-                                                         EnumSet<HiveRelOptMaterialization.RewriteAlgorithm> scope) {
+                                                         EnumSet<RewriteAlgorithm> scope) {
     HiveRelOptMaterialization materialization = materializedViewsCache.get(dbName, viewName);
     if (materialization == null) {
       return null;
@@ -371,6 +359,13 @@ public final class HiveMaterializedViewsRegistry {
 
   public List<HiveRelOptMaterialization> getRewritingMaterializedViews(ASTNode ast) {
     return materializedViewsCache.get(ast);
+  }
+
+  private Context createContext(HiveConf conf) {
+    Context ctx = new Context(conf);
+    ctx.setIsLoadingMaterializedView(true);
+    ctx.setHDFSCleanup(true);
+    return ctx;
   }
 
   public boolean isEmpty() {
@@ -424,13 +419,7 @@ public final class HiveMaterializedViewsRegistry {
     }
 
     // 1.3 Build row type from field <type, name>
-    RelDataType rowType;
-    try {
-      rowType = TypeConverter.getType(cluster, rr, null);
-    } catch (CalciteSemanticException e) {
-      // Bail out
-      return null;
-    }
+    RelDataType rowType = TypeConverter.getType(cluster, rr, null);
 
     // 2. Build RelOptAbstractTable
     List<String> fullyQualifiedTabName = new ArrayList<>();
@@ -479,7 +468,7 @@ public final class HiveMaterializedViewsRegistry {
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
@@ -494,7 +483,7 @@ public final class HiveMaterializedViewsRegistry {
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, new QueryTables(true), new HashMap<>(), new HashMap<>(), new AtomicInteger());
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }

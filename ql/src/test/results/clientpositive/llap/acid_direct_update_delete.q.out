@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE test_update_bucketed(id string, value string) CLUSTERED BY(id) INTO 10 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -134,11 +136,76 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	seven
 8	eight
 9	nine
+PREHOOK: query: CREATE TABLE test_delete(id int) STORED AS ORC TBLPROPERTIES('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_delete
+POSTHOOK: query: CREATE TABLE test_delete(id int) STORED AS ORC TBLPROPERTIES('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_delete
+PREHOOK: query: INSERT INTO test_delete SELECT id FROM test_update_bucketed WHERE id != 3 and id <=9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: default@test_delete
+POSTHOOK: query: INSERT INTO test_delete SELECT id FROM test_update_bucketed WHERE id != 3 and id <=9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: default@test_delete
+POSTHOOK: Lineage: test_delete.id EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:id, type:string, comment:null), ]
+PREHOOK: query: INSERT INTO test_delete SELECT id FROM test_update_bucketed WHERE id > 9
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: default@test_delete
+POSTHOOK: query: INSERT INTO test_delete SELECT id FROM test_update_bucketed WHERE id > 9
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: default@test_delete
+POSTHOOK: Lineage: test_delete.id EXPRESSION [(test_update_bucketed)test_update_bucketed.FieldSchema(name:id, type:string, comment:null), ]
+PREHOOK: query: DELETE FROM test_delete WHERE id in (5, 13)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete
+PREHOOK: Output: default@test_delete
+POSTHOOK: query: DELETE FROM test_delete WHERE id in (5, 13)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete
+POSTHOOK: Output: default@test_delete
+PREHOOK: query: SELECT * FROM test_delete
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_delete
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM test_delete
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_delete
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+14
+16
+17
+18
+19
+20
+6
+7
+8
+9
 PREHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_update_bucketed
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_update_bucketed
 POSTHOOK: query: DROP TABLE IF EXISTS test_update_bucketed
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_update_bucketed
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_update_bucketed
+PREHOOK: query: DROP TABLE IF EXISTS test_delete
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_delete
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_delete
+POSTHOOK: query: DROP TABLE IF EXISTS test_delete
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_delete
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_delete

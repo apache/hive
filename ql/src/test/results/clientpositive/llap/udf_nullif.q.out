@@ -176,8 +176,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 NULL
 PREHOOK: query: drop table if exists t0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists t0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table t0(a int,b int,c float,d double precision)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

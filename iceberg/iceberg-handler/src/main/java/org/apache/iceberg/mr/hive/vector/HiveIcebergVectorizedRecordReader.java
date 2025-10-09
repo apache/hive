@@ -46,10 +46,15 @@ public final class HiveIcebergVectorizedRecordReader extends AbstractMapredIcebe
   public boolean next(Void key, VectorizedRowBatch value) throws IOException {
     try {
       if (innerReader.nextKeyValue()) {
-        VectorizedRowBatch newBatch = (VectorizedRowBatch) innerReader.getCurrentValue();
+        HiveBatchContext currentValue = (HiveBatchContext) innerReader.getCurrentValue();
+        VectorizedRowBatch newBatch = currentValue.getBatch();
         value.cols = newBatch.cols;
         value.endOfFile = newBatch.endOfFile;
+        value.numCols = newBatch.numCols;
+        value.projectedColumns = newBatch.projectedColumns;
+        value.projectionSize = newBatch.projectionSize;
         value.selectedInUse = newBatch.selectedInUse;
+        value.selected = newBatch.selected;
         value.size = newBatch.size;
         return true;
       } else {

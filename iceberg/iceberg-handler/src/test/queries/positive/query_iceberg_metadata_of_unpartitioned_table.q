@@ -2,7 +2,7 @@
 -- Mask the file size values as it can have slight variability, causing test flakiness
 --! qt:replace:/("file_size_in_bytes":)\d+/$1#Masked#/
 --! qt:replace:/("total-files-size":)\d+/$1#Masked#/
---! qt:replace:/((ORC|PARQUET|AVRO)\s+\d+\s+)\d+/$1#Masked#/
+--! qt:replace:/((ORC|PARQUET|AVRO)\s+\d+\s+\d+\s+)\d+/$1#Masked#/
 
 set tez.mrreader.config.update.properties=hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids;
 set hive.query.results.cache.enabled=false;
@@ -39,6 +39,12 @@ select null_value_counts[1] from default.ice_meta_1.all_data_files;
 select lower_bounds[2], upper_bounds[2] from default.ice_meta_1.all_data_files;
 select data_file.record_count as record_count, data_file.value_counts[2] as value_counts, data_file.null_value_counts[2] as null_value_counts from default.ice_meta_1.all_entries;
 
+select file_format, spec_id from default.ice_meta_1.data_files;
+select content, upper_bounds from default.ice_meta_1.delete_files;
+select file from default.ice_meta_1.metadata_log_entries;
+select name, type from default.ice_meta_1.refs;
+select content, file_format from default.ice_meta_1.all_delete_files;
+select file_format, value_counts from default.ice_meta_1.all_files;
 
 set hive.fetch.task.conversion=more;
 
@@ -59,5 +65,12 @@ select file_format, null_value_counts from default.ice_meta_1.all_data_files;
 select null_value_counts[1] from default.ice_meta_1.all_data_files;
 select lower_bounds[2], upper_bounds[2] from default.ice_meta_1.all_data_files;
 select data_file.record_count as record_count, data_file.value_counts[2] as value_counts, data_file.null_value_counts[2] as null_value_counts from default.ice_meta_1.all_entries;
+
+select file_format, spec_id from default.ice_meta_1.data_files;
+select content, upper_bounds from default.ice_meta_1.delete_files;
+select file from default.ice_meta_1.metadata_log_entries;
+select name, type from default.ice_meta_1.refs;
+select content, file_format from default.ice_meta_1.all_delete_files;
+select file_format, value_counts from default.ice_meta_1.all_files;
 
 drop table ice_meta_1;

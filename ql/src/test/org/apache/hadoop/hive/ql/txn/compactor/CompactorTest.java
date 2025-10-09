@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -33,15 +32,20 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
+import org.apache.hadoop.hive.metastore.LockComponentBuilder;
+import org.apache.hadoop.hive.metastore.LockRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FindNextCompactRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
@@ -53,10 +57,11 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -80,14 +85,13 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
 import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -99,6 +103,7 @@ import java.util.Stack;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities.CompactorThreadType;
 
@@ -114,33 +119,45 @@ public abstract class CompactorTest {
   static final private String CLASS_NAME = CompactorTest.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   public static final String WORKER_VERSION = HiveVersionInfo.getShortVersion();
+  private static final AtomicInteger TMP_DIR_ID = new AtomicInteger();
 
   protected TxnStore txnHandler;
   protected IMetaStoreClient ms;
   protected HiveConf conf;
 
   private final AtomicBoolean stop = new AtomicBoolean();
-  protected File tmpdir;
+  private Path tmpdir;
+  FileSystem fs;
 
   @Before
+  @BeforeEach
   public void setup() throws Exception {
     setup(new HiveConf());
   }
 
-  protected void setup(HiveConf conf) throws Exception {
+  protected final void setup(HiveConf conf) throws Exception {
     this.conf = conf;
+    fs = FileSystem.get(conf);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, useMinHistoryWriteId());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS,
+        "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer");
+    // Set this config to true in the base class, there are extended test classes which set this config to false.
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
-    tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
+    Path tmpPath = new Path(System.getProperty("test.tmp.dir"), "compactor_test_table_" + TMP_DIR_ID.getAndIncrement());
+    fs.mkdirs(tmpPath);
+    tmpdir = fs.resolvePath(tmpPath);
   }
 
   protected void compactorTestCleanup() throws IOException {
-    FileUtils.deleteDirectory(tmpdir);
+    fs.delete(tmpdir, true);
   }
 
   protected void startInitiator() throws Exception {
@@ -254,6 +271,36 @@ public abstract class CompactorTest {
     return awiResp.getTxnToWriteIds().get(0).getWriteId();
   }
 
+  protected void addDeltaFileWithTxnComponents(Table t, Partition p, int numRecords, boolean abort)
+      throws Exception {
+    long txnId = openTxn();
+    long writeId = ms.allocateTableWriteId(txnId, t.getDbName(), t.getTableName());
+    acquireLock(t, p, txnId);
+    addDeltaFile(t, p, writeId, writeId, numRecords);
+    if (abort) {
+      txnHandler.abortTxns(new AbortTxnsRequest(Collections.singletonList(txnId)));
+    } else {
+      txnHandler.commitTxn(new CommitTxnRequest(txnId));
+    }
+  }
+
+  protected void acquireLock(Table t, Partition p, long txnId) throws Exception {
+    LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
+            .setLock(LockType.SHARED_WRITE)
+            .setOperationType(DataOperationType.INSERT)
+            .setDbName(t.getDbName())
+            .setTableName(t.getTableName())
+            .setIsTransactional(true);
+    if (p != null) {
+      lockCompBuilder.setPartitionName(t.getPartitionKeys().get(0).getName() + "=" + p.getValues().get(0));
+    }
+    LockRequestBuilder requestBuilder = new LockRequestBuilder().setUser(null)
+            .setTransactionId(txnId).addLockComponent(lockCompBuilder.build());
+    requestBuilder.setZeroWaitReadEnabled(!conf.getBoolVar(HiveConf.ConfVars.TXN_OVERWRITE_X_LOCK) ||
+            !conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+    ms.lock(requestBuilder.build());
+  }
+
   protected void addDeltaFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords)
       throws Exception {
     addFile(t, p, minTxn, maxTxn, numRecords, FileType.DELTA, 2, true);
@@ -320,6 +367,14 @@ public abstract class CompactorTest {
     AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
     awiRqst.setTxnIds(rsp.getTxn_ids());
     AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
+
+    long minOpenWriteId = Long.MAX_VALUE;
+    if (open != null && useMinHistoryWriteId()) {
+      long minOpenTxnId = open.stream().mapToLong(v -> v).min().orElse(-1);
+      minOpenWriteId = awiResp.getTxnToWriteIds().stream()
+        .filter(v -> v.getTxnId() == minOpenTxnId).map(TxnToWriteId::getWriteId)
+        .findFirst().orElse(minOpenWriteId);
+    }
     int i = 0;
     for (long tid : rsp.getTxn_ids()) {
       assert (awiResp.getTxnToWriteIds().get(i).getTxnId() == tid);
@@ -332,6 +387,9 @@ public abstract class CompactorTest {
         txnHandler.abortTxn(new AbortTxnRequest(tid));
       } else if (open == null || !open.contains(tid)) {
         txnHandler.commitTxn(new CommitTxnRequest(tid));
+      } else if (open.contains(tid) && useMinHistoryWriteId()){
+        txnHandler.addWriteIdsToMinHistory(tid,
+          Collections.singletonMap(dbName + "." + tblName, minOpenWriteId));
       }
     }
   }
@@ -380,12 +438,11 @@ public abstract class CompactorTest {
   }
 
   private String getLocation(String tableName, String partValue) {
-    String location =  tmpdir.getAbsolutePath() +
-      System.getProperty("file.separator") + tableName;
+    Path tblLocation = new Path(tmpdir, tableName);
     if (partValue != null) {
-      location += System.getProperty("file.separator") + "ds=" + partValue;
+      tblLocation = new Path(tblLocation, "ds=" + partValue);
     }
-    return location;
+    return tblLocation.toString();
   }
 
   private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE}
@@ -649,6 +706,10 @@ public abstract class CompactorTest {
    */
   abstract boolean useHive130DeltaDirName();
 
+  protected boolean useMinHistoryWriteId() {
+    return false;
+  }
+
   String makeDeltaDirName(long minTxnId, long maxTxnId) {
     if(minTxnId != maxTxnId) {
       //covers both streaming api and post compaction style.
@@ -673,7 +734,7 @@ public abstract class CompactorTest {
     findNextCompactRequest.setWorkerId("fred");
     findNextCompactRequest.setWorkerVersion(WORKER_VERSION);
     CompactionInfo ci = txnHandler.findNextToCompact(findNextCompactRequest);
-    ci.runAs = System.getProperty("user.name");
+    ci.runAs = rqst.getRunas() == null ? System.getProperty("user.name") : rqst.getRunas();
     long compactorTxnId = openTxn(TxnType.COMPACTION);
     // Need to create a valid writeIdList to set the highestWriteId in ci
     ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), compactorTxnId);

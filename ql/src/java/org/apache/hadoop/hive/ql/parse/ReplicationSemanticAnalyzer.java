@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.repl.ReplScope;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -43,6 +44,8 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.OptimizedBootstrapLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.PreOptimizedBootstrapLoadMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -51,8 +54,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.List;
 import java.util.Collections;
+import java.util.Objects;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_QUERY_ID;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPL_CONFIG;
@@ -85,7 +89,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    LOG.debug("ReplicationSemanticAanalyzer: analyzeInternal");
+    LOG.debug("ReplicationSemanticAnalyzer: analyzeInternal");
     LOG.debug(ast.getName() + ":" + ast.getToken().getText() + "=" + ast.getText());
     // Some of the txn related configs were not set when ReplicationSemanticAnalyzer.conf was initialized.
     // It should be set first.
@@ -96,8 +100,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         try {
           analyzeReplDump(ast);
         } catch (SemanticException e) {
-          ReplUtils.reportStatusInReplicationMetrics("REPL_DUMP", ReplUtils.isErrorRecoverable(e)
-                  ? Status.FAILED_ADMIN : Status.FAILED, null, conf);
+            ReplUtils.reportStatusInReplicationMetrics("REPL_DUMP", ReplUtils.isErrorRecoverable(e)
+                    ? Status.FAILED_ADMIN : Status.FAILED, null, conf, null, null);
           throw e;
         }
         break;
@@ -109,7 +113,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         } catch (SemanticException e) {
           if (!e.getMessage().equals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg())) {
             ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", ReplUtils.isErrorRecoverable(e)
-                    ? Status.FAILED_ADMIN : Status.FAILED, null, conf);
+                    ? Status.FAILED_ADMIN : Status.FAILED, null, conf,  null, null);
           }
           throw e;
         }
@@ -127,7 +131,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void setTxnConfigs() {
-    String validTxnList = queryState.getConf().get(ValidTxnList.VALID_TXNS_KEY);
+    String validTxnList = queryState.getValidTxnList();
     if (validTxnList != null) {
       conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList);
     }
@@ -142,7 +146,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     String replScopeType = (replScope == this.replScope) ? "Current" : "Old";
     for (int listIdx = 0; listIdx < childCount; listIdx++) {
       String tableList = unescapeSQLString(replTablesNode.getChild(listIdx).getText());
-      if (tableList == null || tableList.isEmpty()) {
+      if (tableList.isEmpty()) {
         throw new SemanticException(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN);
       }
       if (listIdx == 0) {
@@ -169,10 +173,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (currNode.getType()) {
       case TOK_REPL_CONFIG:
         Map<String, String> replConfigs = getProps((ASTNode) currNode.getChild(0));
-        if (null != replConfigs) {
-          for (Map.Entry<String, String> config : replConfigs.entrySet()) {
-            conf.set(config.getKey(), config.getValue());
-          }
+        for (Map.Entry<String, String> config : replConfigs.entrySet()) {
+          conf.set(config.getKey(), config.getValue());
         }
         break;
       case TOK_REPL_TABLES:
@@ -192,18 +194,19 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (String dbName : databases) {
       Database database = db.getDatabase(dbName);
       if (database != null) {
+        Map<String, String> dbParams = database.getParameters();
         if (MetaStoreUtils.isTargetOfReplication(database)) {
-          if (MetaStoreUtils.isDbBeingFailedOverAtEndpoint(database, MetaStoreUtils.FailoverEndpoint.TARGET)) {
-            LOG.info("Proceeding with dump operation as database: {} is target of replication and" +
-                    "{} is set to TARGET.", dbName, ReplConst.REPL_FAILOVER_ENDPOINT);
-            ReplUtils.unsetDbPropIfSet(database, ReplConst.TARGET_OF_REPLICATION, db);
-          } else {
-            LOG.warn("Database " + dbNameOrPattern + " is marked as target of replication (repl.target.for), Will "
-                + "trigger failover.");
-          }
+          LOG.info("Triggering optimized bootstrap for database {} since it " +
+                          "is marked as target of replication (repl.target.for) " +
+                          "with {} set to {}",
+                  dbName, ReplConst.REPL_FAILOVER_ENDPOINT,
+                  Objects.nonNull(dbParams) ?
+                          dbParams.get(ReplConst.REPL_FAILOVER_ENDPOINT)
+                          : null
+          );
         }
       } else {
-        throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
+        throw new SemanticException("Cannot dump database " + dbName + " as it does not exist");
       }
     }
   }
@@ -316,7 +319,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // looking at each db, and then each table, and then setting up the appropriate
     // import job in its place.
     try {
-      assert(sourceDbNameOrPattern != null);
+      Objects.requireNonNull(sourceDbNameOrPattern, "REPL LOAD Source database name shouldn't be null");
+      Objects.requireNonNull(replScope.getDbName(), "REPL LOAD Target database name shouldn't be null");
       Path loadPath = getCurrentLoadPath();
 
       // Now, the dumped path can be one of three things:
@@ -339,8 +343,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf);
       if (ReplUtils.failedWithNonRecoverableError(latestDumpPath, conf)) {
         Path nonRecoverableFile = new Path(latestDumpPath, ReplAck.NON_RECOVERABLE_MARKER.toString());
-        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED,
-                nonRecoverableFile.toString(), conf);
+        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.FAILED_ADMIN,
+                nonRecoverableFile.toString(), conf,  sourceDbNameOrPattern, null);
         throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
       }
       if (loadPath != null) {
@@ -348,22 +352,26 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         boolean evDump = false;
         // we will decide what hdfs locations needs to be copied over here as well.
-        if (dmd.isIncrementalDump()) {
-          LOG.debug("{} contains an incremental dump", loadPath);
+        if (dmd.isIncrementalDump() || dmd.isOptimizedBootstrapDump() || dmd.isPreOptimizedBootstrapDump()) {
+          LOG.debug("{} contains an incremental / Optimized bootstrap dump", loadPath);
           evDump = true;
         } else {
           LOG.debug("{} contains an bootstrap dump", loadPath);
         }
+
+        ReplicationMetricCollector metricCollector = initReplicationLoadMetricCollector(loadPath.toString(), replScope.getDbName(), dmd);
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
                 replScope.getDbName(),
                 dmd.getReplScope(),
                 queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
-            initMetricCollection(!evDump, loadPath.toString(), replScope.getDbName(),
-              dmd.getDumpExecutionId()), dmd.isReplScopeModified());
+                metricCollector, dmd.isReplScopeModified());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
+        if (dmd.isPreOptimizedBootstrapDump()) {
+          dmd.setOptimizedBootstrapToDumpMetadataFile(conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L));
+        }
       } else {
-        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED, null, conf);
-        LOG.warn("Previous Dump Already Loaded");
+        ReplUtils.reportStatusInReplicationMetrics("REPL_LOAD", Status.SKIPPED, null, conf,  sourceDbNameOrPattern, null);
+        LOG.warn("No dump to load or the previous dump already loaded");
       }
     } catch (Exception e) {
       // TODO : simple wrap & rethrow for now, clean up with error codes
@@ -371,18 +379,44 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private ReplicationMetricCollector initMetricCollection(boolean isBootstrap, String dumpDirectory,
-                                                          String dbNameToLoadIn, long dumpExecutionId) {
+  private ReplicationMetricCollector initReplicationLoadMetricCollector(String dumpDirectory, String dbNameToLoadIn,
+                                                                        DumpMetaData dmd) throws SemanticException {
     ReplicationMetricCollector collector;
-    if (isBootstrap) {
-      collector = new BootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dumpExecutionId, conf);
+    if (dmd.isPreOptimizedBootstrapDump() || dmd.isOptimizedBootstrapDump()) {
+      Database dbToLoad = null;
+      try {
+        dbToLoad = db.getDatabase(dbNameToLoadIn);
+      } catch (HiveException e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
+      if (dbToLoad == null) {
+        throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS, dbNameToLoadIn);
+      }
+      // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
+      String failoverType = "";
+      try {
+        // check whether ReplConst.FAILOVER_ENDPOINT is set
+        failoverType = MetaStoreUtils.isDbBeingPlannedFailedOver(db.getDatabase(dbNameToLoadIn)) ? ReplConst.FailoverType.PLANNED.toString() : ReplConst.FailoverType.UNPLANNED.toString();
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
+      if (dmd.isPreOptimizedBootstrapDump()) {
+        collector = new PreOptimizedBootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf,
+                MetaStoreUtils.FailoverEndpoint.TARGET.toString(), failoverType);
+      } else {
+        // db property ReplConst.FAILOVER_ENDPOINT is only set during planned failover.
+        collector = new OptimizedBootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf,
+                MetaStoreUtils.FailoverEndpoint.TARGET.toString(), failoverType);
+      }
+    } else if (dmd.isBootstrapDump()) {
+      collector = new BootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf);
     } else {
-      collector = new IncrementalLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dumpExecutionId, conf);
+      collector = new IncrementalLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dmd.getDumpExecutionId(), conf);
     }
     return collector;
   }
 
-  private Path getCurrentLoadPath() throws IOException, SemanticException {
+  private Path getCurrentLoadPath() throws IOException {
     Path loadPathBase = ReplUtils.getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase());
     final FileSystem fs = loadPathBase.getFileSystem(conf);
     // Make fully qualified path for further use.
@@ -410,27 +444,25 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void setConfigs(ASTNode node) throws SemanticException {
     Map<String, String> replConfigs = getProps(node);
-    if (null != replConfigs) {
-      for (Map.Entry<String, String> config : replConfigs.entrySet()) {
-        String key = config.getKey();
-        // don't set the query id in the config
-        if (key.equalsIgnoreCase(HIVEQUERYID.varname)) {
-          String queryTag = config.getValue();
-          if (!StringUtils.isEmpty(queryTag)) {
-            QueryState.setApplicationTag(conf, queryTag);
-          }
-          queryState.setQueryTag(queryTag);
-        } else {
-          conf.set(key, config.getValue());
+    for (Map.Entry<String, String> config : replConfigs.entrySet()) {
+      String key = config.getKey();
+      // don't set the query id in the config
+      if (key.equalsIgnoreCase(HIVE_QUERY_ID.varname)) {
+        String queryTag = config.getValue();
+        if (!StringUtils.isEmpty(queryTag)) {
+          QueryState.setApplicationTag(conf, queryTag);
         }
+        queryState.setQueryTag(queryTag);
+      } else {
+        conf.set(key, config.getValue());
       }
+    }
 
-      // As hive conf is changed, need to get the Hive DB again with it.
-      try {
-        db = Hive.get(conf);
-      } catch (HiveException e) {
-        throw new SemanticException(e);
-      }
+    // As hive conf is changed, need to get the Hive DB again with it.
+    try {
+      db = Hive.get(conf);
+    } catch (HiveException e) {
+      throw new SemanticException(e);
     }
   }
 

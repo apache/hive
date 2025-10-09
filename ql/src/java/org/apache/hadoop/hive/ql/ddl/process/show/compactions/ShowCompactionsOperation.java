@@ -20,20 +20,29 @@ package org.apache.hadoop.hive.ql.ddl.process.show.compactions;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
+import static org.apache.commons.collections.MapUtils.isNotEmpty;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.NO_VAL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getHostFromId;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getThreadIdFromId;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionStateStr2Enum;
+import static org.apache.hadoop.hive.ql.io.AcidUtils.compactionTypeStr2ThriftType;
 
 /**
  * Operation process of showing compactions.
@@ -47,8 +56,8 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
   public int execute() throws HiveException {
     SessionState sessionState = SessionState.get();
     // Call the metastore to get the status of all known compactions (completed get purged eventually)
-    ShowCompactResponse rsp = context.getDb().showCompactions();
-
+    ShowCompactRequest request = getShowCompactioRequest(desc);
+    ShowCompactResponse rsp = context.getDb().showCompactions(request);
     // Write the results into the file
     try (DataOutputStream os = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
       // Write a header for cliDriver
@@ -66,6 +75,40 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
       return 1;
     }
     return 0;
+  }
+
+  private ShowCompactRequest getShowCompactioRequest(ShowCompactionsDesc desc) throws SemanticException {
+    ShowCompactRequest request = new ShowCompactRequest();
+    if (isBlank(desc.getDbName()) && isNotBlank(desc.getTbName())) {
+      request.setDbName(SessionState.get().getCurrentDatabase());
+    } else {
+      request.setDbName(desc.getDbName());
+    }
+    if (isNotBlank(desc.getTbName())) {
+      request.setTbName(desc.getTbName());
+    }
+    if (isNotBlank(desc.getPoolName())) {
+      request.setPoolName(desc.getPoolName());
+    }
+    if (isNotBlank(desc.getCompactionType())) {
+      request.setType(compactionTypeStr2ThriftType(desc.getCompactionType()));
+    }
+    if (isNotBlank(desc.getCompactionStatus())) {
+      request.setState(compactionStateStr2Enum(desc.getCompactionStatus()).getSqlConst());
+    }
+    if (isNotEmpty(desc.getPartSpec())) {
+      request.setPartName(AcidUtils.getPartitionName(desc.getPartSpec()));
+    }
+    if(desc.getCompactionId()>0){
+     request.setId(desc.getCompactionId());
+    }
+    if (desc.getLimit()>0) {
+      request.setLimit(desc.getLimit());
+    }
+    if (isNotBlank(desc.getOrderBy())) {
+      request.setOrder(desc.getOrderBy());
+    }
+    return request;
   }
 
   private void writeHeader(DataOutputStream os) throws IOException {
@@ -98,6 +141,16 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.writeBytes("Initiator host");
     os.write(Utilities.tabCode);
     os.writeBytes("Initiator");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Pool name");
+    os.write(Utilities.tabCode);
+    os.writeBytes("TxnId");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Next TxnId");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Commit Time");
+    os.write(Utilities.tabCode);
+    os.writeBytes("Highest WriteId");
     os.write(Utilities.newLineCode);
   }
 
@@ -129,9 +182,20 @@ public class ShowCompactionsOperation extends DDLOperation<ShowCompactionsDesc> 
     os.write(Utilities.tabCode);
     String error = e.getErrorMessage();
     os.writeBytes(error == null ? NO_VAL : error);
+    os.write(Utilities.tabCode);
     os.writeBytes(getHostFromId(e.getInitiatorId()));
     os.write(Utilities.tabCode);
     os.writeBytes(getThreadIdFromId(e.getInitiatorId()));
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetPoolName() ? e.getPoolName() : NO_VAL);
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetTxnId() ? Long.toString(e.getTxnId()) : NO_VAL);
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetNextTxnId() ? Long.toString(e.getNextTxnId()) : NO_VAL);
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetCommitTime() ? Long.toString(e.getCommitTime()) : NO_VAL);
+    os.write(Utilities.tabCode);
+    os.writeBytes(e.isSetHightestWriteId() ? Long.toString(e.getHightestWriteId()) : NO_VAL);
     os.write(Utilities.newLineCode);
   }
 }

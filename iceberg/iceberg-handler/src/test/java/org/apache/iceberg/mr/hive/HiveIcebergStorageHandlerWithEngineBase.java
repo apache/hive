@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -32,8 +33,8 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -52,15 +53,22 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.apache.iceberg.mr.hive.TestTables.ALL_TABLE_TYPES;
+import static org.apache.iceberg.mr.hive.TestTables.TestTableType.HIVE_CATALOG;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
+import static org.junit.Assume.assumeTrue;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
-  protected static final String[] EXECUTION_ENGINES = new String[] {"tez"};
+  public static final String RETRY_STRATEGIES =
+      "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict";
+
+  public static final String RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT =
+      "overlay,reoptimize,reexecute_lost_am," + "dagsubmit,recompile_without_cbo";
 
   protected static final Schema ORDER_SCHEMA = new Schema(
           required(1, "order_id", Types.LongType.get()),
@@ -100,30 +108,25 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
       StatsSetupConst.TOTAL_SIZE, SnapshotSummary.TOTAL_FILE_SIZE_PROP
   );
 
-  @Parameters(name = "fileFormat={0}, engine={1}, catalog={2}, isVectorized={3}")
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
   public static Collection<Object[]> parameters() {
     Collection<Object[]> testParams = Lists.newArrayList();
-    String javaVersion = System.getProperty("java.specification.version");
 
     // Run tests with every FileFormat for a single Catalog (HiveCatalog)
     for (FileFormat fileFormat : HiveIcebergStorageHandlerTestUtils.FILE_FORMATS) {
-      for (String engine : EXECUTION_ENGINES) {
-        // include Tez tests only for Java 8
-        if (javaVersion.equals("1.8")) {
-          testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, false});
-          // test for vectorization=ON in case of ORC and PARQUET format with Tez engine
-          if (fileFormat != FileFormat.METADATA && "tez".equals(engine) && MetastoreUtil.hive3PresentOnClasspath()) {
-            testParams.add(new Object[] {fileFormat, engine, TestTables.TestTableType.HIVE_CATALOG, true});
-          }
+      IntStream.of(2, 1).forEach(formatVersion -> {
+        testParams.add(new Object[]{fileFormat, HIVE_CATALOG, false, formatVersion});
+        // test for vectorization=ON in case of ORC and PARQUET format
+        if (fileFormat != FileFormat.METADATA) {
+          testParams.add(new Object[]{fileFormat, HIVE_CATALOG, true, formatVersion});
         }
-      }
+      });
     }
 
-    // Run tests for every Catalog for a single FileFormat (PARQUET) and execution engine (tez)
-    // skip HiveCatalog tests as they are added before
-    for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
-      if (!TestTables.TestTableType.HIVE_CATALOG.equals(testTableType)) {
-        testParams.add(new Object[]{FileFormat.PARQUET, "tez", testTableType, false});
+    // Run tests for every Catalog for a single FileFormat (PARQUET), skip HiveCatalog tests as they are added before
+    for (TestTableType testTableType : ALL_TABLE_TYPES) {
+      if (testTableType != HIVE_CATALOG) {
+        testParams.add(new Object[]{FileFormat.PARQUET, testTableType, false, 1});
       }
     }
 
@@ -138,19 +141,19 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   public FileFormat fileFormat;
 
   @Parameter(1)
-  public String executionEngine;
+  public TestTableType testTableType;
 
   @Parameter(2)
-  public TestTables.TestTableType testTableType;
+  public boolean isVectorized;
 
   @Parameter(3)
-  public boolean isVectorized;
+  public Integer formatVersion;
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Rule
-  public Timeout timeout = new Timeout(400_000, TimeUnit.MILLISECONDS);
+  public Timeout timeout = new Timeout(500_000, TimeUnit.MILLISECONDS);
 
   @BeforeClass
   public static void beforeClass() {
@@ -164,16 +167,21 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
   @Before
   public void before() throws IOException {
+    validateTestParams();
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
-    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp, executionEngine);
+    HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
     // Fetch task conversion might kick in for certain queries preventing vectorization code path to be used, so
     // we turn it off explicitly to achieve better coverage.
     if (isVectorized) {
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
     } else {
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "more");
+      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "more");
     }
+  }
+
+  protected void validateTestParams() {
+    assumeTrue(formatVersion == 1);
   }
 
   @After

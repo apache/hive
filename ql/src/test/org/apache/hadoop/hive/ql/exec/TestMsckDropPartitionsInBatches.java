@@ -17,24 +17,19 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.CheckResult.PartitionResult;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Msck;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
-import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
-import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hadoop.util.StringUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,13 +38,11 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
@@ -73,7 +66,7 @@ public class TestMsckDropPartitionsInBatches {
 
   @BeforeClass
   public static void setupClass() throws Exception {
-    hiveConf = new HiveConf(TestMsckCreatePartitionsInBatches.class);
+    hiveConf = new HiveConfForTest(TestMsckCreatePartitionsInBatches.class);
     hiveConf.setIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE, 5);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -85,49 +78,14 @@ public class TestMsckDropPartitionsInBatches {
 
   @Before
   public void before() throws Exception {
-    createPartitionedTable(catName, dbName, tableName);
+    PartitionUtil.createPartitionedTable(db, catName, dbName, tableName);
     table = db.getTable(catName, dbName, tableName);
     repairOutput = new ArrayList<String>();
   }
 
   @After
   public void after() throws Exception {
-    cleanUpTableQuietly(catName, dbName, tableName);
-  }
-
-  private Table createPartitionedTable(String catName, String dbName, String tableName) throws Exception {
-    try {
-      db.dropTable(catName, dbName, tableName);
-      Table table = new Table();
-      table.setCatName(catName);
-      table.setDbName(dbName);
-      table.setTableName(tableName);
-      FieldSchema col1 = new FieldSchema("key", "string", "");
-      FieldSchema col2 = new FieldSchema("value", "int", "");
-      FieldSchema col3 = new FieldSchema("city", "string", "");
-      StorageDescriptor sd = new StorageDescriptor();
-      sd.setSerdeInfo(new SerDeInfo());
-      sd.setInputFormat(TextInputFormat.class.getCanonicalName());
-      sd.setOutputFormat(HiveIgnoreKeyTextOutputFormat.class.getCanonicalName());
-      sd.setCols(Arrays.asList(col1, col2));
-      table.setPartitionKeys(Arrays.asList(col3));
-      table.setSd(sd);
-      db.createTable(table);
-      return db.getTable(catName, dbName, tableName);
-    } catch (Exception exception) {
-      fail("Unable to drop and create table " + StatsUtils
-        .getFullyQualifiedTableName(dbName, tableName) + " because " + StringUtils
-        .stringifyException(exception));
-      throw exception;
-    }
-  }
-
-  private void cleanUpTableQuietly(String catName, String dbName, String tableName) {
-    try {
-      db.dropTable(catName, dbName, tableName, true, true, true);
-    } catch (Exception exception) {
-      fail("Unexpected exception: " + StringUtils.stringifyException(exception));
-    }
+    PartitionUtil.cleanUpTableQuietly(db, catName, dbName, tableName);
   }
 
   private Set<PartitionResult> dropPartsNotInFs(int numOfParts) {
@@ -274,10 +232,12 @@ public class TestMsckDropPartitionsInBatches {
 
     assertEquals(expectedCallCount, droppedParts.size());
     for (int i = 0; i < expectedCallCount; i++) {
+      List<Pair<Integer, byte[]>> actualArgs = droppedParts.get(i);
+      int actualPartitionSize = actualArgs.get(0).getLeft();
       Assert.assertEquals(
         String.format("Unexpected batch size in attempt %d.  Expected: %d.  Found: %d", i + 1,
-          expectedBatchSizes[i], droppedParts.get(i).size()),
-        expectedBatchSizes[i], droppedParts.get(i).size());
+          expectedBatchSizes[i], actualPartitionSize),
+        expectedBatchSizes[i], actualPartitionSize);
     }
   }
 

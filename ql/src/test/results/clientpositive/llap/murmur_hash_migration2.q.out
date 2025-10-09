@@ -19,7 +19,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acid_ptn_bucket1
 OPTIMIZED SQL: SELECT *
-FROM TABLE(INLINE(ARRAY[ (1, 2, 'today'),  (1, 3, 'today'),  (1, 4, 'yesterday'),  (2, 2, 'yesterday'),  (2, 3, 'today'),  (2, 4, 'today')]))
+FROM TABLE(INLINE(ARRAY[(1, 2, 'today'), (1, 3, 'today'), (1, 4, 'yesterday'), (2, 2, 'yesterday'), (2, 3, 'today'), (2, 4, 'today')]))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -55,7 +55,7 @@ STAGE PLANS:
                         Reduce Output Operator
                           bucketingVersion: 1
                           key expressions: _col2 (type: string), _bucket_number (type: string), _col0 (type: int)
-                          null sort order: aaa
+                          null sort order: zzz
                           numBuckets: 2
                           sort order: +++
                           Map-reduce partition columns: _col2 (type: string)

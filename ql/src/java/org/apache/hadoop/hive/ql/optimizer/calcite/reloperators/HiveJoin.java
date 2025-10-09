@@ -94,10 +94,6 @@ public class HiveJoin extends Join implements HiveRelNode {
   }
 
   @Override
-  public void implement(Implementor implementor) {
-  }
-
-  @Override
   public final HiveJoin copy(RelTraitSet traitSet, RexNode conditionExpr, RelNode left,
       RelNode right, JoinRelType joinType, boolean semiJoinDone) {
     try {

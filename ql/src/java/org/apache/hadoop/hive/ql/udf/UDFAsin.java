@@ -48,7 +48,7 @@ public class UDFAsin extends UDFMath {
     if (d < -1 || d > 1) {
       return null;
     } else {
-      result.set(Math.asin(d));
+      result.set(StrictMath.asin(d));
       return result;
     }
   }

@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 /**
  * IncrementalDumpLogger.
  *
- * Repllogger for incremental dump.
+ * ReplLogger for incremental dump.
  **/
 public class IncrementalDumpLogger extends ReplLogger<String> {
   private String dbName;

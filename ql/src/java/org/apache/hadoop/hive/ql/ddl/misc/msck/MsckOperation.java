@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.MsckInfo;
 import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -51,7 +52,7 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
   }
 
   @Override
-  public int execute() throws HiveException, IOException, TException {
+  public int execute() throws HiveException, IOException, TException, MetastoreException {
     try {
       Msck msck = new Msck(false, false);
       msck.init(Msck.getMsckConf(context.getDb().getConf()));
@@ -75,9 +76,9 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
           desc.getFilterExp(), desc.getResFile(), desc.isRepairPartitions(),
           desc.isAddPartitions(), desc.isDropPartitions(), partitionExpirySeconds);
       return msck.repair(msckInfo);
-    } catch (MetaException e) {
+    } catch (MetaException | MetastoreException e) {
       LOG.error("Unable to create msck instance.", e);
-      return 1;
+      throw e;
     } catch (SemanticException e) {
       LOG.error("Msck failed.", e);
       return 1;

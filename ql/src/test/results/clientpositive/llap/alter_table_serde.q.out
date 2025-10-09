@@ -58,10 +58,12 @@ name                	string
 PREHOOK: query: drop table test_table_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table_n1
 POSTHOOK: query: drop table test_table_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_n1
 PREHOOK: query: create table test_table_n1 (id int, query string, name string) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
@@ -195,8 +197,10 @@ dt                  	string
 PREHOOK: query: drop table test_table_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table_n1
 POSTHOOK: query: drop table test_table_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_n1

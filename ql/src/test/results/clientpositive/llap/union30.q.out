@@ -65,7 +65,7 @@ STAGE PLANS:
         Map 4 <- Union 2 (CONTAINS)
         Reducer 3 <- Union 2 (CUSTOM_SIMPLE_EDGE)
         Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 2 (CONTAINS)
-        Reducer 8 <- Map 7 (SIMPLE_EDGE), Union 2 (CONTAINS)
+        Reducer 7 <- Map 5 (SIMPLE_EDGE), Union 2 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -165,23 +165,6 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 316 Data size: 56248 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string), value (type: string)
-                    outputColumnNames: key, value
-                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.4
-                      mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 316 Data size: 56248 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         null sort order: zz
@@ -244,7 +227,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
-        Reducer 8 
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator

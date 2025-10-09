@@ -1,11 +1,15 @@
 PREHOOK: query: drop table union_date_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table union_date_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table union_date_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table union_date_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table union_date_1 (
   ORIGIN_CITY_NAME string,
   DEST_CITY_NAME string,
@@ -123,16 +127,20 @@ POSTHOOK: Input: default@union_date_2
 PREHOOK: query: drop table union_date_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_date_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@union_date_1
 POSTHOOK: query: drop table union_date_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_date_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_date_1
 PREHOOK: query: drop table union_date_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_date_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@union_date_2
 POSTHOOK: query: drop table union_date_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_date_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_date_2

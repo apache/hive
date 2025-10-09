@@ -118,7 +118,7 @@ public class VectorTopNKeyOperator extends Operator<TopNKeyDesc> implements Vect
     incomingBatches++;
     // The selected vector represents selected rows.
     // Clone the selected vector
-    System.arraycopy(batch.selected, 0, temporarySelected, 0, batch.size);
+    System.arraycopy(batch.selected, 0, temporarySelected, 0, batch.selected.length);
     int [] selectedBackup = batch.selected;
     batch.selected = temporarySelected;
     int sizeBackup = batch.size;

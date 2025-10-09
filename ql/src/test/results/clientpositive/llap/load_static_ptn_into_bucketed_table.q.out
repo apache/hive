@@ -222,10 +222,12 @@ POSTHOOK: Input: default@src_bucket_tbl@ds=2008-04-08
 PREHOOK: query: drop table src_bucket_tbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_bucket_tbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_bucket_tbl
 POSTHOOK: query: drop table src_bucket_tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_bucket_tbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_bucket_tbl
 PREHOOK: query: CREATE TABLE src_bucket_tbl(key int, value string) partitioned by (hr int, ds string) clustered by (key) into 1 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -267,7 +269,7 @@ STAGE PLANS:
                     Statistics: Num rows: 34 Data size: 12648 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _bucket_number (type: string), _col0 (type: int)
-                      null sort order: aaa
+                      null sort order: zzz
                       sort order: +++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 34 Data size: 12648 Basic stats: COMPLETE Column stats: NONE
@@ -451,10 +453,12 @@ POSTHOOK: Input: default@src_bucket_tbl@hr=10/ds=__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: drop table src_bucket_tbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_bucket_tbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_bucket_tbl
 POSTHOOK: query: drop table src_bucket_tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_bucket_tbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_bucket_tbl
 PREHOOK: query: CREATE TABLE src_bucket_tbl(key int, value string) partitioned by (hr int, ds string) clustered by (key) into 1 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -496,7 +500,7 @@ STAGE PLANS:
                     Statistics: Num rows: 67 Data size: 24180 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _bucket_number (type: string), _col0 (type: int)
-                      null sort order: aaa
+                      null sort order: zzz
                       sort order: +++
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 67 Data size: 24180 Basic stats: COMPLETE Column stats: NONE
@@ -680,10 +684,12 @@ POSTHOOK: Input: default@src_bucket_tbl@hr=20/ds=2008-04-08
 PREHOOK: query: drop table src_bucket_tbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_bucket_tbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_bucket_tbl
 POSTHOOK: query: drop table src_bucket_tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_bucket_tbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_bucket_tbl
 PREHOOK: query: CREATE TABLE src_bucket_tbl(key int, value string) partitioned by (hr int, ds string) clustered by (key) into 1 buckets STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -910,8 +916,10 @@ POSTHOOK: Input: default@src_bucket_tbl@hr=30/ds=2010-05-07
 PREHOOK: query: drop table src_bucket_tbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_bucket_tbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_bucket_tbl
 POSTHOOK: query: drop table src_bucket_tbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_bucket_tbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_bucket_tbl

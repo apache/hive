@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -32,13 +33,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.io.BytesWritable;
 
 /**
  * A constant expression.
  */
 public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
   private static final long serialVersionUID = 1L;
-  final protected transient static char[] hexArray = "0123456789ABCDEF".toCharArray();
+  final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
   private Object value;
   // If this constant was created while doing constant folding, foldedFromCol holds the name of
   // original column from which it was folded.
@@ -124,7 +126,12 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     if (typeInfo.getTypeName().equals(serdeConstants.STRING_TYPE_NAME) || typeInfo instanceof BaseCharTypeInfo) {
       return "'" + value.toString() + "'";
     } else if (typeInfo.getTypeName().equals(serdeConstants.BINARY_TYPE_NAME)) {
-      byte[] bytes = (byte[]) value;
+      byte[] bytes;
+      if(value instanceof BytesWritable){
+         bytes =  ((BytesWritable)value).getBytes();
+      } else {
+         bytes = (byte[]) value;
+      }
       char[] hexChars = new char[bytes.length * 2];
       for (int j = 0; j < bytes.length; j++) {
         int v = bytes[j] & 0xFF;
@@ -166,6 +173,9 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     if (typeInfo.getCategory() == Category.PRIMITIVE) {
       return getFormatted(typeInfo, value);
     } else if (typeInfo.getCategory() == Category.STRUCT) {
+      if (getWritableObjectInspector().getWritableConstantValue() == null) {
+        return getFormatted(typeInfo, value);
+      }
       StringBuilder sb = new StringBuilder();
       sb.append("const struct(");
       List<?> items = (List<?>) getWritableObjectInspector().getWritableConstantValue();
@@ -205,6 +215,14 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
     }
 
     return true;
+  }
+
+  public static boolean isFoldedFromCol(ExprNodeDesc expr) {
+    if (!(expr instanceof ExprNodeConstantDesc)) {
+      return false;
+    }
+    ExprNodeConstantDesc constantExpr = (ExprNodeConstantDesc) expr;
+    return StringUtils.isNotEmpty(constantExpr.foldedFromCol);
   }
 
   @Override

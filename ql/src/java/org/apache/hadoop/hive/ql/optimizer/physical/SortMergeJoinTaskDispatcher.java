@@ -274,7 +274,7 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
           pathToAliases, aliasToSize);
 
       long ThresholdOfSmallTblSizeSum = HiveConf.getLongVar(conf,
-          HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
+          HiveConf.ConfVars.HIVE_SMALL_TABLES_FILESIZE);
 
       for (int bigTablePosition = 0; bigTablePosition < numAliases; bigTablePosition++) {
         // this table cannot be big table

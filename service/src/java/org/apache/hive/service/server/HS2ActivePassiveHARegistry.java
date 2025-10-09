@@ -42,9 +42,10 @@ import org.apache.hadoop.hive.registry.impl.ZkRegistryBase;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.types.Endpoint;
 import org.apache.hadoop.registry.client.types.ServiceRecord;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.service.ServiceException;
+import org.apache.hive.service.auth.AuthType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +83,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     String keytab = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
     String zkNameSpacePrefix = zkNameSpace + "-";
     return new HS2ActivePassiveHARegistry(null, zkNameSpacePrefix, LEADER_LATCH_PATH, principal, keytab,
-      isClient ? null : SASL_LOGIN_CONTEXT_NAME, conf, isClient);
+      isClient ? SASL_LOGIN_CONTEXT_NAME : null, conf, isClient);
   }
 
   private HS2ActivePassiveHARegistry(final String instanceName, final String zkNamespacePrefix,
@@ -172,9 +173,9 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
 
   private void updateEndpoint(final ServiceRecord srv, final String endpointName) {
     final String instanceUri = srv.get(INSTANCE_URI_CONFIG);
-    final String[] tokens = instanceUri.split(":");
-    final String hostname = tokens[0];
-    final int port = Integer.parseInt(tokens[1]);
+    IPStackUtils.HostPort hostPort = IPStackUtils.getHostAndPort(instanceUri);
+    final String hostname = hostPort.getHostname();
+    final int port = hostPort.getPort();
     Endpoint urlEndpoint = RegistryTypeUtils.ipcEndpoint(endpointName, new InetSocketAddress(hostname, port));
     srv.addInternalEndpoint(urlEndpoint);
     LOG.info("Added {} endpoint to service record", urlEndpoint);
@@ -360,7 +361,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     // Auth specific confs
     confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION.varname,
       conf.get(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION.varname));
-    if (HiveServer2.isKerberosAuthMode(conf)) {
+    if (AuthType.isKerberosAuthMode(conf)) {
       confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname,
         conf.get(HiveConf.ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname));
     }

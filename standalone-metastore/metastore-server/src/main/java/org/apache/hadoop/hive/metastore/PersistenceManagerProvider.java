@@ -69,7 +69,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
-import static org.apache.hadoop.hive.metastore.HiveMetaStore.isMetaStoreHousekeepingLeader;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
 
 /**
  * This class is a wrapper class around PersistenceManagerFactory and its properties
@@ -83,6 +83,7 @@ import static org.apache.hadoop.hive.metastore.HiveMetaStore.isMetaStoreHousekee
 public class PersistenceManagerProvider {
   private static PersistenceManagerFactory pmf;
   private static PersistenceManagerFactory compactorPmf;
+  private static DatabaseProduct databaseProduct;
   private static Properties prop;
   private static final ReentrantReadWriteLock pmfLock = new ReentrantReadWriteLock();
   private static final Lock pmfReadLock = pmfLock.readLock();
@@ -136,6 +137,89 @@ public class PersistenceManagerProvider {
     }
     return isRetriableException(e.getCause());
   }
+
+  /**
+   * When closing PersistenceManagerFactory, the connection factory should be closed as well,
+   * otherwise the underlying dangling connections would be accumulated resulting to connection leaks.
+   * See TestDataSourceProviderFactory#testClosePersistenceManagerProvider for details.
+   * @param pmf the PersistenceManagerFactory tended to be closed
+   */
+  @VisibleForTesting
+  public static void closePmfInternal(PersistenceManagerFactory pmf) {
+    if (pmf != null) {
+      LOG.debug("Closing PersistenceManagerFactory");
+      pmf.close();
+      // close the underlying connection pool to avoid leaks
+      if (pmf.getConnectionFactory() instanceof AutoCloseable) {
+        try (AutoCloseable closeable = (AutoCloseable) pmf.getConnectionFactory()) {
+        } catch (Exception e) {
+          LOG.warn("Failed to close connection factory of PersistenceManagerFactory: " + pmf, e);
+        }
+      }
+      if (pmf.getConnectionFactory2() instanceof AutoCloseable) {
+        try (AutoCloseable closeable = (AutoCloseable) pmf.getConnectionFactory2()) {
+        } catch (Exception e) {
+          LOG.warn("Failed to close connection factory2 of PersistenceManagerFactory: " + pmf, e);
+        }
+      }
+      LOG.debug("PersistenceManagerFactory closed");
+    }
+  }
+
+  // Output the changed properties
+  private static void logPropChanges(Properties newProps) {
+    if (prop == null) {
+      LOG.info("Current pmf properties are uninitialized");
+      return;
+    }
+    LOG.info("Updating the pmf due to property change");
+    if (LOG.isDebugEnabled() && !newProps.equals(prop)) {
+      for (String key : prop.stringPropertyNames()) {
+        if (!key.equals(newProps.get(key))) {
+          if (LOG.isDebugEnabled() && MetastoreConf.isPrintable(key)) {
+            // The jdbc connection url can contain sensitive information like username and password
+            // which should be masked out before logging.
+            String oldVal = prop.getProperty(key);
+            String newVal = newProps.getProperty(key);
+            if (key.equals(ConfVars.CONNECT_URL_KEY.getVarname())) {
+              oldVal = MetaStoreServerUtils.anonymizeConnectionURL(oldVal);
+              newVal = MetaStoreServerUtils.anonymizeConnectionURL(newVal);
+            }
+            LOG.debug("Found {} to be different. Old val : {} : New Val : {}", key,
+                oldVal, newVal);
+          } else {
+            LOG.debug("Found masked property {} to be different", key);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Close the corresponding PersistenceManagerFactory
+   * @param forCompactor true for compactorPmf, otherwise pmf
+   * @param shouldClose close the PersistenceManagerFactory if true
+   */
+  public static void closePmfIfNeeded(boolean forCompactor, boolean shouldClose) {
+    pmfWriteLock.lock();
+    try {
+      PersistenceManagerFactory factory = forCompactor ? compactorPmf : pmf;
+      if (factory != null && shouldClose) {
+        clearOutPmfClassLoaderCache(factory);
+        if (!forTwoMetastoreTesting) {
+          closePmfInternal(factory);
+        }
+        if (forCompactor) {
+          compactorPmf = null;
+        } else {
+          pmf = null;
+        }
+      }
+    } finally {
+      pmfWriteLock.unlock();
+    }
+  }
+
   /**
    * This method updates the PersistenceManagerFactory and its properties if the given
    * configuration is different from its current set of properties. Most common case is that
@@ -152,6 +236,7 @@ public class PersistenceManagerProvider {
   public static void updatePmfProperties(Configuration conf) {
     // take a read lock to check if the datasource properties changed.
     // Most common case is that datasource properties do not change
+    boolean useCompactorPool = MetastoreConf.getBoolVar(conf, COMPACTOR_USE_CUSTOM_POOL);
     Properties propsFromConf = PersistenceManagerProvider.getDataSourceProps(conf);
     pmfReadLock.lock();
     // keep track of if the read-lock is acquired by this thread
@@ -162,64 +247,34 @@ public class PersistenceManagerProvider {
     boolean readLockAcquired = true;
     try {
       // if pmf properties change, need to update, release read lock and take write lock
-      if (pmf == null || !propsFromConf.equals(prop)) {
+      if (pmf == null || (compactorPmf == null && useCompactorPool) || !propsFromConf.equals(prop)) {
         pmfReadLock.unlock();
         readLockAcquired = false;
         pmfWriteLock.lock();
         try {
           // check if we need to update pmf again here in case some other thread already did it
           // for us after releasing readlock and before acquiring write lock above
-          if (pmf == null || !propsFromConf.equals(prop)) {
+          boolean propChanged = !propsFromConf.equals(prop);
+          if (pmf == null || (compactorPmf == null && useCompactorPool)  || propChanged) {
+            logPropChanges(propsFromConf);
             // OK, now we really need to re-initialize pmf and pmf properties
-            if (LOG.isInfoEnabled()) {
-              LOG.info("Updating the pmf due to property change");
-              if (prop == null) {
-                LOG.info("Current pmf properties are uninitialized");
-              } else {
-                for (String key : prop.stringPropertyNames()) {
-                  if (!key.equals(propsFromConf.get(key))) {
-                     if (LOG.isDebugEnabled() && MetastoreConf.isPrintable(key)) {
-                       // The jdbc connection url can contain sensitive information like username and password
-                       // which should be masked out before logging.
-                       String oldVal = prop.getProperty(key);
-                       String newVal = propsFromConf.getProperty(key);
-                       if (key.equals(ConfVars.CONNECT_URL_KEY.getVarname())) {
-                         oldVal = MetaStoreServerUtils.anonymizeConnectionURL(oldVal);
-                         newVal = MetaStoreServerUtils.anonymizeConnectionURL(newVal);
-                       }
-                       LOG.debug("Found {} to be different. Old val : {} : New Val : {}", key,
-                           oldVal, newVal);
-                     } else {
-                      LOG.debug("Found masked property {} to be different", key);
-                    }
-                  }
-                }
-              }
-            }
-            if (pmf != null) {
-              clearOutPmfClassLoaderCache(pmf);
-              if (!forTwoMetastoreTesting) {
-                // close the underlying connection pool to avoid leaks
-                LOG.debug("Closing PersistenceManagerFactory");
-                pmf.close();
-                LOG.debug("PersistenceManagerFactory closed");
-              }
-              pmf = null;
-            }
+            closePmfIfNeeded(true, propChanged);
+            closePmfIfNeeded(false, propChanged);
             // update the pmf properties object then initialize pmf using them
             prop = propsFromConf;
             retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS);
             retryInterval = MetastoreConf
                 .getTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL, TimeUnit.MILLISECONDS);
             // init PMF with retry logic
-            pmf = retry(() -> initPMF(conf, false));
-            try {
-              if (isMetaStoreHousekeepingLeader(conf) && MetastoreConf.getBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON)
-                    && compactorPmf == null) {
-                compactorPmf = retry(() -> initPMF(conf, true));
-              }
-            } catch (Exception e) {
-              LOG.error(e.getMessage());
+            if (pmf == null) {
+              pmf = retry(() -> initPMF(conf, false));
+            }
+            if (compactorPmf == null && useCompactorPool) {
+              compactorPmf = retry(() -> initPMF(conf, true));
+            }
+            if (databaseProduct == null) {
+              String url = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+              databaseProduct = DatabaseProduct.determineDatabaseProduct(url, conf);
             }
           }
           // downgrade by acquiring read lock before releasing write lock
@@ -238,7 +293,7 @@ public class PersistenceManagerProvider {
 
   private static PersistenceManagerFactory initPMF(Configuration conf, boolean forCompactor) {
     DataSourceProvider dsp = DataSourceProviderFactory.tryGetDataSourceProviderOrNull(conf);
-    PersistenceManagerFactory pmf;
+    PersistenceManagerFactory pmf = null;
 
     // Any preexisting datanucleus property should be passed along
     Map<Object, Object> dsProp = new HashMap<>(prop);
@@ -251,10 +306,22 @@ public class PersistenceManagerProvider {
     if (dsp == null) {
       pmf = JDOHelper.getPersistenceManagerFactory(dsProp);
     } else {
-      try {
-        DataSource ds = (maxPoolSize > 0) ? dsp.create(conf, maxPoolSize) : dsp.create(conf);
+      DataSource ds = null;
+      DataSource ds2 = null;
+      String sourceName = forCompactor ? "objectstore-compactor" : "objectstore";
+      try (DataSourceProvider.DataSourceNameConfigurator configurator =
+               new DataSourceProvider.DataSourceNameConfigurator(conf, sourceName)) {
+        ds = (maxPoolSize > 0) ? dsp.create(conf, maxPoolSize) : dsp.create(conf);
+        databaseProduct = DatabaseProduct.determineDatabaseProduct(ds, conf);
+        // The secondary connection factory is used for schema generation, and for value generation operations.
+        // We use a different pool for the secondary connection factory to avoid resource starvation.
+        // DataNucleus uses locks for schema generation and value generation, under normal circumstances 2 connections
+        // should be sufficient.
+        configurator.resetName(sourceName + "-secondary");
+        int maxSecondaryPoolSize = Math.max(2, MetastoreConf.getIntVar(conf, ConfVars.CONNECTION_POOLING_MAX_SECONDARY_CONNECTIONS));
+        ds2 = dsp.create(conf, maxSecondaryPoolSize);
         dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY, ds);
-        dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds);
+        dsProp.put(PropertyNames.PROPERTY_CONNECTION_FACTORY2, ds2);
         dsProp.put(ConfVars.MANAGER_FACTORY_CLASS.getVarname(),
             "org.datanucleus.api.jdo.JDOPersistenceManagerFactory");
         pmf = JDOHelper.getPersistenceManagerFactory(dsProp);
@@ -262,8 +329,18 @@ public class PersistenceManagerProvider {
         LOG.warn("Could not create PersistenceManagerFactory using "
             + "connection pool properties, will fall back", e);
         pmf = JDOHelper.getPersistenceManagerFactory(prop);
+      } finally {
+        if (pmf == null && ds instanceof AutoCloseable) {
+          try (AutoCloseable close1 = (AutoCloseable) ds;
+               AutoCloseable close2 = (AutoCloseable) ds2 ) {
+            LOG.debug("Trying to close the dangling datasource as the pmf is null");
+          } catch (Exception e) {
+            LOG.warn("Failed to close the DataSource", e);
+          }
+        }
       }
     }
+    assert pmf != null;
     DataStoreCache dsc = pmf.getDataStoreCache();
     if (dsc != null) {
       String objTypes = MetastoreConf.getVar(conf, ConfVars.CACHE_PINOBJTYPES);
@@ -440,6 +517,14 @@ public class PersistenceManagerProvider {
     } finally {
       pmfReadLock.unlock();
     }
+  }
+
+  public static DatabaseProduct getDatabaseProduct() {
+    if (databaseProduct == null) {
+      throw new IllegalStateException(
+          "Cannot determine the database product. PersistenceManagerFactory has not been initialized yet");
+    }
+    return databaseProduct;
   }
 
   /**

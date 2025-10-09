@@ -53,6 +53,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 
+import static org.apache.hadoop.hive.shims.HadoopShims.USER_ID;
+
 public abstract class Operation {
   protected final HiveSession parentSession;
   protected boolean embedded;
@@ -205,7 +207,7 @@ public abstract class Operation {
 
   protected final void assertState(final Collection<OperationState> states) throws HiveSQLException {
     if (!states.contains(state)) {
-      throw new HiveSQLException("Expected states: " + states + ", but found " + this.state);
+      throw new HiveSQLException("Expected states: " + states + ", but found " + this.state, null, null, queryState.getQueryId());
     }
     this.lastAccessTime = System.currentTimeMillis();
   }
@@ -226,7 +228,8 @@ public abstract class Operation {
 
   protected void createOperationLog() {
     if (parentSession.isOperationLogEnabled()) {
-      operationLog = OperationLogManager.createOperationLog(this, queryState);
+      File operationLogFile = new File(parentSession.getOperationLogSessionDir(), queryState.getQueryId());
+      operationLog = new OperationLog(opHandle.toString(), operationLogFile, parentSession.getHiveConf());
       isOperationLogEnabled = true;
     }
   }
@@ -236,7 +239,8 @@ public abstract class Operation {
    * Set up some preconditions, or configurations.
    */
   protected void beforeRun() {
-    ShimLoader.getHadoopShims().setHadoopQueryContext(queryState.getQueryId());
+    ShimLoader.getHadoopShims()
+        .setHadoopQueryContext(String.format(USER_ID, queryState.getQueryId(), parentSession.getUserName()));
     if (!embedded) {
       createOperationLog();
       LogUtils.registerLoggingContext(queryState.getConf());
@@ -262,7 +266,8 @@ public abstract class Operation {
       LogUtils.unregisterLoggingContext();
     }
     // Reset back to session context after the query is done
-    ShimLoader.getHadoopShims().setHadoopSessionContext(parentSession.getSessionState().getSessionId());
+    ShimLoader.getHadoopShims().setHadoopSessionContext(
+        String.format(USER_ID, parentSession.getSessionState().getSessionId(), parentSession.getUserName()));
   }
 
   /**
@@ -287,8 +292,10 @@ public abstract class Operation {
   private static class OperationLogCleaner implements Runnable {
     public static final Logger LOG = LoggerFactory.getLogger(OperationLogCleaner.class.getName());
     private OperationLog operationLog;
+    private Operation operation;
 
-    public OperationLogCleaner(OperationLog operationLog) {
+    public OperationLogCleaner(Operation operation, OperationLog operationLog) {
+      this.operation = operation;
       this.operationLog = operationLog;
     }
 
@@ -297,6 +304,7 @@ public abstract class Operation {
       if (operationLog != null) {
         LOG.info("Closing operation log {}", operationLog);
         operationLog.close();
+        OperationLogManager.closeOperation(operation);
       }
     }
   }
@@ -314,12 +322,13 @@ public abstract class Operation {
       } else {
         if (operationLogCleanupDelayMs > 0) {
           ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
-          scheduledExecutorService.schedule(new OperationLogCleaner(operationLog), operationLogCleanupDelayMs,
+          scheduledExecutorService.schedule(new OperationLogCleaner(this, operationLog), operationLogCleanupDelayMs,
             TimeUnit.MILLISECONDS);
           scheduledExecutorService.shutdown();
         } else {
           log.info("Closing operation log {} without delay", operationLog);
           operationLog.close();
+          OperationLogManager.closeOperation(this);
         }
       }
     }
@@ -358,13 +367,13 @@ public abstract class Operation {
       EnumSet<FetchOrientation> supportedOrientations) throws HiveSQLException {
     if (!supportedOrientations.contains(orientation)) {
       throw new HiveSQLException("The fetch type " + orientation.toString() +
-          " is not supported for this resultset", "HY106");
+          " is not supported for this resultset", "HY106", queryState.getQueryId());
     }
   }
 
-  protected HiveSQLException toSQLException(String prefix, CommandProcessorException e) {
+  protected HiveSQLException toSQLException(String prefix, CommandProcessorException e, String queryId) {
     HiveSQLException ex =
-        new HiveSQLException(prefix + ": " + e.getMessage(), e.getSqlState(), e.getResponseCode());
+        new HiveSQLException(prefix + ": " + e.getMessage(), e.getSqlState(), e.getResponseCode(), queryId);
     if (e.getCause() != null) {
       ex.initCause(e.getCause());
     }

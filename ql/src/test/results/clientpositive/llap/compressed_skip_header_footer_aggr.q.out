@@ -360,3 +360,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testcase_gz
 #### A masked pattern was here ####
 2
+#### A masked pattern was here ####

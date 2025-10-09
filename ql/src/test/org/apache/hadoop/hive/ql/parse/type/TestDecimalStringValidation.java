@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.type;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -100,7 +101,7 @@ public class TestDecimalStringValidation {
 
   @Test
   public void testValidationDecimalWithCharacterFailsWhenStrictChecksEnabled() {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY, true);
     try {
       validateCall(conf);
@@ -112,7 +113,7 @@ public class TestDecimalStringValidation {
 
   @Test
   public void testValidationDecimalWithCharacterSucceedsWhenStrictChecksDisabled() throws SemanticException {
-    HiveConf conf = new HiveConf();
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY, false);
     validateCall(conf);
   }

@@ -24,9 +24,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSpecBuilder;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
@@ -88,7 +92,7 @@ public class OptimisedBootstrapUtils {
    * @return true, if the database has repl.target.for property set.
    * @throws HiveException
    */
-  public static boolean isFailover(String dbName, Hive hive) throws HiveException {
+  public static boolean isDbTargetOfFailover(String dbName, Hive hive) throws HiveException {
     Database database = hive.getDatabase(dbName);
     return database != null ? MetaStoreUtils.isTargetOfReplication(database) : false;
   }
@@ -258,9 +262,10 @@ public class OptimisedBootstrapUtils {
     Path filePath = new Path(currentDumpPath, EVENT_ACK_FILE);
     Utils.writeOutput(dbEventId + FILE_ENTRY_SEPARATOR + targetDbEventId, filePath, conf);
     LOG.info("Created event_ack file at {} with source eventId {} and target eventId {}", filePath, dbEventId,
-        targetDbEventId);
+            targetDbEventId);
     work.setResultValues(Arrays.asList(currentDumpPath.toUri().toString(), String.valueOf(lastReplId)));
-    dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, -1L, false);
+    long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+    dmd.setDump(DumpType.PRE_OPTIMIZED_BOOTSTRAP, work.eventFrom, lastReplId, cmRoot, executionId, false);
     dmd.write(true);
     return lastReplId;
   }
@@ -395,7 +400,17 @@ public class OptimisedBootstrapUtils {
     // Check if the table is partitioned, in case the table is partitioned we need to check for the partitions
     // listing as well.
     if (table.isPartitioned()) {
-      List<Partition> partitions = hiveDb.getPartitions(table);
+      GetProjectionsSpec getProjectionsSpec = new GetPartitionProjectionsSpecBuilder()
+          .addProjectFieldList(Arrays.asList("sd.location")).build();
+      GetPartitionsRequest request = new GetPartitionsRequest(table.getDbName(), table.getTableName(),
+          getProjectionsSpec, null);
+      request.setCatName(table.getCatName());
+      List<Partition> partitions;
+      try {
+        partitions = hiveDb.getPartitionsWithSpecs(table, request);
+      } catch (Exception e) {
+        throw new HiveException(e);
+      }
       for (Partition part : partitions) {
         Path partPath = part.getDataLocation();
         // Build listing for the partition only if it doesn't lies within the table location, else it would have been

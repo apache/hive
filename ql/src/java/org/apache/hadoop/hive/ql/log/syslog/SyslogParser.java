@@ -295,13 +295,13 @@ public class SyslogParser implements Closeable {
 
     expect(' ');
 
-    byte[] appname = null;
+    byte[] appName = null;
     byte[] procId = null;
     byte[] msgId = null;
     Map<String, String> structuredData = null;
 
     if (version >= 1) {
-      appname = readWordOrNil(48);
+      appName = readWordOrNil(48);
       expect(' ');
       procId = readWordOrNil(12);
       expect(' ');
@@ -310,7 +310,7 @@ public class SyslogParser implements Closeable {
       structuredData = readAndParseStructuredData();
     } else if (version == 0 && parseTag) {
       // Try to find a colon terminated tag.
-      appname = readTag();
+      appName = readTag();
       if (peek() == '[') {
         procId = readPid();
       }
@@ -323,7 +323,7 @@ public class SyslogParser implements Closeable {
     if (c != -1) {
       msg = readLine();
     }
-    createEvent(version, priority, cal, hostname, appname, procId, msgId, structuredData, msg, row);
+    createEvent(version, priority, cal, hostname, appName, procId, msgId, structuredData, msg, row);
     return row;
   }
 
@@ -339,25 +339,27 @@ public class SyslogParser implements Closeable {
 
   /**
    * Create a log event from the given parameters.
+   * https://www.rfc-editor.org/rfc/rfc3164
+   * https://www.rfc-editor.org/rfc/rfc5424
    *
    * @param version        the syslog version, 0 for RFC 3164
    * @param priority       the syslog priority, according to RFC 5424
    * @param cal            the timestamp of the message. Note that timezone matters
    * @param hostname       the hostname
-   * @param appname        the RFC 5424 appname
+   * @param appName        the RFC 5424 app-name
    * @param procId         the RFC 5424 proc-id
    * @param msgId          the RFC 5424 msg-id
    * @param structuredData the RFC 5424 structured-data
    * @param body           the message body
    */
   private void createEvent(int version, int priority, Calendar cal, String hostname,
-    byte[] appname, byte[] procId, byte[] msgId, Map<String, String> structuredData, byte[] body, List<Object> row) {
+    byte[] appName, byte[] procId, byte[] msgId, Map<String, String> structuredData, byte[] body, List<Object> row) {
     row.add(FACILITIES[priority / 8]);
     row.add(getEventPriorityBySyslog(priority));
     row.add(version == 0 ? "RFC3164" : "RFC5424");
     row.add(Timestamp.ofEpochMilli(cal.getTimeInMillis()));
     row.add(hostname != null ? hostname : "");
-    row.add(appname != null ? new String(appname) : "");
+    row.add(appName != null ? new String(appName) : "");
     row.add(procId != null ? new String(procId) : "");
     row.add(msgId != null ? new String(msgId) : "");
     row.add(structuredData);

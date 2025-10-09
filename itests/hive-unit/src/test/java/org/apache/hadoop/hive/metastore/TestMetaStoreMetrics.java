@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -40,8 +42,8 @@ public class TestMetaStoreMetrics {
 
   @BeforeClass
   public static void before() throws Exception {
-    hiveConf = new HiveConf(TestMetaStoreMetrics.class);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+    hiveConf = new HiveConfForTest(TestMetaStoreMetrics.class);
+    hiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_METRICS, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     hiveConf
@@ -156,4 +158,17 @@ public class TestMetaStoreMetrics {
     Assert.assertEquals(initialCount,
         Metrics.getRegistry().getCounters().get(MetricsConstants.OPEN_CONNECTIONS).getCount());
   }
+
+  @Test
+  public void testConnectionPoolMetrics() {
+    // The connection pool's metric is in a pattern of ${poolName}.pool.${metricName}
+    String secondaryPoolMetricName = "objectstore-secondary.pool.TotalConnections";
+    String poolMetricName = "objectstore.pool.TotalConnections";
+    Assert.assertEquals(MetastoreConf.getIntVar(hiveConf,
+        MetastoreConf.ConfVars.CONNECTION_POOLING_MAX_CONNECTIONS),
+        Metrics.getRegistry().getGauges().get(poolMetricName).getValue());
+    Assert.assertEquals(2,
+        Metrics.getRegistry().getGauges().get(secondaryPoolMetricName).getValue());
+  }
+
 }

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists udf_tb1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists udf_tb1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists udf_tb2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists udf_tb2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table udf_tb1 (year int, month int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

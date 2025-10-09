@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS repairtable
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS repairtable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE repairtable(col STRING) PARTITIONED BY (p1 STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -27,4 +29,4 @@ Partitions not in metastore:	repairtable:p1=A
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable
 PREHOOK: type: MSCK
 PREHOOK: Output: default@repairtable
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Found two paths for same partition 'repairtable:p1=a' for table repairtable

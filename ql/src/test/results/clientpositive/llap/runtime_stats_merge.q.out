@@ -121,12 +121,12 @@ Stage-4
           Dependency Collection{}
             Stage-2
               Reducer 2 vectorized, llap
-              File Output Operator [FS_55]
+              File Output Operator [FS_54]
                 table:{"name:":"default.lineitem2"}
-                Select Operator [SEL_54] (runtime: rows=1 width=76)
+                Select Operator [SEL_53] (runtime: rows=1 width=76)
                   Output:["_col0"]
                 <-Map 1 [SIMPLE_EDGE] llap
-                  SHUFFLE [RS_12]
+                  SHUFFLE [RS_14]
                     PartitionCols:UDFToInteger(_col0)
                     Select Operator [SEL_11] (runtime: rows=1 width=76)
                       Output:["_col0"]
@@ -134,14 +134,14 @@ Stage-4
                         predicate:(_col1 = _col2)
                         Select Operator [SEL_9] (runtime: rows=1 width=84)
                           Output:["_col0","_col1","_col2"]
-                          Map Join Operator [MAPJOIN_40] (runtime: rows=1 width=84)
-                            Conds:SEL_2._col0=RS_44._col0(Inner),Output:["_col0","_col1","_col2"]
+                          Map Join Operator [MAPJOIN_39] (runtime: rows=1 width=84)
+                            Conds:SEL_2._col1=RS_43._col0(Inner),Output:["_col0","_col1","_col2"]
                           <-Map 4 [BROADCAST_EDGE] vectorized, llap
-                            BROADCAST [RS_44]
+                            BROADCAST [RS_43]
                               PartitionCols:_col0
-                              Select Operator [SEL_43] (runtime: rows=1 width=4)
+                              Select Operator [SEL_42] (runtime: rows=1 width=4)
                                 Output:["_col0"]
-                                Filter Operator [FIL_42] (runtime: rows=1 width=4)
+                                Filter Operator [FIL_41] (runtime: rows=1 width=4)
                                   predicate:l_orderkey is not null
                                   TableScan [TS_3] (runtime: rows=1 width=4)
                                     default@lineitem_stage,lineitem_stage, ACID table,Tbl:COMPLETE,Col:COMPLETE,Output:["l_orderkey"]

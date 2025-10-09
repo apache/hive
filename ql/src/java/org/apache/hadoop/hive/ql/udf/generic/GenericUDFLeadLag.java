@@ -91,7 +91,7 @@ public abstract class GenericUDFLeadLag extends GenericUDF {
       Object o = ((ConstantObjectInspector) amtOI).getWritableConstantValue();
       amt = ((IntWritable) o).get();
       if (amt < 0) {
-        throw new UDFArgumentTypeException(1,  " amount can not be nagative. Specified: " + amt);
+        throw new UDFArgumentTypeException(1,  " amount can not be negative. Specified: " + amt);
       }
     }
 

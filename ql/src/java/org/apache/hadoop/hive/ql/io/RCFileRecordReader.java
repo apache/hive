@@ -102,7 +102,7 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
     this.conf = conf;
     this.split = split;
 
-    useCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEUSERCFILESYNCCACHE);
+    useCache = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_USE_RCFILE_SYNC_CACHE);
 
     if (split.getStart() > in.getPosition()) {
       long oldSync = useCache ? syncCache.get(split) : -1;

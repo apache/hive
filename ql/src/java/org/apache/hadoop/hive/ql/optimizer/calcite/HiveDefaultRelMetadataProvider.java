@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveOnTezCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveRelMdCost;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdAggregatedColumns;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRuntimeRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSelectivity;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdSize;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdTableReferences;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdUniqueKeys;
 
 import com.google.common.collect.ImmutableList;
@@ -67,6 +69,8 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdDistribution.SOURCE,
                   HiveRelMdCollation.SOURCE,
                   HiveRelMdPredicates.SOURCE,
+                  HiveRelMdTableReferences.SOURCE,
+                  HiveRelMdAggregatedColumns.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
   private final RelMetadataProvider metadataProvider;
@@ -82,7 +86,7 @@ public class HiveDefaultRelMetadataProvider {
         && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_EXTENDED_COST_MODEL)) {
       // Get max split size for HiveRelMdParallelism
       final Double maxSplitSize = (double) HiveConf.getLongVar(
-          hiveConf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
+          hiveConf, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE);
 
       // Create and return metadata provider
       JaninoRelMetadataProvider metadataProvider = JaninoRelMetadataProvider.of(
@@ -102,6 +106,8 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdDistribution.SOURCE,
                   HiveRelMdCollation.SOURCE,
                   HiveRelMdPredicates.SOURCE,
+                  HiveRelMdTableReferences.SOURCE,
+                  HiveRelMdAggregatedColumns.SOURCE,
                   JaninoRelMetadataProvider.DEFAULT)));
 
       if (nodeClasses != null) {

@@ -44,11 +44,12 @@ public class CoreAccumuloCliDriver extends CliAdapter {
   @BeforeClass
   public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
+    String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
     qt = new AccumuloQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, new AccumuloTestSetup(),
-        initScript, cleanupScript);
+        hiveConfDir, initScript, cleanupScript);
   }
 
   @Override

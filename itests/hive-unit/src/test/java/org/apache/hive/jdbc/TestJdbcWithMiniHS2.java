@@ -27,7 +27,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -67,7 +66,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.ObjectStore;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -85,7 +84,6 @@ import org.datanucleus.AbstractNucleusContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 
@@ -106,7 +104,7 @@ public class TestJdbcWithMiniHS2 {
   @BeforeClass
   public static void setupBeforeClass() throws Exception {
     MiniHS2.cleanupLocalDir();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = getNewHiveConf();
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");
 
@@ -204,7 +202,7 @@ public class TestJdbcWithMiniHS2 {
       }
     }
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = getNewHiveConf();
     startMiniHS2(conf);
     openDefaultConnections();
     openTestConnections();
@@ -217,9 +215,9 @@ public class TestJdbcWithMiniHS2 {
   private static void startMiniHS2(HiveConf conf, boolean httpMode) throws Exception {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
-    conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
+    conf.setBoolVar(ConfVars.HIVE_STATS_COL_AUTOGATHER, false);
     // store post-exec hooks calls so we can look at them later
-    conf.setVar(ConfVars.POSTEXECHOOKS, ReadableHook.class.getName() + "," +
+    conf.setVar(ConfVars.POST_EXEC_HOOKS, ReadableHook.class.getName() + "," +
         LineageLogger.class.getName());
     MiniHS2.Builder builder = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false);
     if (httpMode) {
@@ -790,7 +788,7 @@ public class TestJdbcWithMiniHS2 {
   public void testSessionScratchDirs() throws Exception {
     // Stop HiveServer2
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = getNewHiveConf();
     String userName;
     Path scratchDirPath;
     // Set a custom prefix for hdfs scratch dir path
@@ -807,15 +805,15 @@ public class TestJdbcWithMiniHS2 {
     // FS
     FileSystem fs = miniHS2.getLocalFS();
     FsPermission expectedFSPermission = new FsPermission(HiveConf.getVar(conf,
-        HiveConf.ConfVars.SCRATCHDIRPERMISSION));
+        HiveConf.ConfVars.SCRATCH_DIR_PERMISSION));
 
     // Verify scratch dir paths and permission
     // HDFS scratch dir
-    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) + "/" + userName);
+    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR) + "/" + userName);
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
 
     // Local scratch dir
-    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
 
     // Downloaded resources dir
@@ -831,11 +829,11 @@ public class TestJdbcWithMiniHS2 {
 
     // Verify scratch dir paths and permission
     // HDFS scratch dir
-    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) + "/" + userName);
+    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR) + "/" + userName);
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
 
     // Local scratch dir
-    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR));
+    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, true);
 
     // Downloaded resources dir
@@ -858,7 +856,7 @@ public class TestJdbcWithMiniHS2 {
    */
   @Test
   public void testUdfWhiteBlackList() throws Exception {
-    HiveConf testConf = new HiveConf();
+    HiveConf testConf = getNewHiveConf();
     assertTrue(testConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_WHITELIST).isEmpty());
     // verify that udf in default whitelist can be executed
     Statement stmt = conDefault.createStatement();
@@ -894,6 +892,13 @@ public class TestJdbcWithMiniHS2 {
     restoreMiniHS2AndConnections();
   }
 
+  private static HiveConf getNewHiveConf() {
+    HiveConf conf = new HiveConfForTest(TestJdbcWithMiniHS2.class);
+    //TODO: HIVE-28284: TestJdbcWithMiniHS2/TestJdbcWithMiniHS2ErasureCoding to run on Tez
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    return conf;
+  }
+
   /** Test UDF blacklist
    *   - verify default value
    *   - verify udfs allowed with default blacklist
@@ -902,7 +907,7 @@ public class TestJdbcWithMiniHS2 {
    */
   @Test
   public void testUdfBlackList() throws Exception {
-    HiveConf testConf = new HiveConf();
+    HiveConf testConf = getNewHiveConf();
     assertTrue(testConf.getVar(ConfVars.HIVE_SERVER2_BUILTIN_UDF_BLACKLIST).isEmpty());
     Statement stmt = conDefault.createStatement();
     // verify that udf in default whitelist can be executed
@@ -933,7 +938,7 @@ public class TestJdbcWithMiniHS2 {
   public void testUdfBlackListOverride() throws Exception {
     stopMiniHS2();
     // setup whitelist
-    HiveConf testConf = new HiveConf();
+    HiveConf testConf = getNewHiveConf();
 
     Set<String> funcNames = FunctionRegistry.getFunctionNames();
     String funcNameStr = "";
@@ -969,7 +974,7 @@ public class TestJdbcWithMiniHS2 {
   public void testRootScratchDir() throws Exception {
     // Stop HiveServer2
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = getNewHiveConf();
     String userName;
     Path scratchDirPath;
     conf.set("hive.exec.scratchdir", tmpDir + "/hs2");
@@ -982,7 +987,7 @@ public class TestJdbcWithMiniHS2 {
     FsPermission expectedFSPermission = new FsPermission((short)00733);
     // Verify scratch dir paths and permission
     // HDFS scratch dir
-    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR));
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
     conn.close();
 
@@ -992,7 +997,7 @@ public class TestJdbcWithMiniHS2 {
     conf.set("hive.exec.scratchdir", tmpDir + "/level1/level2/level3");
     startMiniHS2(conf);
     conn = getConnection(miniHS2.getJdbcURL(testDbName), userName, "password");
-    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
+    scratchDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR));
     verifyScratchDir(conf, fs, scratchDirPath, expectedFSPermission, userName, false);
     conn.close();
 
@@ -1019,7 +1024,7 @@ public class TestJdbcWithMiniHS2 {
   public void testHttpHeaderSize() throws Exception {
     // Stop HiveServer2
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = getNewHiveConf();
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_REQUEST_HEADER_SIZE, 1024);
     conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE, 1024);
     startMiniHS2(conf, true);
@@ -1089,9 +1094,9 @@ public class TestJdbcWithMiniHS2 {
   public void testHttpRetryOnServerIdleTimeout() throws Exception {
     // Stop HiveServer2
     stopMiniHS2();
-    HiveConf conf = new HiveConf();
+    HiveConf conf = getNewHiveConf();
     // Set server's idle timeout to a very low value
-    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME, "5");
+    conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_MAX_IDLE_TIME, "5000");
     startMiniHS2(conf, true);
     String userName = System.getProperty("user.name");
     Connection conn = getConnection(miniHS2.getJdbcURL(testDbName)+";retries=3", userName, "password");
@@ -1227,15 +1232,11 @@ public class TestJdbcWithMiniHS2 {
     try {
       constructorCacheField = ReflectionUtil.class.getDeclaredField("CONSTRUCTOR_CACHE");
       if (constructorCacheField != null) {
-        constructorCacheField.setAccessible(true);
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(constructorCacheField, constructorCacheField.getModifiers()
-            & ~Modifier.FINAL);
         tmp =
             CacheBuilder.newBuilder().expireAfterAccess(5, TimeUnit.SECONDS).concurrencyLevel(64)
                 .weakKeys().weakValues().build();
-        constructorCacheField.set(tmp.getClass(), tmp);
+        constructorCacheField.setAccessible(true);
+        constructorCacheField.set(null, tmp);
       }
     } catch (Exception e) {
       System.out.println("Error when setting the CONSTRUCTOR_CACHE to expire: " + e);

@@ -264,8 +264,10 @@ POSTHOOK: Input: default@tabw4intcols
 PREHOOK: query: drop table tabw4intcols
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tabw4intcols
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tabw4intcols
 POSTHOOK: query: drop table tabw4intcols
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tabw4intcols
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tabw4intcols

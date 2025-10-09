@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -62,6 +64,21 @@ public interface LlapIo<T> {
    */
   OrcTail getOrcTailFromCache(Path path, Configuration conf, CacheTag tag, @Nullable Object fileKey) throws IOException;
 
+
+  /**
+   * Returns the metadata buffers associated with the Parquet file on the given path.
+   * Content is either obtained from cache, or from disk if there is a cache miss.
+   * @param path Parquet file path
+   * @param conf jobConf
+   * @param fileKey fileId of the Parquet file (either the Long fileId of HDFS or the SyntheticFileId).
+   *                Optional, if it is not provided, it will be generated, see:
+   *                org.apache.hadoop.hive.ql.io.HdfsUtils#getFileId()
+   * @return
+   * @throws IOException
+   */
+  MemoryBufferOrBuffers getParquetFooterBuffersFromCache(Path path, JobConf conf, @Nullable Object fileKey)
+      throws IOException;
+
   /**
    * Handles request to evict entities specified in the request object.
    * @param protoRequest lists Hive entities (DB, table, etc..) whose LLAP buffers should be evicted.
@@ -98,5 +115,7 @@ public interface LlapIo<T> {
    * Load the actual data into the cache based on the provided metadata.
    */
   void loadDataIntoCache(LlapDaemonProtocolProtos.CacheEntryList metadata);
+
+  boolean usingLowLevelCache();
 
 }

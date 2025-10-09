@@ -55,8 +55,10 @@ POSTHOOK: Input: default@tmp1
 PREHOOK: query: drop table tmp1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp1
 POSTHOOK: query: drop table tmp1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp1

@@ -45,6 +45,8 @@ import org.apache.hadoop.io.Writable;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * RegexSerDe uses regular expression (regex) to deserialize data. It doesn't
@@ -67,9 +69,11 @@ import com.google.common.collect.Lists;
  * based Regex library.
  */
 @SerDeSpec(schemaProps = {
-    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
+    serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES, serdeConstants.SERIALIZATION_ENCODING,
     RegexSerDe.INPUT_REGEX, RegexSerDe.INPUT_REGEX_CASE_SENSITIVE })
-public class RegexSerDe extends AbstractSerDe {
+public class RegexSerDe extends AbstractEncodingAwareSerDe {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RegexSerDe.class);
 
   public static final String INPUT_REGEX = "input.regex";
   public static final String INPUT_REGEX_CASE_SENSITIVE = "input.regex.case.insensitive";
@@ -101,7 +105,7 @@ public class RegexSerDe extends AbstractSerDe {
 
     // output format string is not supported anymore, warn user of deprecation
     if (null != properties.getProperty("output.format.string")) {
-      log.warn("output.format.string has been deprecated");
+      LOG.warn("output.format.string has been deprecated");
     }
 
     // Parse the configuration parameters
@@ -159,7 +163,7 @@ public class RegexSerDe extends AbstractSerDe {
   long partialMatchedRowsCount = 0;
 
   @Override
-  public Object deserialize(Writable blob) throws SerDeException {
+  public Object doDeserialize(Writable blob) throws SerDeException {
 
     Text rowText = (Text) blob;
     Matcher m = inputPattern.matcher(rowText.toString());
@@ -173,7 +177,7 @@ public class RegexSerDe extends AbstractSerDe {
       unmatchedRowsCount++;
         if (!alreadyLoggedNoMatch) {
          // Report the row if its the first time
-         log.warn("" + unmatchedRowsCount + " unmatched rows are found: " + rowText);
+         LOG.warn("" + unmatchedRowsCount + " unmatched rows are found: " + rowText);
          alreadyLoggedNoMatch = true;
       }
       return null;
@@ -255,7 +259,7 @@ public class RegexSerDe extends AbstractSerDe {
          partialMatchedRowsCount++;
          if (!alreadyLoggedPartialMatch) {
          // Report the row if its the first row
-         log.warn("" + partialMatchedRowsCount
+         LOG.warn("" + partialMatchedRowsCount
             + " partially unmatched rows are found, " + " cannot find group "
             + c + ": " + rowText);
            alreadyLoggedPartialMatch = true;
@@ -267,9 +271,21 @@ public class RegexSerDe extends AbstractSerDe {
   }
 
   @Override
-  public Writable serialize(Object obj, ObjectInspector objInspector)
+  public Writable doSerialize(Object obj, ObjectInspector objInspector)
       throws SerDeException {
         throw new UnsupportedOperationException(
           "Regex SerDe doesn't support the serialize() method");
+  }
+
+  @Override
+  protected Writable transformFromUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextFromUTF8(text, this.charset);
+  }
+
+  @Override
+  protected Writable transformToUTF8(Writable blob) {
+    Text text = (Text)blob;
+    return SerDeUtils.transformTextToUTF8(text, this.charset);
   }
 }

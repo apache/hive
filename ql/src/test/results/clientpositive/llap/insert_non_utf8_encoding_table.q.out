@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists table_with_utf8_encoding
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists table_with_utf8_encoding
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table table_with_utf8_encoding (name STRING) 
  ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
  WITH SERDEPROPERTIES ('serialization.encoding'='utf-8')
@@ -44,8 +46,10 @@ Weiqi,Peng
 Hua,Li
 PREHOOK: query: drop table if exists table_with_non_utf8_encoding
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists table_with_non_utf8_encoding
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table table_with_non_utf8_encoding (name STRING) 
  ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
  WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1')

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists alter_table_src
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists alter_table_src
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists alter_table_cascade
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists alter_table_cascade
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table alter_table_src(c1 string, c2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -835,8 +839,10 @@ Tom	19.0000	__HIVE_DEFAULT_PARTITION__	123
 Tom	234.7900	__HIVE_DEFAULT_PARTITION__	123
 PREHOOK: query: drop table if exists alter_table_restrict
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists alter_table_restrict
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table alter_table_restrict (c1 string) partitioned by (p1 string, p2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

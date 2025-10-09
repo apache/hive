@@ -1,0 +1,307 @@
+PREHOOK: query: drop table if exists llap_orders
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists llap_orders
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS ORC tblproperties('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_orders
+POSTHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS ORC tblproperties('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_orders
+PREHOOK: query: INSERT INTO llap_orders VALUES
+(0, 48, 5, timestamp('2000-06-04 19:55:46.129'), 'EU', 'DE'),
+(1, 12, 6, timestamp('2007-06-24 19:23:22.829'), 'US', 'TX'),
+(2, 76, 4, timestamp('2018-02-19 23:43:51.995'), 'EU', 'DE'),
+(3, 91, 5, timestamp('2000-07-15 09:09:11.587'), 'US', 'NJ'),
+(4, 18, 6, timestamp('2007-12-02 22:30:39.302'), 'EU', 'ES'),
+(5, 71, 5, timestamp('2010-02-08 20:31:23.430'), 'EU', 'DE'),
+(6, 78, 3, timestamp('2016-02-22 20:37:37.025'), 'EU', 'FR'),
+(7, 88, 0, timestamp('2020-03-26 18:47:40.611'), 'EU', 'FR'),
+(8, 87, 4, timestamp('2003-02-20 00:48:09.139'), 'EU', 'ES'),
+(9, 60, 6, timestamp('2012-08-28 01:35:54.283'), 'EU', 'IT'),
+(10, 24, 5, timestamp('2015-03-28 18:57:50.069'), 'US', 'NY'),
+(11, 42, 2, timestamp('2012-06-27 01:13:32.350'), 'EU', 'UK'),
+(12, 37, 4, timestamp('2020-08-09 01:18:50.153'), 'US', 'NY'),
+(13, 52, 1, timestamp('2019-09-04 01:46:19.558'), 'EU', 'UK'),
+(14, 96, 3, timestamp('2019-03-05 22:00:03.020'), 'US', 'NJ'),
+(15, 18, 3, timestamp('2001-09-11 00:14:12.687'), 'EU', 'FR'),
+(16, 46, 0, timestamp('2013-08-31 02:16:17.878'), 'EU', 'UK'),
+(17, 26, 5, timestamp('2001-02-01 20:05:32.317'), 'EU', 'FR'),
+(18, 68, 5, timestamp('2009-12-29 08:44:08.048'), 'EU', 'ES'),
+(19, 54, 6, timestamp('2015-08-15 01:59:22.177'), 'EU', 'HU'),
+(20, 10, 0, timestamp('2018-05-06 12:56:12.789'), 'US', 'CA')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_orders
+POSTHOOK: query: INSERT INTO llap_orders VALUES
+(0, 48, 5, timestamp('2000-06-04 19:55:46.129'), 'EU', 'DE'),
+(1, 12, 6, timestamp('2007-06-24 19:23:22.829'), 'US', 'TX'),
+(2, 76, 4, timestamp('2018-02-19 23:43:51.995'), 'EU', 'DE'),
+(3, 91, 5, timestamp('2000-07-15 09:09:11.587'), 'US', 'NJ'),
+(4, 18, 6, timestamp('2007-12-02 22:30:39.302'), 'EU', 'ES'),
+(5, 71, 5, timestamp('2010-02-08 20:31:23.430'), 'EU', 'DE'),
+(6, 78, 3, timestamp('2016-02-22 20:37:37.025'), 'EU', 'FR'),
+(7, 88, 0, timestamp('2020-03-26 18:47:40.611'), 'EU', 'FR'),
+(8, 87, 4, timestamp('2003-02-20 00:48:09.139'), 'EU', 'ES'),
+(9, 60, 6, timestamp('2012-08-28 01:35:54.283'), 'EU', 'IT'),
+(10, 24, 5, timestamp('2015-03-28 18:57:50.069'), 'US', 'NY'),
+(11, 42, 2, timestamp('2012-06-27 01:13:32.350'), 'EU', 'UK'),
+(12, 37, 4, timestamp('2020-08-09 01:18:50.153'), 'US', 'NY'),
+(13, 52, 1, timestamp('2019-09-04 01:46:19.558'), 'EU', 'UK'),
+(14, 96, 3, timestamp('2019-03-05 22:00:03.020'), 'US', 'NJ'),
+(15, 18, 3, timestamp('2001-09-11 00:14:12.687'), 'EU', 'FR'),
+(16, 46, 0, timestamp('2013-08-31 02:16:17.878'), 'EU', 'UK'),
+(17, 26, 5, timestamp('2001-02-01 20:05:32.317'), 'EU', 'FR'),
+(18, 68, 5, timestamp('2009-12-29 08:44:08.048'), 'EU', 'ES'),
+(19, 54, 6, timestamp('2015-08-15 01:59:22.177'), 'EU', 'HU'),
+(20, 10, 0, timestamp('2018-05-06 12:56:12.789'), 'US', 'CA')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_orders
+PREHOOK: query: select count(*) from  llap_orders
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from  llap_orders
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+21
+PREHOOK: query: describe formatted llap_orders
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@llap_orders
+POSTHOOK: query: describe formatted llap_orders
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@llap_orders
+# col_name            	data_type           	comment             
+orderid             	int                 	                    
+quantity            	int                 	                    
+itemid              	int                 	                    
+tradets             	timestamp           	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+p1                  	IDENTITY            	 
+p2                  	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"itemid\":\"true\",\"orderid\":\"true\",\"p1\":\"true\",\"p2\":\"true\",\"quantity\":\"true\",\"tradets\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"orderid\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"quantity\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"itemid\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"tradets\",\"required\":false,\"type\":\"timestamp\"},{\"id\":5,\"name\":\"p1\",\"required\":false,\"type\":\"string\"},{\"id\":6,\"name\":\"p2\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#SnapshotId#
+	current-snapshot-summary	{\"added-data-files\":\"10\",\"added-records\":\"21\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"10\",\"total-records\":\"21\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"p1\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"p2\",\"transform\":\"identity\",\"source-id\":6,\"field-id\":1001}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	10                  
+	numPartitions       	10                  
+	numRows             	21                  
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: delete from llap_orders where itemid = 6
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders
+PREHOOK: Output: default@llap_orders
+POSTHOOK: query: delete from llap_orders where itemid = 6
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders
+POSTHOOK: Output: default@llap_orders
+PREHOOK: query: delete from llap_orders where itemid = 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders
+PREHOOK: Output: default@llap_orders
+POSTHOOK: query: delete from llap_orders where itemid = 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders
+POSTHOOK: Output: default@llap_orders
+PREHOOK: query: select count(*) from  llap_orders
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from  llap_orders
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
+PREHOOK: query: describe formatted llap_orders
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@llap_orders
+POSTHOOK: query: describe formatted llap_orders
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@llap_orders
+# col_name            	data_type           	comment             
+orderid             	int                 	                    
+quantity            	int                 	                    
+itemid              	int                 	                    
+tradets             	timestamp           	                    
+p1                  	string              	                    
+p2                  	string              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+p1                  	IDENTITY            	 
+p2                  	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"orderid\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"quantity\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"itemid\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"tradets\",\"required\":false,\"type\":\"timestamp\"},{\"id\":5,\"name\":\"p1\",\"required\":false,\"type\":\"string\"},{\"id\":6,\"name\":\"p2\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#SnapshotId#
+	current-snapshot-summary	{\"added-position-delete-files\":\"5\",\"added-delete-files\":\"5\",\"added-files-size\":\"#Masked#\",\"added-position-deletes\":\"6\",\"changed-partition-count\":\"5\",\"total-records\":\"21\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"10\",\"total-delete-files\":\"9\",\"total-position-deletes\":\"10\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"p1\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000},{\"name\":\"p2\",\"transform\":\"identity\",\"source-id\":6,\"field-id\":1001}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	10                  
+	numPartitions       	10                  
+	numRows             	11                  
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	3                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: explain select count(*) from  llap_orders
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(*) from  llap_orders
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+
+Stage-0
+  Fetch Operator
+    limit:-1
+    Stage-1
+      Reducer 2 vectorized
+      File Output Operator [FS_11]
+        Group By Operator [GBY_10] (rows=1 width=8)
+          Output:["_col0"],aggregations:["count(VALUE._col0)"]
+        <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+          PARTITION_ONLY_SHUFFLE [RS_9]
+            Group By Operator [GBY_8] (rows=1 width=8)
+              Output:["_col0"],aggregations:["count()"]
+              Select Operator [SEL_7] (rows=14 width=5###)
+                TableScan [TS_0] (rows=14 width=5###)
+                  default@llap_orders,llap_orders,Tbl:COMPLETE,Col:COMPLETE
+
+PREHOOK: query: explain insert into  llap_orders select * from llap_orders limit 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders
+PREHOOK: Output: default@llap_orders
+POSTHOOK: query: explain insert into  llap_orders select * from llap_orders limit 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders
+POSTHOOK: Output: default@llap_orders
+Plan optimized by CBO.
+
+Vertex dependency in root stage
+Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
+
+Stage-3
+  Stats Work{}
+    Stage-0
+      Move Operator
+        table:{"name:":"default.llap_orders"}
+        Stage-2
+          Dependency Collection{}
+            Stage-1
+              Reducer 3 vectorized
+              File Output Operator [FS_26]
+                table:{"name:":"default.llap_orders"}
+                Select Operator [SEL_25]
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col4","_col5"]
+                <-Reducer 2 [SIMPLE_EDGE] vectorized
+                  SHUFFLE [RS_21]
+                    PartitionCols:_col4, _col5
+                    Select Operator [SEL_20] (rows=14 width=420)
+                      Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                      Limit [LIM_19] (rows=14 width=420)
+                        Number of rows:100000
+                      <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
+                        PARTITION_ONLY_SHUFFLE [RS_18]
+                          Select Operator [SEL_17] (rows=14 width=420)
+                            Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                            Limit [LIM_16] (rows=14 width=420)
+                              Number of rows:100000
+                              TableScan [TS_0] (rows=14 width=420)
+                                default@llap_orders,llap_orders,Tbl:COMPLETE,Col:NONE,Output:["orderid","quantity","itemid","tradets","p1","p2"]
+              Reducer 4 vectorized
+              File Output Operator [FS_29]
+                Select Operator [SEL_28] (rows=7 width=420)
+                  Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36"]
+                  Group By Operator [GBY_27] (rows=7 width=420)
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","min(VALUE._col5)","max(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)","min(VALUE._col13)","max(VALUE._col14)","count(VALUE._col15)","compute_bit_vector_hll(VALUE._col16)","max(VALUE._col17)","avg(VALUE._col18)","count(VALUE._col19)","compute_bit_vector_hll(VALUE._col20)","max(VALUE._col21)","avg(VALUE._col22)","count(VALUE._col23)","compute_bit_vector_hll(VALUE._col24)"],keys:KEY._col0, KEY._col1
+                  <-Reducer 2 [SIMPLE_EDGE] vectorized
+                    SHUFFLE [RS_24]
+                      PartitionCols:_col0, _col1
+                      Group By Operator [GBY_23] (rows=14 width=420)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26"],aggregations:["min(orderid)","max(orderid)","count(1)","count(orderid)","compute_bit_vector_hll(orderid)","min(quantity)","max(quantity)","count(quantity)","compute_bit_vector_hll(quantity)","min(itemid)","max(itemid)","count(itemid)","compute_bit_vector_hll(itemid)","min(tradets)","max(tradets)","count(tradets)","compute_bit_vector_hll(tradets)","max(length(p1))","avg(COALESCE(length(p1),0))","count(p1)","compute_bit_vector_hll(p1)","max(length(p2))","avg(COALESCE(length(p2),0))","count(p2)","compute_bit_vector_hll(p2)"],keys:p1, p2
+                        Select Operator [SEL_22] (rows=14 width=420)
+                          Output:["orderid","quantity","itemid","tradets","p1","p2"]
+                           Please refer to the previous Select Operator [SEL_20]
+

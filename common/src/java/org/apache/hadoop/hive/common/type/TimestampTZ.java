@@ -77,8 +77,8 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
 
   @Override
   public boolean equals(Object other) {
-    if (other instanceof TimestampTZ) {
-      return compareTo((TimestampTZ) other) == 0;
+    if (other instanceof TimestampTZ timestamp) {
+      return compareTo(timestamp) == 0;
     }
     return false;
   }
@@ -100,4 +100,7 @@ public class TimestampTZ implements Comparable<TimestampTZ> {
     return zonedDateTime.toInstant().getNano();
   }
 
+  public Instant toInstant() {
+    return zonedDateTime.toInstant();
+  }
 }

@@ -19,10 +19,29 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.SetMultimap;
+import org.antlr.runtime.TokenRewriteStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.lib.CostLessRuleDispatcher;
+import org.apache.hadoop.hive.ql.lib.ExpressionWalker;
+import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
+import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.Quotation;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -107,6 +126,8 @@ public final class HiveUtils {
   static final byte[] tabEscapeBytes = "\\t".getBytes();;
   static final byte[] tabUnescapeBytes = "\t".getBytes();
   static final byte[] ctrlABytes = "\u0001".getBytes();
+  static final Pattern TAG = Pattern.compile("tag_(.*)");
+  static final Pattern SNAPSHOT_REF = Pattern.compile("(?:branch_|tag_)(.*)");
 
 
   public static final Logger LOG = LoggerFactory.getLogger(HiveUtils.class);
@@ -281,9 +302,74 @@ public final class HiveUtils {
     // in identifier by doubling them up.
     Quotation quotation = Quotation.from(conf);
     if (quotation != Quotation.NONE) {
-      identifier = identifier.replaceAll("`", "``");
+      return unparseIdentifier(identifier, Quotation.BACKTICKS);
     }
     return "`" + identifier + "`";
+  }
+
+  public static String unparseIdentifier(String identifier, Quotation quotation) {
+    return String.format("%s%s%s",
+        quotation.getQuotationChar(),
+        identifier.replaceAll(
+            quotation.getQuotationChar(), quotation.getQuotationChar() + quotation.getQuotationChar()),
+        quotation.getQuotationChar());
+  }
+
+  public static String unparseIdentifier(String identifier) {
+    return unparseIdentifier(identifier, Quotation.BACKTICKS);
+  }
+
+  public static String getSqlTextWithQuotedIdentifiers(
+          ASTNode node, TokenRewriteStream tokenRewriteStream, String rewriteProgram)
+          throws SemanticException {
+    UnparseTranslator unparseTranslator = HiveUtils.collectUnescapeIdentifierTranslations(node);
+    unparseTranslator.applyTranslations(tokenRewriteStream, rewriteProgram);
+    return tokenRewriteStream.toString(rewriteProgram, node.getTokenStartIndex(), node.getTokenStopIndex());
+  }
+
+  public static UnparseTranslator collectUnescapeIdentifierTranslations(ASTNode node)
+      throws SemanticException {
+    UnparseTranslator unparseTranslator = new UnparseTranslator(Quotation.BACKTICKS);
+    unparseTranslator.enable();
+
+    SetMultimap<Integer, SemanticNodeProcessor> astNodeToProcessor = HashMultimap.create();
+    astNodeToProcessor.put(HiveParser.Identifier, new IdentifierProcessor());
+    NodeProcessorCtx nodeProcessorCtx = new QuotedIdExpressionContext(unparseTranslator);
+
+    CostLessRuleDispatcher costLessRuleDispatcher = new CostLessRuleDispatcher(
+        (nd, stack, procCtx, nodeOutputs) -> null, astNodeToProcessor, nodeProcessorCtx);
+    SemanticGraphWalker walker = new ExpressionWalker(costLessRuleDispatcher);
+    walker.startWalking(Collections.singletonList(node), null);
+    return unparseTranslator;
+  }
+
+  static class IdentifierProcessor implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
+            throws SemanticException {
+      UnparseTranslator unparseTranslator = ((QuotedIdExpressionContext)procCtx).getUnparseTranslator();
+      ASTNode identifier = (ASTNode) nd;
+      String id = identifier.getText();
+      if (FunctionRegistry.getFunctionInfo(id) != null){
+        return null;
+      }
+
+      unparseTranslator.addIdentifierTranslation(identifier);
+      return null;
+    }
+  }
+
+  static class QuotedIdExpressionContext implements NodeProcessorCtx {
+    private final UnparseTranslator unparseTranslator;
+
+    public QuotedIdExpressionContext(UnparseTranslator unparseTranslator) {
+      this.unparseTranslator = unparseTranslator;
+    }
+
+    public UnparseTranslator getUnparseTranslator() {
+      return unparseTranslator;
+    }
   }
 
   public static HiveStorageHandler getStorageHandler(
@@ -438,5 +524,23 @@ public final class HiveUtils {
       return new Path(root, dbName + "." + tableName);
     }
     return new Path(root, dbName);
+  }
+
+  public static String getTableSnapshotRef(String refName) {
+    Matcher ref = SNAPSHOT_REF.matcher(String.valueOf(refName));
+    return ref.matches() ? ref.group(1) : null;
+  }
+
+  public static Boolean isTableTag(String refName) {
+    Matcher ref = TAG.matcher(refName);
+    return ref.matches();
+  }
+
+  public static String getLowerCaseTableName(String refName) {
+    String[] refParts = refName.split("\\.");
+    if (refParts.length == 3 && SNAPSHOT_REF.matcher(refParts[2]).matches()) {
+      return (refParts[0] + "." + refParts[1]).toLowerCase() + "." + refParts[2];
+    }
+    return refName.toLowerCase();
   }
 }

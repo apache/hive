@@ -690,7 +690,7 @@ public class HiveStreamingConnection implements StreamingConnection {
         getHeatbeatMSC().close();
         try {
           // Close the HMS that is used for addWriteNotificationLog
-          Hive.get(conf).getSynchronizedMSC().close();
+          Hive.get(conf).getMSC().close();
         } catch (Exception e) {
           LOG.warn("Error while closing HMS connection", e);
         }
@@ -827,7 +827,7 @@ public class HiveStreamingConnection implements StreamingConnection {
     setHiveConf(conf, HiveConf.ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
     setHiveConf(conf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     setHiveConf(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI.getHiveName());
-    setHiveConf(conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "nonstrict");
+    setHiveConf(conf, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
     if (streamingOptimizations) {
       setHiveConf(conf, HiveConf.ConfVars.HIVE_ORC_DELTA_STREAMING_OPTIMIZATIONS_ENABLED, true);
     }

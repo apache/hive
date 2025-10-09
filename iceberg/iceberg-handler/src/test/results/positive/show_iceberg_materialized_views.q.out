@@ -1,0 +1,748 @@
+PREHOOK: query: CREATE DATABASE test1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test1
+POSTHOOK: query: CREATE DATABASE test1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test1
+PREHOOK: query: CREATE DATABASE test2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test2
+POSTHOOK: query: CREATE DATABASE test2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test2
+PREHOOK: query: USE test1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test1
+POSTHOOK: query: USE test1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test1
+PREHOOK: query: CREATE TABLE shtb_test1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING)
+stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@shtb_test1
+POSTHOOK: query: CREATE TABLE shtb_test1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING)
+stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@shtb_test1
+PREHOOK: query: CREATE TABLE shtb_test2(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING)
+STORED AS ORC TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@shtb_test2
+POSTHOOK: query: CREATE TABLE shtb_test2(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING)
+STORED AS ORC TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@shtb_test2
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view1 DISABLE REWRITE stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT * FROM shtb_test1 where KEY > 1000 and KEY < 2000
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_test1
+PREHOOK: Output: database:test1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: test1@shtb_test1_view1
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view1 DISABLE REWRITE stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT * FROM shtb_test1 where KEY > 1000 and KEY < 2000
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_test1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: test1@shtb_test1_view1
+POSTHOOK: Lineage: shtb_test1_view1.ds SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1.key SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1.value SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view2 
+stored by iceberg stored as orc TBLPROPERTIES ('rewriting.time.window' = '-1min', 'format-version'='1') AS
+SELECT * FROM shtb_test1 where KEY > 100 and KEY < 200
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_test1
+PREHOOK: Output: database:test1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: test1@shtb_test1_view2
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view2 
+stored by iceberg stored as orc TBLPROPERTIES ('rewriting.time.window' = '-1min', 'format-version'='1') AS
+SELECT * FROM shtb_test1 where KEY > 100 and KEY < 200
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_test1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: test1@shtb_test1_view2
+POSTHOOK: Lineage: shtb_test1_view2.ds SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view2.key SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view2.value SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_view_on_native
+stored by iceberg stored as orc TBLPROPERTIES ('format-version'='1') AS
+SELECT * FROM shtb_test2 where KEY > 100 and KEY < 200
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_test2
+PREHOOK: Output: database:test1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: test1@shtb_view_on_native
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_view_on_native
+stored by iceberg stored as orc TBLPROPERTIES ('format-version'='1') AS
+SELECT * FROM shtb_test2 where KEY > 100 and KEY < 200
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_test2
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: test1@shtb_view_on_native
+POSTHOOK: Lineage: shtb_view_on_native.ds SIMPLE [(shtb_test2)shtb_test2.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_view_on_native.key SIMPLE [(shtb_test2)shtb_test2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_view_on_native.value SIMPLE [(shtb_test2)shtb_test2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_full_view2
+stored by iceberg stored as orc tblproperties ('format-version'='1', 'rewriting.time.window' = '5min') AS
+SELECT * FROM shtb_test1
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_test1
+PREHOOK: Output: database:test1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: test1@shtb_full_view2
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_full_view2
+stored by iceberg stored as orc tblproperties ('format-version'='1', 'rewriting.time.window' = '5min') AS
+SELECT * FROM shtb_test1
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_test1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: test1@shtb_full_view2
+POSTHOOK: Lineage: shtb_full_view2.ds SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_full_view2.key SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_full_view2.value SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_aggr_view1 stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT a.value, sum(a.key) FROM shtb_test1 a join shtb_test1 b on (a.key = b.key) group by a.value
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_test1
+PREHOOK: Output: database:test1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: test1@shtb_aggr_view1
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_aggr_view1 stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT a.value, sum(a.key) FROM shtb_test1 a join shtb_test1 b on (a.key = b.key) group by a.value
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_test1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: test1@shtb_aggr_view1
+POSTHOOK: Lineage: shtb_aggr_view1._c1 EXPRESSION [(shtb_test1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_aggr_view1.value SIMPLE [(shtb_test1)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_aggr_view2 stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT a.value, count(1), sum(a.key) FROM shtb_test1 a join shtb_test1 b on (a.key = b.key) group by a.value
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_test1
+PREHOOK: Output: database:test1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: test1@shtb_aggr_view2
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_aggr_view2 stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT a.value, count(1), sum(a.key) FROM shtb_test1 a join shtb_test1 b on (a.key = b.key) group by a.value
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_test1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: test1@shtb_aggr_view2
+POSTHOOK: Lineage: shtb_aggr_view2._c1 EXPRESSION [(shtb_test1)a.null, (shtb_test1)b.null, ]
+POSTHOOK: Lineage: shtb_aggr_view2._c2 EXPRESSION [(shtb_test1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_aggr_view2.value SIMPLE [(shtb_test1)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: USE test2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test2
+POSTHOOK: query: USE test2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test2
+PREHOOK: query: CREATE TABLE shtb_test1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test1
+POSTHOOK: query: CREATE TABLE shtb_test1(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test1
+PREHOOK: query: CREATE TABLE shtb_test2(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test2
+POSTHOOK: query: CREATE TABLE shtb_test2(KEY INT, VALUE STRING) PARTITIONED BY(ds STRING)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test2
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view1 DISABLE REWRITE stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT * FROM shtb_test1 where KEY > 1000 and KEY < 2000
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: test2@shtb_test1
+PREHOOK: Output: database:test2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: test2@shtb_test1_view1
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_test1_view1 DISABLE REWRITE stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT * FROM shtb_test1 where KEY > 1000 and KEY < 2000
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: test2@shtb_test1
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: test2@shtb_test1_view1
+POSTHOOK: Lineage: shtb_test1_view1.ds SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1.key SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test1_view1.value SIMPLE [(shtb_test1)shtb_test1.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW shtb_test2_view2 DISABLE REWRITE stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT * FROM shtb_test2 where KEY > 100 and KEY < 200
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: test2@shtb_test2
+PREHOOK: Output: database:test2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: test2@shtb_test2_view2
+POSTHOOK: query: CREATE MATERIALIZED VIEW shtb_test2_view2 DISABLE REWRITE stored by iceberg stored as orc tblproperties ('format-version'='1') AS
+SELECT * FROM shtb_test2 where KEY > 100 and KEY < 200
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: test2@shtb_test2
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: test2@shtb_test2_view2
+POSTHOOK: Lineage: shtb_test2_view2.ds SIMPLE [(shtb_test2)shtb_test2.FieldSchema(name:ds, type:string, comment:null), ]
+POSTHOOK: Lineage: shtb_test2_view2.key SIMPLE [(shtb_test2)shtb_test2.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: shtb_test2_view2.value SIMPLE [(shtb_test2)shtb_test2.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: USE test1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test1
+POSTHOOK: query: USE test1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test1
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+      Show Materialized Views{"database name:":"test1"}
+
+PREHOOK: query: SHOW MATERIALIZED VIEWS
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+shtb_aggr_view1     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_aggr_view2     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
+shtb_view_on_native 	Yes                 	Manual refresh      	Available for insert operations only
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+      Show Materialized Views{"database name:":"test1"}
+
+PREHOOK: query: SHOW MATERIALIZED VIEWS '%test%'
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS '%test%'
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
+PREHOOK: query: SHOW MATERIALIZED VIEWS '%view2'
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS '%view2'
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+shtb_aggr_view2     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
+PREHOOK: query: USE test2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test2
+POSTHOOK: query: USE test2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test2
+PREHOOK: query: SHOW MATERIALIZED VIEWS 'shtb_%'
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS 'shtb_%'
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test2_view2    	No                  	Manual refresh      	Not available       
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS FROM test1
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS FROM test1
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+      Show Materialized Views{"database name:":"test1"}
+
+PREHOOK: query: SHOW MATERIALIZED VIEWS FROM test1
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test1
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+shtb_aggr_view1     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_aggr_view2     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
+shtb_view_on_native 	Yes                 	Manual refresh      	Available for insert operations only
+PREHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test2_view2    	No                  	Manual refresh      	Not available       
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+      Show Materialized Views{"database name:":"test1"}
+
+PREHOOK: query: SHOW MATERIALIZED VIEWS IN test1
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+shtb_aggr_view1     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_aggr_view2     	Yes                 	Manual refresh      	Available for insert operations only
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
+shtb_view_on_native 	Yes                 	Manual refresh      	Available for insert operations only
+PREHOOK: query: SHOW MATERIALIZED VIEWS IN default
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS IN default
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+      Show Materialized Views{"database name:":"test1"}
+
+PREHOOK: query: SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
+PREHOOK: query: DESCRIBE FORMATTED test1.shtb_full_view2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test1@shtb_full_view2
+POSTHOOK: query: DESCRIBE FORMATTED test1.shtb_full_view2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test1@shtb_full_view2
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	test1               	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ds\",\"required\":false,\"type\":\"string\"}]}
+	format-version      	1                   
+	iceberg.orc.files.only	true                
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	rewriting.time.window	5min                
+	snapshot-count      	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.format.default	orc                 
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT * FROM shtb_test1	 
+Expanded Query:     	SELECT `shtb_test1`.`key`, `shtb_test1`.`value`, `shtb_test1`.`ds` FROM `test1`.`shtb_test1`	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+test1.shtb_test1    	Unknown             	 
+PREHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test1@shtb_test1_view1
+POSTHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test1@shtb_test1_view1
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	test1               	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ds\",\"required\":false,\"type\":\"string\"}]}
+	format-version      	1                   
+	iceberg.orc.files.only	true                
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	snapshot-count      	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.format.default	orc                 
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT * FROM shtb_test1 where KEY > 1000 and KEY < 2000	 
+Expanded Query:     	SELECT `shtb_test1`.`key`, `shtb_test1`.`value`, `shtb_test1`.`ds` FROM `test1`.`shtb_test1` where `shtb_test1`.`key` > 1000 and `shtb_test1`.`key` < 2000	 
+Rewrite Enabled:    	No                  	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+test1.shtb_test1    	Unknown             	 
+PREHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: test1@shtb_test1_view2
+POSTHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: test1@shtb_test1_view2
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	test1               	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ds\",\"required\":false,\"type\":\"string\"}]}
+	format-version      	1                   
+	iceberg.orc.files.only	true                
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	rewriting.time.window	-1min               
+	snapshot-count      	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.format.default	orc                 
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT * FROM shtb_test1 where KEY > 100 and KEY < 200	 
+Expanded Query:     	SELECT `shtb_test1`.`key`, `shtb_test1`.`value`, `shtb_test1`.`ds` FROM `test1`.`shtb_test1` where `shtb_test1`.`key` > 100 and `shtb_test1`.`key` < 200	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+test1.shtb_test1    	Unknown             	 
+PREHOOK: query: SHOW MATERIALIZED VIEWS IN test2 LIKE "nomatch"
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test2 LIKE "nomatch"
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: query: CREATE DATABASE `database`
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:database
+POSTHOOK: query: CREATE DATABASE `database`
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:database
+PREHOOK: query: USE `database`
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:database
+POSTHOOK: query: USE `database`
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:database
+PREHOOK: query: CREATE TABLE foo_n0(a INT)
+stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:database
+PREHOOK: Output: database@foo_n0
+POSTHOOK: query: CREATE TABLE foo_n0(a INT)
+stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:database
+POSTHOOK: Output: database@foo_n0
+PREHOOK: query: CREATE MATERIALIZED VIEW fooview
+stored by iceberg stored as orc tblproperties ('format-version'='1', 'rewriting.time.window' = '0min') AS
+SELECT * FROM foo_n0
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: database@foo_n0
+PREHOOK: Output: database:database
+PREHOOK: Output: database@fooview
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE MATERIALIZED VIEW fooview
+stored by iceberg stored as orc tblproperties ('format-version'='1', 'rewriting.time.window' = '0min') AS
+SELECT * FROM foo_n0
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: database@foo_n0
+POSTHOOK: Output: database:database
+POSTHOOK: Output: database@fooview
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: fooview.a SIMPLE [(foo_n0)foo_n0.FieldSchema(name:a, type:int, comment:null), ]
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: SHOW MATERIALIZED VIEWS FROM `database` LIKE "fooview"
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM `database` LIKE "fooview"
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+fooview             	Yes                 	Manual refresh (Valid until source tables modified)	Available for insert operations only
+PREHOOK: query: DESCRIBE FORMATTED `database`.`fooview`
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: database@fooview
+POSTHOOK: query: DESCRIBE FORMATTED `database`.`fooview`
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: database@fooview
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	database            	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"}]}
+	format-version      	1                   
+	iceberg.orc.files.only	true                
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	rewriting.time.window	0min                
+	snapshot-count      	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.format.default	orc                 
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	SELECT * FROM foo_n0	 
+Expanded Query:     	SELECT `foo_n0`.`a` FROM `database`.`foo_n0`	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+database.foo_n0     	Unknown             	 
+PREHOOK: query: DROP MATERIALIZED VIEW fooview
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: DROP MATERIALIZED VIEW fooview
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: DROP TABLE foo_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE foo_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: USE test1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test1
+POSTHOOK: query: USE test1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test1
+PREHOOK: query: DROP MATERIALIZED VIEW shtb_test1_view1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_test1_view1
+PREHOOK: Output: test1@shtb_test1_view1
+POSTHOOK: query: DROP MATERIALIZED VIEW shtb_test1_view1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_test1_view1
+POSTHOOK: Output: test1@shtb_test1_view1
+PREHOOK: query: DROP MATERIALIZED VIEW shtb_test1_view2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_test1_view2
+PREHOOK: Output: test1@shtb_test1_view2
+POSTHOOK: query: DROP MATERIALIZED VIEW shtb_test1_view2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_test1_view2
+POSTHOOK: Output: test1@shtb_test1_view2
+PREHOOK: query: DROP MATERIALIZED VIEW shtb_full_view2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_full_view2
+PREHOOK: Output: test1@shtb_full_view2
+POSTHOOK: query: DROP MATERIALIZED VIEW shtb_full_view2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_full_view2
+POSTHOOK: Output: test1@shtb_full_view2
+PREHOOK: query: DROP MATERIALIZED VIEW shtb_aggr_view1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_aggr_view1
+PREHOOK: Output: test1@shtb_aggr_view1
+POSTHOOK: query: DROP MATERIALIZED VIEW shtb_aggr_view1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_aggr_view1
+POSTHOOK: Output: test1@shtb_aggr_view1
+PREHOOK: query: DROP MATERIALIZED VIEW shtb_aggr_view2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_aggr_view2
+PREHOOK: Output: test1@shtb_aggr_view2
+POSTHOOK: query: DROP MATERIALIZED VIEW shtb_aggr_view2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_aggr_view2
+POSTHOOK: Output: test1@shtb_aggr_view2
+PREHOOK: query: DROP MATERIALIZED VIEW shtb_view_on_native
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_view_on_native
+PREHOOK: Output: test1@shtb_view_on_native
+POSTHOOK: query: DROP MATERIALIZED VIEW shtb_view_on_native
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_view_on_native
+POSTHOOK: Output: test1@shtb_view_on_native
+PREHOOK: query: DROP TABLE shtb_test1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test1@shtb_test1
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@shtb_test1
+POSTHOOK: query: DROP TABLE shtb_test1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test1@shtb_test1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@shtb_test1
+PREHOOK: query: DROP TABLE shtb_test2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test1@shtb_test2
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@shtb_test2
+POSTHOOK: query: DROP TABLE shtb_test2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test1@shtb_test2
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@shtb_test2
+PREHOOK: query: DROP DATABASE test1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test1
+PREHOOK: Output: database:test1
+POSTHOOK: query: DROP DATABASE test1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test1
+POSTHOOK: Output: database:test1
+PREHOOK: query: USE test2
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test2
+POSTHOOK: query: USE test2
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test2
+PREHOOK: query: DROP MATERIALIZED VIEW shtb_test1_view1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: test2@shtb_test1_view1
+PREHOOK: Output: test2@shtb_test1_view1
+POSTHOOK: query: DROP MATERIALIZED VIEW shtb_test1_view1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: test2@shtb_test1_view1
+POSTHOOK: Output: test2@shtb_test1_view1
+PREHOOK: query: DROP MATERIALIZED VIEW shtb_test2_view2
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: test2@shtb_test2_view2
+PREHOOK: Output: test2@shtb_test2_view2
+POSTHOOK: query: DROP MATERIALIZED VIEW shtb_test2_view2
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: test2@shtb_test2_view2
+POSTHOOK: Output: test2@shtb_test2_view2
+PREHOOK: query: DROP TABLE shtb_test1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test2@shtb_test1
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test1
+POSTHOOK: query: DROP TABLE shtb_test1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test2@shtb_test1
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test1
+PREHOOK: query: DROP TABLE shtb_test2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: test2@shtb_test2
+PREHOOK: Output: database:test2
+PREHOOK: Output: test2@shtb_test2
+POSTHOOK: query: DROP TABLE shtb_test2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: test2@shtb_test2
+POSTHOOK: Output: database:test2
+POSTHOOK: Output: test2@shtb_test2
+PREHOOK: query: DROP DATABASE test2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test2
+PREHOOK: Output: database:test2
+POSTHOOK: query: DROP DATABASE test2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test2
+POSTHOOK: Output: database:test2

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table tstsrc_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tstsrc_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table tstsrcpart_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tstsrcpart_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tstsrc_n2 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -457,16 +461,20 @@ POSTHOOK: Input: default@new_name@ds=1
 PREHOOK: query: drop table tstsrc_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstsrc_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstsrc_n2
 POSTHOOK: query: drop table tstsrc_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstsrc_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrc_n2
 PREHOOK: query: drop table tstsrcpart_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstsrcpart_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstsrcpart_n2
 POSTHOOK: query: drop table tstsrcpart_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstsrcpart_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart_n2

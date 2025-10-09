@@ -1,15 +1,21 @@
 PREHOOK: query: drop table pcr_t1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table pcr_t2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table pcr_t3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table pcr_t1 (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -526,7 +532,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
-WHERE `key` < 5 AND (`value` <> 'val_2' AND `ds` <= '2000-04-09')
+WHERE `key` < 5 AND `value` <> 'val_2' AND `ds` <= '2000-04-09'
 ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1421,10 +1427,9 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST(14 AS INT) AS `key`, `value`
-FROM (SELECT `value`
 FROM `default`.`pcr_t1`
 WHERE `key` = 14 AND `ds` IN ('2000-04-08', '2000-04-09')
-ORDER BY `value`) AS `t1`
+ORDER BY `value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1827,7 +1832,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`
 FROM `default`.`pcr_t1`
-WHERE `ds` >= '2000-04-08' OR `ds` < '2000-04-10'
+WHERE `ds` IS NOT NULL
 ORDER BY `key`, `value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1845,7 +1850,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: pcr_t1
-                  filterExpr: ((ds >= '2000-04-08') or (ds < '2000-04-10')) (type: boolean)
+                  filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 60 Data size: 5640 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -2105,7 +2110,7 @@ POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcr_t1`
-WHERE  (`key`, `ds`) IN ( (1, '2000-04-08'),  (2, '2000-04-09'))
+WHERE (`key`, `ds`) IN ((1, '2000-04-08'), (2, '2000-04-09'))
 ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -2285,15 +2290,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key0` AS `key1`, `t4`.`value0` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
-FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key0`, `t2`.`value` AS `value0`
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, CAST('2000-04-08' AS STRING) AS `ds1`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key`) AS `t4`
+ORDER BY `t0`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -2567,15 +2571,14 @@ POSTHOOK: Input: default@pcr_t1
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcr_t1@ds=2000-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`key`, `t4`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t4`.`key0` AS `key1`, `t4`.`value0` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
-FROM (SELECT `t0`.`key`, `t0`.`value`, `t2`.`key` AS `key0`, `t2`.`value` AS `value0`
+OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, CAST('2000-04-08' AS STRING) AS `ds`, `t2`.`key` AS `key1`, `t2`.`value` AS `value1`, CAST('2000-04-09' AS STRING) AS `ds1`
 FROM (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-08' AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`pcr_t1`
 WHERE `ds` = '2000-04-09' AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key`
-ORDER BY `t0`.`key`) AS `t4`
+ORDER BY `t0`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4290,10 +4293,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
-FROM (SELECT `key`, `value`, `hr`
 FROM `default`.`srcpart`
-WHERE `key` = 11 AND (`ds` = '2008-04-08' AND `hr` IN ('11', '12'))
-ORDER BY `key`, `hr`) AS `t1`
+WHERE `key` = 11 AND `ds` = '2008-04-08' AND `hr` IN ('11', '12')
+ORDER BY `key`, `hr`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4479,10 +4481,9 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`, CAST('11' AS STRING) AS `hr`
-FROM (SELECT `key`, `value`, `ds`
 FROM `default`.`srcpart`
 WHERE `key` = 11 AND `hr` = '11'
-ORDER BY `key`, `ds`) AS `t1`
+ORDER BY `key`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -4658,31 +4659,39 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: query: drop table pcr_t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t1
 POSTHOOK: query: drop table pcr_t1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t1
 PREHOOK: query: drop table pcr_t2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t2
 POSTHOOK: query: drop table pcr_t2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t2
 PREHOOK: query: drop table pcr_t3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t3
 POSTHOOK: query: drop table pcr_t3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t3
 PREHOOK: query: drop table pcr_foo
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_foo
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table pcr_foo (key int, value string) partitioned by (ds int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -4800,10 +4809,12 @@ POSTHOOK: Input: default@pcr_foo@ds=5
 PREHOOK: query: drop table pcr_foo
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_foo
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_foo
 POSTHOOK: query: drop table pcr_foo
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_foo
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_foo
 PREHOOK: query: create table ab(strct struct<a:int, b:string>)
 row format delimited
@@ -4831,8 +4842,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@ab
 PREHOOK: query: drop table foo_field
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table foo_field
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table foo_field (s struct<a:int,b:string>) partitioned by (ds int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -4878,10 +4891,12 @@ POSTHOOK: Input: default@foo_field@ds=7
 PREHOOK: query: drop table foo_field
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo_field
+PREHOOK: Output: database:default
 PREHOOK: Output: default@foo_field
 POSTHOOK: query: drop table foo_field
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@foo_field
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo_field
 PREHOOK: query: explain select key,value from srcpart where cast(hr as double)  = cast(11 as double)
 PREHOOK: type: QUERY

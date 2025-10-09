@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer;
@@ -54,7 +55,7 @@ public class TestHCatAuthUtil {
    */
   @Test
   public void authEnabledV1Auth() throws Exception {
-    HiveConf hcatConf = new HiveConf(this.getClass());
+    HiveConf hcatConf = new HiveConfForTest(this.getClass());
     hcatConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     hcatConf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, StorageBasedAuthorizationProvider.class.getName());
     SessionState.start(hcatConf);
@@ -66,7 +67,7 @@ public class TestHCatAuthUtil {
    */
   @Test
   public void authEnabledV2Auth() throws Exception {
-    HiveConf hcatConf = new HiveConf(this.getClass());
+    HiveConf hcatConf = new HiveConfForTest(this.getClass());
     hcatConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     hcatConf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, DummyV2AuthorizerFactory.class.getName());
     SessionState.start(hcatConf);
@@ -78,7 +79,7 @@ public class TestHCatAuthUtil {
    */
   @Test
   public void authDisabled() throws Exception {
-    HiveConf hcatConf = new HiveConf(this.getClass());
+    HiveConf hcatConf = new HiveConfForTest(this.getClass());
     hcatConf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, false);
     SessionState.start(hcatConf);
     assertFalse("hcat auth should be disabled", HCatAuthUtil.isAuthorizationEnabled(hcatConf));

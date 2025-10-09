@@ -211,8 +211,11 @@ public class QBParseInfo {
   /**
    * See also {@link #getInsertOverwriteTables()}
    */
-  public boolean isInsertIntoTable(String dbName, String table) {
-    String fullName = dbName + "." + table;
+  public boolean isInsertIntoTable(String dbName, String table, String branchName) {
+    String  fullName = dbName + "." + table;
+    if (branchName != null) {
+      fullName += "." + branchName;
+    }
     return insertIntoTables.containsKey(fullName.toLowerCase());
   }
 

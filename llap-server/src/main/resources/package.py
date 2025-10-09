@@ -1,4 +1,20 @@
 #!/usr/bin/python
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 import sys,os,stat
 import argparse
@@ -27,7 +43,7 @@ class LlapResource(object):
 		if (not self.direct):
 			h += self.cache
 		if size == -1:
-			print "Cannot determine the container size"
+			print("Cannot determine the container size")
 			sys.exit(1)
 			return
 		else:
@@ -66,7 +82,7 @@ def service_appconfig_global_property(arg):
 def construct_service_site_global_string(kvs):
 	if not kvs:
 		return ""
-	kvs = map(lambda a : a[0], kvs)
+	kvs = [a[0] for a in kvs]
 	return ",\n" + ",\n".join(["    %s:%s" % (json_print(k), json_print(v)) for (k,v) in kvs])
 
 	
@@ -106,9 +122,9 @@ def main(args):
 		sys.exit(0)
 		return
 	if args.java_child:
-		print "%s Running as a child of LlapServiceDriver" % (strftime("%H:%M:%S", gmtime()))
+		print("%s Running as a child of LlapServiceDriver" % (strftime("%H:%M:%S", gmtime())))
 	else:
-		print "%s Running after LlapServiceDriver" % (strftime("%H:%M:%S", gmtime()))
+		print("%s Running after LlapServiceDriver" % (strftime("%H:%M:%S", gmtime())))
 
 	input = args.input
 	output = args.output
@@ -134,7 +150,7 @@ def main(args):
 		service_keytab_path = service_keytab
 
 	if not input:
-		print "Cannot find input files"
+		print("Cannot find input files")
 		sys.exit(1)
 		return
 	java_home = config["java.home"]
@@ -143,7 +159,9 @@ def main(args):
 	resource = LlapResource(config)
 
 	daemon_args = args.args
-	if long(max_direct_memory) > 0:
+
+	# https://docs.python.org/3.0/whatsnew/3.0.html#integers
+	if int(max_direct_memory) > 0:
 		daemon_args = " -XX:MaxDirectMemorySize=%s %s" % (max_direct_memory, daemon_args)
 	daemon_args = " -Dhttp.maxConnections=%s %s" % ((max(args.instances, resource.executors) + 1), daemon_args)
 	vars = {
@@ -182,24 +200,25 @@ def main(args):
 	shutil.copytree(src, dst)
 
 	# Make the llap tarball
-	print "%s Prepared the files" % (strftime("%H:%M:%S", gmtime()))
+	print("%s Prepared the files" % (strftime("%H:%M:%S", gmtime())))
 
 	tarball = tarfile.open(join(output, "%s-%s.tar.gz" % (resource.clusterName, version)), "w:gz")
 	# recursive add + -C chdir inside
 	tarball.add(input, "")
 	tarball.close()
 
-	print "%s Packaged the files" % (strftime("%H:%M:%S", gmtime()))
+	print("%s Packaged the files" % (strftime("%H:%M:%S", gmtime())))
 
 	with open(join(output, "Yarnfile"), "w") as f:
 		f.write(yarnfile % vars)
 
 	with open(join(output, "run.sh"), "w") as f:
 		f.write(runner % vars)
-	os.chmod(join(output, "run.sh"), 0700)
+	os.chmod(join(output, "run.sh"), 0o700)
+    # https://docs.python.org/3.0/whatsnew/3.0.html#integers
 
 	if not args.java_child:
-		print "%s Prepared %s/run.sh for running LLAP on YARN" % (strftime("%H:%M:%S", gmtime()), output)
+		print("%s Prepared %s/run.sh for running LLAP on YARN" % (strftime("%H:%M:%S", gmtime()), output))
 
 if __name__ == "__main__":
 	main(sys.argv[1:])

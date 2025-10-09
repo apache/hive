@@ -40,12 +40,13 @@ public class TestUseDatabase {
 
   @Before
   public void setUp() throws Exception {
-
     HiveConf hcatConf = new HiveConf(this.getClass());
+    //TODO: HIVE-27998: hcatalog tests on Tez
+    hcatConf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     hcatConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    hcatConf.set(ConfVars.PREEXECHOOKS.varname, "");
-    hcatConf.set(ConfVars.POSTEXECHOOKS.varname, "");
+    hcatConf.set(ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hcatConf.set(ConfVars.POST_EXEC_HOOKS.varname, "");
     hcatConf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
     hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, HCatSemanticAnalyzer.class.getName());

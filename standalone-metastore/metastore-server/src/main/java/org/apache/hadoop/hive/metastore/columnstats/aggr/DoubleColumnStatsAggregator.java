@@ -19,13 +19,13 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.aggr;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -43,18 +43,21 @@ import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.dou
 public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implements
     IExtrapolatePartStatus {
 
-  private static final Logger LOG = LoggerFactory.getLogger(LongColumnStatsAggregator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DoubleColumnStatsAggregator.class);
 
   @Override
   public ColumnStatisticsObj aggregate(List<ColStatsObjWithSourceInfo> colStatsWithSourceInfo,
       List<String> partNames, boolean areAllPartsFound) throws MetaException {
+    checkStatisticsList(colStatsWithSourceInfo);
+
     ColumnStatisticsObj statsObj = null;
-    String colType = null;
+    String colType;
     String colName = null;
     // check if all the ColumnStatisticsObjs contain stats and all the ndv are
     // bitvectors
     boolean doAllPartitionContainStats = partNames.size() == colStatsWithSourceInfo.size();
     NumDistinctValueEstimator ndvEstimator = null;
+    boolean areAllNDVEstimatorsMergeable = true;
     for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
       ColumnStatisticsObj cso = csp.getColStatsObj();
       if (statsObj == null) {
@@ -65,58 +68,58 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
         LOG.trace("doAllPartitionContainStats for column: {} is: {}", colName,
             doAllPartitionContainStats);
       }
-      DoubleColumnStatsDataInspector doubleColumnStatsData =
-          doubleInspectorFromStats(cso);
-      if (doubleColumnStatsData.getNdvEstimator() == null) {
-        ndvEstimator = null;
+      DoubleColumnStatsDataInspector columnStatsData = doubleInspectorFromStats(cso);
+
+      // check if we can merge NDV estimators
+      if (columnStatsData.getNdvEstimator() == null) {
+        areAllNDVEstimatorsMergeable = false;
         break;
       } else {
-        // check if all of the bit vectors can merge
-        NumDistinctValueEstimator estimator = doubleColumnStatsData.getNdvEstimator();
+        NumDistinctValueEstimator estimator = columnStatsData.getNdvEstimator();
         if (ndvEstimator == null) {
           ndvEstimator = estimator;
         } else {
-          if (ndvEstimator.canMerge(estimator)) {
-            continue;
-          } else {
-            ndvEstimator = null;
+          if (!ndvEstimator.canMerge(estimator)) {
+            areAllNDVEstimatorsMergeable = false;
             break;
           }
         }
       }
     }
-    if (ndvEstimator != null) {
-      ndvEstimator = NumDistinctValueEstimatorFactory
-          .getEmptyNumDistinctValueEstimator(ndvEstimator);
+    if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {
+      ndvEstimator = NumDistinctValueEstimatorFactory.getEmptyNumDistinctValueEstimator(ndvEstimator);
     }
-    LOG.debug("all of the bit vectors can merge for " + colName + " is " + (ndvEstimator != null));
-    ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
+    LOG.debug("all of the bit vectors can merge for {} is {}", colName, areAllNDVEstimatorsMergeable);
+
+    ColumnStatisticsData columnStatisticsData = initColumnStatisticsData();
     if (doAllPartitionContainStats || colStatsWithSourceInfo.size() < 2) {
       DoubleColumnStatsDataInspector aggregateData = null;
       long lowerBound = 0;
       long higherBound = 0;
       double densityAvgSum = 0.0;
+      DoubleColumnStatsMerger merger = new DoubleColumnStatsMerger();
       for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
         ColumnStatisticsObj cso = csp.getColStatsObj();
         DoubleColumnStatsDataInspector newData = doubleInspectorFromStats(cso);
         lowerBound = Math.max(lowerBound, newData.getNumDVs());
         higherBound += newData.getNumDVs();
         densityAvgSum += (newData.getHighValue() - newData.getLowValue()) / newData.getNumDVs();
-        if (ndvEstimator != null) {
+        if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {
           ndvEstimator.mergeEstimators(newData.getNdvEstimator());
         }
         if (aggregateData == null) {
           aggregateData = newData.deepCopy();
         } else {
-          DoubleColumnStatsMerger merger = new DoubleColumnStatsMerger();
-          merger.setLowValue(aggregateData, newData);
-          merger.setHighValue(aggregateData, newData);
+          aggregateData.setLowValue(merger.mergeLowValue(
+              merger.getLowValue(aggregateData), merger.getLowValue(newData)));
+          aggregateData.setHighValue(merger.mergeHighValue(
+              merger.getHighValue(aggregateData), merger.getHighValue(newData)));
 
-          aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-          aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
+          aggregateData.setNumNulls(merger.mergeNumNulls(aggregateData.getNumNulls(), newData.getNumNulls()));
+          aggregateData.setNumDVs(merger.mergeNumDVs(aggregateData.getNumDVs(), newData.getNumDVs()));
         }
       }
-      if (ndvEstimator != null) {
+      if (areAllNDVEstimatorsMergeable && ndvEstimator != null) {
         // if all the ColumnStatisticsObjs contain bitvectors, we do not need to
         // use uniform distribution assumption because we can merge bitvectors
         // to get a good estimation.
@@ -138,10 +141,12 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
         }
         aggregateData.setNumDVs(estimation);
       }
+
       columnStatisticsData.setDoubleStats(aggregateData);
     } else {
+      // TODO: bail out if missing stats are over a certain threshold
       // we need extrapolation
-      LOG.debug("start extrapolation for " + colName);
+      LOG.debug("start extrapolation for {}", colName);
       Map<String, Integer> indexMap = new HashMap<>();
       for (int index = 0; index < partNames.size(); index++) {
         indexMap.put(partNames.get(index), index);
@@ -149,9 +154,9 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
       Map<String, Double> adjustedIndexMap = new HashMap<>();
       Map<String, ColumnStatisticsData> adjustedStatsMap = new HashMap<>();
       // while we scan the css, we also get the densityAvg, lowerbound and
-      // higerbound when useDensityFunctionForNDVEstimation is true.
+      // higherbound when useDensityFunctionForNDVEstimation is true.
       double densityAvgSum = 0.0;
-      if (ndvEstimator == null) {
+      if (!areAllNDVEstimatorsMergeable) {
         // if not every partition uses bitvector for ndv, we just fall back to
         // the traditional extrapolation methods.
         for (ColStatsObjWithSourceInfo csp : colStatsWithSourceInfo) {
@@ -230,19 +235,33 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
           adjustedIndexMap, adjustedStatsMap, densityAvgSum / adjustedStatsMap.size());
     }
     LOG.debug(
-        "Ndv estimatation for {} is {}. # of partitions requested: {}. # of partitions found: {}",
+        "Ndv estimation for {} is {}. # of partitions requested: {}. # of partitions found: {}",
         colName, columnStatisticsData.getDoubleStats().getNumDVs(), partNames.size(),
         colStatsWithSourceInfo.size());
+
+    KllHistogramEstimator mergedKllHistogramEstimator = mergeHistograms(colStatsWithSourceInfo);
+    if (mergedKllHistogramEstimator != null) {
+      columnStatisticsData.getDoubleStats().setHistogram(mergedKllHistogramEstimator.serialize());
+    }
+
     statsObj.setStatsData(columnStatisticsData);
     return statsObj;
+  }
+
+  @Override protected ColumnStatisticsData initColumnStatisticsData() {
+    ColumnStatisticsData columnStatisticsData = new ColumnStatisticsData();
+    // init stats internal data if missing, re-use if existing
+    if (!columnStatisticsData.isSetDoubleStats()) {
+      columnStatisticsData.setDoubleStats(new DoubleColumnStatsData());
+    }
+    return columnStatisticsData;
   }
 
   @Override
   public void extrapolate(ColumnStatisticsData extrapolateData, int numParts,
       int numPartsWithStats, Map<String, Double> adjustedIndexMap,
       Map<String, ColumnStatisticsData> adjustedStatsMap, double densityAvg) {
-    int rightBorderInd = numParts;
-    DoubleColumnStatsDataInspector extrapolateDoubleData = new DoubleColumnStatsDataInspector();
+
     Map<String, DoubleColumnStatsData> extractedAdjustedStatsMap = new HashMap<>();
     for (Map.Entry<String, ColumnStatisticsData> entry : adjustedStatsMap.entrySet()) {
       extractedAdjustedStatsMap.put(entry.getKey(), entry.getValue().getDoubleStats());
@@ -250,16 +269,10 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
     List<Map.Entry<String, DoubleColumnStatsData>> list = new LinkedList<>(
         extractedAdjustedStatsMap.entrySet());
     // get the lowValue
-    Collections.sort(list, new Comparator<Map.Entry<String, DoubleColumnStatsData>>() {
-      @Override
-      public int compare(Map.Entry<String, DoubleColumnStatsData> o1,
-          Map.Entry<String, DoubleColumnStatsData> o2) {
-        return Double.compare(o1.getValue().getLowValue(), o2.getValue().getLowValue());
-      }
-    });
+    list.sort(Comparator.comparingDouble(o -> o.getValue().getLowValue()));
     double minInd = adjustedIndexMap.get(list.get(0).getKey());
     double maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
-    double lowValue = 0;
+    double lowValue;
     double min = list.get(0).getValue().getLowValue();
     double max = list.get(list.size() - 1).getValue().getLowValue();
     if (minInd == maxInd) {
@@ -269,27 +282,21 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
       lowValue = (max - (max - min) * maxInd / (maxInd - minInd));
     } else {
       // right border is the min
-      lowValue = (max - (max - min) * (rightBorderInd - maxInd) / (minInd - maxInd));
+      lowValue = (max - (max - min) * (numParts - maxInd) / (minInd - maxInd));
     }
 
     // get the highValue
-    Collections.sort(list, new Comparator<Map.Entry<String, DoubleColumnStatsData>>() {
-      @Override
-      public int compare(Map.Entry<String, DoubleColumnStatsData> o1,
-          Map.Entry<String, DoubleColumnStatsData> o2) {
-        return Double.compare(o1.getValue().getHighValue(), o2.getValue().getHighValue());
-      }
-    });
+    list.sort(Comparator.comparingDouble(o -> o.getValue().getHighValue()));
     minInd = adjustedIndexMap.get(list.get(0).getKey());
     maxInd = adjustedIndexMap.get(list.get(list.size() - 1).getKey());
-    double highValue = 0;
+    double highValue;
     min = list.get(0).getValue().getHighValue();
     max = list.get(list.size() - 1).getValue().getHighValue();
     if (minInd == maxInd) {
       highValue = min;
     } else if (minInd < maxInd) {
       // right border is the max
-      highValue = (min + (max - min) * (rightBorderInd - minInd) / (maxInd - minInd));
+      highValue = (min + (max - min) * (numParts - minInd) / (maxInd - minInd));
     } else {
       // left border is the max
       highValue = (min + (max - min) * minInd / (minInd - maxInd));
@@ -304,16 +311,10 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
     numNulls = numNulls * numParts / numPartsWithStats;
 
     // get the ndv
-    long ndv = 0;
-    long ndvMin = 0;
-    long ndvMax = 0;
-    Collections.sort(list, new Comparator<Map.Entry<String, DoubleColumnStatsData>>() {
-      @Override
-      public int compare(Map.Entry<String, DoubleColumnStatsData> o1,
-          Map.Entry<String, DoubleColumnStatsData> o2) {
-        return Long.compare(o1.getValue().getNumDVs(), o2.getValue().getNumDVs());
-      }
-    });
+    long ndv;
+    long ndvMin;
+    long ndvMax;
+    list.sort(Comparator.comparingLong(o -> o.getValue().getNumDVs()));
     long lowerBound = list.get(list.size() - 1).getValue().getNumDVs();
     long higherBound = 0;
     for (Map.Entry<String, DoubleColumnStatsData> entry : list) {
@@ -335,17 +336,16 @@ public class DoubleColumnStatsAggregator extends ColumnStatsAggregator implement
         ndv = ndvMin;
       } else if (minInd < maxInd) {
         // right border is the max
-        ndv = (long) (ndvMin + (ndvMax - ndvMin) * (rightBorderInd - minInd) / (maxInd - minInd));
+        ndv = (long) (ndvMin + (ndvMax - ndvMin) * (numParts - minInd) / (maxInd - minInd));
       } else {
         // left border is the max
         ndv = (long) (ndvMin + (ndvMax - ndvMin) * minInd / (minInd - maxInd));
       }
     }
+    DoubleColumnStatsData extrapolateDoubleData = extrapolateData.getDoubleStats();
     extrapolateDoubleData.setLowValue(lowValue);
     extrapolateDoubleData.setHighValue(highValue);
     extrapolateDoubleData.setNumNulls(numNulls);
     extrapolateDoubleData.setNumDVs(ndv);
-    extrapolateData.setDoubleStats(extrapolateDoubleData);
   }
-
 }

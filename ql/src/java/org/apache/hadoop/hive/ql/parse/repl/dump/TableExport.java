@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -24,6 +25,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -97,7 +99,54 @@ public class TableExport {
     this.mmCtx = mmCtx;
   }
 
-  public void write(boolean isExportTask, FileList fileList, boolean dataCopyAtLoad) throws SemanticException {
+  @VisibleForTesting
+  public TableExport() {
+    this.replicationSpec = null;
+    this.tableSpec = null;
+    this.db = null;
+    this.conf = null;
+    this.distCpDoAsUser = "";
+    this.paths = null;
+    this.mmCtx = null;
+  }
+
+  /**
+   * Write table or partition data one after another
+   * @param isExportTask Indicates whether task is export or not
+   * @param fileList List of files to be written
+   * @param dataCopyAtLoad Indicates whether data need to be distcp during load only or not
+   * @throws SemanticException
+   */
+  public void serialWrite(boolean isExportTask, FileList fileList, boolean dataCopyAtLoad) throws SemanticException {
+    write(isExportTask, fileList, dataCopyAtLoad);
+  }
+
+  /**
+   * Write table or partition data simultaneously using ExportService.
+   * Create ExportJob to write data and submit it to the ExportService.
+   * @param isExportTask Indicates whether task is export or not
+   * @param fileList List of files to be written
+   * @param dataCopyAtLoad Indicates whether data need to be distcp during load only or not.
+   * @throws HiveException
+   */
+  public void parallelWrite(ExportService exportService, boolean isExportTask, FileList fileList, boolean dataCopyAtLoad) throws HiveException {
+    assert (exportService != null && exportService.isExportServiceRunning());
+    exportService.submit(() -> {
+      if (tableSpec != null) {
+        logger.debug("Starting parallel export of table {} ", tableSpec.getTableName());
+      }
+      try {
+        write(isExportTask, fileList, dataCopyAtLoad);
+        //As soon as write is over, close current thread MS client connection with Metastore server.
+        Hive.closeCurrent();
+      } catch (Exception e) {
+        throw new RuntimeException(e.getCause().getMessage(), e.getCause());
+      }
+    }
+    );
+  }
+
+  protected void write(boolean isExportTask, FileList fileList, boolean dataCopyAtLoad) throws SemanticException {
     if (tableSpec == null) {
       writeMetaData(null);
     } else if (shouldExport()) {
@@ -121,8 +170,15 @@ public class TableExport {
           if (replicationSpec.isMetadataOnly()) {
             return null;
           } else {
-            return new PartitionIterable(db, tableSpec.tableHandle, null, conf.getIntVar(
-                HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX), true);
+            // There are separate threads for exporting each table. getPartitions in each thread
+            // has only one MS client embedded inside Hive object. When parallel thread
+            // initiate connections to MetadataStore server, stream gets overwritten. So stream
+            // becomes invalid for old client and its gets errors like socket closed or broken pipe
+            // Hence, we create a local thread variable of Hive class and use it here while constructing
+            // PartitionIterable object. This creates a local copy of MS client for each thread.
+
+            return new PartitionIterable(Hive.get(conf), tableSpec.tableHandle, null, MetastoreConf.getIntVar(
+                conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX), true);
           }
         } else {
           // PARTITIONS specified - partitions inside tableSpec
@@ -175,7 +231,7 @@ public class TableExport {
                 replicationSpec, conf);
         if (!(isExportTask || dataCopyAtLoad)) {
           fileList.add(new DataCopyPath(replicationSpec, tableSpec.tableHandle.getDataLocation(),
-                  paths.dataExportDir()).convertToString());
+              paths.dataExportDir()).convertToString());
         }
         new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf, mmCtx)
                 .export(isExportTask, (dataCopyAtLoad));

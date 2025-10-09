@@ -1,11 +1,15 @@
 PREHOOK: query: drop table t1_n28
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table t1_n28
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table t2_n19
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table t2_n19
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table t1_n28 as select * from src where key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -769,18 +773,22 @@ POSTHOOK: Input: default@t6_n0
 PREHOOK: query: drop table t1_n28
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n28
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n28
 POSTHOOK: query: drop table t1_n28
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n28
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n28
 PREHOOK: query: drop table t2_n19
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n19
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n19
 POSTHOOK: query: drop table t2_n19
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n19
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n19
 PREHOOK: query: create table t1_n28 as select * from src where key < 10
 PREHOOK: type: CREATETABLE_AS_SELECT

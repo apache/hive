@@ -2,6 +2,7 @@
 --! qt:dataset:part
 -- SORT_QUERY_RESULTS
 set hive.mapred.mode=nonstrict;
+set hive.auto.convert.anti.join=true;
 
 
 -- no agg, corr

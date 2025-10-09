@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-alpha-2-SNAPSHOT</version>
+    <version>4.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it</artifactId>
@@ -25,6 +25,7 @@
   <name>Hive Integration - Parent</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
   </properties>
   <modules>
     <module>custom-serde</module>
@@ -33,6 +34,7 @@
     <module>hive-unit</module>
     <module>hive-blobstore</module>
     <module>util</module>
+    <module>test-jdbc</module>
     <module>test-serde</module>
     <module>qtest</module>
     <module>qtest-accumulo</module>
@@ -41,6 +43,8 @@
     <module>hive-minikdc</module>
     <module>qtest-druid</module>
     <module>qtest-kudu</module>
+    <module>qtest-iceberg</module>
+    <module>hive-iceberg</module>
   </modules>
   <dependencyManagement>
     <dependencies>
@@ -352,6 +356,12 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-client</artifactId>
         <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -441,6 +451,12 @@
         <classifier>tests</classifier>
       </dependency>
       <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-testing-util</artifactId>
+        <version>${hbase.version}</version>
+        <classifier>tests</classifier>
+      </dependency>
+      <dependency>
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-tests</artifactId>
         <version>${tez.version}</version>
@@ -483,14 +499,6 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-  <profiles>
-    <profile>
-      <id>iceberg</id>
-      <modules>
-        <module>qtest-iceberg</module>
-      </modules>
-    </profile>
-  </profiles>
   <build>
     <plugins>
       <plugin>

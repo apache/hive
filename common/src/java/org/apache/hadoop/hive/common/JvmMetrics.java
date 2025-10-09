@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.common;
 
 import static org.apache.hadoop.hive.common.JvmMetricsInfo.*;
 
-import org.apache.hadoop.log.metrics.EventCounter;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsInfo;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
@@ -96,7 +95,6 @@ public class JvmMetrics implements MetricsSource {
     getMemoryUsage(rb);
     getGcUsage(rb);
     getThreadUsage(rb);
-    getEventCounters(rb);
   }
 
   private void getMemoryUsage(MetricsRecordBuilder rb) {
@@ -152,6 +150,16 @@ public class JvmMetrics implements MetricsSource {
   }
 
   private void getThreadUsage(MetricsRecordBuilder rb) {
+    ThreadCountResult result = getThreadCountResult(threadMXBean);
+    rb.addGauge(ThreadsNew, result.threadsNew)
+        .addGauge(ThreadsRunnable, result.threadsRunnable)
+        .addGauge(ThreadsBlocked, result.threadsBlocked)
+        .addGauge(ThreadsWaiting, result.threadsWaiting)
+        .addGauge(ThreadsTimedWaiting, result.threadsTimedWaiting)
+        .addGauge(ThreadsTerminated, result.threadsTerminated);
+  }
+
+  public static ThreadCountResult getThreadCountResult(ThreadMXBean threadMXBean) {
     int threadsNew = 0;
     int threadsRunnable = 0;
     int threadsBlocked = 0;
@@ -170,18 +178,25 @@ public class JvmMetrics implements MetricsSource {
         case TERMINATED:    threadsTerminated++;    break;
       }
     }
-    rb.addGauge(ThreadsNew, threadsNew)
-        .addGauge(ThreadsRunnable, threadsRunnable)
-        .addGauge(ThreadsBlocked, threadsBlocked)
-        .addGauge(ThreadsWaiting, threadsWaiting)
-        .addGauge(ThreadsTimedWaiting, threadsTimedWaiting)
-        .addGauge(ThreadsTerminated, threadsTerminated);
+    return new ThreadCountResult(threadsNew, threadsRunnable, threadsBlocked, threadsWaiting, threadsTimedWaiting, threadsTerminated);
   }
 
-  private void getEventCounters(MetricsRecordBuilder rb) {
-    rb.addCounter(LogFatal, EventCounter.getFatal())
-        .addCounter(LogError, EventCounter.getError())
-        .addCounter(LogWarn, EventCounter.getWarn())
-        .addCounter(LogInfo, EventCounter.getInfo());
+  public static class ThreadCountResult {
+    public final int threadsNew;
+    public final int threadsRunnable;
+    public final int threadsBlocked;
+    public final int threadsWaiting;
+    public final int threadsTimedWaiting;
+    public final int threadsTerminated;
+
+    public ThreadCountResult(int threadsNew, int threadsRunnable, int threadsBlocked, int threadsWaiting, int threadsTimedWaiting,
+        int threadsTerminated) {
+      this.threadsNew = threadsNew;
+      this.threadsRunnable = threadsRunnable;
+      this.threadsBlocked = threadsBlocked;
+      this.threadsWaiting = threadsWaiting;
+      this.threadsTimedWaiting = threadsTimedWaiting;
+      this.threadsTerminated = threadsTerminated;
+    }
   }
 }

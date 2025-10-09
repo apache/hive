@@ -42,6 +42,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * CombineHiveRecordReader.
@@ -51,7 +53,7 @@ import org.apache.hadoop.mapred.lib.CombineFileSplit;
  */
 public class CombineHiveRecordReader<K extends WritableComparable, V extends Writable>
     extends HiveContextAwareRecordReader<K, V> {
-  private org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(CombineHiveRecordReader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(CombineHiveRecordReader.class);
 
   private Map<Path, PartitionDesc> pathToPartInfo;
 
@@ -70,14 +72,12 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
           + inputFormatClassName);
     }
     InputFormat inputFormat = HiveInputFormat.getInputFormatFromCache(inputFormatClass, jobConf);
+    MapWork mrwork = null;
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_ENABLED, LlapProxy.isDaemon())) {
       try {
         // TODO : refactor this out
         if (pathToPartInfo == null) {
-          MapWork mrwork = (MapWork) Utilities.getMergeWork(jobConf);
-          if (mrwork == null) {
-            mrwork = Utilities.getMapWork(jobConf);
-          }
+          mrwork = getMrWork(jobConf);
           pathToPartInfo = mrwork.getPathToPartitionInfo();
         }
 
@@ -88,28 +88,34 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
       }
     }
 
+    FileSplit inputSplit;
     // create a split for the given partition
-    FileSplit fsplit = new FileSplit(hsplit.getPaths()[partition], hsplit
-        .getStartOffsets()[partition], hsplit.getLengths()[partition], hsplit
-        .getLocations());
+    if (inputFormat instanceof CombineHiveInputFormat.MergeSplits) {
+      mrwork = getMrWork(jobConf);
+      inputSplit = ((CombineHiveInputFormat.MergeSplits) inputFormat).createMergeSplit(hsplit, partition,
+          mrwork.getMergeSplitProperties());
+    } else {
+      inputSplit = new FileSplit(hsplit.getPaths()[partition],
+          hsplit.getStartOffsets()[partition], hsplit.getLengths()[partition],
+          hsplit.getLocations());
+    }
 
-    this.setRecordReader(inputFormat.getRecordReader(fsplit, jobConf, reporter));
+    this.setRecordReader(inputFormat.getRecordReader(inputSplit, jobConf, reporter));
 
-    this.initIOContext(fsplit, jobConf, inputFormatClass, this.recordReader);
+    this.initIOContext(inputSplit, jobConf, inputFormatClass, this.recordReader);
 
     //If current split is from the same file as preceding split and the preceding split has footerbuffer,
     //the current split should use the preceding split's footerbuffer in order to skip footer correctly.
-    if (preReader != null && preReader instanceof CombineHiveRecordReader
-        && ((CombineHiveRecordReader)preReader).getFooterBuffer() != null) {
+    if (preReader instanceof CombineHiveRecordReader
+        && ((CombineHiveRecordReader) preReader).getFooterBuffer() != null) {
       if (partition != 0 && hsplit.getPaths()[partition -1].equals(hsplit.getPaths()[partition]))
         this.setFooterBuffer(((CombineHiveRecordReader)preReader).getFooterBuffer());
     }
-
   }
 
   private PartitionDesc extractSinglePartSpec(CombineHiveInputSplit hsplit) throws IOException {
     PartitionDesc part = null;
-    Map<Map<Path,PartitionDesc>, Map<Path,PartitionDesc>> cache = new HashMap<>();
+    Map<Path, Path> cache = new HashMap<>();
     for (Path path : hsplit.getPaths()) {
       PartitionDesc otherPart = HiveFileFormatUtils.getFromPathRecursively(
           pathToPartInfo, path, cache);
@@ -127,6 +133,14 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
     return part;
   }
 
+  private MapWork getMrWork(JobConf jobConf) {
+    MapWork mrwork = (MapWork) Utilities.getMergeWork(jobConf);
+    if (mrwork == null) {
+      mrwork = Utilities.getMapWork(jobConf);
+    }
+    return mrwork;
+  }
+
   @Override
   public void doClose() throws IOException {
     recordReader.close();
@@ -134,12 +148,12 @@ public class CombineHiveRecordReader<K extends WritableComparable, V extends Wri
 
   @Override
   public K createKey() {
-    return (K) recordReader.createKey();
+    return recordReader.createKey();
   }
 
   @Override
   public V createValue() {
-    return (V) recordReader.createValue();
+    return recordReader.createValue();
   }
 
   @Override

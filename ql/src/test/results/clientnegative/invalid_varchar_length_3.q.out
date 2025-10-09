@@ -1,5 +1,7 @@
 PREHOOK: query: drop table if exists invalid_varchar_length_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists invalid_varchar_length_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 FAILED: RuntimeException Varchar length 0 out of allowed range [1, 65535]

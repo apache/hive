@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists union_all_bug_test_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists union_all_bug_test_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists union_all_bug_test_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists union_all_bug_test_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists union_all_bug_test_1
 (
 f1 int,
@@ -458,16 +462,22 @@ POSTHOOK: Input: default@union_all_bug_test_2
 1
 PREHOOK: query: drop table if exists map_json
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists map_json
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists map_json1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists map_json1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists map_json2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists map_json2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table map_json1(
   id int,
   val array<string>)
@@ -558,26 +568,32 @@ POSTHOOK: Output: default@explode
 PREHOOK: query: drop table map_json
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@map_json
+PREHOOK: Output: database:default
 PREHOOK: Output: default@map_json
 POSTHOOK: query: drop table map_json
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@map_json
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@map_json
 PREHOOK: query: drop table map_json1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@map_json1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@map_json1
 POSTHOOK: query: drop table map_json1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@map_json1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@map_json1
 PREHOOK: query: drop table map_json2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@map_json2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@map_json2
 POSTHOOK: query: drop table map_json2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@map_json2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@map_json2
 PREHOOK: query: SELECT f1
 FROM (

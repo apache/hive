@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists acid_ivot_stage
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists acid_ivot_stage
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table acid_ivot_stage(
     ctinyint TINYINT,
     csmallint SMALLINT,
@@ -106,7 +108,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -171,7 +173,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	12288               
 	rawDataSize         	0                   
-	totalSize           	309566              
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -247,10 +249,12 @@ POSTHOOK: Input: default@acid_ivot
 PREHOOK: query: drop table acid_ivot
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid_ivot
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: drop table acid_ivot
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid_ivot
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_ivot
 PREHOOK: query: create table acid_ivot(
     ctinyint TINYINT,
@@ -340,7 +344,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	1668                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -436,7 +440,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	4                   
 	rawDataSize         	0                   
-	totalSize           	3337                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -528,7 +532,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	12292               
 	rawDataSize         	0                   
-	totalSize           	312904              
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -562,10 +566,12 @@ STAGE PLANS:
 PREHOOK: query: drop table acid_ivot
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid_ivot
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_ivot
 POSTHOOK: query: drop table acid_ivot
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid_ivot
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_ivot
 PREHOOK: query: create table acid_ivot like src
 PREHOOK: type: CREATETABLE
@@ -597,7 +603,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -642,7 +648,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -729,7 +735,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -854,7 +860,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	5820                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -904,7 +910,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	502                 
 	rawDataSize         	5318                
-	totalSize           	5820                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

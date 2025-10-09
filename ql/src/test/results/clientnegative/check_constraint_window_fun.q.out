@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10326]: Invalid Constraint syntax Invalid CHECK constraint expression: lead(i, 1) > 3. Invalid Constraint syntax Window functions are not allowed in Check Constraints
+FAILED: SemanticException [Error 10326]: Invalid Constraint syntax Invalid CHECK constraint expression: lead(`i`, 1) > 3. Invalid Constraint syntax Window functions are not allowed in Check Constraints

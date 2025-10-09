@@ -31,6 +31,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 
 /**
  * ThriftHttpServletTest.
@@ -42,11 +44,13 @@ public class ThriftHttpServletTest {
 
   private ThriftHttpServlet thriftHttpServlet;
 
+  private HiveConf hiveConf = new HiveConf();
+
   @Before
   public void setUp() throws Exception {
     String authType = HiveAuthConstants.AuthTypes.KERBEROS.toString();
-    thriftHttpServlet = new ThriftHttpServlet(null, null, authType, null, null, null,
-        new HiveConf());
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION, authType);
+    thriftHttpServlet = new ThriftHttpServlet(null, null, null, null, null, hiveConf);
   }
 
   @Test
@@ -70,4 +74,38 @@ public class ThriftHttpServletTest {
         "from the client is empty.");
     thriftHttpServlet.doKerberosAuth(httpServletRequest);
   }
+
+  @Test
+  public void testWwwAuthenticateNegotiateHeaderAddedToTheResponse() throws Exception {
+    HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
+    PrintWriter mockPrintWriter = Mockito.mock(PrintWriter.class);
+    Mockito.when(mockResponse.getWriter()).thenReturn(mockPrintWriter);
+
+    thriftHttpServlet.doPost(mockRequest, mockResponse);
+
+    Mockito.verify(mockResponse)
+      .setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    Mockito.verify(mockPrintWriter)
+      .println("Authentication Error: Authorization header received from the client is empty.");
+    Mockito.verify(mockResponse)
+      .addHeader(HttpAuthUtils.WWW_AUTHENTICATE, HttpAuthUtils.NEGOTIATE);
+  }
+
+  @Test
+  public void testWwwAuthenticateNegotiateHeaderNotAddedToTheResponseWhenNotEmptyAuthorizationHeaderExists() throws Exception {
+    HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+    Mockito.when(mockRequest.getHeader(HttpAuthUtils.AUTHORIZATION)).thenReturn("Authorization: Negotiate");
+    HttpServletResponse mockResponse = Mockito.mock(HttpServletResponse.class);
+    PrintWriter mockPrintWriter = Mockito.mock(PrintWriter.class);
+    Mockito.when(mockResponse.getWriter()).thenReturn(mockPrintWriter);
+
+    thriftHttpServlet.doPost(mockRequest, mockResponse);
+
+    Mockito.verify(mockResponse)
+      .setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    Mockito.verify(mockResponse, Mockito.times(0))
+      .addHeader(HttpAuthUtils.WWW_AUTHENTICATE, HttpAuthUtils.NEGOTIATE);
+  }
+
 }

@@ -1,0 +1,393 @@
+PREHOOK: query: create table ice_orc (
+    event_id int, 
+    event_time timestamp with local time zone,
+    event_src string    
+)
+partitioned by spec(truncate(3, event_src))
+stored by iceberg stored as orc
+tblproperties ('compactor.threshold.target.size'='1500')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: create table ice_orc (
+    event_id int, 
+    event_time timestamp with local time zone,
+    event_src string    
+)
+partitioned by spec(truncate(3, event_src))
+stored by iceberg stored as orc
+tblproperties ('compactor.threshold.target.size'='1500')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (1, cast('2023-07-20 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (2, cast('2023-07-21 00:00:00' as timestamp with local time zone), 'AAA_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (1, cast('2023-07-20 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (2, cast('2023-07-21 00:00:00' as timestamp with local time zone), 'AAA_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (3, cast('2023-07-23 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (4, cast('2023-07-24 00:00:00' as timestamp with local time zone), 'AAA_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (3, cast('2023-07-23 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (4, cast('2023-07-24 00:00:00' as timestamp with local time zone), 'AAA_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (5, cast('2023-08-04 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (6, cast('2023-08-05 00:00:00' as timestamp with local time zone), 'BBB_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (5, cast('2023-08-04 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (6, cast('2023-08-05 00:00:00' as timestamp with local time zone), 'BBB_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (7, cast('2023-08-06 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (8, cast('2023-08-27 00:00:00' as timestamp with local time zone), 'BBB_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (7, cast('2023-08-06 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (8, cast('2023-08-27 00:00:00' as timestamp with local time zone), 'BBB_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: alter table ice_orc set partition spec(truncate(3, event_src), month(event_time))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: alter table ice_orc set partition spec(truncate(3, event_src), month(event_time))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (9, cast('2024-07-20 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (10, cast('2024-07-21 00:00:00' as timestamp with local time zone), 'AAA_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (9, cast('2024-07-20 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (10, cast('2024-07-21 00:00:00' as timestamp with local time zone), 'AAA_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values     
+    (11, cast('2024-08-22 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (12, cast('2024-08-23 00:00:00' as timestamp with local time zone), 'AAA_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values     
+    (11, cast('2024-08-22 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (12, cast('2024-08-23 00:00:00' as timestamp with local time zone), 'AAA_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values     
+    (13, cast('2024-08-24 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (14, cast('2024-08-25 00:00:00' as timestamp with local time zone), 'AAA_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values     
+    (13, cast('2024-08-24 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (14, cast('2024-08-25 00:00:00' as timestamp with local time zone), 'AAA_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (15, cast('2024-09-24 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (16, cast('2024-09-25 00:00:00' as timestamp with local time zone), 'AAA_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (15, cast('2024-09-24 00:00:00' as timestamp with local time zone), 'AAA_1'),
+    (16, cast('2024-09-25 00:00:00' as timestamp with local time zone), 'AAA_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (17, cast('2024-07-01 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (18, cast('2024-07-02 00:00:00' as timestamp with local time zone), 'BBB_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (17, cast('2024-07-01 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (18, cast('2024-07-02 00:00:00' as timestamp with local time zone), 'BBB_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (19, cast('2024-07-03 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (20, cast('2024-07-04 00:00:00' as timestamp with local time zone), 'BBB_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (19, cast('2024-07-03 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (20, cast('2024-07-04 00:00:00' as timestamp with local time zone), 'BBB_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (21, cast('2024-08-03 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (22, cast('2024-08-04 00:00:00' as timestamp with local time zone), 'BBB_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (21, cast('2024-08-03 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (22, cast('2024-08-04 00:00:00' as timestamp with local time zone), 'BBB_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values 
+    (23, cast('2024-08-05 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (24, cast('2024-08-06 00:00:00' as timestamp with local time zone), 'BBB_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values 
+    (23, cast('2024-08-05 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (24, cast('2024-08-06 00:00:00' as timestamp with local time zone), 'BBB_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: insert into ice_orc values
+    (25, cast('2024-09-05 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (26, cast('2024-09-06 00:00:00' as timestamp with local time zone), 'BBB_2')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: insert into ice_orc values
+    (25, cast('2024-09-05 00:00:00' as timestamp with local time zone), 'BBB_1'),
+    (26, cast('2024-09-06 00:00:00' as timestamp with local time zone), 'BBB_2')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: select * from ice_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+#Masked#	2023-07-20 00:00:00.0 US/Pacific	AAA_1
+#Masked#	2023-07-21 00:00:00.0 US/Pacific	AAA_2
+#Masked#	2023-07-23 00:00:00.0 US/Pacific	AAA_1
+#Masked#	2023-07-24 00:00:00.0 US/Pacific	AAA_2
+#Masked#	2023-08-04 00:00:00.0 US/Pacific	BBB_1
+#Masked#	2023-08-05 00:00:00.0 US/Pacific	BBB_2
+#Masked#	2023-08-06 00:00:00.0 US/Pacific	BBB_1
+#Masked#	2023-08-27 00:00:00.0 US/Pacific	BBB_2
+#Masked#	2024-07-20 00:00:00.0 US/Pacific	AAA_1
+#Masked#0	2024-07-04 00:00:00.0 US/Pacific	BBB_2
+#Masked#0	2024-07-21 00:00:00.0 US/Pacific	AAA_2
+#Masked#1	2024-08-03 00:00:00.0 US/Pacific	BBB_1
+#Masked#1	2024-08-22 00:00:00.0 US/Pacific	AAA_1
+#Masked#2	2024-08-04 00:00:00.0 US/Pacific	BBB_2
+#Masked#2	2024-08-23 00:00:00.0 US/Pacific	AAA_2
+#Masked#3	2024-08-05 00:00:00.0 US/Pacific	BBB_1
+#Masked#3	2024-08-24 00:00:00.0 US/Pacific	AAA_1
+#Masked#4	2024-08-06 00:00:00.0 US/Pacific	BBB_2
+#Masked#4	2024-08-25 00:00:00.0 US/Pacific	AAA_2
+#Masked#5	2024-09-05 00:00:00.0 US/Pacific	BBB_1
+#Masked#5	2024-09-24 00:00:00.0 US/Pacific	AAA_1
+#Masked#6	2024-09-06 00:00:00.0 US/Pacific	BBB_2
+#Masked#6	2024-09-25 00:00:00.0 US/Pacific	AAA_2
+#Masked#7	2024-07-01 00:00:00.0 US/Pacific	BBB_1
+#Masked#8	2024-07-02 00:00:00.0 US/Pacific	BBB_2
+#Masked#9	2024-07-03 00:00:00.0 US/Pacific	BBB_1
+PREHOOK: query: describe formatted ice_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: describe formatted ice_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc
+# col_name            	data_type           	comment             
+event_id            	int                 	                    
+event_time          	timestamp with local time zone	                    
+event_src           	string              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+event_src           	TRUNCATE[3]         	 
+event_time          	MONTH               	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"event_id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"event_time\",\"required\":false,\"type\":\"timestamptz\"},{\"id\":3,\"name\":\"event_src\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"2\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"13\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"event_src_trunc\",\"transform\":\"truncate[3]\",\"source-id\":3,\"field-id\":1000},{\"name\":\"event_time_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1001}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	13                  
+	numPartitions       	8                   
+	numRows             	26                  
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	13                  
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: alter table ice_orc COMPACT 'major' and wait 
+where (event_src in ('BBB_1', 'BBB_2') and event_time < '2024-09-01 00:00:00') or
+      (event_src in ('AAA_1', 'AAA_2') and event_time > '2024-08-01 00:00:00')
+PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@ice_orc
+PREHOOK: Output: default@ice_orc
+POSTHOOK: query: alter table ice_orc COMPACT 'major' and wait 
+where (event_src in ('BBB_1', 'BBB_2') and event_time < '2024-09-01 00:00:00') or
+      (event_src in ('AAA_1', 'AAA_2') and event_time > '2024-08-01 00:00:00')
+POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@ice_orc
+POSTHOOK: Output: default@ice_orc
+PREHOOK: query: select * from ice_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc
+#### A masked pattern was here ####
+#Masked#	2023-07-20 00:00:00.0 US/Pacific	AAA_1
+#Masked#	2023-07-21 00:00:00.0 US/Pacific	AAA_2
+#Masked#	2023-07-23 00:00:00.0 US/Pacific	AAA_1
+#Masked#	2023-07-24 00:00:00.0 US/Pacific	AAA_2
+#Masked#	2023-08-04 00:00:00.0 US/Pacific	BBB_1
+#Masked#	2023-08-05 00:00:00.0 US/Pacific	BBB_2
+#Masked#	2023-08-06 00:00:00.0 US/Pacific	BBB_1
+#Masked#	2023-08-27 00:00:00.0 US/Pacific	BBB_2
+#Masked#	2024-07-20 00:00:00.0 US/Pacific	AAA_1
+#Masked#0	2024-07-04 00:00:00.0 US/Pacific	BBB_2
+#Masked#0	2024-07-21 00:00:00.0 US/Pacific	AAA_2
+#Masked#1	2024-08-03 00:00:00.0 US/Pacific	BBB_1
+#Masked#1	2024-08-22 00:00:00.0 US/Pacific	AAA_1
+#Masked#2	2024-08-04 00:00:00.0 US/Pacific	BBB_2
+#Masked#2	2024-08-23 00:00:00.0 US/Pacific	AAA_2
+#Masked#3	2024-08-05 00:00:00.0 US/Pacific	BBB_1
+#Masked#3	2024-08-24 00:00:00.0 US/Pacific	AAA_1
+#Masked#4	2024-08-06 00:00:00.0 US/Pacific	BBB_2
+#Masked#4	2024-08-25 00:00:00.0 US/Pacific	AAA_2
+#Masked#5	2024-09-05 00:00:00.0 US/Pacific	BBB_1
+#Masked#5	2024-09-24 00:00:00.0 US/Pacific	AAA_1
+#Masked#6	2024-09-06 00:00:00.0 US/Pacific	BBB_2
+#Masked#6	2024-09-25 00:00:00.0 US/Pacific	AAA_2
+#Masked#7	2024-07-01 00:00:00.0 US/Pacific	BBB_1
+#Masked#8	2024-07-02 00:00:00.0 US/Pacific	BBB_2
+#Masked#9	2024-07-03 00:00:00.0 US/Pacific	BBB_1
+PREHOOK: query: describe formatted ice_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc
+POSTHOOK: query: describe formatted ice_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc
+# col_name            	data_type           	comment             
+event_id            	int                 	                    
+event_time          	timestamp with local time zone	                    
+event_src           	string              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+event_src           	TRUNCATE[3]         	 
+event_time          	MONTH               	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	compactor.threshold.target.size	1500                
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"event_id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"event_time\",\"required\":false,\"type\":\"timestamptz\"},{\"id\":3,\"name\":\"event_src\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"2\",\"deleted-data-files\":\"4\",\"added-records\":\"8\",\"deleted-records\":\"8\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"4\",\"total-records\":\"26\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"8\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"event_src_trunc\",\"transform\":\"truncate[3]\",\"source-id\":3,\"field-id\":1000},{\"name\":\"event_time_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1001}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	8                   
+	numPartitions       	8                   
+	numRows             	26                  
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	17                  
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: show compactions order by 'partition'
+PREHOOK: type: SHOW COMPACTIONS
+POSTHOOK: query: show compactions order by 'partition'
+POSTHOOK: type: SHOW COMPACTIONS
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+#Masked#	default	ice_orc	event_src_trunc=AAA/event_time_month=2024-08	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	event_src_trunc=AAA/event_time_month=2024-09	MAJOR	refused	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	event_src_trunc=BBB/event_time_month=2024-07	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	event_src_trunc=BBB/event_time_month=2024-08	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 
+#Masked#	default	ice_orc	 --- 	MAJOR	succeeded	#Masked#	manual	default	0	0	0	 --- 

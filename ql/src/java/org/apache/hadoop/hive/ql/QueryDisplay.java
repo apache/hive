@@ -47,7 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class QueryDisplay {
 
   /**
-   * Preffered objectmapper for this class.
+   * Preferred objectMapper for this class.
    *
    * It must be used to have things work in shaded environment (and its also more performant).
    */
@@ -307,7 +307,7 @@ public class QueryDisplay {
 
   /**
    * @param phase phase of query
-   * @return map of HMS Client method-calls and duration in miliseconds, during given phase.
+   * @return map of HMS Client method-calls and duration in milliseconds, during given phase.
    */
   public synchronized Map<String, Long> getHmsTimings(Phase phase) {
     return hmsTimingMap.get(phase);
@@ -315,7 +315,7 @@ public class QueryDisplay {
 
   /**
    * @param phase phase of query
-   * @param hmsTimings map of HMS Client method-calls and duration in miliseconds, during given phase.
+   * @param hmsTimings map of HMS Client method-calls and duration in milliseconds, during given phase.
    */
   public synchronized void setHmsTimings(Phase phase, Map<String, Long> hmsTimings) {
     hmsTimingMap.put(phase, hmsTimings);
@@ -323,7 +323,7 @@ public class QueryDisplay {
 
   /**
    * @param phase phase of query
-   * @return map of PerfLogger call-trace name and start time in miliseconds, during given phase.
+   * @return map of PerfLogger call-trace name and start time in milliseconds, during given phase.
    */
   public synchronized Map<String, Long> getPerfLogStarts(Phase phase) {
     return perfLogStartMap.get(phase);
@@ -331,7 +331,7 @@ public class QueryDisplay {
 
   /**
    * @param phase phase of query
-   * @param perfLogStarts map of PerfLogger call-trace name and start time in miliseconds, during given phase.
+   * @param perfLogStarts map of PerfLogger call-trace name and start time in milliseconds, during given phase.
    */
   public synchronized void setPerfLogStarts(Phase phase, Map<String, Long> perfLogStarts) {
     perfLogStartMap.put(phase, perfLogStarts);
@@ -339,7 +339,7 @@ public class QueryDisplay {
 
   /**
    * @param phase phase of query
-   * @return map of PerfLogger call-trace name and end time in miliseconds, during given phase.
+   * @return map of PerfLogger call-trace name and end time in milliseconds, during given phase.
    */
   public synchronized Map<String, Long> getPerfLogEnds(Phase phase) {
     return perfLogEndMap.get(phase);
@@ -347,7 +347,7 @@ public class QueryDisplay {
 
   /**
    * @param phase phase of query
-   * @param perfLogEnds map of PerfLogger call-trace name and end time in miliseconds, during given phase.
+   * @param perfLogEnds map of PerfLogger call-trace name and end time in milliseconds, during given phase.
    */
   public synchronized void setPerfLogEnds(Phase phase, Map<String, Long> perfLogEnds) {
     perfLogEndMap.put(phase, perfLogEnds);
@@ -355,7 +355,7 @@ public class QueryDisplay {
 
   /**
    * @param phase phase of query
-   * @return map of PerfLogger call-trace name and duration in miliseconds, during given phase.
+   * @return map of PerfLogger call-trace name and duration in milliseconds, during given phase.
    */
   public synchronized Map<String, Long> getPerfLogTimes(Phase phase) {
     Map<String, Long> times = new HashMap<>();

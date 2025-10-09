@@ -1,0 +1,470 @@
+PREHOOK: query: DROP TABLE IF EXISTS llap_orders_parquet PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS llap_orders_parquet PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS llap_items_parquet PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS llap_items_parquet PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS mig_source_parquet PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS mig_source_parquet PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE llap_items_parquet (itemid INT, price INT, category STRING, name STRING, description STRING) STORED BY ICEBERG STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_items_parquet
+POSTHOOK: query: CREATE EXTERNAL TABLE llap_items_parquet (itemid INT, price INT, category STRING, name STRING, description STRING) STORED BY ICEBERG STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_items_parquet
+PREHOOK: query: INSERT INTO llap_items_parquet VALUES
+(0, 35000,  'Sedan',     'Model 3', 'Standard range plus'),
+(1, 45000,  'Sedan',     'Model 3', 'Long range'),
+(2, 50000,  'Sedan',     'Model 3', 'Performance'),
+(3, 48000,  'Crossover', 'Model Y', 'Long range'),
+(4, 55000,  'Crossover', 'Model Y', 'Performance'),
+(5, 83000,  'Sports',    'Model S', 'Long range'),
+(6, 123000, 'Sports',   'Model S', 'Plaid')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_items_parquet
+POSTHOOK: query: INSERT INTO llap_items_parquet VALUES
+(0, 35000,  'Sedan',     'Model 3', 'Standard range plus'),
+(1, 45000,  'Sedan',     'Model 3', 'Long range'),
+(2, 50000,  'Sedan',     'Model 3', 'Performance'),
+(3, 48000,  'Crossover', 'Model Y', 'Long range'),
+(4, 55000,  'Crossover', 'Model Y', 'Performance'),
+(5, 83000,  'Sports',    'Model S', 'Long range'),
+(6, 123000, 'Sports',   'Model S', 'Plaid')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_items_parquet
+PREHOOK: query: CREATE EXTERNAL TABLE llap_orders_parquet (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, P2 STRING) STORED BY ICEBERG STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: CREATE EXTERNAL TABLE llap_orders_parquet (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, P2 STRING) STORED BY ICEBERG STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(0, 48, 5, timestamp('2000-06-04 19:55:46.129'), 'EU', 'DE'),
+(1, 12, 6, timestamp('2007-06-24 19:23:22.829'), 'US', 'TX'),
+(2, 76, 4, timestamp('2018-02-19 23:43:51.995'), 'EU', 'DE'),
+(3, 91, 5, timestamp('2000-07-15 09:09:11.587'), 'US', 'NJ'),
+(4, 18, 6, timestamp('2007-12-02 22:30:39.302'), 'EU', 'ES'),
+(5, 71, 5, timestamp('2010-02-08 20:31:23.430'), 'EU', 'DE'),
+(6, 78, 3, timestamp('2016-02-22 20:37:37.025'), 'EU', 'FR'),
+(7, 88, 0, timestamp('2020-03-26 18:47:40.611'), 'EU', 'FR'),
+(8, 87, 4, timestamp('2003-02-20 00:48:09.139'), 'EU', 'ES'),
+(9, 60, 6, timestamp('2012-08-28 01:35:54.283'), 'EU', 'IT'),
+(10, 24, 5, timestamp('2015-03-28 18:57:50.069'), 'US', 'NY'),
+(11, 42, 2, timestamp('2012-06-27 01:13:32.350'), 'EU', 'UK'),
+(12, 37, 4, timestamp('2020-08-09 01:18:50.153'), 'US', 'NY'),
+(13, 52, 1, timestamp('2019-09-04 01:46:19.558'), 'EU', 'UK'),
+(14, 96, 3, timestamp('2019-03-05 22:00:03.020'), 'US', 'NJ'),
+(15, 18, 3, timestamp('2001-09-11 00:14:12.687'), 'EU', 'FR'),
+(16, 46, 0, timestamp('2013-08-31 02:16:17.878'), 'EU', 'UK'),
+(17, 26, 5, timestamp('2001-02-01 20:05:32.317'), 'EU', 'FR'),
+(18, 68, 5, timestamp('2009-12-29 08:44:08.048'), 'EU', 'ES'),
+(19, 54, 6, timestamp('2015-08-15 01:59:22.177'), 'EU', 'HU'),
+(20, 10, 0, timestamp('2018-05-06 12:56:12.789'), 'US', 'CA')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(0, 48, 5, timestamp('2000-06-04 19:55:46.129'), 'EU', 'DE'),
+(1, 12, 6, timestamp('2007-06-24 19:23:22.829'), 'US', 'TX'),
+(2, 76, 4, timestamp('2018-02-19 23:43:51.995'), 'EU', 'DE'),
+(3, 91, 5, timestamp('2000-07-15 09:09:11.587'), 'US', 'NJ'),
+(4, 18, 6, timestamp('2007-12-02 22:30:39.302'), 'EU', 'ES'),
+(5, 71, 5, timestamp('2010-02-08 20:31:23.430'), 'EU', 'DE'),
+(6, 78, 3, timestamp('2016-02-22 20:37:37.025'), 'EU', 'FR'),
+(7, 88, 0, timestamp('2020-03-26 18:47:40.611'), 'EU', 'FR'),
+(8, 87, 4, timestamp('2003-02-20 00:48:09.139'), 'EU', 'ES'),
+(9, 60, 6, timestamp('2012-08-28 01:35:54.283'), 'EU', 'IT'),
+(10, 24, 5, timestamp('2015-03-28 18:57:50.069'), 'US', 'NY'),
+(11, 42, 2, timestamp('2012-06-27 01:13:32.350'), 'EU', 'UK'),
+(12, 37, 4, timestamp('2020-08-09 01:18:50.153'), 'US', 'NY'),
+(13, 52, 1, timestamp('2019-09-04 01:46:19.558'), 'EU', 'UK'),
+(14, 96, 3, timestamp('2019-03-05 22:00:03.020'), 'US', 'NJ'),
+(15, 18, 3, timestamp('2001-09-11 00:14:12.687'), 'EU', 'FR'),
+(16, 46, 0, timestamp('2013-08-31 02:16:17.878'), 'EU', 'UK'),
+(17, 26, 5, timestamp('2001-02-01 20:05:32.317'), 'EU', 'FR'),
+(18, 68, 5, timestamp('2009-12-29 08:44:08.048'), 'EU', 'ES'),
+(19, 54, 6, timestamp('2015-08-15 01:59:22.177'), 'EU', 'HU'),
+(20, 10, 0, timestamp('2018-05-06 12:56:12.789'), 'US', 'CA')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: SELECT i.name, i.description, SUM(o.quantity) FROM llap_items_parquet i JOIN llap_orders_parquet o ON i.itemid = o.itemid  WHERE p1 = 'EU' and i.price >= 50000 GROUP BY i.name, i.description
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_items_parquet
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT i.name, i.description, SUM(o.quantity) FROM llap_items_parquet i JOIN llap_orders_parquet o ON i.itemid = o.itemid  WHERE p1 = 'EU' and i.price >= 50000 GROUP BY i.name, i.description
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_items_parquet
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+Model 3	Performance	42
+Model S	Long range	213
+Model S	Plaid	132
+Model Y	Performance	163
+PREHOOK: query: ALTER TABLE llap_items_parquet CHANGE category cat string AFTER description
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@llap_items_parquet
+PREHOOK: Output: default@llap_items_parquet
+POSTHOOK: query: ALTER TABLE llap_items_parquet CHANGE category cat string AFTER description
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@llap_items_parquet
+POSTHOOK: Output: default@llap_items_parquet
+PREHOOK: query: ALTER TABLE llap_items_parquet CHANGE price cost int AFTER name
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@llap_items_parquet
+PREHOOK: Output: default@llap_items_parquet
+POSTHOOK: query: ALTER TABLE llap_items_parquet CHANGE price cost int AFTER name
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@llap_items_parquet
+POSTHOOK: Output: default@llap_items_parquet
+PREHOOK: query: SELECT i.name, i.description, SUM(o.quantity) FROM llap_items_parquet i JOIN llap_orders_parquet o ON i.itemid = o.itemid  WHERE p1 = 'EU' and i.cost >= 100000 GROUP BY i.name, i.description
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_items_parquet
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT i.name, i.description, SUM(o.quantity) FROM llap_items_parquet i JOIN llap_orders_parquet o ON i.itemid = o.itemid  WHERE p1 = 'EU' and i.cost >= 100000 GROUP BY i.name, i.description
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_items_parquet
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+Model S	Plaid	132
+PREHOOK: query: ALTER TABLE llap_items_parquet ADD COLUMNS (to60 float)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@llap_items_parquet
+PREHOOK: Output: default@llap_items_parquet
+POSTHOOK: query: ALTER TABLE llap_items_parquet ADD COLUMNS (to60 float)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@llap_items_parquet
+POSTHOOK: Output: default@llap_items_parquet
+PREHOOK: query: INSERT INTO llap_items_parquet VALUES
+(7, 'Model X', 93000, 'Long range', 'SUV', 3.8),
+(7, 'Model X', 113000, 'Plaid', 'SUV', 2.5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_items_parquet
+POSTHOOK: query: INSERT INTO llap_items_parquet VALUES
+(7, 'Model X', 93000, 'Long range', 'SUV', 3.8),
+(7, 'Model X', 113000, 'Plaid', 'SUV', 2.5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_items_parquet
+PREHOOK: query: SELECT cat, min(to60) from llap_items_parquet group by cat
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_items_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cat, min(to60) from llap_items_parquet group by cat
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_items_parquet
+#### A masked pattern was here ####
+Crossover	NULL
+SUV	2.5
+Sedan	NULL
+Sports	NULL
+PREHOOK: query: ALTER TABLE llap_items_parquet REPLACE COLUMNS (itemid int, name string, cost int, description string, to60 float)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@llap_items_parquet
+PREHOOK: Output: default@llap_items_parquet
+POSTHOOK: query: ALTER TABLE llap_items_parquet REPLACE COLUMNS (itemid int, name string, cost int, description string, to60 float)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@llap_items_parquet
+POSTHOOK: Output: default@llap_items_parquet
+PREHOOK: query: INSERT INTO llap_items_parquet VALUES
+(8, 'Cybertruck', 40000, 'Single Motor RWD', 6.5),
+(9, 'Cybertruck', 50000, 'Dual Motor AWD', 4.5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_items_parquet
+POSTHOOK: query: INSERT INTO llap_items_parquet VALUES
+(8, 'Cybertruck', 40000, 'Single Motor RWD', 6.5),
+(9, 'Cybertruck', 50000, 'Dual Motor AWD', 4.5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_items_parquet
+PREHOOK: query: SELECT name, min(to60), max(cost) FROM llap_items_parquet WHERE itemid > 3 GROUP BY name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_items_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT name, min(to60), max(cost) FROM llap_items_parquet WHERE itemid > 3 GROUP BY name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_items_parquet
+#### A masked pattern was here ####
+Cybertruck	4.5	50000
+Model S	NULL	123000
+Model X	2.5	113000
+Model Y	NULL	55000
+PREHOOK: query: ALTER TABLE llap_orders_parquet CHANGE tradets ordertime timestamp AFTER P2
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@llap_orders_parquet
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: ALTER TABLE llap_orders_parquet CHANGE tradets ordertime timestamp AFTER P2
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@llap_orders_parquet
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: ALTER TABLE llap_orders_parquet CHANGE p1 region string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@llap_orders_parquet
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: ALTER TABLE llap_orders_parquet CHANGE p1 region string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@llap_orders_parquet
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(21, 21, 8, 'EU', 'HU', timestamp('2000-01-04 19:55:46.129'))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(21, 21, 8, 'EU', 'HU', timestamp('2000-01-04 19:55:46.129'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: SELECT region, min(ordertime), sum(quantity) FROM llap_orders_parquet WHERE itemid > 5 GROUP BY region
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT region, min(ordertime), sum(quantity) FROM llap_orders_parquet WHERE itemid > 5 GROUP BY region
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+EU	2000-01-04 19:55:46.129	153
+US	2007-06-24 19:23:22.829	12
+PREHOOK: query: ALTER TABLE llap_orders_parquet CHANGE P2 state string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@llap_orders_parquet
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: ALTER TABLE llap_orders_parquet CHANGE P2 state string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@llap_orders_parquet
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: SELECT region, state, min(ordertime), sum(quantity) FROM llap_orders_parquet WHERE itemid > 5 GROUP BY region, state
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT region, state, min(ordertime), sum(quantity) FROM llap_orders_parquet WHERE itemid > 5 GROUP BY region, state
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+EU	ES	2007-12-02 22:30:39.302	18
+EU	HU	2000-01-04 19:55:46.129	75
+EU	IT	2012-08-28 01:35:54.283	60
+US	TX	2007-06-24 19:23:22.829	12
+PREHOOK: query: ALTER TABLE llap_orders_parquet ADD COLUMNS (city string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@llap_orders_parquet
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: ALTER TABLE llap_orders_parquet ADD COLUMNS (city string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@llap_orders_parquet
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(22, 99, 9, 'EU', 'DE', timestamp('2021-01-04 19:55:46.129'), 'München')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(22, 99, 9, 'EU', 'DE', timestamp('2021-01-04 19:55:46.129'), 'München')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: SELECT state, max(city) from llap_orders_parquet WHERE region = 'EU' GROUP BY state
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT state, max(city) from llap_orders_parquet WHERE region = 'EU' GROUP BY state
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+DE	München
+ES	NULL
+FR	NULL
+HU	NULL
+IT	NULL
+UK	NULL
+PREHOOK: query: ALTER TABLE llap_orders_parquet SET PARTITION SPEC (region, state, city)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@llap_orders_parquet
+POSTHOOK: query: ALTER TABLE llap_orders_parquet SET PARTITION SPEC (region, state, city)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@llap_orders_parquet
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(23, 89, 6, 'EU', 'IT', timestamp('2021-02-04 19:55:46.129'), 'Venezia')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(23, 89, 6, 'EU', 'IT', timestamp('2021-02-04 19:55:46.129'), 'Venezia')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: SELECT state, max(city), avg(itemid) from llap_orders_parquet WHERE region = 'EU' GROUP BY state
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT state, max(city), avg(itemid) from llap_orders_parquet WHERE region = 'EU' GROUP BY state
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+DE	München	5.75
+ES	NULL	5.0
+FR	NULL	2.75
+HU	NULL	7.0
+IT	Venezia	6.0
+UK	NULL	1.0
+PREHOOK: query: ALTER TABLE llap_orders_parquet SET PARTITION SPEC (state, city)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@llap_orders_parquet
+POSTHOOK: query: ALTER TABLE llap_orders_parquet SET PARTITION SPEC (state, city)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@llap_orders_parquet
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(24, 88, 5, 'EU', 'UK', timestamp('2006-02-04 19:55:46.129'), 'London')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(24, 88, 5, 'EU', 'UK', timestamp('2006-02-04 19:55:46.129'), 'London')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: SELECT state, max(city), avg(itemid) from llap_orders_parquet WHERE region = 'EU' GROUP BY state
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT state, max(city), avg(itemid) from llap_orders_parquet WHERE region = 'EU' GROUP BY state
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+DE	München	5.75
+ES	NULL	5.0
+FR	NULL	2.75
+HU	NULL	7.0
+IT	Venezia	6.0
+UK	London	2.0
+PREHOOK: query: ALTER TABLE llap_orders_parquet REPLACE COLUMNS (quantity int, itemid int, region string, state string, ordertime timestamp, city string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@llap_orders_parquet
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: ALTER TABLE llap_orders_parquet REPLACE COLUMNS (quantity int, itemid int, region string, state string, ordertime timestamp, city string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@llap_orders_parquet
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(88, 5, 'EU', 'FR', timestamp('2006-02-04 19:55:46.129'), 'Paris')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@llap_orders_parquet
+POSTHOOK: query: INSERT INTO llap_orders_parquet VALUES
+(88, 5, 'EU', 'FR', timestamp('2006-02-04 19:55:46.129'), 'Paris')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@llap_orders_parquet
+PREHOOK: query: SELECT state, max(city), avg(itemid) from llap_orders_parquet WHERE region = 'EU' GROUP BY state
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT state, max(city), avg(itemid) from llap_orders_parquet WHERE region = 'EU' GROUP BY state
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+DE	München	5.75
+ES	NULL	5.0
+FR	Paris	3.2
+HU	NULL	7.0
+IT	Venezia	6.0
+UK	London	2.0
+PREHOOK: query: SELECT o.city, i.name, min(i.cost), max(to60), sum(o.quantity) FROM llap_items_parquet i JOIN llap_orders_parquet o ON i.itemid = o.itemid  WHERE region = 'EU' and i.cost >= 50000 and ordertime > timestamp('2010-01-01') GROUP BY o.city, i.name
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_items_parquet
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT o.city, i.name, min(i.cost), max(to60), sum(o.quantity) FROM llap_items_parquet i JOIN llap_orders_parquet o ON i.itemid = o.itemid  WHERE region = 'EU' and i.cost >= 50000 and ordertime > timestamp('2010-01-01') GROUP BY o.city, i.name
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_items_parquet
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+München	Cybertruck	50000	4.5	99
+NULL	Model 3	50000	NULL	42
+Venezia	Model S	123000	NULL	89
+NULL	Model S	83000	NULL	185
+NULL	Model Y	55000	NULL	76
+PREHOOK: query: SELECT i.name, i.description, SUM(o.quantity) FROM llap_items_parquet i JOIN llap_orders_parquet o ON i.itemid = o.itemid  WHERE region = 'EU' and i.cost >= 50000 GROUP BY i.name, i.description
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_items_parquet
+PREHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT i.name, i.description, SUM(o.quantity) FROM llap_items_parquet i JOIN llap_orders_parquet o ON i.itemid = o.itemid  WHERE region = 'EU' and i.cost >= 50000 GROUP BY i.name, i.description
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_items_parquet
+POSTHOOK: Input: default@llap_orders_parquet
+#### A masked pattern was here ####
+Cybertruck	Dual Motor AWD	99
+Model 3	Performance	42
+Model S	Long range	389
+Model S	Plaid	221
+Model Y	Performance	163
+PREHOOK: query: CREATE EXTERNAL TABLE mig_source_parquet (id int) partitioned by (region string) stored AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mig_source_parquet
+POSTHOOK: query: CREATE EXTERNAL TABLE mig_source_parquet (id int) partitioned by (region string) stored AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mig_source_parquet
+PREHOOK: query: INSERT INTO mig_source_parquet VALUES (1, 'EU'), (1, 'US'), (2, 'EU'), (3, 'EU'), (2, 'US')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@mig_source_parquet
+POSTHOOK: query: INSERT INTO mig_source_parquet VALUES (1, 'EU'), (1, 'US'), (2, 'EU'), (3, 'EU'), (2, 'US')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@mig_source_parquet
+POSTHOOK: Output: default@mig_source_parquet@region=EU
+POSTHOOK: Output: default@mig_source_parquet@region=US
+POSTHOOK: Lineage: mig_source_parquet PARTITION(region=EU).id SCRIPT []
+POSTHOOK: Lineage: mig_source_parquet PARTITION(region=US).id SCRIPT []
+PREHOOK: query: ALTER TABLE mig_source_parquet convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@mig_source_parquet
+POSTHOOK: query: ALTER TABLE mig_source_parquet convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@mig_source_parquet
+POSTHOOK: Output: default@mig_source_parquet
+PREHOOK: query: SELECT region, SUM(id) from mig_source_parquet GROUP BY region
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mig_source_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT region, SUM(id) from mig_source_parquet GROUP BY region
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mig_source_parquet
+#### A masked pattern was here ####
+EU	6
+US	3
+PREHOOK: query: SELECT region, SUM(id) from mig_source_parquet GROUP BY region
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mig_source_parquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT region, SUM(id) from mig_source_parquet GROUP BY region
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mig_source_parquet
+#### A masked pattern was here ####
+EU	6
+US	3

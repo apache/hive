@@ -93,10 +93,12 @@ b=2/c=2
 PREHOOK: query: drop table dmp.mp_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: dmp@mp_n0
+PREHOOK: Output: database:dmp
 PREHOOK: Output: dmp@mp_n0
 POSTHOOK: query: drop table dmp.mp_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: dmp@mp_n0
+POSTHOOK: Output: database:dmp
 POSTHOOK: Output: dmp@mp_n0
 PREHOOK: query: drop database dmp
 PREHOOK: type: DROPDATABASE

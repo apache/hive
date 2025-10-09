@@ -26,14 +26,10 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hive.common.util.ReflectionUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Enumeration;
@@ -129,7 +125,7 @@ public class TableDesc implements Serializable, Cloneable {
 
   @Explain(displayName = "properties", explainLevels = { Level.EXTENDED })
   public Map getPropertiesExplain() {
-    return PlanUtils.getPropertiesExplain(getProperties());
+    return PlanUtils.getPropertiesForExplain(getProperties());
   }
 
   public void setProperties(final Properties properties) {
@@ -263,5 +259,13 @@ public class TableDesc implements Serializable, Cloneable {
     return "TableDesc [inputFileFormatClass=" + inputFileFormatClass
         + ", outputFileFormatClass=" + outputFileFormatClass + ", properties="
         + properties + ", jobProperties=" + jobProperties + "]";
+  }
+
+  public void setProperty(String key, String value) {
+    properties.put(key, value);
+  }
+
+  public String getProperty(String key) {
+    return properties.getProperty(key);
   }
 }

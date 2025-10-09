@@ -75,7 +75,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	580                 
-	totalSize           	356                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -94,8 +94,8 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n8	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_n8	N/A                 	 
 PREHOOK: query: show tblproperties cmv_mat_view_n8
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties cmv_mat_view_n8
@@ -108,7 +108,7 @@ numFiles	1
 numFilesErasureCoded	0
 numRows	5
 rawDataSize	580
-totalSize	356
+totalSize	#Masked#
 #### A masked pattern was here ####
 PREHOOK: query: select a, c from cmv_mat_view_n8
 PREHOOK: type: QUERY
@@ -172,7 +172,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	5                   
-	totalSize           	10                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -191,8 +191,8 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n8	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_n8	N/A                 	 
 PREHOOK: query: select a from cmv_mat_view2_n3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2_n3
@@ -259,7 +259,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1025                
-	totalSize           	511                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -278,8 +278,8 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n8	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_n8	N/A                 	 
 PREHOOK: query: select a, b, c from cmv_mat_view3_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view3_n0
@@ -355,7 +355,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	5                   
-	totalSize           	10                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -374,8 +374,8 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	Unknown             	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_n8	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_n8	N/A                 	 
 PREHOOK: query: select a from cmv_mat_view4_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view4_n0

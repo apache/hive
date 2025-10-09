@@ -27,7 +27,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> colNames; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String validWriteIdList; // optional
-  private @org.apache.thrift.annotation.Nullable java.lang.String engine; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String engine; // optional
   private long id; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -111,7 +111,7 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __ID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST,_Fields.ID};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.VALID_WRITE_ID_LIST,_Fields.ENGINE,_Fields.ID};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -126,7 +126,7 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.ENGINE, new org.apache.thrift.meta_data.FieldMetaData("engine", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.ENGINE, new org.apache.thrift.meta_data.FieldMetaData("engine", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
@@ -135,6 +135,8 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   public TableStatsRequest() {
+    this.engine = "hive";
+
     this.id = -1L;
 
   }
@@ -142,14 +144,12 @@ package org.apache.hadoop.hive.metastore.api;
   public TableStatsRequest(
     java.lang.String dbName,
     java.lang.String tblName,
-    java.util.List<java.lang.String> colNames,
-    java.lang.String engine)
+    java.util.List<java.lang.String> colNames)
   {
     this();
     this.dbName = dbName;
     this.tblName = tblName;
     this.colNames = colNames;
-    this.engine = engine;
   }
 
   /**
@@ -190,7 +190,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.colNames = null;
     this.catName = null;
     this.validWriteIdList = null;
-    this.engine = null;
+    this.engine = "hive";
+
     this.id = -1L;
 
   }
@@ -747,14 +748,16 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
-    if (!first) sb.append(", ");
-    sb.append("engine:");
-    if (this.engine == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.engine);
+    if (isSetEngine()) {
+      if (!first) sb.append(", ");
+      sb.append("engine:");
+      if (this.engine == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.engine);
+      }
+      first = false;
     }
-    first = false;
     if (isSetId()) {
       if (!first) sb.append(", ");
       sb.append("id:");
@@ -777,10 +780,6 @@ package org.apache.hadoop.hive.metastore.api;
 
     if (!isSetColNames()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'colNames' is unset! Struct:" + toString());
-    }
-
-    if (!isSetEngine()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'engine' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -841,13 +840,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 3: // COL_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list572 = iprot.readListBegin();
-                struct.colNames = new java.util.ArrayList<java.lang.String>(_list572.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem573;
-                for (int _i574 = 0; _i574 < _list572.size; ++_i574)
+                org.apache.thrift.protocol.TList _list618 = iprot.readListBegin();
+                struct.colNames = new java.util.ArrayList<java.lang.String>(_list618.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem619;
+                for (int _i620 = 0; _i620 < _list618.size; ++_i620)
                 {
-                  _elem573 = iprot.readString();
-                  struct.colNames.add(_elem573);
+                  _elem619 = iprot.readString();
+                  struct.colNames.add(_elem619);
                 }
                 iprot.readListEnd();
               }
@@ -915,9 +914,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(COL_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.colNames.size()));
-          for (java.lang.String _iter575 : struct.colNames)
+          for (java.lang.String _iter621 : struct.colNames)
           {
-            oprot.writeString(_iter575);
+            oprot.writeString(_iter621);
           }
           oprot.writeListEnd();
         }
@@ -938,9 +937,11 @@ package org.apache.hadoop.hive.metastore.api;
         }
       }
       if (struct.engine != null) {
-        oprot.writeFieldBegin(ENGINE_FIELD_DESC);
-        oprot.writeString(struct.engine);
-        oprot.writeFieldEnd();
+        if (struct.isSetEngine()) {
+          oprot.writeFieldBegin(ENGINE_FIELD_DESC);
+          oprot.writeString(struct.engine);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.isSetId()) {
         oprot.writeFieldBegin(ID_FIELD_DESC);
@@ -968,12 +969,11 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.colNames.size());
-        for (java.lang.String _iter576 : struct.colNames)
+        for (java.lang.String _iter622 : struct.colNames)
         {
-          oprot.writeString(_iter576);
+          oprot.writeString(_iter622);
         }
       }
-      oprot.writeString(struct.engine);
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetCatName()) {
         optionals.set(0);
@@ -981,15 +981,21 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetValidWriteIdList()) {
         optionals.set(1);
       }
-      if (struct.isSetId()) {
+      if (struct.isSetEngine()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetId()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
       }
       if (struct.isSetValidWriteIdList()) {
         oprot.writeString(struct.validWriteIdList);
+      }
+      if (struct.isSetEngine()) {
+        oprot.writeString(struct.engine);
       }
       if (struct.isSetId()) {
         oprot.writeI64(struct.id);
@@ -1004,19 +1010,17 @@ package org.apache.hadoop.hive.metastore.api;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list577 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-        struct.colNames = new java.util.ArrayList<java.lang.String>(_list577.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _elem578;
-        for (int _i579 = 0; _i579 < _list577.size; ++_i579)
+        org.apache.thrift.protocol.TList _list623 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+        struct.colNames = new java.util.ArrayList<java.lang.String>(_list623.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _elem624;
+        for (int _i625 = 0; _i625 < _list623.size; ++_i625)
         {
-          _elem578 = iprot.readString();
-          struct.colNames.add(_elem578);
+          _elem624 = iprot.readString();
+          struct.colNames.add(_elem624);
         }
       }
       struct.setColNamesIsSet(true);
-      struct.engine = iprot.readString();
-      struct.setEngineIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
@@ -1026,6 +1030,10 @@ package org.apache.hadoop.hive.metastore.api;
         struct.setValidWriteIdListIsSet(true);
       }
       if (incoming.get(2)) {
+        struct.engine = iprot.readString();
+        struct.setEngineIsSet(true);
+      }
+      if (incoming.get(3)) {
         struct.id = iprot.readI64();
         struct.setIdIsSet(true);
       }

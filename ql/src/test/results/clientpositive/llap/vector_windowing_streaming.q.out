@@ -1,7 +1,9 @@
 PREHOOK: query: drop table over10k_n8
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table over10k_n8
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table over10k_n8(
            t tinyint,
            si smallint,
@@ -774,8 +776,10 @@ STAGE PLANS:
 
 PREHOOK: query: drop table if exists sB
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists sB
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table sB ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -790,7 +794,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sB
 POSTHOOK: Lineage: sb.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: sb.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: sb.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: sb.r EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 a.ctinyint	a.cdouble	a.r
 PREHOOK: query: select * from sB
 where ctinyint is null
@@ -809,8 +813,10 @@ NULL	-16309.0	3
 NULL	-16307.0	4
 PREHOOK: query: drop table if exists sD
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists sD
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: explain vectorization detail
 create table sD ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5
@@ -1098,7 +1104,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sD
 POSTHOOK: Lineage: sd.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: sd.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-POSTHOOK: Lineage: sd.r SCRIPT [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:null), ]
+POSTHOOK: Lineage: sd.r EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), (alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 a.ctinyint	a.cdouble	a.r
 PREHOOK: query: select * from sD
 where ctinyint is null

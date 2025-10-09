@@ -1,0 +1,92 @@
+PREHOOK: query: create table t1 (
+  t tinyint default 1Y,
+  si smallint default 1S,
+  i int default 1,
+  b bigint default 1L,
+  f double default double(5.7),
+  d double,
+  s varchar(25) default cast('col1' as varchar(25)),
+  dc decimal(38,18),
+  bo varchar(5),
+  v varchar(25),
+  c char(25) default cast('var1' as char(25)),
+  ts timestamp DEFAULT TIMESTAMP'2016-02-22 12:45:07.000000000',
+  dt date default cast('2015-03-12' as DATE),
+  tz timestamp with local time zone DEFAULT TIMESTAMPLOCALTZ'#Masked#America/Los_Angeles')
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (
+  t tinyint default 1Y,
+  si smallint default 1S,
+  i int default 1,
+  b bigint default 1L,
+  f double default double(5.7),
+  d double,
+  s varchar(25) default cast('col1' as varchar(25)),
+  dc decimal(38,18),
+  bo varchar(5),
+  v varchar(25),
+  c char(25) default cast('var1' as char(25)),
+  ts timestamp DEFAULT TIMESTAMP'2016-02-22 12:45:07.000000000',
+  dt date default cast('2015-03-12' as DATE),
+  tz timestamp with local time zone DEFAULT TIMESTAMPLOCALTZ'#Masked#America/Los_Angeles')
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1(t,si) values (2,5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1(t,si) values (2,5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.b SIMPLE []
+POSTHOOK: Lineage: t1.bo SIMPLE []
+POSTHOOK: Lineage: t1.c EXPRESSION []
+POSTHOOK: Lineage: t1.d SIMPLE []
+POSTHOOK: Lineage: t1.dc SIMPLE []
+POSTHOOK: Lineage: t1.dt EXPRESSION []
+POSTHOOK: Lineage: t1.f EXPRESSION []
+POSTHOOK: Lineage: t1.i SIMPLE []
+POSTHOOK: Lineage: t1.s EXPRESSION []
+POSTHOOK: Lineage: t1.si SCRIPT []
+POSTHOOK: Lineage: t1.t SCRIPT []
+POSTHOOK: Lineage: t1.ts SIMPLE []
+POSTHOOK: Lineage: t1.tz SIMPLE []
+POSTHOOK: Lineage: t1.v SIMPLE []
+PREHOOK: query: insert into t1(b,dt) values (2,cast('2019-08-14' as DATE))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1(b,dt) values (2,cast('2019-08-14' as DATE))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.b SCRIPT []
+POSTHOOK: Lineage: t1.bo SIMPLE []
+POSTHOOK: Lineage: t1.c EXPRESSION []
+POSTHOOK: Lineage: t1.d SIMPLE []
+POSTHOOK: Lineage: t1.dc SIMPLE []
+POSTHOOK: Lineage: t1.dt SCRIPT []
+POSTHOOK: Lineage: t1.f EXPRESSION []
+POSTHOOK: Lineage: t1.i SIMPLE []
+POSTHOOK: Lineage: t1.s EXPRESSION []
+POSTHOOK: Lineage: t1.si SIMPLE []
+POSTHOOK: Lineage: t1.t SIMPLE []
+POSTHOOK: Lineage: t1.ts SIMPLE []
+POSTHOOK: Lineage: t1.tz SIMPLE []
+POSTHOOK: Lineage: t1.v SIMPLE []
+PREHOOK: query: select tz,b,dt,t,si from t1 ORDER BY t1.t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: select tz,b,dt,t,si from t1 ORDER BY t1.t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+#Masked#2	2019-08-14	1	1
+#Masked#1	2015-03-12	2	5

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tb1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tb1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tb1 (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -12,8 +14,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tb1
 PREHOOK: query: drop table if exists tb2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tb2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tb2 (id smallint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

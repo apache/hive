@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists multi_test_text
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists multi_test_text
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists multi_test_acid
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists multi_test_acid
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table multi_test_text (a int, b int, c int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -103,16 +107,20 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists multi_test_text
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multi_test_text
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multi_test_text
 POSTHOOK: query: drop table if exists multi_test_text
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multi_test_text
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi_test_text
 PREHOOK: query: drop table if exists multi_test_acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multi_test_acid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multi_test_acid
 POSTHOOK: query: drop table if exists multi_test_acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multi_test_acid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multi_test_acid

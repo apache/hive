@@ -1,5 +1,7 @@
 PREHOOK: query: DROP TABLE IF EXISTS ice_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS ice_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 FAILED: SemanticException Provide only one of the following: STORED BY ORC or WITH SERDEPROPERTIES('write.format.default'='ORC')

@@ -1,31 +1,45 @@
 PREHOOK: query: DROP TABLE parquet_decimal_spark
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_decimal_spark
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE parquet_decimal_bigint_spark
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_decimal_bigint_spark
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE parquet_decimal_int_spark
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_decimal_int_spark
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE parquet_decimal_smallint_spark
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_decimal_smallint_spark
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE parquet_decimal_tinyint_spark
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_decimal_tinyint_spark
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE parquet_decimal_double_spark
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_decimal_double_spark
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE parquet_decimal_float_spark
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE parquet_decimal_float_spark
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE parquet_decimal_spark (d1 decimal(4,2), d2 decimal(4,0), d3 decimal(12,5), d4 decimal(12,0)) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -353,10 +367,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_decimal_float_spark
 #### A masked pattern was here ####
 44.21	54.0	3344556.2	3344556.0
-52.0	62.0	8877665.0	7.7664498E11
+52.0	62.0	8877665.0	7.76645E11
 0.0	0.0	0.0	0.0
 -42.25	-52.0	-2233115.0	-2233115.0
--15.0	-25.0	-8877665.0	-7.7664498E11
+-15.0	-25.0	-8877665.0	-7.76645E11
 PREHOOK: query: SELECT * FROM parquet_decimal_spark order by d2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquet_decimal_spark
@@ -444,9 +458,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquet_decimal_float_spark
 #### A masked pattern was here ####
 -42.25	-52.0	-2233115.0	-2233115.0
--15.0	-25.0	-8877665.0	-7.7664498E11
+-15.0	-25.0	-8877665.0	-7.76645E11
 44.21	54.0	3344556.2	3344556.0
-52.0	62.0	8877665.0	7.7664498E11
+52.0	62.0	8877665.0	7.76645E11
 NULL	NULL	NULL	NULL
 PREHOOK: query: SELECT * FROM parquet_decimal_string_spark order by d2
 PREHOOK: type: QUERY

@@ -29,9 +29,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -41,25 +43,34 @@ import org.apache.hadoop.hive.ql.ddl.table.AlterTableUtils;
 import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
+import org.apache.hadoop.hive.ql.parse.ParseUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.ParseUtils.ReparseResult;
 import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.InputFormat;
 
 /**
@@ -82,7 +93,26 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
     Map<String, String> partitionSpec = getPartSpec((ASTNode) tableNode.getChild(1));
     addTruncateTableOutputs(tableNode, table, partitionSpec);
 
-    Task<?> truncateTask = null;
+    if (table.getStorageHandler() != null && !table.getStorageHandler().canUseTruncate(table, partitionSpec)) {
+      // Transform the truncate query to delete query.
+      StringBuilder rewrittenQuery = constructDeleteQuery(getFullTableNameForSQL((ASTNode) tableNode.getChild(0)),
+          table, partitionSpec);
+      ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, rewrittenQuery);
+      Context rewrittenCtx = rr.rewrittenCtx;
+      ASTNode rewrittenTree = rr.rewrittenTree;
+      rewrittenCtx.setOperation(Context.Operation.DELETE);
+      rewrittenCtx.addDestNamePrefix(1, Context.DestClausePrefix.DELETE);
+
+      BaseSemanticAnalyzer deleteAnalyzer = SemanticAnalyzerFactory.get(queryState, rewrittenTree);
+      // Note: this will overwrite this.ctx with rewrittenCtx
+      rewrittenCtx.setEnableUnparse(false);
+      deleteAnalyzer.analyze(rewrittenTree, rewrittenCtx);
+
+      rootTasks = deleteAnalyzer.getRootTasks();
+      return;
+    }
+
+    Task<?> truncateTask;
     ASTNode colNamesNode = (ASTNode) root.getFirstChildWithType(HiveParser.TOK_TABCOLNAME);
     if (colNamesNode == null) {
       truncateTask = getTruncateTaskWithoutColumnNames(tableName, partitionSpec, table);
@@ -95,7 +125,6 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
   private void checkTruncateEligibility(ASTNode ast, ASTNode root, String tableName, Table table)
       throws SemanticException {
-    validateUnsupportedPartitionClause(table, root.getChildCount() > 1);
 
     if (table.isNonNative()) {
       if (table.getStorageHandler() == null || !table.getStorageHandler().supportsTruncateOnNonNativeTables()) {
@@ -128,7 +157,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
         truncateUseBase ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
     
     if (partitionSpec == null) {
-      if (!table.isPartitioned()) {
+      if (!table.isPartitioned() || table.hasNonNativePartitionSupport()) {
         outputs.add(new WriteEntity(table, writeType));
       } else {
         for (Partition partition : PartitionUtils.getPartitions(db, table, null, false)) {
@@ -137,9 +166,19 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       }
     } else {
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
-        validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, true);
-        Partition partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
-        outputs.add(new WriteEntity(partition, writeType));
+        if (table.hasNonNativePartitionSupport()) {
+          table.getStorageHandler().validatePartSpec(table, partitionSpec);
+          try {
+            String partName = Warehouse.makePartName(partitionSpec, false);
+            Partition partition = new DummyPartition(table, partName, partitionSpec);
+            outputs.add(new WriteEntity(partition, writeType));
+          } catch (MetaException e) {
+            throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
+          }
+        } else {
+          Partition partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
+          outputs.add(new WriteEntity(partition, writeType));
+        }
       } else {
         validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, false);
         for (Partition partition : PartitionUtils.getPartitions(db, table, partitionSpec, false)) {
@@ -182,7 +221,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
   @SuppressWarnings("rawtypes")
   private Task<?> truncatePartitionedTableWithColumnNames(ASTNode root, TableName tableName, Table table,
-      Map<String, String> partitionSpec, List<String> columnNames) throws HiveException, SemanticException {
+      Map<String, String> partitionSpec, List<String> columnNames) throws HiveException {
     Partition partition = db.getPartition(table, partitionSpec, false);
 
     Path tablePath = table.getPath();
@@ -321,7 +360,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
   private void addStatTask(ASTNode root, Table table, Path oldPartitionLocation, Path newPartitionLocation,
       LoadTableDesc loadTableDesc, Task<MoveWork> moveTask) throws SemanticException {
     // Recalculate the HDFS stats if auto gather stats is set
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER)) {
       BasicStatsWork basicStatsWork;
       if (oldPartitionLocation.equals(newPartitionLocation)) {
         // If we're merging to the same location, we can avoid some metastore calls
@@ -337,5 +376,29 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
       Task<?> statTask = TaskFactory.get(columnStatsWork);
       moveTask.addDependentTask(statTask);
     }
+  }
+
+  public StringBuilder constructDeleteQuery(String qualifiedTableName, Table table, Map<String, String> partitionSpec)
+      throws SemanticException {
+    StringBuilder sb = new StringBuilder().append("delete from ").append(qualifiedTableName)
+            .append(" where ");
+    boolean first = true;
+    for (String key : partitionSpec.keySet()) {
+      ColumnInfo columnInfo = table.getStorageHandler().getColumnInfo(table, key);
+      if (columnInfo.getObjectInspector() instanceof PrimitiveObjectInspector) {
+        PrimitiveObjectInspector primitiveObjInspector = (PrimitiveObjectInspector) columnInfo.getObjectInspector();
+        String value = partitionSpec.get(key);
+        if (value != null) {
+          sb.append(first ? "" : " and ").append(HiveUtils.unparseIdentifier(key, conf)).append(" = ")
+            .append(TypeInfoUtils.convertStringToLiteralForSQL(value, primitiveObjInspector.getPrimitiveCategory()));
+        }
+      } else {
+        throw new SemanticException(String.format(
+            "Only primitive partition column type is supported via TRUNCATE operation " +
+            " but column %s is not a primitive category.", key));
+      }
+      first = false;
+    }
+    return sb;
   }
 }

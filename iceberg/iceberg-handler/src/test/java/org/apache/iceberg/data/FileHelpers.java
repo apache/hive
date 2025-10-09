@@ -22,48 +22,57 @@ package org.apache.iceberg.data;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileFormat;
-import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.data.parquet.GenericParquetWriter;
+import org.apache.iceberg.deletes.BaseDVFileWriter;
+import org.apache.iceberg.deletes.DVFileWriter;
 import org.apache.iceberg.deletes.EqualityDeleteWriter;
+import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.deletes.PositionDeleteWriter;
+import org.apache.iceberg.encryption.EncryptedFiles;
+import org.apache.iceberg.encryption.EncryptedOutputFile;
+import org.apache.iceberg.encryption.EncryptionKeyMetadata;
 import org.apache.iceberg.io.FileAppender;
+import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFile;
-import org.apache.iceberg.parquet.Parquet;
+import org.apache.iceberg.io.OutputFileFactory;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.CharSequenceSet;
 import org.apache.iceberg.util.Pair;
+
+import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT;
+import static org.apache.iceberg.TableProperties.DEFAULT_FILE_FORMAT_DEFAULT;
 
 public class FileHelpers {
   private FileHelpers() {
   }
 
-  public static Pair<DeleteFile, Set<CharSequence>> writeDeleteFile(Table table, OutputFile out,
+  public static Pair<DeleteFile, CharSequenceSet> writeDeleteFile(Table table, OutputFile out,
                                                                     List<Pair<CharSequence, Long>> deletes)
       throws IOException {
     return writeDeleteFile(table, out, null, deletes);
   }
 
-  public static Pair<DeleteFile, Set<CharSequence>> writeDeleteFile(Table table, OutputFile out, StructLike partition,
+  public static Pair<DeleteFile, CharSequenceSet> writeDeleteFile(Table table, OutputFile out, StructLike partition,
                                                                     List<Pair<CharSequence, Long>> deletes)
       throws IOException {
-    PositionDeleteWriter<?> writer = Parquet.writeDeletes(out)
-        .withSpec(table.spec())
-        .setAll(table.properties())
-        .metricsConfig(MetricsConfig.forTable(table))
-        .withPartition(partition)
-        .overwrite()
-        .buildPositionWriter();
+    FileFormat format = defaultFormat(table.properties());
+    FileAppenderFactory<Record> factory = new GenericAppenderFactory(table.schema(), table.spec());
 
+    PositionDeleteWriter<Record> writer =
+        factory.newPosDeleteWriter(encrypt(out), format, partition);
+    PositionDelete<Record> posDelete = PositionDelete.create();
     try (Closeable toClose = writer) {
       for (Pair<CharSequence, Long> delete : deletes) {
-        writer.delete(delete.first(), delete.second());
+        writer.write(posDelete.set(delete.first(), delete.second(), null));
       }
     }
 
@@ -76,36 +85,69 @@ public class FileHelpers {
   }
 
   public static DeleteFile writeDeleteFile(Table table, OutputFile out, StructLike partition,
-                                           List<Record> deletes, Schema deleteRowSchema) throws IOException {
-    EqualityDeleteWriter<Record> writer = Parquet.writeDeletes(out)
-        .forTable(table)
-        .withPartition(partition)
-        .rowSchema(deleteRowSchema)
-        .createWriterFunc(GenericParquetWriter::buildWriter)
-        .overwrite()
-        .equalityFieldIds(deleteRowSchema.columns().stream().mapToInt(Types.NestedField::fieldId).toArray())
-        .buildEqualityWriter();
+                                           List<Record> deletes, Schema deleteRowSchema)
+      throws IOException {
+    FileFormat format = defaultFormat(table.properties());
+    int[] equalityFieldIds = deleteRowSchema.columns().stream().mapToInt(Types.NestedField::fieldId).toArray();
+    FileAppenderFactory<Record> factory = new GenericAppenderFactory(table.schema(), table.spec(),
+        equalityFieldIds, deleteRowSchema, null);
 
+    EqualityDeleteWriter<Record> writer = factory.newEqDeleteWriter(encrypt(out), format, partition);
     try (Closeable toClose = writer) {
-      writer.deleteAll(deletes);
+      writer.write(deletes);
     }
 
     return writer.toDeleteFile();
   }
 
-  public static DataFile writeDataFile(Table table, OutputFile out, List<Record> rows) throws IOException {
-    FileAppender<Record> writer = Parquet.write(out)
-        .createWriterFunc(GenericParquetWriter::buildWriter)
-        .schema(table.schema())
-        .overwrite()
-        .build();
+  public static Pair<DeleteFile, CharSequenceSet> writeDeleteFile(
+          Table table,
+          OutputFile out,
+          StructLike partition,
+          List<Pair<CharSequence, Long>> deletes,
+          int formatVersion)
+          throws IOException {
+    if (formatVersion >= 3) {
+      OutputFileFactory fileFactory =
+              OutputFileFactory.builderFor(table, 1, 1).format(FileFormat.PUFFIN).build();
+      DVFileWriter writer = new BaseDVFileWriter(fileFactory, p -> null);
+      try (DVFileWriter closeableWriter = writer) {
+        for (Pair<CharSequence, Long> delete : deletes) {
+          closeableWriter.delete(
+                  delete.first().toString(), delete.second(), table.spec(), partition);
+        }
+      }
 
+      return Pair.of(
+              Iterables.getOnlyElement(writer.result().deleteFiles()),
+              writer.result().referencedDataFiles());
+    } else {
+      FileWriterFactory<Record> factory = GenericFileWriterFactory.builderFor(table).build();
+
+      PositionDeleteWriter<Record> writer =
+              factory.newPositionDeleteWriter(encrypt(out), table.spec(), partition);
+      PositionDelete<Record> posDelete = PositionDelete.create();
+      try (Closeable toClose = writer) {
+        for (Pair<CharSequence, Long> delete : deletes) {
+          writer.write(posDelete.set(delete.first(), delete.second(), null));
+        }
+      }
+
+      return Pair.of(writer.toDeleteFile(), writer.referencedDataFiles());
+    }
+  }
+
+  public static DataFile writeDataFile(Table table, OutputFile out, List<Record> rows) throws IOException {
+    FileFormat format = defaultFormat(table.properties());
+    GenericAppenderFactory factory = new GenericAppenderFactory(table.schema());
+
+    FileAppender<Record> writer = factory.newAppender(out, format);
     try (Closeable toClose = writer) {
       writer.addAll(rows);
     }
 
     return DataFiles.builder(table.spec())
-        .withFormat(FileFormat.PARQUET)
+        .withFormat(format)
         .withPath(out.location())
         .withFileSizeInBytes(writer.length())
         .withSplitOffsets(writer.splitOffsets())
@@ -115,23 +157,72 @@ public class FileHelpers {
 
   public static DataFile writeDataFile(Table table, OutputFile out, StructLike partition, List<Record> rows)
       throws IOException {
-    FileAppender<Record> writer = Parquet.write(out)
-        .createWriterFunc(GenericParquetWriter::buildWriter)
-        .schema(table.schema())
-        .overwrite()
-        .build();
+    FileFormat format = defaultFormat(table.properties());
+    GenericAppenderFactory factory = new GenericAppenderFactory(table.schema(), table.spec());
 
+    FileAppender<Record> writer = factory.newAppender(out, format);
     try (Closeable toClose = writer) {
       writer.addAll(rows);
     }
 
     return DataFiles.builder(table.spec())
-        .withFormat(FileFormat.PARQUET)
+        .withFormat(format)
         .withPath(out.location())
         .withPartition(partition)
         .withFileSizeInBytes(writer.length())
         .withSplitOffsets(writer.splitOffsets())
         .withMetrics(writer.metrics())
         .build();
+  }
+
+  public static DeleteFile writePosDeleteFile(
+          Table table, OutputFile out, StructLike partition, List<PositionDelete<?>> deletes)
+          throws IOException {
+    return writePosDeleteFile(table, out, partition, deletes, 2);
+  }
+
+  public static DeleteFile writePosDeleteFile(
+          Table table,
+          OutputFile out,
+          StructLike partition,
+          List<PositionDelete<?>> deletes,
+          int formatVersion)
+          throws IOException {
+    if (formatVersion >= 3) {
+      OutputFileFactory fileFactory =
+              OutputFileFactory.builderFor(table, 1, 1).format(FileFormat.PUFFIN).build();
+      DVFileWriter writer = new BaseDVFileWriter(fileFactory, p -> null);
+      try (DVFileWriter closeableWriter = writer) {
+        for (PositionDelete<?> delete : deletes) {
+          closeableWriter.delete(delete.path().toString(), delete.pos(), table.spec(), partition);
+        }
+      }
+
+      return Iterables.getOnlyElement(writer.result().deleteFiles());
+    } else {
+      FileWriterFactory<Record> factory =
+              GenericFileWriterFactory.builderFor(table)
+                      .positionDeleteRowSchema(table.schema())
+                      .build();
+
+      PositionDeleteWriter<?> writer =
+              factory.newPositionDeleteWriter(encrypt(out), table.spec(), partition);
+      try (Closeable toClose = writer) {
+        for (PositionDelete delete : deletes) {
+          writer.write(delete);
+        }
+      }
+
+      return writer.toDeleteFile();
+    }
+  }
+
+  private static EncryptedOutputFile encrypt(OutputFile out) {
+    return EncryptedFiles.encryptedOutput(out, EncryptionKeyMetadata.EMPTY);
+  }
+
+  private static FileFormat defaultFormat(Map<String, String> properties) {
+    String formatString = properties.getOrDefault(DEFAULT_FILE_FORMAT, DEFAULT_FILE_FORMAT_DEFAULT);
+    return FileFormat.fromString(formatString);
   }
 }

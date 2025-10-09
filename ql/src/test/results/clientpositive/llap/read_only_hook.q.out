@@ -1,0 +1,71 @@
+POSTHOOK: query: ALTER DATABASE default SET DBPROPERTIES('readonly' = 'true')
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+POSTHOOK: query: SHOW CREATE DATABASE default
+POSTHOOK: type: SHOW_CREATEDATABASE
+POSTHOOK: Input: database:default
+CREATE DATABASE `default`
+COMMENT
+  'Default Hive database'
+LOCATION
+#### A masked pattern was here ####
+WITH DBPROPERTIES (
+  'readonly'='true')
+POSTHOOK: query: SHOW CREATE TABLE src
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@src
+CREATE TABLE `src`(
+  `key` string COMMENT 'default', 
+  `value` string COMMENT 'default')
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+POSTHOOK: query: DESC DATABASE default
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:default
+default	Default Hive database	location/in/test		public	ROLE		
+POSTHOOK: query: DESCRIBE src
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@src
+key                 	string              	default             
+value               	string              	default             
+POSTHOOK: query: EXPLAIN SELECT * FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              ListSink
+
+POSTHOOK: query: SELECT * FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238

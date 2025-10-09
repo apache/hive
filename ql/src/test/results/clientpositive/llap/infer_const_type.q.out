@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE infertypes
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE infertypes
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE infertypes(ti TINYINT, si SMALLINT, i INT, bi BIGINT, fl FLOAT, db DOUBLE, str STRING)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -253,8 +255,10 @@ POSTHOOK: Input: default@infertypes
 PREHOOK: query: DROP TABLE infertypes
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@infertypes
+PREHOOK: Output: database:default
 PREHOOK: Output: default@infertypes
 POSTHOOK: query: DROP TABLE infertypes
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@infertypes
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@infertypes

@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
@@ -96,7 +97,8 @@ public class TestFunctionRegistry {
     varchar5 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
     char10 = TypeInfoFactory.getPrimitiveTypeInfo("char(10)");
     char5 = TypeInfoFactory.getPrimitiveTypeInfo("char(5)");
-    SessionState.start(new HiveConf());
+    HiveConf conf = new HiveConfForTest(getClass());
+    SessionState.start(conf);
   }
 
   private void implicit(TypeInfo a, TypeInfo b, boolean convertible) {

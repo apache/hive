@@ -29,7 +29,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -74,7 +74,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -90,8 +90,10 @@ Storage Desc Params:
 PREHOOK: query: drop table alter_table_not_sorted
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_table_not_sorted
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_table_not_sorted
 POSTHOOK: query: drop table alter_table_not_sorted
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_table_not_sorted
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_table_not_sorted

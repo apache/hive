@@ -1,0 +1,77 @@
+PREHOOK: query: CREATE TABLE my_tbl (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@my_tbl
+POSTHOOK: query: CREATE TABLE my_tbl (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@my_tbl
+PREHOOK: query: insert into my_tbl values (100),(200),(300)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@my_tbl
+POSTHOOK: query: insert into my_tbl values (100),(200),(300)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@my_tbl
+POSTHOOK: Lineage: my_tbl.id SCRIPT []
+PREHOOK: query: select * from my_tbl where id not in ('ABC', 'DEF')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from my_tbl where id not in ('ABC', 'DEF')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+100
+200
+300
+PREHOOK: query: select * from my_tbl where id not in ('ABC', 'DEF', '123')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from my_tbl where id not in ('ABC', 'DEF', '123')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+100
+200
+300
+PREHOOK: query: select * from my_tbl where id not in ('ABC', 'DEF', '100')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from my_tbl where id not in ('ABC', 'DEF', '100')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+200
+300
+PREHOOK: query: select * from my_tbl where id not in (100, 'ABC', 200)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from my_tbl where id not in (100, 'ABC', 200)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+300
+PREHOOK: query: select * from my_tbl where id is not null or id in ("ABC")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from my_tbl where id is not null or id in ("ABC")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+100
+200
+300
+PREHOOK: query: select * from my_tbl where id is not null and id in ("ABC")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@my_tbl
+#### A masked pattern was here ####
+POSTHOOK: query: select * from my_tbl where id is not null and id in ("ABC")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@my_tbl
+#### A masked pattern was here ####

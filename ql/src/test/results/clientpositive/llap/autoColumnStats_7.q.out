@@ -197,16 +197,20 @@ POSTHOOK: Input: default@dest_g2_n5
 PREHOOK: query: DROP TABLE dest_g2_n5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest_g2_n5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest_g2_n5
 POSTHOOK: query: DROP TABLE dest_g2_n5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest_g2_n5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest_g2_n5
 PREHOOK: query: DROP TABLE src_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_temp
 POSTHOOK: query: DROP TABLE src_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_temp

@@ -80,7 +80,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
-          filterExpr: ((hr <= 12) and (hr > 11)) (type: boolean)
+          filterExpr: ((hr > 11) and (hr <= 12)) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
             outputColumnNames: _col0, _col1, _col2
@@ -1658,7 +1658,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partint
-          filterExpr: hr NOT BETWEEN 12 AND 14 (type: boolean)
+          filterExpr: ((hr < 12) or (hr > 14)) (type: boolean)
           Select Operator
             expressions: key (type: string), value (type: string), hr (type: int)
             outputColumnNames: _col0, _col1, _col2
@@ -3219,8 +3219,10 @@ irG2+wNa4ZWkUKb0+hXweg==
 PREHOOK: query: drop table partint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partint
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partint
 POSTHOOK: query: drop table partint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partint
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partint

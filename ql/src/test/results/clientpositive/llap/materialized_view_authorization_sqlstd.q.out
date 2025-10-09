@@ -274,10 +274,12 @@ POSTHOOK: Output: db2@testmv
 PREHOOK: query: drop table db1.testmvtable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: db1@testmvtable
+PREHOOK: Output: database:db1
 PREHOOK: Output: db1@testmvtable
 POSTHOOK: query: drop table db1.testmvtable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: db1@testmvtable
+POSTHOOK: Output: database:db1
 POSTHOOK: Output: db1@testmvtable
 PREHOOK: query: drop database db1 cascade
 PREHOOK: type: DROPDATABASE

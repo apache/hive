@@ -1,7 +1,9 @@
 PREHOOK: query: drop table masking_test_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table masking_test_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table masking_test_n2 as select cast(key as int) as key, value, '12' from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -132,10 +134,12 @@ POSTHOOK: Input: default@masking_test_n2
 PREHOOK: query: drop table masking_test_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@masking_test_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_n2
 POSTHOOK: query: drop table masking_test_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@masking_test_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_n2
 PREHOOK: query: create table masking_test_n2 as select cast(key as int) as key, '12'
 '12', '12', '12', '12', '12', '12', '12', '12', '12', '12'
@@ -205,10 +209,12 @@ NULL	2	1212	12	12	12	12	12	12	12	12	12
 PREHOOK: query: drop table masking_test_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@masking_test_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_n2
 POSTHOOK: query: drop table masking_test_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@masking_test_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_n2
 PREHOOK: query: create table masking_test_n2 as select cast(key as int) as key, '12'
 '12', '12', '12', '12', '12', INPUT__FILE__NAME as file_name, '12', '12', '12', '12', '12'

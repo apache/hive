@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE dest1_n148
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE dest1_n148
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE dest1_n148(a array<int>, b array<string>, c map<string,string>, d int, e string)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '1'
@@ -60,7 +62,7 @@ STAGE PLANS:
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Map-reduce partition columns: 1 (type: int)
+                      Map-reduce partition columns: _col0 (type: array<int>)
                       Statistics: Num rows: 11 Data size: 34628 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: array<int>), _col1 (type: array<string>), _col2 (type: map<string,string>), _col3 (type: int), _col4 (type: string)
             Execution mode: llap
@@ -154,10 +156,12 @@ NULL	NULL	NULL	0	NULL
 PREHOOK: query: DROP TABLE dest1_n148
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_n148
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_n148
 POSTHOOK: query: DROP TABLE dest1_n148
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_n148
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n148
 PREHOOK: query: CREATE TABLE dest1_n148(a array<int>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 PREHOOK: type: CREATETABLE
@@ -198,10 +202,12 @@ NULL
 PREHOOK: query: DROP TABLE dest1_n148
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_n148
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_n148
 POSTHOOK: query: DROP TABLE dest1_n148
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_n148
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n148
 PREHOOK: query: CREATE TABLE dest1_n148(a map<string,string>) ROW FORMAT DELIMITED FIELDS TERMINATED BY '1' ESCAPED BY '\\'
 PREHOOK: type: CREATETABLE
@@ -767,19 +773,25 @@ POSTHOOK: Input: default@destbin_n0
 PREHOOK: query: DROP TABLE destBin_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destbin_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@destbin_n0
 POSTHOOK: query: DROP TABLE destBin_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destbin_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destbin_n0
 PREHOOK: query: DROP TABLE dest2_n38
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE dest2_n38
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE dest3_n6
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE dest3_n6
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE dest2_n38 (a map<string,map<string,map<string,uniontype<int, bigint, string, double, boolean, array<string>, map<string,string>>>>>)
   ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2' STORED AS SEQUENCEFILE
 PREHOOK: type: CREATETABLE

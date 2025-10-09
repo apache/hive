@@ -53,6 +53,7 @@ public class GenericUDFSplit extends GenericUDF {
 
     converters = new ObjectInspectorConverters.Converter[arguments.length];
     for (int i = 0; i < arguments.length; i++) {
+      checkArgPrimitive(arguments, i);
       converters[i] = ObjectInspectorConverters.getConverter(arguments[i],
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
     }

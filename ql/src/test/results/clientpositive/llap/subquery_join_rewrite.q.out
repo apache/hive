@@ -80,15 +80,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
-  HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(ws_order_number=[$0])
-    HiveSortLimit(fetch=[0])
-      HiveProject(ws_order_number=[$0])
-        HiveFilter(condition=[IS NOT NULL($0)])
-          HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+HiveValues(tuples=[[]])
 
 PREHOOK: query: select * from web_sales ws1
 where exists (select 1 from web_sales ws2 where ws1.ws_order_number = ws2.ws_order_number limit 0)
@@ -245,7 +237,6 @@ NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
-Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select * from web_sales ws1
 where exists (select 1 from web_sales ws2 where ws2.ws_order_number = 2 limit 0)
@@ -259,16 +250,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[true], joinType=[semi])
-  HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-    HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(ws_order_number=[$0])
-    HiveSortLimit(fetch=[0])
-      HiveProject(ws_order_number=[CAST(2):INTEGER])
-        HiveFilter(condition=[=($0, 2)])
-          HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+HiveValues(tuples=[[]])
 
-Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from web_sales ws1
 where exists (select 1 from web_sales ws2 where ws2.ws_order_number = 2 limit 0)
 PREHOOK: type: QUERY
@@ -441,7 +424,7 @@ where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select * from web_sales ws1
 where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls last limit 1 offset 2)
@@ -457,25 +440,24 @@ POSTHOOK: Input: default@web_sales
 CBO PLAN:
 HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
   HiveFilter(condition=[OR(=($2, 0), AND(IS NULL($5), >=($3, $2), IS NOT NULL($0)))])
-    HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1], c=[$4], ck=[$5], ws_order_number0=[$2], literalTrue=[$3])
+    HiveJoin(condition=[=($0, $4)], joinType=[left], algorithm=[none], cost=[not available])
       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-        HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
-          HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-            HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-          HiveProject(ws_order_number=[$0], literalTrue=[true])
-            HiveFilter(condition=[IS NOT NULL($0)])
-              HiveProject(ws_order_number=[$0])
-                HiveSortLimit(sort0=[$0], dir0=[ASC], offset=[2], fetch=[1])
-                  HiveProject(ws_order_number=[$0])
-                    HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+        HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+          HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
         HiveProject(c=[$0], ck=[$1])
           HiveAggregate(group=[{}], c=[COUNT()], ck=[COUNT($0)])
             HiveProject(ws_order_number=[$0])
               HiveSortLimit(sort0=[$0], dir0=[ASC], offset=[2], fetch=[1])
                 HiveProject(ws_order_number=[$0])
                   HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+      HiveProject(ws_order_number=[$0], literalTrue=[true])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveProject(ws_order_number=[$0])
+            HiveSortLimit(sort0=[$0], dir0=[ASC], offset=[2], fetch=[1])
+              HiveProject(ws_order_number=[$0])
+                HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from web_sales ws1
 where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls last limit 1 offset 2)
 PREHOOK: type: QUERY

@@ -76,9 +76,7 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
     conf.setVar(HiveConf.ConfVars.LLAP_IO_MEMORY_MODE, "none");
     conf.setVar(HiveConf.ConfVars.LLAP_EXTERNAL_SPLITS_TEMP_TABLE_STORAGE_FORMAT, "text");
 
-
-    conf.addResource(new URL("file://" + new File(confDir).toURI().getPath()
-        + "/tez-site.xml"));
+    conf.addResource(new URL("file://" + new File(confDir).toURI().getPath() + "/tez-site.xml"));
 
     miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
@@ -86,7 +84,6 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
 
     Map<String, String> confOverlay = new HashMap<>();
     miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
   }
 
   @AfterClass
@@ -107,8 +104,7 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
     hs2Conn.close();
   }
 
-  protected void runQuery(final String query, final List<String> setCmds,
-                          final int numRows) throws Exception {
+  protected void runQuery(final String query, final List<String> setCmds, final int numRows) throws Exception {
 
     Connection con = hs2Conn;
     BaseJdbcWithMiniLlap.createTestTable(con, null, tableName, kvDataFilePath.toString());
@@ -179,15 +175,9 @@ public abstract class AbstractTestJdbcGenericUDTFGetSplits {
     query = "select " + udtfName + "(" + "'select value from " + tableName + " where value is not null limit 2', 5)";
     runQuery(query, getConfigs(), expectedCounts[5]);
 
-    query = "select " + udtfName + "(" +
-        "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 5)";
+    query = "select " + udtfName + "(" + "'select `value` from (select value from " + tableName +
+        " where value is not null order by value) as t', 5)";
     runQuery(query, getConfigs(), expectedCounts[6]);
-
-    List<String> setCmds = getConfigs();
-    setCmds.add("set hive.llap.external.splits.order.by.force.single.split=false");
-    query = "select " + udtfName + "(" +
-        "'select `value` from (select value from " + tableName + " where value is not null order by value) as t', 10)";
-    runQuery(query, setCmds, expectedCounts[7]);
   }
 
   protected void testGenericUDTFOrderBySplitCount1OnPartitionedTable(String udtfName, int[] expectedCounts)

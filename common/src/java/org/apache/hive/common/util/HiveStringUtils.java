@@ -18,6 +18,7 @@
 
 package org.apache.hive.common.util;
 
+import com.google.common.base.Splitter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -38,8 +39,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-
-import com.google.common.base.Splitter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.EntityArrays;
@@ -216,7 +215,7 @@ public class HiveStringUtils {
     }
     StringBuilder s = new StringBuilder();
     for(int i = start; i < end; i++) {
-      s.append(String.format("%02x", bytes[i]));
+      s.append("%02x".formatted(bytes[i]));
     }
     return s.toString();
   }
@@ -259,7 +258,7 @@ public class HiveStringUtils {
   /**
    * @param str
    *          The string array to be parsed into an URI array.
-   * @return <tt>null</tt> if str is <tt>null</tt>, else the URI array
+   * @return <pre>null</pre> if str is <pre>null</pre>, else the URI array
    *         equivalent to str.
    * @throws IllegalArgumentException
    *           If any string in str violates RFC&nbsp;2396.
@@ -1080,19 +1079,17 @@ public class HiveStringUtils {
     return false;
   }
 
-  public static String getPartitionValWithInvalidCharacter(List<String> partVals,
-      Pattern partitionValidationPattern) {
-    if (partitionValidationPattern == null) {
-      return null;
+  public static String getPartitionValWithInvalidCharacter(
+      List<String> partVals, Pattern partitionValidationPattern) {
+    String result = null;
+    if (partitionValidationPattern != null) {
+      result =
+          partVals.stream()
+              .filter(partVal -> !partitionValidationPattern.matcher(partVal).matches())
+              .findFirst()
+              .orElse(null);
     }
-  
-    for (String partVal : partVals) {
-      if (!partitionValidationPattern.matcher(partVal).matches()) {
-        return partVal;
-      }
-    }
-  
-    return null;
+    return result;
   }
 
   /**

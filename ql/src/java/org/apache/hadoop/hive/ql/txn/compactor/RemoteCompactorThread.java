@@ -19,22 +19,11 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.thrift.TException;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.convertToGetPartitionsByNamesRequest;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * Compactor thread that can run outside the metastore. It will
@@ -45,39 +34,22 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 public class RemoteCompactorThread extends CompactorThread {
   protected IMetaStoreClient msc;
 
+  private String poolName;
+
+  public String getPoolName() {
+    return poolName;
+  }
+
+  public void setPoolName(String poolName) {
+    this.poolName = poolName;
+  }
+
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     this.msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
   }
 
   @Override Table resolveTable(CompactionInfo ci) throws MetaException {
-    try {
-      return msc.getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
-    } catch (TException e) {
-      LOG.error("Unable to find table " + ci.getFullTableName(), e);
-      throw new MetaException(e.toString());
-    }
-  }
-
-  @Override boolean replIsCompactionDisabledForDatabase(String dbName) throws TException {
-    try {
-      Database database = msc.getDatabase(getDefaultCatalog(conf), dbName);
-      // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
-      return ReplUtils.isFirstIncPending(database.getParameters());
-    } catch (NoSuchObjectException e) {
-      LOG.info("Unable to find database " + dbName);
-      return true;
-    }
-  }
-
-  @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
-    try {
-      GetPartitionsByNamesRequest req = convertToGetPartitionsByNamesRequest(ci.dbname, ci.tableName,
-          Collections.singletonList(ci.partName));
-      return msc.getPartitionsByNames(req).getPartitions();
-    } catch (TException e) {
-      LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);
-      throw new MetaException(e.toString());
-    }
+    return RemoteCompactorUtil.resolveTable(conf, msc, ci);
   }
 }

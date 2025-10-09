@@ -317,7 +317,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	1000                
 	rawDataSize         	9624                
-	totalSize           	10659               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -638,7 +638,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	1000                
 	rawDataSize         	9624                
-	totalSize           	10659               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -688,7 +688,7 @@ POSTHOOK: Input: default@list_bucketing_static_part_n2@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`, CAST('val_484' AS STRING) AS `$f1`, CAST('2008-04-08' AS STRING) AS `$f2`, CAST('11' AS STRING) AS `$f3`
 FROM `default`.`list_bucketing_static_part_n2`
-WHERE `key` = '484' AND `value` = 'val_484' AND (`ds` = '2008-04-08' AND `hr` = '11')
+WHERE `key` = '484' AND `value` = 'val_484' AND `ds` = '2008-04-08' AND `hr` = '11'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -774,8 +774,10 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: query: drop table list_bucketing_static_part_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@list_bucketing_static_part_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@list_bucketing_static_part_n2
 POSTHOOK: query: drop table list_bucketing_static_part_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@list_bucketing_static_part_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@list_bucketing_static_part_n2

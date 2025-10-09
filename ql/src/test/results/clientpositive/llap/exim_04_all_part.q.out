@@ -76,10 +76,12 @@ POSTHOOK: Input: default@exim_employee_n5@emp_country=us/emp_state=tn
 PREHOOK: query: drop table exim_employee_n5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_employee_n5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@exim_employee_n5
 POSTHOOK: query: drop table exim_employee_n5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@exim_employee_n5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_employee_n5
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
@@ -134,9 +136,9 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:4
-totalFileSize:44
-maxFileSize:11
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 #### A masked pattern was here ####
@@ -183,10 +185,12 @@ POSTHOOK: Input: importer@exim_employee_n5@emp_country=us/emp_state=tn
 PREHOOK: query: drop table exim_employee_n5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: importer@exim_employee_n5
+PREHOOK: Output: database:importer
 PREHOOK: Output: importer@exim_employee_n5
 POSTHOOK: query: drop table exim_employee_n5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: importer@exim_employee_n5
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_employee_n5
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE

@@ -24,6 +24,9 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Conversion utilities from the hybrid Julian/Gregorian calendar to/from the
  * proleptic Gregorian.
@@ -37,6 +40,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CalendarUtils {
 
+  private static final Logger LOG = LoggerFactory.getLogger(CalendarUtils.class);
   public static final long SWITCHOVER_MILLIS;
   public static final long SWITCHOVER_DAYS;
 
@@ -205,6 +209,6 @@ public class CalendarUtils {
   }
 
   private CalendarUtils() {
-    throw new UnsupportedOperationException();
+    LOG.error("CalenderUtils instantiation prevented");
   }
 }

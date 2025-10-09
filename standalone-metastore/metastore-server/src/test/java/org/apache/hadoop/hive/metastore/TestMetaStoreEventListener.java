@@ -325,7 +325,7 @@ public class TestMetaStoreEventListener {
     msc.alter_table(dbName, tblName, renamedTable);
     listSize++;
     assertEquals(notifyList.size(), listSize);
-    PreAlterTableEvent preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 1);
+    PreAlterTableEvent preAlterTableE = (PreAlterTableEvent) preNotifyList.get(preNotifyList.size() - 2);
 
     renamedTable = msc.getTable(dbName, renamed);
 
@@ -438,7 +438,7 @@ public class TestMetaStoreEventListener {
     assertEquals(event.getOldValue(), metaConfVal);
     assertEquals(event.getNewValue(), "[test pattern modified]");
     // This should also trigger meta listener notification via TServerEventHandler#deleteContext
-    nonClosingClient.getTTransport().close();
+    nonClosingClient.getThriftClient().getTTransport().close();
 
     Thread.sleep(2 * 1000);
 

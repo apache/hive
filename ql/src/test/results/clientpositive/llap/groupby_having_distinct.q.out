@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE tmp_src1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE tmp_src1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE tmp_src1(
   `npp` string,
   `nsoc` string) stored as orc

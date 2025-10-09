@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -35,7 +36,7 @@ public class TestAlterTableMetadata {
      * owner metadata of the table in HMS.
      */
 
-    HiveConf conf = new HiveConf(this.getClass());
+    HiveConf conf = new HiveConfForTest(getClass());
     conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     SessionState.start(conf);
     IDriver driver = DriverFactory.newDriver(conf);

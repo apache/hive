@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE orc_llap_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_llap_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_llap_n0(
     ctinyint TINYINT,
     csmallint SMALLINT,
@@ -318,8 +320,10 @@ POSTHOOK: Input: default@orc_llap_n0
 PREHOOK: query: DROP TABLE orc_llap_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_llap_n0
 POSTHOOK: query: DROP TABLE orc_llap_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap_n0

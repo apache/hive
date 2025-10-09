@@ -21,6 +21,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
@@ -35,14 +39,16 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.junit.After;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandler;
+import org.apache.hadoop.hive.ql.txn.compactor.handler.TaskHandlerFactory;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.internal.util.reflection.FieldSetter;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +61,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
@@ -90,14 +97,18 @@ public class TestCleaner extends CompactorTest {
   }
 
   public void testRetryAfterFailedCleanup(boolean delayEnabled) throws Exception {
-    conf.setBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, delayEnabled);
-    conf.setTimeVar(HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 2, TimeUnit.SECONDS);
+    HiveConf.setBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, delayEnabled);
+    HiveConf.setTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, 2, TimeUnit.SECONDS);
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_MAX_RETRY_ATTEMPTS, 3);
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, 100, TimeUnit.MILLISECONDS);
     String errorMessage = "No cleanup here!";
 
     //Prevent cleaner from marking the compaction as cleaned
     TxnStore mockedHandler = spy(txnHandler);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
+    List<TaskHandler> taskHandlers = TaskHandlerFactory.getInstance()
+            .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover);
     doThrow(new RuntimeException(errorMessage)).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     Table t = newTable("default", "retry_test", false);
@@ -122,7 +133,9 @@ public class TestCleaner extends CompactorTest {
       Cleaner cleaner = new Cleaner();
       cleaner.setConf(conf);
       cleaner.init(new AtomicBoolean(true));
-      FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+      cleaner.setCleanupHandlers(taskHandlers);
+
+      ReflectionUtil.setInAllFields(cleaner, "txnHandler", mockedHandler);
 
       cleaner.run();
 
@@ -148,7 +161,8 @@ public class TestCleaner extends CompactorTest {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+    cleaner.setCleanupHandlers(taskHandlers);
+    ReflectionUtil.setInAllFields(cleaner, "txnHandler", mockedHandler);
 
     cleaner.run();
 
@@ -180,13 +194,18 @@ public class TestCleaner extends CompactorTest {
 
     //Prevent cleaner from marking the compaction as cleaned
     TxnStore mockedHandler = spy(txnHandler);
+    MetadataCache metadataCache = new MetadataCache(true);
+    FSRemover fsRemover = new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache);
+    List<TaskHandler> taskHandlers = TaskHandlerFactory.getInstance()
+            .getHandlers(conf, mockedHandler, metadataCache, false, fsRemover);
     doThrow(new RuntimeException()).when(mockedHandler).markCleaned(nullable(CompactionInfo.class));
 
     //Do a run to fail the clean and set the retention time
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+    cleaner.setCleanupHandlers(taskHandlers);
+    ReflectionUtil.setInAllFields(cleaner, "txnHandler", mockedHandler);
 
     cleaner.run();
 
@@ -201,7 +220,8 @@ public class TestCleaner extends CompactorTest {
     cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    FieldSetter.setField(cleaner, MetaStoreCompactorThread.class.getDeclaredField("txnHandler"), mockedHandler);
+    cleaner.setCleanupHandlers(taskHandlers);
+    ReflectionUtil.setInAllFields(cleaner, "txnHandler", mockedHandler);
 
     cleaner.run();
 
@@ -298,6 +318,9 @@ public class TestCleaner extends CompactorTest {
     txnHandler.markCompacted(ci);
     // Open a query during compaction
     long longQuery = openTxn();
+    if (useMinHistoryWriteId()) {
+      allocateTableWriteId("default", "camtc", longQuery);
+    }
     txnHandler.commitTxn(new CommitTxnRequest(compactTxn));
 
     startCleaner();
@@ -737,6 +760,8 @@ public class TestCleaner extends CompactorTest {
     rqst.setPartitionname(partName);
     long compactTxn = compactInTxn(rqst);
     addDeltaFile(t, p, 21, 22, 2);
+
+    txnHandler.addWriteIdsToMinHistory(1, Collections.singletonMap("default.trfcp", 23L));
     startCleaner();
 
     // make sure cleaner didn't remove anything, and cleaning is still queued
@@ -787,13 +812,13 @@ public class TestCleaner extends CompactorTest {
     return false;
   }
 
-  @After
+  @AfterEach
   public void tearDown() throws Exception {
     compactorTestCleanup();
   }
 
   @Test
-  public void NoCleanupAfterMajorCompaction() throws Exception {
+  public void noCleanupAfterMajorCompaction() throws Exception {
     Map<String, String> parameters = new HashMap<>();
 
     //With no cleanup true
@@ -814,7 +839,7 @@ public class TestCleaner extends CompactorTest {
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, rsp.getCompacts().get(0).getState());
 
     // Check that the files are not removed
     List<Path> paths = getDirectories(conf, t, null);
@@ -862,7 +887,7 @@ public class TestCleaner extends CompactorTest {
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, rsp.getCompactsSize());
-    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.REFUSED_RESPONSE, rsp.getCompacts().get(0).getState());
 
     // Check that the files are not removed
     List<Path> paths = getDirectories(conf, t, p);
@@ -1057,7 +1082,7 @@ public class TestCleaner extends CompactorTest {
 
     List<Path> paths = getDirectories(conf, t, null);
     Assert.assertEquals(1, paths.size());
-    Assert.assertEquals("delta_0000020_0000020", paths.get(0).getName());
+    Assert.assertEquals(makeDeltaDirName(20,20), paths.get(0).getName());
   }
 
   @Test
@@ -1076,8 +1101,10 @@ public class TestCleaner extends CompactorTest {
     burnThroughTransactions(dbName, tblName, 22);
 
     // block cleaner with an open txn
-    openTxn();
-    
+    long txnId = openTxn();
+    if (useMinHistoryWriteId()) {
+      allocateTableWriteId(dbName, tblName, txnId);
+    }
     CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
     rqst.setPartitionname(partName);
     long ctxnid = compactInTxn(rqst);
@@ -1093,5 +1120,107 @@ public class TestCleaner extends CompactorTest {
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
   }
 
+  @Test
+  public void testCompactionHighWatermarkIsHonored() throws Exception {
+    String dbName = "default";
+    String tblName = "trfcp";
+    String partName = "ds=today";
+    Table t = newTable(dbName, tblName, true);
+    Partition p = newPartition(t, "today");
 
+    // minor compaction
+    addBaseFile(t, p, 19L, 19);
+    addDeltaFile(t, p, 20L, 20L, 1);
+    addDeltaFile(t, p, 21L, 21L, 1);
+    addDeltaFile(t, p, 22L, 22L, 1);
+    burnThroughTransactions(dbName, tblName, 22);
+
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setPartitionname(partName);
+    long ctxnid = compactInTxn(rqst);
+    addDeltaFile(t, p, 20, 22, 3, ctxnid);
+
+    // block cleaner with an open txn
+    long openTxnId = openTxn();
+
+    //2nd minor
+    addDeltaFile(t, p, 23L, 23L, 1);
+    addDeltaFile(t, p, 24L, 24L, 1);
+    burnThroughTransactions(dbName, tblName, 2);
+
+    rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    rqst.setPartitionname(partName);
+    ctxnid = compactInTxn(rqst);
+    addDeltaFile(t, p, 20, 24, 5, ctxnid);
+
+    startCleaner();
+    txnHandler.abortTxn(new AbortTxnRequest(openTxnId));
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    List<String> actualDirs = getDirectories(conf, t, p).stream()
+      .map(Path::getName).sorted()
+      .collect(Collectors.toList());
+    
+    List<String> expectedDirs = Arrays.asList(
+      "base_19",
+      addVisibilitySuffix(makeDeltaDirName(20, 22), 23),
+      addVisibilitySuffix(makeDeltaDirName(20, 24), 27),
+      makeDeltaDirName(23, 23),
+      makeDeltaDirName(24, 24)
+    );
+    Assert.assertEquals("Directories do not match", expectedDirs, actualDirs);
+  }
+
+  @Test
+  public void testCleanupOnConcurrentMinorCompactions() throws Exception {
+    String dbName = "default";
+    String tblName = "tcocmc";
+    Table t = newTable(dbName, tblName, false);
+    
+    addBaseFile(t, null, 20L, 20, 21);
+    addDeltaFile(t, null, 22L, 22L, 1);
+    addDeltaFile(t, null, 23L, 23L, 1);
+
+    // Overlapping compacted deltas with different visibilityTxnIDs simulating concurrent compaction from two workers
+    addDeltaFile(t, null, 22L, 23L, 2, 24);
+    addDeltaFile(t, null, 22L, 23L, 2, 25);
+    burnThroughTransactions(dbName, tblName, 25);
+    
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MINOR);
+    compactInTxn(rqst);
+    
+    startCleaner();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    List<Path> paths = getDirectories(conf, t, null);
+    Assert.assertEquals(2, paths.size());
+    boolean sawBase = false, sawDelta = false;
+    for (Path path : paths) {
+      if (path.getName().equals("base_20_v0000021")) {
+        sawBase = true;
+      } else if (path.getName().equals(addVisibilitySuffix(makeDeltaDirNameCompacted(22, 23), 25))) {
+        sawDelta = true;
+      } else {
+        Assert.fail("Unexpected file " + path.getName());
+      }
+    }
+    Assert.assertTrue(sawBase);
+    Assert.assertTrue(sawDelta);
+  }
+
+  private void allocateTableWriteId(String dbName, String tblName, long txnId) throws Exception {
+    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
+    awiRqst.setTxnIds(Collections.singletonList(txnId));
+    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
+
+    txnHandler.addWriteIdsToMinHistory(txnId, Collections.singletonMap(dbName + "." + tblName,
+      awiResp.getTxnToWriteIds().get(0).getWriteId()));
+  }
 }

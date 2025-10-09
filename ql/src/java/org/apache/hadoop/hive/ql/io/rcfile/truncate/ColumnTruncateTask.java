@@ -78,7 +78,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
    */
   @Override
   public int execute() {
-    HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT,
+    HiveConf.setVar(job, HiveConf.ConfVars.HIVE_INPUT_FORMAT,
         BucketizedHiveInputFormat.class.getName());
     success = true;
     HiveFileFormatUtils.prepareJobOutput(job);
@@ -105,16 +105,16 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     job.setBoolean(MRJobConfig.MAP_SPECULATIVE, false);
 
     if (work.getMinSplitSize() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, work
           .getMinSplitSize().longValue());
     }
 
     if (work.getInputformat() != null) {
-      HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, work
+      HiveConf.setVar(job, HiveConf.ConfVars.HIVE_INPUT_FORMAT, work
           .getInputformat());
     }
 
-    String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
+    String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVE_INPUT_FORMAT);
     LOG.info("Using " + inpFormat);
 
     try {
@@ -146,7 +146,7 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
     String jobName = null;
     if (noName && this.getQueryPlan() != null) {
-      int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+      int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVE_JOBNAME_LENGTH);
       jobName = Utilities.abbreviate(this.getQueryPlan().getQueryStr(),
           maxlen - 6);
     }
@@ -166,9 +166,9 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
 
       // remove the pwd from conf file so that job tracker doesn't show this
       // logs
-      String pwd = HiveConf.getVar(job, HiveConf.ConfVars.METASTOREPWD);
+      String pwd = HiveConf.getVar(job, HiveConf.ConfVars.METASTORE_PWD);
       if (pwd != null) {
-        HiveConf.setVar(job, HiveConf.ConfVars.METASTOREPWD, "HIVE");
+        HiveConf.setVar(job, HiveConf.ConfVars.METASTORE_PWD, "HIVE");
       }
       JobClient jc = new JobClient(job);
 

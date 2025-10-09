@@ -66,10 +66,14 @@ public class VectorUDFMapIndexStringScalar extends VectorUDFMapIndexBaseScalar {
     byte[][] keyVector = keyColVector.vector;
     int[] keyStart = keyColVector.start;
     int[] keyLength = keyColVector.length;
+    final boolean isRepeating = keyColVector.isRepeating;
     for (int i = 0; i < count; i++) {
       final int keyOffset = offset + i;
+      final int start = isRepeating? keyStart[0]: keyStart[keyOffset];
+      final int len = isRepeating? keyLength[0]: keyLength[keyOffset];
+      byte[] rowKey = isRepeating? keyVector[0]: keyVector[keyOffset];
       if (StringExpr.equal(key, 0, key.length,
-          keyVector[keyOffset], keyStart[keyOffset], keyLength[keyOffset])) {
+          rowKey, start, len)) {
         return offset + i;
       }
     }

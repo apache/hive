@@ -23,6 +23,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.mapreduce.MRJobConfig;
+import org.apache.hadoop.tools.DistCp;
+import org.apache.tez.dag.api.TezConfiguration;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
@@ -190,4 +193,46 @@ public class TestHadoop23Shims {
     shims.getFileId(fs, "badpath");
   }
 
+  @Test
+  public void testMapReduceQueueIsSetToTezQueue() throws Exception {
+    Configuration conf = new Configuration();
+    // there is a tez.queue.name, but hive.mapred.job.follow.tez.queue is not allowed
+    conf.set(TezConfiguration.TEZ_QUEUE_NAME, "helloQ");
+    conf.set("hive.execution.engine", "tez");
+    DistCp distCp = runMockDistCp(conf);
+    assertEquals("default", distCp.getConf().get(MRJobConfig.QUEUE_NAME));
+
+    // there is a tez.queue.name, and hive.mapred.job.follow.tez.queue is allowed
+    conf.set(TezConfiguration.TEZ_QUEUE_NAME, "helloQ");
+    conf.setBoolean("hive.mapred.job.follow.tez.queue", true);
+    conf.set("hive.execution.engine", "tez");
+    distCp = runMockDistCp(conf);
+    assertEquals("helloQ", distCp.getConf().get(MRJobConfig.QUEUE_NAME));
+
+    // there is a tez.queue.name, also hive.mapred.job.follow.tez.queue is allowed,
+    // but execution engine is set to legacy 'mr': queue follow is not activated
+    conf.set(TezConfiguration.TEZ_QUEUE_NAME, "helloQ");
+    conf.setBoolean("hive.mapred.job.follow.tez.queue", true);
+    conf.set("hive.execution.engine", "mr");
+    distCp = runMockDistCp(conf);
+    assertEquals("default", distCp.getConf().get(MRJobConfig.QUEUE_NAME));
+
+    // there is no tez.queue.name set at all
+    conf = new Configuration();
+    conf.setBoolean("hive.mapred.job.follow.tez.queue", true);
+    conf.set("hive.execution.engine", "tez");
+    distCp = runMockDistCp(conf);
+    assertEquals("default", distCp.getConf().get(MRJobConfig.QUEUE_NAME));
+  }
+
+  private DistCp runMockDistCp(Configuration conf) throws Exception {
+    Path copySrc = getMockedPath(false);
+    Path copyDst = getMockedPath(false);
+    Hadoop23Shims shims = new Hadoop23Shims();
+    List<String> params = shims.constructDistCpParams(Collections.singletonList(copySrc), copyDst, conf);
+
+    DistCp distCp = new DistCp(conf, null);
+    shims.runDistCpInternal(distCp, params);
+    return distCp;
+  }
 }

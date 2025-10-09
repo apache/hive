@@ -21,9 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.misc.columnstats;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
@@ -53,7 +51,7 @@ public class AlterTableUpdateColumnStatistictAnalyzer extends AbstractAlterTable
     String columnName = getUnescapedName((ASTNode) command.getChild(0));
     Map<String, String> properties = getProps((ASTNode) (command.getChild(1)).getChild(0));
 
-    String partitionName = getPartitionName(partitionSpec);
+    String partitionName = AcidUtils.getPartitionName(partitionSpec);
     String columnType = getColumnType(table, columnName);
 
     ColumnStatsUpdateWork work = new ColumnStatsUpdateWork(partitionName, properties, table.getDbName(),
@@ -68,17 +66,7 @@ public class AlterTableUpdateColumnStatistictAnalyzer extends AbstractAlterTable
     rootTasks.add(task);
   }
 
-  private String getPartitionName(Map<String, String> partitionSpec) throws SemanticException {
-    String partitionName = null;
-    if (partitionSpec != null) {
-      try {
-        partitionName = Warehouse.makePartName(partitionSpec, false);
-      } catch (MetaException e) {
-        throw new SemanticException("partition " + partitionSpec.toString() + " not found");
-      }
-    }
-    return partitionName;
-  }
+
 
   private String getColumnType(Table table, String columnName) throws SemanticException {
     for (FieldSchema column : table.getCols()) {

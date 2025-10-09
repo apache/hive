@@ -33,7 +33,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -63,23 +66,25 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
-import org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager2;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +108,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   private static final String TEST_DATA_DIR = new File(System.getProperty("java.io.tmpdir") +
       File.separator + TestTxnCommands.class.getCanonicalName() + "-" + System.currentTimeMillis()
   ).getPath().replaceAll("\\\\", "/");
-  
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
   @Override
   protected String getTestDataDir() {
     return TEST_DATA_DIR;
@@ -115,6 +122,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //TestTxnCommandsWithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    HiveConf.setVar(hiveConf, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_DROP_PARTITION_USE_BASE, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_RENAME_PARTITION_MAKE_COPY, false);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ACID_CREATE_TABLE_USE_SUFFIX, false);
@@ -154,9 +162,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     List<String> rs = runStatementOnDriver("select a from " + Table.ACIDTBL + " where b = 2");
     Assert.assertEquals(1, rs.size());
     Assert.assertEquals("1", rs.get(0));
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, true);
     runStatementOnDriver("insert overwrite table " + Table.ACIDTBL + " values(3,2)");
-    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, false);
     runStatementOnDriver("insert into " + Table.ACIDTBL + " values(5,6)");
     rs = runStatementOnDriver("select a from " + Table.ACIDTBL + " order by a");
     Assert.assertEquals(2, rs.size());
@@ -249,7 +257,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals(imported.toString(), "insert_only",
         imported.getParameters().get("transactional_properties"));
     Path importPath = new Path(imported.getSd().getLocation());
-    FileStatus[] stat = fs.listStatus(importPath, AcidUtils.hiddenFileFilter);
+    FileStatus[] stat = fs.listStatus(importPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(Arrays.toString(stat), 1, stat.length);
     assertIsDelta(stat[0]);
     List<String> allData = stringifyValues(rows1);
@@ -277,7 +285,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertNull(imported.toString(),
         imported.getParameters().get("transactional_properties"));
     importPath = new Path(imported.getSd().getLocation());
-    stat = fs.listStatus(importPath, AcidUtils.hiddenFileFilter);
+    stat = fs.listStatus(importPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
     allData = stringifyValues(rows2);
     Collections.sort(allData);
     rs = runStatementOnDriver(String.format("select a,b from %s order by a,b", importName));
@@ -297,6 +305,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       this.cdlIn = cdlIn;
       this.cdlOut = cdlOut;
       this.hiveConf = new HiveConf(hiveConf);
+      this.hiveConf.unset(HiveConf.ConfVars.HIVE_SESSION_ID.varname);
     }
 
     @Override
@@ -395,6 +404,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       throws Exception, MetaException, TException, NoSuchObjectException {
     hiveConf.setBoolean("hive.stats.autogather", true);
     hiveConf.setBoolean("hive.stats.column.autogather", true);
+    hiveConf.setBoolean("hive.txn.xlock.write", true);
     // Need to close the thread local Hive object so that configuration change is reflected to HMS.
     Hive.closeCurrent();
     runStatementOnDriver("drop table if exists " + tableName);
@@ -594,8 +604,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:8:9223372036854775807::", validWriteIds);
 
-    runStatementOnDriver(String.format("ALTER TABLE %s SET SKEWED LOCATION (1='hdfs://127.0.0.1:8020/abcd/1')",
-      tableName));
+    runStatementOnDriver(String.format("ALTER TABLE %s SET SKEWED LOCATION (1='hdfs://%s/abcd/1')",
+        tableName, IPStackUtils.concatLoopbackAddressPort(8020)));
     validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
     Assert.assertEquals("default.alter_table:9:9223372036854775807::", validWriteIds);
 
@@ -746,7 +756,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     queue.add(path);
     while (!queue.isEmpty()) {
       Path next = queue.pollFirst();
-      FileStatus[] stats = fs.listStatus(next, AcidUtils.hiddenFileFilter);
+      FileStatus[] stats = fs.listStatus(next, FileUtils.HIDDEN_FILES_PATH_FILTER);
       for (FileStatus stat : stats) {
         Path child = stat.getPath();
         paths.add(child.toString());
@@ -988,7 +998,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //this should fail because txn aborted due to timeout
     CommandProcessorException e = runStatementOnDriverNegative("delete from " + Table.ACIDTBL + " where a = 5");
     Assert.assertTrue("Actual: " + e.getMessage(),
-        e.getMessage().contains("Transaction manager has aborted the transaction txnid:1"));
+        e.getMessage().contains("Transaction manager has aborted the transaction txnid:5"));
 
     //now test that we don't timeout locks we should not
     //heartbeater should be running in the background every 1/2 second
@@ -1012,7 +1022,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       }
     }
     Assert.assertNotNull(txnInfo);
-    Assert.assertEquals(16, txnInfo.getId());
+    Assert.assertEquals(6, txnInfo.getId());
     Assert.assertEquals(TxnState.OPEN, txnInfo.getState());
     String s = TestTxnDbUtil
         .queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
@@ -1024,19 +1034,19 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertNotEquals("Didn't see heartbeat happen", Long.parseLong(vals[0]), lastHeartbeat);
 
     ShowLocksResponse slr = txnHandler.showLocks(new ShowLocksRequest());
-    TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks());
+    TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks());
     pause(750);
     houseKeeperService.run();
     pause(750);
     slr = txnHandler.showLocks(new ShowLocksRequest());
     Assert.assertEquals("Unexpected lock count: " + slr, 1, slr.getLocks().size());
-    TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks());
+    TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks());
 
     pause(750);
     houseKeeperService.run();
     slr = txnHandler.showLocks(new ShowLocksRequest());
     Assert.assertEquals("Unexpected lock count: " + slr, 1, slr.getLocks().size());
-    TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks());
+    TestTxnDbUtil.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks());
 
     //should've done several heartbeats
     s = TestTxnDbUtil.queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
@@ -1417,15 +1427,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //create a delta directory
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL + "(a,b) values(1,17)");
 
-    boolean isVectorized = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
-    String query = "select ROW__ID, a, b" + (isVectorized ? " from  " : ", INPUT__FILE__NAME from ") +  Table.NONACIDORCTBL + " order by ROW__ID";
+    String query = "select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected = new String[][] {
       {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/000001_0"},
       {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/000001_0_copy_1"},
       {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/000001_0_copy_1"},
       {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/delta_10000001_10000001_0000/bucket_00001_0"}
     };
-    checkResult(expected, query, isVectorized, "before compact", LOG);
+    checkResultAndVectorization(expected, query, "before compact", LOG);
 
     Assert.assertEquals(536870912,
         BucketCodec.V1.encode(new AcidOutputFormat.Options(hiveConf).bucket(0)));
@@ -1436,15 +1445,14 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table " + Table.NONACIDORCTBL + " compact 'major'");
     runWorker(hiveConf);
 
-    query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
-        + Table.NONACIDORCTBL + " order by ROW__ID";
+    query = "select ROW__ID, a, b, INPUT__FILE__NAME from " + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000021/bucket_00001"},
-        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000021/bucket_00001"}
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000009/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000009/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000009/bucket_00001"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000009/bucket_00001"}
     };
-    checkResult(expected2, query, isVectorized, "after major compact", LOG);
+    checkResultAndVectorization(expected2, query, "after major compact", LOG);
     //make sure they are the same before and after compaction
   }
   //@Ignore("see bucket_num_reducers_acid.q")
@@ -1454,9 +1462,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     // todo: try using set VerifyNumReducersHook.num.reducers=10;
     d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
-    hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 1);
+    hc.setIntVar(HiveConf.ConfVars.MAX_REDUCERS, 1);
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
-    hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 1);
+    hc.setIntVar(HiveConf.ConfVars.HADOOP_NUM_REDUCERS, 1);
     hc.setBoolVar(HiveConf.ConfVars.HIVE_EXPLAIN_USER, false);
     d = new Driver(hc);
     d.setMaxRows(10000);
@@ -1474,9 +1482,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     //see bucket_num_reducers.q bucket_num_reducers2.q
     d.destroy();
     HiveConf hc = new HiveConf(hiveConf);
-    hc.setIntVar(HiveConf.ConfVars.MAXREDUCERS, 2);
+    hc.setIntVar(HiveConf.ConfVars.MAX_REDUCERS, 2);
     //this is used in multiple places, SemanticAnalyzer.getBucketingSortingDest() among others
-    hc.setIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS, 2);
+    hc.setIntVar(HiveConf.ConfVars.HADOOP_NUM_REDUCERS, 2);
     d = new Driver(hc);
     d.setMaxRows(10000);
     runStatementOnDriver("create table fourbuckets (a int, b int) clustered by (a) into 4 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
@@ -2091,5 +2099,507 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     if (0 != stat.length) {
       Assert.fail("Expecting partition data to be removed from FS");
     }
+  }
+
+  @Test
+  public void testIsRawFormatFile() throws Exception {
+    dropTables("file_formats");
+    
+    runStatementOnDriver("CREATE TABLE `file_formats`(`id` int, `name` string) " +
+      " ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' " +
+      "WITH SERDEPROPERTIES ( " +
+      " 'field.delim'='|', " +
+      " 'line.delim'='\n'," +
+      " 'serialization.format'='|')  " +
+      "STORED AS " +
+      " INPUTFORMAT " +
+      "   'org.apache.hadoop.mapred.TextInputFormat' " +
+      " OUTPUTFORMAT " +
+      "   'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' " +
+      "TBLPROPERTIES ( " +
+      " 'transactional'='true'," +
+      " 'transactional_properties'='insert_only')");
+    
+    runStatementOnDriver("insert into file_formats (id, name) values (1, 'Avro'),(2, 'Parquet'),(3, 'ORC')");
+    
+    List<String> res = runStatementOnDriver("select * from file_formats");
+    Assert.assertEquals(3, res.size());
+  }
+  @Test
+  public void testShowCompactions() throws Exception {
+    //generate some compaction history
+    runStatementOnDriver("drop database if exists mydb1 cascade");
+    runStatementOnDriver("create database mydb1");
+    runStatementOnDriver("create table mydb1.tbl0 " + "(a int, b int) partitioned by (p string) clustered by (a) into " +
+      BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb1.tbl0" + " PARTITION(p) " +
+      " values(1,2,'p1'),(3,4,'p1'),(1,2,'p2'),(3,4,'p2'),(1,2,'p3'),(3,4,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p1') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p2') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p3') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("insert into mydb1.tbl0" + " PARTITION(p) " +
+      " values(4,5,'p1'),(6,7,'p1'),(4,5,'p2'),(6,7,'p2'),(4,5,'p3'),(6,7,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION (p='p1') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION (p='p2') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION (p='p3')  compact 'MAJOR' pool 'pool0'");
+    TestTxnCommands2.runWorker(hiveConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+
+    SessionState.get().setCurrentDatabase("mydb1");
+
+    //testing show compaction command
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<String> r = runStatementOnDriver("SHOW COMPACTIONS");
+    Assert.assertEquals(rsp.getCompacts().size()+1, r.size());//includes Header row
+
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 STATUS 'ready for cleaning'");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getState().equals("ready for cleaning")).count() +1,
+            r.size());//includes Header row
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+      "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+      "Highest WriteId", r.get(0));
+    Pattern p = Pattern.compile(".*mydb1.*\tready for cleaning.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+    r = runStatementOnDriver("SHOW COMPACTIONS COMPACTIONID=1");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getId()==1).count() +1,
+            r.size());//includes Header row
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile("1\t.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 TYPE 'MAJOR' ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb1")).
+      filter(x->x.getType().equals(CompactionType.MAJOR)).count()+1, r.size());//includes Header row
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+   "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+   "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb1.*\tMAJOR.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 POOL 'poolx' TYPE 'MINOR' ");
+    //includes Header row
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb1")).
+      filter(x->x.getPoolName().equals("poolx")).filter(x->x.getType().equals(CompactionType.MAJOR)).count()+1, r.size());
+    Assert.assertEquals(1,r.size());//only header row
+
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 POOL 'pool0' TYPE 'MAJOR'");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb1")).
+      filter(x->x.getPoolName().equals("pool0")).filter(x->x.getType().equals(CompactionType.MAJOR)).count()+1, r.size());//includes Header row
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+    "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+    "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb1.*\tMAJOR.*\tpool0.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 POOL 'pool0'");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb1")).
+      filter(x->x.getPoolName().equals("pool0")).count()+1, r.size());//includes Header row
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+    "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+    "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb1.*\tpool0.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    r = runStatementOnDriver("SHOW COMPACTIONS DATABASE mydb1 POOL 'pool0'");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb1")).
+      filter(x->x.getPoolName().equals("pool0")).count()+1, r.size());//includes Header row
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb1.*\tpool0.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i).toString()).matches());
+    }
+
+    r = runStatementOnDriver("SHOW COMPACTIONS tbl0 TYPE 'MAJOR' ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getTablename().equals("tbl0")).
+      filter(x->x.getType().equals(CompactionType.MAJOR)).count()+1, r.size());//includes Header row
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*tbl0.*\tMAJOR.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    r = runStatementOnDriver("SHOW COMPACTIONS mydb1.tbl0 PARTITION (p='p3') ");
+    //includes Header row
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb1")).
+      filter(x->x.getTablename().equals("tbl0")).filter(x->x.getPartitionname().equals("p=p3")).count() + 1, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb1\ttbl0\tp=p3.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+    //includes Header row
+    r = runStatementOnDriver("SHOW COMPACTIONS mydb1.tbl0 PARTITION (p='p3') pool 'pool0' TYPE 'MAJOR'");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb1")).
+      filter(x->x.getTablename().equals("tbl0")).filter(x->x.getPartitionname().equals("p=p3")).
+      filter(x->x.getPoolName().equals("pool0")).filter(x->x.getType().equals(CompactionType.MAJOR)).count() + 1, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb1\ttbl0\tp=p3\tMAJOR.*\tpool0.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+  }
+
+  @Test
+  public void testShowCompactionFilterWithPartition()throws Exception {
+    setUpCompactionRequestsData("mydb","tbl2");
+    executeCompactionRequest("mydb","tbl2", "MAJOR","ds='mon'");
+    SessionState.get().setCurrentDatabase("mydb");
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+
+    //includes Header row
+    List<String> r = runStatementOnDriver("SHOW COMPACTIONS");
+    Assert.assertEquals(rsp.getCompacts().size()+1, r.size());
+
+    //includes Header row
+    r = runStatementOnDriver("SHOW COMPACTIONS tbl2 STATUS 'refused'");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getState().equals("refused")).count()+1, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    Pattern p = Pattern.compile(".*tbl2.*\trefused.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    //includes Header row
+    r = runStatementOnDriver("SHOW COMPACTIONS tbl2 ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getTablename().equals("tbl2")).count()+1, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*tbl2.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    //includes Header row
+    r = runStatementOnDriver("SHOW COMPACTIONS mydb.tbl2 PARTITION (ds='mon') ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb")).
+    filter(x->x.getTablename().equals("tbl2")).filter(x->x.getPartitionname().equals("ds=mon")).count()+1, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb\ttbl2\tds=mon.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    //includes Header row
+    r = runStatementOnDriver("SHOW COMPACTIONS mydb.tbl2 PARTITION (ds='mon') TYPE 'MAJOR' ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb")).
+            filter(x->x.getTablename().equals("tbl2")).filter(x->x.getPartitionname().equals("ds=mon")).
+            filter(x->x.getType().equals(CompactionType.MAJOR)).count()+1, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb\ttbl2\tds=mon\tMAJOR.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    //includes Header row
+    r = runStatementOnDriver("SHOW COMPACTIONS DATABASE mydb TYPE 'MAJOR' ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb")).
+            filter(x->x.getType().equals(CompactionType.MAJOR)).count()+1, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb.*\tMAJOR.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    executeCompactionRequest("mydb","tbl2", "MINOR","ds='wed'");
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    //includes Header row
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb TYPE 'MINOR' ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb")).
+            filter(x->x.getType().equals(CompactionType.MINOR)).count()+1, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    p = Pattern.compile(".*mydb.*\tMINOR.*");
+    for(int i = 1; i < r.size(); i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    //includes Header row
+    r = runStatementOnDriver("SHOW COMPACTIONS  mydb.tbl2 PARTITION (ds='wed') ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mydb")).
+    filter(x->x.getTablename().equals("tbl2")).filter(x->x.getPartitionname().equals("ds=wed")).count()+1, r.size());
+    for(int i=1;i<r.size();i++) {
+      Assert.assertTrue(r.get(i).contains("mydb"));
+      Assert.assertTrue(r.get(i).contains("tbl2"));
+      Assert.assertTrue(r.get(i).contains("ds=wed"));
+    }
+
+    r = runStatementOnDriver("SHOW COMPACTIONS tbl2 ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getTablename().equalsIgnoreCase("tbl2")).count()+1, r.size());
+    for(int i=1;i<r.size();i++) {
+      Assert.assertTrue(r.get(i).contains("tbl2"));
+    }
+    //includes Header row
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mymydbdb2 TYPE 'MAJOR' ");
+    Assert.assertEquals(rsp.getCompacts().stream().filter(x->x.getDbname().equals("mymydbdb2")).
+            filter(x->x.getType().equals(CompactionType.MAJOR)).count()+1, r.size());
+    Assert.assertEquals(1,r.size());//only header row
+  }
+  @Test
+  public void testShowCompactionInputValidation() throws Exception {
+    setUpCompactionRequestsData("mydb2","tbl2");
+    executeCompactionRequest("mydb2","tbl2", "MAJOR", "ds='mon'");
+    SessionState.get().setCurrentDatabase("mydb2");
+
+    //validation testing of paramters
+    expectedException.expect(RuntimeException.class);
+    List<String> r  = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb POOL 'pool0' TYPE 'MAJOR'");// validates db
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb2  TYPE 'MAJR'");// validates compaction type
+    r = runStatementOnDriver("SHOW COMPACTIONS mydb2.tbl1 PARTITION (ds='mon') TYPE 'MINOR' " +
+          "STATUS 'ready for clean'");// validates table
+    r = runStatementOnDriver("SHOW COMPACTIONS mydb2.tbl2 PARTITION (p=101,day='Monday') POOL 'pool0' TYPE 'minor' " +
+          "STATUS 'ready for clean'");// validates partspec
+    r = runStatementOnDriver("SHOW COMPACTIONS mydb1.tbl0 PARTITION (p='p1') POOL 'pool0' TYPE 'minor' " +
+          "STATUS 'ready for clean'");//validates compaction status
+  }
+
+  @Test
+  public void testShowCompactionFilterSortingAndLimit() throws Exception {
+    runStatementOnDriver("drop database if exists mydb1 cascade");
+    runStatementOnDriver("create database mydb1");
+    runStatementOnDriver("create table mydb1.tbl0 " + "(a int, b int) partitioned by (p string) clustered by (a) into " +
+            BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb1.tbl0" + " PARTITION(p) " +
+            " values(1,2,'p1'),(3,4,'p1'),(1,2,'p2'),(3,4,'p2'),(1,2,'p3'),(3,4,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p1') compact 'MAJOR' pool 'poolx'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p2') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+
+    runStatementOnDriver("drop database if exists mydb cascade");
+    runStatementOnDriver("create database mydb");
+    runStatementOnDriver("create table mydb.tbl " + "(a int, b int) partitioned by (ds string) clustered by (a) into " +
+            BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb.tbl" + " PARTITION(ds) " +
+            " values(1,2,'mon'),(3,4,'tue'),(1,2,'mon'),(3,4,'tue'),(1,2,'wed'),(3,4,'wed')");
+    runStatementOnDriver("alter table mydb.tbl" + " PARTITION(ds='mon') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb.tbl" + " PARTITION(ds='tue') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    runStatementOnDriver("create table mydb.tbl2 " + "(a int, b int) partitioned by (dm string) clustered by (a) into " +
+            BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb.tbl2" + " PARTITION(dm) " +
+            " values(1,2,'xxx'),(3,4,'xxx'),(1,2,'yyy'),(3,4,'yyy'),(1,2,'zzz'),(3,4,'zzz')");
+    runStatementOnDriver("alter table mydb.tbl2" + " PARTITION(dm='yyy') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb.tbl2" + " PARTITION(dm='zzz') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+
+    //includes Header row
+    List<String> r = runStatementOnDriver("SHOW COMPACTIONS");
+    Assert.assertEquals(rsp.getCompacts().size() + 1, r.size());
+    r = runStatementOnDriver("SHOW COMPACTIONS LIMIT 3");
+    Assert.assertEquals(4, r.size());
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb TYPE 'MAJOR' LIMIT 2");
+    Assert.assertEquals(3, r.size());
+
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb TYPE 'MAJOR' ORDER BY 'tabname' DESC,'partname' ASC");
+    Assert.assertEquals(5, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    Pattern p = Pattern.compile(".*mydb\ttbl2\tdm.*");
+    for (int i = 1; i < r.size() - 3; i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+    p = Pattern.compile(".*mydb\ttbl\tds.*");
+    for (int i = 3; i < r.size() - 1; i++) {
+      Assert.assertTrue(p.matcher(r.get(i)).matches());
+    }
+
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 TYPE 'MAJOR' ORDER BY 'poolname' ASC");
+    Assert.assertEquals(3, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    List<String> txnIdActualList = r.stream().skip(1).map(x -> x.split("\t")[15]).collect(Collectors.toList());
+    List<String> txnIdExpectedList = r.stream().skip(1).map(x -> x.split("\t")[15]).sorted(Collections.reverseOrder()).
+            collect(Collectors.toList());
+    Assert.assertEquals(txnIdExpectedList, txnIdActualList);
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb TYPE 'MAJOR' ORDER BY 'txnid' DESC");
+    Assert.assertEquals(5, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    txnIdActualList = r.stream().skip(1).map(x -> x.split("\t")[16]).collect(Collectors.toList());
+    txnIdExpectedList = r.stream().skip(1).map(x -> x.split("\t")[16]).sorted(Collections.reverseOrder()).
+            collect(Collectors.toList());
+    Collections.sort(txnIdExpectedList, Collections.reverseOrder());
+    Assert.assertEquals(txnIdExpectedList, txnIdActualList);
+
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb TYPE 'MAJOR' ORDER BY TxnId DESC");
+    Assert.assertEquals(5, r.size());
+    Assert.assertEquals("CompactionId\tDatabase\tTable\tPartition\tType\tState\tWorker host\tWorker\tEnqueue Time\tStart Time" +
+            "\tDuration(ms)\tHadoopJobId\tError message\tInitiator host\tInitiator\tPool name\tTxnId\tNext TxnId\tCommit Time\t" +
+            "Highest WriteId", r.get(0));
+    txnIdActualList = r.stream().skip(1).map(x -> x.split("\t")[16]).collect(Collectors.toList());
+    txnIdExpectedList = r.stream().skip(1).map(x -> x.split("\t")[16]).sorted(Collections.reverseOrder()).
+            collect(Collectors.toList());
+    Assert.assertEquals(txnIdExpectedList, txnIdActualList);
+
+
+    expectedException.expect(RuntimeException.class);
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb TYPE 'MAJOR' ORDER BY tbl DESC,PARTITIONS ASC");
+    expectedException.expect(RuntimeException.class);
+    r = runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb TYPE 'MAJOR' ORDER BY tbl DESC,PARTITIONS ASC");
+
+  }
+
+  @Test
+  public void testAbortCompactions() throws Exception {
+    //generate some compaction history
+    runStatementOnDriver("drop database if exists mydb1 cascade");
+    runStatementOnDriver("create database mydb1");
+    runStatementOnDriver("create table mydb1.tbl0 " + "(a int, b int) partitioned by (p string) clustered by (a) into " +
+            BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb1.tbl0" + " PARTITION(p) " +
+            " values(1,2,'p1'),(3,4,'p1'),(1,2,'p2'),(3,4,'p2'),(1,2,'p3'),(3,4,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p1') compact 'MAJOR'");
+    TestTxnCommands2.runInitiator(hiveConf);
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p2') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION(p='p3') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("insert into mydb1.tbl0" + " PARTITION(p) " +
+            " values(4,5,'p1'),(6,7,'p1'),(4,5,'p2'),(6,7,'p2'),(4,5,'p3'),(6,7,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION (p='p1') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION (p='p2') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl0" + " PARTITION (p='p3')  compact 'MAJOR' pool 'pool0'");
+    TestTxnCommands2.runInitiator(hiveConf);
+    TestTxnCommands2.runWorker(hiveConf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
+
+
+
+    runStatementOnDriver("create table mydb1.tbl2 " + "(a int, b int) partitioned by (p string) clustered by (a) into " +
+            BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb1.tbl2" + " PARTITION(p) " +
+            " values(1,2,'p1'),(3,4,'p1'),(1,2,'p2'),(3,4,'p2'),(1,2,'p3'),(3,4,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl2" + " PARTITION(p='p1') compact 'MAJOR'");
+    runStatementOnDriver("alter table mydb1.tbl2" + " PARTITION(p='p2') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+    TestTxnCommands2.runCleaner(hiveConf);
+    runStatementOnDriver("alter table mydb1.tbl2" + " PARTITION(p='p3') compact 'MAJOR'");
+    runStatementOnDriver("insert into mydb1.tbl0" + " PARTITION(p) " +
+            " values(4,5,'p1'),(6,7,'p1'),(4,5,'p2'),(6,7,'p2'),(4,5,'p3'),(6,7,'p3')");
+    TestTxnCommands2.runWorker(hiveConf);
+    TestTxnCommands2.runCleaner(hiveConf);
+    runStatementOnDriver("insert into mydb1.tbl2" + " PARTITION(p) " +
+            " values(11,12,'p1'),(13,14,'p1'),(11,12,'p2'),(13,14,'p2'),(11,12,'p3'),(13,14,'p3')");
+    runStatementOnDriver("alter table mydb1.tbl2" + " PARTITION (p='p1')  compact 'MINOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    runStatementOnDriver("create table mydb1.tbl3 " + "(a int, b int) partitioned by (ds string) clustered by (a) into " +
+            BUCKET_COUNT + " buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into mydb1.tbl3" + " PARTITION(ds) " +
+            " values(1,2,'today'),(3,4,'today'),(1,2,'tomorrow'),(3,4,'tomorrow'),(1,2,'yesterday'),(3,4,'yesterday')");
+    runStatementOnDriver("alter table mydb1.tbl3" + " PARTITION(ds='today') compact 'MAJOR'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    SessionState.get().setCurrentDatabase("mydb1");
+
+    //testing show compaction command
+
+    List<String> r =  runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 STATUS 'initiated'");
+    Assert.assertEquals(3,r.size());
+    List<String>compIdsToAbort = r.stream().skip(1).map(x -> x.split("\t")[0]).collect(Collectors.toList());
+    String abortCompactionCmd = "ABORT COMPACTIONS " +compIdsToAbort.get(0)+"\t"+compIdsToAbort.get(1);
+    r = runStatementOnDriver(abortCompactionCmd);
+    Assert.assertEquals(3,r.size());
+    Assert.assertEquals("CompactionId\tStatus\tMessage", r.get(0));
+    Assert.assertTrue(r.get(1).contains("Successfully aborted compaction"));
+    Assert.assertTrue(r.get(2).contains("Successfully aborted compaction"));
+
+    abortCompactionCmd = "ABORT COMPACTIONS " +compIdsToAbort.get(0)+"\t"+compIdsToAbort.get(1);
+    r = runStatementOnDriver(abortCompactionCmd);
+    Assert.assertEquals(3,r.size());
+    Assert.assertEquals("CompactionId\tStatus\tMessage", r.get(0));
+    Assert.assertTrue(r.get(1).contains("Error"));
+
+    r =  runStatementOnDriver("SHOW COMPACTIONS SCHEMA mydb1 STATUS 'aborted'");
+    Assert.assertEquals(3,r.size());
+
+  }
+
+
+  private void setUpCompactionRequestsData(String dbName, String tbName) throws Exception {
+    runStatementOnDriver("drop database if exists " + dbName);
+    runStatementOnDriver("create database " + dbName);
+    runStatementOnDriver("create table " + dbName + "." + tbName + " (a int, b int) partitioned by (ds String)  stored as orc " +
+       "TBLPROPERTIES ('transactional'='true')");
+    runStatementOnDriver("insert into " + dbName + "." + tbName + " PARTITION (ds) " +
+      " values(1,2,'mon'),(3,4,'mon'),(1,2,'tue'),(3,4,'tue'),(1,2,'wed'),(3,4,'wed')");
+  }
+
+  private void executeCompactionRequest(String dbName, String tbName, String compactiontype, String partition) throws Exception {
+    runStatementOnDriver("alter table "+dbName+"."+tbName+" PARTITION (" +partition+") compact '"+compactiontype + "'" );
+    TestTxnCommands2.runWorker(hiveConf);
+  }
+
+  @Test
+  public void testFetchTaskCachingWithConversion() throws Exception {
+    dropTables("fetch_task_table");
+    List actualRes = new ArrayList<>();
+    runStatementOnDriver("create table fetch_task_table (a INT, b INT) stored as orc" +
+            " tblproperties ('transactional'='true')");
+    runStatementOnDriver("insert into table fetch_task_table values (1,2), (3,4), (5,6)");
+    List expectedRes = runStatementOnDriver("select * from fetch_task_table");
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CACHING, true);
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+    d.run("select * from fetch_task_table");
+    Assert.assertFalse(d.getFetchTask().isCachingEnabled());
+    d.getFetchTask().fetch(actualRes);
+    Assert.assertEquals(actualRes, expectedRes);
+    actualRes.clear();
+
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "more");
+    d.run("select * from fetch_task_table");
+    Assert.assertTrue(d.getFetchTask().isCachingEnabled());
+    d.getFetchTask().fetch(actualRes);
+    Assert.assertEquals(actualRes, expectedRes);
   }
 }

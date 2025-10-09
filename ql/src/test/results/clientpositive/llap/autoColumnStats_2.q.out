@@ -1,7 +1,9 @@
 PREHOOK: query: drop table src_multi1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table src_multi1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_multi1 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -68,7 +70,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -83,12 +85,16 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: drop table a_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table a_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table b_n3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table b_n3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table a_n3 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -201,7 +207,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -236,7 +242,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	10624               
-	totalSize           	11624               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -385,8 +391,10 @@ comment             	from deserializer
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 PREHOOK: query: drop table src_multi2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table src_multi2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_multi2 like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -429,7 +437,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	508                 
 	rawDataSize         	5400                
-	totalSize           	5908                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -444,8 +452,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: drop table nzhang_part14
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table nzhang_part14
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table if not exists nzhang_part14 (key string)
   partitioned by (value string)
 PREHOOK: type: CREATETABLE
@@ -511,8 +521,10 @@ STAGE PLANS:
 
 PREHOOK: query: drop table src5
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table src5
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src5 as select key, value from src limit 5
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -584,8 +596,10 @@ STAGE PLANS:
 
 PREHOOK: query: drop table alter5
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table alter5
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -624,7 +638,7 @@ Partition Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -669,7 +683,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	1406                
-	totalSize           	1906                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -711,10 +725,12 @@ STAGE PLANS:
 PREHOOK: query: drop table alter5
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter5
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter5
 POSTHOOK: query: drop table alter5
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter5
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter5
 PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
 PREHOOK: type: CREATETABLE
@@ -793,7 +809,7 @@ Table:              	alter5
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	totalSize           	1906                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -834,8 +850,10 @@ STAGE PLANS:
 
 PREHOOK: query: drop table src_stat_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table src_stat_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_stat_part(key string, value string) partitioned by (partitionId int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -880,7 +898,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	38                  
-	totalSize           	43                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -929,7 +947,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	25                  
 	rawDataSize         	191                 
-	totalSize           	216                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -944,8 +962,10 @@ Storage Desc Params:
 	serialization.format	1                   
 PREHOOK: query: drop table srcbucket_mapjoin_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table srcbucket_mapjoin_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n2(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -956,8 +976,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcbucket_mapjoin_n2
 PREHOOK: query: drop table tab_part_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tab_part_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE tab_part_n1 (key int, value string) PARTITIONED BY(ds STRING) CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -968,8 +990,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_part_n1
 PREHOOK: query: drop table srcbucket_mapjoin_part_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table srcbucket_mapjoin_part_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_n2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1066,7 +1090,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1125,7 +1149,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	242                 
 	rawDataSize         	2566                
-	totalSize           	2808                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1141,10 +1165,12 @@ Storage Desc Params:
 PREHOOK: query: drop table nzhang_part14
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nzhang_part14
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_part14
 POSTHOOK: query: drop table nzhang_part14
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part14
 PREHOOK: query: create table if not exists nzhang_part14 (key string, value string)
   partitioned by (ds string, hr string)
@@ -1184,7 +1210,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1253,7 +1279,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	6                   
-	totalSize           	8                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1314,7 +1340,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1000                
 	rawDataSize         	10624               
-	totalSize           	11624               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1330,10 +1356,12 @@ Storage Desc Params:
 PREHOOK: query: drop table nzhang_part14
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nzhang_part14
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nzhang_part14
 POSTHOOK: query: drop table nzhang_part14
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nzhang_part14
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nzhang_part14
 PREHOOK: query: create table if not exists nzhang_part14 (key string, value string)
 partitioned by (ds string, hr string)
@@ -1393,7 +1421,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1000                
 	rawDataSize         	10624               
-	totalSize           	11624               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1409,10 +1437,12 @@ Storage Desc Params:
 PREHOOK: query: drop table a_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@a_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@a_n3
 POSTHOOK: query: drop table a_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@a_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@a_n3
 PREHOOK: query: create table a_n3 (key string, value string)
 partitioned by (ds string, hr string)
@@ -1427,10 +1457,12 @@ POSTHOOK: Output: default@a_n3
 PREHOOK: query: drop table b_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@b_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@b_n3
 POSTHOOK: query: drop table b_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@b_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b_n3
 PREHOOK: query: create table b_n3 (key string, value string)
 partitioned by (ds string, hr string)
@@ -1444,8 +1476,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@b_n3
 PREHOOK: query: drop table c_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table c_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table c_n1 (key string, value string)
 partitioned by (ds string, hr string)
 PREHOOK: type: CREATETABLE

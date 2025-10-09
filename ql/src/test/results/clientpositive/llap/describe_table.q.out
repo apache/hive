@@ -182,7 +182,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	2000                
 	rawDataSize         	21248               
-	totalSize           	23248               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -239,7 +239,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -280,7 +280,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	2000                
 	rawDataSize         	21248               
-	totalSize           	23248               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -337,7 +337,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -457,7 +457,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -477,10 +477,12 @@ Storage Desc Params:
 PREHOOK: query: drop table srcpart_serdeprops
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_serdeprops
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_serdeprops
 POSTHOOK: query: drop table srcpart_serdeprops
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_serdeprops
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_serdeprops
 PREHOOK: query: CREATE TABLE IF NOT EXISTS desc_parttable_stats (somenumber int) PARTITIONED BY (yr int)
 PREHOOK: type: CREATETABLE
@@ -563,7 +565,7 @@ Table Parameters:
 	numPartitions       	3                   
 	numRows             	3                   
 	rawDataSize         	3                   
-	totalSize           	6                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -579,10 +581,12 @@ Storage Desc Params:
 PREHOOK: query: DROP TABLE IF EXISTS desc_parttable_stats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@desc_parttable_stats
+PREHOOK: Output: database:default
 PREHOOK: Output: default@desc_parttable_stats
 POSTHOOK: query: DROP TABLE IF EXISTS desc_parttable_stats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@desc_parttable_stats
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@desc_parttable_stats
 PREHOOK: query: CREATE DATABASE IF NOT EXISTS name1
 PREHOOK: type: CREATEDATABASE
@@ -903,10 +907,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"col1\":\"tru
 PREHOOK: query: DROP TABLE IF EXISTS table1_n18
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: name2@table1_n18
+PREHOOK: Output: database:name2
 PREHOOK: Output: name2@table1_n18
 POSTHOOK: query: DROP TABLE IF EXISTS table1_n18
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: name2@table1_n18
+POSTHOOK: Output: database:name2
 POSTHOOK: Output: name2@table1_n18
 PREHOOK: query: use name1
 PREHOOK: type: SWITCHDATABASE
@@ -917,18 +923,22 @@ POSTHOOK: Input: database:name1
 PREHOOK: query: DROP TABLE IF EXISTS name1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: name1@name1
+PREHOOK: Output: database:name1
 PREHOOK: Output: name1@name1
 POSTHOOK: query: DROP TABLE IF EXISTS name1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: name1@name1
+POSTHOOK: Output: database:name1
 POSTHOOK: Output: name1@name1
 PREHOOK: query: DROP TABLE IF EXISTS name2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: name1@name2
+PREHOOK: Output: database:name1
 PREHOOK: Output: name1@name2
 POSTHOOK: query: DROP TABLE IF EXISTS name2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: name1@name2
+POSTHOOK: Output: database:name1
 POSTHOOK: Output: name1@name2
 PREHOOK: query: use name2
 PREHOOK: type: SWITCHDATABASE
@@ -938,8 +948,10 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:name2
 PREHOOK: query: DROP TABLE IF EXISTS table1_n18
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:name2
 POSTHOOK: query: DROP TABLE IF EXISTS table1_n18
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:name2
 PREHOOK: query: DROP DATABASE IF EXISTS name1
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:name1

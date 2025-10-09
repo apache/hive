@@ -164,10 +164,12 @@ POSTHOOK: Input: default@t_test
 PREHOOK: query: DROP TABLE IF EXISTS t_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_test
 POSTHOOK: query: DROP TABLE IF EXISTS t_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_test
 PREHOOK: query: CREATE TABLE t_test(
   a int,
@@ -275,8 +277,10 @@ POSTHOOK: Input: default@t_test
 PREHOOK: query: DROP TABLE IF EXISTS t_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_test
 POSTHOOK: query: DROP TABLE IF EXISTS t_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_test

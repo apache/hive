@@ -18,13 +18,19 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -34,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -56,6 +63,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocolException;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -64,21 +72,28 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.createSourceTable;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test class for IMetaStoreClient API. Testing the Table related functions for metadata
@@ -108,6 +123,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
     extraConf.put(ConfVars.HIVE_IN_TEST.getVarname(), "true");
     extraConf.put(ConfVars.METASTORE_METADATA_TRANSFORMER_CLASS.getVarname(), " ");
+    extraConf.put(ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS.getVarname(), "true");
 
     startMetaStores(msConf, extraConf);
   }
@@ -251,10 +267,6 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     Assert.assertTrue(createdTable.isSetId());
     createdTable.unsetId();
     Assert.assertEquals("create/get table data", table, createdTable);
-
-    // Check that the directory is created
-    Assert.assertTrue("The directory should not be created",
-        metaStore.isPathExists(new Path(createdTable.getSd().getLocation())));
 
     client.dropTable(table.getDbName(), table.getTableName(), true, false);
     try {
@@ -1184,6 +1196,105 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   }
 
   @Test
+  public void testAlterTableExpectedPropertyMatch() throws Exception {
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL_DDL));
+    Table originalTable = testTables[0];
+
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "transient_lastDdlTime");
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE,
+            originalTable.getParameters().get("transient_lastDdlTime"));
+
+    client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
+            originalTable, context);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testAlterTableExpectedPropertyDifferent() throws Exception {
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL_DDL));
+    Table originalTable = testTables[0];
+
+    EnvironmentContext context = new EnvironmentContext();
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "transient_lastDdlTime");
+    context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, "alma");
+
+    client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
+            originalTable, context);
+  }
+
+  /**
+   * This tests ensures that concurrent Iceberg commits will fail. Acceptable as a first sanity check.
+   * <p>
+   * I have not found a good way to check that HMS side database commits are parallel in the
+   * {@link org.apache.hadoop.hive.metastore.HiveAlterHandler#alterTable(RawStore, Warehouse, String, String, String, Table, EnvironmentContext, IHMSHandler, String)}
+   * call, but this test could be used to manually ensure that using breakpoints.
+   */
+  @Test
+  public void testAlterTableExpectedPropertyConcurrent() throws Exception {
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL));
+    Assume.assumeTrue(MetastoreConf.getBoolVar(metaStore.getConf(), ConfVars.TRY_DIRECT_SQL_DDL));
+    Table originalTable = testTables[0];
+
+    originalTable.getParameters().put("snapshot", "0");
+    client.alter_table(originalTable.getCatName(), originalTable.getDbName(), originalTable.getTableName(),
+            originalTable, null);
+
+    ExecutorService threads = null;
+    try {
+      threads = Executors.newFixedThreadPool(2);
+      for (int i = 0; i < 3; i++) {
+        EnvironmentContext context = new EnvironmentContext();
+        context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_KEY, "snapshot");
+        context.putToProperties(hive_metastoreConstants.EXPECTED_PARAMETER_VALUE, String.valueOf(i));
+
+        Table newTable = originalTable.deepCopy();
+        newTable.getParameters().put("snapshot", String.valueOf(i + 1));
+
+        IMetaStoreClient client1 = metaStore.getClient();
+        IMetaStoreClient client2 = metaStore.getClient();
+
+        Collection<Callable<Boolean>> concurrentTasks = new ArrayList<>(2);
+        concurrentTasks.add(alterTask(client1, newTable, context));
+        concurrentTasks.add(alterTask(client2, newTable, context));
+
+        Collection<Future<Boolean>> results = threads.invokeAll(concurrentTasks);
+
+        boolean foundSuccess = false;
+        boolean foundFailure = false;
+
+        for (Future<Boolean> result : results) {
+          if (result.get()) {
+            foundSuccess = true;
+          } else {
+            foundFailure = true;
+          }
+        }
+
+        assertTrue("At least one success is expected", foundSuccess);
+        assertTrue("At least one failure is expected", foundFailure);
+      }
+    } finally {
+      if (threads != null) {
+        threads.shutdown();
+      }
+    }
+  }
+
+  private Callable<Boolean> alterTask(IMetaStoreClient hmsClient, Table newTable, EnvironmentContext context) {
+    return () -> {
+      try {
+        hmsClient.alter_table(newTable.getCatName(), newTable.getDbName(), newTable.getTableName(),
+                newTable, context);
+      } catch (Throwable e) {
+        return false;
+      }
+      return true;
+    };
+  }
+
+  @Test
   public void tablesInOtherCatalogs() throws TException, URISyntaxException {
     String catName = "create_etc_tables_in_other_catalogs";
     Catalog cat = new CatalogBuilder()
@@ -1334,7 +1445,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
       partNames.add("pcol1=" + partVal);
     }
     // Truncate a table
-    client.truncateTable(catName, dbName, tableNames[0], partNames);
+    client.truncateTable(catName, dbName, tableNames[0], null, partNames, null, -1, true, null);
 
     // Truncate a table in the wrong catalog
     try {
@@ -1450,8 +1561,8 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
     try {
       List<String> partNames = client.listPartitionNames(partitionedTable.getDbName(),
           partitionedTable.getTableName(), (short) -1);
-      client.truncateTable("nosuch", partitionedTable.getDbName(), partitionedTable.getTableName(),
-          partNames);
+      client.truncateTable("nosuch", partitionedTable.getDbName(), partitionedTable.getTableName(), null,
+          partNames, null, -1, true, null);
       Assert.fail(); // For reasons I don't understand and am too lazy to debug at the moment the
       // NoSuchObjectException gets swallowed by a TApplicationException in remote mode.
     } catch (TApplicationException|NoSuchObjectException e) {
@@ -1462,6 +1573,41 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
   @Test(expected = NoSuchObjectException.class)
   public void dropTableBogusCatalog() throws TException {
     client.dropTable("nosuch", testTables[0].getDbName(), testTables[0].getTableName(), true, false);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testDropManagedTableWithoutStoragePermission() throws TException, IOException {
+    String dbName = testTables[0].getDbName();
+    String tblName = testTables[0].getTableName();
+    Table table = client.getTable(dbName, tblName);
+    Path tablePath = new Path(table.getSd().getLocation());
+    FileSystem fs = Warehouse.getFs(tablePath, new Configuration());
+    fs.setPermission(tablePath.getParent(), new FsPermission((short) 0555));
+
+    try {
+      client.dropTable(dbName, tblName);
+    } finally {
+      // recover write permission so that file can be cleaned.
+      fs.setPermission(tablePath.getParent(), new FsPermission((short) 0755));
+    }
+  }
+
+  @Test
+  public void testDropExternalTableWithoutStoragePermission() throws TException, IOException {
+    // external table
+    String dbName = testTables[4].getDbName();
+    String tblName = testTables[4].getTableName();
+    Table table = client.getTable(dbName, tblName);
+    Path tablePath = new Path(table.getSd().getLocation());
+    FileSystem fs = Warehouse.getFs(tablePath, new Configuration());
+    fs.setPermission(tablePath.getParent(), new FsPermission((short) 0555));
+
+    try {
+      client.dropTable(dbName, tblName);
+    } finally {
+      // recover write permission so that file can be cleaned.
+      fs.setPermission(tablePath.getParent(), new FsPermission((short) 0755));
+    }
   }
 
   /**
@@ -1492,7 +1638,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
                .setNumBuckets(4)
                .setRetention(30000)
                .setRewriteEnabled(true)
-               .setType("VIEW")
+               .setType(TableType.VIRTUAL_VIEW.name())
                .setViewExpandedText("viewExplainedText")
                .setViewOriginalText("viewOriginalText")
                .setSerdeLib("serdelib")

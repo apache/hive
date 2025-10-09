@@ -20,11 +20,11 @@ POSTHOOK: Output: TEST_database@test_table
 POSTHOOK: Output: database:test_database
 PREHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:test_database
+PREHOOK: Input: database:test_database
 PREHOOK: Output: test_database.test_func
 POSTHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:test_database
+POSTHOOK: Input: database:test_database
 POSTHOOK: Output: test_database.test_func
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
@@ -42,21 +42,23 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table
 PREHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.test_func
 POSTHOOK: query: CREATE FUNCTION test_func as 'org.apache.hadoop.hive.ql.udf.UDFAscii'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.test_func
 PREHOOK: query: DROP DATABASE TEST_database CASCADE
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test_database
 PREHOOK: Output: database:test_database
+PREHOOK: Output: test_database.test_func
 PREHOOK: Output: test_database@test_table
 POSTHOOK: query: DROP DATABASE TEST_database CASCADE
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:test_database
 POSTHOOK: Output: database:test_database
+POSTHOOK: Output: test_database.test_func
 POSTHOOK: Output: test_database@test_table
 PREHOOK: query: describe test_table
 PREHOOK: type: DESCTABLE

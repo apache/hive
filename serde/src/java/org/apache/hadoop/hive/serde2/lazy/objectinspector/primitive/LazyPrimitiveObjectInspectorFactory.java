@@ -149,6 +149,8 @@ public final class LazyPrimitiveObjectInspectorFactory {
       return getLazyBooleanObjectInspector(lazyParams.isExtendedBooleanLiteral());
     case TIMESTAMP:
       return getLazyTimestampObjectInspector(lazyParams.getTimestampFormats());
+    case TIMESTAMPLOCALTZ:
+      return new LazyTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo)typeInfo, lazyParams.getTimestampFormats());
     default:
      return getLazyObjectInspector(typeInfo);
     }
@@ -171,9 +173,6 @@ public final class LazyPrimitiveObjectInspectorFactory {
       break;
     case DECIMAL:
       poi = new LazyHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
-      break;
-    case TIMESTAMPLOCALTZ:
-      poi = new LazyTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo)typeInfo);
       break;
     default:
       throw new RuntimeException(

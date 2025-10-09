@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE PW18
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE PW18
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE PW18(`USER` STRING, COMPLEXDT UNIONTYPE<INT, DOUBLE>) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe5'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -44,8 +46,10 @@ NULL	NULL	1
 NULL	NULL	1
 PREHOOK: query: DROP TABLE PW18_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE PW18_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE PW18_2(`USER` STRING, COMPLEXDT UNIONTYPE<INT, DOUBLE>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe5'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

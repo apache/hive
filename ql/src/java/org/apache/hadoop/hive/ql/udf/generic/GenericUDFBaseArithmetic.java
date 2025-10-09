@@ -50,7 +50,7 @@ public abstract class GenericUDFBaseArithmetic extends GenericUDFBaseBinary {
 
     // Lookup values needed for numeric arithmetic UDFs
     if (confLookupNeeded) {
-      CompatLevel compatLevel = HiveCompat.getCompatLevel(SessionState.get().getConf());
+      CompatLevel compatLevel = HiveCompat.getCompatLevel(SessionState.getSessionConf());
       ansiSqlArithmetic = compatLevel.ordinal() > CompatLevel.HIVE_0_12.ordinal();
       confLookupNeeded = false;
     }

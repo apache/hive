@@ -1,7 +1,9 @@
 PREHOOK: query: drop table partition_date_1_temp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table partition_date_1_temp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create temporary table partition_date_1_temp (key string, value string) partitioned by (dt date, region string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -94,20 +96,12 @@ POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 PREHOOK: query: select * from partition_date_1_temp where dt = '2000-01-01' and region = '2' order by key,value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
 PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select * from partition_date_1_temp where dt = '2000-01-01' and region = '2' order by key,value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
 POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 165	val_165	2000-01-01	2
 238	val_238	2000-01-01	2
@@ -117,77 +111,37 @@ POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 PREHOOK: query: select count(*) from partition_date_1_temp where dt = date '2000-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt = date '2000-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 15
 PREHOOK: query: select count(*) from partition_date_1_temp where dt = '2000-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt = '2000-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 15
 PREHOOK: query: select count(*) from partition_date_1_temp where dt = date '2000-01-01' and region = '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt = date '2000-01-01' and region = '2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 5
 PREHOOK: query: select count(*) from partition_date_1_temp where dt = date '2013-08-08' and region = '10'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt = date '2013-08-08' and region = '10'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 11
 PREHOOK: query: select count(*) from partition_date_1_temp where region = '1'
@@ -202,153 +156,73 @@ POSTHOOK: Input: default@partition_date_1_temp
 PREHOOK: query: select count(*) from partition_date_1_temp where dt = date '2000-01-01' and region = '3'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt = date '2000-01-01' and region = '3'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 0
 PREHOOK: query: select count(*) from partition_date_1_temp where dt = date '1999-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt = date '1999-01-01'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 0
 PREHOOK: query: select count(*) from partition_date_1_temp where dt > date '2000-01-01' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt > date '2000-01-01' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 20
 PREHOOK: query: select count(*) from partition_date_1_temp where dt < date '2000-01-02' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt < date '2000-01-02' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 10
 PREHOOK: query: select count(*) from partition_date_1_temp where dt >= date '2000-01-02' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt >= date '2000-01-02' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 20
 PREHOOK: query: select count(*) from partition_date_1_temp where dt <= date '2000-01-01' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt <= date '2000-01-01' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 10
 PREHOOK: query: select count(*) from partition_date_1_temp where dt <> date '2000-01-01' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt <> date '2000-01-01' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 20
 PREHOOK: query: select count(*) from partition_date_1_temp where dt between date '1999-12-30' and date '2000-01-03' and region = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1_temp
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-PREHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 POSTHOOK: query: select count(*) from partition_date_1_temp where dt between date '1999-12-30' and date '2000-01-03' and region = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1_temp
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2000-01-01/region=2
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=1
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-08-08/region=10
-POSTHOOK: Input: default@partition_date_1_temp@dt=2013-12-10/region=2020-20-20
 #### A masked pattern was here ####
 10
 PREHOOK: query: select count(*) from partition_date_1_temp where region = '2020-20-20'
@@ -372,8 +246,10 @@ POSTHOOK: Input: default@partition_date_1_temp
 PREHOOK: query: drop table partition_date_1_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partition_date_1_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partition_date_1_temp
 POSTHOOK: query: drop table partition_date_1_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partition_date_1_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_date_1_temp

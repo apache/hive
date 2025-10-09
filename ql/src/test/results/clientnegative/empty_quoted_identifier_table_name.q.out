@@ -1,0 +1,1 @@
+FAILED: ParseException line 1:32 cannot recognize input near 'test_database' '.' '<EOF>' in table name

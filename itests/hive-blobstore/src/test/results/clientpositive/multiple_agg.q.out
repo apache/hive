@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE birthdays
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE birthdays
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE birthdays (id INT, name STRING, birthday TIMESTAMP)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
 #### A masked pattern was here ####

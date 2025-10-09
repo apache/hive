@@ -724,10 +724,12 @@ ts                  	double
 PREHOOK: query: drop table alter_coltype_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_coltype_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_coltype_temp
 POSTHOOK: query: drop table alter_coltype_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_coltype_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_coltype_temp
 PREHOOK: query: create database pt
 PREHOOK: type: CREATEDATABASE
@@ -858,7 +860,7 @@ POSTHOOK: Input: pt@alterdynamic_part_table_temp@partcol1=2/partcol2=1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `intcol`
 FROM `pt`.`alterdynamic_part_table_temp`
-WHERE  (`partcol1`, `partcol2`) IN ( (2, '1'),  (1, '__HIVE_DEFAULT_PARTITION__'))
+WHERE (`partcol1`, `partcol2`) IN ((2, '1'), (1, '__HIVE_DEFAULT_PARTITION__'))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -926,10 +928,12 @@ POSTHOOK: Input: pt@alterdynamic_part_table_temp@partcol1=2/partcol2=1
 PREHOOK: query: drop table pt.alterdynamic_part_table_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: pt@alterdynamic_part_table_temp
+PREHOOK: Output: database:pt
 PREHOOK: Output: pt@alterdynamic_part_table_temp
 POSTHOOK: query: drop table pt.alterdynamic_part_table_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: pt@alterdynamic_part_table_temp
+POSTHOOK: Output: database:pt
 POSTHOOK: Output: pt@alterdynamic_part_table_temp
 PREHOOK: query: drop database pt
 PREHOOK: type: DROPDATABASE

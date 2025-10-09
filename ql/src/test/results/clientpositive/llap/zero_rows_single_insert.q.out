@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE src_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE src_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE src_table (key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -20,8 +22,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_table
 PREHOOK: query: DROP TABLE target_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE target_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE target_table (key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -59,13 +63,15 @@ POSTHOOK: Input: default@target_table
 100
 PREHOOK: query: INSERT OVERWRITE TABLE target_table SELECT key FROM src_table WHERE FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src_table
 PREHOOK: Output: default@target_table
 POSTHOOK: query: INSERT OVERWRITE TABLE target_table SELECT key FROM src_table WHERE FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src_table
 POSTHOOK: Output: default@target_table
-POSTHOOK: Lineage: target_table.key SIMPLE [(src_table)src_table.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: target_table.key SIMPLE []
 PREHOOK: query: SELECT COUNT(*) FROM target_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target_table
@@ -95,13 +101,15 @@ POSTHOOK: Input: default@target_table
 100
 PREHOOK: query: INSERT INTO TABLE target_table SELECT key FROM src_table WHERE FALSE
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src_table
 PREHOOK: Output: default@target_table
 POSTHOOK: query: INSERT INTO TABLE target_table SELECT key FROM src_table WHERE FALSE
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src_table
 POSTHOOK: Output: default@target_table
-POSTHOOK: Lineage: target_table.key SIMPLE [(src_table)src_table.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: target_table.key SIMPLE []
 PREHOOK: query: SELECT COUNT(*) FROM target_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target_table

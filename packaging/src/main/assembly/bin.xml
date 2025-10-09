@@ -36,7 +36,7 @@
       <outputDirectory>lib</outputDirectory>
       <unpack>false</unpack>
       <useProjectArtifact>false</useProjectArtifact>
-      <useStrictFiltering>true</useStrictFiltering>
+      <useStrictFiltering>false</useStrictFiltering>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
         <exclude>org.apache.calcite:*</exclude>
@@ -44,13 +44,11 @@
         <exclude>org.apache.hive.hcatalog:*</exclude>
         <exclude>org.slf4j:*</exclude>
         <exclude>log4j:*</exclude>
+        <exclude>ch.qos.reload4j:*</exclude>
         <exclude>junit:*</exclude>
         <exclude>commons-configuration:commons-configuration</exclude>
         <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
         <exclude>org.apache.hive:hive-contrib</exclude>
-        <exclude>com.oracle.database.jdbc:*</exclude>
-        <exclude>mysql:mysql-connector-java:*</exclude>
-        <exclude>org.mariadb.jdbc:*</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
@@ -100,7 +98,7 @@
       <outputDirectory>hcatalog/share/webhcat/svr/lib</outputDirectory>
       <unpack>false</unpack>
       <useProjectArtifact>false</useProjectArtifact>
-      <useStrictFiltering>true</useStrictFiltering>
+      <useStrictFiltering>false</useStrictFiltering>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
         <exclude>org.apache.hadoop:*</exclude>
@@ -138,23 +136,26 @@
       <includes>
         <include>DEVNOTES</include>
         <include>README.txt</include>
-        <include>LICENSE</include>
         <include>NOTICE</include>
         <include>CHANGELOG</include>
         <include>RELEASE_NOTES.txt</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>
-
     <fileSet>
-      <directory>${project.parent.basedir}/binary-package-licenses</directory>
+      <directory>${project.build.directory}/generated-resources</directory>
+      <includes>
+        <include>/LICENSE</include>
+        <include>/licenses.xml</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/generated-resources/licenses</directory>
       <includes>
         <include>/*</include>
       </includes>
-      <excludes>
-        <exclude>/README</exclude>
-      </excludes>
-      <outputDirectory>binary-package-licenses</outputDirectory>
+      <outputDirectory>licenses</outputDirectory>
     </fileSet>
 
     <fileSet>
@@ -224,14 +225,6 @@
         <include>**/*.xml</include>
       </includes>
       <outputDirectory>scripts/llap/yarn</outputDirectory>
-    </fileSet>
-
-    <fileSet>
-      <directory>${project.parent.basedir}/metastore/scripts/upgrade</directory>
-      <includes>
-        <include>**/*</include>
-      </includes>
-      <outputDirectory>scripts/metastore/upgrade</outputDirectory>
     </fileSet>
 
     <fileSet>

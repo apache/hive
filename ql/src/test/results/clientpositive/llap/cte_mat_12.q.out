@@ -1,0 +1,182 @@
+PREHOOK: query: CREATE TABLE emps
+(
+    empid  INTEGER,
+    deptno INTEGER,
+    name   VARCHAR(10),
+    salary DECIMAL(8, 2)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps
+POSTHOOK: query: CREATE TABLE emps
+(
+    empid  INTEGER,
+    deptno INTEGER,
+    name   VARCHAR(10),
+    salary DECIMAL(8, 2)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps
+PREHOOK: query: EXPLAIN CBO
+SELECT COUNT(*) FROM emps e GROUP BY e.deptno
+UNION
+SELECT COUNT(*) FROM emps e GROUP BY e.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT COUNT(*) FROM emps e GROUP BY e.deptno
+UNION
+SELECT COUNT(*) FROM emps e GROUP BY e.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveProject(_o__c0=[$0])
+    HiveUnion(all=[true])
+      HiveProject(_o__c0=[$0])
+        HiveTableSpool(table=[[cte, cte_suggestion_0]])
+          HiveProject(_o__c0=[$1])
+            HiveAggregate(group=[{1}], agg#0=[count()])
+              HiveTableScan(table=[[default, emps]], table:alias=[e])
+      HiveProject(_o__c0=[$0])
+        HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT COUNT(*), 'A' FROM emps e GROUP BY e.deptno
+UNION
+SELECT COUNT(*), 'B' FROM emps e GROUP BY e.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT COUNT(*), 'A' FROM emps e GROUP BY e.deptno
+UNION
+SELECT COUNT(*), 'B' FROM emps e GROUP BY e.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0, 1}])
+  HiveProject(_o__c0=[$0], _o__c1=[$1])
+    HiveUnion(all=[true])
+      HiveProject(_o__c0=[$1], _o__c1=[_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+        HiveAggregate(group=[{1}], agg#0=[count()])
+          HiveTableScan(table=[[default, emps]], table:alias=[e])
+      HiveProject(_o__c0=[$1], _o__c1=[_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+        HiveAggregate(group=[{1}], agg#0=[count()])
+          HiveTableScan(table=[[default, emps]], table:alias=[e])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT name FROM emps e WHERE salary > 50000
+UNION
+SELECT name FROM emps e WHERE salary > 50000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT name FROM emps e WHERE salary > 50000
+UNION
+SELECT name FROM emps e WHERE salary > 50000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveProject(name=[$0])
+    HiveUnion(all=[true])
+      HiveProject(name=[$2])
+        HiveFilter(condition=[>($3, 50000:DECIMAL(5, 0))])
+          HiveTableScan(table=[[default, emps]], table:alias=[e])
+      HiveProject(name=[$2])
+        HiveFilter(condition=[>($3, 50000:DECIMAL(5, 0))])
+          HiveTableScan(table=[[default, emps]], table:alias=[e])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT COUNT(*) FROM emps e GROUP BY e.deptno
+UNION
+SELECT COUNT(*) FROM emps e GROUP BY e.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT COUNT(*) FROM emps e GROUP BY e.deptno
+UNION
+SELECT COUNT(*) FROM emps e GROUP BY e.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveProject(_o__c0=[$0])
+    HiveUnion(all=[true])
+      HiveProject(_o__c0=[$0])
+        HiveTableSpool(table=[[cte, cte_suggestion_0]])
+          HiveProject(_o__c0=[$1])
+            HiveAggregate(group=[{1}], agg#0=[count()])
+              HiveTableScan(table=[[default, emps]], table:alias=[e])
+      HiveProject(_o__c0=[$0])
+        HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT COUNT(*), 'A' FROM emps e GROUP BY e.deptno
+UNION
+SELECT COUNT(*), 'B' FROM emps e GROUP BY e.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT COUNT(*), 'A' FROM emps e GROUP BY e.deptno
+UNION
+SELECT COUNT(*), 'B' FROM emps e GROUP BY e.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0, 1}])
+  HiveProject(_o__c0=[$0], _o__c1=[$1])
+    HiveUnion(all=[true])
+      HiveProject(_o__c0=[$1], _o__c1=[_UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+        HiveTableSpool(table=[[cte, cte_suggestion_0]])
+          HiveProject(deptno=[$0], $f1=[$1])
+            HiveAggregate(group=[{1}], agg#0=[count()])
+              HiveTableScan(table=[[default, emps]], table:alias=[e])
+      HiveProject(_o__c0=[$1], _o__c1=[_UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+        HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT name FROM emps e WHERE salary > 50000
+UNION
+SELECT name FROM emps e WHERE salary > 50000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT name FROM emps e WHERE salary > 50000
+UNION
+SELECT name FROM emps e WHERE salary > 50000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveProject(name=[$0])
+    HiveUnion(all=[true])
+      HiveProject(name=[$0])
+        HiveTableSpool(table=[[cte, cte_suggestion_0]])
+          HiveProject(name=[$2])
+            HiveFilter(condition=[>($3, 50000:DECIMAL(5, 0))])
+              HiveTableScan(table=[[default, emps]], table:alias=[e])
+      HiveProject(name=[$0])
+        HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+

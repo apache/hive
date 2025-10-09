@@ -274,7 +274,8 @@ public class HiveJoinConstraintsRule extends RelOptRule {
           }
         }
 
-        if (!call.getMetadataQuery().areColumnsUnique(nonFkInput, fkJoinColBuilder.build())) {
+        final Boolean isUnique = call.getMetadataQuery().areColumnsUnique(nonFkInput, fkJoinColBuilder.build());
+        if (isUnique == null || !isUnique) {
           return;
         }
 

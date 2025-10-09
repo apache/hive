@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE Employee_Part_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE Employee_Part_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE Employee_Part_n0(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
@@ -188,7 +190,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	7                   
 	rawDataSize         	57                  
-	totalSize           	64                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -671,8 +673,10 @@ bit_vector          	HL
 comment             	from deserializer   
 PREHOOK: query: drop table Employee_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table Employee_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE Employee_n0(employeeID int, employeeName String) partitioned by (employeeSalary double, country string)
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE

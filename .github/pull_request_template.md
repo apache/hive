@@ -37,7 +37,6 @@ If possible, please also clarify if this is a user-facing change compared to the
 If no, write 'No'.
 -->
 
-
 ### How was this patch tested?
 <!--
 If tests were added, say they were added here. Please make sure to add some test cases that check the changes thoroughly including negative and positive cases if possible.

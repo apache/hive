@@ -18,11 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
+import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
@@ -92,6 +97,8 @@ public class VectorExtractRow {
 
   private static final byte[] EMPTY_BYTES = new byte[0];
   private static final String EMPTY_STRING = "";
+
+  public enum OutputType { WRITABLES, POJO };
 
   /*
    * Allocate the various arrays.
@@ -184,14 +191,13 @@ public class VectorExtractRow {
    * @return
    */
   private Object extractRowColumn(VectorizedRowBatch batch, int batchIndex,
-      int logicalColumnIndex) {
+      int logicalColumnIndex, OutputType outputType) {
 
     final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
     final ColumnVector colVector = batch.cols[projectionColumnNum];
     final TypeInfo typeInfo = typeInfos[logicalColumnIndex];
     // try {
-      return extractRowColumn(
-          colVector, typeInfo, objectInspectors[logicalColumnIndex], batchIndex);
+      return extractRowColumn(colVector, typeInfo, objectInspectors[logicalColumnIndex], batchIndex, outputType);
     // } catch (Exception e){
     //   throw new RuntimeException("Error evaluating column number " + projectionColumnNum +
     //       ", typeInfo " + typeInfo.toString() + ", batchIndex " + batchIndex);
@@ -200,6 +206,12 @@ public class VectorExtractRow {
 
   public Object extractRowColumn(
       ColumnVector colVector, TypeInfo typeInfo, ObjectInspector objectInspector, int batchIndex) {
+    return extractRowColumn(colVector, typeInfo, objectInspector, batchIndex, OutputType.WRITABLES);
+  }
+
+  public Object extractRowColumn(
+      ColumnVector colVector, TypeInfo typeInfo, ObjectInspector objectInspector, int batchIndex,
+      OutputType outputType) {
 
     if (colVector == null) {
       // The planner will not include unneeded columns for reading but other parts of execution
@@ -217,51 +229,89 @@ public class VectorExtractRow {
       {
         final PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
         final PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
-        final Writable primitiveWritable =
-            VectorizedBatchUtil.getPrimitiveWritable(primitiveCategory);
+        final Writable primitiveWritable = outputType == OutputType.WRITABLES ?
+            VectorizedBatchUtil.getPrimitiveWritable(primitiveCategory) :
+            null;
         switch (primitiveCategory) {
         case VOID:
           return null;
         case BOOLEAN:
-          ((BooleanWritable) primitiveWritable).set(
-              ((LongColumnVector) colVector).vector[adjustedIndex] == 0 ?
-                  false : true);
-          return primitiveWritable;
+          boolean boolValue = ((LongColumnVector) colVector).vector[adjustedIndex] == 0 ? false : true;
+          if (outputType == OutputType.WRITABLES) {
+            ((BooleanWritable) primitiveWritable).set(boolValue);
+            return primitiveWritable;
+          } else {
+            return boolValue;
+          }
         case BYTE:
-          ((ByteWritable) primitiveWritable).set(
-              (byte) ((LongColumnVector) colVector).vector[adjustedIndex]);
-          return primitiveWritable;
+          byte byteValue = (byte) ((LongColumnVector) colVector).vector[adjustedIndex];
+          if (outputType == OutputType.WRITABLES) {
+            ((ByteWritable) primitiveWritable).set(byteValue);
+            return primitiveWritable;
+          } else {
+            return byteValue;
+          }
         case SHORT:
-          ((ShortWritable) primitiveWritable).set(
-              (short) ((LongColumnVector) colVector).vector[adjustedIndex]);
-          return primitiveWritable;
+          short shortValue = (short) ((LongColumnVector) colVector).vector[adjustedIndex];
+          if (outputType == OutputType.WRITABLES) {
+            ((ShortWritable) primitiveWritable).set(shortValue);
+            return primitiveWritable;
+          } else {
+            return shortValue;
+          }
         case INT:
-          ((IntWritable) primitiveWritable).set(
-              (int) ((LongColumnVector) colVector).vector[adjustedIndex]);
-          return primitiveWritable;
+          int intValue = (int) ((LongColumnVector) colVector).vector[adjustedIndex];
+          if (outputType == OutputType.WRITABLES) {
+            ((IntWritable) primitiveWritable).set(intValue);
+            return primitiveWritable;
+          } else {
+            return intValue;
+          }
         case LONG:
-          ((LongWritable) primitiveWritable).set(
-              ((LongColumnVector) colVector).vector[adjustedIndex]);
-          return primitiveWritable;
+          long longValue = ((LongColumnVector) colVector).vector[adjustedIndex];
+          if (outputType == OutputType.WRITABLES) {
+            ((LongWritable) primitiveWritable).set(longValue);
+            return primitiveWritable;
+          } else {
+            return longValue;
+          }
         case TIMESTAMP:
           // From java.sql.Timestamp used by vectorization to serializable org.apache.hadoop.hive.common.type.Timestamp
           java.sql.Timestamp ts =
               ((TimestampColumnVector) colVector).asScratchTimestamp(adjustedIndex);
           Timestamp serializableTS = Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos());
-          ((TimestampWritableV2) primitiveWritable).set(serializableTS);
-          return primitiveWritable;
+          if (outputType == OutputType.WRITABLES) {
+            ((TimestampWritableV2) primitiveWritable).set(serializableTS);
+            return primitiveWritable;
+          } else {
+            // return Hive Timestamp object
+            return serializableTS;
+          }
         case DATE:
-          ((DateWritableV2) primitiveWritable).set(
-              (int) ((LongColumnVector) colVector).vector[adjustedIndex]);
-          return primitiveWritable;
+          Date dateValue = Date.ofEpochDay((int) ((LongColumnVector) colVector).vector[adjustedIndex]);
+          if (outputType == OutputType.WRITABLES) {
+            ((DateWritableV2) primitiveWritable).set(dateValue);
+            return primitiveWritable;
+          } else {
+            // return Hive Date object
+            return dateValue;
+          }
         case FLOAT:
-          ((FloatWritable) primitiveWritable).set(
-              (float) ((DoubleColumnVector) colVector).vector[adjustedIndex]);
-          return primitiveWritable;
+          float floatValue = (float) ((DoubleColumnVector) colVector).vector[adjustedIndex];
+          if (outputType == OutputType.WRITABLES) {
+            ((FloatWritable) primitiveWritable).set(floatValue);
+            return primitiveWritable;
+          } else {
+            return floatValue;
+          }
         case DOUBLE:
-          ((DoubleWritable) primitiveWritable).set(
-              ((DoubleColumnVector) colVector).vector[adjustedIndex]);
-          return primitiveWritable;
+          double doubleValue = ((DoubleColumnVector) colVector).vector[adjustedIndex];
+          if (outputType == OutputType.WRITABLES) {
+            ((DoubleWritable) primitiveWritable).set(doubleValue);
+            return primitiveWritable;
+          } else {
+            return doubleValue;
+          }
         case BINARY:
           {
             final BytesColumnVector bytesColVector =
@@ -270,16 +320,22 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            BytesWritable bytesWritable = (BytesWritable) primitiveWritable;
-            if (bytes == null || length == 0) {
-              if (length > 0) {
-                nullBytesReadError(primitiveCategory, batchIndex);
+            if (outputType == OutputType.WRITABLES) {
+              BytesWritable bytesWritable = (BytesWritable) primitiveWritable;
+              if (bytes == null || length == 0) {
+                if (length > 0) {
+                  nullBytesReadError(primitiveCategory, batchIndex);
+                }
+                bytesWritable.set(EMPTY_BYTES, 0, 0);
+              } else {
+                bytesWritable.set(bytes, start, length);
               }
-              bytesWritable.set(EMPTY_BYTES, 0, 0);
+              return bytesWritable;
             } else {
-              bytesWritable.set(bytes, start, length);
+              byte[] ret = new byte[length];
+              System.arraycopy(bytes, start, ret, 0, length);
+              return ret;
             }
-            return primitiveWritable;
           }
         case STRING:
           {
@@ -289,17 +345,32 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
+            String result = null;
             if (bytes == null || length == 0) {
               if (length > 0) {
                 nullBytesReadError(primitiveCategory, batchIndex);
               }
-              ((Text) primitiveWritable).set(EMPTY_BYTES, 0, 0);
+              result = EMPTY_STRING;
+              if (outputType == OutputType.WRITABLES) {
+                ((Text) primitiveWritable).set(EMPTY_BYTES, 0, 0);
+              }
             } else {
-
               // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-              ((Text) primitiveWritable).set(bytes, start, length);
+              if (outputType == OutputType.WRITABLES) {
+                ((Text) primitiveWritable).set(bytes, start, length);
+              } else {
+                try {
+                  result = Text.decode(bytes, start, length);
+                } catch (CharacterCodingException e) {
+                  throw new RuntimeException("Could not decode to String object.", e);
+                }
+              }
             }
-            return primitiveWritable;
+            if (outputType == OutputType.WRITABLES) {
+              return primitiveWritable;
+            } else {
+              return result;
+            }
           }
         case VARCHAR:
           {
@@ -309,7 +380,9 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            final HiveVarcharWritable hiveVarcharWritable = (HiveVarcharWritable) primitiveWritable;
+            // TODO: maybe not create writable for POJO case
+            final HiveVarcharWritable hiveVarcharWritable =
+                (HiveVarcharWritable) VectorizedBatchUtil.getPrimitiveWritable(primitiveCategory);
             if (bytes == null || length == 0) {
               if (length > 0) {
                 nullBytesReadError(primitiveCategory, batchIndex);
@@ -326,7 +399,11 @@ public class VectorExtractRow {
                     new String(bytes, start, adjustedLength, Charsets.UTF_8), -1);
               }
             }
-            return primitiveWritable;
+            if (outputType == OutputType.WRITABLES) {
+              return hiveVarcharWritable;
+            } else {
+              return hiveVarcharWritable.getHiveVarchar();
+            }
           }
         case CHAR:
           {
@@ -336,7 +413,9 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            final HiveCharWritable hiveCharWritable = (HiveCharWritable) primitiveWritable;
+            // TODO: maybe not create writable for POJO case
+            final HiveCharWritable hiveCharWritable =
+                (HiveCharWritable) VectorizedBatchUtil.getPrimitiveWritable(primitiveCategory);
             final int maxLength = ((CharTypeInfo) primitiveTypeInfo).getLength();
             if (bytes == null || length == 0) {
               if (length > 0) {
@@ -354,27 +433,46 @@ public class VectorExtractRow {
                     new String(bytes, start, adjustedLength, Charsets.UTF_8), maxLength);
               }
             }
-            return primitiveWritable;
+            if (outputType == OutputType.WRITABLES) {
+              return hiveCharWritable;
+            } else {
+              return hiveCharWritable.getHiveChar();
+            }
           }
         case DECIMAL:
+          // decimal code is deep within HiveDecimalWritable, probably can't avoid creating it
+          HiveDecimalWritable decimalWritable =
+              (HiveDecimalWritable) VectorizedBatchUtil.getPrimitiveWritable(primitiveCategory);
           if (colVector instanceof Decimal64ColumnVector) {
             Decimal64ColumnVector dec32ColVector = (Decimal64ColumnVector) colVector;
-            ((HiveDecimalWritable) primitiveWritable).deserialize64(
-                dec32ColVector.vector[adjustedIndex], dec32ColVector.scale);
+            decimalWritable.deserialize64(dec32ColVector.vector[adjustedIndex], dec32ColVector.scale);
           } else {
             // The HiveDecimalWritable set method will quickly copy the deserialized decimal writable fields.
-            ((HiveDecimalWritable) primitiveWritable).set(
-                ((DecimalColumnVector) colVector).vector[adjustedIndex]);
+            decimalWritable.set(((DecimalColumnVector) colVector).vector[adjustedIndex]);
           }
-          return primitiveWritable;
+          if (outputType == OutputType.WRITABLES) {
+            return decimalWritable;
+          } else {
+            return decimalWritable.getHiveDecimal();
+          }
         case INTERVAL_YEAR_MONTH:
-          ((HiveIntervalYearMonthWritable) primitiveWritable).set(
-              (int) ((LongColumnVector) colVector).vector[adjustedIndex]);
-          return primitiveWritable;
+          HiveIntervalYearMonth hiveIntervalYearMonthValue =
+              new HiveIntervalYearMonth((int) ((LongColumnVector) colVector).vector[adjustedIndex]);
+          if (outputType == OutputType.WRITABLES) {
+            ((HiveIntervalYearMonthWritable) primitiveWritable).set(hiveIntervalYearMonthValue);
+            return primitiveWritable;
+          } else {
+            return hiveIntervalYearMonthValue;
+          }
         case INTERVAL_DAY_TIME:
-          ((HiveIntervalDayTimeWritable) primitiveWritable).set(
-              ((IntervalDayTimeColumnVector) colVector).asScratchIntervalDayTime(adjustedIndex));
-          return primitiveWritable;
+          HiveIntervalDayTime hiveIntervalDayTimeValue =
+              ((IntervalDayTimeColumnVector) colVector).asScratchIntervalDayTime(adjustedIndex);
+          if (outputType == OutputType.WRITABLES) {
+            ((HiveIntervalDayTimeWritable) primitiveWritable).set(hiveIntervalDayTimeValue);
+            return primitiveWritable;
+          } else {
+            return hiveIntervalDayTimeValue;
+          }
         default:
           throw new RuntimeException("Primitive category " + primitiveCategory.name() +
               " not supported");
@@ -474,14 +572,40 @@ public class VectorExtractRow {
   /**
    * Extract an row object from a VectorizedRowBatch at batchIndex.
    *
-   * @param batch
-   * @param batchIndex
-   * @param objects
+   * @param batch VRB instance to lookup the row from
+   * @param batchIndex index of the row within this batch
+   * @param objects output
    */
   public void extractRow(VectorizedRowBatch batch, int batchIndex, Object[] objects) {
     for (int i = 0; i < projectionColumnNums.length; i++) {
-      objects[i] = extractRowColumn(batch, batchIndex, i);
+      objects[i] = extractRowColumn(batch, batchIndex, i, OutputType.WRITABLES);
     }
+  }
+
+
+  /**
+   * Extract an row object from a VectorizedRowBatch at batchIndex.
+   *
+   * @param batch VRB instance to lookup the row from
+   * @param batchIndex index of the row within this batch
+   * @param objects output
+   */
+  public void extractRow(VectorizedRowBatch batch, int batchIndex, Object[] objects, OutputType outputType) {
+    for (int i = 0; i < projectionColumnNums.length; i++) {
+      objects[i] = extractRowColumn(batch, batchIndex, i, outputType);
+    }
+  }
+
+  /**
+   * Returns an accessor function construct that can return data from a VRB batch instance.
+   * The outer function would take a batch index to select the row inside the batch, and an inner function
+   * would select the data/item inside the row based on the provided row index.
+   *
+   * @param batch VRB instance
+   * @return function construct
+   */
+  public Function<Integer, Function<Integer, Object>> accessor(VectorizedRowBatch batch) {
+    return batchIndex -> rowIndex -> extractRowColumn(batch, batchIndex, rowIndex, OutputType.POJO);
   }
 
   private void nullBytesReadError(PrimitiveCategory primitiveCategory, int batchIndex) {

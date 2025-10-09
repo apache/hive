@@ -17,29 +17,34 @@
  */
 package org.apache.hadoop.hive.ql.util;
 
+import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.NullValueOption;
 
+import static org.apache.hadoop.hive.ql.util.DirectionUtils.ASCENDING_CODE;
+
 /**
  * Enum for converting different Null ordering description types.
  */
 public enum NullOrdering {
-  NULLS_FIRST(1, HiveParser.TOK_NULLS_FIRST, NullValueOption.MINVALUE, 'a'),
-  NULLS_LAST(0, HiveParser.TOK_NULLS_LAST, NullValueOption.MAXVALUE, 'z');
+  NULLS_FIRST(1, HiveParser.TOK_NULLS_FIRST, NullValueOption.MINVALUE, 'a', RelFieldCollation.NullDirection.FIRST),
+  NULLS_LAST(0, HiveParser.TOK_NULLS_LAST, NullValueOption.MAXVALUE, 'z', RelFieldCollation.NullDirection.LAST);
 
-  NullOrdering(int code, int token, NullValueOption nullValueOption, char sign) {
+  NullOrdering(int code, int token, NullValueOption nullValueOption, char sign, RelFieldCollation.NullDirection direction) {
     this.code = code;
     this.token = token;
     this.nullValueOption = nullValueOption;
     this.sign = sign;
+    this.direction = direction;
   }
 
   private final int code;
   private final int token;
   private final NullValueOption nullValueOption;
   private final char sign;
+  private final RelFieldCollation.NullDirection direction;
 
   public static NullOrdering fromToken(int token) {
     for (NullOrdering nullOrdering : NullOrdering.values()) {
@@ -68,9 +73,30 @@ public enum NullOrdering {
     throw new EnumConstantNotPresentException(NullOrdering.class, "No enum constant present with sign " + sign);
   }
 
+  public static NullOrdering fromDirection(RelFieldCollation.NullDirection nullDirection) {
+    for (NullOrdering nullOrdering : NullOrdering.values()) {
+      if (nullOrdering.direction == nullDirection) {
+        return nullOrdering;
+      }
+    }
+    throw new EnumConstantNotPresentException(
+            NullOrdering.class, "No enum constant present with null direction " + nullDirection);
+  }
+
   public static NullOrdering defaultNullOrder(Configuration hiveConf) {
-    return HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST) ?
-            NullOrdering.NULLS_LAST : NullOrdering.NULLS_FIRST;
+    return defaultNullsLast(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
+  }
+
+  private static NullOrdering defaultNullsLast(boolean defaultNullsLast) {
+    return defaultNullsLast ? NullOrdering.NULLS_LAST : NullOrdering.NULLS_FIRST;
+  }
+
+  public static NullOrdering defaultNullOrder(int order, Configuration hiveConf) {
+    if (order == ASCENDING_CODE) {
+      return defaultNullOrder(hiveConf);
+    }
+
+    return defaultNullsLast(!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
   }
 
   public int getCode() {
@@ -87,5 +113,9 @@ public enum NullOrdering {
 
   public char getSign() {
     return sign;
+  }
+
+  public RelFieldCollation.NullDirection getDirection() {
+    return direction;
   }
 }

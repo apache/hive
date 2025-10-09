@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:65 Argument type mismatch ''5'': tumbling_window only takes primitive types as 2nd argument, got LIST

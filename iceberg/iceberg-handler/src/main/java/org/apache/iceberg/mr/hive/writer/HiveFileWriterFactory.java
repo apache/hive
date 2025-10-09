@@ -56,6 +56,10 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
         positionDeleteRowSchema);
   }
 
+  static Builder builderFor(Table table) {
+    return new Builder(table);
+  }
+
   @Override
   protected void configureDataWrite(Avro.DataWriteBuilder builder) {
     builder.createWriterFunc(DataWriter::create);
@@ -73,7 +77,7 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
   @Override
   protected void configureDataWrite(Parquet.DataWriteBuilder builder) {
-    builder.createWriterFunc(GenericParquetWriter::buildWriter);
+    builder.createWriterFunc(GenericParquetWriter::create);
   }
 
   @Override
@@ -83,7 +87,7 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
   @Override
   protected void configurePositionDelete(Parquet.DeleteWriteBuilder builder) {
-    builder.createWriterFunc(GenericParquetWriter::buildWriter);
+    builder.createWriterFunc(GenericParquetWriter::create);
   }
 
   @Override
@@ -99,5 +103,50 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
   @Override
   protected void configurePositionDelete(ORC.DeleteWriteBuilder deleteWriteBuilder) {
     deleteWriteBuilder.createWriterFunc(GenericOrcWriter::buildWriter);
+  }
+
+  static class Builder {
+    private final Table table;
+    private FileFormat dataFileFormat;
+    private Schema dataSchema;
+    private FileFormat deleteFileFormat;
+    private Schema positionDeleteRowSchema;
+
+    Builder(Table table) {
+      this.table = table;
+    }
+
+    Builder dataFileFormat(FileFormat newDataFileFormat) {
+      this.dataFileFormat = newDataFileFormat;
+      return this;
+    }
+
+    Builder dataSchema(Schema newDataSchema) {
+      this.dataSchema = newDataSchema;
+      return this;
+    }
+
+    Builder deleteFileFormat(FileFormat newDeleteFileFormat) {
+      this.deleteFileFormat = newDeleteFileFormat;
+      return this;
+    }
+
+    Builder positionDeleteRowSchema(Schema newPositionDeleteRowSchema) {
+      this.positionDeleteRowSchema = newPositionDeleteRowSchema;
+      return this;
+    }
+
+    HiveFileWriterFactory build() {
+      return new HiveFileWriterFactory(
+          table,
+          dataFileFormat,
+          dataSchema,
+          null,
+          deleteFileFormat,
+          null,
+          null,
+          null,
+          positionDeleteRowSchema);
+    }
   }
 }

@@ -3,6 +3,7 @@
 drop table if exists json_serde1_1;
 drop table if exists json_serde1_2;
 drop table if exists json_serde1_3;
+drop table if exists json_serde1_4;
 
 create table json_serde1_1 (a array<string>,b map<string,int>)
   row format serde 'org.apache.hive.hcatalog.data.JsonSerDe';
@@ -35,6 +36,16 @@ select * from json_serde1_2;
 create table json_serde1_3 (c1 int, c2 string) stored as jsonfile;
 show create table json_serde1_3;
 
+create table json_serde1_4 (a array<string>,b map<string,int>)
+  row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
+  WITH SERDEPROPERTIES ('serialization.encoding'='ISO8859_1');
+
+insert into table json_serde1_4
+  select array('MÃ¼ller'),map('MÃ¼ller',1) from src limit 2;
+
+select * from json_serde1_4;
+
 drop table json_serde1_1;
 drop table json_serde1_2;
 drop table json_serde1_3;
+drop table json_serde1_4;

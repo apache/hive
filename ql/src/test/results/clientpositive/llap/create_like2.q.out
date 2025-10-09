@@ -46,7 +46,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -94,7 +94,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -145,7 +145,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -191,7 +191,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -240,7 +240,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -286,7 +286,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -302,40 +302,151 @@ Sort Columns:       	[]
 PREHOOK: query: drop table test_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_mm
 POSTHOOK: query: drop table test_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_mm
 PREHOOK: query: drop table test_external
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_external
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_external
 POSTHOOK: query: drop table test_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_external
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_external
 PREHOOK: query: drop table test_mm1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_mm1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_mm1
 POSTHOOK: query: drop table test_mm1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_mm1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_mm1
 PREHOOK: query: drop table test_external1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_external1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_external1
 POSTHOOK: query: drop table test_external1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_external1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_external1
 PREHOOK: query: drop table test_mm2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_mm2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_mm2
 POSTHOOK: query: drop table test_mm2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_mm2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_mm2
+PREHOOK: query: CREATE EXTERNAL TABLE default.dbs (
+  DB_ID            bigint,
+  DB_LOCATION_URI  string,
+  NAME             string,
+  OWNER_NAME       string,
+  OWNER_TYPE       string )
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+  'hive.sql.database.type' = 'MYSQL',
+  'hive.sql.jdbc.driver'   = 'com.mysql.jdbc.Driver',
+  'hive.sql.jdbc.url'      = 'jdbc:mysql://localhost:3306/hive1',
+  'hive.sql.dbcp.username' = 'hive1',
+  'hive.sql.dbcp.password' = 'cloudera',
+  'hive.sql.query' = 'SELECT DB_ID, DB_LOCATION_URI, NAME, OWNER_NAME, OWNER_TYPE FROM DBS'
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dbs
+POSTHOOK: query: CREATE EXTERNAL TABLE default.dbs (
+  DB_ID            bigint,
+  DB_LOCATION_URI  string,
+  NAME             string,
+  OWNER_NAME       string,
+  OWNER_TYPE       string )
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+  'hive.sql.database.type' = 'MYSQL',
+  'hive.sql.jdbc.driver'   = 'com.mysql.jdbc.Driver',
+  'hive.sql.jdbc.url'      = 'jdbc:mysql://localhost:3306/hive1',
+  'hive.sql.dbcp.username' = 'hive1',
+  'hive.sql.dbcp.password' = 'cloudera',
+  'hive.sql.query' = 'SELECT DB_ID, DB_LOCATION_URI, NAME, OWNER_NAME, OWNER_TYPE FROM DBS'
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dbs
+PREHOOK: query: CREATE TABLE default.dbscopy LIKE default.dbs
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dbscopy
+POSTHOOK: query: CREATE TABLE default.dbscopy LIKE default.dbs
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dbscopy
+PREHOOK: query: desc formatted default.dbscopy
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@dbscopy
+POSTHOOK: query: desc formatted default.dbscopy
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@dbscopy
+# col_name            	data_type           	comment             
+db_id               	bigint              	                    
+db_location_uri     	string              	                    
+name                	string              	                    
+#### A masked pattern was here ####
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: drop table default.dbs
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dbs
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dbs
+POSTHOOK: query: drop table default.dbs
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dbs
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dbs
+PREHOOK: query: drop table default.dbscopy
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@dbscopy
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dbscopy
+POSTHOOK: query: drop table default.dbscopy
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@dbscopy
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dbscopy

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists t1_staging
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists t1_staging
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table t1_staging(
 a string,
 b int,
@@ -37,8 +39,10 @@ POSTHOOK: Output: default@t1_staging
 POSTHOOK: Output: default@t1_staging@e=epart
 PREHOOK: query: drop table t1_n147
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table t1_n147
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table t1_n147(
 a string,
 b int,
@@ -138,10 +142,12 @@ fff4166378aa9d94cd4f8a9cd543375890a61b4f09a57dbfb31a66b33b3e3fd9\N\N2015-01-2
 PREHOOK: query: drop table t1_n147
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n147
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n147
 POSTHOOK: query: drop table t1_n147
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n147
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n147
 PREHOOK: query: create table t1_n147(
 a string,
@@ -299,7 +305,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col12 (type: string), _bucket_number (type: string), _col8 (type: string)
-                          null sort order: aaa
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col12 (type: string)
                           Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -421,7 +427,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col12 (type: string), _bucket_number (type: string), _col8 (type: string)
-                          null sort order: aaa
+                          null sort order: zzz
                           sort order: +++
                           Map-reduce partition columns: _col12 (type: string)
                           Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
@@ -547,18 +553,22 @@ POSTHOOK: Input: default@dynpart_sort_opt_bucketing_test@ca_location_type=single
 PREHOOK: query: DROP TABLE dynpart_sort_opt_bucketing_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dynpart_sort_opt_bucketing_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dynpart_sort_opt_bucketing_test
 POSTHOOK: query: DROP TABLE dynpart_sort_opt_bucketing_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dynpart_sort_opt_bucketing_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dynpart_sort_opt_bucketing_test
 PREHOOK: query: drop table if exists t1_staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_staging
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_staging
 POSTHOOK: query: drop table if exists t1_staging
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_staging
 PREHOOK: query: create table t1_staging(
                            a string,
@@ -594,10 +604,12 @@ POSTHOOK: Output: default@t1_staging@e=100
 PREHOOK: query: drop table t1_n147
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n147
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n147
 POSTHOOK: query: drop table t1_n147
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n147
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n147
 PREHOOK: query: create table t1_n147(
                         a string,
@@ -655,7 +667,7 @@ STAGE PLANS:
                     Statistics: Num rows: 51 Data size: 23008 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: _col4 (type: decimal(3,0)), _bucket_number (type: string), _col0 (type: string), _col1 (type: decimal(6,0))
-                      null sort order: aaaa
+                      null sort order: zzzz
                       sort order: ++++
                       Map-reduce partition columns: _col4 (type: decimal(3,0))
                       Statistics: Num rows: 51 Data size: 23008 Basic stats: PARTIAL Column stats: PARTIAL
@@ -733,16 +745,20 @@ true
 PREHOOK: query: drop table t1_staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_staging
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_staging
 POSTHOOK: query: drop table t1_staging
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_staging
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_staging
 PREHOOK: query: drop table t1_n147
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n147
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n147
 POSTHOOK: query: drop table t1_n147
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n147
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n147

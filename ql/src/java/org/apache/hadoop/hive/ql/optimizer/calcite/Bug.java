@@ -34,12 +34,6 @@ public final class Bug {
    * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-1851">CALCITE-1851</a> is fixed.
    */
   public static final boolean CALCITE_1851_FIXED = false;
-  
-  /**
-   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-3982">issue
-   * CALCITE-3982</a> is fixed.
-   */
-  public static final boolean CALCITE_3982_FIXED = false;
 
   /**
    * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-4166">issue
@@ -74,4 +68,53 @@ public final class Bug {
    * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-4704">CALCITE-4704</a> is fixed.
    */
   public static final boolean CALCITE_4704_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5293">CALCITE-5293</a> is fixed.
+   */
+  public static final boolean CALCITE_5293_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5294">CALCITE-5294</a> is fixed.
+   */
+  public static final boolean CALCITE_5294_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5337">CALCITE-5337</a> is fixed.
+   */
+  public static final boolean CALCITE_5337_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5669">CALCITE-5669</a> is fixed.
+   */
+  public static final boolean CALCITE_5669_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-5669">CALCITE-5985</a> is fixed.
+   */
+  public static final boolean CALCITE_5985_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6513">CALCITE-6513</a> is fixed.
+   */
+  public static final boolean CALCITE_6513_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6704">CALCITE-6704</a> is fixed.
+   */
+  public static final boolean CALCITE_6704_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6513">CALCITE-6737</a> is fixed.
+   */
+  public static final boolean CALCITE_6737_FIXED = false;
+
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6954">CALCITE-6954</a> is fixed.
+   */
+  public static final boolean CALCITE_6954_FIXED = false;
+  /**
+   * Whether <a href="https://issues.apache.org/jira/browse/CALCITE-6832">CALCITE-6832</a> is fixed.
+   */
+  public static final boolean CALCITE_6832_FIXED = false;
 }

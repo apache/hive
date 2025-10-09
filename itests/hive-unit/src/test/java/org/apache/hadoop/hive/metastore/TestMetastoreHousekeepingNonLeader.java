@@ -37,7 +37,7 @@ public class TestMetastoreHousekeepingNonLeader extends MetastoreHousekeepingLea
   @Before
   public void setUp() throws Exception {
     // Empty string for leader indicates that the HMS is leader.
-    internalSetup("some_non_leader_host.domain1.domain");
+    internalSetup("some_non_leader_host.domain1.domain", true);
   }
 
   @Test
@@ -58,7 +58,6 @@ public class TestMetastoreHousekeepingNonLeader extends MetastoreHousekeepingLea
         if (entry.getValue()) {
           LOG.info("Thread found for " + entry.getKey().getSimpleName());
         }
-        Assert.assertTrue("No thread found for " + entry.getKey().getSimpleName(), entry.getValue());
       } else {
         if (!entry.getValue()) {
           LOG.info("No thread found for " + entry.getKey().getSimpleName());

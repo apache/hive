@@ -57,7 +57,7 @@ private boolean showStats = false;
       </%if>
     </%if>
     <%if showGraph %>
-      <script type="text/javascript" src="/static/js/vis.min.js"></script>
+      <script type="text/javascript" src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
       <link href="/static/css/query-plan-graph.css" rel="stylesheet">
       <script src="/static/js/query-plan-graph.js"></script>
     </%if>

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -102,5 +103,10 @@ public class MsckAnalyzer extends AbstractFunctionAnalyzer {
 
   private boolean isMsckDropPartition(int type) {
     return type == HiveParser.KW_SYNC || type == HiveParser.KW_DROP;
+  }
+
+  @Override
+  public void setQueryType(ASTNode tree) {
+    queryProperties.setQueryType(QueryProperties.QueryType.OTHER);
   }
 }

@@ -57,7 +57,7 @@ JAVA_GC_OPTS="-XX:+PrintGCDetails -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFil
 if [ "$JAVA_VERSION" -gt "1" ]; then # from java9+, -Xlog argument should be used
   JAVA_GC_OPTS="-Xlog:gc*,safepoint:gc.log:time,uptime:filecount=4,filesize=100M"
 fi
-JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:+UseNUMA -verbose:gc $JAVA_GC_OPTS"
+JAVA_OPTS_BASE="-server -XX:+UseNUMA -verbose:gc $JAVA_GC_OPTS"
 
 if [ ! -d "${LLAP_DAEMON_HOME}" ]; then
   echo No LLAP_DAEMON_HOME set, or is not a directory. 

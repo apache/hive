@@ -64,6 +64,7 @@ createTableStatement
          tableComment?
          createTablePartitionSpec?
          tableBuckets?
+         tableWriteLocallyOrdered?
          tableSkewed?
          tableRowFormat?
          tableFileFormat?
@@ -77,6 +78,7 @@ createTableStatement
          tableComment?
          createTablePartitionSpec?
          tableBuckets?
+         tableWriteLocallyOrdered?
          tableSkewed?
          tableRowFormat?
          tableFileFormat?
@@ -94,6 +96,7 @@ createTableStatement
          tableComment?
          createTablePartitionSpec?
          tableBuckets?
+         tableWriteLocallyOrdered?
          tableSkewed?
          tableRowFormat?
          tableFileFormat?
@@ -107,6 +110,7 @@ createTableStatement
          tableComment?
          createTablePartitionSpec?
          tableBuckets?
+         tableWriteLocallyOrdered?
          tableSkewed?
          tableRowFormat?
          tableFileFormat?

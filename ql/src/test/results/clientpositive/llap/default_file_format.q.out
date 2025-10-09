@@ -73,7 +73,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -107,7 +107,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -141,7 +141,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -170,8 +170,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -205,7 +210,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -234,10 +239,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	numFiles            	0                   
-	totalSize           	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -253,50 +261,62 @@ Storage Desc Params:
 PREHOOK: query: drop table t_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_n2
 POSTHOOK: query: drop table t_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_n2
 PREHOOK: query: drop table o
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@o
+PREHOOK: Output: database:default
 PREHOOK: Output: default@o
 POSTHOOK: query: drop table o
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@o
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@o
 PREHOOK: query: drop table io
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io
 POSTHOOK: query: drop table io
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io
 PREHOOK: query: drop table e_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@e_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@e_n1
 POSTHOOK: query: drop table e_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@e_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e_n1
 PREHOOK: query: drop table i_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@i_n0
 POSTHOOK: query: drop table i_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@i_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@i_n0
 PREHOOK: query: drop table e2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@e2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@e2
 POSTHOOK: query: drop table e2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@e2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e2
 PREHOOK: query: create table t_n2 (c int)
 PREHOOK: type: CREATETABLE
@@ -373,7 +393,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -407,7 +427,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -441,7 +461,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -470,10 +490,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	numFiles            	0                   
-	totalSize           	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -507,7 +530,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -536,10 +559,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"c\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	numFiles            	0                   
-	totalSize           	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -555,48 +581,60 @@ Storage Desc Params:
 PREHOOK: query: drop table t_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_n2
 POSTHOOK: query: drop table t_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_n2
 PREHOOK: query: drop table o
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@o
+PREHOOK: Output: database:default
 PREHOOK: Output: default@o
 POSTHOOK: query: drop table o
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@o
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@o
 PREHOOK: query: drop table io
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@io
+PREHOOK: Output: database:default
 PREHOOK: Output: default@io
 POSTHOOK: query: drop table io
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@io
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@io
 PREHOOK: query: drop table e_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@e_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@e_n1
 POSTHOOK: query: drop table e_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@e_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e_n1
 PREHOOK: query: drop table i_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@i_n0
 POSTHOOK: query: drop table i_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@i_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@i_n0
 PREHOOK: query: drop table e2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@e2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@e2
 POSTHOOK: query: drop table e2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@e2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@e2

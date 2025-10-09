@@ -1,19 +1,27 @@
 PREHOOK: query: DROP TABLE users
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE users
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE states
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE states
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE countries
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE countries
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE users_level
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE users_level
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE users(key string, state string, country string, country_id int)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (
@@ -203,26 +211,32 @@ user1	IA	Iowa
 PREHOOK: query: DROP TABLE users
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@users
+PREHOOK: Output: database:default
 PREHOOK: Output: default@users
 POSTHOOK: query: DROP TABLE users
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@users
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users
 PREHOOK: query: DROP TABLE states
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@states
+PREHOOK: Output: database:default
 PREHOOK: Output: default@states
 POSTHOOK: query: DROP TABLE states
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@states
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@states
 PREHOOK: query: DROP TABLE countries
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@countries
+PREHOOK: Output: database:default
 PREHOOK: Output: default@countries
 POSTHOOK: query: DROP TABLE countries
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@countries
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@countries
 PREHOOK: query: CREATE EXTERNAL TABLE users(key int, userid int, username string, created int) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
@@ -269,16 +283,20 @@ POSTHOOK: Input: default@users_level
 PREHOOK: query: DROP TABLE users
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@users
+PREHOOK: Output: database:default
 PREHOOK: Output: default@users
 POSTHOOK: query: DROP TABLE users
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@users
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users
 PREHOOK: query: DROP TABLE users_level
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@users_level
+PREHOOK: Output: database:default
 PREHOOK: Output: default@users_level
 POSTHOOK: query: DROP TABLE users_level
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@users_level
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@users_level

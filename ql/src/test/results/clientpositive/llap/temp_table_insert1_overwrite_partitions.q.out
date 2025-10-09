@@ -225,10 +225,12 @@ POSTHOOK: Input: default@destintable_temp@ds=2011-11-11/hr=11
 PREHOOK: query: drop table destinTable_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@destintable_temp
 POSTHOOK: query: drop table destinTable_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destintable_temp
 PREHOOK: query: CREATE TEMPORARY TABLE destinTable_temp (one string,two string)
 PREHOOK: type: CREATETABLE
@@ -336,18 +338,22 @@ POSTHOOK: Lineage: destintable_temp.two SIMPLE [(sourcetable_temp)sourcetable_te
 PREHOOK: query: drop table destinTable_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@destintable_temp
 POSTHOOK: query: drop table destinTable_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destintable_temp
 PREHOOK: query: drop table sourceTable_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sourcetable_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sourcetable_temp
 POSTHOOK: query: drop table sourceTable_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sourcetable_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sourcetable_temp
 PREHOOK: query: CREATE TEMPORARY TABLE sourceTable_temp (one string,two string) PARTITIONED BY (ds string,hr string)
 PREHOOK: type: CREATETABLE
@@ -522,16 +528,20 @@ POSTHOOK: Lineage: destintable_temp PARTITION(ds=2011-11-11,hr=11).two SIMPLE [(
 PREHOOK: query: drop table destinTable_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@destintable_temp
 POSTHOOK: query: drop table destinTable_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destintable_temp
 PREHOOK: query: drop table sourceTable_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sourcetable_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sourcetable_temp
 POSTHOOK: query: drop table sourceTable_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sourcetable_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sourcetable_temp

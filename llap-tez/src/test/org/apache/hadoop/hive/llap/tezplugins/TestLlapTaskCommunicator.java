@@ -353,7 +353,7 @@ public class TestLlapTaskCommunicator {
     private TaskSpec createBaseTaskSpec(String vertexName, TezVertexID vertexId, int taskIdx) {
       TaskSpec taskSpec = mock(TaskSpec.class);
       Configuration conf = new Configuration(false);
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYID, "fakeQueryId");
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID, "fakeQueryId");
       UserPayload userPayload;
       try {
         userPayload = TezUtils.createUserPayloadFromConf(conf);
@@ -363,6 +363,7 @@ public class TestLlapTaskCommunicator {
       TezTaskAttemptID taskAttemptId = TezTaskAttemptID.getInstance(
           TezTaskID.getInstance(vertexId, taskIdx), 0);
       doReturn(taskAttemptId).when(taskSpec).getTaskAttemptID();
+      doReturn(taskAttemptId.getDAGID()).when(taskSpec).getDAGID();
       doReturn(DAG_NAME).when(taskSpec).getDAGName();
       doReturn(vertexName).when(taskSpec).getVertexName();
       ProcessorDescriptor processorDescriptor = ProcessorDescriptor.create("fakeClassName").setUserPayload(userPayload);

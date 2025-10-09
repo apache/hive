@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrLessThan;
@@ -73,6 +75,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -295,15 +298,16 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   public URI getURIForAuth(Table table) throws URISyntaxException {
     Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
     hbaseConf = getConf();
-    String hbase_host = tableProperties.getOrDefault(HBASE_HOST_NAME,
-        hbaseConf.get(HBASE_HOST_NAME));
+    String hbase_host = IPStackUtils.adaptLoopbackAddress(tableProperties.getOrDefault(HBASE_HOST_NAME,
+        hbaseConf.get(HBASE_HOST_NAME)));
     String hbase_port = tableProperties.getOrDefault(HBASE_CLIENT_PORT,
         hbaseConf.get(HBASE_CLIENT_PORT));
     String table_name = encodeString(tableProperties.getOrDefault(HBaseSerDe.HBASE_TABLE_NAME,
         null));
     String column_family = encodeString(tableProperties.getOrDefault(
         HBaseSerDe.HBASE_COLUMNS_MAPPING, null));
-    String URIString = HBASE_PREFIX + "//" + hbase_host + ":" + hbase_port + "/" + table_name;
+    String URIString = HBASE_PREFIX + "//" + IPStackUtils.concatHostPort(hbase_host, Integer.parseInt(hbase_port)) +
+            "/" + table_name;
     if (column_family != null) {
       URIString += "/" + column_family;
     }
@@ -427,6 +431,10 @@ public class HBaseStorageHandler extends DefaultStorageHandler
       ExprNodeDesc predicate) {
     ColumnMapping keyMapping = hBaseSerDe.getHBaseSerdeParam().getKeyColumnMapping();
     ColumnMapping tsMapping = hBaseSerDe.getHBaseSerdeParam().getTimestampColumnMapping();
+
+    // converts 'BETWEEN' predicate to '<= AND >=' predicate
+    predicate = convertBetweenToLTOrEqualAndGTOrEqual(predicate);
+
     IndexPredicateAnalyzer analyzer = HiveHBaseTableInputFormat.newIndexPredicateAnalyzer(
         keyMapping.columnName, keyMapping.isComparable(),
         tsMapping == null ? null : tsMapping.columnName);
@@ -503,6 +511,19 @@ public class HBaseStorageHandler extends DefaultStorageHandler
             continue;
           }
         }
+
+        // In HBase, Keys are sorted lexicographically so the byte representation of negative values comes after the positive values
+        // So don't pushdown the predicate if any constant value is a negative number.
+        // if first condition constant value is less than 0 then don't pushdown the predicate
+        if (((Number) searchConditions.get(0).getConstantDesc().getValue()).longValue() < 0 && scSize == 2) {
+          residualPredicate = extractResidualCondition(analyzer, searchConditions, residualPredicate);
+          continue;
+        }
+        // if second condition constant value is less than 0 then don't pushdown the predicate
+        if (scSize == 2 && ((Number) searchConditions.get(1).getConstantDesc().getValue()).longValue() < 0) {
+          residualPredicate = extractResidualCondition(analyzer, searchConditions, residualPredicate);
+          continue;
+        }
       }
 
       // This one can be pushed
@@ -514,6 +535,31 @@ public class HBaseStorageHandler extends DefaultStorageHandler
     decomposedPredicate.pushedPredicate = pushedPredicate;
     decomposedPredicate.residualPredicate = residualPredicate;
     return decomposedPredicate;
+  }
+
+  private static ExprNodeDesc convertBetweenToLTOrEqualAndGTOrEqual(ExprNodeDesc predicate) {
+    if (predicate instanceof ExprNodeGenericFuncDesc && ((ExprNodeGenericFuncDesc) predicate).getGenericUDF() instanceof GenericUDFBetween && "false".equalsIgnoreCase(
+        predicate.getChildren().get(0).getExprString())) {
+      try {
+        List<ExprNodeDesc> betweenInputs = predicate.getChildren();
+        List<ExprNodeDesc> gtOrEqualInputs = Arrays.asList(betweenInputs.get(1), betweenInputs.get(2));
+        List<ExprNodeDesc> ltOrEqualInputs = Arrays.asList(betweenInputs.get(1), betweenInputs.get(3));
+
+        ExprNodeGenericFuncDesc gtOrEqual =
+            ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo(">=").getGenericUDF(), ">=",
+                gtOrEqualInputs);
+        ExprNodeGenericFuncDesc ltOrEqual =
+            ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo("<=").getGenericUDF(), "<=",
+                ltOrEqualInputs);
+        List<ExprNodeDesc> andInputs = Arrays.asList(ltOrEqual, gtOrEqual);
+
+        predicate = ExprNodeGenericFuncDesc.newInstance(FunctionRegistry.getFunctionInfo("and").getGenericUDF(), "and",
+            andInputs);
+      } catch (Exception se) {
+        LOG.warn("Unable to convert 'BETWEEN' predicate to '>= AND <=' predicate.", se);
+      }
+    }
+    return predicate;
   }
 
   private static ExprNodeGenericFuncDesc extractStorageHandlerCondition(IndexPredicateAnalyzer analyzer,

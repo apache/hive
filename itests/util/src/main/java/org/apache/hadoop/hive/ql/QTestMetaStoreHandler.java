@@ -21,12 +21,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.dbinstall.rules.DatabaseRule;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Derby;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mssql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Mysql;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Oracle;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.Postgres;
-import org.apache.hadoop.hive.metastore.dbinstall.rules.PostgresTPCDS;
+import org.apache.hadoop.hive.metastore.dbinstall.rules.MetastoreRuleFactory;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +41,7 @@ public class QTestMetaStoreHandler {
   public QTestMetaStoreHandler(String metastore) {
     this.metastoreType = Objects.requireNonNull(metastore);
 
-    this.rule = getDatabaseRule(metastoreType).setVerbose(false);
+    this.rule = MetastoreRuleFactory.create(metastoreType).setVerbose(false);
 
     LOG.info(String.format("initialized metastore type '%s' for qtests", metastoreType));
   }
@@ -60,7 +55,7 @@ public class QTestMetaStoreHandler {
   }
 
   public QTestMetaStoreHandler setMetaStoreConfiguration(HiveConf conf) {
-    conf.setVar(ConfVars.METASTOREDBTYPE, getDbTypeConfString());
+    conf.setVar(ConfVars.METASTORE_DB_TYPE, getDbTypeConfString());
 
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, rule.getJdbcUrl());
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER, rule.getJdbcDriver());
@@ -75,37 +70,11 @@ public class QTestMetaStoreHandler {
     return this;
   }
 
-  private DatabaseRule getDatabaseRule(String metastoreType) {
-    switch (metastoreType) {
-    case "postgres":
-      return new Postgres();
-    case "postgres.tpcds":
-      return new PostgresTPCDS();
-    case "oracle":
-      return new Oracle();
-    case "mysql":
-      return new Mysql();
-    case "mssql":
-    case "sqlserver":
-      return new Mssql();
-    default:
-      return new Derby();
-    }
-  }
-
   private String getDbTypeConfString() {// "ORACLE", "MYSQL", "MSSQL", "POSTGRES"
     return "sqlserver".equalsIgnoreCase(metastoreType) ? "MSSQL" : metastoreType.toUpperCase();
   }
 
-  public void beforeTest() throws Exception {
-    getRule().before();
-    if (!isDerby()) {// derby is handled with old QTestUtil logic (TxnDbUtil stuff)
-      getRule().install();
-    }
-  }
-
-  public void afterTest(QTestUtil qt) throws Exception {
-    getRule().after();
+  public void truncateDatabase(QTestUtil qt) throws Exception {
 
     // special qtest logic, which doesn't fit quite well into Derby.after()
     if (isDerby()) {
@@ -113,6 +82,11 @@ public class QTestMetaStoreHandler {
     }
   }
 
+  /**
+   * Sets system properties for the metastore connection.
+   * The metastore database must be initialized before calling this method. Some information, such as port
+   * number (in JDBC URL), is not available until the rule is initialized.
+   */
   public void setSystemProperties() {
     System.setProperty(MetastoreConf.ConfVars.CONNECT_URL_KEY.getVarname(), rule.getJdbcUrl());
     System.setProperty(MetastoreConf.ConfVars.CONNECTION_DRIVER.getVarname(), rule.getJdbcDriver());

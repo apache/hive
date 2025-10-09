@@ -84,7 +84,7 @@ public class TableAccessAnalyzer {
     SemanticDispatcher disp = new DefaultRuleDispatcher(getDefaultProc(), opRules, tableAccessCtx);
     SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
 
-    // Create a list of topop nodes and walk!
+    // Create a list of topOp nodes and walk!
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pGraphContext.getTopOps().values());
     ogw.startWalking(topNodes, null);

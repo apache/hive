@@ -52,6 +52,7 @@ import com.google.common.collect.Sets;
  */
 public class SetProcessor implements CommandProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(SetProcessor.class);
+  private static final SessionState.LogHelper console = SessionState.getConsole();
 
   private static final String prefix = "set: ";
   private static final Set<String> removedConfigs =
@@ -158,72 +159,72 @@ public class SetProcessor implements CommandProcessor {
     }
   }
 
-  public CommandProcessorResponse executeSetVariable(String varname, String varvalue) throws CommandProcessorException {
+  public CommandProcessorResponse executeSetVariable(String varName, String varValue) throws CommandProcessorException {
     try {
-      return setVariable(varname, varvalue);
+      return setVariable(varName, varValue);
     } catch (Exception e) {
       Throwable exception = e instanceof IllegalArgumentException ? null : e;
       throw new CommandProcessorException(1, -1, e.getMessage(), "42000", exception);
     }
   }
 
-  public static CommandProcessorResponse setVariable(String varname, String varvalue) throws Exception {
+  public static CommandProcessorResponse setVariable(String varName, String varValue) throws Exception {
     SessionState ss = SessionState.get();
-    if (varvalue.contains("\n")){
+    if (varValue.contains("\n")){
       ss.err.println("Warning: Value had a \\n character in it.");
     }
-    varname = varname.trim();
+    varName = varName.trim();
     String nonErrorMessage = null;
-    if (varname.startsWith(ENV_PREFIX)){
+    if (varName.startsWith(ENV_PREFIX)){
       ss.err.println("env:* variables can not be set.");
       throw new CommandProcessorException(1); // Should we propagate the error message properly?
-    } else if (varname.startsWith(SYSTEM_PREFIX)){
-      String propName = varname.substring(SYSTEM_PREFIX.length());
+    } else if (varName.startsWith(SYSTEM_PREFIX)){
+      String propName = varName.substring(SYSTEM_PREFIX.length());
       System.getProperties()
           .setProperty(propName, new VariableSubstitution(new HiveVariableSource() {
             @Override
             public Map<String, String> getHiveVariable() {
               return SessionState.get().getHiveVariables();
             }
-          }).substitute(ss.getConf(), varvalue));
-    } else if (varname.startsWith(HIVECONF_PREFIX)){
-      String propName = varname.substring(HIVECONF_PREFIX.length());
-      nonErrorMessage = setConf(varname, propName, varvalue, false);
-    } else if (varname.startsWith(HIVEVAR_PREFIX)) {
-      String propName = varname.substring(HIVEVAR_PREFIX.length());
+          }).substitute(ss.getConf(), varValue));
+    } else if (varName.startsWith(HIVECONF_PREFIX)){
+      String propName = varName.substring(HIVECONF_PREFIX.length());
+      nonErrorMessage = setConf(varName, propName, varValue, false);
+    } else if (varName.startsWith(HIVEVAR_PREFIX)) {
+      String propName = varName.substring(HIVEVAR_PREFIX.length());
       ss.getHiveVariables().put(propName, new VariableSubstitution(new HiveVariableSource() {
         @Override
         public Map<String, String> getHiveVariable() {
           return SessionState.get().getHiveVariables();
         }
-      }).substitute(ss.getConf(), varvalue));
-    } else if (varname.startsWith(METACONF_PREFIX)) {
-      String propName = varname.substring(METACONF_PREFIX.length());
+      }).substitute(ss.getConf(), varValue));
+    } else if (varName.startsWith(METACONF_PREFIX)) {
+      String propName = varName.substring(METACONF_PREFIX.length());
       Hive hive = Hive.get(ss.getConf());
       hive.setMetaConf(propName, new VariableSubstitution(new HiveVariableSource() {
         @Override
         public Map<String, String> getHiveVariable() {
           return SessionState.get().getHiveVariables();
         }
-      }).substitute(ss.getConf(), varvalue));
+      }).substitute(ss.getConf(), varValue));
     } else {
-      nonErrorMessage = setConf(varname, varname, varvalue, true);
-      if (varname.equals(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED.toString())) {
-        SessionState.get().updateHistory(Boolean.parseBoolean(varvalue), ss);
+      nonErrorMessage = setConf(varName, varName, varValue, true);
+      if (varName.equals(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED.toString())) {
+        SessionState.get().updateHistory(Boolean.parseBoolean(varValue), ss);
       }
     }
     return new CommandProcessorResponse(null, nonErrorMessage);
   }
 
-  static String setConf(String varname, String key, String varvalue, boolean register)
+  static String setConf(String varName, String key, String varValue, boolean register)
         throws IllegalArgumentException {
-    return setConf(SessionState.get(), varname, key, varvalue, register);
+    return setConf(SessionState.get(), varName, key, varValue, register);
   }
 
   /**
    * @return A console message that is not strong enough to fail the command (e.g. deprecation).
    */
-  static String setConf(SessionState ss, String varname, String key, String varvalue, boolean register)
+  static String setConf(SessionState ss, String varName, String key, String varValue, boolean register)
         throws IllegalArgumentException {
     String result = null;
     HiveConf conf = ss.getConf();
@@ -232,13 +233,13 @@ public class SetProcessor implements CommandProcessor {
       public Map<String, String> getHiveVariable() {
         return ss.getHiveVariables();
       }
-    }).substitute(conf, varvalue);
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
+    }).substitute(conf, varValue);
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CONF_VALIDATION)) {
       HiveConf.ConfVars confVars = HiveConf.getConfVars(key);
       if (confVars != null) {
         if (!confVars.isType(value)) {
           StringBuilder message = new StringBuilder();
-          message.append("'SET ").append(varname).append('=').append(varvalue);
+          message.append("'SET ").append(varName).append('=').append(varValue);
           message.append("' FAILED because ").append(key).append(" expects ");
           message.append(confVars.typeString()).append(" type value.");
           throw new IllegalArgumentException(message.toString());
@@ -246,7 +247,7 @@ public class SetProcessor implements CommandProcessor {
         String fail = confVars.validate(value);
         if (fail != null) {
           StringBuilder message = new StringBuilder();
-          message.append("'SET ").append(varname).append('=').append(varvalue);
+          message.append("'SET ").append(varName).append('=').append(varValue);
           message.append("' FAILED in validation : ").append(fail).append('.');
           throw new IllegalArgumentException(message.toString());
         }
@@ -255,6 +256,10 @@ public class SetProcessor implements CommandProcessor {
       }
     }
     conf.verifyAndSet(key, value);
+    if (conf.isLockedConfig(key)) {
+      console.printWarn("Cannot modify " + key + " at runtime. "
+              + "It is in the list of locked configurations that can't be modified at runtime");
+    }
     if (HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname.equals(key)) {
       if ("mr".equals(value)) {
         result = HiveConf.generateMrDeprecationWarning();
@@ -285,14 +290,14 @@ public class SetProcessor implements CommandProcessor {
     return sortedEnvMap;
   }
 
-  private CommandProcessorResponse getVariable(String varname) throws Exception {
+  private CommandProcessorResponse getVariable(String varName) throws Exception {
     SessionState ss = SessionState.get();
-    if (varname.equals("silent")){
+    if (varName.equals("silent")){
       ss.out.println("silent" + "=" + ss.getIsSilent());
       return new CommandProcessorResponse(getSchema(), null);
     }
-    if (varname.startsWith(SYSTEM_PREFIX)) {
-      String propName = varname.substring(SYSTEM_PREFIX.length());
+    if (varName.startsWith(SYSTEM_PREFIX)) {
+      String propName = varName.substring(SYSTEM_PREFIX.length());
       String result = System.getProperty(propName);
       if (result != null) {
         if(isHidden(propName)) {
@@ -305,8 +310,8 @@ public class SetProcessor implements CommandProcessor {
         ss.out.println(propName + " is undefined as a system property");
         throw new CommandProcessorException(1);
       }
-    } else if (varname.indexOf(ENV_PREFIX) == 0) {
-      String var = varname.substring(ENV_PREFIX.length());
+    } else if (varName.indexOf(ENV_PREFIX) == 0) {
+      String var = varName.substring(ENV_PREFIX.length());
       if (System.getenv(var) != null) {
         if(isHidden(var)) {
           ss.out.println(ENV_PREFIX + var + " is a hidden config");
@@ -315,11 +320,11 @@ public class SetProcessor implements CommandProcessor {
         }
         return new CommandProcessorResponse(getSchema(), null);
       } else {
-        ss.out.println(varname + " is undefined as an environmental variable");
+        ss.out.println(varName + " is undefined as an environmental variable");
         throw new CommandProcessorException(1);
       }
-    } else if (varname.indexOf(HIVECONF_PREFIX) == 0) {
-      String var = varname.substring(HIVECONF_PREFIX.length());
+    } else if (varName.indexOf(HIVECONF_PREFIX) == 0) {
+      String var = varName.substring(HIVECONF_PREFIX.length());
       if (ss.getConf().isHiddenConfig(var)) {
         ss.out.println(HIVECONF_PREFIX + var + " is a hidden config");
         return new CommandProcessorResponse(getSchema(), null);
@@ -327,31 +332,31 @@ public class SetProcessor implements CommandProcessor {
         ss.out.println(HIVECONF_PREFIX + var + "=" + ss.getConf().get(var));
         return new CommandProcessorResponse(getSchema(), null);
       } else {
-        ss.out.println(varname + " is undefined as a hive configuration variable");
+        ss.out.println(varName + " is undefined as a hive configuration variable");
         throw new CommandProcessorException(1);
       }
-    } else if (varname.indexOf(HIVEVAR_PREFIX) == 0) {
-      String var = varname.substring(HIVEVAR_PREFIX.length());
+    } else if (varName.indexOf(HIVEVAR_PREFIX) == 0) {
+      String var = varName.substring(HIVEVAR_PREFIX.length());
       if (ss.getHiveVariables().get(var) != null) {
         ss.out.println(HIVEVAR_PREFIX + var + "=" + ss.getHiveVariables().get(var));
         return new CommandProcessorResponse(getSchema(), null);
       } else {
-        ss.out.println(varname + " is undefined as a hive variable");
+        ss.out.println(varName + " is undefined as a hive variable");
         throw new CommandProcessorException(1);
       }
-    } else if (varname.indexOf(METACONF_PREFIX) == 0) {
-      String var = varname.substring(METACONF_PREFIX.length());
+    } else if (varName.indexOf(METACONF_PREFIX) == 0) {
+      String var = varName.substring(METACONF_PREFIX.length());
       Hive hive = Hive.get(ss.getConf());
       String value = hive.getMetaConf(var);
       if (value != null) {
         ss.out.println(METACONF_PREFIX + var + "=" + value);
         return new CommandProcessorResponse(getSchema(), null);
       } else {
-        ss.out.println(varname + " is undefined as a hive meta variable");
+        ss.out.println(varName + " is undefined as a hive meta variable");
         throw new CommandProcessorException(1);
       }
     } else {
-      dumpOption(varname);
+      dumpOption(varName);
       return new CommandProcessorResponse(getSchema(), null);
     }
   }

@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE avro_charvarchar_staging
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE avro_charvarchar_staging
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE avro_charvarchar
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE avro_charvarchar
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE avro_charvarchar_staging (
   cchar char(5),
   cvarchar varchar(10),

@@ -34,12 +34,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -63,6 +60,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
    * Set by the semantic analyzer only in case of the analyze command.
    */
   private List<String> partColumns;
+
+  private List<String> groupingPartitionColumns;
+  private Integer groupingNumBuckets;
 
   /**
    * Used for split sampling (row count per split)
@@ -109,11 +109,23 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   public static final String PARTITION_PRUNING_FILTER =
       "hive.io.pruning.filter";
 
+  public static final String GROUPING_PARTITION_COLUMNS =
+      "hive.io.grouping.partition.columns";
+
+  public static final String GROUPING_NUM_BUCKETS =
+      "hive.io.grouping.num.buckets";
+
   public static final String AS_OF_TIMESTAMP =
       "hive.io.as.of.timestamp";
 
   public static final String AS_OF_VERSION =
       "hive.io.as.of.version";
+
+  public static final String FROM_VERSION =
+      "hive.io.version.from";
+
+  public static final String SNAPSHOT_REF =
+      "hive.io.snapshot.ref";
 
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
@@ -140,8 +152,11 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private int numBuckets = -1;
 
   private String asOfVersion = null;
+  private String versionIntervalFrom = null;
 
   private String asOfTimestamp = null;
+
+  private String snapshotRef = null;
 
   public TableScanDesc() {
     this(null, null);
@@ -172,6 +187,8 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
       numBuckets = tblMetadata.getNumBuckets();
       asOfTimestamp = tblMetadata.getAsOfTimestamp();
       asOfVersion = tblMetadata.getAsOfVersion();
+      versionIntervalFrom = tblMetadata.getVersionIntervalFrom();
+      snapshotRef = tblMetadata.getSnapshotRef();
     }
     isTranscationalTable = AcidUtils.isTransactionalTable(this.tableMetadata);
     if (isTranscationalTable) {
@@ -340,6 +357,26 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   public List<String> getPartColumns () {
     return partColumns;
+  }
+
+  public void setGroupingPartitionColumns(List<String> groupingPartitionColumns) {
+    this.groupingPartitionColumns = groupingPartitionColumns;
+  }
+
+  @Explain(displayName = "Grouping Partition Columns", explainLevels = { Level.USER, Level.EXTENDED })
+  @Signature
+  public List<String> getGroupingPartitionColumns() {
+    return groupingPartitionColumns;
+  }
+
+  public void setGroupingNumBuckets(int groupingNumBuckets) {
+    this.groupingNumBuckets = groupingNumBuckets;
+  }
+
+  @Explain(displayName = "Grouping Num Buckets", explainLevels = { Level.USER, Level.EXTENDED })
+  @Signature
+  public Integer getGroupingNumBuckets() {
+    return groupingNumBuckets;
   }
 
   public void setGatherStats(boolean gatherStats) {
@@ -531,9 +568,19 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     return asOfVersion;
   }
 
+  @Explain(displayName = "Version interval from")
+  public String getVersionIntervalFrom() {
+    return versionIntervalFrom;
+  }
+
   @Explain(displayName = "As of timestamp")
   public String getAsOfTimestamp() {
     return asOfTimestamp;
+  }
+
+  @Explain(displayName = "Snapshot ref")
+  public String getSnapshotRef() {
+    return snapshotRef;
   }
 
   public class TableScanOperatorExplainVectorization extends OperatorExplainVectorization {

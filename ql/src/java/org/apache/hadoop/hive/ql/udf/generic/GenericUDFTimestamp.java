@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDateToTimestamp;
@@ -31,7 +32,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -71,7 +71,6 @@ public class GenericUDFTimestamp extends GenericUDF {
    * otherwise, it's interpreted as timestamp in seconds.
    */
   private boolean intToTimestampInSeconds = false;
-  private boolean strict = true;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -79,22 +78,29 @@ public class GenericUDFTimestamp extends GenericUDF {
     checkArgPrimitive(arguments, 0);
     checkArgGroups(arguments, 0, tsInputTypes, STRING_GROUP, DATE_GROUP, NUMERIC_GROUP, VOID_GROUP, BOOLEAN_GROUP);
 
-    strict = SessionState.get() != null ? SessionState.get().getConf()
-        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION) : new HiveConf()
-        .getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION);
-    intToTimestampInSeconds = SessionState.get() != null ? SessionState.get().getConf()
-        .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS) : new HiveConf()
-        .getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS);
-
-    if (strict) {
-      if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(tsInputTypes[0]) == PrimitiveGrouping.NUMERIC_GROUP) {
+    final SessionState ss = SessionState.get();
+    if (ss != null) {
+      final boolean strict = ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION);
+      final PrimitiveGrouping grouping = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(tsInputTypes[0]);
+      if (strict && grouping == PrimitiveGrouping.NUMERIC_GROUP) {
         throw new UDFArgumentException(
             "Casting NUMERIC types to TIMESTAMP is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
       }
+      intToTimestampInSeconds = ss.getConf().getBoolVar(ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS);
     }
 
     obtainTimestampConverter(arguments, 0, tsInputTypes, tsConvertors);
     return PrimitiveObjectInspectorFactory.writableTimestampObjectInspector;
+  }
+
+  @Override
+  public void configure(MapredContext context) {
+    if (context == null) {
+      return;
+    }
+
+    intToTimestampInSeconds = HiveConf.getBoolVar(context.getJobConf(),
+        ConfVars.HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS);
   }
 
   @Override

@@ -17,6 +17,7 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
@@ -55,5 +56,20 @@ public class HiveDatabaseAccessor extends GenericJdbcDatabaseAccessor {
       return sql;
     }
     return sql + " LIMIT " + limit;
+  }
+
+  @Override
+  protected List<String> getColNamesFromRS(ResultSet rs) throws Exception {
+    List<String> columnNames = super.getColNamesFromRS(rs);
+    return columnNames.stream()
+        .map(c -> {
+          int lastIndex = c.lastIndexOf(".");
+          return lastIndex == -1 ? c : c.substring(lastIndex + 1); })
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  protected String getMetaDataQuery(String sql) {
+    return addLimitToQuery(sql, 0);
   }
 }

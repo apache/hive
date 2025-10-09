@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.ql.QTestUtil;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class adapts old vm test-executors to be executed in multiple instances
@@ -37,8 +35,6 @@ public abstract class CliAdapter {
 
   protected final AbstractCliConfig cliConfig;
   protected QTestMetaStoreHandler metaStoreHandler;
-  boolean firstTestNotYetRun = true; // this can protect class/test level logic from each other
-  private static final Logger LOG = LoggerFactory.getLogger(CliAdapter.class);
 
   public CliAdapter(AbstractCliConfig cliConfig) {
     this.cliConfig = cliConfig;
@@ -76,12 +72,10 @@ public abstract class CliAdapter {
         return new Statement() {
           @Override
           public void evaluate() throws Throwable {
-            metaStoreHandler.setSystemProperties(); // for QTestUtil pre-initialization
-            CliAdapter.this.beforeClass(); // instantiating QTestUtil
-
-            LOG.debug("will initialize metastore database in class rule");
             metaStoreHandler.getRule().before();
             metaStoreHandler.getRule().install();
+            metaStoreHandler.setSystemProperties(); // for QTestUtil pre-initialization
+            CliAdapter.this.beforeClass(); // instantiating QTestUtil
 
             if (getQt() != null) {
               metaStoreHandler.setMetaStoreConfiguration(getQt().getConf());
@@ -95,10 +89,7 @@ public abstract class CliAdapter {
               base.evaluate();
             } finally {
               CliAdapter.this.shutdown();
-              if (getQt() != null && firstTestNotYetRun) {
-                LOG.debug("will destroy metastore database in class rule (if not derby)");
-                metaStoreHandler.afterTest(getQt());
-              }
+              metaStoreHandler.getRule().after();
             }
           }
         };
@@ -117,14 +108,6 @@ public abstract class CliAdapter {
         return new Statement() {
           @Override
           public void evaluate() throws Throwable {
-
-            if (getQt() != null && !firstTestNotYetRun) {
-              LOG.debug("will initialize metastore database in test rule");
-              metaStoreHandler.setMetaStoreConfiguration(getQt().getConf());
-              metaStoreHandler.beforeTest();
-            }
-            firstTestNotYetRun = false;
-
             if (getQt() != null && CliAdapter.this.shouldRunCreateScriptBeforeEveryTest()){
               // it's because some drivers still use init scripts, which can create a non-dataset table
               // and get cleant after every test
@@ -136,8 +119,7 @@ public abstract class CliAdapter {
             } finally {
               CliAdapter.this.tearDown();
               if (getQt() != null) {
-                LOG.debug("will destroy metastore database in test rule (if not derby)");
-                metaStoreHandler.afterTest(getQt());
+                metaStoreHandler.truncateDatabase(getQt());
               }
             }
           }

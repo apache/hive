@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists customer
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists customer
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists customer_address
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists customer_address
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table customer(id bigint, address_id bigint, name char(20))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -288,10 +292,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: customer
-                  filterExpr: ((name) IN ('Joe                 ', 'Robert              ', 'Heisenberg          ') and address_id is not null) (type: boolean)
+                  filterExpr: ((name) IN ('Heisenberg          ', 'Joe                 ', 'Robert              ') and address_id is not null) (type: boolean)
                   Statistics: Num rows: 6 Data size: 582 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((name) IN ('Joe                 ', 'Robert              ', 'Heisenberg          ') and address_id is not null) (type: boolean)
+                    predicate: ((name) IN ('Heisenberg          ', 'Joe                 ', 'Robert              ') and address_id is not null) (type: boolean)
                     Statistics: Num rows: 3 Data size: 291 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: +

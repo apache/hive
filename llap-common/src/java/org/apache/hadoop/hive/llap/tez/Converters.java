@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.protobuf.ByteString;
+import com.google.protobuf.UnsafeByteOperations;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.EntityDescriptorProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.GroupInputSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
@@ -179,7 +179,7 @@ public class Converters {
     if (userPayload != null) {
       UserPayloadProto.Builder payloadBuilder = UserPayloadProto.newBuilder();
       if (userPayload.hasPayload()) {
-        payloadBuilder.setUserPayload(ByteString.copyFrom(userPayload.getPayload()));
+        payloadBuilder.setUserPayload(UnsafeByteOperations.unsafeWrap(userPayload.getPayload()));
         payloadBuilder.setVersion(userPayload.getVersion());
       }
       builder.setUserPayload(payloadBuilder.build());

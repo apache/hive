@@ -1,4 +1,5 @@
 --! qt:dataset:alltypesorc
+--! qt:replace:/(\S Data size\:\s+)\S+(\s+Basic stats\: \S+ Column stats\: \S+)/$1#Masked#$2/
 
 set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;

@@ -39,7 +39,7 @@ STAGE PLANS:
             location: B
             partition spec: {ds=2010-02-01}
           Partition
-            params: {totalSize=0, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}, numFiles=0, numFilesErasureCoded=0}
+            params: {totalSize=#Masked#, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}, numFiles=0, numFilesErasureCoded=0}
             partition spec: {ds=2010-03-01}
           Partition
             location: C
@@ -115,5 +115,5 @@ POSTHOOK: Input: default@add_part_test_n1_temp@ds=2010-04-01
 #### A masked pattern was here ####
 100	100	2010-01-01
 200	200	2010-02-01
-500	400	2010-04-01
 400	300	2010-03-01
+500	400	2010-04-01

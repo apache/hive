@@ -18,23 +18,10 @@
 -->
 
 <configuration>
-
-  <property>
-    <name>hive.metastore.client.cache.maxSize</name>
-    <value>10Mb</value>
-    <description>Max size for hive metastore client local cache</description>
-  </property>
-
   <property>
     <name>hive.metastore.client.cache.enabled</name>
     <value>true</value>
     <description>This property enables a Caffeiene Cache for Metastore client</description>
-  </property>
-
-  <property>
-    <name>hive.metastore.client.cache.recordStats</name>
-    <value>true</value>
-    <description>This property enables recording metastore client cache stats in DEBUG logs</description>
   </property>
 
 <property>
@@ -119,14 +106,6 @@
 </property>
 
 <property>
-  <name>hive.metastore.metadb.dir</name>
-  <value>file://${test.tmp.dir}/metadb/</value>
-  <description>
-  Required by metastore server or if the uris argument below is not supplied
-  </description>
-</property>
-
-<property>
   <name>test.log.dir</name>
   <value>${test.tmp.dir}/log/</value>
   <description></description>
@@ -160,6 +139,12 @@
   <name>hive.querylog.location</name>
   <value>${test.tmp.dir}/tmp</value>
   <description>Location of the structured hive logs</description>
+</property>
+
+<property>
+  <name>hive.lineage.statement.filter</name>
+  <value>ALL</value>
+  <description>Specify the types of statements for which column lineage information is generated</description>
 </property>
 
 <property>
@@ -233,15 +218,9 @@
 </property>
 
 <property>
-  <name>hive.stats.key.prefix.reserve.length</name>
-  <value>0</value>
-</property>
-
-<property>
   <name>hive.exec.submit.local.task.via.child</name>
   <value>false</value>
 </property>
-
 
 <property>
   <name>hive.dummyparam.test.server.specific.config.override</name>
@@ -286,27 +265,6 @@
   <name>hive.security.authorization.manager</name>
   <value>org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest</value>
   <description>The Hive client authorization manager class name.</description>
-</property>
-
-<property>
-  <name>hive.llap.io.cache.orc.size</name>
-  <value>8388608</value>
-</property>
-
-<property>
-  <name>hive.llap.io.cache.orc.arena.size</name>
-  <value>8388608</value>
-</property>
-
-<property>
-  <name>hive.llap.io.cache.orc.alloc.max</name>
-  <value>2097152</value>
-</property>
-
-
-<property>
-  <name>hive.llap.io.cache.orc.alloc.min</name>
-  <value>32768</value>
 </property>
 
 <property>

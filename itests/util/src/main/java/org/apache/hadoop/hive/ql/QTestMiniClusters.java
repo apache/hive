@@ -420,7 +420,7 @@ public class QTestMiniClusters {
     // Create remote dirs once.
     if (getMr() != null) {
       assert fs != null;
-      Path warehousePath = fs.makeQualified(new Path(conf.getVar(ConfVars.METASTOREWAREHOUSE)));
+      Path warehousePath = fs.makeQualified(new Path(conf.getVar(ConfVars.METASTORE_WAREHOUSE)));
       assert warehousePath != null;
       Path hiveJarPath = fs.makeQualified(new Path(conf.getVar(ConfVars.HIVE_JAR_DIRECTORY)));
       assert hiveJarPath != null;
@@ -570,13 +570,13 @@ public class QTestMiniClusters {
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fsUriString);
 
     // Remote dirs
-    conf.setVar(ConfVars.METASTOREWAREHOUSE, warehousePath.toString());
+    conf.setVar(ConfVars.METASTORE_WAREHOUSE, warehousePath.toString());
     conf.setVar(ConfVars.HIVE_JAR_DIRECTORY, jarPath.toString());
     conf.setVar(ConfVars.HIVE_USER_INSTALL_DIR, userInstallPath.toString());
-    // ConfVars.SCRATCHDIR - {test.tmp.dir}/scratchdir
+    // ConfVars.SCRATCH_DIR - {test.tmp.dir}/scratchdir
 
     // Local dirs
-    // ConfVars.LOCALSCRATCHDIR - {test.tmp.dir}/localscratchdir
+    // ConfVars.LOCAL_SCRATCH_DIR - {test.tmp.dir}/localscratchdir
 
     // TODO Make sure to cleanup created dirs.
   }

@@ -64,7 +64,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col1 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -151,16 +151,20 @@ STAGE PLANS:
 PREHOOK: query: drop table destinTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@destintable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@destintable
 POSTHOOK: query: drop table destinTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@destintable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@destintable
 PREHOOK: query: drop table sourceTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@sourcetable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@sourcetable
 POSTHOOK: query: drop table sourceTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@sourcetable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@sourcetable

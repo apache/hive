@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists tx1_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tx1_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists tx2_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tx2_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tx1_n2 (a integer,b integer,c integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

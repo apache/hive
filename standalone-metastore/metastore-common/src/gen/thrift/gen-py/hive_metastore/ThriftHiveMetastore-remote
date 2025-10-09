@@ -24,6 +24,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('Usage: ' + sys.argv[0] + ' [-h host[:port]] [-u url] [-f[ramed]] [-s[sl]] [-novalidate] [-ca_certs certs] [-keyfile keyfile] [-certfile certfile] function [arg1 [arg2...]]')
     print('')
     print('Functions:')
+    print('  AbortCompactResponse abort_Compactions(AbortCompactionRequest rqst)')
     print('  string getMetaConf(string key)')
     print('  void setMetaConf(string key, string value)')
     print('  void create_catalog(CreateCatalogRequest catalog)')
@@ -32,18 +33,21 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  GetCatalogsResponse get_catalogs()')
     print('  void drop_catalog(DropCatalogRequest catName)')
     print('  void create_database(Database database)')
+    print('  void create_database_req(CreateDatabaseRequest createDatabaseRequest)')
     print('  Database get_database(string name)')
     print('  Database get_database_req(GetDatabaseRequest request)')
     print('  void drop_database(string name, bool deleteData, bool cascade)')
     print('  void drop_database_req(DropDatabaseRequest req)')
     print('   get_databases(string pattern)')
     print('   get_all_databases()')
+    print('  GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request)')
     print('  void alter_database(string dbname, Database db)')
-    print('  void create_dataconnector(DataConnector connector)')
+    print('  void alter_database_req(AlterDatabaseRequest alterDbReq)')
+    print('  void create_dataconnector_req(CreateDataConnectorRequest connectorReq)')
     print('  DataConnector get_dataconnector_req(GetDataConnectorRequest request)')
-    print('  void drop_dataconnector(string name, bool ifNotExists, bool checkReferences)')
+    print('  void drop_dataconnector_req(DropDataConnectorRequest dropDcReq)')
     print('   get_dataconnectors()')
-    print('  void alter_dataconnector(string name, DataConnector connector)')
+    print('  void alter_dataconnector_req(AlterDataConnectorRequest alterReq)')
     print('  Type get_type(string name)')
     print('  bool create_type(Type type)')
     print('  bool drop_type(string type)')
@@ -68,6 +72,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  Table translate_table_dryrun(CreateTableRequest request)')
     print('  void drop_table(string dbname, string name, bool deleteData)')
     print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
+    print('  void drop_table_req(DropTableRequest dropTableReq)')
     print('  void truncate_table(string dbName, string tableName,  partNames)')
     print('  TruncateTableResponse truncate_table_req(TruncateTableRequest req)')
     print('   get_tables(string db_name, string pattern)')
@@ -76,8 +81,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   get_materialized_views_for_rewriting(string db_name)')
     print('   get_table_meta(string db_patterns, string tbl_patterns,  tbl_types)')
     print('   get_all_tables(string db_name)')
-    print('  Table get_table(string dbname, string tbl_name)')
-    print('   get_table_objects_by_name(string dbname,  tbl_names)')
     print('   get_tables_ext(GetTablesExtRequest req)')
     print('  GetTableResult get_table_req(GetTableRequest req)')
     print('  GetTablesResult get_table_objects_by_name_req(GetTablesRequest req)')
@@ -95,10 +98,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  Partition append_partition(string db_name, string tbl_name,  part_vals)')
     print('  AddPartitionsResult add_partitions_req(AddPartitionsRequest request)')
     print('  Partition append_partition_with_environment_context(string db_name, string tbl_name,  part_vals, EnvironmentContext environment_context)')
+    print('  Partition append_partition_req(AppendPartitionsRequest appendPartitionsReq)')
     print('  Partition append_partition_by_name(string db_name, string tbl_name, string part_name)')
     print('  Partition append_partition_by_name_with_environment_context(string db_name, string tbl_name, string part_name, EnvironmentContext environment_context)')
     print('  bool drop_partition(string db_name, string tbl_name,  part_vals, bool deleteData)')
     print('  bool drop_partition_with_environment_context(string db_name, string tbl_name,  part_vals, bool deleteData, EnvironmentContext environment_context)')
+    print('  bool drop_partition_req(DropPartitionRequest dropPartitionReq)')
     print('  bool drop_partition_by_name(string db_name, string tbl_name, string part_name, bool deleteData)')
     print('  bool drop_partition_by_name_with_environment_context(string db_name, string tbl_name, string part_name, bool deleteData, EnvironmentContext environment_context)')
     print('  DropPartitionsResult drop_partitions_req(DropPartitionsRequest req)')
@@ -113,6 +118,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   get_partitions_with_auth(string db_name, string tbl_name, i16 max_parts, string user_name,  group_names)')
     print('   get_partitions_pspec(string db_name, string tbl_name, i32 max_parts)')
     print('   get_partition_names(string db_name, string tbl_name, i16 max_parts)')
+    print('   fetch_partition_names_req(PartitionsRequest partitionReq)')
     print('  PartitionValuesResponse get_partition_values(PartitionValuesRequest request)')
     print('   get_partitions_ps(string db_name, string tbl_name,  part_vals, i16 max_parts)')
     print('   get_partitions_ps_with_auth(string db_name, string tbl_name,  part_vals, i16 max_parts, string user_name,  group_names)')
@@ -121,12 +127,15 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  GetPartitionNamesPsResponse get_partition_names_ps_req(GetPartitionNamesPsRequest req)')
     print('   get_partition_names_req(PartitionsByExprRequest req)')
     print('   get_partitions_by_filter(string db_name, string tbl_name, string filter, i16 max_parts)')
+    print('   get_partitions_by_filter_req(GetPartitionsByFilterRequest req)')
     print('   get_part_specs_by_filter(string db_name, string tbl_name, string filter, i32 max_parts)')
     print('  PartitionsByExprResult get_partitions_by_expr(PartitionsByExprRequest req)')
     print('  PartitionsSpecByExprResult get_partitions_spec_by_expr(PartitionsByExprRequest req)')
     print('  i32 get_num_partitions_by_filter(string db_name, string tbl_name, string filter)')
     print('   get_partitions_by_names(string db_name, string tbl_name,  names)')
     print('  GetPartitionsByNamesResult get_partitions_by_names_req(GetPartitionsByNamesRequest req)')
+    print('  PropertyGetResponse get_properties(PropertyGetRequest req)')
+    print('  bool set_properties(PropertySetRequest req)')
     print('  void alter_partition(string db_name, string tbl_name, Partition new_part)')
     print('  void alter_partitions(string db_name, string tbl_name,  new_parts)')
     print('  void alter_partitions_with_environment_context(string db_name, string tbl_name,  new_parts, EnvironmentContext environment_context)')
@@ -160,10 +169,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  bool set_aggr_stats_for(SetPartitionsStatsRequest request)')
     print('  bool delete_partition_column_statistics(string db_name, string tbl_name, string part_name, string col_name, string engine)')
     print('  bool delete_table_column_statistics(string db_name, string tbl_name, string col_name, string engine)')
+    print('  bool delete_column_statistics_req(DeleteColumnStatisticsRequest req)')
     print('  void create_function(Function func)')
     print('  void drop_function(string dbName, string funcName)')
     print('  void alter_function(string dbName, string funcName, Function newFunc)')
     print('   get_functions(string dbName, string pattern)')
+    print('  GetFunctionsResponse get_functions_req(GetFunctionsRequest request)')
     print('  Function get_function(string dbName, string funcName)')
     print('  GetAllFunctionsResponse get_all_functions()')
     print('  bool create_role(Role role)')
@@ -202,6 +213,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  i64 get_latest_txnid_in_conflict(i64 txnId)')
     print('  void repl_tbl_writeid_state(ReplTblWriteIdStateRequest rqst)')
     print('  GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst)')
+    print('  void add_write_ids_to_min_history(i64 txnId,  writeIds)')
     print('  AllocateTableWriteIdsResponse allocate_table_write_ids(AllocateTableWriteIdsRequest rqst)')
     print('  MaxAllocatedTableWriteIdResponse get_max_allocated_table_write_id(MaxAllocatedTableWriteIdRequest rqst)')
     print('  void seed_write_id(SeedTableWriteIdsRequest rqst)')
@@ -215,6 +227,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void compact(CompactionRequest rqst)')
     print('  CompactionResponse compact2(CompactionRequest rqst)')
     print('  ShowCompactResponse show_compact(ShowCompactRequest rqst)')
+    print('  bool submit_for_cleanup(CompactionRequest o1, i64 o2, i64 o3)')
     print('  void add_dynamic_partitions(AddDynamicPartitions rqst)')
     print('  OptionalCompactionInfoStruct find_next_compact(string workerId)')
     print('  OptionalCompactionInfoStruct find_next_compact2(FindNextCompactRequest rqst)')
@@ -294,6 +307,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   get_all_packages(ListPackageRequest request)')
     print('  void drop_package(DropPackageRequest request)')
     print('   get_all_write_event_info(GetAllWriteEventInfoRequest request)')
+    print('  ReplayedTxnsForPolicyResult get_replayed_txns_for_policy(string policyName)')
     print('  string getName()')
     print('  string getVersion()')
     print('  fb_status getStatus()')
@@ -386,7 +400,13 @@ protocol = TBinaryProtocol(transport)
 client = ThriftHiveMetastore.Client(protocol)
 transport.open()
 
-if cmd == 'getMetaConf':
+if cmd == 'abort_Compactions':
+    if len(args) != 1:
+        print('abort_Compactions requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.abort_Compactions(eval(args[0]),))
+
+elif cmd == 'getMetaConf':
     if len(args) != 1:
         print('getMetaConf requires 1 args')
         sys.exit(1)
@@ -434,6 +454,12 @@ elif cmd == 'create_database':
         sys.exit(1)
     pp.pprint(client.create_database(eval(args[0]),))
 
+elif cmd == 'create_database_req':
+    if len(args) != 1:
+        print('create_database_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.create_database_req(eval(args[0]),))
+
 elif cmd == 'get_database':
     if len(args) != 1:
         print('get_database requires 1 args')
@@ -470,17 +496,29 @@ elif cmd == 'get_all_databases':
         sys.exit(1)
     pp.pprint(client.get_all_databases())
 
+elif cmd == 'get_databases_req':
+    if len(args) != 1:
+        print('get_databases_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_databases_req(eval(args[0]),))
+
 elif cmd == 'alter_database':
     if len(args) != 2:
         print('alter_database requires 2 args')
         sys.exit(1)
     pp.pprint(client.alter_database(args[0], eval(args[1]),))
 
-elif cmd == 'create_dataconnector':
+elif cmd == 'alter_database_req':
     if len(args) != 1:
-        print('create_dataconnector requires 1 args')
+        print('alter_database_req requires 1 args')
         sys.exit(1)
-    pp.pprint(client.create_dataconnector(eval(args[0]),))
+    pp.pprint(client.alter_database_req(eval(args[0]),))
+
+elif cmd == 'create_dataconnector_req':
+    if len(args) != 1:
+        print('create_dataconnector_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.create_dataconnector_req(eval(args[0]),))
 
 elif cmd == 'get_dataconnector_req':
     if len(args) != 1:
@@ -488,11 +526,11 @@ elif cmd == 'get_dataconnector_req':
         sys.exit(1)
     pp.pprint(client.get_dataconnector_req(eval(args[0]),))
 
-elif cmd == 'drop_dataconnector':
-    if len(args) != 3:
-        print('drop_dataconnector requires 3 args')
+elif cmd == 'drop_dataconnector_req':
+    if len(args) != 1:
+        print('drop_dataconnector_req requires 1 args')
         sys.exit(1)
-    pp.pprint(client.drop_dataconnector(args[0], eval(args[1]), eval(args[2]),))
+    pp.pprint(client.drop_dataconnector_req(eval(args[0]),))
 
 elif cmd == 'get_dataconnectors':
     if len(args) != 0:
@@ -500,11 +538,11 @@ elif cmd == 'get_dataconnectors':
         sys.exit(1)
     pp.pprint(client.get_dataconnectors())
 
-elif cmd == 'alter_dataconnector':
-    if len(args) != 2:
-        print('alter_dataconnector requires 2 args')
+elif cmd == 'alter_dataconnector_req':
+    if len(args) != 1:
+        print('alter_dataconnector_req requires 1 args')
         sys.exit(1)
-    pp.pprint(client.alter_dataconnector(args[0], eval(args[1]),))
+    pp.pprint(client.alter_dataconnector_req(eval(args[0]),))
 
 elif cmd == 'get_type':
     if len(args) != 1:
@@ -650,6 +688,12 @@ elif cmd == 'drop_table_with_environment_context':
         sys.exit(1)
     pp.pprint(client.drop_table_with_environment_context(args[0], args[1], eval(args[2]), eval(args[3]),))
 
+elif cmd == 'drop_table_req':
+    if len(args) != 1:
+        print('drop_table_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.drop_table_req(eval(args[0]),))
+
 elif cmd == 'truncate_table':
     if len(args) != 3:
         print('truncate_table requires 3 args')
@@ -697,18 +741,6 @@ elif cmd == 'get_all_tables':
         print('get_all_tables requires 1 args')
         sys.exit(1)
     pp.pprint(client.get_all_tables(args[0],))
-
-elif cmd == 'get_table':
-    if len(args) != 2:
-        print('get_table requires 2 args')
-        sys.exit(1)
-    pp.pprint(client.get_table(args[0], args[1],))
-
-elif cmd == 'get_table_objects_by_name':
-    if len(args) != 2:
-        print('get_table_objects_by_name requires 2 args')
-        sys.exit(1)
-    pp.pprint(client.get_table_objects_by_name(args[0], eval(args[1]),))
 
 elif cmd == 'get_tables_ext':
     if len(args) != 1:
@@ -812,6 +844,12 @@ elif cmd == 'append_partition_with_environment_context':
         sys.exit(1)
     pp.pprint(client.append_partition_with_environment_context(args[0], args[1], eval(args[2]), eval(args[3]),))
 
+elif cmd == 'append_partition_req':
+    if len(args) != 1:
+        print('append_partition_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.append_partition_req(eval(args[0]),))
+
 elif cmd == 'append_partition_by_name':
     if len(args) != 3:
         print('append_partition_by_name requires 3 args')
@@ -835,6 +873,12 @@ elif cmd == 'drop_partition_with_environment_context':
         print('drop_partition_with_environment_context requires 5 args')
         sys.exit(1)
     pp.pprint(client.drop_partition_with_environment_context(args[0], args[1], eval(args[2]), eval(args[3]), eval(args[4]),))
+
+elif cmd == 'drop_partition_req':
+    if len(args) != 1:
+        print('drop_partition_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.drop_partition_req(eval(args[0]),))
 
 elif cmd == 'drop_partition_by_name':
     if len(args) != 4:
@@ -920,6 +964,12 @@ elif cmd == 'get_partition_names':
         sys.exit(1)
     pp.pprint(client.get_partition_names(args[0], args[1], eval(args[2]),))
 
+elif cmd == 'fetch_partition_names_req':
+    if len(args) != 1:
+        print('fetch_partition_names_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.fetch_partition_names_req(eval(args[0]),))
+
 elif cmd == 'get_partition_values':
     if len(args) != 1:
         print('get_partition_values requires 1 args')
@@ -968,6 +1018,12 @@ elif cmd == 'get_partitions_by_filter':
         sys.exit(1)
     pp.pprint(client.get_partitions_by_filter(args[0], args[1], args[2], eval(args[3]),))
 
+elif cmd == 'get_partitions_by_filter_req':
+    if len(args) != 1:
+        print('get_partitions_by_filter_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_partitions_by_filter_req(eval(args[0]),))
+
 elif cmd == 'get_part_specs_by_filter':
     if len(args) != 4:
         print('get_part_specs_by_filter requires 4 args')
@@ -1003,6 +1059,18 @@ elif cmd == 'get_partitions_by_names_req':
         print('get_partitions_by_names_req requires 1 args')
         sys.exit(1)
     pp.pprint(client.get_partitions_by_names_req(eval(args[0]),))
+
+elif cmd == 'get_properties':
+    if len(args) != 1:
+        print('get_properties requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_properties(eval(args[0]),))
+
+elif cmd == 'set_properties':
+    if len(args) != 1:
+        print('set_properties requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.set_properties(eval(args[0]),))
 
 elif cmd == 'alter_partition':
     if len(args) != 3:
@@ -1202,6 +1270,12 @@ elif cmd == 'delete_table_column_statistics':
         sys.exit(1)
     pp.pprint(client.delete_table_column_statistics(args[0], args[1], args[2], args[3],))
 
+elif cmd == 'delete_column_statistics_req':
+    if len(args) != 1:
+        print('delete_column_statistics_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.delete_column_statistics_req(eval(args[0]),))
+
 elif cmd == 'create_function':
     if len(args) != 1:
         print('create_function requires 1 args')
@@ -1225,6 +1299,12 @@ elif cmd == 'get_functions':
         print('get_functions requires 2 args')
         sys.exit(1)
     pp.pprint(client.get_functions(args[0], args[1],))
+
+elif cmd == 'get_functions_req':
+    if len(args) != 1:
+        print('get_functions_req requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_functions_req(eval(args[0]),))
 
 elif cmd == 'get_function':
     if len(args) != 2:
@@ -1454,6 +1534,12 @@ elif cmd == 'get_valid_write_ids':
         sys.exit(1)
     pp.pprint(client.get_valid_write_ids(eval(args[0]),))
 
+elif cmd == 'add_write_ids_to_min_history':
+    if len(args) != 2:
+        print('add_write_ids_to_min_history requires 2 args')
+        sys.exit(1)
+    pp.pprint(client.add_write_ids_to_min_history(eval(args[0]), eval(args[1]),))
+
 elif cmd == 'allocate_table_write_ids':
     if len(args) != 1:
         print('allocate_table_write_ids requires 1 args')
@@ -1531,6 +1617,12 @@ elif cmd == 'show_compact':
         print('show_compact requires 1 args')
         sys.exit(1)
     pp.pprint(client.show_compact(eval(args[0]),))
+
+elif cmd == 'submit_for_cleanup':
+    if len(args) != 3:
+        print('submit_for_cleanup requires 3 args')
+        sys.exit(1)
+    pp.pprint(client.submit_for_cleanup(eval(args[0]), eval(args[1]), eval(args[2]),))
 
 elif cmd == 'add_dynamic_partitions':
     if len(args) != 1:
@@ -2005,6 +2097,12 @@ elif cmd == 'get_all_write_event_info':
         print('get_all_write_event_info requires 1 args')
         sys.exit(1)
     pp.pprint(client.get_all_write_event_info(eval(args[0]),))
+
+elif cmd == 'get_replayed_txns_for_policy':
+    if len(args) != 1:
+        print('get_replayed_txns_for_policy requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_replayed_txns_for_policy(args[0],))
 
 elif cmd == 'getName':
     if len(args) != 0:

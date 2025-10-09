@@ -624,8 +624,8 @@ public final class BytesBytesMultiHashMap implements MemoryEstimate {
     if (capacity > Integer.MAX_VALUE) {
       throw new RuntimeException("Attempting to expand the hash table to " + capacity
           + " that overflows maximum array size. For this query, you may want to disable "
-          + ConfVars.HIVEDYNAMICPARTITIONHASHJOIN.varname + " or reduce "
-          + ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD.varname);
+          + ConfVars.HIVE_DYNAMIC_PARTITION_HASHJOIN.varname + " or reduce "
+          + ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD.varname);
     }
   }
 

@@ -212,7 +212,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: GROUPBY operator: Aggregations with > 1 parameter are not supported count([Column[a], Column[b]])
+                notVectorizedReason: GROUPBY operator: Aggregations with > 1 parameter are not supported unless all the extra parameters are constants count([Column[a], Column[b]])
                 vectorized: false
         Reducer 2 
             Execution mode: llap

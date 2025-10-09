@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.txn.compactor.MRCompactor;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.io.NullWritable;
@@ -260,7 +261,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-    this.validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+    this.validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(txnString);
     LOG.info("Read ValidWriteIdList: " + this.validWriteIdList.toString()
             + ":" + orcSplit);
 
@@ -787,7 +788,7 @@ public class VectorizedOrcAcidRowBatchReader
 
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
     ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() :
-        new ValidReaderWriteIdList(txnString);
+        ValidReaderWriteIdList.fromValue(txnString);
 
     long rowIdOffset = 0;
     OrcRawRecordMerger.TransactionMetaData syntheticTxnInfo =
@@ -904,7 +905,7 @@ public class VectorizedOrcAcidRowBatchReader
    * Major compaction will attach these values to each row permanently.
    * It's critical that these generated column values are assigned exactly the same way by each
    * read of the same row and by the Compactor.
-   * See {@link org.apache.hadoop.hive.ql.txn.compactor.CompactorMR} and
+   * See {@link MRCompactor} and
    * {@link OrcRawRecordMerger.OriginalReaderPairToCompact} for the Compactor read path.
    * (Longer term should make compactor use this class)
    *
@@ -1242,7 +1243,7 @@ public class VectorizedOrcAcidRowBatchReader
         int bucket = AcidUtils.parseBucketId(orcSplit.getPath());
         String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
         this.validWriteIdList
-                = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+                = (txnString == null) ? new ValidReaderWriteIdList() : ValidReaderWriteIdList.fromValue(txnString);
         LOG.debug("Using SortMergedDeleteEventRegistry");
         Map<String, Integer> deltaToAttemptId = AcidUtils.getDeltaToAttemptIdMap(pathToDeltaMetaData, deleteDeltas, bucket);
         OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isDeleteReader(true);
@@ -1925,7 +1926,8 @@ public class VectorizedOrcAcidRowBatchReader
       this.testMode = conf.getBoolean(ConfVars.HIVE_IN_TEST.varname, false);
       int bucket = AcidUtils.parseBucketId(orcSplit.getPath());
       String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-      ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+      ValidWriteIdList validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList()
+              : ValidReaderWriteIdList.fromValue(txnString);
       LOG.debug("Using ColumnizedDeleteEventRegistry");
       this.sortMerger = new TreeMap<>();
       this.rowIds = null;

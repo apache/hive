@@ -27,6 +27,7 @@ import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.parquet.hadoop.metadata.ParquetMetadata;
 
 /**
  * Vectorized input format for Parquet files
@@ -38,6 +39,7 @@ public class VectorizedParquetInputFormat
   private FileMetadataCache metadataCache = null;
   private DataCache dataCache = null;
   private Configuration cacheConf = null;
+  private ParquetMetadata metadata;
 
   public VectorizedParquetInputFormat() {
   }
@@ -48,7 +50,11 @@ public class VectorizedParquetInputFormat
     JobConf jobConf,
     Reporter reporter) throws IOException {
     return new VectorizedParquetRecordReader(
-        inputSplit, jobConf, metadataCache, dataCache, cacheConf);
+        inputSplit, jobConf, metadataCache, dataCache, cacheConf, metadata);
+  }
+
+  public void setMetadata(ParquetMetadata metadata) throws IOException {
+    this.metadata = metadata;
   }
 
   @Override

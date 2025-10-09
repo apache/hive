@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.orc.TypeDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,8 +61,8 @@ public class OrcFileMergeOperator extends
 
   private Map<Integer, Writer> outWriters = new HashMap<>();
   private Path prevPath;
-  private Reader reader;
   private FSDataInputStream fdis;
+  private ObjectInspector obi;
 
   /** Kryo ctor. */
   protected OrcFileMergeOperator() {
@@ -109,9 +110,17 @@ public class OrcFileMergeOperator extends
 
       if (prevPath == null) {
         prevPath = k.getInputPath();
-        reader = OrcFile.createReader(fs, k.getInputPath());
-        LOG.info("ORC merge file input path: " + k.getInputPath());
       }
+      if (obi == null) {
+        Reader reader = OrcFile.createReader(fs, prevPath);
+        obi = reader.getObjectInspector();
+        try {
+          reader.close();
+        } catch (IOException e) {
+          throw new HiveException(String.format("Unable to close reader for %s", filePath), e);
+        }
+      }
+      LOG.info("ORC merge file input path: " + k.getInputPath());
 
       // store the orc configuration from the first file. All other files should
       // match this configuration before merging else will not be merged
@@ -131,7 +140,7 @@ public class OrcFileMergeOperator extends
             .compress(compression)
             .version(fileVersion)
             .rowIndexStride(rowIndexStride)
-            .inspector(reader.getObjectInspector());
+            .inspector(obi);
         // compression buffer size should only be set if compression is enabled
         if (compression != CompressionKind.NONE) {
           // enforce is required to retain the buffer sizes of old files instead of orc writer
@@ -150,14 +159,6 @@ public class OrcFileMergeOperator extends
       if (!checkCompatibility(k)) {
         addIncompatibleFile(k.getInputPath());
         return;
-      }
-
-      // next file in the path
-      if (!k.getInputPath().equals(prevPath)) {
-        if (reader != null) {
-          reader.close();
-        }
-        reader = OrcFile.createReader(fs, k.getInputPath());
       }
 
       // initialize buffer to read the entire stripe
@@ -190,15 +191,6 @@ public class OrcFileMergeOperator extends
     } finally {
       if (exception) {
         closeOp(true);
-      }
-      if (reader != null) {
-        try {
-          reader.close();
-        } catch (IOException e) {
-          throw new HiveException(String.format("Unable to close reader for %s", filePath), e);
-        } finally {
-          reader = null;
-        }
       }
       if (fdis != null) {
         try {

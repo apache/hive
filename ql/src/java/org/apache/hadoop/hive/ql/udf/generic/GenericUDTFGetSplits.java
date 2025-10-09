@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -238,7 +236,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
           + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
     }
     ApplicationId extClientAppId = coordinator.createExtClientAppId();
-    String externalDagName = SessionState.get().getConf().getVar(ConfVars.HIVEQUERYNAME);
+    String externalDagName = SessionState.get().getConf().getVar(ConfVars.HIVE_QUERY_NAME);
 
     StringBuilder sb = new StringBuilder();
     sb.append("Generated appID ").append(extClientAppId.toString()).append(" for LLAP splits");
@@ -271,8 +269,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       throws HiveException {
 
     HiveConf conf = new HiveConf(SessionState.get().getConf());
-    HiveConf.setVar(conf, ConfVars.HIVEFETCHTASKCONVERSION, "none");
-    HiveConf.setVar(conf, ConfVars.HIVEQUERYRESULTFILEFORMAT, PlanUtils.LLAP_OUTPUT_FORMAT_KEY);
+    HiveConf.setVar(conf, ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+    HiveConf.setVar(conf, ConfVars.HIVE_QUERY_RESULT_FILEFORMAT, PlanUtils.LLAP_OUTPUT_FORMAT_KEY);
 
     String originalMode = HiveConf.getVar(conf,
         ConfVars.HIVE_EXECUTION_MODE);
@@ -451,7 +449,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       // Update the queryId to use the generated extClientAppId. See comment below about
       // why this is done.
-      HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, extClientAppId.toString());
+      HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVE_QUERY_ID, extClientAppId.toString());
       Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, work,
           DagUtils.createTezLrMap(appJarLr, null));
       String vertexName = wx.getName();
@@ -465,7 +463,13 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
               ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
 
-      HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork, false, inputArgNumSplits);
+      // we're not interested in split fs serialization optimization in this case
+      // it was implemented for split generation in TezAM
+      // this can be removed any time when it turns out that's needed here too
+      HiveConf.setIntVar(wxConf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD, -1);
+
+      HiveSplitGenerator splitGenerator =
+          new HiveSplitGenerator(wxConf, mapWork, false, inputArgNumSplits);
       List<Event> eventList = splitGenerator.initialize();
       int numGroupedSplitsGenerated = eventList.size() - 1;
       InputSplit[] result = new InputSplit[numGroupedSplitsGenerated];
@@ -618,7 +622,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       JobTokenIdentifier identifier = new JobTokenIdentifier(new Text(
           tokenIdentifier));
       Token<JobTokenIdentifier> sessionToken = new Token<JobTokenIdentifier>(identifier,
-          new JobTokenSecretManager());
+          new JobTokenSecretManager(new Configuration()));
       sessionToken.setService(identifier.getJobId());
       return sessionToken;
     }
@@ -733,13 +737,11 @@ public class GenericUDTFGetSplits extends GenericUDTF {
    * @return LocalResource corresponding to the localized hive exec resource.
    * @throws IOException
    *           when any file system related call fails.
-   * @throws LoginException
-   *           when we are unable to determine the user.
    * @throws URISyntaxException
    *           when current jar location cannot be determined.
    */
   private LocalResource createJarLocalResource(String localJarPath,
-      DagUtils utils, Configuration conf) throws IOException, LoginException,
+      DagUtils utils, Configuration conf) throws IOException,
       IllegalArgumentException, FileNotFoundException {
     FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
     assert destDirStatus != null;

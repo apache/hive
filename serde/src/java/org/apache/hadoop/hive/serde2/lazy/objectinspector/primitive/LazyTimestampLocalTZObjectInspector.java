@@ -22,13 +22,24 @@ import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestampLocalTZ;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
+import org.apache.hive.common.util.TimestampParser;
+
+import java.util.Collections;
+import java.util.List;
 
 public class LazyTimestampLocalTZObjectInspector
     extends AbstractPrimitiveLazyObjectInspector<TimestampLocalTZWritable>
     implements TimestampLocalTZObjectInspector {
 
+  private final TimestampParser parser;
+
   protected LazyTimestampLocalTZObjectInspector(TimestampLocalTZTypeInfo typeInfo) {
+    this(typeInfo, Collections.emptyList());
+  }
+
+  LazyTimestampLocalTZObjectInspector(TimestampLocalTZTypeInfo typeInfo, List<String> formats) {
     super(typeInfo);
+    this.parser = new TimestampParser(formats == null ? Collections.emptyList() : formats);
   }
 
   @Override
@@ -48,5 +59,9 @@ public class LazyTimestampLocalTZObjectInspector
   @Override
   public Object copyObject(Object o) {
     return o == null ? null : new LazyTimestampLocalTZ((LazyTimestampLocalTZ) o);
+  }
+
+  public TimestampParser getParser() {
+    return parser;
   }
 }

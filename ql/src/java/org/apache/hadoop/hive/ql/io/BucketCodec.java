@@ -53,26 +53,26 @@ public enum BucketCodec {
    * next 4 bits reserved for future
    * remaining 12 bits - the statement ID - 0-based numbering of all statements within a
    * transaction.  Each leg of a multi-insert statement gets a separate statement ID.
-   * The reserved bits align it so that it easier to interpret it in Hex.
-   * 
+   * The reserved bits align it so that it's easier to interpret it in Hex.
+   *
    * Constructs like Merge and Multi-Insert may have multiple tasks writing data that belongs to
    * the same physical bucket file.  For example, a Merge stmt with update and insert clauses,
    * (and split update enabled - should be the default in 3.0).  A task on behalf of insert may
    * be writing a row into bucket 0 and another task in the update branch may be writing an insert
-   * event into bucket 0.  Each of these task are writing to different delta directory - distinguished
+   * event into bucket 0.  Each of these tasks are writing to different delta directory - distinguished
    * by statement ID.  By including both bucket ID and statement ID in {@link RecordIdentifier}
    * we ensure that {@link RecordIdentifier} is unique.
-   * 
+   *
    * The intent is that sorting rows by {@link RecordIdentifier} groups rows in the same physical
    * bucket next to each other.
    * For any row created by a given version of Hive, top 3 bits are constant.  The next
    * most significant bits are the bucket ID, then the statement ID.  This ensures that
    * {@link org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer} works which is
    * designed so that each task only needs to keep 1 writer opened at a time.  It could be
-   * configured such that a single writer sees data for multiple buckets so it must "group" data
+   * configured such that a single writer sees data for multiple buckets, so it must "group" data
    * by bucket ID (and then sort within each bucket as required) which is achieved via sorting
    * by {@link RecordIdentifier} which includes the {@link RecordIdentifier#getBucketProperty()}
-   * which has the actual bucket ID in the high order bits.  This scheme also ensures that 
+   * which has the actual bucket ID in the high order bits.  This scheme also ensures that
    * {@link org.apache.hadoop.hive.ql.exec.FileSinkOperator#process(Object, int)} works in case
    * there numBuckets &gt; numReducers.  (The later could be fixed by changing how writers are
    * initialized in "if (fpaths.acidLastBucket != bucketNum) {")

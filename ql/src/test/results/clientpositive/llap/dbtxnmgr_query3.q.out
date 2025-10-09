@@ -91,16 +91,20 @@ POSTHOOK: Input: default@t2_n67@pval=1
 PREHOOK: query: drop table T1_n111
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n111
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n111
 POSTHOOK: query: drop table T1_n111
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n111
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n111
 PREHOOK: query: drop table T2_n67
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n67
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n67
 POSTHOOK: query: drop table T2_n67
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n67
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n67

@@ -126,7 +126,9 @@ public class TruncDateFromTimestamp extends VectorExpression {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
           outputIsNull[i] = inputIsNull[i];
-          truncDate(inputColVector, outputColVector, i);
+          if (!inputIsNull[i]) {
+            truncDate(inputColVector, outputColVector, i);
+          }
         }
       } else {
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);

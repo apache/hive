@@ -412,8 +412,9 @@ public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
       FileMetaData metadata;
       try {
         HadoopInputFile inputFile = HadoopInputFile.fromPath(new Path(file), conf);
-        ParquetFileReader reader = ParquetFileReader.open(inputFile);
-        metadata = reader.getFileMetaData();
+        try(ParquetFileReader reader = ParquetFileReader.open(inputFile)) {
+          metadata = reader.getFileMetaData();
+        }
       } catch (Exception e) {
         throw new SerDeException(ErrorMsg.PARQUET_FOOTER_ERROR.getErrorCodedMsg(), e);
       }
@@ -421,7 +422,7 @@ public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
       MessageType msg = metadata.getSchema();
       List<FieldSchema> schema = new ArrayList<>();
       String inferBinaryAsStringValue = conf.get(HiveConf.ConfVars.HIVE_PARQUET_INFER_BINARY_AS.varname);
-      boolean inferBinaryAsString = "string".equalsIgnoreCase(inferBinaryAsStringValue);
+      boolean inferBinaryAsString = serdeConstants.STRING_TYPE_NAME.equalsIgnoreCase(inferBinaryAsStringValue);
 
       for (Type field: msg.getFields()) {
         FieldSchema fieldSchema = convertParquetTypeToFieldSchema(field, inferBinaryAsString);

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS int_txt
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS int_txt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE int_txt (`i` int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -38,8 +40,10 @@ POSTHOOK: Input: default@int_txt
 PREHOOK: query: DROP TABLE IF EXISTS int_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@int_txt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@int_txt
 POSTHOOK: query: DROP TABLE IF EXISTS int_txt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@int_txt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@int_txt

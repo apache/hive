@@ -19,17 +19,23 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import com.google.common.base.Joiner;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ResourceType;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.datanucleus.ExecutionContext;
+import org.datanucleus.api.jdo.JDOPersistenceManager;
+import org.datanucleus.metadata.AbstractClassMetaData;
+import org.datanucleus.metadata.AbstractMemberMetaData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +52,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /**
  * Helper utilities used by DirectSQL code in HiveMetastore.
@@ -78,7 +83,7 @@ class MetastoreDirectSqlUtils {
       }
       LOG.warn(errorBuilder.toString() + "]", ex);
       // We just logged an exception with (in case of JDO) a humongous callstack. Make a new one.
-      throw new MetaException("See previous errors; " + ex.getMessage() + errorBuilder.toString() + "]");
+      throw new MetaException("See previous errors; " + ExceptionUtils.getRootCauseMessage(ex) + " " +  errorBuilder.toString() + "]");
     }
   }
 
@@ -144,6 +149,8 @@ class MetastoreDirectSqlUtils {
         if (fields == null && !iter.hasNext())
           break;
         long id = entry.getKey();
+        T value = entry.getValue();
+        boolean foundEntries = false;
         while (fields != null || iter.hasNext()) {
           if (fields == null) {
             fields = iter.next();
@@ -152,9 +159,19 @@ class MetastoreDirectSqlUtils {
           if (nestedId < id) {
             throw new MetaException("Found entries for unknown ID " + nestedId);
           }
-          if (nestedId > id)
+          if (nestedId > id) {
+            if (!foundEntries) {
+              Throwable throwable = (new Throwable()).fillInStackTrace();
+              LOG.warn("Multi-value fields are missing for the {}:{}, method: {}", value.getClass().getSimpleName(), id,
+                  throwable.getStackTrace()[2]);
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("loopJoinOrderedResult:", throwable);
+              }
+            }
             break; // fields belong to one of the next entries
-          func.apply(entry.getValue(), fields);
+          }
+          foundEntries = true;
+          func.apply(value, fields);
           fields = null;
         }
         Deadline.checkTimeout();
@@ -165,24 +182,6 @@ class MetastoreDirectSqlUtils {
     }
     timingTrace(doTrace, queryText, start, queryTime);
     return rv;
-  }
-
-  static void setPartitionParameters(String PARTITION_PARAMS, boolean convertMapNullsToEmptyStrings,
-      PersistenceManager pm, String partIds, TreeMap<Long, Partition> partitions)
-      throws MetaException {
-    String queryText;
-    queryText = "select \"PART_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from " + PARTITION_PARAMS + ""
-        + " where \"PART_ID\" in (" + partIds + ") and \"PARAM_KEY\" is not null"
-        + " order by \"PART_ID\" asc";
-    loopJoinOrderedResult(pm, partitions, queryText, 0, new ApplyFunc<Partition>() {
-      @Override
-      public void apply(Partition t, Object[] fields) {
-        t.putToParameters(extractSqlClob(fields[1]), extractSqlClob(fields[2]));
-      }});
-    // Perform conversion of null map values
-    for (Partition t : partitions.values()) {
-      t.setParameters(MetaStoreServerUtils.trimMapNulls(t.getParameters(), convertMapNullsToEmptyStrings));
-    }
   }
 
   static void setPartitionParametersWithFilter(String PARTITION_PARAMS,
@@ -514,6 +513,19 @@ class MetastoreDirectSqlUtils {
     }
   }
 
+  static void setFunctionResourceUris(String FUNC_RU, PersistenceManager pm, String funcIds,
+      TreeMap<Long, Function> functions)
+      throws MetaException {
+    String queryText;
+    queryText = "select \"FUNC_ID\", \"RESOURCE_TYPE\", \"RESOURCE_URI\" from " +  FUNC_RU
+        + " where \"FUNC_ID\" in (" + funcIds + ")"
+        + " order by \"FUNC_ID\" asc, \"INTEGER_IDX\" asc";
+    loopJoinOrderedResult(pm, functions, queryText, 0, (t, fields) -> {
+      ResourceUri resourceUri = new ResourceUri(ResourceType.findByValue((int)fields[1]), (String) fields[2]);
+      t.getResourceUris().add(resourceUri);
+    });
+  }
+
   /**
    * Convert a boolean value returned from the RDBMS to a Java Boolean object.
    * MySQL has booleans, but e.g. Derby uses 'Y'/'N' mapping and Oracle DB
@@ -559,7 +571,6 @@ class MetastoreDirectSqlUtils {
         return true;
       }
     }
-    LOG.debug("Value is of type {}", value.getClass());
     throw new MetaException("Cannot extract boolean from column value " + value);
   }
 
@@ -595,9 +606,29 @@ class MetastoreDirectSqlUtils {
       return (byte[]) value;
     }
 	else {
-      // this may happen when enablebitvector is false
-      LOG.debug("Expected blob type but got " + value.getClass().getName());
+      // org.apache.hadoop.hive.metastore.MetaStoreDirectSql.getStatsList(enableBitVector,enableKll)
+      // We get here when enableBitvector or enableKll is false
       return null;
+    }
+  }
+
+  static Long getModelIdentity(PersistenceManager pm, Class<?> modelClass)
+      throws MetaException {
+    ExecutionContext ec = ((JDOPersistenceManager) pm).getExecutionContext();
+    AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(modelClass, ec.getClassLoaderResolver());
+    switch (cmd.getIdentityType()) {
+      case DATASTORE :
+        return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, null);
+      case APPLICATION :
+        if (cmd.usesSingleFieldIdentityClass()) {
+          int[] valueGenMemberPositions = cmd.getValueGenerationMemberPositions();
+          AbstractMemberMetaData mmd = cmd.getMetaDataForManagedMemberAtAbsolutePosition(valueGenMemberPositions[0]);
+          return (Long) ec.getStoreManager().getValueGenerationStrategyValue(ec, cmd, mmd);
+        }
+        throw new MetaException("Multiple key fields found in class: " + modelClass.getSimpleName());
+    default:
+      throw new MetaException(
+          "Identity type is not datastore or application, model: " + modelClass.getSimpleName());
     }
   }
 

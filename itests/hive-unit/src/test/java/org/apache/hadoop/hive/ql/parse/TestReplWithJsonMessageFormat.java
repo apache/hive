@@ -25,8 +25,6 @@ import org.junit.Rule;
 import org.junit.rules.TestRule;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -24,7 +24,7 @@ package org.apache.hadoop.hive.metastore.api;
   private boolean needMerge; // optional
   private long writeId; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String validWriteIdList; // optional
-  private @org.apache.thrift.annotation.Nullable java.lang.String engine; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String engine; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -102,7 +102,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __NEEDMERGE_ISSET_ID = 0;
   private static final int __WRITEID_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.NEED_MERGE,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST};
+  private static final _Fields optionals[] = {_Fields.NEED_MERGE,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST,_Fields.ENGINE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -115,7 +115,7 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.VALID_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("validWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.ENGINE, new org.apache.thrift.meta_data.FieldMetaData("engine", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.ENGINE, new org.apache.thrift.meta_data.FieldMetaData("engine", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SetPartitionsStatsRequest.class, metaDataMap);
@@ -124,15 +124,15 @@ package org.apache.hadoop.hive.metastore.api;
   public SetPartitionsStatsRequest() {
     this.writeId = -1L;
 
+    this.engine = "hive";
+
   }
 
   public SetPartitionsStatsRequest(
-    java.util.List<ColumnStatistics> colStats,
-    java.lang.String engine)
+    java.util.List<ColumnStatistics> colStats)
   {
     this();
     this.colStats = colStats;
-    this.engine = engine;
   }
 
   /**
@@ -169,7 +169,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.writeId = -1L;
 
     this.validWriteIdList = null;
-    this.engine = null;
+    this.engine = "hive";
+
   }
 
   public int getColStatsSize() {
@@ -588,14 +589,16 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
-    if (!first) sb.append(", ");
-    sb.append("engine:");
-    if (this.engine == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.engine);
+    if (isSetEngine()) {
+      if (!first) sb.append(", ");
+      sb.append("engine:");
+      if (this.engine == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.engine);
+      }
+      first = false;
     }
-    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -604,10 +607,6 @@ package org.apache.hadoop.hive.metastore.api;
     // check for required fields
     if (!isSetColStats()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'colStats' is unset! Struct:" + toString());
-    }
-
-    if (!isSetEngine()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'engine' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -652,14 +651,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // COL_STATS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list408 = iprot.readListBegin();
-                struct.colStats = new java.util.ArrayList<ColumnStatistics>(_list408.size);
-                @org.apache.thrift.annotation.Nullable ColumnStatistics _elem409;
-                for (int _i410 = 0; _i410 < _list408.size; ++_i410)
+                org.apache.thrift.protocol.TList _list454 = iprot.readListBegin();
+                struct.colStats = new java.util.ArrayList<ColumnStatistics>(_list454.size);
+                @org.apache.thrift.annotation.Nullable ColumnStatistics _elem455;
+                for (int _i456 = 0; _i456 < _list454.size; ++_i456)
                 {
-                  _elem409 = new ColumnStatistics();
-                  _elem409.read(iprot);
-                  struct.colStats.add(_elem409);
+                  _elem455 = new ColumnStatistics();
+                  _elem455.read(iprot);
+                  struct.colStats.add(_elem455);
                 }
                 iprot.readListEnd();
               }
@@ -717,9 +716,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(COL_STATS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.colStats.size()));
-          for (ColumnStatistics _iter411 : struct.colStats)
+          for (ColumnStatistics _iter457 : struct.colStats)
           {
-            _iter411.write(oprot);
+            _iter457.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -743,9 +742,11 @@ package org.apache.hadoop.hive.metastore.api;
         }
       }
       if (struct.engine != null) {
-        oprot.writeFieldBegin(ENGINE_FIELD_DESC);
-        oprot.writeString(struct.engine);
-        oprot.writeFieldEnd();
+        if (struct.isSetEngine()) {
+          oprot.writeFieldBegin(ENGINE_FIELD_DESC);
+          oprot.writeString(struct.engine);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -766,12 +767,11 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.colStats.size());
-        for (ColumnStatistics _iter412 : struct.colStats)
+        for (ColumnStatistics _iter458 : struct.colStats)
         {
-          _iter412.write(oprot);
+          _iter458.write(oprot);
         }
       }
-      oprot.writeString(struct.engine);
       java.util.BitSet optionals = new java.util.BitSet();
       if (struct.isSetNeedMerge()) {
         optionals.set(0);
@@ -782,7 +782,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetValidWriteIdList()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetEngine()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetNeedMerge()) {
         oprot.writeBool(struct.needMerge);
       }
@@ -792,26 +795,27 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetValidWriteIdList()) {
         oprot.writeString(struct.validWriteIdList);
       }
+      if (struct.isSetEngine()) {
+        oprot.writeString(struct.engine);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, SetPartitionsStatsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list413 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.colStats = new java.util.ArrayList<ColumnStatistics>(_list413.size);
-        @org.apache.thrift.annotation.Nullable ColumnStatistics _elem414;
-        for (int _i415 = 0; _i415 < _list413.size; ++_i415)
+        org.apache.thrift.protocol.TList _list459 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.colStats = new java.util.ArrayList<ColumnStatistics>(_list459.size);
+        @org.apache.thrift.annotation.Nullable ColumnStatistics _elem460;
+        for (int _i461 = 0; _i461 < _list459.size; ++_i461)
         {
-          _elem414 = new ColumnStatistics();
-          _elem414.read(iprot);
-          struct.colStats.add(_elem414);
+          _elem460 = new ColumnStatistics();
+          _elem460.read(iprot);
+          struct.colStats.add(_elem460);
         }
       }
       struct.setColStatsIsSet(true);
-      struct.engine = iprot.readString();
-      struct.setEngineIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.needMerge = iprot.readBool();
         struct.setNeedMergeIsSet(true);
@@ -823,6 +827,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(2)) {
         struct.validWriteIdList = iprot.readString();
         struct.setValidWriteIdListIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.engine = iprot.readString();
+        struct.setEngineIsSet(true);
       }
     }
   }

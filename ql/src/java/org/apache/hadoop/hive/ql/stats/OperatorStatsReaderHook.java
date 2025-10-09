@@ -60,7 +60,7 @@ public class OperatorStatsReaderHook implements ExecuteWithHookContext {
         LOG.debug("Reading runtime statistics for tez vertex task: {}", vertexName);
         TezCounters counters = tezTask.getTezCounters();
         if (counters != null) {
-          String groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+          String groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_COUNTER_GROUP);
           for (Operator<? extends OperatorDesc> op : baseWork.getAllOperators()) {
             String operatorId = op.getOperatorId();
             OperatorStats operatorStats = null;

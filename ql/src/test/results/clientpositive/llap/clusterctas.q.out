@@ -143,8 +143,10 @@ POSTHOOK: Lineage: x.value SIMPLE [(src)x.FieldSchema(name:value, type:string, c
 PREHOOK: query: DROP TABLE x
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@x
+PREHOOK: Output: database:default
 PREHOOK: Output: default@x
 POSTHOOK: query: DROP TABLE x
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@x
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@x

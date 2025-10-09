@@ -488,18 +488,22 @@ POSTHOOK: Input: default@bucket_small_n17@pri=2
 PREHOOK: query: drop table bucket_big_n17
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bucket_big_n17
+PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_big_n17
 POSTHOOK: query: drop table bucket_big_n17
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bucket_big_n17
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_big_n17
 PREHOOK: query: drop table bucket_small_n17
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bucket_small_n17
+PREHOOK: Output: database:default
 PREHOOK: Output: default@bucket_small_n17
 POSTHOOK: query: drop table bucket_small_n17
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bucket_small_n17
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bucket_small_n17
 PREHOOK: query: CREATE TABLE bucket_big_n17
 (

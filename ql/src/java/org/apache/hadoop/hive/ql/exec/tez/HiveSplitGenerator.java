@@ -22,24 +22,37 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.google.common.base.Joiner;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.protobuf.ByteString;
+import java.nio.ByteBuffer;
 
 import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +71,8 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.apache.hadoop.mapreduce.split.TezMapReduceSplitsGrouper;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hadoop.util.Time;
+import org.apache.tez.common.TezCommonUtils;
 import org.apache.tez.common.TezUtils;
 import org.apache.tez.dag.api.TaskLocationHint;
 import org.apache.tez.dag.api.VertexLocationHint;
@@ -77,6 +92,7 @@ import org.apache.tez.runtime.api.events.InputInitializerEvent;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * This class is used to generate splits inside the AM on the cluster. It
@@ -138,12 +154,13 @@ public class HiveSplitGenerator extends InputInitializer {
     this.numSplits = Optional.empty();
   }
 
-  private void prepare(InputInitializerContext initializerContext) throws IOException, SerDeException {
+  @VisibleForTesting
+  void prepare(InputInitializerContext initializerContext) throws IOException, SerDeException {
     userPayloadProto =
         MRInputHelpers.parseMRInputPayload(initializerContext.getInputUserPayload());
 
     this.conf = TezUtils.createConfFromByteString(userPayloadProto.getConfigurationBytes());
-    
+
     this.jobConf = new JobConf(conf);
 
     // Read all credentials into the credentials instance stored in JobConf.
@@ -154,6 +171,102 @@ public class HiveSplitGenerator extends InputInitializer {
     this.splitLocationProvider =
         Utils.getSplitLocationProvider(conf, work.getCacheAffinity(), LOG);
     LOG.info("SplitLocationProvider: " + splitLocationProvider);
+  }
+
+  /**
+   * SplitSerializer is a helper class for taking care of serializing splits to the tez scratch dir
+   * when a size criteria defined by "hive.tez.input.fs.serialization.threshold" is met.
+   * It utilizes an ExecutorService for parallel writes to prevent a single split write operation
+   * becoming the bottleneck (as write() is called from a loop currently).
+   */
+  class SplitSerializer implements AutoCloseable {
+    private static final String FILE_PATH_FORMAT = "%s/events/%s/%d_%s_InputDataInformationEvent_%d";
+
+    // fields needed for filepath
+    private String queryId;
+    private String inputName;
+    private int vertexId;
+    private Path appStagingPath;
+    // filesystem and executor
+    private FileSystem fs;
+    private ExecutorService executor;
+
+    private AtomicBoolean anyTaskFailed;
+    private List<Future<?>> asyncTasks;
+
+    @VisibleForTesting
+    SplitSerializer() throws IOException {
+      if (getContext() == null) {
+        // this typically happens in case the split generation is not in the Tez AM
+        // in that case we're not interested in this feature, so it's fine to return here and fail later
+        return;
+      }
+      queryId = jobConf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
+      inputName = getContext().getInputName();
+      vertexId = getContext().getVertexId();
+      appStagingPath = TezCommonUtils.getTezSystemStagingPath(jobConf, getContext().getApplicationId().toString());
+
+      fs = appStagingPath.getFileSystem(jobConf);
+
+      int numThreads = HiveConf.getIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THREADS);
+      executor = Executors.newFixedThreadPool(numThreads,
+          new ThreadFactoryBuilder().setNameFormat("HiveSplitGenerator.SplitSerializer Thread - " + "#%d").build());
+      anyTaskFailed = new AtomicBoolean(false);
+      asyncTasks = new ArrayList<>();
+    }
+
+    @VisibleForTesting
+    InputDataInformationEvent write(int count, MRSplitProto mrSplit) {
+      InputDataInformationEvent diEvent;
+      Path filePath = getSerializedFilePath(count);
+
+      Runnable task = () -> {
+        if (!anyTaskFailed.get()) {
+          try {
+            writeSplit(count, mrSplit, filePath);
+          } catch (IOException e) {
+            anyTaskFailed.set(true);
+            throw new RuntimeException(e);
+          }
+        }
+      };
+      asyncTasks.add(CompletableFuture.runAsync(task, executor));
+      return InputDataInformationEvent.createWithSerializedPath(count, filePath.toString());
+    }
+
+    @VisibleForTesting
+    void writeSplit(int count, MRSplitProto mrSplit, Path filePath) throws IOException {
+      long fileWriteStarted = Time.monotonicNow();
+      try (FSDataOutputStream out = fs.create(filePath, false)) {
+        mrSplit.writeTo(out);
+      }
+      LOG.debug("Split #{} event to output path: {} written in {} ms", count, filePath,
+          Time.monotonicNow() - fileWriteStarted);
+    }
+
+    Path getSerializedFilePath(int index) {
+      // e.g. staging_dir/events/queryid/inputtable_InputDataInformationEvent_0
+      return new Path(String.format(FILE_PATH_FORMAT, appStagingPath, queryId, vertexId, inputName, index));
+    }
+
+    @Override
+    public void close() {
+      try {
+        if (asyncTasks != null) {
+          CompletableFuture.allOf(asyncTasks.toArray(new CompletableFuture[0])).get();
+        }
+      } catch (InterruptedException e) {
+        LOG.info("Interrupted while generating splits", e);
+        Thread.currentThread().interrupt();
+      } catch (ExecutionException e) {// ExecutionException wraps the original exception
+        LOG.error("Exception while generating splits", e.getCause());
+        throw new RuntimeException(e.getCause());
+      } finally {
+        if (executor != null) {
+          executor.shutdown();
+        }
+      }
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -188,22 +301,9 @@ public class HiveSplitGenerator extends InputInitializer {
           (InputFormat<?, ?>) ReflectionUtils.newInstance(JavaUtils.loadClass(realInputFormatName),
             jobConf);
 
-        int totalResource = 0;
-        int taskResource = 0;
-        int availableSlots = 0;
-        // FIXME. Do the right thing Luke.
-        if (getContext() == null) {
-          // for now, totalResource = taskResource for llap
-          availableSlots = 1;
-        }
+        int availableSlots = getAvailableSlotsCalculator().getAvailableSlots();
 
-        if (getContext() != null) {
-          totalResource = getContext().getTotalAvailableResource().getMemory();
-          taskResource = getContext().getVertexTaskResource().getMemory();
-          availableSlots = totalResource / taskResource;
-        }
-
-        if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, 1) <= 1) {
+        if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, 1) <= 1) {
           // broken configuration from mapred-default.xml
           final long blockSize = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY,
             DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
@@ -211,7 +311,7 @@ public class HiveSplitGenerator extends InputInitializer {
             TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE,
             TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE_DEFAULT);
           final long preferredSplitSize = Math.min(blockSize / 2, minGrouping);
-          HiveConf.setLongVar(jobConf, HiveConf.ConfVars.MAPREDMINSPLITSIZE, preferredSplitSize);
+          HiveConf.setLongVar(jobConf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, preferredSplitSize);
           LOG.info("The preferred split size is " + preferredSplitSize);
         }
 
@@ -228,7 +328,7 @@ public class HiveSplitGenerator extends InputInitializer {
 
         InputSplit[] splits;
         if (generateSingleSplit &&
-          conf.get(HiveConf.ConfVars.HIVETEZINPUTFORMAT.varname).equals(HiveInputFormat.class.getName())) {
+          conf.get(HiveConf.ConfVars.HIVE_TEZ_INPUT_FORMAT.varname).equals(HiveInputFormat.class.getName())) {
           MapWork mapWork = Utilities.getMapWork(jobConf);
           List<Path> paths = Utilities.getInputPathsTez(jobConf, mapWork);
           FileSystem fs = paths.get(0).getFileSystem(jobConf);
@@ -366,7 +466,9 @@ public class HiveSplitGenerator extends InputInitializer {
     return splits;
   }
 
-  private List<Event> createEventList(boolean sendSerializedEvents, InputSplitInfoMem inputSplitInfo) {
+  @VisibleForTesting
+  List<Event> createEventList(boolean sendSerializedEvents, InputSplitInfoMem inputSplitInfo)
+      throws IOException {
 
     List<Event> events = Lists.newArrayListWithCapacity(inputSplitInfo.getNumTasks() + 1);
 
@@ -377,13 +479,46 @@ public class HiveSplitGenerator extends InputInitializer {
     events.add(configureVertexEvent);
 
     if (sendSerializedEvents) {
-      MRSplitsProto splitsProto = inputSplitInfo.getSplitsProto();
       int count = 0;
-      for (MRSplitProto mrSplit : splitsProto.getSplitsList()) {
-        InputDataInformationEvent diEvent = InputDataInformationEvent.createWithSerializedPayload(
-            count++, mrSplit.toByteString().asReadOnlyByteBuffer());
-        events.add(diEvent);
+      long inMemoryPayloadSize = 0;
+      long serializedPayloadSize = 0;
+
+      int payloadSerializationThresholdBytes =
+          HiveConf.getIntVar(jobConf, HiveConf.ConfVars.HIVE_TEZ_INPUT_FS_SERIALIZATION_THRESHOLD);
+
+      List<MRSplitProto> splits = inputSplitInfo.getSplitsProto().getSplitsList();
+      LOG.debug("Start creating events for {} splits", splits.size());
+      long startTime = Time.monotonicNow();
+
+      try (SplitSerializer splitSerializer = getSplitSerializer()) {
+        for (MRSplitProto mrSplit : splits) {
+          ByteBuffer payloadBuffer = mrSplit.toByteString().asReadOnlyByteBuffer();
+          int payloadSize = payloadBuffer.limit();
+          boolean shouldSerializeEventToFile =
+              payloadSerializationThresholdBytes != -1 && inMemoryPayloadSize >= payloadSerializationThresholdBytes;
+          LOG.debug("Split #{}, byteBuffer size: {} bytes", count, payloadSize);
+
+          InputDataInformationEvent diEvent = null;
+
+          if (shouldSerializeEventToFile) {
+            LOG.debug("Serialize to path: {}, current in-memory payload: {} bytes >= threshold: {} bytes",
+                splitSerializer.getSerializedFilePath(count), inMemoryPayloadSize, payloadSerializationThresholdBytes);
+            serializedPayloadSize += payloadSize;
+            diEvent = splitSerializer.write(count, mrSplit);
+          } else {
+            inMemoryPayloadSize += payloadSize;
+            diEvent = InputDataInformationEvent.createWithSerializedPayload(count, payloadBuffer);
+          }
+          events.add(diEvent);
+          count += 1;
+        }
       }
+
+      // this is useful for making decisions regarding split serialization threshold
+      long elapsed = Time.monotonicNow() - startTime;
+      LOG.info(
+          "Finished creating events ({} splits) in {} ms, size of payloads: in memory: {} bytes, serialized to fs: {} bytes",
+          splits.size(), elapsed, inMemoryPayloadSize, serializedPayloadSize);
     } else {
       int count = 0;
       for (org.apache.hadoop.mapred.InputSplit split : inputSplitInfo.getOldFormatSplits()) {
@@ -393,6 +528,11 @@ public class HiveSplitGenerator extends InputInitializer {
       }
     }
     return events;
+  }
+
+  @VisibleForTesting
+  SplitSerializer getSplitSerializer() throws IOException {
+    return new SplitSerializer();
   }
 
   @Override
@@ -450,5 +590,13 @@ public class HiveSplitGenerator extends InputInitializer {
         throw new RuntimeException("Problem getting input split size", e);
       }
     }
+  }
+
+  private AvailableSlotsCalculator getAvailableSlotsCalculator() throws Exception {
+    Class<?> clazz = Class.forName(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SPLITS_AVAILABLE_SLOTS_CALCULATOR_CLASS),
+            true, Utilities.getSessionSpecifiedClassLoader());
+    AvailableSlotsCalculator slotsCalculator = (AvailableSlotsCalculator) ReflectionUtil.newInstance(clazz, null);
+    slotsCalculator.initialize(conf, this);
+    return slotsCalculator;
   }
 }

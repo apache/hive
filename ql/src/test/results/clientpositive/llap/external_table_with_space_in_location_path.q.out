@@ -31,10 +31,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE spacetest
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@spacetest
+PREHOOK: Output: database:default
 PREHOOK: Output: default@spacetest
 POSTHOOK: query: DROP TABLE spacetest
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@spacetest
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@spacetest
 PREHOOK: query: CREATE EXTERNAL TABLE spacetestpartition (id int, message string) PARTITIONED BY (day int) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 PREHOOK: type: CREATETABLE
@@ -80,9 +82,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE spacetestpartition
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@spacetestpartition
+PREHOOK: Output: database:default
 PREHOOK: Output: default@spacetestpartition
 POSTHOOK: query: DROP TABLE spacetestpartition
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@spacetestpartition
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@spacetestpartition
 #### A masked pattern was here ####

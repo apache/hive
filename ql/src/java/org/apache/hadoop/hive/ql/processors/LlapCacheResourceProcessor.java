@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryPolicy;
 import org.apache.hadoop.net.NetUtils;
@@ -122,8 +123,8 @@ public class LlapCacheResourceProcessor implements CommandProcessor {
 
   private Schema getSchema() {
     Schema sch = new Schema();
-    sch.addToFieldSchemas(new FieldSchema("hostName", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("purgedMemoryBytes", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("hostName", serdeConstants.STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("purgedMemoryBytes", serdeConstants.STRING_TYPE_NAME, ""));
     sch.putToProperties(SERIALIZATION_NULL_FORMAT, defaultNullString);
     return sch;
   }

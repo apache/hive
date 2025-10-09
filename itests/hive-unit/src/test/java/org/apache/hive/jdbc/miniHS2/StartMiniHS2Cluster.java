@@ -22,9 +22,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hive.jdbc.miniHS2.MiniHS2.MiniClusterType;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -49,6 +50,8 @@ public class StartMiniHS2Cluster {
     String confFilesProperty = System.getProperty("miniHS2.conf", "../../data/conf/hive-site.xml");
     boolean usePortsFromConf = Boolean.parseBoolean(System.getProperty("miniHS2.usePortsFromConf", "false"));
     boolean isMetastoreRemote = Boolean.getBoolean("miniHS2.isMetastoreRemote");
+    boolean withHouseKeepingThreads = Boolean.getBoolean("miniHS2.withHouseKeepingThreads");
+    boolean queryHistory = Boolean.getBoolean("miniHS2.queryHistory");
 
     // Load conf files
     String[] confFiles = confFilesProperty.split(",");
@@ -64,6 +67,7 @@ public class StartMiniHS2Cluster {
     HiveConf conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_RPC_QUERY_PLAN, true);
+    conf.set(Constants.CLUSTER_ID_HIVE_CONF_PROP, ServiceContext.findClusterId());
 
     for (; idx < confFiles.length; ++idx) {
       String confFile = confFiles[idx];
@@ -73,10 +77,11 @@ public class StartMiniHS2Cluster {
       conf.addResource(new URL("file://" + new File(confFile).toURI().getPath()));
     }
 
-    miniHS2 = new MiniHS2(conf, clusterType, usePortsFromConf, isMetastoreRemote);
+    miniHS2 = new MiniHS2.Builder().withConf(conf).withClusterType(clusterType).withPortsFromConf(usePortsFromConf)
+        .withRemoteMetastore(isMetastoreRemote).withHouseKeepingThreads(withHouseKeepingThreads)
+        .withQueryHistory(queryHistory).build();
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);
-    miniHS2.getDFS().getFileSystem().mkdirs(new Path("/apps_staging_dir/anonymous"));
 
     System.out.println("JDBC URL available at " + miniHS2.getJdbcURL());
 

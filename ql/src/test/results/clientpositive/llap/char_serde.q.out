@@ -1,27 +1,39 @@
 PREHOOK: query: drop table if exists char_serde_regex
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_serde_regex
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_serde_lb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_serde_lb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_serde_ls
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_serde_ls
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_serde_c
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_serde_c
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_serde_lbc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_serde_lbc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists char_serde_orc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists char_serde_orc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table  char_serde_regex (
   key char(15),
   value char(20)
@@ -383,48 +395,60 @@ val_101             	2
 PREHOOK: query: drop table if exists char_serde_regex
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_regex
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_serde_regex
 POSTHOOK: query: drop table if exists char_serde_regex
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_regex
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_regex
 PREHOOK: query: drop table if exists char_serde_lb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_lb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_serde_lb
 POSTHOOK: query: drop table if exists char_serde_lb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_lb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_lb
 PREHOOK: query: drop table if exists char_serde_ls
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_ls
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_serde_ls
 POSTHOOK: query: drop table if exists char_serde_ls
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_ls
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_ls
 PREHOOK: query: drop table if exists char_serde_c
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_c
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_serde_c
 POSTHOOK: query: drop table if exists char_serde_c
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_c
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_c
 PREHOOK: query: drop table if exists char_serde_lbc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_lbc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_serde_lbc
 POSTHOOK: query: drop table if exists char_serde_lbc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_lbc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_lbc
 PREHOOK: query: drop table if exists char_serde_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_serde_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_serde_orc
 POSTHOOK: query: drop table if exists char_serde_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_serde_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_serde_orc

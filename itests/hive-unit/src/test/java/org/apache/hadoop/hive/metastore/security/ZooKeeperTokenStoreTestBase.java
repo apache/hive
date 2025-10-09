@@ -54,6 +54,7 @@ public abstract class ZooKeeperTokenStoreTestBase {
   private static final String LOCALHOST_KEY_STORE_NAME = "keystore.jks";
   private static final String TRUST_STORE_NAME = "truststore.jks";
   private static final String KEY_STORE_TRUST_STORE_PASSWORD = "HiveJdbc";
+  private static final String KEY_STORE_TRUST_STORE_TYPE = "JKS";
 
   private static MiniZooKeeperCluster zkCluster = null;
   private static int zkPort = -1;
@@ -96,10 +97,14 @@ public abstract class ZooKeeperTokenStoreTestBase {
           dataFileDir + File.separator + LOCALHOST_KEY_STORE_NAME);
       conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_PASSWORD,
           KEY_STORE_TRUST_STORE_PASSWORD);
+      conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_TYPE,
+          KEY_STORE_TRUST_STORE_TYPE);
       conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_LOCATION,
           dataFileDir + File.separator + TRUST_STORE_NAME);
       conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_PASSWORD,
           KEY_STORE_TRUST_STORE_PASSWORD);
+      conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_TYPE,
+          KEY_STORE_TRUST_STORE_TYPE);
       conf.set(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_SSL_ENABLE, "true");
 
     }

@@ -44,6 +44,8 @@ public class TestMacroSemanticAnalyzer {
   public void setup() throws Exception {
     queryState = new QueryState.Builder().build();
     conf = queryState.getConf();
+    // the test doesn't involve DAG execution, skip TezSessionState initialization
+    conf.setBoolean(HiveConf.ConfVars.HIVE_CLI_TEZ_INITIALIZE_SESSION.varname, false);
     SessionState.start(conf);
     context = new Context(conf);
   }

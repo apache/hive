@@ -1,19 +1,27 @@
 PREHOOK: query: drop table if exists admirals
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists admirals
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists ship_types
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ship_types
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists ships
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ships
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists torpedos
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists torpedos
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table ships (id integer,ship_type_id integer,crew_size integer)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -92,8 +100,8 @@ select row_number() over (),t.id,row_number() over (partition by t.id) from ship
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ship_types
 POSTHOOK: Output: default@ships
-POSTHOOK: Lineage: ships.crew_size SCRIPT [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: ships.id SCRIPT [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: ships.crew_size EXPRESSION [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: ships.id EXPRESSION []
 POSTHOOK: Lineage: ships.ship_type_id SIMPLE [(ship_types)t.FieldSchema(name:id, type:int, comment:null), ]
 Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: insert into torpedos
@@ -108,36 +116,36 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ship_types
 POSTHOOK: Input: default@ships
 POSTHOOK: Output: default@torpedos
-POSTHOOK: Lineage: torpedos.admiral_id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
-POSTHOOK: Lineage: torpedos.id SCRIPT [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: torpedos.admiral_id EXPRESSION [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: torpedos.id EXPRESSION []
 POSTHOOK: Lineage: torpedos.ship_id SIMPLE [(ships)s.FieldSchema(name:id, type:int, comment:null), ]
 PREHOOK: query: select
-    s.id
+    `s`.`id`
 from
-    ships s,
-    ship_types st,
-    torpedos t
+    `ships` `s`,
+    `ship_types` `st`,
+    `torpedos` `t`
 where
-    st.type_name='galaxy class' 
-    and s.crew_size=2
-    and ship_type_id=st.id
-    and ship_id=s.id
+    `st`.`type_name`='galaxy class' 
+    and `s`.`crew_size`=2
+    and `ship_type_id`=`st`.`id`
+    and `ship_id`=`s`.`id`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ship_types
 PREHOOK: Input: default@ships
 PREHOOK: Input: default@torpedos
 #### A masked pattern was here ####
 POSTHOOK: query: select
-    s.id
+    `s`.`id`
 from
-    ships s,
-    ship_types st,
-    torpedos t
+    `ships` `s`,
+    `ship_types` `st`,
+    `torpedos` `t`
 where
-    st.type_name='galaxy class' 
-    and s.crew_size=2
-    and ship_type_id=st.id
-    and ship_id=s.id
+    `st`.`type_name`='galaxy class' 
+    and `s`.`crew_size`=2
+    and `ship_type_id`=`st`.`id`
+    and `ship_id`=`s`.`id`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ship_types
 POSTHOOK: Input: default@ships
@@ -225,27 +233,27 @@ Stage-0
                       default@ship_types,st,Tbl:COMPLETE,Col:COMPLETE,Output:["id","type_name"]
 
 PREHOOK: query: select
-    s.id
+    `s`.`id`
 from
-    ships s,
-    ship_types st
+    `ships` `s`,
+    `ship_types` `st`
 where
-    st.type_name='galaxy class' 
-    and s.crew_size=2
-    and ship_type_id=st.id
+    `st`.`type_name`='galaxy class' 
+    and `s`.`crew_size`=2
+    and `ship_type_id`=`st`.`id`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ship_types
 PREHOOK: Input: default@ships
 #### A masked pattern was here ####
 POSTHOOK: query: select
-    s.id
+    `s`.`id`
 from
-    ships s,
-    ship_types st
+    `ships` `s`,
+    `ship_types` `st`
 where
-    st.type_name='galaxy class' 
-    and s.crew_size=2
-    and ship_type_id=st.id
+    `st`.`type_name`='galaxy class' 
+    and `s`.`crew_size`=2
+    and `ship_type_id`=`st`.`id`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ship_types
 POSTHOOK: Input: default@ships

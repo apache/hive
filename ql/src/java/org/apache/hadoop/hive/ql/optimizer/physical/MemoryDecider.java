@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MemoryDecider implements PhysicalPlanResolver {
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(MemoryDecider.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(MemoryDecider.class);
 
   public class MemoryCalculator implements SemanticDispatcher {
 
@@ -73,9 +73,9 @@ public class MemoryDecider implements PhysicalPlanResolver {
 
     public MemoryCalculator(PhysicalContext pctx) {
       this.pctx = pctx;
-      this.totalAvailableMemory = HiveConf.getLongVar(pctx.conf, HiveConf.ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD);
-      this.minimumHashTableSize = HiveConf.getIntVar(pctx.conf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS)
-        * HiveConf.getIntVar(pctx.conf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE);
+      this.totalAvailableMemory = HiveConf.getLongVar(pctx.conf, HiveConf.ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD);
+      this.minimumHashTableSize = HiveConf.getIntVar(pctx.conf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MIN_NUM_PARTITIONS)
+        * HiveConf.getIntVar(pctx.conf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MIN_WB_SIZE);
       this.inflationFactor = HiveConf.getFloatVar(pctx.conf, HiveConf.ConfVars.HIVE_HASH_TABLE_INFLATION_FACTOR);
     }
 

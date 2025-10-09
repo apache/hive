@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS decimal_part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS decimal_part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE decimal_part (id DECIMAL(4,0), foo VARCHAR(10))
     PARTITIONED BY (nr_bank DECIMAL(4,0))
 STORED AS ORC TBLPROPERTIES ('orc.compress'='ZLIB')
@@ -176,3 +178,79 @@ POSTHOOK: Input: default@decimal_part@nr_bank=8801
 #### A masked pattern was here ####
 1	88
 1	8801
+PREHOOK: query: DROP TABLE IF EXISTS decimal_part1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS decimal_part1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE decimal_part1 (quantity INT) PARTITIONED BY (sales_percent DECIMAL(10,2)) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@decimal_part1
+POSTHOOK: query: CREATE EXTERNAL TABLE decimal_part1 (quantity INT) PARTITIONED BY (sales_percent DECIMAL(10,2)) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_part1
+PREHOOK: query: INSERT INTO decimal_part1 VALUES (1, 24518.01)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_part1
+POSTHOOK: query: INSERT INTO decimal_part1 VALUES (1, 24518.01)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_part1
+POSTHOOK: Output: default@decimal_part1@sales_percent=24518.01
+POSTHOOK: Lineage: decimal_part1 PARTITION(sales_percent=24518.01).quantity SCRIPT []
+PREHOOK: query: INSERT INTO decimal_part1 VALUES (2, 24518.02)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_part1
+POSTHOOK: query: INSERT INTO decimal_part1 VALUES (2, 24518.02)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_part1
+POSTHOOK: Output: default@decimal_part1@sales_percent=24518.02
+POSTHOOK: Lineage: decimal_part1 PARTITION(sales_percent=24518.02).quantity SCRIPT []
+PREHOOK: query: SELECT count(*), sales_percent FROM decimal_part1 GROUP BY sales_percent
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_part1
+PREHOOK: Input: default@decimal_part1@sales_percent=24518.01
+PREHOOK: Input: default@decimal_part1@sales_percent=24518.02
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*), sales_percent FROM decimal_part1 GROUP BY sales_percent
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_part1
+POSTHOOK: Input: default@decimal_part1@sales_percent=24518.01
+POSTHOOK: Input: default@decimal_part1@sales_percent=24518.02
+#### A masked pattern was here ####
+1	24518.02
+1	24518.01
+PREHOOK: query: SELECT d1.quantity,d1.sales_percent FROM decimal_part1 d1 JOIN decimal_part1 d2 ON d1.sales_percent=d2.sales_percent
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_part1
+PREHOOK: Input: default@decimal_part1@sales_percent=24518.01
+PREHOOK: Input: default@decimal_part1@sales_percent=24518.02
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d1.quantity,d1.sales_percent FROM decimal_part1 d1 JOIN decimal_part1 d2 ON d1.sales_percent=d2.sales_percent
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_part1
+POSTHOOK: Input: default@decimal_part1@sales_percent=24518.01
+POSTHOOK: Input: default@decimal_part1@sales_percent=24518.02
+#### A masked pattern was here ####
+1	24518.01
+2	24518.02
+PREHOOK: query: SELECT d1.quantity,d1.sales_percent FROM decimal_part1 d1 JOIN decimal_part1 d2 ON d1.sales_percent=d2.sales_percent
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_part1
+PREHOOK: Input: default@decimal_part1@sales_percent=24518.01
+PREHOOK: Input: default@decimal_part1@sales_percent=24518.02
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d1.quantity,d1.sales_percent FROM decimal_part1 d1 JOIN decimal_part1 d2 ON d1.sales_percent=d2.sales_percent
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_part1
+POSTHOOK: Input: default@decimal_part1@sales_percent=24518.01
+POSTHOOK: Input: default@decimal_part1@sales_percent=24518.02
+#### A masked pattern was here ####
+1	24518.01
+2	24518.02

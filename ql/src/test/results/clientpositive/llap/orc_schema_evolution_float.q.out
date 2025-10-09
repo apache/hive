@@ -1,7 +1,9 @@
 PREHOOK: query: drop table float_text
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table float_text
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table float_text(f float)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -248,16 +250,20 @@ POSTHOOK: Input: default@float_orc
 PREHOOK: query: drop table float_text
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@float_text
+PREHOOK: Output: database:default
 PREHOOK: Output: default@float_text
 POSTHOOK: query: drop table float_text
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@float_text
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@float_text
 PREHOOK: query: drop table float_orc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@float_orc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@float_orc
 POSTHOOK: query: drop table float_orc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@float_orc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@float_orc

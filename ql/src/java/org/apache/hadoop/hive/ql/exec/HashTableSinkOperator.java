@@ -122,7 +122,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   @SuppressWarnings("unchecked")
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
-    boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESESSIONSILENT);
+    boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_SESSION_SILENT);
     console = new LogHelper(LOG, isSilent);
     memoryExhaustionChecker = MemoryExhaustionCheckerFactory.getChecker(console, hconf, conf);
     emptyRowContainer.addRow(emptyObjectArray);
@@ -172,7 +172,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     }
     mapJoinTables = new MapJoinPersistableTableContainer[tagLen];
     mapJoinTableSerdes = new MapJoinTableContainerSerDe[tagLen];
-    hashTableScale = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVEHASHTABLESCALE);
+    hashTableScale = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_SCALE);
     if (hashTableScale <= 0) {
       hashTableScale = 1;
     }

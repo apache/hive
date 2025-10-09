@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 class MetastoreHousekeepingLeaderTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreHousekeepingLeaderTestBase.class);
   private static HiveMetaStoreClient client;
-  private static Configuration conf = MetastoreConf.newMetastoreConf();
+  protected static Configuration conf = MetastoreConf.newMetastoreConf();
   private static Warehouse warehouse;
   private static boolean isServerStarted = false;
   private static int port;
@@ -54,11 +54,14 @@ class MetastoreHousekeepingLeaderTestBase {
   static Map<String, Boolean> threadNames = new HashMap<>();
   static Map<Class<? extends Thread>, Boolean> threadClasses = new HashMap<>();
 
-  void internalSetup(final String leaderHostName) throws Exception {
+  void internalSetup(final String leaderHostName, boolean configuredLeader) throws Exception {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
     MetastoreConf.setVar(conf, ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME, leaderHostName);
+    MetastoreConf.setVar(conf, ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION,
+        configuredLeader ? "host" : "lock");
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
 
     addHouseKeepingThreadConfigs();
 
@@ -113,6 +116,7 @@ class MetastoreHousekeepingLeaderTestBase {
 
   private void addCompactorConfigs() {
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEANER_ON, true);
     MetastoreConf.setVar(conf, ConfVars.HIVE_METASTORE_RUNWORKER_IN, "metastore");
     MetastoreConf.setLongVar(conf, ConfVars.COMPACTOR_WORKER_THREADS, 1);
     threadClasses.put(Initiator.class, false);
@@ -154,6 +158,7 @@ class MetastoreHousekeepingLeaderTestBase {
   }
 
   void searchHousekeepingThreads() throws Exception {
+    resetThreadStatus();
     // Client has been created so the metastore has started serving and started the background threads
     LOG.info(getAllThreadsAsString());
 
@@ -184,6 +189,11 @@ class MetastoreHousekeepingLeaderTestBase {
         threadNames.put(threadName, true);
       }
     }
+  }
+
+  private void resetThreadStatus() {
+    threadNames.forEach((name, status) -> threadNames.put(name, false));
+    threadClasses.forEach((thread, status) -> threadClasses.put(thread, false));
   }
 }
 

@@ -49,10 +49,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
+
 /**
  * Generic UDF to generate Bloom Filter
  */
-@Description(name = "bloom_filter")
+@Description(name = BLOOM_FILTER_FUNCTION)
 public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
 
   @Override
@@ -122,9 +124,9 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
 
       public BloomFilterBuf(long expectedEntries, long maxEntries) {
         if (expectedEntries > maxEntries) {
-          bloomFilter = new BloomKFilter(maxEntries);
+          bloomFilter = BloomKFilter.build(maxEntries);
         } else {
-          bloomFilter = new BloomKFilter(expectedEntries);
+          bloomFilter = BloomKFilter.build(expectedEntries);
         }
       }
 

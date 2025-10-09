@@ -120,6 +120,34 @@ public final class Op {
         parentVertexes.add(connection.from);
       }
       parentVertexes.removeAll(posToVertex.values());
+
+      // remove the parent vertices that are used for the other join operators
+      List<Op> remaining = new ArrayList<>(children);
+      Set<Op> visited = new HashSet<>();
+      while (!remaining.isEmpty()) {
+        Op child = remaining.remove(0);
+        visited.add(child);
+
+        if (child.opObject.has("input vertices:")) {
+          JSONObject vertexObj = child.opObject.getJSONObject("input vertices:");
+          for (String pos : JSONObject.getNames(vertexObj)) {
+            String vertexName = vertexObj.getString(pos);
+            for (Connection connection : vertex.parentConnections) {
+              if (connection.from.name.equals(vertexName)) {
+                parentVertexes.remove(connection.from);
+                break;
+              }
+            }
+          }
+        }
+
+        for (Op grandchild: child.children) {
+          if (!visited.contains(grandchild)) {
+            remaining.add(grandchild);
+          }
+        }
+      }
+
       Map<String, String> posToOpId = new LinkedHashMap<>();
       if (keys.length() != 0) {
         for (String key : JSONObject.getNames(keys)) {

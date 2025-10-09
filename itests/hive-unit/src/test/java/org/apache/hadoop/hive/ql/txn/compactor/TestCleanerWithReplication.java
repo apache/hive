@@ -18,11 +18,9 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -31,10 +29,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.shims.Utils;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -43,35 +38,25 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.security.auth.login.LoginException;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 import static org.junit.Assert.assertEquals;
 
 public class TestCleanerWithReplication extends CompactorTest {
   private Path cmRootDirectory;
-  private static FileSystem fs;
   private static MiniDFSCluster miniDFSCluster;
   private final String dbName = "TestCleanerWithReplication";
 
   @Before
   public void setup() throws Exception {
-    conf = new HiveConf();
-    TestTxnDbUtil.setConfValues(conf);
-    TestTxnDbUtil.cleanDb(conf);
-    conf.set("fs.defaultFS", fs.getUri().toString());
-    conf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
-    TestTxnDbUtil.prepDb(conf);
-    ms = new HiveMetaStoreClient(conf);
-    txnHandler = TxnUtils.getTxnStore(conf);
-    cmRootDirectory = new Path(conf.get(HiveConf.ConfVars.REPLCMDIR.varname));
+    HiveConf conf = new HiveConf();
+    conf.set("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+    conf.setBoolVar(HiveConf.ConfVars.REPL_CM_ENABLED, true);
+    setup(conf);
+    cmRootDirectory = new Path(conf.get(HiveConf.ConfVars.REPL_CM_DIR.varname));
     if (!fs.exists(cmRootDirectory)) {
       fs.mkdirs(cmRootDirectory);
     }
-    tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
     Database db = new Database();
     db.putToParameters(SOURCE_OF_REPLICATION, "1,2,3");
     db.setName(dbName);
@@ -79,13 +64,12 @@ public class TestCleanerWithReplication extends CompactorTest {
   }
 
   @BeforeClass
-  public static void classLevelSetup() throws LoginException, IOException {
+  public static void classLevelSetup() throws IOException {
     Configuration hadoopConf = new Configuration();
     hadoopConf.set("dfs.client.use.datanode.hostname", "true");
     hadoopConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     miniDFSCluster =
         new MiniDFSCluster.Builder(hadoopConf).numDataNodes(2).format(true).build();
-    fs = miniDFSCluster.getFileSystem();
   }
 
   @After

@@ -45,8 +45,10 @@ default	t1_n76			user1	USER	UPDATE	false	-1	hive_admin_user
 PREHOOK: query: drop table t1_n76
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n76
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n76
 POSTHOOK: query: drop table t1_n76
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n76
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n76

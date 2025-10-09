@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 /**
 
  */
-public class Decimal64ColumnVector extends LongColumnVector {
+public class Decimal64ColumnVector extends LongColumnVector implements IDecimalColumnVector {
 
   public short scale;
   public short precision;
@@ -39,6 +39,13 @@ public class Decimal64ColumnVector extends LongColumnVector {
     this.precision = (short) precision;
     this.scale = (short) scale;
     scratchHiveDecWritable = new HiveDecimalWritable();
+  }
+
+  // Fill the vector entries with provided value
+  public void fill(HiveDecimal value) {
+    isRepeating = true;
+    isNull[0] = false;
+    set(0, value);
   }
 
   /**
@@ -136,12 +143,12 @@ public class Decimal64ColumnVector extends LongColumnVector {
           decimal64ColVector.vector[inputElementNum], decimal64ColVector.scale);
       scratchHiveDecWritable.mutateEnforcePrecisionScale(precision, scale);
       if (scratchHiveDecWritable.isSet()) {
-        vector[inputElementNum] = scratchHiveDecWritable.serialize64(scale);
+        vector[outputElementNum] = scratchHiveDecWritable.serialize64(scale);
       } else {
 
         // In effect, the input is NULL because of out-of-range precision/scale.
         noNulls = false;
-        isNull[inputElementNum] = true;
+        isNull[outputElementNum] = true;
       }
     } else {
 

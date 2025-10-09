@@ -24,13 +24,13 @@ import java.util.List;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.security.DummyHiveMetastoreAuthorizationProvider.AuthCallContext;
@@ -66,14 +66,14 @@ public class TestAuthorizationPreEventListener {
 
     int port = MetaStoreTestUtils.startMetaStoreWithRetry();
 
-    clientHiveConf = new HiveConf(this.getClass());
+    clientHiveConf = new HiveConfForTest(this.getClass());
 
-    clientHiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
-    clientHiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
+    clientHiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:" + port);
+    clientHiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
     clientHiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
-    clientHiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    clientHiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    clientHiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    clientHiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
 
 
     SessionState.start(new CliSessionState(clientHiveConf));
@@ -240,6 +240,8 @@ public class TestAuthorizationPreEventListener {
 
 
     driver.run(String.format("alter table %s rename to %s", tblName, renamed));
+    // remove the last auth call, which is for the get_partitions_req
+    authCalls.remove(authCalls.size() - 1);
     listSize = authCalls.size();
 
     Table renamedTableFromEvent = (

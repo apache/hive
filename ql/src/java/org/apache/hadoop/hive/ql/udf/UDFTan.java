@@ -40,7 +40,7 @@ public class UDFTan extends UDFMath {
    */
   @Override
   protected DoubleWritable doEvaluate(DoubleWritable a) {
-    result.set(Math.tan(a.get()));
+    result.set(StrictMath.tan(a.get()));
     return result;
   }
 

@@ -20,19 +20,24 @@ package org.apache.hive.jdbc;
 
 import static org.mockito.Mockito.when;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hive.service.cli.TableSchema;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.mockito.internal.util.reflection.FieldSetter;
+import org.apache.hive.common.util.ReflectionUtil;
 
 /**
  * Test suite for {@link HiveBaseResultSet} class.
@@ -240,6 +245,49 @@ public class TestHiveBaseResultSet {
     Assert.assertFalse(resultSet.wasNull());
   }
 
+  /**
+   * HIVE-28358 getClob(int) != null
+   */
+  @Test
+  public void testGetClobString() throws SQLException, IOException {
+    FieldSchema fieldSchema = new FieldSchema();
+    fieldSchema.setType("varchar(64)");
+
+    List<FieldSchema> fieldSchemas = Arrays.asList(fieldSchema);
+    TableSchema schema = new TableSchema(fieldSchemas);
+
+    HiveBaseResultSet resultSet = Mockito.spy(HiveBaseResultSet.class);
+    resultSet.row = new Object[] {"ABC"};
+
+    when(resultSet.getSchema()).thenReturn(schema);
+    
+    Clob clob = resultSet.getClob(1);
+    try (Reader clobReader = clob.getCharacterStream()) {
+      Assert.assertEquals("ABC", new BufferedReader(clobReader).lines().collect(Collectors.joining(System.lineSeparator())));
+    }
+    Assert.assertFalse(resultSet.wasNull());
+  }
+
+  /**
+   * HIVE-28358 getClob(int) == null 
+   */
+  @Test
+  public void testGetClobNull() throws SQLException {
+    FieldSchema fieldSchema = new FieldSchema();
+    fieldSchema.setType("varchar(64)");
+
+    List<FieldSchema> fieldSchemas = Arrays.asList(fieldSchema);
+    TableSchema schema = new TableSchema(fieldSchemas);
+
+    HiveBaseResultSet resultSet = Mockito.spy(HiveBaseResultSet.class);
+    resultSet.row = new Object[] {null};
+
+    when(resultSet.getSchema()).thenReturn(schema);
+
+    Assert.assertNull(resultSet.getClob(1));
+    Assert.assertTrue(resultSet.wasNull());
+  }
+
   @Test
   public void testFindColumnUnqualified() throws Exception {
     FieldSchema fieldSchema1 = new FieldSchema();
@@ -259,7 +307,7 @@ public class TestHiveBaseResultSet {
     resultSet.normalizedColumnNames = Arrays.asList("one", "two", "three");
 
     Field executorField = HiveBaseResultSet.class.getDeclaredField("columnNameIndexCache");
-    FieldSetter.setField(resultSet, executorField, new HashMap<>());
+    ReflectionUtil.setField(resultSet, executorField, new HashMap<>());
 
     when(resultSet.getSchema()).thenReturn(schema);
     when(resultSet.findColumn("one")).thenCallRealMethod();
@@ -290,7 +338,7 @@ public class TestHiveBaseResultSet {
     resultSet.normalizedColumnNames = Arrays.asList("table.one", "table.two", "table.three");
 
     Field executorField = HiveBaseResultSet.class.getDeclaredField("columnNameIndexCache");
-    FieldSetter.setField(resultSet, executorField, new HashMap<>());
+    ReflectionUtil.setField(resultSet, executorField, new HashMap<>());
 
     when(resultSet.getSchema()).thenReturn(schema);
     when(resultSet.findColumn("one")).thenCallRealMethod();
@@ -322,7 +370,7 @@ public class TestHiveBaseResultSet {
     resultSet.normalizedColumnNames = Arrays.asList("table.one");
 
     Field executorField = HiveBaseResultSet.class.getDeclaredField("columnNameIndexCache");
-    FieldSetter.setField(resultSet, executorField, new HashMap<>());
+    ReflectionUtil.setField(resultSet, executorField, new HashMap<>());
 
     when(resultSet.getSchema()).thenReturn(schema);
     when(resultSet.findColumn("zero")).thenCallRealMethod();

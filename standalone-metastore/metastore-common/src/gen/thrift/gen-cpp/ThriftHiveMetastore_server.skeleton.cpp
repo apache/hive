@@ -20,6 +20,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     // Your initialization goes here
   }
 
+  void abort_Compactions(AbortCompactResponse& _return, const AbortCompactionRequest& rqst) {
+    // Your implementation goes here
+    printf("abort_Compactions\n");
+  }
+
   void getMetaConf(std::string& _return, const std::string& key) {
     // Your implementation goes here
     printf("getMetaConf\n");
@@ -60,6 +65,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_database\n");
   }
 
+  void create_database_req(const CreateDatabaseRequest& createDatabaseRequest) {
+    // Your implementation goes here
+    printf("create_database_req\n");
+  }
+
   void get_database(Database& _return, const std::string& name) {
     // Your implementation goes here
     printf("get_database\n");
@@ -90,14 +100,24 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_all_databases\n");
   }
 
+  void get_databases_req(GetDatabaseObjectsResponse& _return, const GetDatabaseObjectsRequest& request) {
+    // Your implementation goes here
+    printf("get_databases_req\n");
+  }
+
   void alter_database(const std::string& dbname, const Database& db) {
     // Your implementation goes here
     printf("alter_database\n");
   }
 
-  void create_dataconnector(const DataConnector& connector) {
+  void alter_database_req(const AlterDatabaseRequest& alterDbReq) {
     // Your implementation goes here
-    printf("create_dataconnector\n");
+    printf("alter_database_req\n");
+  }
+
+  void create_dataconnector_req(const CreateDataConnectorRequest& connectorReq) {
+    // Your implementation goes here
+    printf("create_dataconnector_req\n");
   }
 
   void get_dataconnector_req(DataConnector& _return, const GetDataConnectorRequest& request) {
@@ -105,9 +125,9 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_dataconnector_req\n");
   }
 
-  void drop_dataconnector(const std::string& name, const bool ifNotExists, const bool checkReferences) {
+  void drop_dataconnector_req(const DropDataConnectorRequest& dropDcReq) {
     // Your implementation goes here
-    printf("drop_dataconnector\n");
+    printf("drop_dataconnector_req\n");
   }
 
   void get_dataconnectors(std::vector<std::string> & _return) {
@@ -115,9 +135,9 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_dataconnectors\n");
   }
 
-  void alter_dataconnector(const std::string& name, const DataConnector& connector) {
+  void alter_dataconnector_req(const AlterDataConnectorRequest& alterReq) {
     // Your implementation goes here
-    printf("alter_dataconnector\n");
+    printf("alter_dataconnector_req\n");
   }
 
   void get_type(Type& _return, const std::string& name) {
@@ -240,6 +260,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_table_with_environment_context\n");
   }
 
+  void drop_table_req(const DropTableRequest& dropTableReq) {
+    // Your implementation goes here
+    printf("drop_table_req\n");
+  }
+
   void truncate_table(const std::string& dbName, const std::string& tableName, const std::vector<std::string> & partNames) {
     // Your implementation goes here
     printf("truncate_table\n");
@@ -278,16 +303,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_all_tables(std::vector<std::string> & _return, const std::string& db_name) {
     // Your implementation goes here
     printf("get_all_tables\n");
-  }
-
-  void get_table(Table& _return, const std::string& dbname, const std::string& tbl_name) {
-    // Your implementation goes here
-    printf("get_table\n");
-  }
-
-  void get_table_objects_by_name(std::vector<Table> & _return, const std::string& dbname, const std::vector<std::string> & tbl_names) {
-    // Your implementation goes here
-    printf("get_table_objects_by_name\n");
   }
 
   void get_tables_ext(std::vector<ExtendedTableInfo> & _return, const GetTablesExtRequest& req) {
@@ -375,6 +390,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("append_partition_with_environment_context\n");
   }
 
+  void append_partition_req(Partition& _return, const AppendPartitionsRequest& appendPartitionsReq) {
+    // Your implementation goes here
+    printf("append_partition_req\n");
+  }
+
   void append_partition_by_name(Partition& _return, const std::string& db_name, const std::string& tbl_name, const std::string& part_name) {
     // Your implementation goes here
     printf("append_partition_by_name\n");
@@ -393,6 +413,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   bool drop_partition_with_environment_context(const std::string& db_name, const std::string& tbl_name, const std::vector<std::string> & part_vals, const bool deleteData, const EnvironmentContext& environment_context) {
     // Your implementation goes here
     printf("drop_partition_with_environment_context\n");
+  }
+
+  bool drop_partition_req(const DropPartitionRequest& dropPartitionReq) {
+    // Your implementation goes here
+    printf("drop_partition_req\n");
   }
 
   bool drop_partition_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& part_name, const bool deleteData) {
@@ -465,6 +490,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partition_names\n");
   }
 
+  void fetch_partition_names_req(std::vector<std::string> & _return, const PartitionsRequest& partitionReq) {
+    // Your implementation goes here
+    printf("fetch_partition_names_req\n");
+  }
+
   void get_partition_values(PartitionValuesResponse& _return, const PartitionValuesRequest& request) {
     // Your implementation goes here
     printf("get_partition_values\n");
@@ -505,6 +535,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partitions_by_filter\n");
   }
 
+  void get_partitions_by_filter_req(std::vector<Partition> & _return, const GetPartitionsByFilterRequest& req) {
+    // Your implementation goes here
+    printf("get_partitions_by_filter_req\n");
+  }
+
   void get_part_specs_by_filter(std::vector<PartitionSpec> & _return, const std::string& db_name, const std::string& tbl_name, const std::string& filter, const int32_t max_parts) {
     // Your implementation goes here
     printf("get_part_specs_by_filter\n");
@@ -533,6 +568,16 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_partitions_by_names_req(GetPartitionsByNamesResult& _return, const GetPartitionsByNamesRequest& req) {
     // Your implementation goes here
     printf("get_partitions_by_names_req\n");
+  }
+
+  void get_properties(PropertyGetResponse& _return, const PropertyGetRequest& req) {
+    // Your implementation goes here
+    printf("get_properties\n");
+  }
+
+  bool set_properties(const PropertySetRequest& req) {
+    // Your implementation goes here
+    printf("set_properties\n");
   }
 
   void alter_partition(const std::string& db_name, const std::string& tbl_name, const Partition& new_part) {
@@ -700,6 +745,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("delete_table_column_statistics\n");
   }
 
+  bool delete_column_statistics_req(const DeleteColumnStatisticsRequest& req) {
+    // Your implementation goes here
+    printf("delete_column_statistics_req\n");
+  }
+
   void create_function(const Function& func) {
     // Your implementation goes here
     printf("create_function\n");
@@ -718,6 +768,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_functions(std::vector<std::string> & _return, const std::string& dbName, const std::string& pattern) {
     // Your implementation goes here
     printf("get_functions\n");
+  }
+
+  void get_functions_req(GetFunctionsResponse& _return, const GetFunctionsRequest& request) {
+    // Your implementation goes here
+    printf("get_functions_req\n");
   }
 
   void get_function(Function& _return, const std::string& dbName, const std::string& funcName) {
@@ -910,6 +965,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_valid_write_ids\n");
   }
 
+  void add_write_ids_to_min_history(const int64_t txnId, const std::map<std::string, int64_t> & writeIds) {
+    // Your implementation goes here
+    printf("add_write_ids_to_min_history\n");
+  }
+
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) {
     // Your implementation goes here
     printf("allocate_table_write_ids\n");
@@ -973,6 +1033,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void show_compact(ShowCompactResponse& _return, const ShowCompactRequest& rqst) {
     // Your implementation goes here
     printf("show_compact\n");
+  }
+
+  bool submit_for_cleanup(const CompactionRequest& o1, const int64_t o2, const int64_t o3) {
+    // Your implementation goes here
+    printf("submit_for_cleanup\n");
   }
 
   void add_dynamic_partitions(const AddDynamicPartitions& rqst) {
@@ -1368,6 +1433,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_all_write_event_info(std::vector<WriteEventInfo> & _return, const GetAllWriteEventInfoRequest& request) {
     // Your implementation goes here
     printf("get_all_write_event_info\n");
+  }
+
+  void get_replayed_txns_for_policy(ReplayedTxnsForPolicyResult& _return, const std::string& policyName) {
+    // Your implementation goes here
+    printf("get_replayed_txns_for_policy\n");
   }
 
 };

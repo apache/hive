@@ -1,5 +1,5 @@
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###         16 ### HDFS DATE ### hdfs://### HDFS PATH ###Foo/in1.txt
+-rw-r--r--   3 ### USER ### ### GROUP ###         ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###Foo/in1.txt
 PREHOOK: query: create external table table_external (c1 int, c2 int)
 partitioned by (day string)
 location 'hdfs://### HDFS PATH ###'
@@ -17,4 +17,4 @@ POSTHOOK: Output: default@table_external
 PREHOOK: query: msck repair table table_external
 PREHOOK: type: MSCK
 PREHOOK: Output: default@table_external
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Repair: Cannot add partition table_external:day=Foo due to invalid characters in the name

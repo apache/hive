@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -260,7 +261,7 @@ public class SamplePruner extends Transform {
       Collection<Path> retPathList)
       throws IOException {
     LOG.info("Path pattern = " + pathPattern);
-    FileStatus srcs[] = fs.globStatus(new Path(pathPattern));
+    FileStatus srcs[] = fs.globStatus(new Path(pathPattern), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(srcs);
 
     boolean hasFile = false, allFile = true;

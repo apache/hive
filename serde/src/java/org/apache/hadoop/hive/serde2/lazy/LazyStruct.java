@@ -300,7 +300,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
     // first field always starts from 0, even when missing
     startPosition[0] = 0;
     for (int i = 1; i <= fields.length; i++) {
-      if (fields.length > 1 && delimitIndexes[i - 1] != -1) {
+      if (delimitIndexes[i - 1] != -1) {
         int start = delimitIndexes[i - 1] + fieldDelimit.length;
         startPosition[i] = start - i * diff;
       } else {
@@ -313,7 +313,7 @@ public class LazyStruct extends LazyNonPrimitive<LazySimpleStructObjectInspector
 
   // find all the indexes of the sub byte[]
   private int[] findIndexes(byte[] array, byte[] target) {
-    if (fields.length <= 1) {
+    if (fields.length < 1) {
       return new int[0];
     }
     int[] indexes = new int[fields.length];

@@ -27,6 +27,7 @@ import org.apache.hadoop.hbase.HBaseTestingUtility;
 import org.apache.hadoop.hbase.MiniHBaseCluster;
 import org.apache.hadoop.hbase.zookeeper.MiniZooKeeperCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -52,7 +53,7 @@ public class TestHBaseQueries {
    * databases, etc.), otherwise those will be visible for subsequent test methods too.
    */
   public TestHBaseQueries() throws Exception {
-    baseConf = new HiveConf(HBaseConfiguration.create(), TestHBaseQueries.class);
+    baseConf = new HiveConfForTest(HBaseConfiguration.create(), TestHBaseQueries.class);
     baseConf.set(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER.varname, SQLStdHiveAuthorizerFactory.class.getName());
 
     // set up Zookeeper
@@ -105,7 +106,7 @@ public class TestHBaseQueries {
     conf.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES, true);
     conf.setBoolVar(HiveConf.ConfVars.CREATE_TABLES_AS_ACID, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY, true);
-    conf.setVar(HiveConf.ConfVars.HIVEDEFAULTMANAGEDFILEFORMAT, "ORC");
+    conf.setVar(HiveConf.ConfVars.HIVE_DEFAULT_MANAGED_FILEFORMAT, "ORC");
 
     driver = DriverFactory.newDriver(conf);
 

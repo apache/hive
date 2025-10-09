@@ -62,9 +62,9 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     this.desc = desc;
     this.hconf = hconf;
 
-    keyCountAdj = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT);
-    threshold = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD);
-    loadFactor = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR);
+    keyCountAdj = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_KEY_COUNT_ADJUSTMENT);
+    threshold = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_THRESHOLD);
+    loadFactor = HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_LOAD_FACTOR);
 
     this.numHTs = numHTs;
     this.estimatedKeyCount = estimatedKeys > numHTs ? (estimatedKeys/ numHTs) : estimatedKeys;
@@ -98,7 +98,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     boolean isFullOuter = vectorDesc.getIsFullOuter();
     boolean minMaxEnabled = vectorDesc.getMinMaxEnabled();
 
-    int writeBufferSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE);
+    int writeBufferSize = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_WB_SIZE);
 
     VectorMapJoinFastHashTableContainerBase htWrapper = null;
     switch (hashTableKeyType) {

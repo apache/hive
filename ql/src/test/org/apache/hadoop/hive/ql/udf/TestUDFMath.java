@@ -143,6 +143,30 @@ public class TestUDFMath {
     Assert.assertEquals(7.0, res.get(), 0.000001);
   }
 
+  @Test
+  public void testCosh() throws HiveException {
+    UDFCosh udf = new UDFCosh();
+    input = createDecimal("0.7727408115633954");
+    DoubleWritable res = udf.evaluate(input);
+    Assert.assertEquals(1.3137198299489201, res.get(), 0.000001);
+  }
+
+  @Test
+  public void testSinh() throws HiveException {
+    UDFSinh udf = new UDFSinh();
+    input = createDecimal("0.7980555152315012");
+    DoubleWritable res = udf.evaluate(input);
+    Assert.assertEquals(0.8855070376410608, res.get(), 0.000001);
+  }
+
+  @Test
+  public void testTanh() throws HiveException {
+    UDFTanh udf = new UDFTanh();
+    input = createDecimal("0.7853981633974483");
+    DoubleWritable res = udf.evaluate(input);
+    Assert.assertEquals(0.6557942026326724, res.get(), 0.000001);
+  }
+
   private HiveDecimalWritable createDecimal(String input) {
     return new HiveDecimalWritable(HiveDecimal.create(input));
   }

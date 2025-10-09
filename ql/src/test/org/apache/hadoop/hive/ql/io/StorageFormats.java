@@ -26,16 +26,7 @@ import java.util.ServiceLoader;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
-import org.apache.hadoop.hive.ql.io.RCFileStorageFormatDescriptor;
-import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
-import org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat;
-import org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat;
-import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
-import org.apache.hadoop.hive.serde2.avro.AvroSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 
 import static org.junit.Assert.assertTrue;
 
@@ -104,9 +95,9 @@ public class StorageFormats {
       String serdeClass = descriptor.getSerde();
       if (serdeClass == null) {
         if (descriptor instanceof RCFileStorageFormatDescriptor) {
-          serdeClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTRCFILESERDE);
+          serdeClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_RCFILE_SERDE);
         } else {
-          serdeClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEDEFAULTSERDE);
+          serdeClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_DEFAULT_SERDE);
         }
       }
 

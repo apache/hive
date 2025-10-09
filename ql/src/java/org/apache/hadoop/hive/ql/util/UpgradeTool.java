@@ -31,10 +31,8 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -43,19 +41,16 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -146,7 +141,7 @@ public class UpgradeTool {
   private static void printAndExit(UpgradeTool tool) {
     HelpFormatter formatter = new HelpFormatter();
     formatter.printHelp("upgrade-acid", tool.cmdLineOptions);
-    System.exit(1);
+    ExitUtil.terminate(1);
   }
 
   private void init() {
@@ -181,7 +176,7 @@ public class UpgradeTool {
       return RetryingMetaStoreClient.getProxy(conf, true);
     } catch (MetaException e) {
       throw new RuntimeException("Error connecting to Hive Metastore URI: "
-          + conf.getVar(HiveConf.ConfVars.METASTOREURIS) + ". " + e.getMessage(), e);
+          + conf.getVar(HiveConf.ConfVars.METASTORE_URIS) + ". " + e.getMessage(), e);
     }
   }
   /**
@@ -524,7 +519,7 @@ public class UpgradeTool {
      * ORC uses table props for settings so things like bucketing, I/O Format, etc should
      * be the same for each partition.
      */
-    boolean canBeMadeAcid = canBeMadeAcid(fullTableName, t.getSd());
+    boolean canBeMadeAcid = AcidUtils.canBeMadeAcid(fullTableName, t.getSd());
     if(t.getPartitionKeysSize() <= 0) {
       if(canBeMadeAcid) {
         convertToAcid.add("ALTER TABLE " + Warehouse.getQualifiedName(t) + " SET TBLPROPERTIES (" +
@@ -584,33 +579,8 @@ public class UpgradeTool {
       }
     }
   }
-  private static boolean canBeMadeAcid(String fullTableName, StorageDescriptor sd) {
-    return isAcidInputOutputFormat(fullTableName, sd) && sd.getSortColsSize() <= 0;
-  }
-  private static boolean isAcidInputOutputFormat(String fullTableName, StorageDescriptor sd) {
-    try {
-      Class inputFormatClass = sd.getInputFormat() == null ? null :
-          Class.forName(sd.getInputFormat());
-      Class outputFormatClass = sd.getOutputFormat() == null ? null :
-          Class.forName(sd.getOutputFormat());
 
-      if (inputFormatClass != null && outputFormatClass != null &&
-          Class.forName("org.apache.hadoop.hive.ql.io.AcidInputFormat")
-              .isAssignableFrom(inputFormatClass) &&
-          Class.forName("org.apache.hadoop.hive.ql.io.AcidOutputFormat")
-              .isAssignableFrom(outputFormatClass)) {
-        return true;
-      }
-    } catch (ClassNotFoundException e) {
-      //if a table is using some custom I/O format and it's not in the classpath, we won't mark
-      //the table for Acid, but today (Hive 3.1 and earlier) OrcInput/OutputFormat is the only
-      //Acid format
-      LOG.error("Could not determine if " + fullTableName +
-          " can be made Acid due to: " + e.getMessage(), e);
-      return false;
-    }
-    return false;
-  }
+
   private static void makeConvertTableScript(List<String> alterTableAcid, List<String> alterTableMm,
       String scriptLocation) throws IOException {
     if (alterTableAcid.isEmpty()) {

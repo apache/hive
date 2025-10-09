@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.client;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
@@ -87,7 +88,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
             .setDbName(DEFAULT_DATABASE)
             .setTableName("test_view")
             .addCol("test_col", "int")
-            .setType("VIEW")
+            .setType(TableType.VIRTUAL_VIEW.name())
             .create(client, metaStore.getConf());
 
     testTables[2] =
@@ -102,7 +103,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
             .setDbName(DEFAULT_DATABASE)
             .setTableName("test_table_to_find_2")
             .addCol("test_col", "int")
-            .setType("VIEW")
+            .setType(TableType.VIRTUAL_VIEW.name())
             .create(client, metaStore.getConf());
 
     testTables[4] =
@@ -269,6 +270,20 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     // Find table which name contains _to_find_ in the dummy database
     tables = client.getTables(OTHER_DATABASE, "*_to_find_*");
     Assert.assertEquals("Found functions size", 1, tables.size());
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[6].getTableName()));
+
+    // Find tables by using the wildcard sign "*"
+    tables = client.getTables(DEFAULT_DATABASE, "*");
+    Assert.assertEquals("All tables size", 5, tables.size());
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[0].getTableName()));
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[1].getTableName()));
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[2].getTableName()));
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[3].getTableName()));
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[4].getTableName()));
+
+    tables = client.getTables(OTHER_DATABASE, "*");
+    Assert.assertEquals("All tables size", 2, tables.size());
+    Assert.assertTrue("Comparing tablenames", tables.contains(testTables[5].getTableName()));
     Assert.assertTrue("Comparing tablenames", tables.contains(testTables[6].getTableName()));
 
     // Look for tables but do not find any
@@ -505,7 +520,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[1].getTableName());
 
     GetProjectionsSpec projectSpec = (new GetTableProjectionsSpecBuilder()).includeOwner().includeOwnerType().
-            includeSdLocation().build();
+            includeSdLocation().includeTableType().build();
 
     List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
 
@@ -519,7 +534,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
       Assert.assertTrue(table.isSetOwnerType());
       Assert.assertTrue(table.isSetOwner());
       StorageDescriptor sd = table.getSd();
-      Assert.assertTrue(sd.isSetLocation());
+      if (TableType.VIRTUAL_VIEW.toString().equals(table.getTableType())) {
+        Assert.assertFalse(sd.isSetLocation());
+      } else {
+        Assert.assertTrue(sd.isSetLocation());
+      }
     }
   }
 

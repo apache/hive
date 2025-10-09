@@ -12,7 +12,7 @@ WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
 LIMIT 10;
 
-SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c 
+SELECT cdouble, cstring1, cint, cfloat, csmallint, coalesce(cdouble, cstring1, cint, cfloat, csmallint) as c
 FROM alltypesorc
 WHERE (cdouble IS NULL)
 ORDER BY cdouble, cstring1, cint, cfloat, csmallint, c
@@ -43,13 +43,13 @@ ORDER BY cfloat, cbigint, c
 LIMIT 10;
 
 EXPLAIN VECTORIZATION ONLY EXPRESSION SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
-FROM alltypesorc 
+FROM alltypesorc
 WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
 ORDER BY ctimestamp1, ctimestamp2, c
 LIMIT 10;
 
 SELECT ctimestamp1, ctimestamp2, coalesce(ctimestamp1, ctimestamp2) as c
-FROM alltypesorc 
+FROM alltypesorc
 WHERE ctimestamp1 IS NOT NULL OR ctimestamp2 IS NOT NULL
 ORDER BY ctimestamp1, ctimestamp2, c
 LIMIT 10;
@@ -75,3 +75,15 @@ SELECT cbigint, ctinyint, coalesce(cbigint, ctinyint) as c
 FROM alltypesorc
 WHERE cbigint IS NULL
 LIMIT 10;
+
+CREATE TABLE test1 (
+   col1 String,
+   col2 decimal(18,6));
+
+insert into test1 (col1, col2) values('hello', null);
+select col1,col2 FROM test1
+where (NVL(test1.col2, 0) = 0);
+
+EXPLAIN VECTORIZATION DETAIL
+select col1,col2 FROM test1
+where (NVL(test1.col2, 0) = 0);

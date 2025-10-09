@@ -56,7 +56,7 @@ public class LegacyVectorMapJoinFastHashTableLoader implements org.apache.hadoop
     this.hconf = hconf;
     this.desc = (MapJoinDesc)joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
-    this.htLoadCounter = this.tezContext.getTezProcessorContext().getCounters().findCounter(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP), hconf.get("__hive.context.name", ""));
+    this.htLoadCounter = this.tezContext.getTezProcessorContext().getCounters().findCounter(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_COUNTER_GROUP), hconf.get("__hive.context.name", ""));
   }
 
   @Override
@@ -66,7 +66,7 @@ public class LegacyVectorMapJoinFastHashTableLoader implements org.apache.hadoop
     this.hconf = hconf;
     this.desc = joinOp.getConf();
     this.cacheKey = joinOp.getCacheKey();
-    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+    String counterGroup = HiveConf.getVar(hconf, HiveConf.ConfVars.HIVE_COUNTER_GROUP);
     String vertexName = hconf.get(Operator.CONTEXT_NAME_KEY, "");
     String counterName = Utilities.getVertexCounterName(HashTableLoaderCounters.HASHTABLE_LOAD_TIME_MS.name(), vertexName);
     this.htLoadCounter = tezContext.getTezProcessorContext().getCounters().findCounter(counterGroup, counterName);

@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE insert_into5a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE insert_into5a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE insert_into5b
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE insert_into5b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE insert_into5a (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -551,8 +555,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE insert_into5a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into5a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@insert_into5a
 POSTHOOK: query: DROP TABLE insert_into5a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into5a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into5a

@@ -1,0 +1,41 @@
+PREHOOK: query: CREATE EXTERNAL TABLE book (id int, title varchar(100), author int)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "book")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@book
+POSTHOOK: query: CREATE EXTERNAL TABLE book (id int, title varchar(100), author int)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "POSTGRES",
+    "hive.sql.jdbc.driver" = "org.postgresql.Driver",
+    "hive.sql.jdbc.url" = "jdbc:postgresql://localhost:5432/qdb",
+    "hive.sql.dbcp.username" = "qtestuser",
+    "hive.sql.dbcp.password" = "qtestpassword",
+    "hive.sql.table" = "book")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@book
+PREHOOK: query: explain cbo
+select * from book 
+where id = 0 or (id = 1 and author = 11) or (id = 2 and author = 22)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@book
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select * from book 
+where id = 0 or (id = 1 and author = 11) or (id = 2 and author = 22)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@book
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.POSTGRES])
+  JdbcFilter(condition=[AND(OR(=($0, 0), AND(=($0, 1), =($2, 11)), AND(=($0, 2), =($2, 22))), IN($0, 0, 1, 2))])
+    JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
+

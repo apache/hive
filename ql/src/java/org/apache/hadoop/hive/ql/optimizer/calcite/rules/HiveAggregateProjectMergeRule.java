@@ -19,7 +19,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.rules.AggregateProjectMergeRule;
+import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
@@ -38,11 +40,14 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
  */
 public class HiveAggregateProjectMergeRule extends AggregateProjectMergeRule {
   public static final HiveAggregateProjectMergeRule INSTANCE =
-      new HiveAggregateProjectMergeRule();
+      new HiveAggregateProjectMergeRule(HiveAggregate.class, HiveProject.class, HiveRelFactories.HIVE_BUILDER);
 
-  /** Private constructor. */
-  private HiveAggregateProjectMergeRule() {
-    super(HiveAggregate.class, HiveProject.class, HiveRelFactories.HIVE_BUILDER);
+  protected HiveAggregateProjectMergeRule(
+      Class<? extends Aggregate> aggregateClass,
+      Class<? extends Project> projectClass,
+      RelBuilderFactory relBuilderFactory
+  ) {
+    super(aggregateClass, projectClass, relBuilderFactory);
   }
 
   @Override

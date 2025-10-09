@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.rowset.serial.SerialClob;
+
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
@@ -61,6 +63,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
   protected Statement statement = null;
   protected SQLWarning warningChain = null;
   protected boolean wasNull = false;
+  protected boolean useConvertedResultSet = false;
   protected Object[] row;
   protected List<String> columnNames;
   protected List<String> normalizedColumnNames;
@@ -309,12 +312,14 @@ public abstract class HiveBaseResultSet implements ResultSet {
 
   @Override
   public Clob getClob(int i) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    String str = getString(i);
+    return str == null ? null : new SerialClob(str.toCharArray());
   }
 
   @Override
   public Clob getClob(String colName) throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    String str = getString(colName);
+    return str == null ? null : new SerialClob(str.toCharArray());
   }
 
   @Override
@@ -519,8 +524,14 @@ public abstract class HiveBaseResultSet implements ResultSet {
       throw new SQLException("Invalid columnIndex: " + columnIndex);
     }
 
-    final Type columnType = getSchema().getColumnDescriptorAt(columnIndex - 1).getType();
     final Object value = row[columnIndex - 1];
+    if (useConvertedResultSet) {
+      // Conversion has been done already so just return the object
+      wasNull = value == null;
+      return value;
+    }
+
+    final Type columnType = getSchema().getColumnDescriptorAt(columnIndex - 1).getType();
 
     try {
       final Object evaluated = evaluate(columnType, value);

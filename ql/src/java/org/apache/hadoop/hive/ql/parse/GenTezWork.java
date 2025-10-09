@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -371,7 +372,7 @@ public class GenTezWork implements SemanticNodeProcessor {
     if (context.leafOperatorToFollowingWork.containsKey(operator)) {
 
       BaseWork followingWork = context.leafOperatorToFollowingWork.get(operator);
-      long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
+      long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER);
 
       LOG.debug("Second pass. Leaf operator: "+operator
         +" has common downstream work: "+followingWork);
@@ -423,7 +424,7 @@ public class GenTezWork implements SemanticNodeProcessor {
         rWork.getTagToInput().put(tag == -1 ? 0 : tag, work.getName());
 
         // remember the output name of the reduce sink
-        rs.getConf().setOutputName(rWork.getName());
+        rs.getConf().setOutputName(getActualOutputWorkName(context, rWork));
 
         // For dynamic partitioned hash join, run the ReduceSinkMapJoinProc logic for any
         // ReduceSink parents that we missed.
@@ -460,7 +461,8 @@ public class GenTezWork implements SemanticNodeProcessor {
           if (rWork.isAutoReduceParallelism()) {
             edgeProp =
                 new TezEdgeProperty(context.conf, edgeType, true, rWork.isSlowStart(),
-                    rWork.getMinReduceTasks(), rWork.getMaxReduceTasks(), bytesPerReducer);
+                    rWork.getMinReduceTasks(), rWork.getMaxReduceTasks(), bytesPerReducer,
+                    rWork.getMinSrcFraction(), rWork.getMaxSrcFraction());
           } else {
             edgeProp = new TezEdgeProperty(edgeType);
             edgeProp.setSlowStart(rWork.isSlowStart());
@@ -512,5 +514,20 @@ public class GenTezWork implements SemanticNodeProcessor {
     tezWork.connect(unionWork, work, edgeProp);
     unionWork.addUnionOperators(context.currentUnionOperators);
     context.workWithUnionOperators.add(work);
+  }
+
+  /**
+   * If the given reduceWork is the merged work of a MergeJoinWork, return the name of that MergeJoinWork.
+   * Otherwise, return the name of the given reduceWork.
+   */
+  private String getActualOutputWorkName(GenTezProcContext context, ReduceWork reduceWork) {
+    return context.opMergeJoinWorkMap.values().stream()
+        .filter(mergeJoinWork -> mergeJoinWork.getBaseWorkList().contains(reduceWork))
+        .map(MergeJoinWork::getMainWork)
+        // getMainWork() == null means that we have not visited the leaf Operator of MergeJoinWork.
+        // In this case, GenTezWork will adjust the output name of merged works
+        // by calling MergeJoinWork.addMergedWork() with non-null argument for parameter work.
+        .filter(Objects::nonNull)
+        .findAny().orElse(reduceWork).getName();
   }
 }

@@ -37,7 +37,7 @@ import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.InputFormatConfig;
-import org.apache.iceberg.mr.mapreduce.IcebergSplit;
+import org.apache.iceberg.mr.mapreduce.IcebergMergeSplit;
 import org.apache.iceberg.mr.mapreduce.IcebergSplitContainer;
 
 /**
@@ -75,8 +75,13 @@ public class MapredIcebergInputFormat<T> implements InputFormat<Void, Container<
   @Override
   public RecordReader<Void, Container<T>> getRecordReader(InputSplit split, JobConf job,
                                                           Reporter reporter) throws IOException {
-    IcebergSplit icebergSplit = ((IcebergSplitContainer) split).icebergSplit();
-    return new MapredIcebergRecordReader<>(innerInputFormat, icebergSplit, job, reporter);
+    try {
+      org.apache.hadoop.mapreduce.InputSplit inputSplit = split instanceof IcebergMergeSplit ?
+              (IcebergMergeSplit) split : ((IcebergSplitContainer) split).icebergSplit();
+      return new MapredIcebergRecordReader<>(innerInputFormat, inputSplit, job, reporter);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 
@@ -85,7 +90,8 @@ public class MapredIcebergInputFormat<T> implements InputFormat<Void, Container<
     private final long splitLength; // for getPos()
 
     MapredIcebergRecordReader(org.apache.iceberg.mr.mapreduce.IcebergInputFormat<T> mapreduceInputFormat,
-                              IcebergSplit split, JobConf job, Reporter reporter) throws IOException {
+        org.apache.hadoop.mapreduce.InputSplit split, JobConf job, Reporter reporter)
+        throws IOException, InterruptedException {
       super(mapreduceInputFormat, split, job, reporter);
       splitLength = split.getLength();
     }

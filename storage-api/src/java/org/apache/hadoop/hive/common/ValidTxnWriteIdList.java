@@ -42,8 +42,12 @@ public class ValidTxnWriteIdList {
     this.txnId = txnId;
   }
 
-  public ValidTxnWriteIdList(String value) {
-    readFromString(value);
+  public ValidTxnWriteIdList() {}
+
+  public static ValidTxnWriteIdList fromValue(String value) {
+    ValidTxnWriteIdList txnWrtList = new ValidTxnWriteIdList();
+    txnWrtList.readFromString(value);
+    return txnWrtList;
   }
 
   @Override
@@ -63,6 +67,12 @@ public class ValidTxnWriteIdList {
     return null;
   }
 
+  public Long getMinOpenWriteId(String table) {
+    ValidWriteIdList tableValidWriteIdList = getTableValidWriteIdList(table);
+    Long minOpenWriteId = tableValidWriteIdList.getMinOpenWriteId();
+    return minOpenWriteId != null ? minOpenWriteId : tableValidWriteIdList.getHighWatermark() + 1;
+  }
+
   public boolean isEmpty() {
     return tablesValidWriteIdList.isEmpty();
   }
@@ -80,7 +90,7 @@ public class ValidTxnWriteIdList {
     this.txnId = Long.parseLong(tblWriteIdStrList[0]);
     for (int index = 1; index < tblWriteIdStrList.length; index++) {
       String tableStr = tblWriteIdStrList[index];
-      ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(tableStr);
+      ValidWriteIdList validWriteIdList = ValidReaderWriteIdList.fromValue(tableStr);
       addTableValidWriteIdList(validWriteIdList);
     }
   }

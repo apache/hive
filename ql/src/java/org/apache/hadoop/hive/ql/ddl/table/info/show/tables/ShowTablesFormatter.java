@@ -19,12 +19,12 @@
 package org.apache.hadoop.hive.ql.ddl.table.info.show.tables;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.formatting.MapBuilder;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Formats SHOW TABLES results.
@@ -51,7 +52,7 @@ public abstract class ShowTablesFormatter {
 
   public abstract void showTables(DataOutputStream out, List<String> tables) throws HiveException;
 
-  abstract void showTablesExtended(DataOutputStream out, List<Table> tables) throws HiveException;
+  abstract void showTablesExtended(DataOutputStream out, Map<String, String> tableNameToType) throws HiveException;
 
   // ------ Implementations ------
 
@@ -62,16 +63,16 @@ public abstract class ShowTablesFormatter {
     }
 
     @Override
-    void showTablesExtended(DataOutputStream out, List<Table> tables) throws HiveException {
-      if (tables.isEmpty()) {
+    void showTablesExtended(DataOutputStream out, Map<String, String> tableNameToType) throws HiveException {
+      if (tableNameToType.isEmpty()) {
         return;
       }
 
       List<Map<String, Object>> tableDataList = new ArrayList<>();
-      for (Table table : tables) {
+      for (Map.Entry<String, String> table : tableNameToType.entrySet()) {
         Map<String, Object> tableData = ImmutableMap.of(
-            "Table Name", table.getTableName(),
-            "Table Type", table.getTableType().toString());
+            "Table Name", table.getKey(),
+            "Table Type", table.getValue());
         tableDataList.add(tableData);
       }
 
@@ -96,8 +97,8 @@ public abstract class ShowTablesFormatter {
     }
 
     @Override
-    void showTablesExtended(DataOutputStream out, List<Table> tables) throws HiveException {
-      if (tables.isEmpty()) {
+    void showTablesExtended(DataOutputStream out, Map<String, String> tableNameToType) throws HiveException {
+      if (tableNameToType.isEmpty()) {
         return;
       }
 
@@ -106,8 +107,8 @@ public abstract class ShowTablesFormatter {
         if (!SessionState.get().isHiveServerQuery()) {
           mdt.addRow("# Table Name", "Table Type");
         }
-        for (Table table : tables) {
-          mdt.addRow(table.getTableName(), table.getTableType().toString());
+        for (Map.Entry<String, String> table : tableNameToType.entrySet()) {
+          mdt.addRow(table.getKey(), table.getValue());
         }
         // In case the query is served by HiveServer2, don't pad it with spaces,
         // as HiveServer2 output is consumed by JDBC/ODBC clients.

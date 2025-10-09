@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS sort_array_by_order_wrong
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS sort_array_by_order_wrong
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE sort_array_by_order_wrong
 STORED AS TEXTFILE
 AS

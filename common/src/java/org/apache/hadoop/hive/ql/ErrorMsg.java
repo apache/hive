@@ -351,6 +351,7 @@ public enum ErrorMsg {
       "Resource type GLOBAL is not supported in this authorization setting", "28000"),
   UNSUPPORTED_AUTHORIZATION_RESOURCE_TYPE_COLUMN(10258,
       "Resource type COLUMN is not supported in this authorization setting", "28000"),
+  CANNOT_DROP_COLUMN(10259, "Drop column is not supported for table {0}. SerDe may be incompatible.", true),
 
   TXNMGR_NOT_SPECIFIED(10260, "Transaction manager not specified correctly, " +
       "set hive.txn.manager"),
@@ -362,6 +363,8 @@ public enum ErrorMsg {
   DBTXNMGR_REQUIRES_CONCURRENCY(10264,
       "To use DbTxnManager you must set hive.support.concurrency=true"),
   TXNMGR_NOT_ACID(10265, "This command is not allowed on an ACID table {0}.{1} with a non-ACID transaction manager", true),
+  DROP_COLUMN_UNCASCADED(10266, "Drop column is not supported without cascade for partitioned table. SerDe may be incompatible.", true),
+
   LOCK_NO_SUCH_LOCK(10270, "No record of lock {0} could be found, " +
       "may have timed out", true),
   LOCK_REQUEST_UNSUPPORTED(10271, "Current transaction manager does not " +
@@ -373,7 +376,7 @@ public enum ErrorMsg {
       "metastore."),
   INVALID_COMPACTION_TYPE(10282, "Invalid compaction type, supported values are 'major' and " +
       "'minor'"),
-  NO_COMPACTION_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
+  COMPACTION_NO_PARTITION(10283, "You must specify a partition to compact for partitioned tables"),
   TOO_MANY_COMPACTION_PARTITIONS(10284, "Compaction can only be requested on one partition at a " +
       "time."),
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
@@ -421,7 +424,7 @@ public enum ErrorMsg {
   REPLACE_UNSUPPORTED_TYPE_CONVERSION(10314, "Replacing columns with unsupported type conversion (from {0} to {1}) for column {2}. SerDe may be incompatible", true),
   HIVE_GROUPING_SETS_AGGR_NOMAPAGGR_MULTIGBY(10315,
       "Grouping sets aggregations (with rollups or cubes) are not allowed when " +
-      "HIVEMULTIGROUPBYSINGLEREDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
+      "HIVE_MULTI_GROUPBY_SINGLE_REDUCER is turned on. Set hive.multigroupby.singlereducer=false if you want to use grouping sets"),
   CANNOT_RETRIEVE_TABLE_METADATA(10316, "Error while retrieving table metadata"),
   INVALID_AST_TREE(10318, "Internal error : Invalid AST"),
   ERROR_SERIALIZE_METASTORE(10319, "Error while serializing the metastore objects"),
@@ -478,11 +481,24 @@ public enum ErrorMsg {
   DATACONNECTOR_NOT_EXISTS(10428, "Dataconnector does not exist:"),
   TIME_TRAVEL_NOT_ALLOWED(10429, "Time travel is not allowed for {0}. Please choose a storage format which supports the feature.", true),
   INVALID_METADATA_TABLE_NAME(10430, "Invalid metadata table name {0}.", true),
-  METADATA_TABLE_NOT_SUPPORTED(10431, "Metadata tables are not supported for table {0}.", true),
+  TABLE_META_REF_NOT_SUPPORTED(10431, "Table Meta Ref extension is not supported for table {0}.", true),
   COMPACTION_REFUSED(10432, "Compaction request for {0}.{1}{2} is refused, details: {3}.", true),
+  COMPACTION_PARTITION_EVOLUTION(10438, "Compaction for {0}.{1} on partition level is not allowed on a table that has undergone partition evolution", true),
+  COMPACTION_NON_IDENTITY_PARTITION_SPEC(10439, "Compaction for {0}.{1} is not supported on the table with non-identity partition spec", true),
   CBO_IS_REQUIRED(10433,
           "The following functionality requires CBO (" + HiveConf.ConfVars.HIVE_CBO_ENABLED.varname + "): {0}", true),
   CTLF_UNSUPPORTED_FORMAT(10434, "CREATE TABLE LIKE FILE is not supported by the ''{0}'' file format", true),
+  NON_NATIVE_ACID_UPDATE(10435, "Update and Merge to a non-native ACID table in \"merge-on-read\" mode is only supported when \"" +
+          HiveConf.ConfVars.SPLIT_UPDATE.varname + "\"=\"true\""),
+  READ_ONLY_DATABASE(10436, "Database {0} is read-only", true),
+  UNEXPECTED_PARTITION_TRANSFORM_SPEC(10437, "Partition transforms are only supported by Iceberg storage handler", true),
+  NONICEBERG_COMPACTION_WITH_FILTER_NOT_SUPPORTED(10440, "Compaction with filter is not allowed on non-Iceberg table {0}.{1}", true),
+  ICEBERG_COMPACTION_WITH_PART_SPEC_AND_FILTER_NOT_SUPPORTED(10441, "Compaction command with both partition spec and filter is not supported on Iceberg table {0}.{1}", true),
+  COMPACTION_THREAD_INITIALIZATION(10442, "Compaction thread failed during initialization", false),
+  ALTER_TABLE_COMPACTION_NON_PARTITIONED_COLUMN_NOT_ALLOWED(10443, "Filter expression can contain only partition columns."),
+  CATALOG_ALREADY_EXISTS(10444, "Catalog {0} already exists", true),
+  CATALOG_NOT_EXISTS(10445, "Catalog {0} does not exists:", true),
+  INVALID_SCHEDULED_QUERY(10446, "Scheduled query {0} does not exist", true),
 
   //========================== 20000 range starts here ========================//
 
@@ -522,6 +538,7 @@ public enum ErrorMsg {
   CTLF_MISSING_STORAGE_FORMAT_DESCRIPTOR(20021, "Failed to find StorageFormatDescriptor for file format ''{0}''", true),
   PARQUET_FOOTER_ERROR(20022, "Failed to read parquet footer:"),
   PARQUET_UNHANDLED_TYPE(20023, "Unhandled type {0}", true),
+  ORC_FOOTER_ERROR(20024, "Failed to read orc footer:"),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),

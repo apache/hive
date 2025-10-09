@@ -1,7 +1,9 @@
 PREHOOK: query: drop table `table_tsltz`
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table `table_tsltz`
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE table_tsltz (tz VARCHAR(200),
                          c_ts1 TIMESTAMP,
                          c_ts2 TIMESTAMP,

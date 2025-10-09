@@ -46,7 +46,19 @@ aes_encrypt
 and
 approx_distinct
 array
+array_append
+array_compact
 array_contains
+array_distinct
+array_except
+array_intersect
+array_join
+array_max
+array_min
+array_position
+array_remove
+array_slice
+array_union
 ascii
 asin
 assert_true
@@ -61,7 +73,6 @@ bround
 bucket_number
 buildversion
 cardinality_violation
-case
 cast_format
 cbrt
 ceil
@@ -74,13 +85,13 @@ collect_list
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
-compute_stats
 concat
 concat_ws
 context_ngrams
 conv
 corr
 cos
+cosh
 count
 covar_pop
 covar_samp
@@ -206,6 +217,12 @@ hash
 hex
 histogram_numeric
 hour
+iceberg_bucket
+iceberg_day
+iceberg_hour
+iceberg_month
+iceberg_truncate
+iceberg_year
 if
 in
 in_bloom_filter
@@ -279,6 +296,7 @@ nullif
 nvl
 octet_length
 or
+parse_json
 parse_url
 parse_url_tuple
 percent_rank
@@ -333,6 +351,7 @@ shiftright
 shiftrightunsigned
 sign
 sin
+sinh
 size
 sort_array
 sort_array_by
@@ -371,7 +390,6 @@ st_exteriorring
 st_geodesiclengthwgs84
 st_geomcollection
 st_geometryn
-st_geometryprocessing
 st_geometrytype
 st_geomfromgeojson
 st_geomfromjson
@@ -439,14 +457,21 @@ substring_index
 sum
 surrogate_key
 tan
+tanh
 to_date
 to_epoch_milli
+to_json
 to_unix_timestamp
 to_utc_timestamp
+toarray
+tomap
+tostruct
 translate
 trim
 trunc
+try_variant_get
 tumbling_window
+typeof
 ucase
 udftoboolean
 udftobyte
@@ -464,6 +489,7 @@ validate_acid_sort_order
 var_pop
 var_samp
 variance
+variant_get
 version
 weekofyear
 when
@@ -505,7 +531,6 @@ PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE 'c%'
 POSTHOOK: type: SHOWFUNCTIONS
 cardinality_violation
-case
 cast_format
 cbrt
 ceil
@@ -518,13 +543,13 @@ collect_list
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
-compute_stats
 concat
 concat_ws
 context_ngrams
 conv
 corr
 cos
+cosh
 count
 covar_pop
 covar_samp
@@ -543,8 +568,9 @@ PREHOOK: query: SHOW FUNCTIONS LIKE '%e'
 PREHOOK: type: SHOWFUNCTIONS
 POSTHOOK: query: SHOW FUNCTIONS LIKE '%e'
 POSTHOOK: type: SHOWFUNCTIONS
+array_remove
+array_slice
 assert_true
-case
 coalesce
 current_database
 current_date
@@ -566,6 +592,7 @@ explode
 first_value
 floor_minute
 from_unixtime
+iceberg_truncate
 in_file
 inline
 isfalse
@@ -658,7 +685,19 @@ aes_encrypt
 and
 approx_distinct
 array
+array_append
+array_compact
 array_contains
+array_distinct
+array_except
+array_intersect
+array_join
+array_max
+array_min
+array_position
+array_remove
+array_slice
+array_union
 ascii
 asin
 assert_true
@@ -673,7 +712,6 @@ bround
 bucket_number
 buildversion
 cardinality_violation
-case
 cast_format
 cbrt
 ceil
@@ -686,13 +724,13 @@ collect_list
 collect_set
 compute_bit_vector_fm
 compute_bit_vector_hll
-compute_stats
 concat
 concat_ws
 context_ngrams
 conv
 corr
 cos
+cosh
 count
 covar_pop
 covar_samp
@@ -818,6 +856,12 @@ hash
 hex
 histogram_numeric
 hour
+iceberg_bucket
+iceberg_day
+iceberg_hour
+iceberg_month
+iceberg_truncate
+iceberg_year
 if
 in
 in_bloom_filter
@@ -891,6 +935,7 @@ nullif
 nvl
 octet_length
 or
+parse_json
 parse_url
 parse_url_tuple
 percent_rank
@@ -945,6 +990,7 @@ shiftright
 shiftrightunsigned
 sign
 sin
+sinh
 size
 sort_array
 sort_array_by
@@ -983,7 +1029,6 @@ st_exteriorring
 st_geodesiclengthwgs84
 st_geomcollection
 st_geometryn
-st_geometryprocessing
 st_geometrytype
 st_geomfromgeojson
 st_geomfromjson
@@ -1051,14 +1096,21 @@ substring_index
 sum
 surrogate_key
 tan
+tanh
 to_date
 to_epoch_milli
+to_json
 to_unix_timestamp
 to_utc_timestamp
+toarray
+tomap
+tostruct
 translate
 trim
 trunc
+try_variant_get
 tumbling_window
+typeof
 ucase
 udftoboolean
 udftobyte
@@ -1076,6 +1128,7 @@ validate_acid_sort_order
 var_pop
 var_samp
 variance
+variant_get
 version
 weekofyear
 when

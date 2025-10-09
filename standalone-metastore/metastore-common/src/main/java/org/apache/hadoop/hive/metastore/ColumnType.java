@@ -82,6 +82,8 @@ public class ColumnType {
 
   public static final String UNION_TYPE_NAME = "uniontype";
 
+  public static final String VARIANT_TYPE_NAME = "variant";
+
   public static final String LIST_COLUMNS = "columns";
 
   public static final String LIST_COLUMN_TYPES = "columns.types";
@@ -197,6 +199,7 @@ public class ColumnType {
     MAP_TYPE_NAME,
     STRUCT_TYPE_NAME,
     UNION_TYPE_NAME,
+    VARIANT_TYPE_NAME,
     LIST_COLUMNS,
     LIST_COLUMN_TYPES,
     COLUMN_NAME_DELIMITER
@@ -204,7 +207,7 @@ public class ColumnType {
 
   /**
    * Given a type string return the type name.  For example, passing in the type string
-   * <tt>varchar(256)</tt> will return <tt>varchar</tt>.
+   * <pre>varchar(256)</pre> will return <pre>varchar</pre>.
    * @param typeString Type string
    * @return type name, guaranteed to be in lower case
    */

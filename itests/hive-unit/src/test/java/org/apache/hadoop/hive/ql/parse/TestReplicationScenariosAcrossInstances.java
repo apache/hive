@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuild
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.util.DependencyResolver;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
@@ -77,7 +76,6 @@ import static org.apache.hadoop.hdfs.protocol.HdfsConstants.QUOTA_RESET;
 import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -99,6 +97,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
     overrides.put(MetastoreConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.getVarname(),
         "true");
+    overrides.put(HiveConf.ConfVars.REPL_BATCH_INCREMENTAL_EVENTS.varname, "false");
     internalBeforeClassSetup(overrides, TestReplicationScenariosAcrossInstances.class);
   }
 
@@ -514,7 +513,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("create table t3 (rank int)")
         .dump(primaryDbName);
 
-    replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXECPARALLEL, true);
+    replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXEC_PARALLEL, true);
     replica.load(replicatedDbName, primaryDbName)
         .run("use " + replicatedDbName)
         .run("repl status " + replicatedDbName)
@@ -524,7 +523,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("select country from t2")
         .verifyResults(Arrays.asList("india", "australia", "russia", "uk", "us", "france", "japan",
             "china"));
-    replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXECPARALLEL, false);
+    replica.hiveConf.setBoolVar(HiveConf.ConfVars.EXEC_PARALLEL, false);
   }
 
   @Test
@@ -701,7 +700,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
       replica.load("", "`*`");
       Assert.fail();
     } catch (HiveException e) {
-      assertEquals("MetaException(message:Database name cannot be null.)", e.getMessage());
+      assertEquals("REPL LOAD Target database name shouldn't be null", e.getMessage());
     }
   }
 
@@ -709,8 +708,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   public void testReplLoadFromSourceUsingWithClause() throws Throwable {
     HiveConf replicaConf = replica.getConf();
     List<String> withConfigs = Arrays.asList(
-            "'hive.metastore.warehouse.dir'='" + replicaConf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE) + "'",
-            "'hive.metastore.uris'='" + replicaConf.getVar(HiveConf.ConfVars.METASTOREURIS) + "'",
+            "'hive.metastore.warehouse.dir'='" + replicaConf.getVar(HiveConf.ConfVars.METASTORE_WAREHOUSE) + "'",
+            "'hive.metastore.uris'='" + replicaConf.getVar(HiveConf.ConfVars.METASTORE_URIS) + "'",
             "'hive.repl.replica.functions.root.dir'='" + replicaConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR) + "'");
 
     ////////////  Bootstrap   ////////////
@@ -1058,7 +1057,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path path = new Path(hiveDumpDir);
     FileSystem fs = path.getFileSystem(conf);
     FileStatus[] fileStatus = fs.listStatus(path);
-    int numEvents = fileStatus.length - 3; //for _metadata, _finished_dump and _events_dump
+    int numEvents = fileStatus.length - 4; //for _metadata, _finished_dump and _events_dump, _open_txn
 
     replica.load(replicatedDbName, primaryDbName,
         Arrays.asList("'hive.repl.approx.max.load.tasks'='1','hive.repl.include.external.tables'='false'"))
@@ -1653,7 +1652,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     // is loaded before t2. So that scope is set to table in first iteration for table t1. In the next iteration, it
     // loads only remaining partitions of t2, so that the table tracker has no tasks.
 
-    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     Path nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     if(nonRecoverablePath != null){
       baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -1993,7 +1992,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
     }
     //Delete non recoverable marker to fix this
-    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     Path nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     Assert.assertNotNull(nonRecoverablePath);
     baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -2040,7 +2039,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
     }
     //Delete non recoverable marker to fix this
-    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     Path nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     Assert.assertNotNull(nonRecoverablePath);
     baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -2159,7 +2158,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, true);
     ensureFailedAdminRepl(getAtlasClause(confMap), true);
     //Delete non recoverable marker to fix this
-    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     Path nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     Assert.assertNotNull(nonRecoverablePath);
     baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -2169,7 +2168,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname, true);
     ensureFailedAdminRepl(getAtlasClause(confMap), true);
     //Delete non recoverable marker to fix this
-    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     Assert.assertNotNull(nonRecoverablePath);
     baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -2177,7 +2176,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, true);
     ensureFailedAdminRepl(getAtlasClause(confMap), true);
     //Delete non recoverable marker to fix this
-    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     Assert.assertNotNull(nonRecoverablePath);
     baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -2185,7 +2184,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, true);
     ensureFailedAdminRepl(getAtlasClause(confMap), true);
     //Delete non recoverable marker to fix this
-    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     Assert.assertNotNull(nonRecoverablePath);
     baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -2199,7 +2198,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, false);
     ensureFailedAdminRepl(getAtlasClause(confMap), false);
     //Delete non recoverable marker to fix this
-    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     Assert.assertNotNull(nonRecoverablePath);
     baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -2209,7 +2208,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, false);
     ensureFailedAdminRepl(getAtlasClause(confMap), false);
     //Delete non recoverable marker to fix this
-    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     Assert.assertNotNull(nonRecoverablePath);
     baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
@@ -2217,7 +2216,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, false);
     ensureFailedAdminRepl(getAtlasClause(confMap), false);
     //Delete non recoverable marker to fix this
-    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
     Assert.assertNotNull(nonRecoverablePath);
     baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);

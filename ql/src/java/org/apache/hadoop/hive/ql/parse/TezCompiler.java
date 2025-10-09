@@ -26,7 +26,6 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -88,6 +87,8 @@ import org.apache.hadoop.hive.ql.optimizer.ConstantPropagate;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcCtx.ConstantPropagateOption;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.optimizer.DynamicPartitionPruningOptimization;
+import org.apache.hadoop.hive.ql.optimizer.FiltertagAppenderProc;
+import org.apache.hadoop.hive.ql.optimizer.GroupingSetOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.MergeJoinProc;
 import org.apache.hadoop.hive.ql.optimizer.NonBlockingOpDeDupProc;
 import org.apache.hadoop.hive.ql.optimizer.ParallelEdgeFixer;
@@ -99,7 +100,6 @@ import org.apache.hadoop.hive.ql.optimizer.SetReducerParallelism;
 import org.apache.hadoop.hive.ql.optimizer.SharedWorkOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.SortedDynPartitionOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
 import org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyPushdownProcessor;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkJoinDeDuplication;
@@ -116,8 +116,8 @@ import org.apache.hadoop.hive.ql.optimizer.physical.PhysicalContext;
 import org.apache.hadoop.hive.ql.optimizer.physical.SerializeFilter;
 import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.optimizer.physical.Vectorizer;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.optimizer.stats.annotation.AnnotateWithStatistics;
+import org.apache.hadoop.hive.ql.optimizer.UnionDistinctMerger;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -138,7 +138,6 @@ import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.mapper.AuxOpTreeSignature;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -147,6 +146,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter.GenericUDAFB
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
 
 /**
  * TezCompiler translates the operator plan into TezTasks.
@@ -192,7 +193,7 @@ public class TezCompiler extends TaskCompiler {
     }
 
     // need to run this; to get consistent filterop conditions(for operator tree matching)
-    if (procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_OPT_CONSTANT_PROPAGATION)) {
       new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
     }
 
@@ -202,15 +203,23 @@ public class TezCompiler extends TaskCompiler {
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Setup stats in the operator plan");
 
     // run Sorted dynamic partition optimization
-    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.DYNAMICPARTITIONING) &&
-        HiveConf.getVar(procCtx.conf, HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equals("nonstrict") &&
-        !HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.DYNAMIC_PARTITIONING) &&
+        HiveConf.getVar(procCtx.conf, HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE).equals("nonstrict") &&
+        !HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVE_OPT_LIST_BUCKETING) &&
+         HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVE_CBO_ENABLED)) {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
       new SortedDynPartitionOptimizer().transform(procCtx.parseContext);
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Sorted dynamic partition optimization");
     }
 
-    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION)) {
+    perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_MERGE_ADJACENT_UNION_DISTINCT)) {
+      // This should be run before ReduceSinkDeDuplication in order not to merge irrelevant GroupBy operators.
+      new UnionDistinctMerger().transform(procCtx.parseContext);
+    }
+    perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run adjacent union distinct merger");
+
+    if(HiveConf.getBoolVar(procCtx.conf, HiveConf.ConfVars.HIVE_OPT_REDUCE_DEDUPLICATION)) {
       perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
       // Dynamic sort partition adds an extra RS therefore need to de-dup
       new ReduceSinkDeDuplication().transform(procCtx.parseContext);
@@ -230,7 +239,7 @@ public class TezCompiler extends TaskCompiler {
     new BucketVersionPopulator().transform(pCtx);
 
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.TEZ_COMPILER);
-    if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTJOINREDUCEDEDUPLICATION)) {
+    if(procCtx.conf.getBoolVar(ConfVars.HIVE_OPT_JOIN_REDUCE_DEDUPLICATION)) {
       new ReduceSinkJoinDeDuplication().transform(procCtx.parseContext);
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Run reduce sink after join algorithm selection");
@@ -244,11 +253,13 @@ public class TezCompiler extends TaskCompiler {
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.TEZ_COMPILER, "Shared scans optimization");
 
+    extendParentReduceSinkOfMapJoin(procCtx);
+
     // need a new run of the constant folding because we might have created lots
     // of "and true and true" conditions.
     // Rather than run the full constant folding just need to shortcut AND/OR expressions
     // involving constant true/false values.
-    if(procCtx.conf.getBoolVar(ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+    if(procCtx.conf.getBoolVar(ConfVars.HIVE_OPT_CONSTANT_PROPAGATION)) {
       new ConstantPropagate(ConstantPropagateOption.SHORTCUT).transform(procCtx.parseContext);
     }
 
@@ -476,7 +487,7 @@ public class TezCompiler extends TaskCompiler {
         new SetReducerParallelism());
     opRules.put(new RuleRegExp("Convert Join to Map-join",
         JoinOperator.getOperatorName() + "%"), new ConvertJoinMapJoin());
-    if (procCtx.conf.getBoolVar(ConfVars.HIVEMAPAGGRHASHMINREDUCTIONSTATSADJUST)) {
+    if (procCtx.conf.getBoolVar(ConfVars.HIVE_MAP_AGGR_HASH_MIN_REDUCTION_STATS_ADJUST)) {
       opRules.put(new RuleRegExp("Set min reduction - GBy (Hash)",
           GroupByOperator.getOperatorName() + "%"),
           new SetHashGroupByMinReduction());
@@ -488,6 +499,22 @@ public class TezCompiler extends TaskCompiler {
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     SemanticGraphWalker ogw = new ForwardWalker(disp);
+    ogw.startWalking(topNodes, null);
+
+    if (procCtx.conf.getLongVar(ConfVars.HIVE_OPTIMIZE_GROUPING_SET_THRESHOLD) > 0) {
+      new GroupingSetOptimizer().transform(procCtx.parseContext);
+    }
+  }
+
+  private void extendParentReduceSinkOfMapJoin(OptimizeTezProcContext procCtx) throws SemanticException {
+    Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<>();
+    opRules.put(
+        new RuleRegExp("Extend parent RS of MapJoin", MapJoinOperator.getOperatorName() + "%"),
+        new FiltertagAppenderProc());
+
+    SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
+    List<Node> topNodes = new ArrayList<>(procCtx.parseContext.getTopOps().values());
     ogw.startWalking(topNodes, null);
   }
 
@@ -664,7 +691,7 @@ public class TezCompiler extends TaskCompiler {
       for (BaseWork w : baseWorkList) {
         // work should be the smallest unit for memory allocation
         w.setReservedMemoryMB(
-            (int)(conf.getLongVar(ConfVars.HIVECONVERTJOINNOCONDITIONALTASKTHRESHOLD) / (1024 * 1024)));
+            (int)(conf.getLongVar(ConfVars.HIVE_CONVERT_JOIN_NOCONDITIONAL_TASK_THRESHOLD) / (1024 * 1024)));
       }
     }
 
@@ -771,13 +798,13 @@ public class TezCompiler extends TaskCompiler {
     PhysicalContext physicalCtx = new PhysicalContext(conf, pCtx, pCtx.getContext(), rootTasks,
        pCtx.getFetchTask());
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_NULL_SCAN_OPTIMIZE)) {
       physicalCtx = new NullScanOptimizer().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping null scan query optimization");
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_METADATA_ONLY_QUERIES)) {
       physicalCtx = new MetadataOnlyOptimizer().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping metadata only query optimization");
@@ -801,14 +828,14 @@ public class TezCompiler extends TaskCompiler {
       LOG.debug("Skipping vectorization");
     }
 
-    if (!"none".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE))) {
+    if (!"none".equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.HIVE_STAGE_ID_REARRANGE))) {
       physicalCtx = new StageIDsRearranger().resolve(physicalCtx);
     } else {
       LOG.debug("Skipping stage id rearranger");
     }
 
     if ((conf.getBoolVar(HiveConf.ConfVars.HIVE_TEZ_ENABLE_MEMORY_MANAGER))
-        && (conf.getBoolVar(HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN))) {
+        && (conf.getBoolVar(HiveConf.ConfVars.HIVE_USE_HYBRIDGRACE_HASHJOIN))) {
       physicalCtx = new MemoryDecider().resolve(physicalCtx);
     }
 
@@ -972,35 +999,6 @@ public class TezCompiler extends TaskCompiler {
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
     ogw.startWalking(topNodes, null);
-  }
-
-  private static class CollectAll implements SemanticNodeProcessor {
-    private PlanMapper planMapper;
-
-    @Override
-    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs)
-        throws SemanticException {
-      ParseContext pCtx = ((OptimizeTezProcContext) procCtx).parseContext;
-      planMapper = pCtx.getContext().getPlanMapper();
-      FilterOperator fop = (FilterOperator) nd;
-      OpTreeSignature sig = planMapper.getSignatureOf(fop);
-      List<EquivGroup> ar = getGroups(planMapper, HiveFilter.class);
-
-
-      return nd;
-    }
-
-    private List<EquivGroup> getGroups(PlanMapper planMapper2, Class<HiveFilter> class1) {
-      Iterator<EquivGroup> it = planMapper.iterateGroups();
-      List<EquivGroup> ret = new ArrayList<PlanMapper.EquivGroup>();
-      while (it.hasNext()) {
-        EquivGroup g = it.next();
-        if (g.getAll(class1).size() > 0) {
-          ret.add(g);
-        }
-      }
-      return ret;
-    }
   }
 
   private static class MarkRuntimeStatsAsIncorrect implements SemanticNodeProcessor {
@@ -1201,7 +1199,7 @@ public class TezCompiler extends TaskCompiler {
   }
 
   private static boolean isBloomFilterAgg(AggregationDesc agg) {
-    return "bloom_filter".equals(agg.getGenericUDAFName());
+    return BLOOM_FILTER_FUNCTION.equals(agg.getGenericUDAFName());
   }
 
   private static class DynamicPruningRemovalRedundantProc implements SemanticNodeProcessor {
@@ -1471,7 +1469,7 @@ public class TezCompiler extends TaskCompiler {
    */
   private void removeSemijoinsParallelToMapJoin(OptimizeTezProcContext procCtx)
           throws SemanticException {
-    if (!procCtx.conf.getBoolVar(ConfVars.HIVECONVERTJOIN)) {
+    if (!procCtx.conf.getBoolVar(ConfVars.HIVE_CONVERT_JOIN)) {
       // Not needed without mapjoin conversion
       return;
     }
@@ -1974,7 +1972,7 @@ public class TezCompiler extends TaskCompiler {
       for (SemijoinOperatorInfo roi : reductionFactorMap.values()) {
         // This semijoin will be kept
         // We are going to adjust the filter statistics
-        long newNumRows = (long) (1.0 - roi.reductionFactor) * roi.filterStats.getNumRows();
+        long newNumRows = (long) ((1.0 - roi.reductionFactor) * roi.filterStats.getNumRows());
         if (LOG.isDebugEnabled()) {
           LOG.debug("Old stats for {}: {}", roi.filterOperator, roi.filterStats);
           LOG.debug("Number of rows reduction: {}/{}", newNumRows, roi.filterStats.getNumRows());

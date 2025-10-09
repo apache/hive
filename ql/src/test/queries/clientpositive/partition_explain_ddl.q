@@ -143,3 +143,19 @@ analyze table db_bdpbase.default_partition_test compute statistics for columns;
 explain ddl select * from db_bdpbase.default_partition_test;
 
 drop database db_bdpbase cascade;
+
+-- Add tests to check if partition values are quoted correctly.
+
+create table test_partitions (
+    a int,
+    b string
+) partitioned by (
+    c string,
+    d date,
+    e int
+);
+
+insert into test_partitions partition (c="str1", d="1970-01-01", e=1) values ('a_1', 'b_1');
+insert into test_partitions partition (c="str2", d="1970-02-02", e=2) values ('a_2', 'b_2');
+
+explain ddl select * from test_partitions;

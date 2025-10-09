@@ -1,7 +1,9 @@
 PREHOOK: query: drop table over10k
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table over10k
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create temporary table over10k(
            t tinyint,
            si smallint,
@@ -654,9 +656,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
 POSTHOOK: Output: default@t1_n144
 POSTHOOK: Output: default@t2_n84
-POSTHOOK: Lineage: t1_n144.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t1_n144.a1 EXPRESSION [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: t1_n144.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
-POSTHOOK: Lineage: t2_n84.a1 SCRIPT [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), (over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), (over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:b, type:bigint, comment:null), (over10k)over10k.FieldSchema(name:f, type:float, comment:null), (over10k)over10k.FieldSchema(name:d, type:double, comment:null), (over10k)over10k.FieldSchema(name:bo, type:boolean, comment:null), (over10k)over10k.FieldSchema(name:s, type:string, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), (over10k)over10k.FieldSchema(name:dec, type:decimal(4,2), comment:null), (over10k)over10k.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: t2_n84.a1 EXPRESSION [(over10k)over10k.FieldSchema(name:i, type:int, comment:null), (over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: t2_n84.b1 SIMPLE [(over10k)over10k.FieldSchema(name:s, type:string, comment:null), ]
 PREHOOK: query: select * from t1_n144 limit 3
 PREHOOK: type: QUERY

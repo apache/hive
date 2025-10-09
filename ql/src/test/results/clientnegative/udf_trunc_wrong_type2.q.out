@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:27 Argument type mismatch ''MM'': trunc only takes primitive types as 2nd argument, got LIST

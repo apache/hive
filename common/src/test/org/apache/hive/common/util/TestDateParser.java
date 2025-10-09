@@ -45,19 +45,27 @@ public class TestDateParser {
 
   @Test
   public void testValidCases() throws Exception {
-    checkValidCase("1945-12-31", Date.valueOf("1945-12-31"));
-    checkValidCase("1946-01-01", Date.valueOf("1946-01-01"));
-    checkValidCase("2001-11-12", Date.valueOf("2001-11-12"));
-    checkValidCase("0004-05-06", Date.valueOf("0004-05-06"));
-    checkValidCase("1678-09-10", Date.valueOf("1678-09-10"));
-    checkValidCase("9999-10-11", Date.valueOf("9999-10-11"));
+    checkValidCase("1945-12-31", Date.of(1945,12,31));
+    checkValidCase("1946-01-01", Date.of(1946,1,1));
+    checkValidCase("2001-11-12", Date.of(2001,11,12));
+    checkValidCase("0004-05-06", Date.of(4,5,6));
+    checkValidCase("1678-09-10", Date.of(1678,9,10));
+    checkValidCase("9999-10-11", Date.of(9999,10,11));
 
     // Timestamp strings should parse ok
-    checkValidCase("2001-11-12 01:02:03", Date.valueOf("2001-11-12"));
+    checkValidCase("2001-11-12 01:02:03", Date.of(2001,11,12));
 
     // Leading spaces
-    checkValidCase(" 1946-01-01", Date.valueOf("1946-01-01"));
-    checkValidCase(" 2001-11-12 01:02:03", Date.valueOf("2001-11-12"));
+    checkValidCase(" 1946-01-01", Date.of(1946,01,01));
+    checkValidCase(" 2001-11-12 01:02:03", Date.of(2001,11,12));
+  }
+
+  @Test
+  public void testParseDateFromTimestampWithCommonTimeDelimiter() {
+    for (String d : new String[] { "T", " ", "-", ".", "_" }) {
+      String ts = "2023-08-03" + d + "01:02:03";
+      assertEquals("Parsing " + ts, Date.of(2023, 8, 3), DateParser.parseDate(ts));
+    }
   }
 
   @Test
@@ -70,5 +78,8 @@ public class TestDateParser {
     checkInvalidCase("0000-00-00");
     checkInvalidCase("2001-13-12");
     checkInvalidCase("2001-11-31");
+    checkInvalidCase("19999-10-11");
+    checkInvalidCase("08-08-2023");
+    checkInvalidCase("2023-08-0800");
   }
 }

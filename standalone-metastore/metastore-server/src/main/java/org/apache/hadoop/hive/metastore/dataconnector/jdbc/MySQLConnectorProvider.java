@@ -38,22 +38,6 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
   }
 
   /**
-   * Returns a list of all table names from the remote database.
-   * @return List A collection of all the table names, null if there are no tables.
-   * @throws MetaException To indicate any failures with executing this API
-   */
-  @Override protected ResultSet fetchTableNames() throws MetaException {
-    ResultSet rs = null;
-    try {
-      rs = getConnection().getMetaData().getTables(scoped_db, null, null, new String[] { "TABLE" });
-    } catch (SQLException sqle) {
-      LOG.warn("Could not retrieve table names from remote datasource, cause:" + sqle.getMessage());
-      throw new MetaException("Could not retrieve table names from remote datasource, cause:" + sqle);
-    }
-    return rs;
-  }
-
-  /**
    * Fetch a single table with the given name, returns a Hive Table object from the remote database
    * @return Table A Table object for the matching table, null otherwise.
    * @throws MetaException To indicate any failures with executing this API

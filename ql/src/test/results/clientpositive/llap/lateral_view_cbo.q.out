@@ -1,0 +1,113 @@
+PREHOOK: query: CREATE TABLE simple_table (col string, array_col array<string>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@simple_table
+POSTHOOK: query: CREATE TABLE simple_table (col string, array_col array<string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@simple_table
+PREHOOK: query: EXPLAIN CBO SELECT myTable.myCol FROM simple_table
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT myTable.myCol FROM simple_table
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(mycol=[$6])
+  HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+    HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
+
+PREHOOK: query: EXPLAIN CBO SELECT myTable.myCol, myTable2.myCol2 FROM simple_table
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT myTable.myCol, myTable2.myCol2 FROM simple_table
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(mycol=[$6], mycol2=[$7])
+  HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5, $6)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol, INTEGER mytable2.mycol2)])
+    HiveProject(col=[$0], array_col=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], mytable.mycol=[$6])
+      HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+        HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
+
+PREHOOK: query: EXPLAIN CBO SELECT tf.col1, tf.col2, tf.col3
+FROM simple_table
+  LATERAL TABLE(VALUES('A', 10, simple_table.col),('B', 20, simple_table.col)) AS tf(col1, col2, col3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT tf.col1, tf.col2, tf.col3
+FROM simple_table
+  LATERAL TABLE(VALUES('A', 10, simple_table.col),('B', 20, simple_table.col)) AS tf(col1, col2, col3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(col1=[$6], col2=[$7], col3=[$8])
+  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, $2, $3, $4, $5, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, $2, $3, $4, $5, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
+    HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
+
+PREHOOK: query: EXPLAIN CBO SELECT myTable.myCol FROM simple_table
+LATERAL VIEW explode(simple_table.array_col) myTable AS myCol
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT myTable.myCol FROM simple_table
+LATERAL VIEW explode(simple_table.array_col) myTable AS myCol
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(mycol=[$6])
+  HiveTableFunctionScan(invocation=[LATERAL(explode($1), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) mytable.mycol)])
+    HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
+
+PREHOOK: query: EXPLAIN CBO SELECT myCol FROM
+(SELECT * FROM simple_table
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE col='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT myCol FROM
+(SELECT * FROM simple_table
+LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+LATERAL VIEW explode(array(1,2,3)) myTable2 AS myCol2) a WHERE col='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(mycol=[$6])
+  HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5, $6)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol, INTEGER mytable2.mycol2)])
+    HiveProject(col=[$0], array_col=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], mytable.mycol=[$6])
+      HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
+        HiveProject(col=[$0], array_col=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5])
+          HiveFilter(condition=[=($0, _UTF-16LE'0')])
+            HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
+
+PREHOOK: query: EXPLAIN CBO SELECT myCol FROM simple_table
+LATERAL VIEW explode(simple_table.array_col) myTable AS myCol where myCol = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO SELECT myCol FROM simple_table
+LATERAL VIEW explode(simple_table.array_col) myTable AS myCol where myCol = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@simple_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(mycol=[$6])
+  HiveFilter(condition=[=(CAST($6):DOUBLE, 1)])
+    HiveTableFunctionScan(invocation=[LATERAL(explode($1), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) mytable.mycol)])
+      HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
+

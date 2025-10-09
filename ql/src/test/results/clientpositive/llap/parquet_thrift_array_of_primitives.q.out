@@ -52,16 +52,20 @@ POSTHOOK: Input: default@temp_parquet_thrift_array_of_primitives
 PREHOOK: query: DROP TABLE temp_parquet_thrift_array_of_primitives
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temp_parquet_thrift_array_of_primitives
+PREHOOK: Output: database:default
 PREHOOK: Output: default@temp_parquet_thrift_array_of_primitives
 POSTHOOK: query: DROP TABLE temp_parquet_thrift_array_of_primitives
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@temp_parquet_thrift_array_of_primitives
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp_parquet_thrift_array_of_primitives
 PREHOOK: query: DROP TABLE parquet_thrift_array_of_primitives
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_thrift_array_of_primitives
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_thrift_array_of_primitives
 POSTHOOK: query: DROP TABLE parquet_thrift_array_of_primitives
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_thrift_array_of_primitives
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_thrift_array_of_primitives

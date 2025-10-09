@@ -55,7 +55,7 @@ public class SortedMergeBucketMapjoinProc extends AbstractSMBJoinProc implements
     // and sort merge bucketed mapjoin cannot be performed
     if (!convert &&
         pGraphContext.getConf().getBoolVar(
-            HiveConf.ConfVars.HIVEENFORCESORTMERGEBUCKETMAPJOIN)) {
+            HiveConf.ConfVars.HIVE_ENFORCE_SORT_MERGE_BUCKET_MAPJOIN)) {
       throw new SemanticException(ErrorMsg.SORTMERGE_MAPJOIN_FAILED.getMsg());
     }
 

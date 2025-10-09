@@ -20,12 +20,15 @@ package org.apache.hive.service.cli.thrift;
 
 import java.security.KeyStore;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.servlet.DispatcherType;
 import javax.ws.rs.HttpMethod;
 
 import com.google.common.base.Splitter;
@@ -38,7 +41,9 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.service.ServiceUtils;
+import org.apache.hive.service.auth.AuthType;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.saml.HiveSamlHttpServlet;
 import org.apache.hive.service.auth.saml.HiveSamlUtils;
@@ -60,6 +65,7 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
@@ -94,7 +100,14 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       String threadPoolName = "HiveServer2-HttpHandler-Pool";
       ThreadPoolExecutor executorService = new ThreadPoolExecutor(minWorkerThreads,
           maxWorkerThreads,workerKeepAliveTime, TimeUnit.SECONDS,
-          new SynchronousQueue<Runnable>(), new ThreadFactoryWithGarbageCleanup(threadPoolName));
+          new SynchronousQueue<Runnable>(), new ThreadFactoryWithGarbageCleanup(threadPoolName)) {
+        @Override
+        public void setThreadFactory(ThreadFactory threadFactory) {
+          // ExecutorThreadPool will override the ThreadFactoryWithGarbageCleanup with his own ThreadFactory,
+          // Override this method to ignore the action.
+          LOG.warn("Ignore setting the thread factory as the pool has already provided his own: {}", getThreadFactory());
+        }
+      };
 
       ExecutorThreadPool threadPool = new ExecutorThreadPool(executorService);
 
@@ -111,6 +124,8 @@ public class ThriftHttpCLIService extends ThriftCLIService {
           hiveConf.getIntVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_RESPONSE_HEADER_SIZE);
       conf.setRequestHeaderSize(requestHeaderSize);
       conf.setResponseHeaderSize(responseHeaderSize);
+      conf.setSendServerVersion(false);
+      conf.setSendXPoweredBy(false);
       final HttpConnectionFactory http = new HttpConnectionFactory(conf) {
         public Connection newConnection(Connector connector, EndPoint endPoint) {
           Connection connection = super.newConnection(connector, endPoint);
@@ -148,7 +163,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         if (keyStoreAlgorithm.isEmpty()) {
           keyStoreAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
         }
-        SslContextFactory sslContextFactory = new SslContextFactory();
+        SslContextFactory sslContextFactory = new SslContextFactory.Server();
         String[] excludedProtocols = hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",");
         LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
         sslContextFactory.addExcludeProtocols(excludedProtocols);
@@ -183,7 +198,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       server.addConnector(connector);
 
       // Thrift configs
-      hiveAuthFactory = new HiveAuthFactory(hiveConf);
+      hiveAuthFactory = new HiveAuthFactory(hiveConf, true);
       TProcessor processor = new TCLIService.Processor<Iface>(this);
       TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
       // Set during the init phase of HiveServer2 if auth mode is kerberos
@@ -191,8 +206,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       UserGroupInformation serviceUGI = cliService.getServiceUGI();
       // UGI for the http/_HOST (SPNego) principal
       UserGroupInformation httpUGI = cliService.getHttpUGI();
-      String authType = hiveConf.getVar(ConfVars.HIVE_SERVER2_AUTHENTICATION);
-      TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory, authType, serviceUGI, httpUGI,
+      TServlet thriftHttpServlet = new ThriftHttpServlet(processor, protocolFactory, serviceUGI, httpUGI,
           hiveAuthFactory, hiveConf);
 
       // Context handler
@@ -219,7 +233,11 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         server.setHandler(context);
       }
       context.addServlet(new ServletHolder(thriftHttpServlet), httpPath);
-      if (HiveSamlUtils.isSamlAuthMode(authType)) {
+      if(isHttpFilteringEnabled(hiveConf)){
+        ThriftHttpFilter thriftHttpFilter = new ThriftHttpFilter(hiveConf);
+        context.addFilter(new FilterHolder(thriftHttpFilter),httpPath, EnumSet.of(DispatcherType.REQUEST));
+      }
+      if (AuthType.isSamlAuthMode(hiveConf)) {
         String ssoPath = HiveSamlUtils.getCallBackPath(hiveConf);
         context.addServlet(new ServletHolder(new HiveSamlHttpServlet(hiveConf)), ssoPath);
       }
@@ -272,7 +290,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       } else {
         LOG.error("Exception caught by " + ThriftHttpCLIService.class.getSimpleName() +
             ". Exiting.", t);
-        System.exit(-1);
+        ExitUtil.terminate(-1);
       }
     }
   }
@@ -299,6 +317,11 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       }
     }
     return httpPath;
+  }
+
+  public boolean isHttpFilteringEnabled(HiveConf hiveConf){
+    return hiveConf.getBoolean(HiveConf.ConfVars.HIVE_SERVER2_XSRF_FILTER_ENABLED.varname, false) ||
+        hiveConf.getBoolean(HiveConf.ConfVars.HIVE_SERVER2_CSRF_FILTER_ENABLED.varname, false);
   }
 
   public  void constrainHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {

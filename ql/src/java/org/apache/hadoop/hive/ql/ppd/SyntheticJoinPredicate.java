@@ -28,6 +28,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewForwardOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
@@ -67,7 +68,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class SyntheticJoinPredicate extends Transform {
 
-  private static transient Logger LOG = LoggerFactory.getLogger(SyntheticJoinPredicate.class.getName());
+  private static Logger LOG = LoggerFactory.getLogger(SyntheticJoinPredicate.class.getName());
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -94,8 +95,12 @@ public class SyntheticJoinPredicate extends Transform {
     // rule and passes the context along
     SyntheticContext context = new SyntheticContext(pctx);
     SemanticDispatcher disp = new DefaultRuleDispatcher(null, opRules, context);
-    SemanticGraphWalker ogw = new PreOrderOnceWalker(disp);
-
+    PreOrderOnceWalker ogw = new PreOrderOnceWalker(disp);
+    // The PreOrderOnceWalker traversal tries to cover all possible paths from the root to every other node. A plan
+    // graph with lateral view operators has a particular structure that makes the number of paths exponentially big
+    // and the traversal of such graphs prohibitively expensive. For this reason, we exclude lateral view operators
+    // from the traversal and essentially disable the synthetic predicate generation for such branches.
+    ogw.excludeNode(LateralViewForwardOperator.class);
     // Create a list of top op nodes
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pctx.getTopOps().values());

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -36,11 +37,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
@@ -55,12 +58,16 @@ import org.apache.hadoop.hive.ql.stats.fs.FSStatsAggregator;
  *
  */
 public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
+
+  public static final String EXPLAIN_ANALYZE_PROGRAM = "EXPLAIN_ANALYZE_PROGRAM";
+
   List<FieldSchema> fieldList;
   ExplainConfiguration config;
 
   public ExplainSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
     config = new ExplainConfiguration();
+    setSqlKind(SqlKind.EXPLAIN);
   }
 
   @Override
@@ -142,8 +149,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     // step 1 (ANALYZE_STATE.RUNNING), run the query and collect the runtime #rows
     // step 2 (ANALYZE_STATE.ANALYZING), explain the query and provide the runtime #rows collected.
     if (config.getAnalyze() == AnalyzeState.RUNNING) {
-      String query = ctx.getTokenRewriteStream().toString(input.getTokenStartIndex(),
-          input.getTokenStopIndex());
+      String query = HiveUtils.getSqlTextWithQuotedIdentifiers(
+              input, ctx.getTokenRewriteStream(), EXPLAIN_ANALYZE_PROGRAM);
       LOG.info("Explain analyze (running phase) for query " + query);
       conf.unset(ValidTxnList.VALID_TXNS_KEY);
       conf.unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
@@ -221,7 +228,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx.getCalcitePlan());
 
     work.setAppendTaskType(
-        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_EXPLAIN_DEPENDENCY_APPEND_TASK_TYPES));
 
     ExplainTask explTask = (ExplainTask) TaskFactory.get(work);
 
@@ -281,5 +288,16 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       return true;
     }
     return super.skipAuthorization();
+  }
+
+  @Override
+  public void startAnalysis() {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
+      queryState.createHMSCache();
+    }
+  }
+
+  public void setQueryType(ASTNode tree) {
+    queryProperties.setQueryType(QueryProperties.QueryType.DQL);
   }
 }

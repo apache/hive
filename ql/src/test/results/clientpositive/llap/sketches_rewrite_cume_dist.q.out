@@ -69,28 +69,28 @@ order by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	0.09090909090909091	0.0
-1	0.09090909090909091	0.0
-2	0.13636363636363635	0.09090909090909091
-3	0.18181818181818182	0.13636363636363635
-4	0.22727272727272727	0.18181818181818182
-5	0.2727272727272727	0.22727272727272727
-6	0.4090909090909091	0.2727272727272727
-6	0.4090909090909091	0.2727272727272727
-6	0.4090909090909091	0.2727272727272727
-7	0.5	0.4090909090909091
-7	0.5	0.4090909090909091
-8	0.5909090909090909	0.5
-8	0.5909090909090909	0.5
-9	0.6818181818181818	0.5909090909090909
-9	0.6818181818181818	0.5909090909090909
-10	0.7727272727272727	0.6818181818181818
-10	0.7727272727272727	0.6818181818181818
-11	0.8181818181818182	0.7727272727272727
-12	0.8636363636363636	0.8181818181818182
-13	0.9090909090909091	0.8636363636363636
-14	0.9545454545454546	0.9090909090909091
-15	1.0	0.9545454545454546
+1	0.09090909090909091	0.09090909090909091
+1	0.09090909090909091	0.09090909090909091
+2	0.13636363636363635	0.13636363636363635
+3	0.18181818181818182	0.18181818181818182
+4	0.22727272727272727	0.22727272727272727
+5	0.2727272727272727	0.2727272727272727
+6	0.4090909090909091	0.4090909090909091
+6	0.4090909090909091	0.4090909090909091
+6	0.4090909090909091	0.4090909090909091
+7	0.5	0.5
+7	0.5	0.5
+8	0.5909090909090909	0.5909090909090909
+8	0.5909090909090909	0.5909090909090909
+9	0.6818181818181818	0.6818181818181818
+9	0.6818181818181818	0.6818181818181818
+10	0.7727272727272727	0.7727272727272727
+10	0.7727272727272727	0.7727272727272727
+11	0.8181818181818182	0.8181818181818182
+12	0.8636363636363636	0.8636363636363636
+13	0.9090909090909091	0.9090909090909091
+14	0.9545454545454546	0.9545454545454546
+15	1.0	1.0
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select id,'rewrite',cume_dist() over (order by id) from sketch_input order by id
@@ -148,7 +148,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -186,7 +186,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -219,28 +219,28 @@ POSTHOOK: query: select id,'rewrite',cume_dist() over (order by id) from sketch_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	rewrite	0.0
-1	rewrite	0.0
-2	rewrite	0.09090909090909091
-3	rewrite	0.13636363636363635
-4	rewrite	0.18181818181818182
-5	rewrite	0.22727272727272727
-6	rewrite	0.2727272727272727
-6	rewrite	0.2727272727272727
-6	rewrite	0.2727272727272727
-7	rewrite	0.4090909090909091
-7	rewrite	0.4090909090909091
-8	rewrite	0.5
-8	rewrite	0.5
-9	rewrite	0.5909090909090909
-9	rewrite	0.5909090909090909
-10	rewrite	0.6818181818181818
-10	rewrite	0.6818181818181818
-11	rewrite	0.7727272727272727
-12	rewrite	0.8181818181818182
-13	rewrite	0.8636363636363636
-14	rewrite	0.9090909090909091
-15	rewrite	0.9545454545454546
+1	rewrite	0.09090909090909091
+1	rewrite	0.09090909090909091
+2	rewrite	0.13636363636363635
+3	rewrite	0.18181818181818182
+4	rewrite	0.22727272727272727
+5	rewrite	0.2727272727272727
+6	rewrite	0.4090909090909091
+6	rewrite	0.4090909090909091
+6	rewrite	0.4090909090909091
+7	rewrite	0.5
+7	rewrite	0.5
+8	rewrite	0.5909090909090909
+8	rewrite	0.5909090909090909
+9	rewrite	0.6818181818181818
+9	rewrite	0.6818181818181818
+10	rewrite	0.7727272727272727
+10	rewrite	0.7727272727272727
+11	rewrite	0.8181818181818182
+12	rewrite	0.8636363636363636
+13	rewrite	0.9090909090909091
+14	rewrite	0.9545454545454546
+15	rewrite	1.0
 Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select id,'rewrite',count(id) over ()*cume_dist() over (order by id) from sketch_input order by id
@@ -299,7 +299,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -371,7 +371,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -404,28 +404,28 @@ POSTHOOK: query: select id,'rewrite',count(id) over ()*cume_dist() over (order b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	rewrite	0.0
-1	rewrite	0.0
-2	rewrite	2.0
-3	rewrite	3.0
-4	rewrite	4.0
-5	rewrite	5.0
-6	rewrite	6.0
-6	rewrite	6.0
-6	rewrite	6.0
-7	rewrite	9.0
-7	rewrite	9.0
-8	rewrite	11.0
-8	rewrite	11.0
-9	rewrite	13.0
-9	rewrite	13.0
-10	rewrite	14.999999999999998
-10	rewrite	14.999999999999998
-11	rewrite	17.0
-12	rewrite	18.0
-13	rewrite	19.0
-14	rewrite	20.0
-15	rewrite	21.0
+1	rewrite	2.0
+1	rewrite	2.0
+2	rewrite	3.0
+3	rewrite	4.0
+4	rewrite	5.0
+5	rewrite	6.0
+6	rewrite	9.0
+6	rewrite	9.0
+6	rewrite	9.0
+7	rewrite	11.0
+7	rewrite	11.0
+8	rewrite	13.0
+8	rewrite	13.0
+9	rewrite	14.999999999999998
+9	rewrite	14.999999999999998
+10	rewrite	17.0
+10	rewrite	17.0
+11	rewrite	18.0
+12	rewrite	19.0
+13	rewrite	20.0
+14	rewrite	21.0
+15	rewrite	22.0
 PREHOOK: query: insert into sketch_input values (null,'a'),(null,'b')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -493,7 +493,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -531,7 +531,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -566,28 +566,28 @@ POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 NULL	rewrite	0.0
 NULL	rewrite	0.0
-1	rewrite	0.0
-1	rewrite	0.0
-2	rewrite	0.09090909090909091
-3	rewrite	0.13636363636363635
-4	rewrite	0.18181818181818182
-5	rewrite	0.22727272727272727
-6	rewrite	0.2727272727272727
-6	rewrite	0.2727272727272727
-6	rewrite	0.2727272727272727
-7	rewrite	0.4090909090909091
-7	rewrite	0.4090909090909091
-8	rewrite	0.5
-8	rewrite	0.5
-9	rewrite	0.5909090909090909
-9	rewrite	0.5909090909090909
-10	rewrite	0.6818181818181818
-10	rewrite	0.6818181818181818
-11	rewrite	0.7727272727272727
-12	rewrite	0.8181818181818182
-13	rewrite	0.8636363636363636
-14	rewrite	0.9090909090909091
-15	rewrite	0.9545454545454546
+1	rewrite	0.09090909090909091
+1	rewrite	0.09090909090909091
+2	rewrite	0.13636363636363635
+3	rewrite	0.18181818181818182
+4	rewrite	0.22727272727272727
+5	rewrite	0.2727272727272727
+6	rewrite	0.4090909090909091
+6	rewrite	0.4090909090909091
+6	rewrite	0.4090909090909091
+7	rewrite	0.5
+7	rewrite	0.5
+8	rewrite	0.5909090909090909
+8	rewrite	0.5909090909090909
+9	rewrite	0.6818181818181818
+9	rewrite	0.6818181818181818
+10	rewrite	0.7727272727272727
+10	rewrite	0.7727272727272727
+11	rewrite	0.8181818181818182
+12	rewrite	0.8636363636363636
+13	rewrite	0.9090909090909091
+14	rewrite	0.9545454545454546
+15	rewrite	1.0
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
 select id,'rewrite',cume_dist() over (order by id nulls last) from sketch_input order by id nulls last
@@ -645,7 +645,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -683,7 +683,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -716,28 +716,28 @@ POSTHOOK: query: select id,'rewrite',cume_dist() over (order by id nulls last) f
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	rewrite	0.0
-1	rewrite	0.0
-2	rewrite	0.09090909090909091
-3	rewrite	0.13636363636363635
-4	rewrite	0.18181818181818182
-5	rewrite	0.22727272727272727
-6	rewrite	0.2727272727272727
-6	rewrite	0.2727272727272727
-6	rewrite	0.2727272727272727
-7	rewrite	0.4090909090909091
-7	rewrite	0.4090909090909091
-8	rewrite	0.5
-8	rewrite	0.5
-9	rewrite	0.5909090909090909
-9	rewrite	0.5909090909090909
-10	rewrite	0.6818181818181818
-10	rewrite	0.6818181818181818
-11	rewrite	0.7727272727272727
-12	rewrite	0.8181818181818182
-13	rewrite	0.8636363636363636
-14	rewrite	0.9090909090909091
-15	rewrite	0.9545454545454546
+1	rewrite	0.09090909090909091
+1	rewrite	0.09090909090909091
+2	rewrite	0.13636363636363635
+3	rewrite	0.18181818181818182
+4	rewrite	0.22727272727272727
+5	rewrite	0.2727272727272727
+6	rewrite	0.4090909090909091
+6	rewrite	0.4090909090909091
+6	rewrite	0.4090909090909091
+7	rewrite	0.5
+7	rewrite	0.5
+8	rewrite	0.5909090909090909
+8	rewrite	0.5909090909090909
+9	rewrite	0.6818181818181818
+9	rewrite	0.6818181818181818
+10	rewrite	0.7727272727272727
+10	rewrite	0.7727272727272727
+11	rewrite	0.8181818181818182
+12	rewrite	0.8636363636363636
+13	rewrite	0.9090909090909091
+14	rewrite	0.9545454545454546
+15	rewrite	1.0
 NULL	rewrite	1.0
 NULL	rewrite	1.0
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
@@ -749,27 +749,27 @@ POSTHOOK: query: select id,cume_dist() over (order by id) from sketch_input orde
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	0.0
-1	0.0
-2	0.09090909090909091
-3	0.13636363636363635
-4	0.18181818181818182
-5	0.22727272727272727
-6	0.2727272727272727
-6	0.2727272727272727
-6	0.2727272727272727
-7	0.4090909090909091
-7	0.4090909090909091
-8	0.5
-8	0.5
-9	0.5909090909090909
-9	0.5909090909090909
-10	0.6818181818181818
-10	0.6818181818181818
-11	0.7727272727272727
-12	0.8181818181818182
-13	0.8636363636363636
-14	0.9090909090909091
-15	0.9545454545454546
+1	0.09090909090909091
+1	0.09090909090909091
+2	0.13636363636363635
+3	0.18181818181818182
+4	0.22727272727272727
+5	0.2727272727272727
+6	0.4090909090909091
+6	0.4090909090909091
+6	0.4090909090909091
+7	0.5
+7	0.5
+8	0.5909090909090909
+8	0.5909090909090909
+9	0.6818181818181818
+9	0.6818181818181818
+10	0.7727272727272727
+10	0.7727272727272727
+11	0.8181818181818182
+12	0.8636363636363636
+13	0.9090909090909091
+14	0.9545454545454546
+15	1.0
 NULL	1.0
 NULL	1.0

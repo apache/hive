@@ -32,7 +32,7 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
- * https://cwiki.apache.org/confluence/display/Hive/TeradataBinarySerde.
+ * https://hive.apache.org/docs/latest/user/teradatabinaryserde
  * FileInputFormat for Teradata binary files.
  *
  * In the Teradata Binary File, each record constructs as below:

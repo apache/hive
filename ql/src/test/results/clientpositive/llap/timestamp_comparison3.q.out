@@ -209,10 +209,12 @@ STAGE PLANS:
 PREHOOK: query: drop table timestamp_test_n123.onecolumntable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: timestamp_test_n123@onecolumntable
+PREHOOK: Output: database:timestamp_test_n123
 PREHOOK: Output: timestamp_test_n123@onecolumntable
 POSTHOOK: query: drop table timestamp_test_n123.onecolumntable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: timestamp_test_n123@onecolumntable
+POSTHOOK: Output: database:timestamp_test_n123
 POSTHOOK: Output: timestamp_test_n123@onecolumntable
 PREHOOK: query: drop database timestamp_test_n123
 PREHOOK: type: DROPDATABASE

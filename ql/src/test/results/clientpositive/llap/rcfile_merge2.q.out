@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE rcfile_merge2a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE rcfile_merge2a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE rcfile_merge2a (key INT, value STRING)
     PARTITIONED BY (one string, two string, three string)
     STORED AS RCFILE
@@ -53,7 +55,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 231500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                       Statistics: Num rows: 500 Data size: 231500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -287,8 +289,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE rcfile_merge2a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@rcfile_merge2a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@rcfile_merge2a
 POSTHOOK: query: DROP TABLE rcfile_merge2a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@rcfile_merge2a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@rcfile_merge2a

@@ -22,15 +22,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
-import org.apache.hadoop.fs.permission.AclStatus;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -39,7 +35,6 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.shims.Utils;
 import org.junit.After;
 import org.junit.Assert;
@@ -53,9 +48,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -72,13 +65,8 @@ import static org.apache.hadoop.hive.common.repl.ReplConst.SOURCE_OF_REPLICATION
 public class TestReplicationFilterTransactions {
   static final private Logger LOG = LoggerFactory.getLogger(TestReplicationFilterTransactions.class);
 
-  private final static String tid =
-          TestReplicationFilterTransactions.class.getCanonicalName().toLowerCase().replace('.','_') + "_" + System.currentTimeMillis();
-  private final static String TEST_PATH =
-          System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
-
   @Rule
-  public TemporaryFolder tempFolder= new TemporaryFolder();
+  public TemporaryFolder tempFolder = new TemporaryFolder();
 
   // Event listener for the primary, mainly counts txn events.
   // Count totals are saved to static fields so they can be accessed
@@ -263,12 +251,15 @@ public class TestReplicationFilterTransactions {
 
     Map<String, String> conf = setupConf(miniDFSCluster.getFileSystem().getUri().toString(),
             PrimaryEventListenerTestImpl.class.getName());
+    //TODO: HIVE-28044: Replication tests to run on Tez
+    conf.put(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     primary = new WarehouseInstance(LOG, miniDFSCluster, conf);
 
     conf = setupConf(miniDFSCluster.getFileSystem().getUri().toString(),
             ReplicaEventListenerTestImpl.class.getName());
     conf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
-
+    //TODO: HIVE-28044: Replication tests to run on Tez
+    conf.put(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
     replica = new WarehouseInstance(LOG, miniDFSCluster, conf);
 
     primaryDbName = testName.getMethodName() + "_" + System.currentTimeMillis();
@@ -281,10 +272,10 @@ public class TestReplicationFilterTransactions {
     PrimaryEventListenerTestImpl.reset();
     ReplicaEventListenerTestImpl.reset();
 
-    // Each test always has 8 openTxns, 6 commitTxn, and 2 abortTxns.
+    // Each test always has 9 openTxns, 7 commitTxn, and 2 abortTxns.
     // Note that this is the number that was done on the primary,
     // and some are done on non-replicated database.
-    expected = new EventCount(8, 6, 2);
+    expected = new EventCount(9, 7, 2);
   }
 
   static void updateTxnMapping(Map<Long, Long> map) throws Exception {
@@ -332,8 +323,11 @@ public class TestReplicationFilterTransactions {
             .run("insert into t999 values (99908)")
             .run("insert into t999 values (99909)")
             .run("insert into t999 values (99910)")
-            .run("drop table t999");
-    txnOffset = 10;
+            .run("drop table t999")
+            .run("create table t10 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t10 values (10)");
+    txnOffset = 11;
 
     // primaryDbName is replicated, t2 and t2 are ACID tables with initial data.
     // t3 is an ACID table with 2 initial rows, later t3 will be locked to force aborted transaction.
@@ -409,7 +403,8 @@ public class TestReplicationFilterTransactions {
     primary.run("use " + primaryDbName)
             .run("insert into t1 values (2), (3)")
             .run("insert into t2 partition(country='india') values ('chennai')")
-            .run("insert into t2 partition(country='india') values ('pune')");
+            .run("insert into t2 partition(country='india') values ('pune')")
+            .run("truncate table t10");
     prepareAbortTxn(primaryDbName, 222);
     primary.run("use " + otherDbName)
             .run("insert into t1 values (200), (300)")
@@ -490,14 +485,14 @@ public class TestReplicationFilterTransactions {
 
     // Assert the number of Txn events that occurred on the replica.
     // When optimization is on, filtered has the number of Txn events that are expected to have been filtered.
-    // When optimization is off, filtered should be all all 0s.
+    // When optimization is off, filtered should be all 0s.
     Assert.assertEquals(expected.getCountOpenTxn() - filtered.getCountOpenTxn(), ReplicaEventListenerTestImpl.getCountOpenTxn());
     Assert.assertEquals(expected.getCountCommitTxn() - filtered.getCountCommitTxn(), ReplicaEventListenerTestImpl.getCountCommitTxn());
     Assert.assertEquals(expected.getCountAbortTxn() - filtered.getCountAbortTxn(), ReplicaEventListenerTestImpl.getCountAbortTxn());
 
     // Assert the number of Txn event files found.
     // When optimization is on, filtered has the number of Txn events that are expected to have been filtered.
-    // When optimization is off, filtered should be all all 0s.
+    // When optimization is off, filtered should be all 0s.
     // Note that when optimization is on, there should never be optnTxn events.
     Assert.assertEquals(optimizationOn ? 0 : expected.getCountOpenTxn(), openTxns.size());
     Assert.assertEquals(expected.getCountCommitTxn() - filtered.getCountCommitTxn(), commitTxns.size());
@@ -510,5 +505,9 @@ public class TestReplicationFilterTransactions {
     for (Map.Entry<Long, Long> mapping : replicaTxnMapping.entrySet()) {
       Assert.assertEquals(mapping.getKey().longValue()  - txnOffset, mapping.getValue().longValue());
     }
+      Map<Long, Long> postReplicationReplTxnMap = new HashMap<>();
+      // In both the cases, the post replication REPL_TXN_MAP should be empty.
+      TestReplicationFilterTransactions.updateTxnMapping(postReplicationReplTxnMap);
+      Assert.assertEquals(0, postReplicationReplTxnMap.size());
   }
 }

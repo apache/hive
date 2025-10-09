@@ -52,32 +52,32 @@ STAGE PLANS:
                   alias: dest1_n54
                   Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: c1 (type: string)
-                    outputColumnNames: c1
+                    expressions: c1 (type: string), UDFToDouble(c1) (type: double)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: sum(c1), count(c1)
+                      aggregations: sum(_col1), count(_col1), sum(_col0), count(_col0)
                       minReductionHashAggr: 0.4
                       mode: hash
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: double), _col1 (type: bigint)
+                        Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: double), _col1 (type: bigint), _col2 (type: double), _col3 (type: bigint)
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(VALUE._col0), count(VALUE._col1)
+                aggregations: sum(VALUE._col0), count(VALUE._col1), sum(VALUE._col2), count(VALUE._col3)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: (_col0 / _col1) (type: double), _col0 (type: double), _col1 (type: bigint)
+                  expressions: (_col0 / _col1) (type: double), _col2 (type: double), _col3 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator

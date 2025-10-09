@@ -152,7 +152,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	23248               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -190,7 +190,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -225,7 +225,7 @@ Table:              	analyze_srcpart
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -260,7 +260,7 @@ Table:              	analyze_srcpart
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -295,7 +295,7 @@ Table:              	analyze_srcpart
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	1                   
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -344,7 +344,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

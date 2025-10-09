@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
+import org.apache.hadoop.hive.metastore.messaging.AlterPartitionsMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
@@ -113,9 +114,16 @@ public class TableHandler extends AbstractMessageHandler {
         writeId = alterTableMessage.getWriteId();
         break;
       case EVENT_ALTER_PARTITION:
-        AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
-        tableType = msg.getTableObj().getTableType();
-        writeId = msg.getWriteId();
+        String eventMessage = deserializer.deSerializeGenericString(context.dmd.getPayload());
+        if (eventMessage.contains("\"keyValues\":")) {
+          AlterPartitionMessage msg = deserializer.getAlterPartitionMessage(context.dmd.getPayload());
+          tableType = msg.getTableObj().getTableType();
+          writeId = msg.getWriteId();
+        } else {
+          AlterPartitionsMessage msg = deserializer.getAlterPartitionsMessage(context.dmd.getPayload());
+          tableType = msg.getTableType();
+          writeId = msg.getWriteId();
+        }
         break;
       default:
         break;

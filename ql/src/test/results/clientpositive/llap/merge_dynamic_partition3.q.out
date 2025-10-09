@@ -169,7 +169,7 @@ STAGE PLANS:
                     Statistics: Num rows: 590 Data size: 402592 Basic stats: PARTIAL Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                       Statistics: Num rows: 590 Data size: 402592 Basic stats: PARTIAL Column stats: PARTIAL
@@ -314,8 +314,8 @@ columns:struct columns { string key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds, string hr}
 totalNumberFiles:4
-totalFileSize:34830
-maxFileSize:11603
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 

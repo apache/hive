@@ -66,8 +66,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 5
 PREHOOK: query: drop table if exists erasure_table2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists erasure_table2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table erasure_table2 like src  location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
@@ -105,9 +107,9 @@ partitioned:false
 partitionColumns:
 totalNumberFiles:1
 totalNumberErasureCodedFiles:1
-totalFileSize:5812
-maxFileSize:5812
-minFileSize:5812
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 ECHO SHOW TBLPROPERTIES erasure_table2
@@ -121,7 +123,7 @@ numFiles	1
 numFilesErasureCoded	1
 numRows	500
 rawDataSize	5312
-totalSize	5812
+totalSize	#Masked#
 #### A masked pattern was here ####
 ECHO unset the default policy on erasure_coding1
 Unset EC policy

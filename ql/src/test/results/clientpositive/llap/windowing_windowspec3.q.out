@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists emp_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists emp_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table emp_n0(empno smallint,
            ename varchar(10),
            job varchar(10),

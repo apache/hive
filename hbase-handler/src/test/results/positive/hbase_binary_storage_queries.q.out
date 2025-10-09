@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE t_hbase
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t_hbase
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE t_hbase(key STRING,
                      tinyint_col TINYINT,
                      smallint_col SMALLINT,
@@ -67,7 +69,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -186,8 +188,10 @@ POSTHOOK: Input: default@t_hbase
 0	0	0	0	11.139999389648438	2.6663574368565E8	3
 PREHOOK: query: DROP TABLE t_hbase_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t_hbase_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE t_hbase_1(key STRING,
                                 tinyint_col TINYINT,
                                 smallint_col SMALLINT,
@@ -247,7 +251,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -325,23 +329,29 @@ POSTHOOK: Input: default@t_hbase_1
 PREHOOK: query: DROP TABLE t_hbase_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_hbase_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase_1
 POSTHOOK: query: DROP TABLE t_hbase_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_hbase_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_1
 PREHOOK: query: DROP TABLE t_hbase
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_hbase
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase
 POSTHOOK: query: DROP TABLE t_hbase
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_hbase
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase
 PREHOOK: query: DROP TABLE t_hbase_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t_hbase_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE t_hbase_2(key STRING,
                      tinyint_col TINYINT,
                      smallint_col SMALLINT,
@@ -475,8 +485,10 @@ POSTHOOK: Input: default@t_hbase_2
 0	0	0	0	11.139999389648438	2.6663574368565E8	3
 PREHOOK: query: DROP TABLE t_hbase_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t_hbase_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE t_hbase_3(key STRING,
                                 tinyint_col TINYINT,
                                 smallint_col SMALLINT,
@@ -569,15 +581,19 @@ POSTHOOK: Input: default@t_hbase_3
 PREHOOK: query: DROP TABLE t_hbase_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_hbase_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase_3
 POSTHOOK: query: DROP TABLE t_hbase_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_hbase_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_3
 PREHOOK: query: DROP TABLE t_hbase_4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t_hbase_4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE t_hbase_4(key STRING,
                      tinyint_col TINYINT,
                      smallint_col SMALLINT,
@@ -676,16 +692,20 @@ POSTHOOK: Input: default@t_hbase_4
 PREHOOK: query: DROP TABLE t_hbase_4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_hbase_4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase_4
 POSTHOOK: query: DROP TABLE t_hbase_4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_hbase_4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_4
 PREHOOK: query: DROP TABLE t_hbase_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_hbase_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase_2
 POSTHOOK: query: DROP TABLE t_hbase_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_hbase_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_2

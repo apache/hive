@@ -30,13 +30,16 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
+import org.apache.hadoop.hive.metastore.client.HookEnabledMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.SynchronizedMetaStoreClient;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.thrift.TException;
 
 import java.util.HashMap;
@@ -63,30 +66,34 @@ import static org.junit.Assert.assertNotNull;
  *  As we support more APIs, we should add them here with appropriate test cases.
  *
  */
-public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache implements IMetaStoreClient {
+public class TestHiveMetaStoreClient extends MetaStoreClientWrapper {
 
-  public TestHiveMetaStoreClient(Configuration conf) throws MetaException {
-    super(conf);
+  private static IMetaStoreClient createUnderlyingClient(Configuration conf) throws MetaException {
+    IMetaStoreClient thriftClient = new ThriftHiveMetaStoreClient(conf, true);
+    IMetaStoreClient clientWithLocalCache = new HiveMetaStoreClientWithLocalCache(conf, thriftClient);
+    IMetaStoreClient clientWithHook = new HookEnabledMetaStoreClient(conf, null, clientWithLocalCache);
+    return new SynchronizedMetaStoreClient(conf, clientWithHook);
   }
 
-  public GetPartitionResponse getPartitionRequest(GetPartitionRequest req)
-      throws NoSuchObjectException, MetaException, TException {
+  public TestHiveMetaStoreClient(Configuration conf) throws MetaException {
+    super(createUnderlyingClient(conf), conf);
+  }
+
+  public GetPartitionResponse getPartitionRequest(GetPartitionRequest req) {
     assertNotNull(req.getId());
     assertNotNull(req.getValidWriteIdList());
     GetPartitionResponse res = new GetPartitionResponse();
     return res;
   }
 
-  public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
-      throws NoSuchObjectException, MetaException, TException {
+  public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req) {
     assertNotNull(req.getId());
     assertNotNull(req.getValidWriteIdList());
     GetPartitionNamesPsResponse res = new GetPartitionNamesPsResponse();
     return res;
   }
 
-  public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
-      throws MetaException, TException, NoSuchObjectException {
+  public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req) {
     assertNotNull(req.getId());
     assertNotNull(req.getValidWriteIdList());
     GetPartitionsPsWithAuthResponse res = new GetPartitionsPsWithAuthResponse();
@@ -94,24 +101,16 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache i
 
   }
 
-  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result) throws TException {
+  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result) {
     assertNotNull(req.getId());
     assertNotNull(req.getValidWriteIdList());
     return false;
   }
 
-  public Table getTable(String dbName, String tableName, boolean getColumnStats, String engine)
-      throws MetaException, TException, NoSuchObjectException {
-    GetTableRequest getTableRequest = new GetTableRequest( dbName, tableName);
-    getTableRequest.setGetColumnStats(getColumnStats);
-    getTableRequest.setEngine(engine);
-    return getTable(getTableRequest);
-
-  }
-
-  public Table getTable(GetTableRequest getTableRequest)
-      throws MetaException, TException, NoSuchObjectException {
+  public Table getTable(GetTableRequest getTableRequest) throws TException {
     Table tTable = new Table();
+    tTable.setDbName(getTableRequest.getDbName());
+    tTable.setTableName(getTableRequest.getTblName());
     tTable.setId(Long.MAX_VALUE);
     Map<String, String> parameters = new HashMap<>();
     parameters.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
@@ -126,8 +125,7 @@ public class TestHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache i
     return tTable;
   }
 
-  public GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest req)
-      throws NoSuchObjectException, MetaException, TException {
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest req) {
     assertNotNull(req.getId());
     assertNotNull(req.getValidWriteIdList());
     GetPartitionsByNamesResult res = new GetPartitionsByNamesResult();

@@ -37,7 +37,7 @@ public class CreateTableLikeDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
   private final String tableName;
-  private final boolean isExternal;
+  private boolean isExternal;
   private final boolean isTemporary;
   private final String defaultInputFormat;
   private final String defaultOutputFormat;
@@ -94,6 +94,10 @@ public class CreateTableLikeDesc implements DDLDesc, Serializable {
   @Explain(displayName = "isExternal", displayOnlyOnTrue = true)
   public boolean isExternal() {
     return isExternal;
+  }
+
+  public void setIsExternal(boolean isExternal) {
+    this.isExternal = isExternal;
   }
 
   @Explain(displayName = "default serde name")

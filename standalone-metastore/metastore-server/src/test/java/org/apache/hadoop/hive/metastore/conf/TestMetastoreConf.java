@@ -20,7 +20,8 @@ package org.apache.hadoop.hive.metastore.conf;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.txn.AcidTxnCleanerService;
+import org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidTxnCleanerService;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.core.StringEndsWith;
@@ -45,11 +46,12 @@ import org.apache.hadoop.hive.metastore.DefaultStorageSchemaReader;
 import org.apache.hadoop.hive.metastore.HiveAlterHandler;
 import org.apache.hadoop.hive.metastore.MaterializationsRebuildLockCleanerTask;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
+import org.apache.hadoop.hive.metastore.RetryingHMSHandler;
 import org.apache.hadoop.hive.metastore.RuntimeStatsCleanerTask;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
-import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
-import org.apache.hadoop.hive.metastore.txn.AcidOpenTxnsCounterService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
+import org.apache.hadoop.hive.metastore.txn.service.AcidOpenTxnsCounterService;
 
 @Category(MetastoreUnitTest.class)
 public class TestMetastoreConf {
@@ -216,7 +218,7 @@ public class TestMetastoreConf {
 
   @Test
   public void readHiveMetastoreSiteWithHiveConfDir() throws IOException {
-    createConfFile("hivemetastore-site.xml", false, "HIVE_CONF_DIR", instaMap(
+    createConfFile("metastore-site.xml", false, "HIVE_CONF_DIR", instaMap(
         "test.double", "1.8"
     ));
     conf = MetastoreConf.newMetastoreConf();
@@ -226,7 +228,7 @@ public class TestMetastoreConf {
 
   @Test
   public void readHiveMetastoreSiteWithHiveHomeDir() throws IOException {
-    createConfFile("hivemetastore-site.xml", true, "HIVE_HOME", instaMap(
+    createConfFile("metastore-site.xml", true, "HIVE_HOME", instaMap(
         "test.bool", "false"
     ));
     conf = MetastoreConf.newMetastoreConf();
@@ -308,36 +310,6 @@ public class TestMetastoreConf {
     Assert.assertEquals("89", MetastoreConf.getAsString(conf, ConfVars.LONG_TEST_ENTRY));
     Assert.assertEquals("1.9", MetastoreConf.getAsString(conf, ConfVars.DOUBLE_TEST_ENTRY));
     Assert.assertEquals("false", MetastoreConf.getAsString(conf, ConfVars.BOOLEAN_TEST_ENTRY));
-  }
-
-  /**
-   * Verify that a config can be set with a deprecated key/name.
-   */
-  @Test
-  public void testDeprecatedConfigs() throws IOException {
-    // set with deprecated key
-    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
-        "hive.test.str", "hivedefault",
-        "this.is.the.metastore.deprecated.name", "1" // default is 0
-    ));
-    conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(1, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
-
-    // set with hive (HiveConf) deprecated key
-    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
-        "hive.test.str", "hivedefault",
-        "this.is.the.hive.deprecated.name", "2" // default is 0
-    ));
-    conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(2, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
-
-    // set with normal key
-    createConfFile("metastore-site.xml", false, "METASTORE_CONF_DIR", instaMap(
-        "hive.test.str", "hivedefault",
-        "test.deprecated", "3" // default is 0
-    ));
-    conf = MetastoreConf.newMetastoreConf();
-    Assert.assertEquals(3, MetastoreConf.getIntVar(conf, ConfVars.DEPRECATED_TEST_ENTRY));
   }
 
   @Test
@@ -482,20 +454,26 @@ public class TestMetastoreConf {
   public void testClassNames() {
     Assert.assertEquals(MetastoreConf.DEFAULT_STORAGE_SCHEMA_READER_CLASS,
         DefaultStorageSchemaReader.class.getName());
+    Assert.assertEquals(MetastoreConf.SERDE_STORAGE_SCHEMA_READER_CLASS,
+        "org.apache.hadoop.hive.metastore.SerDeStorageSchemaReader");
     Assert.assertEquals(MetastoreConf.HIVE_ALTER_HANDLE_CLASS,
         HiveAlterHandler.class.getName());
     Assert.assertEquals(MetastoreConf.MATERIALZIATIONS_REBUILD_LOCK_CLEANER_TASK_CLASS,
         MaterializationsRebuildLockCleanerTask.class.getName());
     Assert.assertEquals(MetastoreConf.METASTORE_TASK_THREAD_CLASS,
         MetastoreTaskThread.class.getName());
+    Assert.assertEquals(MetastoreConf.METASTORE_RETRYING_HANDLER_CLASS,
+        RetryingHMSHandler.class.getName());
     Assert.assertEquals(MetastoreConf.RUNTIME_STATS_CLEANER_TASK_CLASS,
         RuntimeStatsCleanerTask.class.getName());
     Assert.assertEquals(MetastoreConf.EVENT_CLEANER_TASK_CLASS,
         EventCleanerTask.class.getName());
     Assert.assertEquals(MetastoreConf.METASTORE_DELEGATION_MANAGER_CLASS,
         MetastoreDelegationTokenManager.class.getName());
-    Assert.assertEquals(MetastoreConf.ACID_HOUSE_KEEPER_SERVICE_CLASS,
+    Assert.assertEquals(MetastoreConf.ACID_HOUSEKEEPER_SERVICE_CLASS,
         AcidHouseKeeperService.class.getName());
+    Assert.assertEquals(MetastoreConf.COMPACTION_HOUSEKEEPER_SERVICE_CLASS,
+        CompactionHouseKeeperService.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_TXN_CLEANER_SERVICE_CLASS,
         AcidTxnCleanerService.class.getName());
     Assert.assertEquals(MetastoreConf.ACID_OPEN_TXNS_COUNTER_SERVICE_CLASS,

@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Assert;
@@ -38,7 +39,6 @@ import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.slf4j.Logger;
@@ -53,13 +53,13 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
   private static List<HCatFieldSchema> dataColumns;
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatDynamicPartitioned.class);
   protected static final int NUM_RECORDS = 20;
-  protected static final int NUM_PARTITIONS = 5;
+  protected static final int NUM_TOP_PARTITIONS = 5;
 
   public TestHCatDynamicPartitioned(String formatName, String serdeClass, String inputFormatClass,
       String outputFormatClass) throws Exception {
     super(formatName, serdeClass, inputFormatClass, outputFormatClass);
     tableName = "testHCatDynamicPartitionedTable_" + formatName;
-    generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
+    generateWriteRecords(NUM_RECORDS, NUM_TOP_PARTITIONS, 0);
     generateDataColumns();
   }
 
@@ -68,6 +68,8 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     dataColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c1", serdeConstants.INT_TYPE_NAME, "")));
     dataColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c2", serdeConstants.STRING_TYPE_NAME, "")));
     dataColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("p1", serdeConstants.STRING_TYPE_NAME, "")));
+    dataColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("p2", serdeConstants.STRING_TYPE_NAME, "")));
+
   }
 
   protected static void generateWriteRecords(int max, int mod, int offset) {
@@ -79,6 +81,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
       objList.add(i);
       objList.add("strvalue" + i);
       objList.add(String.valueOf((i % mod) + offset));
+      objList.add(String.valueOf((i / (max/2)) + offset));
       writeRecords.add(new DefaultHCatRecord(objList));
     }
   }
@@ -87,6 +90,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
   protected List<FieldSchema> getPartitionKeys() {
     List<FieldSchema> fields = new ArrayList<FieldSchema>();
     fields.add(new FieldSchema("p1", serdeConstants.STRING_TYPE_NAME, ""));
+    fields.add(new FieldSchema("p2", serdeConstants.STRING_TYPE_NAME, ""));
     return fields;
   }
 
@@ -118,8 +122,15 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
 
   protected void runHCatDynamicPartitionedTable(boolean asSingleMapTask,
       String customDynamicPathPattern) throws Exception {
-    generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
-    runMRCreate(null, dataColumns, writeRecords, NUM_RECORDS, true, asSingleMapTask, customDynamicPathPattern);
+    generateWriteRecords(NUM_RECORDS, NUM_TOP_PARTITIONS, 0);
+    HashMap<String, String> properties = new HashMap<String, String>();
+    if (customDynamicPathPattern != null) {
+      properties.put(HCatConstants.HCAT_DYNAMIC_CUSTOM_PATTERN, customDynamicPathPattern);
+    }
+    runMRCreate(null, dataColumns, writeRecords.subList(0,NUM_RECORDS/2), NUM_RECORDS/2,
+        true, asSingleMapTask, properties);
+    runMRCreate(null, dataColumns, writeRecords.subList(NUM_RECORDS/2,NUM_RECORDS), NUM_RECORDS/2,
+        true, asSingleMapTask, properties);
 
     runMRRead(NUM_RECORDS);
 
@@ -141,9 +152,9 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     //Test for duplicate publish
     IOException exc = null;
     try {
-      generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
+      generateWriteRecords(NUM_RECORDS, NUM_TOP_PARTITIONS, 0);
       Job job = runMRCreate(null, dataColumns, writeRecords, NUM_RECORDS, false,
-          true, customDynamicPathPattern);
+          true, properties);
 
       if (HCatUtil.isHadoop23()) {
         Assert.assertTrue(job.isSuccessful()==false);
@@ -168,7 +179,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     driver.run(query);
     res = new ArrayList<String>();
     driver.getResults(res);
-    assertEquals(NUM_PARTITIONS, res.size());
+    assertEquals(NUM_TOP_PARTITIONS*2, res.size());
 
     query = "select * from " + tableName;
     driver.run(query);
@@ -196,7 +207,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
   public void _testHCatDynamicPartitionMaxPartitions() throws Exception {
     HiveConf hc = new HiveConf(this.getClass());
 
-    int maxParts = hiveConf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS);
+    int maxParts = hiveConf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS);
     LOG.info("Max partitions allowed = {}", maxParts);
 
     IOException exc = null;

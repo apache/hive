@@ -17,7 +17,7 @@ STAGE PLANS:
                 TableScan
                   alias: store_sales
                   filterExpr: (ss_cdemo_sk is not null and ss_store_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_96_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:2.2057697134553887E-9
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_96_container, bigKeyColName:ss_store_sk, smallTablePos:1, keyRatio:2.1936500996451943E-9
                   Statistics: Num rows: 82510879939 Data size: 30001917572116 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ss_cdemo_sk is not null and ss_store_sk is not null) (type: boolean)
@@ -155,10 +155,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: (s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC') (type: boolean)
+                  filterExpr: (s_state) IN ('FL', 'LA', 'MI', 'MO', 'SC', 'SD') (type: boolean)
                   Statistics: Num rows: 1704 Data size: 160176 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC') (type: boolean)
+                    predicate: (s_state) IN ('FL', 'LA', 'MI', 'MO', 'SC', 'SD') (type: boolean)
                     Statistics: Num rows: 232 Data size: 21808 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: s_store_sk (type: bigint), s_state (type: char(2))

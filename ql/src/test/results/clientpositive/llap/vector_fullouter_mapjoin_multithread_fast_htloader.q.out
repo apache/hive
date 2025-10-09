@@ -1,0 +1,394 @@
+PREHOOK: query: create table small_long_table (key bigint, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_long_table
+POSTHOOK: query: create table small_long_table (key bigint, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_long_table
+PREHOOK: query: insert into small_long_table values (7610878409923211200, "a")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@small_long_table
+POSTHOOK: query: insert into small_long_table values (7610878409923211200, "a")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@small_long_table
+POSTHOOK: Lineage: small_long_table.key SCRIPT []
+POSTHOOK: Lineage: small_long_table.value SCRIPT []
+PREHOOK: query: -- key hash % 2097152 == 0
+insert into small_long_table values (-371494529663898262, "b")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@small_long_table
+POSTHOOK: query: -- key hash % 2097152 == 0
+insert into small_long_table values (-371494529663898262, "b")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@small_long_table
+POSTHOOK: Lineage: small_long_table.key SCRIPT []
+POSTHOOK: Lineage: small_long_table.value SCRIPT []
+PREHOOK: query: -- key hash % 2097152 == 0
+insert into small_long_table values (-2307888158465848362, "c")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@small_long_table
+POSTHOOK: query: -- key hash % 2097152 == 0
+insert into small_long_table values (-2307888158465848362, "c")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@small_long_table
+POSTHOOK: Lineage: small_long_table.key SCRIPT []
+POSTHOOK: Lineage: small_long_table.value SCRIPT []
+PREHOOK: query: -- key hash % 2097152 == 1
+
+create table big_long_table (key bigint, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@big_long_table
+POSTHOOK: query: -- key hash % 2097152 == 1
+
+create table big_long_table (key bigint, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@big_long_table
+PREHOOK: query: insert into big_long_table values (-2307888158465848362, "c")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@big_long_table
+POSTHOOK: query: insert into big_long_table values (-2307888158465848362, "c")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@big_long_table
+POSTHOOK: Lineage: big_long_table.key SCRIPT []
+POSTHOOK: Lineage: big_long_table.value SCRIPT []
+PREHOOK: query: -- key hash % 2097152 == 1
+
+
+
+alter table big_long_table update statistics set   ('numRows'='90000000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@big_long_table
+PREHOOK: Output: default@big_long_table
+POSTHOOK: query: -- key hash % 2097152 == 1
+
+
+
+alter table big_long_table update statistics set   ('numRows'='90000000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@big_long_table
+POSTHOOK: Output: default@big_long_table
+PREHOOK: query: -- should be larger than small table
+alter table small_long_table update statistics set ('numRows'='2097152')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@small_long_table
+PREHOOK: Output: default@small_long_table
+POSTHOOK: query: -- should be larger than small table
+alter table small_long_table update statistics set ('numRows'='2097152')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@small_long_table
+POSTHOOK: Output: default@small_long_table
+PREHOOK: query: -- 2 * VectorMapJoinFastHashTable.FIRST_SIZE_UP
+
+
+explain
+select * from small_long_table full outer join big_long_table on (small_long_table.key = big_long_table.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@big_long_table
+PREHOOK: Input: default@small_long_table
+#### A masked pattern was here ####
+POSTHOOK: query: -- 2 * VectorMapJoinFastHashTable.FIRST_SIZE_UP
+
+
+explain
+select * from small_long_table full outer join big_long_table on (small_long_table.key = big_long_table.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@big_long_table
+POSTHOOK: Input: default@small_long_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: small_long_table
+                  Statistics: Num rows: 2097152 Data size: 195035136 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: bigint), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2097152 Data size: 195035136 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: bigint)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: bigint)
+                      Statistics: Num rows: 2097152 Data size: 195035136 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string), 0S (type: smallint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: big_long_table
+                  Statistics: Num rows: 90000000 Data size: 8370000000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: bigint), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 90000000 Data size: 8370000000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: bigint)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: bigint)
+                      Statistics: Num rows: 90000000 Data size: 8370000000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Map Join Operator
+                condition map:
+                     Full Outer Join 0 to 1
+                keys:
+                  0 KEY.reducesinkkey0 (type: bigint)
+                  1 KEY.reducesinkkey0 (type: bigint)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                input vertices:
+                  0 Map 1
+                Statistics: Num rows: 62914652097152 Data size: 11702108160000186 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 62914652097152 Data size: 11702108160000186 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from small_long_table full outer join big_long_table on (small_long_table.key = big_long_table.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@big_long_table
+PREHOOK: Input: default@small_long_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from small_long_table full outer join big_long_table on (small_long_table.key = big_long_table.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@big_long_table
+POSTHOOK: Input: default@small_long_table
+#### A masked pattern was here ####
+-2307888158465848362	c	-2307888158465848362	c
+-371494529663898262	b	NULL	NULL
+7610878409923211200	a	NULL	NULL
+PREHOOK: query: create table small_string_table (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@small_string_table
+POSTHOOK: query: create table small_string_table (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@small_string_table
+PREHOOK: query: insert into small_string_table values ("affzk", "a")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@small_string_table
+POSTHOOK: query: insert into small_string_table values ("affzk", "a")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@small_string_table
+POSTHOOK: Lineage: small_string_table.key SCRIPT []
+POSTHOOK: Lineage: small_string_table.value SCRIPT []
+PREHOOK: query: -- key hash % 2097152 == 0
+insert into small_string_table values ("hbkpa", "b")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@small_string_table
+POSTHOOK: query: -- key hash % 2097152 == 0
+insert into small_string_table values ("hbkpa", "b")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@small_string_table
+POSTHOOK: Lineage: small_string_table.key SCRIPT []
+POSTHOOK: Lineage: small_string_table.value SCRIPT []
+PREHOOK: query: -- key hash % 2097152 == 0
+insert into small_string_table values ("kykzm", "c")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@small_string_table
+POSTHOOK: query: -- key hash % 2097152 == 0
+insert into small_string_table values ("kykzm", "c")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@small_string_table
+POSTHOOK: Lineage: small_string_table.key SCRIPT []
+POSTHOOK: Lineage: small_string_table.value SCRIPT []
+PREHOOK: query: -- key hash % 2097152 == 1
+
+create table big_string_table (key string, value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@big_string_table
+POSTHOOK: query: -- key hash % 2097152 == 1
+
+create table big_string_table (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@big_string_table
+PREHOOK: query: insert into big_string_table values ("kykzm", "c")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@big_string_table
+POSTHOOK: query: insert into big_string_table values ("kykzm", "c")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@big_string_table
+POSTHOOK: Lineage: big_string_table.key SCRIPT []
+POSTHOOK: Lineage: big_string_table.value SCRIPT []
+PREHOOK: query: -- key hash % 2097152 == 1
+
+
+
+alter table big_string_table update statistics set   ('numRows'='90000000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@big_string_table
+PREHOOK: Output: default@big_string_table
+POSTHOOK: query: -- key hash % 2097152 == 1
+
+
+
+alter table big_string_table update statistics set   ('numRows'='90000000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@big_string_table
+POSTHOOK: Output: default@big_string_table
+PREHOOK: query: -- should be larger than small table
+alter table small_string_table update statistics set ('numRows'='2097152')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@small_string_table
+PREHOOK: Output: default@small_string_table
+POSTHOOK: query: -- should be larger than small table
+alter table small_string_table update statistics set ('numRows'='2097152')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@small_string_table
+POSTHOOK: Output: default@small_string_table
+PREHOOK: query: -- 2 * VectorMapJoinFastHashTable.FIRST_SIZE_UP
+
+
+explain
+select * from small_string_table full outer join big_string_table on (small_string_table.key = big_string_table.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@big_string_table
+PREHOOK: Input: default@small_string_table
+#### A masked pattern was here ####
+POSTHOOK: query: -- 2 * VectorMapJoinFastHashTable.FIRST_SIZE_UP
+
+
+explain
+select * from small_string_table full outer join big_string_table on (small_string_table.key = big_string_table.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@big_string_table
+POSTHOOK: Input: default@small_string_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 3 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: small_string_table
+                  Statistics: Num rows: 2097152 Data size: 364904448 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 2097152 Data size: 364904448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2097152 Data size: 364904448 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string), 0S (type: smallint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 2 
+            Map Operator Tree:
+                TableScan
+                  alias: big_string_table
+                  Statistics: Num rows: 90000000 Data size: 15660000000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 90000000 Data size: 15660000000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 90000000 Data size: 15660000000 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Map Join Operator
+                condition map:
+                     Full Outer Join 0 to 1
+                keys:
+                  0 KEY.reducesinkkey0 (type: string)
+                  1 KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                input vertices:
+                  0 Map 1
+                Statistics: Num rows: 62914652097152 Data size: 21894266880000348 Basic stats: COMPLETE Column stats: COMPLETE
+                DynamicPartitionHashJoin: true
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 62914652097152 Data size: 21894266880000348 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from small_string_table full outer join big_string_table on (small_string_table.key = big_string_table.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@big_string_table
+PREHOOK: Input: default@small_string_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from small_string_table full outer join big_string_table on (small_string_table.key = big_string_table.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@big_string_table
+POSTHOOK: Input: default@small_string_table
+#### A masked pattern was here ####
+affzk	a	NULL	NULL
+hbkpa	b	NULL	NULL
+kykzm	c	kykzm	c

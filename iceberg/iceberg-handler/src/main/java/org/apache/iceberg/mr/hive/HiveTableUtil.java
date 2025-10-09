@@ -20,13 +20,20 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
@@ -37,21 +44,43 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.ql.io.IOConstants;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
+import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.MetricsConfig;
 import org.apache.iceberg.PartitionSpec;
+import org.apache.iceberg.SerializableTable;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.Transaction;
 import org.apache.iceberg.data.TableMigrationUtil;
+import org.apache.iceberg.exceptions.NotFoundException;
+import org.apache.iceberg.expressions.Expression;
+import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.hadoop.HadoopConfigurable;
+import org.apache.iceberg.hadoop.HadoopFileIO;
+import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mapping.NameMapping;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.Catalogs;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.iceberg.util.SerializationUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveTableUtil {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveTableUtil.class);
+
+  static final String TABLE_EXTENSION = ".table";
 
   private HiveTableUtil() {
   }
@@ -107,10 +136,10 @@ public class HiveTableUtil {
           tasks.add(task);
         }
         int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_SERVER2_ICEBERG_METADATA_GENERATOR_THREADS);
-        ExecutorService executor = Executors.newFixedThreadPool(numThreads,
-            new ThreadFactoryBuilder().setNameFormat("iceberg-metadata-generator-%d").setDaemon(true).build());
-        executor.invokeAll(tasks);
-        executor.shutdown();
+        try (ExecutorService executor = Executors.newFixedThreadPool(numThreads,
+              new ThreadFactoryBuilder().setNameFormat("iceberg-metadata-generator-%d").setDaemon(true).build())) {
+          executor.invokeAll(tasks);
+        }
       }
       append.commit();
     } catch (IOException | InterruptedException e) {
@@ -125,13 +154,50 @@ public class HiveTableUtil {
     while (fileStatusIterator.hasNext()) {
       LocatedFileStatus fileStatus = fileStatusIterator.next();
       String fileName = fileStatus.getPath().getName();
-      if (fileName.startsWith(".") || fileName.startsWith("_")) {
+      if (fileName.startsWith(".") || fileName.startsWith("_") || fileName.endsWith("metadata.json")) {
         continue;
       }
       dataFiles.addAll(TableMigrationUtil.listPartition(partitionKeys, fileStatus.getPath().toString(), format, spec,
-          conf, metricsConfig, nameMapping));
+              conf, metricsConfig, nameMapping));
     }
     return dataFiles;
+  }
+
+  public static void appendFiles(URI fromURI, String format, Table icebergTbl, boolean isOverwrite,
+      Map<String, String> partitionSpec, Configuration conf) throws SemanticException {
+    try {
+      Transaction transaction = icebergTbl.newTransaction();
+      if (isOverwrite) {
+        DeleteFiles delete = transaction.newDelete();
+        if (partitionSpec != null) {
+          Expression partitionExpr =
+              IcebergTableUtil.generateExpressionFromPartitionSpec(icebergTbl, partitionSpec, true);
+          delete.deleteFromRowFilter(partitionExpr);
+        } else {
+          delete.deleteFromRowFilter(Expressions.alwaysTrue());
+        }
+        delete.commit();
+      }
+
+      MetricsConfig metricsConfig = MetricsConfig.fromProperties(icebergTbl.properties());
+      PartitionSpec spec = icebergTbl.spec();
+      String nameMappingStr = icebergTbl.properties().get(TableProperties.DEFAULT_NAME_MAPPING);
+      NameMapping nameMapping = null;
+      if (nameMappingStr != null) {
+        nameMapping = NameMappingParser.fromJson(nameMappingStr);
+      }
+      AppendFiles append = transaction.newAppend();
+      Map<String, String> actualPartitionSpec = Optional.ofNullable(partitionSpec).orElse(Collections.emptyMap());
+      String actualFormat = Optional.ofNullable(format).orElse(IOConstants.PARQUET).toLowerCase();
+      RemoteIterator<LocatedFileStatus> iterator = getFilesIterator(new Path(fromURI), conf);
+      List<DataFile> dataFiles =
+          getDataFiles(iterator, actualPartitionSpec, actualFormat, spec, metricsConfig, nameMapping, conf);
+      dataFiles.forEach(append::appendFile);
+      append.commit();
+      transaction.commitTransaction();
+    } catch (Exception e) {
+      throw new SemanticException("Can not append data files", e);
+    }
   }
 
   public static RemoteIterator<LocatedFileStatus> getFilesIterator(Path path, Configuration conf) throws MetaException {
@@ -142,4 +208,132 @@ public class HiveTableUtil {
       throw new MetaException("Exception happened during the collection of file statuses.\n" + e.getMessage());
     }
   }
+
+  /**
+   * Serializes the Iceberg table object.
+   */
+  public static String serializeTable(Table table, Configuration config, Properties props,
+      List<String> broadcastConfig) {
+    Table serializableTable = SerializableTable.copyOf(table);
+    if (broadcastConfig != null) {
+      broadcastConfig.forEach(cfg ->
+          serializableTable.properties().computeIfAbsent(cfg, props::getProperty));
+    }
+    checkAndSkipIoConfigSerialization(config, serializableTable);
+    return SerializationUtil.serializeToBase64(serializableTable);
+  }
+
+  /**
+   * Returns the Table serialized to the configuration based on the table name.
+   * If configuration is missing from the FileIO of the table, it will be populated with the input config.
+   *
+   * @param config The configuration used to get the data from
+   * @param name The name of the table we need as returned by TableDesc.getTableName()
+   * @return The Table
+   */
+  public static Table deserializeTable(Configuration config, String name) {
+    Table table = SerializationUtil.deserializeFromBase64(
+        config.get(InputFormatConfig.SERIALIZED_TABLE_PREFIX + name));
+    String location = config.get(InputFormatConfig.TABLE_LOCATION);
+    if (table == null &&
+          config.getBoolean(hive_metastoreConstants.TABLE_IS_CTAS, false) &&
+          StringUtils.isNotBlank(location)) {
+      table = readTableObjectFromFile(location, config);
+    }
+    checkAndSetIoConfig(config, table);
+    return table;
+  }
+
+  /**
+   * If enabled, it populates the FileIO's hadoop configuration with the input config object.
+   * This might be necessary when the table object was serialized without the FileIO config.
+   *
+   * @param config Configuration to set for FileIO, if enabled
+   * @param table The Iceberg table object
+   */
+  private static void checkAndSetIoConfig(Configuration config, Table table) {
+    if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
+            InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) &&
+          table.io() instanceof HadoopConfigurable fileIO) {
+      fileIO.setConf(config);
+    }
+  }
+
+  /**
+   * If enabled, it ensures that the FileIO's hadoop configuration will not be serialized.
+   * This might be desirable for decreasing the overall size of serialized table objects.
+   *
+   * Note: Skipping FileIO config serialization in this fashion might in turn necessitate calling
+   * {@link #checkAndSetIoConfig(Configuration, Table)} on the deserializer-side to enable subsequent use of the FileIO.
+   *
+   * @param config Configuration to set for FileIO in a transient manner, if enabled
+   * @param table The Iceberg table object
+   */
+  public static void checkAndSkipIoConfigSerialization(Configuration config, Table table) {
+    if (table != null && config.getBoolean(InputFormatConfig.CONFIG_SERIALIZATION_DISABLED,
+            InputFormatConfig.CONFIG_SERIALIZATION_DISABLED_DEFAULT) &&
+          table.io() instanceof HadoopConfigurable fileIO) {
+      fileIO.serializeConfWith(conf ->
+          new NonSerializingConfig(config)::get);
+    }
+  }
+
+  private static class NonSerializingConfig implements Serializable {
+    private final transient Configuration conf;
+
+    NonSerializingConfig(Configuration conf) {
+      this.conf = conf;
+    }
+
+    public Configuration get() {
+      if (conf == null) {
+        throw new IllegalStateException(
+            "Configuration was not serialized on purpose but was not set manually either");
+      }
+      return conf;
+    }
+  }
+
+  private static String generateTableObjectLocation(String tableLocation, Configuration conf) {
+    return tableLocation + "/temp/" + conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname) + TABLE_EXTENSION;
+  }
+
+  static void createFileForTableObject(Table table, Configuration conf) {
+    String filePath = generateTableObjectLocation(table.location(), conf);
+    String bytes = serializeTable(table, conf, null, null);
+    OutputFile serializedTableFile = table.io().newOutputFile(filePath);
+    try (ObjectOutputStream oos = new ObjectOutputStream(serializedTableFile.createOrOverwrite())) {
+      oos.writeObject(bytes);
+    } catch (IOException ex) {
+      throw new UncheckedIOException(ex);
+    }
+    LOG.debug("Iceberg table metadata file is created {}", serializedTableFile);
+  }
+
+  static void cleanupTableObjectFile(String location, Configuration configuration) {
+    String filePath = generateTableObjectLocation(location, configuration);
+    Path toDelete = new Path(filePath);
+    try {
+      FileSystem fs = Util.getFs(toDelete, configuration);
+      fs.delete(toDelete, true);
+    } catch (IOException ex) {
+      throw new UncheckedIOException(ex);
+    }
+  }
+
+  private static Table readTableObjectFromFile(String location, Configuration config) {
+    String filePath = generateTableObjectLocation(location, config);
+    try (FileIO io = new HadoopFileIO(config)) {
+      try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
+        return SerializationUtil.deserializeFromBase64((String) ois.readObject());
+      }
+    } catch (ClassNotFoundException | IOException e) {
+      throw new NotFoundException("Can not read or parse table object file: %s", filePath);
+    }
+  }
+
+  public static boolean isCtas(Properties properties) {
+    return Boolean.parseBoolean(properties.getProperty(hive_metastoreConstants.TABLE_IS_CTAS));
+  }
+
 }

@@ -25,8 +25,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.tools.MetaToolObjectStore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
@@ -41,7 +41,7 @@ public class TestMetaToolTaskListFSRoot {
     String fsRoot1 = "hdfs://abc.de";
     String fsRoot2 = "hdfs://fgh.ji";
 
-    ObjectStore mockObjectStore = Mockito.mock(ObjectStore.class);
+    MetaToolObjectStore mockObjectStore = Mockito.mock(MetaToolObjectStore.class);
     when(mockObjectStore.listFSRoots()).thenReturn(Sets.newHashSet(fsRoot1, fsRoot2));
 
     OutputStream os = new ByteArrayOutputStream();

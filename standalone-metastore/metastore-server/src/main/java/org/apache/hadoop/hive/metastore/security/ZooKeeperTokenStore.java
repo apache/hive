@@ -33,7 +33,6 @@ import org.apache.curator.framework.imps.CuratorFrameworkState;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenSecretManager.DelegationTokenInformation;
 import org.apache.hadoop.security.token.delegation.MetastoreDelegationTokenSupport;
@@ -69,8 +68,10 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   private boolean sslEnabled;
   private String keyStoreLocation;
   private String keyStorePassword;
+  private String keyStoreType;
   private String trustStoreLocation;
   private String trustStorePassword;
+  private String trustStoreType;
 
   private List<ACL> newNodeAcl;
   private Configuration conf;
@@ -144,8 +145,10 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
               .sslEnabled(sslEnabled)
               .keyStoreLocation(keyStoreLocation)
               .keyStorePassword(keyStorePassword)
+              .keyStoreType(keyStoreType)
               .trustStoreLocation(trustStoreLocation)
               .trustStorePassword(trustStorePassword)
+              .trustStoreType(trustStoreType)
               .build();
           zkSession = zkHelper.getNewZookeeperClient(aclDefaultProvider);
           zkSession.start();
@@ -153,41 +156,6 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
       }
     }
     return zkSession;
-  }
-
-  private void setupJAASConfig(Configuration conf) throws IOException {
-    if (!isKerberosEnabled(conf)) {
-      // The process has not logged in using keytab
-      // this should be a test mode, can't use keytab to authenticate
-      // with zookeeper.
-      LOGGER.warn("Login is not from keytab");
-      return;
-    }
-
-    String principal;
-    String keytab;
-    switch (serverMode) {
-    case METASTORE:
-      principal = getNonEmptyConfVar(conf, "hive.metastore.kerberos.principal");
-      keytab = getNonEmptyConfVar(conf, "hive.metastore.kerberos.keytab.file");
-      break;
-    case HIVESERVER2:
-      principal = getNonEmptyConfVar(conf, "hive.server2.authentication.kerberos.principal");
-      keytab = getNonEmptyConfVar(conf, "hive.server2.authentication.kerberos.keytab");
-      break;
-    default:
-      throw new AssertionError("Unexpected server mode " + serverMode);
-    }
-    SecurityUtils.setZookeeperClientKerberosJaasConfig(principal, keytab);
-  }
-
-  private String getNonEmptyConfVar(Configuration conf, String param) throws IOException {
-    String val = conf.get(param);
-    if (val == null || val.trim().isEmpty()) {
-      throw new IOException("Configuration parameter " + param + " should be set, "
-          + WHEN_ZK_DSTORE_MSG);
-    }
-    return val;
   }
 
   /**
@@ -433,14 +401,17 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
   public boolean removeToken(DelegationTokenIdentifier tokenIdentifier) {
     String tokenPath = getTokenPath(tokenIdentifier);
     zkDelete(tokenPath);
+    LOGGER.info("Removed token: {}", tokenPath);
     return true;
   }
 
   @Override
   public DelegationTokenInformation getToken(DelegationTokenIdentifier tokenIdentifier) {
-    byte[] tokenBytes = zkGetData(getTokenPath(tokenIdentifier));
+    String tokenPath = getTokenPath(tokenIdentifier);
+    byte[] tokenBytes = zkGetData(tokenPath);
     if(tokenBytes == null) {
       // The token is already removed.
+      LOGGER.info("Could not get data from {}", tokenPath);
       return null;
     }
     try {
@@ -499,10 +470,14 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
           keyStoreLocation = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_LOCATION);
           keyStorePassword =
               MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD);
+          keyStoreType =
+              MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_TYPE);
           trustStoreLocation =
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION);
           trustStorePassword =
               MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD);
+          trustStoreType =
+              MetastoreConf.getVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_TYPE);
         } catch (IOException ex) {
           throw new RuntimeException("Failed to read zookeeper configuration passwords", ex);
         }
@@ -517,10 +492,12 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
           keyStoreLocation = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_LOCATION, "");
           char[] pwd = conf.getPassword(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_PASSWORD);
           keyStorePassword = pwd == null ? null : new String(pwd);
+          keyStoreType = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_KEYSTORE_TYPE, "");
           trustStoreLocation =
               conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_LOCATION, "");
           pwd = conf.getPassword(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_PASSWORD);
           trustStorePassword = pwd == null ? null : new String(pwd);
+          trustStoreType = conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_TRUSTSTORE_TYPE, "");
         } catch (IOException ex) {
           throw new RuntimeException("Failed to read zookeeper configuration passwords", ex);
         }
@@ -534,13 +511,6 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
         conf.get(MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE,
             MetastoreDelegationTokenManager.DELEGATION_TOKEN_STORE_ZK_ZNODE_DEFAULT) + serverMode;
 
-    try {
-      // Install the JAAS Configuration for the runtime
-      setupJAASConfig(conf);
-    } catch (IOException e) {
-      throw new TokenStoreException("Error setting up JAAS configuration for zookeeper client "
-          + e.getMessage(), e);
-    }
     initClientAndPaths();
   }
 

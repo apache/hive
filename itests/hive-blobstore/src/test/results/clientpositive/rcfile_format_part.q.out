@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE src_events
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE src_events
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE src_events
 (
   log_id      BIGINT,
@@ -52,8 +54,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_events
 PREHOOK: query: DROP TABLE rcfile_events
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE rcfile_events
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE rcfile_events
 (
   log_id      BIGINT,

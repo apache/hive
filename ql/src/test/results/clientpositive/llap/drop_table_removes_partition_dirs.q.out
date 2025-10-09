@@ -42,9 +42,11 @@ Found 1 items
 PREHOOK: query: DROP TABLE test_table_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table_n3
 POSTHOOK: query: DROP TABLE test_table_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_n3
 #### A masked pattern was here ####

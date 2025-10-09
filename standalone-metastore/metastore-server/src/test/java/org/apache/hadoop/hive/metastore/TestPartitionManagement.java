@@ -49,11 +49,14 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.leader.HouseKeepingTasks;
+import org.apache.hadoop.hive.metastore.leader.StaticLeaderElection;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.thrift.TException;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -236,7 +239,7 @@ public class TestPartitionManagement {
   }
 
   @Test
-  public void testPartitionDiscoveryEnabledBothTableTypes() throws TException, IOException {
+  public void testPartitionDiscoveryEnabledBothTableTypes() throws Exception {
     String dbName = "db2";
     String tableName = "tbl2";
     Map<String, Column> colMap = buildAllColumns();
@@ -302,6 +305,43 @@ public class TestPartitionManagement {
     runPartitionManagementTask(conf);
     partitions = client.listPartitions(dbName, tableName, (short) -1);
     assertEquals(3, partitions.size());
+
+    // only MANAGED table type
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TABLE_TYPES.getVarname(), TableType.MANAGED_TABLE.name());
+    table.getParameters().remove("EXTERNAL");
+    table.setTableType(TableType.MANAGED_TABLE.name());
+    client.alter_table(dbName, tableName, table);
+    Assert.assertTrue(fs.mkdirs(newPart1));
+    Assert.assertTrue(fs.mkdirs(newPart2));
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(5, partitions.size());
+    Assert.assertTrue(fs.delete(newPart1, true));
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(4, partitions.size());
+
+    // disable partition management task by default. Currently, there are 4 directories
+    // this test adds two additional paths and verifies that partitions are not added to
+    // metastore when partition management task is disabled.
+    Assert.assertTrue(fs.mkdirs(new Path(tablePath, "state=AZ/dt=2025-07-01")));
+    Assert.assertTrue(fs.mkdirs(new Path(tablePath, "state=NV/dt=2025-07-02")));
+    assertEquals(6, fs.listStatus(tablePath).length);
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_FREQUENCY.getVarname(), "0");
+    conf.set(MetastoreConf.ConfVars.TASK_THREADS_REMOTE_ONLY.getVarname(),
+        "org.apache.hadoop.hive.metastore.PartitionManagementTask");
+    HouseKeepingTasks listener = new HouseKeepingTasks(conf, true);
+    StaticLeaderElection election = new StaticLeaderElection();
+    election.setName("TestPartitionManagement");
+    listener.takeLeadership(election);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(4, partitions.size());
+
+    // Re-enable PMT and verify 6 partitions
+    conf.set(MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_FREQUENCY.getVarname(), "1");
+    runPartitionManagementTask(conf);
+    partitions = client.listPartitions(dbName, tableName, (short) -1);
+    assertEquals(6, partitions.size());
   }
 
   @Test

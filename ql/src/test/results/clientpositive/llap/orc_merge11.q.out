@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE orcfile_merge1_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orcfile_merge1_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_split_elim_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_split_elim_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table orc_split_elim_n0 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -72,7 +76,7 @@ PREHOOK: Input: default@orcfile_merge1_n2
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_14
+File Version:#Masked#
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
@@ -156,7 +160,8 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 6685 bytes
+File length: 6692 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -164,7 +169,7 @@ ________________________________________________________________________________
 -- END ORC FILE DUMP --
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_14
+File Version:#Masked#
 Rows: 50000
 Compression: ZLIB
 Compression size: 4096
@@ -248,7 +253,8 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 6685 bytes
+File length: 6692 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -277,7 +283,7 @@ PREHOOK: Input: default@orcfile_merge1_n2
 #### A masked pattern was here ####
 -- BEGIN ORC FILE DUMP --
 #### A masked pattern was here ####
-File Version: 0.12 with ORC_14
+File Version:#Masked#
 Rows: 100000
 Compression: ZLIB
 Compression size: 4096
@@ -426,7 +432,8 @@ Stripes:
       Entry 3: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,506,294,0,232,304
       Entry 4: count: 10000 hasNull: false min: 1969-12-31 16:04:10.0 max: 1969-12-31 16:04:10.0 positions: 0,666,54,0,312,64
 
-File length: 12994 bytes
+File length: 13001 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -440,8 +447,10 @@ PREHOOK: Input: default@orc_split_elim_n0
 PREHOOK: query: DROP TABLE orc_split_elim_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_split_elim_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_split_elim_n0
 PREHOOK: query: DROP TABLE orcfile_merge1_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge1_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1_n2

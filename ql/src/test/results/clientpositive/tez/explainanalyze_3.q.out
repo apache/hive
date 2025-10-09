@@ -1,5 +1,5 @@
-PREHOOK: query: select key, value
-FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+PREHOOK: query: select `key`, `value`
+FROM `srcpart` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -7,8 +7,8 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select key, value
-FROM srcpart LATERAL VIEW explode(array(1,2,3)) myTable AS myCol
+POSTHOOK: query: select `key`, `value`
+FROM `srcpart` LATERAL VIEW explode(array(1,2,3)) `myTable` AS `myCol`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
@@ -34,7 +34,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-Plan not optimized by CBO because the statement has lateral views
+Plan optimized by CBO.
 
 Stage-0
   Fetch Operator
@@ -103,10 +103,10 @@ PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:newDB
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-PREHOOK: query: describe database extended newDB
+PREHOOK: query: describe database extended `newDB`
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:newdb
-POSTHOOK: query: describe database extended newDB
+POSTHOOK: query: describe database extended `newDB`
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:newdb
 PREHOOK: query: explain analyze describe database extended newDB
@@ -128,10 +128,10 @@ POSTHOOK: query: describe database extended newDB
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:newdb
 newdb		location/in/test	hdfs://### HDFS PATH ###	hive_test_user	USER			
-PREHOOK: query: use newDB
+PREHOOK: query: use `newDB`
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:newdb
-POSTHOOK: query: use newDB
+POSTHOOK: query: use `newDB`
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:newdb
 PREHOOK: query: explain analyze use newDB
@@ -157,13 +157,13 @@ POSTHOOK: query: create table tab_n2 (name string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:newdb
 POSTHOOK: Output: newDB@tab_n2
-PREHOOK: query: alter table tab_n2 rename to newName
+PREHOOK: query: alter table `tab_n2` rename to `newName`
 PREHOOK: type: ALTERTABLE_RENAME
 PREHOOK: Input: newdb@tab_n2
 PREHOOK: Output: database:newdb
 PREHOOK: Output: newDB@newName
 PREHOOK: Output: newdb@tab_n2
-POSTHOOK: query: alter table tab_n2 rename to newName
+POSTHOOK: query: alter table `tab_n2` rename to `newName`
 POSTHOOK: type: ALTERTABLE_RENAME
 POSTHOOK: Input: newdb@tab_n2
 POSTHOOK: Output: database:newdb
@@ -184,37 +184,43 @@ POSTHOOK: Output: newdb@tab_n2
 Stage-0
   Rename Table{"table name:":"newDB.tab_n2","new table name:":"newDB.newName"}
 
-PREHOOK: query: drop table tab_n2
+PREHOOK: query: drop table `tab_n2`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: newdb@tab_n2
+PREHOOK: Output: database:newdb
 PREHOOK: Output: newdb@tab_n2
-POSTHOOK: query: drop table tab_n2
+POSTHOOK: query: drop table `tab_n2`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: newdb@tab_n2
+POSTHOOK: Output: database:newdb
 POSTHOOK: Output: newdb@tab_n2
 PREHOOK: query: explain analyze drop table tab_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: newdb@tab_n2
+PREHOOK: Output: database:newdb
 PREHOOK: Output: newdb@tab_n2
 POSTHOOK: query: explain analyze drop table tab_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: newdb@tab_n2
+POSTHOOK: Output: database:newdb
 POSTHOOK: Output: newdb@tab_n2
 Stage-0
-  Drop Table{"table:":"tab_n2"}
+  Drop Table{"table:":"newDB.tab_n2"}
 
 PREHOOK: query: drop table tab_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: newdb@tab_n2
+PREHOOK: Output: database:newdb
 PREHOOK: Output: newdb@tab_n2
 POSTHOOK: query: drop table tab_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: newdb@tab_n2
+POSTHOOK: Output: database:newdb
 POSTHOOK: Output: newdb@tab_n2
-PREHOOK: query: use default
+PREHOOK: query: use `default`
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
-POSTHOOK: query: use default
+POSTHOOK: query: use `default`
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
 PREHOOK: query: explain analyze use default
@@ -242,8 +248,10 @@ POSTHOOK: Input: database:newdb
 POSTHOOK: Output: database:newdb
 PREHOOK: query: drop table src_stats
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table src_stats
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_stats as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -256,11 +264,11 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_stats
 POSTHOOK: Lineage: src_stats.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_stats.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: analyze table src_stats compute statistics
+PREHOOK: query: analyze table `src_stats` compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_stats
 PREHOOK: Output: default@src_stats
-POSTHOOK: query: analyze table src_stats compute statistics
+POSTHOOK: query: analyze table `src_stats` compute statistics
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_stats
 POSTHOOK: Output: default@src_stats
@@ -278,12 +286,12 @@ Stage-2
       Map 1
       TableScan [TS_0]
 
-PREHOOK: query: analyze table src_stats compute statistics for columns
+PREHOOK: query: analyze table `src_stats` compute statistics for columns
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: default@src_stats
 PREHOOK: Output: default@src_stats
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: analyze table src_stats compute statistics for columns
+POSTHOOK: query: analyze table `src_stats` compute statistics for columns
 POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@src_stats
 POSTHOOK: Output: default@src_stats
@@ -317,10 +325,10 @@ Stage-2
                 TableScan [TS_0] (rows=500/500 width=178)
                   default@src_stats,src_stats,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
+PREHOOK: query: CREATE TEMPORARY MACRO `SIGMOID` (`x` DOUBLE) 1.0 / (1.0 + EXP(-`x`))
 PREHOOK: type: CREATEMACRO
 PREHOOK: Output: database:default
-POSTHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
+POSTHOOK: query: CREATE TEMPORARY MACRO `SIGMOID` (`x` DOUBLE) 1.0 / (1.0 + EXP(-`x`))
 POSTHOOK: type: CREATEMACRO
 POSTHOOK: Output: database:default
 PREHOOK: query: explain analyze
@@ -340,11 +348,11 @@ PREHOOK: Output: database:default
 POSTHOOK: query: CREATE TEMPORARY MACRO SIGMOID (x DOUBLE) 1.0 / (1.0 + EXP(-x))
 POSTHOOK: type: CREATEMACRO
 POSTHOOK: Output: database:default
-PREHOOK: query: SELECT SIGMOID(2) FROM src LIMIT 1
+PREHOOK: query: SELECT SIGMOID(2) FROM `src` LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT SIGMOID(2) FROM src LIMIT 1
+POSTHOOK: query: SELECT SIGMOID(2) FROM `src` LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -388,12 +396,12 @@ PREHOOK: Output: database:default
 POSTHOOK: query: DROP TEMPORARY MACRO SIGMOID
 POSTHOOK: type: DROPMACRO
 POSTHOOK: Output: database:default
-PREHOOK: query: create table src_autho_test_n4 as select * from src
+PREHOOK: query: create table `src_autho_test_n4` as select * from `src`
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@src_autho_test_n4
-POSTHOOK: query: create table src_autho_test_n4 as select * from src
+POSTHOOK: query: create table `src_autho_test_n4` as select * from `src`
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -453,10 +461,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_autho_test_n4
 POSTHOOK: Lineage: src_autho_test_n4.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: src_autho_test_n4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: grant select on table src_autho_test_n4 to user hive_test_user
+PREHOOK: query: grant select on table `src_autho_test_n4` to user `hive_test_user`
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@src_autho_test_n4
-POSTHOOK: query: grant select on table src_autho_test_n4 to user hive_test_user
+POSTHOOK: query: grant select on table `src_autho_test_n4` to user `hive_test_user`
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test_n4
 PREHOOK: query: explain analyze grant select on table src_autho_test_n4 to user hive_test_user
@@ -474,9 +482,9 @@ PREHOOK: Output: default@src_autho_test_n4
 POSTHOOK: query: grant select on table src_autho_test_n4 to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test_n4
-PREHOOK: query: show grant user hive_test_user on table src_autho_test_n4
+PREHOOK: query: show grant user `hive_test_user` on table `src_autho_test_n4`
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user hive_test_user on table src_autho_test_n4
+POSTHOOK: query: show grant user `hive_test_user` on table `src_autho_test_n4`
 POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test_n4
 PREHOOK: type: SHOW_GRANT
@@ -488,9 +496,9 @@ Stage-1
     Stage-0
       Show grant desc{"privilege subject":{"object:":"default.src_autho_test_n4"},"principal desc:":{"Principal":{"name:":"hive_test_user"}}}
 
-PREHOOK: query: show grant user hive_test_user on table src_autho_test_n4(key)
+PREHOOK: query: show grant user `hive_test_user` on table `src_autho_test_n4`(`key`)
 PREHOOK: type: SHOW_GRANT
-POSTHOOK: query: show grant user hive_test_user on table src_autho_test_n4(key)
+POSTHOOK: query: show grant user `hive_test_user` on table `src_autho_test_n4`(`key`)
 POSTHOOK: type: SHOW_GRANT
 PREHOOK: query: explain analyze show grant user hive_test_user on table src_autho_test_n4(key)
 PREHOOK: type: SHOW_GRANT
@@ -530,10 +538,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 118
 118
 119
-PREHOOK: query: revoke select on table src_autho_test_n4 from user hive_test_user
+PREHOOK: query: revoke select on table `src_autho_test_n4` from user `hive_test_user`
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@src_autho_test_n4
-POSTHOOK: query: revoke select on table src_autho_test_n4 from user hive_test_user
+POSTHOOK: query: revoke select on table `src_autho_test_n4` from user `hive_test_user`
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test_n4
 PREHOOK: query: explain analyze revoke select on table src_autho_test_n4 from user hive_test_user
@@ -545,10 +553,10 @@ POSTHOOK: Output: default@src_autho_test_n4
 Stage-0
   Revoke{"Principals:":[{"Principal":{"name:":"hive_test_user"}}],"privilege subject":{"object:":"default.src_autho_test_n4"},"Privileges:":[{"Privilege":{"privilege:":{"type:":"Select"}}}]}
 
-PREHOOK: query: grant select(key) on table src_autho_test_n4 to user hive_test_user
+PREHOOK: query: grant select(`key`) on table `src_autho_test_n4` to user `hive_test_user`
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@src_autho_test_n4
-POSTHOOK: query: grant select(key) on table src_autho_test_n4 to user hive_test_user
+POSTHOOK: query: grant select(`key`) on table `src_autho_test_n4` to user `hive_test_user`
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test_n4
 PREHOOK: query: explain analyze grant select(key) on table src_autho_test_n4 to user hive_test_user
@@ -560,10 +568,10 @@ POSTHOOK: Output: default@src_autho_test_n4
 Stage-0
   Grant{"Principals:":[{"Principal":{"name:":"hive_test_user"}}],"privilege subject":{"object:":"default.src_autho_test_n4"},"Privileges:":[{"Privilege":{"columns:":["key"],"privilege:":{"type:":"Select"}}}],"grant option:":"false"}
 
-PREHOOK: query: revoke select(key) on table src_autho_test_n4 from user hive_test_user
+PREHOOK: query: revoke select(`key`) on table `src_autho_test_n4` from user `hive_test_user`
 PREHOOK: type: REVOKE_PRIVILEGE
 PREHOOK: Output: default@src_autho_test_n4
-POSTHOOK: query: revoke select(key) on table src_autho_test_n4 from user hive_test_user
+POSTHOOK: query: revoke select(`key`) on table `src_autho_test_n4` from user `hive_test_user`
 POSTHOOK: type: REVOKE_PRIVILEGE
 POSTHOOK: Output: default@src_autho_test_n4
 PREHOOK: query: explain analyze revoke select(key) on table src_autho_test_n4 from user hive_test_user
@@ -575,9 +583,9 @@ POSTHOOK: Output: default@src_autho_test_n4
 Stage-0
   Revoke{"Principals:":[{"Principal":{"name:":"hive_test_user"}}],"privilege subject":{"object:":"default.src_autho_test_n4"},"Privileges:":[{"Privilege":{"columns:":["key"],"privilege:":{"type:":"Select"}}}]}
 
-PREHOOK: query: create role sRc_roLE
+PREHOOK: query: create role `sRc_roLE`
 PREHOOK: type: CREATEROLE
-POSTHOOK: query: create role sRc_roLE
+POSTHOOK: query: create role `sRc_roLE`
 POSTHOOK: type: CREATEROLE
 PREHOOK: query: explain analyze 
 create role sRc_roLE
@@ -592,9 +600,9 @@ PREHOOK: query: create role sRc_roLE
 PREHOOK: type: CREATEROLE
 POSTHOOK: query: create role sRc_roLE
 POSTHOOK: type: CREATEROLE
-PREHOOK: query: grant role sRc_roLE to user hive_test_user
+PREHOOK: query: grant role `sRc_roLE` to user `hive_test_user`
 PREHOOK: type: GRANT_ROLE
-POSTHOOK: query: grant role sRc_roLE to user hive_test_user
+POSTHOOK: query: grant role `sRc_roLE` to user `hive_test_user`
 POSTHOOK: type: GRANT_ROLE
 PREHOOK: query: explain analyze
 grant role sRc_roLE to user hive_test_user
@@ -609,9 +617,9 @@ PREHOOK: query: grant role sRc_roLE to user hive_test_user
 PREHOOK: type: GRANT_ROLE
 POSTHOOK: query: grant role sRc_roLE to user hive_test_user
 POSTHOOK: type: GRANT_ROLE
-PREHOOK: query: show role grant user hive_test_user
+PREHOOK: query: show role grant user `hive_test_user`
 PREHOOK: type: SHOW_ROLE_GRANT
-POSTHOOK: query: show role grant user hive_test_user
+POSTHOOK: query: show role grant user `hive_test_user`
 POSTHOOK: type: SHOW_ROLE_GRANT
 PREHOOK: query: explain analyze show role grant user hive_test_user
 PREHOOK: type: SHOW_ROLE_GRANT
@@ -623,9 +631,9 @@ Stage-1
     Stage-0
       Show Role Grant{"name:":"hive_test_user"}
 
-PREHOOK: query: drop role sRc_roLE
+PREHOOK: query: drop role `sRc_roLE`
 PREHOOK: type: DROPROLE
-POSTHOOK: query: drop role sRc_roLE
+POSTHOOK: query: drop role `sRc_roLE`
 POSTHOOK: type: DROPROLE
 PREHOOK: query: explain analyze drop role sRc_roLE
 PREHOOK: type: DROPROLE
@@ -641,14 +649,16 @@ POSTHOOK: type: DROPROLE
 PREHOOK: query: drop table src_autho_test_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_autho_test_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_autho_test_n4
 POSTHOOK: query: drop table src_autho_test_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_autho_test_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_autho_test_n4
-PREHOOK: query: drop view v_n5
+PREHOOK: query: drop view `v_n5`
 PREHOOK: type: DROPVIEW
-POSTHOOK: query: drop view v_n5
+POSTHOOK: query: drop view `v_n5`
 POSTHOOK: type: DROPVIEW
 PREHOOK: query: explain analyze drop view v_n5
 PREHOOK: type: DROPVIEW
@@ -657,14 +667,14 @@ POSTHOOK: type: DROPVIEW
 Stage-0
   Drop View{"view name:":"v_n5"}
 
-PREHOOK: query: create view v_n5 as with cte as (select * from src  order by key limit 5)
-select * from cte
+PREHOOK: query: create view `v_n5` as with `cte` as (select * from `src`  order by `key` limit 5)
+select * from `cte`
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@v_n5
-POSTHOOK: query: create view v_n5 as with cte as (select * from src  order by key limit 5)
-select * from cte
+POSTHOOK: query: create view `v_n5` as with `cte` as (select * from `src`  order by `key` limit 5)
+select * from `cte`
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
@@ -686,13 +696,13 @@ Plan optimized by CBO.
 Stage-0
   Create View{"original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte","name:":"default.v_n5"}
 
-PREHOOK: query: with cte as (select * from src  order by key limit 5)
-select * from cte
+PREHOOK: query: with `cte` as (select * from `src`  order by `key` limit 5)
+select * from `cte`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: with cte as (select * from src  order by key limit 5)
-select * from cte
+POSTHOOK: query: with `cte` as (select * from `src`  order by `key` limit 5)
+select * from `cte`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -746,11 +756,11 @@ POSTHOOK: query: load data local inpath '../../data/files/orc_split_elim.orc' in
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@orc_merge5_n1
-PREHOOK: query: insert overwrite table orc_merge5_n1 select userid,string1,subtype,decimal1,ts from orc_merge5_n1 where userid<=13
+PREHOOK: query: insert overwrite table `orc_merge5_n1` select `userid`,`string1`,`subtype`,`decimal1`,`ts` from `orc_merge5_n1` where `userid`<=13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_merge5_n1
 PREHOOK: Output: default@orc_merge5_n1
-POSTHOOK: query: insert overwrite table orc_merge5_n1 select userid,string1,subtype,decimal1,ts from orc_merge5_n1 where userid<=13
+POSTHOOK: query: insert overwrite table `orc_merge5_n1` select `userid`,`string1`,`subtype`,`decimal1`,`ts` from `orc_merge5_n1` where `userid`<=13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5_n1
 POSTHOOK: Output: default@orc_merge5_n1
@@ -810,10 +820,12 @@ Stage-3
 PREHOOK: query: drop table orc_merge5_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_merge5_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_merge5_n1
 POSTHOOK: query: drop table orc_merge5_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_merge5_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_merge5_n1
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_n4(key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -925,16 +937,16 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n4@ds=2008-04-08
 POSTHOOK: Output: default@tab_n2@ds=2008-04-08
 POSTHOOK: Lineage: tab_n2 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n4)srcbucket_mapjoin_n4.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: tab_n2 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n4)srcbucket_mapjoin_n4.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: select a.key, a.value, b.value
-from tab_n2 a join tab_part_n3 b on a.key = b.key
+PREHOOK: query: select `a`.`key`, `a`.`value`, `b`.`value`
+from `tab_n2` `a` join `tab_part_n3` `b` on `a`.`key` = `b`.`key`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n2
 PREHOOK: Input: default@tab_n2@ds=2008-04-08
 PREHOOK: Input: default@tab_part_n3
 PREHOOK: Input: default@tab_part_n3@ds=2008-04-08
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select a.key, a.value, b.value
-from tab_n2 a join tab_part_n3 b on a.key = b.key
+POSTHOOK: query: select `a`.`key`, `a`.`value`, `b`.`value`
+from `tab_n2` `a` join `tab_part_n3` `b` on `a`.`key` = `b`.`key`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n2
 POSTHOOK: Input: default@tab_n2@ds=2008-04-08

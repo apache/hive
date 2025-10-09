@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE ts_pq
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE ts_pq
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE ts_pq (ts1 TIMESTAMP)
     STORED AS PARQUET
 #### A masked pattern was here ####

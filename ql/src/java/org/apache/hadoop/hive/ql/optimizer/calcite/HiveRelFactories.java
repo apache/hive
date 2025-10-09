@@ -40,6 +40,7 @@ import org.apache.calcite.rel.core.RelFactories.SetOpFactory;
 import org.apache.calcite.rel.core.RelFactories.SortFactory;
 import org.apache.calcite.rel.hint.RelHint;
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
@@ -48,11 +49,14 @@ import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableSpool;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
@@ -79,11 +83,16 @@ public class HiveRelFactories {
   public static final RelFactories.SortExchangeFactory HIVE_SORT_EXCHANGE_FACTORY =
           new HiveSortExchangeFactoryImpl();
 
+  public static final RelFactories.ValuesFactory HIVE_VALUES_FACTORY =
+          new HiveValuesFactoryImpl();
+
   public static final AggregateFactory HIVE_AGGREGATE_FACTORY =
           new HiveAggregateFactoryImpl();
 
   public static final SetOpFactory HIVE_SET_OP_FACTORY =
           new HiveSetOpFactoryImpl();
+
+  public static final RelFactories.SpoolFactory HIVE_SPOOL_FACTORY = HiveTableSpool::new;
 
   public static final RelBuilderFactory HIVE_BUILDER =
       HiveRelBuilder.proto(
@@ -94,8 +103,10 @@ public class HiveRelFactories {
               HIVE_SEMI_JOIN_FACTORY,
               HIVE_SORT_FACTORY,
               HIVE_SORT_EXCHANGE_FACTORY,
+              HIVE_VALUES_FACTORY,
               HIVE_AGGREGATE_FACTORY,
-              HIVE_SET_OP_FACTORY));
+              HIVE_SET_OP_FACTORY,
+              HIVE_SPOOL_FACTORY));
 
   private HiveRelFactories() {
   }
@@ -107,8 +118,11 @@ public class HiveRelFactories {
    */
   private static class HiveProjectFactoryImpl implements ProjectFactory {
     @Override
-    public RelNode createProject(RelNode child, List<RelHint> hints,
-        List<? extends RexNode> childExprs, List<String> fieldNames) {
+    public RelNode createProject(RelNode child, List<RelHint> hints, List<? extends RexNode> childExprs,
+        List<? extends String> fieldNames, Set<CorrelationId> variablesSet) {
+      if (!variablesSet.isEmpty()) {
+        throw new IllegalStateException("Setting variables is not supported");
+      }
       RelOptCluster cluster = child.getCluster();
       RelDataType rowType = RexUtil.createStructType(
           cluster.getTypeFactory(), childExprs, fieldNames, SqlValidatorUtil.EXPR_SUGGESTER);
@@ -200,6 +214,14 @@ public class HiveRelFactories {
     @Override
     public RelNode createSortExchange(RelNode input, RelDistribution distribution, RelCollation collation) {
       return HiveSortExchange.create(input, distribution, collation);
+    }
+  }
+
+  private static class HiveValuesFactoryImpl implements RelFactories.ValuesFactory {
+    @Override
+    public RelNode createValues(RelOptCluster cluster, RelDataType rowType, List<ImmutableList<RexLiteral>> tuples) {
+      return new HiveValues(
+              cluster, rowType, ImmutableList.copyOf(tuples), cluster.traitSetOf(HiveRelNode.CONVENTION));
     }
   }
 

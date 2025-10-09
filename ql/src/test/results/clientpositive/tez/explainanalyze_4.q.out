@@ -1,18 +1,18 @@
 PREHOOK: query: select
   *
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
-order by a.cint
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
+order by `a`.`cint`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   *
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
-order by a.cint
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
+order by `a`.`cint`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -103,17 +103,17 @@ NULL	-8915	2101183	1864027286	NULL	-8915.0	x7By66525	4KWs6gw7lv2WYd66P	NULL	1969
 -51	NULL	2949963	-1580871111	-51.0	NULL	0K68k3bdl7jO7	TPPAu	1969-12-31 16:00:08.451	NULL	true	false	-51	NULL	2949963	-1580871111	-51.0	NULL	0K68k3bdl7jO7	TPPAu	1969-12-31 16:00:08.451	NULL	true	false
 PREHOOK: query: select
   count(*)
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   count(*)
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -190,22 +190,22 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: select
-  a.csmallint, count(*) c1
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+  `a`.`csmallint`, count(*) `c1`
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
-group by a.csmallint
-order by c1
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
+group by `a`.`csmallint`
+order by `c1`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
-  a.csmallint, count(*) c1
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+  `a`.`csmallint`, count(*) `c1`
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
-group by a.csmallint
-order by c1
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
+group by `a`.`csmallint`
+order by `c1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -301,19 +301,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	6
 PREHOOK: query: select
   *
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
-order by a.cint
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
+order by `a`.`cint`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   *
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
-order by a.cint
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
+order by `a`.`cint`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -401,17 +401,17 @@ NULL	-8915	2101183	1864027286	NULL	-8915.0	x7By66525	4KWs6gw7lv2WYd66P	NULL	1969
 -51	NULL	2949963	-1580871111	-51.0	NULL	0K68k3bdl7jO7	TPPAu	1969-12-31 16:00:08.451	NULL	true	false	-51	NULL	2949963	-1580871111	-51.0	NULL	0K68k3bdl7jO7	TPPAu	1969-12-31 16:00:08.451	NULL	true	false
 PREHOOK: query: select
   count(*)
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   count(*)
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -485,22 +485,22 @@ POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: select
-  a.csmallint, count(*) c1
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+  `a`.`csmallint`, count(*) `c1`
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
-group by a.csmallint
-order by c1
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
+group by `a`.`csmallint`
+order by `c1`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
-  a.csmallint, count(*) c1
-from alltypesorc a join alltypesorc b on a.cint = b.cint
+  `a`.`csmallint`, count(*) `c1`
+from `alltypesorc` `a` join `alltypesorc` `b` on `a`.`cint` = `b`.`cint`
 where
-  a.cint between 1000000 and 3000000 and b.cbigint is not null
-group by a.csmallint
-order by c1
+  `a`.`cint` between 1000000 and 3000000 and `b`.`cbigint` is not null
+group by `a`.`csmallint`
+order by `c1`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: hdfs://### HDFS PATH ###

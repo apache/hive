@@ -563,7 +563,7 @@ getStaticValue() {
   grep -i "^$1=" "$DATAFILE" | cut -d'=' -f2
 }
 
-HMS_UPGRADE_DIR="$(pwd)/../../metastore/scripts/upgrade"
+HMS_UPGRADE_DIR="$(pwd)/../../standalone-metastore/metastore-server/src/main/sql"
 if [ ! -d "$HMS_UPGRADE_DIR/$DB_SERVER" ]; then
   error "Error: $DB_SERVER upgrade scripts are not found on $HMS_UPGRADE_DIR."
   exit 1

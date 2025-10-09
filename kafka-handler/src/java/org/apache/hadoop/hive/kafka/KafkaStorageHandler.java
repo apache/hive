@@ -56,13 +56,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 /**
@@ -246,7 +246,7 @@ import java.util.function.Predicate;
   }
 
   private String getQueryId() {
-    return HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVEQUERYID);
+    return HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_QUERY_ID);
   }
 
   @Override public void commitInsertTable(Table table, boolean overwrite) throws MetaException {
@@ -310,7 +310,7 @@ import java.util.function.Predicate;
 
     RetryUtils.CleanupAfterFailure cleanUpTheMap = new RetryUtils.CleanupAfterFailure() {
       @Override public void cleanup() {
-        producersMap.forEach((s, producer) -> producer.close(0, TimeUnit.MILLISECONDS));
+        producersMap.forEach((s, producer) -> producer.close(Duration.ofMillis(0)));
         producersMap.clear();
       }
     };
@@ -346,7 +346,7 @@ import java.util.function.Predicate;
       RetryUtils.retry(commitTask, isRetrayable, maxTries);
     } catch (Exception e) {
       // at this point we are in a funky state if one commit happend!! close and log it
-      producersMap.forEach((key, producer) -> producer.close(0, TimeUnit.MILLISECONDS));
+      producersMap.forEach((key, producer) -> producer.close(Duration.ofMillis(0)));
       LOG.error("Commit transaction failed", e);
       if (committedTx.size() > 0) {
         LOG.error("Partial Data Got Commited Some actions need to be Done");

@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.ACLProvider;
 import org.apache.curator.framework.imps.CuratorFrameworkState;
@@ -45,6 +47,7 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapUtil;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.registry.RegistryUtilities;
 import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
@@ -55,6 +58,7 @@ import org.apache.hadoop.registry.client.types.ServiceRecord;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.InvalidACLException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.ZooDefs;
@@ -114,6 +118,8 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   private PersistentNode znode;
   private String znodePath; // unique identity for this instance
 
+  final String namespace;
+
   private PathChildrenCache instancesCache; // Created on demand.
 
   /** Local hostname. */
@@ -160,7 +166,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     this.stateChangeListeners = new HashSet<>();
     this.pathToInstanceCache = new ConcurrentHashMap<>();
     this.nodeToInstanceCache = new ConcurrentHashMap<>();
-    final String namespace = getRootNamespace(conf, rootNs, nsPrefix);
+    this.namespace = getRootNamespace(conf, rootNs, nsPrefix);
     ACLProvider aclProvider;
     // get acl provider for most outer path that is non-null
     if (userPathPrefix == null) {
@@ -182,7 +188,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   public static String getRootNamespace(Configuration conf, String userProvidedNamespace,
       String defaultNamespacePrefix) {
-    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
+    final boolean isSecure = isZkEnforceSASLClient(conf);
     String rootNs = userProvidedNamespace;
     if (rootNs == null) {
       rootNs = defaultNamespacePrefix + (isSecure ? SASL_NAMESPACE : UNSECURE_NAMESPACE);
@@ -191,7 +197,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private ACLProvider getACLProviderForZKPath(String zkPath) {
-    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(conf);
+    final boolean isSecure = isZkEnforceSASLClient(conf);
     return new ACLProvider() {
       @Override
       public List<ACL> getDefaultAcl() {
@@ -238,8 +244,10 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
         .sslEnabled(HiveConf.getBoolVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE))
         .keyStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
         .keyStorePassword(keyStorePassword)
+        .keyStoreType(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_TYPE))
         .trustStoreLocation(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
         .trustStorePassword(trustStorePassword)
+        .trustStoreType(HiveConf.getVar(conf, ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_TYPE))
         .build().getNewZookeeperClient(zooKeeperAclProvider, namespace);
   }
 
@@ -351,6 +359,30 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     }
   }
 
+  @VisibleForTesting
+  public String getPersistentNodePath() {
+    return "/" + PATH_JOINER.join(namespace, StringUtils.substringBetween(workersPath, "/", "/"), "pnode0");
+  }
+
+  protected void ensurePersistentNodePath(ServiceRecord srv) throws IOException {
+    String pNodePath = getPersistentNodePath();
+    try {
+      LOG.info("Check if persistent node  path {}  exists, create if not", pNodePath);
+      if (zooKeeperClient.checkExists().forPath(pNodePath) == null) {
+        zooKeeperClient.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT)
+            .forPath(pNodePath, encoder.toBytes(srv));
+        LOG.info("Created persistent path at: {}", pNodePath);
+      }
+    } catch (Exception e) {
+      // throw exception if it is other than NODEEXISTS.
+      if (!(e instanceof KeeperException) || ((KeeperException) e).code() != KeeperException.Code.NODEEXISTS) {
+        LOG.error("Unable to create a persistent znode for this server instance", e);
+        throw new IOException(e);
+      } else {
+        LOG.debug("Ignoring KeeperException while ensuring path as the parent node {} already exists.", pNodePath);
+      }
+    }
+  }
 
   final protected void initializeWithoutRegisteringInternal() throws IOException {
     // Create a znode under the rootNamespace parent for this instance of the server
@@ -374,7 +406,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   }
 
   private void checkAndSetAcls() throws Exception {
-    if (!ZookeeperUtils.isKerberosEnabled(conf)) {
+    if (!isZkEnforceSASLClient(conf)) {
       return;
     }
     // We are trying to check ACLs on the "workers" directory, which noone except us should be
@@ -639,15 +671,23 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   public void start() throws IOException {
     if (zooKeeperClient != null) {
-      String principal = ZookeeperUtils.setupZookeeperAuth(
-          conf, saslLoginContextName, zkPrincipal, zkKeytab);
-      if (principal != null) {
-        userNameFromPrincipal = LlapUtil.getUserNameFromPrincipal(principal);
+      if (isZkEnforceSASLClient(conf)) {
+        if (saslLoginContextName != null) {
+          SecurityUtils.setZookeeperClientKerberosJaasConfig(zkPrincipal, zkKeytab, saslLoginContextName);
+        }
+        if (zkPrincipal != null) {
+          userNameFromPrincipal = LlapUtil.getUserNameFromPrincipal(zkPrincipal);
+        }
       }
       zooKeeperClient.start();
     }
     // Init closeable utils in case register is not called (see HIVE-13322)
     CloseableUtils.class.getName();
+  }
+
+  private static boolean isZkEnforceSASLClient(Configuration conf) {
+    return UserGroupInformation.isSecurityEnabled() &&
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
   }
 
   protected void unregisterInternal() {

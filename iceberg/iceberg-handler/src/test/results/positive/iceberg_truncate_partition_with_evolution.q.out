@@ -1,0 +1,1304 @@
+PREHOOK: query: create table test_ice_int (a int, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_int
+POSTHOOK: query: create table test_ice_int (a int, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_int
+PREHOOK: query: insert into test_ice_int values (11, 'ddd'), (22, 'eefe')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_int
+POSTHOOK: query: insert into test_ice_int values (11, 'ddd'), (22, 'eefe')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_int
+PREHOOK: query: alter table test_ice_int set partition spec(a)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@test_ice_int
+POSTHOOK: query: alter table test_ice_int set partition spec(a)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@test_ice_int
+POSTHOOK: Output: default@test_ice_int
+PREHOOK: query: insert into test_ice_int values (33, 'rrfdfdf')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_int
+POSTHOOK: query: insert into test_ice_int values (33, 'rrfdfdf')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_int
+PREHOOK: query: insert into table test_ice_int select * from test_ice_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_int
+PREHOOK: Output: default@test_ice_int
+POSTHOOK: query: insert into table test_ice_int select * from test_ice_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_int
+POSTHOOK: Output: default@test_ice_int
+PREHOOK: query: select * from test_ice_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11	ddd
+11	ddd
+22	eefe
+22	eefe
+33	rrfdfdf
+33	rrfdfdf
+PREHOOK: query: select `partition` from default.test_ice_int.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_int.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":11}
+{"a":22}
+{"a":33}
+{"a":null}
+PREHOOK: query: explain truncate table test_ice_int partition (a = 22)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_int@a=22
+POSTHOOK: query: explain truncate table test_ice_int partition (a = 22)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_int@a=22
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_ice_int
+                  filterExpr: (a = 22) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string), 22 (type: int), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 480 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.test_ice_int
+            Execution mode: vectorized
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.test_ice_int
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: truncate table test_ice_int partition (a = 22)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_int@a=22
+POSTHOOK: query: truncate table test_ice_int partition (a = 22)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_int@a=22
+PREHOOK: query: select * from test_ice_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11	ddd
+33	rrfdfdf
+33	rrfdfdf
+PREHOOK: query: select `partition` from default.test_ice_int.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_int.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":11}
+{"a":22}
+{"a":33}
+{"a":null}
+PREHOOK: query: explain truncate table test_ice_int partition (a = 33)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_int@a=33
+POSTHOOK: query: explain truncate table test_ice_int partition (a = 33)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_int@a=33
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Truncate Table or Partition
+      partition spec:
+        a 33
+      table name: default.test_ice_int
+
+PREHOOK: query: truncate table test_ice_int partition (a = 33)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_int@a=33
+POSTHOOK: query: truncate table test_ice_int partition (a = 33)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_int@a=33
+PREHOOK: query: select * from test_ice_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_int
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11	ddd
+PREHOOK: query: select `partition` from default.test_ice_int.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_int
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_int.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_int
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":11}
+{"a":22}
+{"a":null}
+PREHOOK: query: create table test_ice_bigint (a bigint, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_bigint
+POSTHOOK: query: create table test_ice_bigint (a bigint, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_bigint
+PREHOOK: query: insert into test_ice_bigint values (115674892756, 'ddd'), (226784902765739, 'eefe')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_bigint
+POSTHOOK: query: insert into test_ice_bigint values (115674892756, 'ddd'), (226784902765739, 'eefe')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_bigint
+PREHOOK: query: alter table test_ice_bigint set partition spec(a)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@test_ice_bigint
+POSTHOOK: query: alter table test_ice_bigint set partition spec(a)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@test_ice_bigint
+POSTHOOK: Output: default@test_ice_bigint
+PREHOOK: query: insert into test_ice_bigint values (3367849937755673, 'rrfdfdf')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_bigint
+POSTHOOK: query: insert into test_ice_bigint values (3367849937755673, 'rrfdfdf')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_bigint
+PREHOOK: query: insert into table test_ice_bigint select * from test_ice_bigint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_bigint
+PREHOOK: Output: default@test_ice_bigint
+POSTHOOK: query: insert into table test_ice_bigint select * from test_ice_bigint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_bigint
+POSTHOOK: Output: default@test_ice_bigint
+PREHOOK: query: select * from test_ice_bigint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_bigint
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_bigint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_bigint
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	ddd
+115674892756	ddd
+226784902765739	eefe
+226784902765739	eefe
+3367849937755673	rrfdfdf
+3367849937755673	rrfdfdf
+PREHOOK: query: select `partition` from default.test_ice_bigint.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_bigint
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_bigint.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_bigint
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":115674892756}
+{"a":226784902765739}
+{"a":3367849937755673}
+{"a":null}
+PREHOOK: query: explain truncate table test_ice_bigint partition (a = 226784902765739)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_bigint@a=226784902765739
+POSTHOOK: query: explain truncate table test_ice_bigint partition (a = 226784902765739)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_bigint@a=226784902765739
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_ice_bigint
+                  filterExpr: (a = 226784902765739L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 88 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string), 226784902765739L (type: bigint), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 1 Data size: 484 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 484 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.test_ice_bigint
+            Execution mode: vectorized
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.test_ice_bigint
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: truncate table test_ice_bigint partition (a = 226784902765739)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_bigint@a=226784902765739
+POSTHOOK: query: truncate table test_ice_bigint partition (a = 226784902765739)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_bigint@a=226784902765739
+PREHOOK: query: select * from test_ice_bigint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_bigint
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_bigint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_bigint
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	ddd
+3367849937755673	rrfdfdf
+3367849937755673	rrfdfdf
+PREHOOK: query: select `partition` from default.test_ice_bigint.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_bigint
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_bigint.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_bigint
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":115674892756}
+{"a":226784902765739}
+{"a":3367849937755673}
+{"a":null}
+PREHOOK: query: explain truncate table test_ice_bigint partition (a = 3367849937755673)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_bigint@a=3367849937755673
+POSTHOOK: query: explain truncate table test_ice_bigint partition (a = 3367849937755673)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_bigint@a=3367849937755673
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Truncate Table or Partition
+      partition spec:
+        a 3367849937755673
+      table name: default.test_ice_bigint
+
+PREHOOK: query: truncate table test_ice_bigint partition (a = 3367849937755673)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_bigint@a=3367849937755673
+POSTHOOK: query: truncate table test_ice_bigint partition (a = 3367849937755673)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_bigint@a=3367849937755673
+PREHOOK: query: select * from test_ice_bigint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_bigint
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_bigint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_bigint
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	ddd
+PREHOOK: query: select `partition` from default.test_ice_bigint.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_bigint
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_bigint.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_bigint
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":115674892756}
+{"a":226784902765739}
+{"a":null}
+PREHOOK: query: create table test_ice_str (a bigint, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_str
+POSTHOOK: query: create table test_ice_str (a bigint, b string) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: insert into test_ice_str values (115674892756, 'ddd'), (2267849027657399057, 'eefe')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_str
+POSTHOOK: query: insert into test_ice_str values (115674892756, 'ddd'), (2267849027657399057, 'eefe')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: insert into test_ice_str values (115674892756, 'a"ab'), (2267849027657399057, 'eefe')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_str
+POSTHOOK: query: insert into test_ice_str values (115674892756, 'a"ab'), (2267849027657399057, 'eefe')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: insert into test_ice_str values (115674892756, "a'ab"), (2267849027657399057, "eefe")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_str
+POSTHOOK: query: insert into test_ice_str values (115674892756, "a'ab"), (2267849027657399057, "eefe")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: alter table test_ice_str set partition spec(b)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@test_ice_str
+POSTHOOK: query: alter table test_ice_str set partition spec(b)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: insert into test_ice_str values (33678499377556738, 'rrfdfdf')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_str
+POSTHOOK: query: insert into test_ice_str values (33678499377556738, 'rrfdfdf')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: insert into table test_ice_str select * from test_ice_str
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: default@test_ice_str
+POSTHOOK: query: insert into table test_ice_str select * from test_ice_str
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: select * from test_ice_str
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_str
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	a"ab
+115674892756	a"ab
+115674892756	a'ab
+115674892756	a'ab
+115674892756	ddd
+115674892756	ddd
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+33678499377556738	rrfdfdf
+33678499377556738	rrfdfdf
+PREHOOK: query: select `partition` from default.test_ice_str.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_str.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"a'ab"}
+{"b":"a\"ab"}
+{"b":"ddd"}
+{"b":"eefe"}
+{"b":"rrfdfdf"}
+{"b":null}
+PREHOOK: query: explain truncate table test_ice_str partition (b = 'ddd')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_str@b=ddd
+POSTHOOK: query: explain truncate table test_ice_str partition (b = 'ddd')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_str@b=ddd
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_ice_str
+                  filterExpr: (b = 'ddd') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string), a (type: bigint), 'ddd' (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 1 Data size: 483 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 483 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.test_ice_str
+            Execution mode: vectorized
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.test_ice_str
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: truncate table test_ice_str partition (b = 'ddd')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_str@b=ddd
+POSTHOOK: query: truncate table test_ice_str partition (b = 'ddd')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_str@b=ddd
+PREHOOK: query: select * from test_ice_str
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_str
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	a"ab
+115674892756	a'ab
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+33678499377556738	rrfdfdf
+33678499377556738	rrfdfdf
+PREHOOK: query: select `partition` from default.test_ice_str.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_str.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"a'ab"}
+{"b":"a\"ab"}
+{"b":"ddd"}
+{"b":"eefe"}
+{"b":"rrfdfdf"}
+{"b":null}
+PREHOOK: query: explain truncate table test_ice_str partition (b = 'rrfdfdf')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_str@b=rrfdfdf
+POSTHOOK: query: explain truncate table test_ice_str partition (b = 'rrfdfdf')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_str@b=rrfdfdf
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Truncate Table or Partition
+      partition spec:
+        b rrfdfdf
+      table name: default.test_ice_str
+
+PREHOOK: query: truncate table test_ice_str partition (b = 'rrfdfdf')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_str@b=rrfdfdf
+POSTHOOK: query: truncate table test_ice_str partition (b = 'rrfdfdf')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_str@b=rrfdfdf
+PREHOOK: query: select * from test_ice_str
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_str
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	a"ab
+115674892756	a'ab
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+PREHOOK: query: select `partition` from default.test_ice_str.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_str.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"a'ab"}
+{"b":"a\"ab"}
+{"b":"ddd"}
+{"b":"eefe"}
+{"b":null}
+PREHOOK: query: truncate table test_ice_str partition (b = 'a"ab')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_str@b=a%22ab
+POSTHOOK: query: truncate table test_ice_str partition (b = 'a"ab')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_str@b=a%22ab
+PREHOOK: query: truncate table test_ice_str partition (b = "a'ab")
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_str@b=a%27ab
+POSTHOOK: query: truncate table test_ice_str partition (b = "a'ab")
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_str@b=a%27ab
+PREHOOK: query: select * from test_ice_str
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_str
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2267849027657399057	eefe
+2267849027657399057	eefe
+2267849027657399057	eefe
+PREHOOK: query: select `partition` from default.test_ice_str.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_str.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"a'ab"}
+{"b":"a\"ab"}
+{"b":"ddd"}
+{"b":"eefe"}
+{"b":null}
+PREHOOK: query: create table test_ice_date (a bigint, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_date
+POSTHOOK: query: create table test_ice_date (a bigint, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_date
+PREHOOK: query: insert into test_ice_date values (115674892756, '2022-02-07'), (2267849027657399057, '2022-08-07')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_date
+POSTHOOK: query: insert into test_ice_date values (115674892756, '2022-02-07'), (2267849027657399057, '2022-08-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_date
+PREHOOK: query: alter table test_ice_date set partition spec(b)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@test_ice_date
+POSTHOOK: query: alter table test_ice_date set partition spec(b)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@test_ice_date
+POSTHOOK: Output: default@test_ice_date
+PREHOOK: query: insert into test_ice_date values (33678499377556738, '2022-08-09')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_date
+POSTHOOK: query: insert into test_ice_date values (33678499377556738, '2022-08-09')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_date
+PREHOOK: query: select * from test_ice_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+115674892756	2022-02-07
+2267849027657399057	2022-08-07
+33678499377556738	2022-08-09
+PREHOOK: query: select `partition` from default.test_ice_date.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_date.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"2022-08-09"}
+{"b":null}
+PREHOOK: query: explain truncate table test_ice_date partition (b = '2022-02-07')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_date@b=2022-02-07
+POSTHOOK: query: explain truncate table test_ice_date partition (b = '2022-02-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_date@b=2022-02-07
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_ice_date
+                  filterExpr: (b = DATE'2022-02-07') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: (b = DATE'2022-02-07') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string), a (type: bigint), DATE'2022-02-07' (type: date)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                      Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.test_ice_date
+            Execution mode: vectorized
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.test_ice_date
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: truncate table test_ice_date partition (b = '2022-02-07')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_date@b=2022-02-07
+POSTHOOK: query: truncate table test_ice_date partition (b = '2022-02-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_date@b=2022-02-07
+PREHOOK: query: select * from test_ice_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2267849027657399057	2022-08-07
+33678499377556738	2022-08-09
+PREHOOK: query: select `partition` from default.test_ice_date.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_date.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":"2022-08-09"}
+{"b":null}
+PREHOOK: query: explain truncate table test_ice_date partition (b = '2022-08-09')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_date@b=2022-08-09
+POSTHOOK: query: explain truncate table test_ice_date partition (b = '2022-08-09')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_date@b=2022-08-09
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Truncate Table or Partition
+      partition spec:
+        b 2022-08-09
+      table name: default.test_ice_date
+
+PREHOOK: query: truncate table test_ice_date partition (b = '2022-08-09')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_date@b=2022-08-09
+POSTHOOK: query: truncate table test_ice_date partition (b = '2022-08-09')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_date@b=2022-08-09
+PREHOOK: query: select * from test_ice_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2267849027657399057	2022-08-07
+PREHOOK: query: select `partition` from default.test_ice_date.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_date.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"b":null}
+PREHOOK: query: create table test_ice_double (a double, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_double
+POSTHOOK: query: create table test_ice_double (a double, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_double
+PREHOOK: query: insert into test_ice_double values (115674892756.67590946, '2022-02-07'), (2267849027.657399057, '2022-08-07')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_double
+POSTHOOK: query: insert into test_ice_double values (115674892756.67590946, '2022-02-07'), (2267849027.657399057, '2022-08-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_double
+PREHOOK: query: alter table test_ice_double set partition spec(a)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@test_ice_double
+POSTHOOK: query: alter table test_ice_double set partition spec(a)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@test_ice_double
+POSTHOOK: Output: default@test_ice_double
+PREHOOK: query: insert into test_ice_double values (33678499.377556738, '2022-08-09')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_double
+POSTHOOK: query: insert into test_ice_double values (33678499.377556738, '2022-08-09')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_double
+PREHOOK: query: insert into table test_ice_double select * from test_ice_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double
+PREHOOK: Output: default@test_ice_double
+POSTHOOK: query: insert into table test_ice_double select * from test_ice_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double
+POSTHOOK: Output: default@test_ice_double
+PREHOOK: query: select * from test_ice_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1.156748927566759E11	2022-02-07
+1.156748927566759E11	2022-02-07
+2.267849027657399E9	2022-08-07
+2.267849027657399E9	2022-08-07
+3.367849937755674E7	2022-08-09
+3.367849937755674E7	2022-08-09
+PREHOOK: query: select `partition` from default.test_ice_double.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_double.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":1.156748927566759E11}
+{"a":2.267849027657399E9}
+{"a":3.367849937755674E7}
+{"a":null}
+PREHOOK: query: explain truncate table test_ice_double partition (a = 115674892756.67590946)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_double@a=115674892756.67590946
+POSTHOOK: query: explain truncate table test_ice_double partition (a = 115674892756.67590946)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_double@a=115674892756.67590946
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_ice_double
+                  filterExpr: (a = 1.156748927566759E11D) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: PARTIAL
+                  Select Operator
+                    expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string), 1.156748927566759E11D (type: double), b (type: date)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                    Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.test_ice_double
+            Execution mode: vectorized
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.test_ice_double
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: truncate table test_ice_double partition (a = 115674892756.67590946)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_double@a=115674892756.67590946
+POSTHOOK: query: truncate table test_ice_double partition (a = 115674892756.67590946)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_double@a=115674892756.67590946
+PREHOOK: query: select * from test_ice_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2.267849027657399E9	2022-08-07
+3.367849937755674E7	2022-08-09
+3.367849937755674E7	2022-08-09
+PREHOOK: query: select `partition` from default.test_ice_double.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_double.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":1.156748927566759E11}
+{"a":2.267849027657399E9}
+{"a":3.367849937755674E7}
+{"a":null}
+PREHOOK: query: explain truncate table test_ice_double partition (a = 33678499.377556738)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_double@a=33678499.377556738
+POSTHOOK: query: explain truncate table test_ice_double partition (a = 33678499.377556738)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_double@a=33678499.377556738
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Truncate Table or Partition
+      partition spec:
+        a 33678499.377556738
+      table name: default.test_ice_double
+
+PREHOOK: query: truncate table test_ice_double partition (a = 33678499.377556738)
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_double@a=33678499.377556738
+POSTHOOK: query: truncate table test_ice_double partition (a = 33678499.377556738)
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_double@a=33678499.377556738
+PREHOOK: query: select * from test_ice_double
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_double
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2.267849027657399E9	2022-08-07
+PREHOOK: query: select `partition` from default.test_ice_double.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_double.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":1.156748927566759E11}
+{"a":2.267849027657399E9}
+{"a":null}
+PREHOOK: query: create table test_ice_double_date (a double, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_double_date
+POSTHOOK: query: create table test_ice_double_date (a double, b date) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_double_date
+PREHOOK: query: insert into test_ice_double_date values (115674892756.67590946, '2022-02-07'), (2267849027.657399057, '2022-08-07')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_double_date
+POSTHOOK: query: insert into test_ice_double_date values (115674892756.67590946, '2022-02-07'), (2267849027.657399057, '2022-08-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_double_date
+PREHOOK: query: alter table test_ice_double_date set partition spec(a, b)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@test_ice_double_date
+POSTHOOK: query: alter table test_ice_double_date set partition spec(a, b)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@test_ice_double_date
+POSTHOOK: Output: default@test_ice_double_date
+PREHOOK: query: insert into test_ice_double_date values (33678499.377556738, '2022-08-09')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_ice_double_date
+POSTHOOK: query: insert into test_ice_double_date values (33678499.377556738, '2022-08-09')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_ice_double_date
+PREHOOK: query: select * from test_ice_double_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_double_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1.156748927566759E11	2022-02-07
+2.267849027657399E9	2022-08-07
+3.367849937755674E7	2022-08-09
+PREHOOK: query: select `partition` from default.test_ice_double_date.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_double_date.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":3.367849937755674E7,"b":"2022-08-09"}
+{"a":null,"b":null}
+PREHOOK: query: explain truncate table test_ice_double_date partition (a = 115674892756.67590946, b = '2022-02-07')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_double_date@a=115674892756.67590946/b=2022-02-07
+POSTHOOK: query: explain truncate table test_ice_double_date partition (a = 115674892756.67590946, b = '2022-02-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_double_date@a=115674892756.67590946/b=2022-02-07
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-1 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-2
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_ice_double_date
+                  filterExpr: ((a = 1.156748927566759E11D) and (b = DATE'2022-02-07')) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: PARTIAL
+                  Filter Operator
+                    predicate: ((a = 1.156748927566759E11D) and (b = DATE'2022-02-07')) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: PARTIAL
+                    Select Operator
+                      expressions: PARTITION__SPEC__ID (type: int), PARTITION__HASH (type: bigint), FILE__PATH (type: string), ROW__POSITION (type: bigint), PARTITION__PROJECTION (type: string), 1.156748927566759E11D (type: double), DATE'2022-02-07' (type: date)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                      Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: PARTIAL
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: PARTIAL
+                        table:
+                            input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                            output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                            serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                            name: default.test_ice_double_date
+            Execution mode: vectorized
+
+  Stage: Stage-3
+    Dependency Collection
+
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.test_ice_double_date
+
+  Stage: Stage-4
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: truncate table test_ice_double_date partition (a = 115674892756.67590946, b = '2022-02-07')
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_ice_double_date@a=115674892756.67590946/b=2022-02-07
+POSTHOOK: query: truncate table test_ice_double_date partition (a = 115674892756.67590946, b = '2022-02-07')
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_ice_double_date@a=115674892756.67590946/b=2022-02-07
+PREHOOK: query: select * from test_ice_double_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_double_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2.267849027657399E9	2022-08-07
+3.367849937755674E7	2022-08-09
+PREHOOK: query: select `partition` from default.test_ice_double_date.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_double_date.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":3.367849937755674E7,"b":"2022-08-09"}
+{"a":null,"b":null}
+PREHOOK: query: explain truncate table test_ice_double_date partition (a = 33678499.377556738, b = '2022-08-09')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_double_date@a=33678499.377556738/b=2022-08-09
+POSTHOOK: query: explain truncate table test_ice_double_date partition (a = 33678499.377556738, b = '2022-08-09')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_double_date@a=33678499.377556738/b=2022-08-09
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Truncate Table or Partition
+      partition spec:
+        a 33678499.377556738
+        b 2022-08-09
+      table name: default.test_ice_double_date
+
+PREHOOK: query: truncate table test_ice_double_date partition (a = 33678499.377556738, b = '2022-08-09')
+PREHOOK: type: TRUNCATETABLE
+PREHOOK: Output: default@test_ice_double_date@a=33678499.377556738/b=2022-08-09
+POSTHOOK: query: truncate table test_ice_double_date partition (a = 33678499.377556738, b = '2022-08-09')
+POSTHOOK: type: TRUNCATETABLE
+POSTHOOK: Output: default@test_ice_double_date@a=33678499.377556738/b=2022-08-09
+PREHOOK: query: select * from test_ice_double_date
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_ice_double_date
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2.267849027657399E9	2022-08-07
+PREHOOK: query: select `partition` from default.test_ice_double_date.partitions
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_ice_double_date
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select `partition` from default.test_ice_double_date.partitions
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_ice_double_date
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"a":null,"b":null}
+PREHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_truncate_part_evolution
+POSTHOOK: query: create external table test_truncate_part_evolution (id int, value string) stored by iceberg stored as orc tblproperties ('format-version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_truncate_part_evolution
+PREHOOK: query: insert into test_truncate_part_evolution values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_truncate_part_evolution
+POSTHOOK: query: insert into test_truncate_part_evolution values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_truncate_part_evolution
+PREHOOK: query: alter table test_truncate_part_evolution set partition spec(id)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: query: alter table test_truncate_part_evolution set partition spec(id)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: Output: default@test_truncate_part_evolution
+PREHOOK: query: alter table test_truncate_part_evolution set tblproperties('external.table.purge'='true')
+PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: Input: default@test_truncate_part_evolution
+PREHOOK: Output: default@test_truncate_part_evolution
+POSTHOOK: query: alter table test_truncate_part_evolution set tblproperties('external.table.purge'='true')
+POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: Output: default@test_truncate_part_evolution
+PREHOOK: query: truncate test_truncate_part_evolution partition(id=1)
+PREHOOK: type: QUERY
+PREHOOK: Output: default@test_truncate_part_evolution@id=1
+POSTHOOK: query: truncate test_truncate_part_evolution partition(id=1)
+POSTHOOK: type: QUERY
+POSTHOOK: Output: default@test_truncate_part_evolution@id=1
+PREHOOK: query: select * from test_truncate_part_evolution
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_truncate_part_evolution
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from test_truncate_part_evolution
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2	two
+3	three
+4	four
+5	five
+PREHOOK: query: drop table test_ice_int
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_ice_int
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_int
+POSTHOOK: query: drop table test_ice_int
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_ice_int
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_int
+PREHOOK: query: drop table test_ice_bigint
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_ice_bigint
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_bigint
+POSTHOOK: query: drop table test_ice_bigint
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_ice_bigint
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_bigint
+PREHOOK: query: drop table test_ice_str
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_ice_str
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_str
+POSTHOOK: query: drop table test_ice_str
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_ice_str
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_str
+PREHOOK: query: drop table test_ice_date
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_ice_date
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_date
+POSTHOOK: query: drop table test_ice_date
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_ice_date
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_date
+PREHOOK: query: drop table test_ice_double
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_ice_double
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_double
+POSTHOOK: query: drop table test_ice_double
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_ice_double
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_double
+PREHOOK: query: drop table test_ice_double_date
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_ice_double_date
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_ice_double_date
+POSTHOOK: query: drop table test_ice_double_date
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_ice_double_date
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_ice_double_date
+PREHOOK: query: drop table test_truncate_part_evolution
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_truncate_part_evolution
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_truncate_part_evolution
+POSTHOOK: query: drop table test_truncate_part_evolution
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_truncate_part_evolution
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_truncate_part_evolution

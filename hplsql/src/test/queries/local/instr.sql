@@ -14,13 +14,13 @@ IF INSTR('abcabcabc', 'b', 3, 2) = 8 THEN
   PRINT 'Correct';
 ELSE
   PRINT 'Failed';
-END IF; 
+END IF;
 
 IF INSTR('abcabcabc', 'b', -3) = 5 THEN
   PRINT 'Correct';
 ELSE
   PRINT 'Failed';
-END IF; 
+END IF;
 
 IF INSTR('abcabcabc', 'b', -3, 2) = 2 THEN
   PRINT 'Correct';

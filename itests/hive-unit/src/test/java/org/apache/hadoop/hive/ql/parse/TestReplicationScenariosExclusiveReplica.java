@@ -77,6 +77,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
         GzipJSONMessageEncoder.class.getCanonicalName());
     overrides.put(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY.varname, "false");
     overrides.put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
+    overrides.put(HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET.varname, "false");
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
         UserGroupInformation.getCurrentUser().getUserName());
     internalBeforeClassSetupExclusiveReplica(overrides, overrides, TestReplicationScenarios.class);
@@ -96,7 +97,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   @Test
   public void testTargetEventIdGenerationAfterFirstIncrementalInOptFailover() throws Throwable {
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
 
     // Do a bootstrap cycle(A->B)
     primary.dump(primaryDbName, withClause);
@@ -156,7 +157,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
     Path newReplDir = new Path(replica.repldDir + "reverse1");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     tuple = replica.dump(replicatedDbName);
 
@@ -177,7 +178,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   public void testTargetEventIdGenerationInOptmisedFailover() throws Throwable {
     // Do a a cycle of bootstrap dump & load.
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
 
     // Do a bootstrap cycle(A->B)
     primary.dump(primaryDbName, withClause);
@@ -265,7 +266,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
     Path newReplDir = new Path(replica.repldDir + "reverse01");
     replicaFs.mkdirs(newReplDir);
     withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
     tuple = replica.dump(replicatedDbName, withClause);
 
@@ -285,7 +286,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   public void testTargetEventIdWithNotificationsExpiredInOptimisedFailover() throws Throwable {
     // Do a a cycle of bootstrap dump & load.
     List<String> withClause = ReplicationTestUtils.includeExternalTableClause(true);
-    withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + primary.repldDir + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + primary.repldDir + "'");
 
     // Do a bootstrap cycle(A->B)
     primary.dump(primaryDbName, withClause);
@@ -347,7 +348,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
       Path newReplDir = new Path(replica.repldDir + "reverse01");
       replicaFs.mkdirs(newReplDir);
       withClause = ReplicationTestUtils.includeExternalTableClause(true);
-      withClause.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + newReplDir + "'");
+      withClause.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + newReplDir + "'");
 
       try {
         replica.dump(replicatedDbName, withClause);
@@ -1091,10 +1092,11 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
 
   private List<String> getStagingLocationConfig(String stagingLoc, boolean addDistCpConfigs) throws IOException {
     List<String> confList = new ArrayList<>();
-    confList.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + stagingLoc + "'");
+    confList.add("'" + HiveConf.ConfVars.REPL_DIR.varname + "'='" + stagingLoc + "'");
     if (addDistCpConfigs) {
       confList.add("'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'");
       confList.add("'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'");
+      confList.add("'" + HiveConf.ConfVars.HIVE_REPL_CLEAR_DANGLING_TXNS_ON_TARGET.varname + "'='false'");
       confList.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
               + UserGroupInformation.getCurrentUser().getUserName() + "'");
     }

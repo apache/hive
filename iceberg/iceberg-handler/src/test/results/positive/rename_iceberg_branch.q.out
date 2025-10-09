@@ -1,0 +1,109 @@
+PREHOOK: query: create external table ice01(id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create external table ice01(id int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: insert into ice01 values (1), (2), (3), (4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (1), (2), (3), (4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: alter table ice01 create branch source
+PREHOOK: type: ALTERTABLE_CREATEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 create branch source
+POSTHOOK: type: ALTERTABLE_CREATEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select * from default.ice01.branch_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: insert into ice01 values (5), (6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (5), (6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select * from default.ice01.branch_source
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_source
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4
+PREHOOK: query: explain alter table ice01 rename branch source to target
+PREHOOK: type: ALTERTABLE_RENAMEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: explain alter table ice01 rename branch source to target
+POSTHOOK: type: ALTERTABLE_RENAMEBRANCH
+POSTHOOK: Input: default@ice01
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    SnapshotRef Operation
+      table name: default.ice01
+      spec: AlterTableSnapshotRefSpec{operationType=RENAME_BRANCH, operationParams=RenameSnapshotrefSpec{sourceBranch=source, targetBranch=target}}
+
+PREHOOK: query: alter table ice01 rename branch source to target
+PREHOOK: type: ALTERTABLE_RENAMEBRANCH
+PREHOOK: Input: default@ice01
+POSTHOOK: query: alter table ice01 rename branch source to target
+POSTHOOK: type: ALTERTABLE_RENAMEBRANCH
+POSTHOOK: Input: default@ice01
+PREHOOK: query: select name,type from default.ice01.refs
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select name,type from default.ice01.refs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+main	BRANCH
+target	BRANCH
+PREHOOK: query: select * from default.ice01.branch_target
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from default.ice01.branch_target
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+4

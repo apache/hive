@@ -10,7 +10,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND `ds` = '2008-04-08' AND (RAND(1) < 0.1 AND `hr` LIKE '%2')
+WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND RAND(1) < 0.1 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -90,7 +90,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND (`ds` = '2008-04-08' AND `hr` LIKE '%2')
+WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

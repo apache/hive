@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists ice_meta_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ice_meta_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists ice_meta_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ice_meta_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table ice_meta_2(a int) partitioned by (b string) stored by iceberg stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -141,12 +145,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_meta_3@b=four/c=Sunday
 POSTHOOK: Lineage: ice_meta_3 PARTITION(b=four,c=Sunday).a SCRIPT []
-PREHOOK: query: alter table ice_meta_3 set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: alter table ice_meta_3 convert to iceberg
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@ice_meta_3
-PREHOOK: Output: default@ice_meta_3
-POSTHOOK: query: alter table ice_meta_3 set tblproperties ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: alter table ice_meta_3 convert to iceberg
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: default@ice_meta_3
 PREHOOK: query: select * from ice_meta_3
@@ -255,7 +258,7 @@ POSTHOOK: query: select summary from default.ice_meta_3.snapshots
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"added-data-files":"7","added-records":"15","added-files-size":"1329","changed-partition-count":"7","total-records":"15","total-files-size":"1329","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
+{"added-data-files":"7","added-records":"15","added-files-size":"#Masked#","changed-partition-count":"7","total-records":"15","total-files-size":"#Masked#","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}
 PREHOOK: query: select summary['changed-partition-count'] from default.ice_meta_2.snapshots
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -289,31 +292,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	Wednesday
-PREHOOK: query: select * from default.ice_meta_2.partitions
+PREHOOK: query: select `partition` from default.ice_meta_2.partitions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.ice_meta_2.partitions
+POSTHOOK: query: select `partition` from default.ice_meta_2.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"four"}	1	1
-{"b":"three"}	3	1
-PREHOOK: query: select * from default.ice_meta_3.partitions
+{"b":"four"}
+{"b":"three"}
+PREHOOK: query: select `partition` from default.ice_meta_3.partitions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.ice_meta_3.partitions
+POSTHOOK: query: select `partition` from default.ice_meta_3.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"four","c":"Saturday"}	3	1
-{"b":"four","c":"Sunday"}	1	1
-{"b":"four","c":"Thursday"}	1	1
-{"b":"one","c":"Monday"}	3	1
-{"b":"three","c":"Wednesday"}	3	1
-{"b":"two","c":"Friday"}	2	1
-{"b":"two","c":"Tuesday"}	2	1
+{"b":"four","c":"Saturday"}
+{"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
+{"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
+{"b":"two","c":"Friday"}
+{"b":"two","c":"Tuesday"}
 PREHOOK: query: select `partition` from default.ice_meta_2.partitions where `partition`.b='four'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -323,15 +326,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"b":"four"}
-PREHOOK: query: select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
+PREHOOK: query: select `partition` from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
+POSTHOOK: query: select `partition` from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"two","c":"Tuesday"}	2	1
+{"b":"two","c":"Tuesday"}
 PREHOOK: query: select partition_summaries from default.ice_meta_3.manifests where partition_summaries[1].upper_bound='Wednesday'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
@@ -341,6 +344,141 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 [{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"two"},{"contains_null":false,"contains_nan":false,"lower_bound":"Friday","upper_bound":"Wednesday"}]
+PREHOOK: query: select file_format, spec_id from default.ice_meta_2.data_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file_format, spec_id from default.ice_meta_2.data_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ORC	0
+ORC	0
+PREHOOK: query: select file_format, spec_id from default.ice_meta_3.data_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file_format, spec_id from default.ice_meta_3.data_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ORC	0
+ORC	0
+ORC	0
+ORC	0
+ORC	0
+ORC	0
+ORC	0
+PREHOOK: query: select content, upper_bounds from default.ice_meta_2.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, upper_bounds from default.ice_meta_2.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select content, upper_bounds from default.ice_meta_3.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, upper_bounds from default.ice_meta_3.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select file from default.ice_meta_2.metadata_log_entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file from default.ice_meta_2.metadata_log_entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+PREHOOK: query: select file from default.ice_meta_3.metadata_log_entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file from default.ice_meta_3.metadata_log_entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+PREHOOK: query: select name, type from default.ice_meta_2.refs
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select name, type from default.ice_meta_2.refs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+main	BRANCH
+PREHOOK: query: select name, type from default.ice_meta_3.refs
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select name, type from default.ice_meta_3.refs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+main	BRANCH
+PREHOOK: query: select content, file_format from default.ice_meta_2.all_delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, file_format from default.ice_meta_2.all_delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select content, file_format from default.ice_meta_3.all_delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, file_format from default.ice_meta_3.all_delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select file_format, value_counts from default.ice_meta_2.all_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file_format, value_counts from default.ice_meta_2.all_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ORC	{1:1,2:1}
+ORC	{1:2,2:2}
+ORC	{1:3,2:3}
+ORC	{1:3,2:3}
+PREHOOK: query: select file_format, value_counts from default.ice_meta_3.all_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file_format, value_counts from default.ice_meta_3.all_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ORC	{1:1}
+ORC	{1:1}
+ORC	{1:2}
+ORC	{1:2}
+ORC	{1:3}
+ORC	{1:3}
+ORC	{1:3}
 PREHOOK: query: select `partition` from default.ice_meta_2.files
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -424,7 +562,7 @@ POSTHOOK: query: select summary from default.ice_meta_3.snapshots
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"added-data-files":"7","added-records":"15","added-files-size":"1329","changed-partition-count":"7","total-records":"15","total-files-size":"1329","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0"}
+{"added-data-files":"7","added-records":"15","added-files-size":"#Masked#","changed-partition-count":"7","total-records":"15","total-files-size":"#Masked#","total-data-files":"7","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}
 PREHOOK: query: select summary['changed-partition-count'] from default.ice_meta_2.snapshots
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -458,31 +596,31 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	Wednesday
-PREHOOK: query: select * from default.ice_meta_2.partitions
+PREHOOK: query: select `partition` from default.ice_meta_2.partitions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.ice_meta_2.partitions
+POSTHOOK: query: select `partition` from default.ice_meta_2.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"four"}	1	1
-{"b":"three"}	3	1
-PREHOOK: query: select * from default.ice_meta_3.partitions
+{"b":"four"}
+{"b":"three"}
+PREHOOK: query: select `partition` from default.ice_meta_3.partitions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.ice_meta_3.partitions
+POSTHOOK: query: select `partition` from default.ice_meta_3.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"four","c":"Saturday"}	3	1
-{"b":"four","c":"Sunday"}	1	1
-{"b":"four","c":"Thursday"}	1	1
-{"b":"one","c":"Monday"}	3	1
-{"b":"three","c":"Wednesday"}	3	1
-{"b":"two","c":"Friday"}	2	1
-{"b":"two","c":"Tuesday"}	2	1
+{"b":"four","c":"Saturday"}
+{"b":"four","c":"Sunday"}
+{"b":"four","c":"Thursday"}
+{"b":"one","c":"Monday"}
+{"b":"three","c":"Wednesday"}
+{"b":"two","c":"Friday"}
+{"b":"two","c":"Tuesday"}
 PREHOOK: query: select `partition` from default.ice_meta_2.partitions where `partition`.b='four'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_2
@@ -492,15 +630,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"b":"four"}
-PREHOOK: query: select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
+PREHOOK: query: select `partition` from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
+POSTHOOK: query: select `partition` from default.ice_meta_3.partitions where `partition`.b='two' and `partition`.c='Tuesday'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"b":"two","c":"Tuesday"}	2	1
+{"b":"two","c":"Tuesday"}
 PREHOOK: query: select partition_summaries from default.ice_meta_3.manifests where partition_summaries[1].upper_bound='Wednesday'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice_meta_3
@@ -510,21 +648,160 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice_meta_3
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 [{"contains_null":false,"contains_nan":false,"lower_bound":"four","upper_bound":"two"},{"contains_null":false,"contains_nan":false,"lower_bound":"Friday","upper_bound":"Wednesday"}]
+PREHOOK: query: select file_format, spec_id from default.ice_meta_2.data_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file_format, spec_id from default.ice_meta_2.data_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ORC	0
+ORC	0
+PREHOOK: query: select file_format, spec_id from default.ice_meta_3.data_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file_format, spec_id from default.ice_meta_3.data_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ORC	0
+ORC	0
+ORC	0
+ORC	0
+ORC	0
+ORC	0
+ORC	0
+PREHOOK: query: select content, upper_bounds from default.ice_meta_2.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, upper_bounds from default.ice_meta_2.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select content, upper_bounds from default.ice_meta_3.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, upper_bounds from default.ice_meta_3.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select file from default.ice_meta_2.metadata_log_entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file from default.ice_meta_2.metadata_log_entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+PREHOOK: query: select file from default.ice_meta_3.metadata_log_entries
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file from default.ice_meta_3.metadata_log_entries
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+hdfs://### HDFS PATH ###
+PREHOOK: query: select name, type from default.ice_meta_2.refs
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select name, type from default.ice_meta_2.refs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+main	BRANCH
+PREHOOK: query: select name, type from default.ice_meta_3.refs
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select name, type from default.ice_meta_3.refs
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+main	BRANCH
+PREHOOK: query: select content, file_format from default.ice_meta_2.all_delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, file_format from default.ice_meta_2.all_delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select content, file_format from default.ice_meta_3.all_delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, file_format from default.ice_meta_3.all_delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: query: select file_format, value_counts from default.ice_meta_2.all_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file_format, value_counts from default.ice_meta_2.all_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ORC	{1:1,2:1}
+ORC	{1:2,2:2}
+ORC	{1:3,2:3}
+ORC	{1:3,2:3}
+PREHOOK: query: select file_format, value_counts from default.ice_meta_3.all_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select file_format, value_counts from default.ice_meta_3.all_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+ORC	{1:1}
+ORC	{1:1}
+ORC	{1:2}
+ORC	{1:2}
+ORC	{1:3}
+ORC	{1:3}
+ORC	{1:3}
 PREHOOK: query: drop table ice_meta_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_meta_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_meta_2
 POSTHOOK: query: drop table ice_meta_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice_meta_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_meta_2
 PREHOOK: query: drop table ice_meta_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ice_meta_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_meta_3
 POSTHOOK: query: drop table ice_meta_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ice_meta_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_meta_3
 PREHOOK: query: CREATE EXTERNAL TABLE `partevv`( `id` int, `ts` timestamp, `ts2` timestamp)  STORED BY ICEBERG STORED AS ORC TBLPROPERTIES  ('format-version'='1')
 PREHOOK: type: CREATETABLE
@@ -572,14 +849,14 @@ POSTHOOK: query: INSERT INTO partevv VALUES (100, '2022-04-29 16:32:03', '2022-0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partevv
-PREHOOK: query: select * from default.partevv.partitions
+PREHOOK: query: select `partition` from default.partevv.partitions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partevv
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from default.partevv.partitions
+POSTHOOK: query: select `partition` from default.partevv.partitions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partevv
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"id":1,"ts_day":null}	1	1
-{"id":2,"ts_day":null}	1	1
-{"id":null,"ts_day":"2022-04-29"}	1	1
+{"id":1,"ts_day":null}
+{"id":2,"ts_day":null}
+{"id":null,"ts_day":"2022-04-29"}

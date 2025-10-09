@@ -215,7 +215,7 @@ public class HiveRelMdSelectivity extends RelMdSelectivity {
   }
 
   /*
-   * a) Order predciates based on ndv in reverse order. b) ndvCrossProduct =
+   * a) Order predicates based on ndv in reverse order. b) ndvCrossProduct =
    * ndv(pe0) * ndv(pe1) ^(1/2) * ndv(pe2) ^(1/4) * ndv(pe3) ^(1/8) ...
    */
   protected double exponentialBackoff(List<JoinLeafPredicateInfo> peLst,

@@ -80,6 +80,9 @@ public abstract class SingleFileSystem extends FileSystem {
   public static class O3FS extends SingleFileSystem {
   }
 
+  public static class OFS extends SingleFileSystem {
+  }
+
   public static class PFILE extends SingleFileSystem {
   }
 

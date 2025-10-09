@@ -1,3 +1,6 @@
+--! qt:replace:/(File Version:)(.+)/$1#Masked#/
+--! qt:replace:/(File length:\s+)\S+(\s+bytes)/$1#Masked#$2/
+-- SORT_QUERY_RESULTS
 SET hive.vectorized.execution.enabled=FALSE;
 SET hive.mapred.mode=nonstrict;
 

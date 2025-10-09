@@ -19,11 +19,17 @@
 package org.apache.hive.common.util;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.mockito.internal.util.reflection.InstanceField;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -39,7 +45,7 @@ public class ReflectionUtil {
   //       not caching that many constructors.
   // Note that weakKeys causes "==" to be used for key compare; this will only work
   // for classes in the same classloader. Should be ok in this case.
-  private static final Cache<Class<?>, Constructor<?>> CONSTRUCTOR_CACHE =
+  private static Cache<Class<?>, Constructor<?>> CONSTRUCTOR_CACHE =
       CacheBuilder.newBuilder().expireAfterAccess(15, TimeUnit.MINUTES)
                                .concurrencyLevel(64)
                                .weakKeys().weakValues().build();
@@ -97,8 +103,8 @@ public class ReflectionUtil {
    */
   public static void setConf(Object theObject, Configuration conf) {
     if (conf != null) {
-      if (theObject instanceof Configurable) {
-        ((Configurable) theObject).setConf(conf);
+      if (theObject instanceof Configurable configurable) {
+        configurable.setConf(conf);
       }
       setJobConf(theObject, conf);
     }
@@ -114,5 +120,66 @@ public class ReflectionUtil {
     } catch (Exception e) {
       throw new RuntimeException("Error in configuring object", e);
     }
+  }
+
+  /**
+   * Sets a declared field in a given object.
+   * Note: if you want to modify a field in a super class, use the {@link ReflectionUtil#setInAllFields } method.
+   * @param object target instance
+   * @param field name of the field to set
+   * @param value new value
+   * @throws RuntimeException in case the field is not found or cannot be set.
+   */
+  public static void setField(Object object, String field, Object value) {
+    try {
+      Field fieldToChange = object.getClass().getDeclaredField(field);
+      setField(object, fieldToChange, value);
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException("Cannot find field %s in object %s".formatted(field, object.getClass()));
+    }
+  }
+
+  public static void setField(Object object, Field fld, Object value) {
+    try {
+      fld.setAccessible(true);
+      fld.set(object, value);
+    } catch (IllegalAccessException e) {
+      String fieldName = null == fld ? "n/a" : fld.getName();
+      throw new RuntimeException("Failed to set " + fieldName + " of object", e);
+    }
+  }
+
+  /**
+   * Sets a declared field in a given object. It finds the field, even if it is declared in a super class.
+   * @param object target instance
+   * @param field name of the field to set
+   * @param value new value
+   * @throws RuntimeException in case the field is not found or cannot be set.
+   */
+  public static void setInAllFields(Object object, String field, Object value) {
+    try {
+      Field fieldToChange = Arrays.stream(FieldUtils.getAllFields(object.getClass()))
+              .filter(f -> f.getName().equals(field))
+              .findFirst()
+              .orElseThrow(NoSuchFieldException::new);
+
+      fieldToChange.setAccessible(true);
+
+      fieldToChange.set(object, value);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException("Cannot set field %s in object %s".formatted(field, object.getClass()));
+    }
+  }
+
+  public static List<InstanceField> allDeclaredFieldsOf(Object testInstance) {
+    List<InstanceField> result = new ArrayList<>();
+    for (Class<?> clazz = testInstance.getClass();
+         clazz != Object.class;
+         clazz = clazz.getSuperclass()) {
+      for (Field field : clazz.getDeclaredFields()) {
+        result.add(new InstanceField(field, testInstance));
+      }
+    }
+    return result;
   }
 }

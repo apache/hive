@@ -109,6 +109,38 @@ final class QueryFactory {
   }
 
   /**
+   * Returns a query for finding user DN based on user RDN.
+   * @param user user RDN that will replace {0} in the search filter
+   * @param userSearchFilter search query that user filter conditions.
+   * @return an instance of {@link Query}
+   */
+  public Query findUserDnBySearch(String user, String userSearchFilter) {
+    if (userSearchFilter != null) {
+      userSearchFilter = userSearchFilter.replaceAll("\\{0\\}", user);
+    }
+    return Query.builder()
+        .filter(userSearchFilter)
+        .build();
+  }
+
+  /**
+   * Returns a query for finding matches based on user and group filter query.
+   * @param user user RDN to replace {0}
+   * @param userDn user DN to replace {1}}
+   * @param groupSearchFilter search query that includes any group filter conditions.
+   * @return an instance of {@link Query}
+   */
+  public Query findDnByUserAndGroupSearch(String user, String userDn, String groupSearchFilter) {
+    if (groupSearchFilter != null) {
+      groupSearchFilter = groupSearchFilter.replaceAll("\\{0\\}", userDn);
+      groupSearchFilter = groupSearchFilter.replaceAll("\\{1\\}", user);
+    }
+    return Query.builder()
+        .filter(groupSearchFilter)
+        .build();
+  }
+
+  /**
    * Returns a query for finding groups to which the user belongs.
    * @param userName username
    * @param userDn user DN

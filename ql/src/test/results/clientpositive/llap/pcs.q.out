@@ -1,11 +1,15 @@
 PREHOOK: query: drop table pcs_t1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcs_t1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table pcs_t2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcs_t2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table pcs_t1 (key int, value string) partitioned by (ds string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -100,7 +104,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds`
 FROM `default`.`pcs_t1`
-WHERE  (`key`, `ds`) IN ( (1, '2000-04-08'),  (2, '2000-04-09'))
+WHERE (`key`, `ds`) IN ((1, '2000-04-08'), (2, '2000-04-09'))
 ORDER BY `key`, `value`, `ds`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -284,7 +288,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE  (`key`, `ds`) IN ( (1, '2000-04-08'),  (2, '2000-04-09'))
+WHERE (`key`, `ds`) IN ((1, '2000-04-08'), (2, '2000-04-09'))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -401,7 +405,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE  (`ds`, `key` + 2) IN ( ('2000-04-08', 3),  ('2000-04-09', 4))
+WHERE (`ds`, `key` + 2) IN (('2000-04-08', 3), ('2000-04-09', 4))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -516,6 +520,13 @@ POSTHOOK: Input: default@pcs_t1
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-08
 POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
+OPTIMIZED SQL: SELECT `t0`.`ds`, `t2`.`key`
+FROM (SELECT `key`, `ds`
+FROM `default`.`pcs_t1`
+WHERE `key` IN (1, 2) AND `ds` IN ('2000-04-08', '2000-04-09')) AS `t0`
+INNER JOIN (SELECT `key`, `ds`
+FROM `default`.`pcs_t1`
+WHERE `ds` IN ('2000-04-08', '2000-04-09')) AS `t2` ON `t0`.`ds` = `t2`.`ds` AND (`t0`.`key`, `t0`.`ds`, `t2`.`ds`) IN ((1, '2000-04-08', '2000-04-09'), (2, '2000-04-09', '2000-04-08'))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -654,7 +665,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (ds) IN ('2000-04-09', '2000-04-08') (type: boolean)
+                  filterExpr: (ds) IN ('2000-04-08', '2000-04-09') (type: boolean)
                   Statistics: Num rows: 40 Data size: 7520 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
@@ -827,7 +838,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE  (`ds`, `key` + `key`) IN ( ('2000-04-08', 1),  ('2000-04-09', 2))
+WHERE (`ds`, `key` + `key`) IN (('2000-04-08', 1), ('2000-04-09', 2))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1291,7 +1302,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE  (`ds`, `key`, RAND(100)) IN ( ('2000-04-08', 1, 0.2),  ('2000-04-09', 2, 0.3))
+WHERE (`ds`, `key`, RAND(100)) IN (('2000-04-08', 1, 0.2), ('2000-04-09', 2, 0.3))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1396,7 +1407,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `ds` <> '2000-04-08' AND (`key` <> 2 AND `key` = 3) OR (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2
+WHERE `ds` <> '2000-04-08' AND `key` = 3 OR (`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1510,11 +1521,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-          filterExpr: (((ds <> '2000-04-08') and (key <> 2) and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
+          filterExpr: (((ds <> '2000-04-08') and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: (((ds <> '2000-04-08') and (key <> 2) and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
+            predicate: (((ds <> '2000-04-08') and (key = 3)) or (((ds = '2000-04-08') or key is not null) and (key = 2))) (type: boolean)
             Select Operator
               expressions: ds (type: string)
               outputColumnNames: _col0
@@ -1553,7 +1564,7 @@ POSTHOOK: Input: default@pcs_t1@ds=2000-04-10
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `ds`
 FROM `default`.`pcs_t1`
-WHERE `key` = 3 OR ((`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND (`key` <> 2 AND `key` = 3)) AND `key` + 5 > 0
+WHERE `key` = 3 OR ((`ds` = '2000-04-08' OR `key` IS NOT NULL) AND `key` = 2 OR `ds` <> '2000-04-08' AND `key` = 3) AND `key` + 5 > 0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -1667,11 +1678,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: pcs_t1
-          filterExpr: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key <> 2) and (key = 3))) and ((key + 5) > 0))) (type: boolean)
+          filterExpr: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0))) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key <> 2) and (key = 3))) and ((key + 5) > 0))) (type: boolean)
+            predicate: ((key = 3) or (((((ds = '2000-04-08') or key is not null) and (key = 2)) or ((ds <> '2000-04-08') and (key = 3))) and ((key + 5) > 0))) (type: boolean)
             Select Operator
               expressions: ds (type: string)
               outputColumnNames: _col0

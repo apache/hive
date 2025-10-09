@@ -12,11 +12,13 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FireEventRequestData");
   private static final org.apache.thrift.protocol.TField INSERT_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("insertData", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField INSERT_DATAS_FIELD_DESC = new org.apache.thrift.protocol.TField("insertDatas", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField REFRESH_EVENT_FIELD_DESC = new org.apache.thrift.protocol.TField("refreshEvent", org.apache.thrift.protocol.TType.BOOL, (short)3);
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     INSERT_DATA((short)1, "insertData"),
-    INSERT_DATAS((short)2, "insertDatas");
+    INSERT_DATAS((short)2, "insertDatas"),
+    REFRESH_EVENT((short)3, "refreshEvent");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -36,6 +38,8 @@ package org.apache.hadoop.hive.metastore.api;
           return INSERT_DATA;
         case 2: // INSERT_DATAS
           return INSERT_DATAS;
+        case 3: // REFRESH_EVENT
+          return REFRESH_EVENT;
         default:
           return null;
       }
@@ -84,6 +88,8 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.INSERT_DATAS, new org.apache.thrift.meta_data.FieldMetaData("insertDatas", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, InsertEventRequestData.class))));
+    tmpMap.put(_Fields.REFRESH_EVENT, new org.apache.thrift.meta_data.FieldMetaData("refreshEvent", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FireEventRequestData.class, metaDataMap);
   }
@@ -115,6 +121,12 @@ package org.apache.hadoop.hive.metastore.api;
     return x;
   }
 
+  public static FireEventRequestData refreshEvent(boolean value) {
+    FireEventRequestData x = new FireEventRequestData();
+    x.setRefreshEvent(value);
+    return x;
+  }
+
 
   @Override
   protected void checkType(_Fields setField, java.lang.Object value) throws java.lang.ClassCastException {
@@ -129,6 +141,11 @@ package org.apache.hadoop.hive.metastore.api;
           break;
         }
         throw new java.lang.ClassCastException("Was expecting value of type java.util.List<InsertEventRequestData> for field 'insertDatas', but got " + value.getClass().getSimpleName());
+      case REFRESH_EVENT:
+        if (value instanceof java.lang.Boolean) {
+          break;
+        }
+        throw new java.lang.ClassCastException("Was expecting value of type java.lang.Boolean for field 'refreshEvent', but got " + value.getClass().getSimpleName());
       default:
         throw new java.lang.IllegalArgumentException("Unknown field id " + setField);
     }
@@ -153,18 +170,27 @@ package org.apache.hadoop.hive.metastore.api;
           if (field.type == INSERT_DATAS_FIELD_DESC.type) {
             java.util.List<InsertEventRequestData> insertDatas;
             {
-              org.apache.thrift.protocol.TList _list944 = iprot.readListBegin();
-              insertDatas = new java.util.ArrayList<InsertEventRequestData>(_list944.size);
-              @org.apache.thrift.annotation.Nullable InsertEventRequestData _elem945;
-              for (int _i946 = 0; _i946 < _list944.size; ++_i946)
+              org.apache.thrift.protocol.TList _list1056 = iprot.readListBegin();
+              insertDatas = new java.util.ArrayList<InsertEventRequestData>(_list1056.size);
+              @org.apache.thrift.annotation.Nullable InsertEventRequestData _elem1057;
+              for (int _i1058 = 0; _i1058 < _list1056.size; ++_i1058)
               {
-                _elem945 = new InsertEventRequestData();
-                _elem945.read(iprot);
-                insertDatas.add(_elem945);
+                _elem1057 = new InsertEventRequestData();
+                _elem1057.read(iprot);
+                insertDatas.add(_elem1057);
               }
               iprot.readListEnd();
             }
             return insertDatas;
+          } else {
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            return null;
+          }
+        case REFRESH_EVENT:
+          if (field.type == REFRESH_EVENT_FIELD_DESC.type) {
+            java.lang.Boolean refreshEvent;
+            refreshEvent = iprot.readBool();
+            return refreshEvent;
           } else {
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             return null;
@@ -189,12 +215,16 @@ package org.apache.hadoop.hive.metastore.api;
         java.util.List<InsertEventRequestData> insertDatas = (java.util.List<InsertEventRequestData>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, insertDatas.size()));
-          for (InsertEventRequestData _iter947 : insertDatas)
+          for (InsertEventRequestData _iter1059 : insertDatas)
           {
-            _iter947.write(oprot);
+            _iter1059.write(oprot);
           }
           oprot.writeListEnd();
         }
+        return;
+      case REFRESH_EVENT:
+        java.lang.Boolean refreshEvent = (java.lang.Boolean)value_;
+        oprot.writeBool(refreshEvent);
         return;
       default:
         throw new java.lang.IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -214,18 +244,22 @@ package org.apache.hadoop.hive.metastore.api;
         case INSERT_DATAS:
           java.util.List<InsertEventRequestData> insertDatas;
           {
-            org.apache.thrift.protocol.TList _list948 = iprot.readListBegin();
-            insertDatas = new java.util.ArrayList<InsertEventRequestData>(_list948.size);
-            @org.apache.thrift.annotation.Nullable InsertEventRequestData _elem949;
-            for (int _i950 = 0; _i950 < _list948.size; ++_i950)
+            org.apache.thrift.protocol.TList _list1060 = iprot.readListBegin();
+            insertDatas = new java.util.ArrayList<InsertEventRequestData>(_list1060.size);
+            @org.apache.thrift.annotation.Nullable InsertEventRequestData _elem1061;
+            for (int _i1062 = 0; _i1062 < _list1060.size; ++_i1062)
             {
-              _elem949 = new InsertEventRequestData();
-              _elem949.read(iprot);
-              insertDatas.add(_elem949);
+              _elem1061 = new InsertEventRequestData();
+              _elem1061.read(iprot);
+              insertDatas.add(_elem1061);
             }
             iprot.readListEnd();
           }
           return insertDatas;
+        case REFRESH_EVENT:
+          java.lang.Boolean refreshEvent;
+          refreshEvent = iprot.readBool();
+          return refreshEvent;
         default:
           throw new java.lang.IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -245,12 +279,16 @@ package org.apache.hadoop.hive.metastore.api;
         java.util.List<InsertEventRequestData> insertDatas = (java.util.List<InsertEventRequestData>)value_;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, insertDatas.size()));
-          for (InsertEventRequestData _iter951 : insertDatas)
+          for (InsertEventRequestData _iter1063 : insertDatas)
           {
-            _iter951.write(oprot);
+            _iter1063.write(oprot);
           }
           oprot.writeListEnd();
         }
+        return;
+      case REFRESH_EVENT:
+        java.lang.Boolean refreshEvent = (java.lang.Boolean)value_;
+        oprot.writeBool(refreshEvent);
         return;
       default:
         throw new java.lang.IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -264,6 +302,8 @@ package org.apache.hadoop.hive.metastore.api;
         return INSERT_DATA_FIELD_DESC;
       case INSERT_DATAS:
         return INSERT_DATAS_FIELD_DESC;
+      case REFRESH_EVENT:
+        return REFRESH_EVENT_FIELD_DESC;
       default:
         throw new java.lang.IllegalArgumentException("Unknown field id " + setField);
     }
@@ -311,6 +351,19 @@ package org.apache.hadoop.hive.metastore.api;
     value_ = java.util.Objects.requireNonNull(value,"_Fields.INSERT_DATAS");
   }
 
+  public boolean getRefreshEvent() {
+    if (getSetField() == _Fields.REFRESH_EVENT) {
+      return (java.lang.Boolean)getFieldValue();
+    } else {
+      throw new java.lang.RuntimeException("Cannot get field 'refreshEvent' because union is currently set to " + getFieldDesc(getSetField()).name);
+    }
+  }
+
+  public void setRefreshEvent(boolean value) {
+    setField_ = _Fields.REFRESH_EVENT;
+    value_ = value;
+  }
+
   public boolean isSetInsertData() {
     return setField_ == _Fields.INSERT_DATA;
   }
@@ -318,6 +371,11 @@ package org.apache.hadoop.hive.metastore.api;
 
   public boolean isSetInsertDatas() {
     return setField_ == _Fields.INSERT_DATAS;
+  }
+
+
+  public boolean isSetRefreshEvent() {
+    return setField_ == _Fields.REFRESH_EVENT;
   }
 
 

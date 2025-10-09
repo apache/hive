@@ -26,10 +26,12 @@ POSTHOOK: Input: default@exim_employee_n6@emp_country=in
 PREHOOK: query: drop table exim_employee_n6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_employee_n6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@exim_employee_n6
 POSTHOOK: query: drop table exim_employee_n6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@exim_employee_n6
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_employee_n6
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
@@ -78,7 +80,7 @@ Table Parameters:
 	numPartitions       	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	11                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -111,10 +113,12 @@ POSTHOOK: Input: importer@exim_employee_n6@emp_country=in
 PREHOOK: query: drop table exim_employee_n6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: importer@exim_employee_n6
+PREHOOK: Output: database:importer
 PREHOOK: Output: importer@exim_employee_n6
 POSTHOOK: query: drop table exim_employee_n6
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: importer@exim_employee_n6
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_employee_n6
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE

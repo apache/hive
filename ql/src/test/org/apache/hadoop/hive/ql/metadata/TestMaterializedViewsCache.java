@@ -39,6 +39,7 @@ import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.IncrementalRebuildMode;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -157,8 +158,8 @@ class TestMaterializedViewsCache {
   private static HiveRelOptMaterialization createMaterialization(Table table) throws ParseException {
     return new HiveRelOptMaterialization(
             new DummyRel(table), new DummyRel(table), null, asList(table.getDbName(), table.getTableName()),
-            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class),
-            HiveRelOptMaterialization.IncrementalRebuildMode.AVAILABLE, ParseUtils.parse(table.getViewExpandedText(), null));
+            RewriteAlgorithm.ALL,
+            IncrementalRebuildMode.AVAILABLE, ParseUtils.parse(table.getViewExpandedText(), null));
   }
 
   @Test
@@ -334,7 +335,7 @@ class TestMaterializedViewsCache {
     public DummyRel(Table table) {
       this.dummyTable = new RelOptHiveTable(null, null,
               singletonList(table.getDbName() + "." + table.getTableName()), null, table,
-              emptyList(), emptyList(), emptyList(), null, null, null,
+              emptyList(), emptyList(), emptyList(), null, null,
               null, null, null);
     }
 

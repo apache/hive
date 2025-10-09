@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveValues;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
@@ -114,6 +115,8 @@ public class HiveOpConverter {
       return new HiveAggregateVisitor(this).visit((HiveAggregate) rn);
     } else if (rn instanceof HiveTableFunctionScan) {
       return new HiveTableFunctionScanVisitor(this).visit((HiveTableFunctionScan) rn);
+    } else if (rn instanceof HiveValues) {
+      return new HiveValuesVisitor(this).visit((HiveValues) rn);
     }
     LOG.error(rn.getClass().getCanonicalName() + "operator translation not supported yet in return path.");
     return null;

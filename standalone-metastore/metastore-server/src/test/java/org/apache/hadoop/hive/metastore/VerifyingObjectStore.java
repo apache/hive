@@ -19,11 +19,13 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.repeat;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -33,6 +35,10 @@ import java.util.Set;
 
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
+import org.apache.hadoop.hive.metastore.model.MTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -51,12 +57,12 @@ public class VerifyingObjectStore extends ObjectStore {
 
   @Override
   public List<Partition> getPartitionsByFilter(String catName, String dbName, String tblName,
-                                               String filter, short maxParts)
+                                               GetPartitionsArgs args)
       throws MetaException, NoSuchObjectException {
     List<Partition> sqlResults = getPartitionsByFilterInternal(
-        catName, dbName, tblName, filter, maxParts, true, false);
+        catName, dbName, tblName, true, false, args);
     List<Partition> ormResults = getPartitionsByFilterInternal(
-        catName, dbName, tblName, filter, maxParts, false, true);
+        catName, dbName, tblName, false, true, args);
     verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
   }
@@ -64,22 +70,23 @@ public class VerifyingObjectStore extends ObjectStore {
   @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
+    GetPartitionsArgs args = new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(partNames).build();
     List<Partition> sqlResults = getPartitionsByNamesInternal(
-        catName, dbName, tblName, partNames, true, false);
+        catName, dbName, tblName, true, false, args);
     List<Partition> ormResults = getPartitionsByNamesInternal(
-        catName, dbName, tblName, partNames, false, true);
+        catName, dbName, tblName, false, true, args);
     verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
   }
 
   @Override
-  public boolean getPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr,
-      String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
+  public boolean getPartitionsByExpr(String catName, String dbName, String tblName, List<Partition> result,
+      GetPartitionsArgs args) throws TException {
     List<Partition> ormParts = new LinkedList<>();
     boolean sqlResult = getPartitionsByExprInternal(
-        catName, dbName, tblName, expr, defaultPartitionName, maxParts, result, true, false);
+        catName, dbName, tblName, result, true, false, args);
     boolean ormResult = getPartitionsByExprInternal(
-        catName, dbName, tblName, expr, defaultPartitionName, maxParts, ormParts, false, true);
+        catName, dbName, tblName, ormParts, false, true, args);
     if (sqlResult != ormResult) {
       String msg = "The unknown flag is different - SQL " + sqlResult + ", ORM " + ormResult;
       LOG.error(msg);
@@ -91,10 +98,10 @@ public class VerifyingObjectStore extends ObjectStore {
 
   @Override
   public List<Partition> getPartitions(
-      String catName, String dbName, String tableName, int maxParts) throws MetaException, NoSuchObjectException {
+      String catName, String dbName, String tableName, GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
     openTransaction();
-    List<Partition> sqlResults = getPartitionsInternal(catName, dbName, tableName, maxParts, true, false);
-    List<Partition> ormResults = getPartitionsInternal(catName, dbName, tableName, maxParts, false, true);
+    List<Partition> sqlResults = getPartitionsInternal(catName, dbName, tableName, true, false, args);
+    List<Partition> ormResults = getPartitionsInternal(catName, dbName, tableName, false, true, args);
     verifyLists(sqlResults, ormResults, Partition.class);
     commitTransaction();
     return sqlResults;
@@ -109,6 +116,44 @@ public class VerifyingObjectStore extends ObjectStore {
         catName, dbName, tableName, colNames, engine, false, true);
     verifyObjects(sqlResult, jdoResult, ColumnStatistics.class);
     return sqlResult;
+  }
+
+  @Override
+  public List<Partition> alterPartitions(String catName, String dbName, String tblName, List<List<String>> part_vals,
+      List<Partition> newParts, long writeId, String queryWriteIdList) throws InvalidObjectException, MetaException {
+    List<Partition> results = new ArrayList<>(newParts.size());
+    catName = normalizeIdentifier(catName);
+    dbName = normalizeIdentifier(dbName);
+    tblName = normalizeIdentifier(tblName);
+    boolean success = false;
+    try {
+      openTransaction();
+      MTable table = ensureGetMTable(catName, dbName, tblName);
+      if (writeId > 0) {
+        newParts.forEach(newPart -> newPart.setWriteId(writeId));
+      }
+      List<FieldSchema> partCols = convertToFieldSchemas(table.getPartitionKeys());
+      List<String> partNames = new ArrayList<>();
+      for (List<String> partVal : part_vals) {
+        partNames.add(Warehouse.makePartName(partCols, partVal));
+      }
+      List<Partition> oldParts = getPartitionsByNames(catName, dbName, tblName, partNames);
+      if (oldParts.size() != partNames.size()) {
+        throw new MetaException("Some partitions to be altered are missing");
+      }
+      List<Partition> tmpNewParts = new ArrayList<>(newParts);
+      alterPartitionsInternal(table, partNames, newParts, queryWriteIdList, true, false);
+      alterPartitionsInternal(table, partNames, oldParts, queryWriteIdList, false, true);
+      results = alterPartitionsInternal(table, partNames, tmpNewParts, queryWriteIdList, true, false);
+      // commit the changes
+      success = commitTransaction();
+    } catch (Exception exception) {
+      LOG.error("Alter failed", exception);
+      throw new MetaException(exception.getMessage());
+    } finally {
+      rollbackAndCleanup(success, null);
+    }
+    return results;
   }
 
   @Override

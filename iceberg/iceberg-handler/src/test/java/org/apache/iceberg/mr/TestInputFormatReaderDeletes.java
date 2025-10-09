@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -50,28 +51,31 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
   private final String inputFormat;
   private final FileFormat fileFormat;
 
-  @Parameterized.Parameters(name = "inputFormat = {0}, fileFormat={1}")
+  @Parameterized.Parameters(name = "fileFormat = {0}, formatVersion = {1}, inputFormat={2}")
   public static Object[][] parameters() {
     return new Object[][] {
-        { "IcebergInputFormat", FileFormat.PARQUET },
-        { "IcebergInputFormat", FileFormat.AVRO },
-        { "IcebergInputFormat", FileFormat.ORC },
-        { "MapredIcebergInputFormat", FileFormat.PARQUET },
-        { "MapredIcebergInputFormat", FileFormat.AVRO },
-        { "MapredIcebergInputFormat", FileFormat.ORC },
+        { FileFormat.PARQUET, 2, "IcebergInputFormat" },
+        { FileFormat.AVRO, 2, "IcebergInputFormat" },
+        { FileFormat.ORC, 2, "IcebergInputFormat" },
+        { FileFormat.PARQUET, 2, "MapredIcebergInputFormat" },
+        { FileFormat.AVRO, 2, "MapredIcebergInputFormat" },
+        { FileFormat.ORC, 2, "MapredIcebergInputFormat" },
+        { FileFormat.PARQUET, 3, "IcebergInputFormat" },
+        { FileFormat.PARQUET, 3, "MapredIcebergInputFormat" },
     };
   }
 
   @Before
   @Override
   public void writeTestDataFile() throws IOException {
-    conf.set(InputFormatConfig.CATALOG, Catalogs.LOCATION);
+    conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
     super.writeTestDataFile();
   }
 
-  public TestInputFormatReaderDeletes(String inputFormat, FileFormat fileFormat) {
-    this.inputFormat = inputFormat;
+  public TestInputFormatReaderDeletes(FileFormat fileFormat, int formatVersion, String inputFormat) {
+    super(formatVersion);
     this.fileFormat = fileFormat;
+    this.inputFormat = inputFormat;
   }
 
   @Override
@@ -85,7 +89,7 @@ public class TestInputFormatReaderDeletes extends DeleteReadTests {
 
     TableOperations ops = ((BaseTable) table).operations();
     TableMetadata meta = ops.current();
-    ops.commit(meta, meta.upgradeToFormatVersion(2));
+    ops.commit(meta, meta.upgradeToFormatVersion(formatVersion));
 
     return table;
   }

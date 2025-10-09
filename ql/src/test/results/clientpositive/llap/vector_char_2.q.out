@@ -1,7 +1,9 @@
 PREHOOK: query: drop table char_2_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table char_2_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table char_2_n0 (
   key char(10),
   value char(20)
@@ -461,8 +463,10 @@ val_95              	190	2
 PREHOOK: query: drop table char_2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@char_2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@char_2_n0
 POSTHOOK: query: drop table char_2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@char_2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@char_2_n0

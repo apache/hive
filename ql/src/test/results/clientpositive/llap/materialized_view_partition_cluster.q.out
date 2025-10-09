@@ -126,9 +126,12 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
-      distribute columns: key string
-      partition columns: partkey double
       columns: value string, key string
+      distribute columns: key string
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      partition columns: partkey double
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       sort columns: key string
       expanded text: SELECT `value`, `key`, `partkey` FROM (SELECT `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key` + 100 as `partkey` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_1`
       name: default.cluster_mv_1
@@ -301,7 +304,7 @@ Table Parameters:
 	numPartitions       	32                  
 	numRows             	55                  
 	rawDataSize         	9790                
-	totalSize           	10870               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -320,8 +323,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:1:9223372036854775807::	 
 Found 32 items
 #### A masked pattern was here ####
 PREHOOK: query: EXPLAIN
@@ -1828,7 +1831,7 @@ Table Parameters:
 	numPartitions       	32                  
 	numRows             	57                  
 	rawDataSize         	11062               
-	totalSize           	17166               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1847,8 +1850,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:3:9223372036854775807::	 
 PREHOOK: query: INSERT INTO src_txn VALUES (238, 'val_238_n2')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -2629,7 +2632,7 @@ Table Parameters:
 	numPartitions       	32                  
 	numRows             	58                  
 	rawDataSize         	11257               
-	totalSize           	17169               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -2648,5 +2651,5 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:4:9223372036854775807::	 

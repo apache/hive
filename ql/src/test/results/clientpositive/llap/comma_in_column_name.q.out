@@ -125,10 +125,12 @@ POSTHOOK: Input: default@test_n4
 PREHOOK: query: drop table test_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_n4
 POSTHOOK: query: drop table test_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_n4
 PREHOOK: query: create table test_n4 (`x,y` int) stored as orc
 PREHOOK: type: CREATETABLE

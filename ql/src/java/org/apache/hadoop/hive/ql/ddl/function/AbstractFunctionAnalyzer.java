@@ -21,14 +21,20 @@ package org.apache.hadoop.hive.ql.ddl.function;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.FunctionType;
+import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Abstract ancestor of function related ddl analyzer classes.
@@ -65,11 +71,24 @@ public abstract class AbstractFunctionAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     if (database != null) {
-      outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
+      inputs.add(new ReadEntity(database));
+      // Add the permanent function as a WriteEntity
+      Function function;
+      if (queryState.getHiveOperation().equals(HiveOperation.CREATEFUNCTION)) {
+        function = new Function(functionName, database.getName(), className,
+                SessionState.getUserFromAuthenticator(), PrincipalType.USER,
+                (int) (System.currentTimeMillis() / 1000), FunctionType.JAVA, resources);
+      } else {
+        try {
+          function = db.getFunction(database.getName(), functionName);
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      outputs.add(new WriteEntity(function, WriteEntity.WriteType.DDL_NO_LOCK));
+    } else { // Temporary functions
+      outputs.add(new WriteEntity(database, functionName, className, Type.FUNCTION, WriteEntity.WriteType.DDL_NO_LOCK));
     }
-
-    // Add the function name as a WriteEntity
-    outputs.add(new WriteEntity(database, functionName, className, Type.FUNCTION, WriteEntity.WriteType.DDL_NO_LOCK));
 
     if (resources != null) {
       for (ResourceUri resource : resources) {

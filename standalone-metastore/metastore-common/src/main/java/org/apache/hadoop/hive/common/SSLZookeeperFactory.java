@@ -27,6 +27,8 @@ import org.apache.zookeeper.common.ClientX509Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.KeyStore;
+
 /**
  * Factory to create Zookeeper clients with the zookeeper.client.secure enabled,
  * allowing SSL communication with the Zookeeper server.
@@ -38,22 +40,26 @@ public class SSLZookeeperFactory implements ZookeeperFactory {
   private boolean sslEnabled;
   private String keyStoreLocation;
   private String keyStorePassword;
+  private String keyStoreType;
   private String trustStoreLocation;
   private String trustStorePassword;
+  private String trustStoreType;
 
   public SSLZookeeperFactory(boolean sslEnabled, String keyStoreLocation, String keyStorePassword,
-      String trustStoreLocation, String trustStorePassword) {
+      String keyStoreType, String trustStoreLocation, String trustStorePassword, String trustStoreType) {
 
     this.sslEnabled = sslEnabled;
     this.keyStoreLocation = keyStoreLocation;
     this.keyStorePassword = keyStorePassword;
+    this.keyStoreType = (!StringUtils.isBlank(keyStoreType)) ? keyStoreType : KeyStore.getDefaultType();
     this.trustStoreLocation = trustStoreLocation;
     this.trustStorePassword = trustStorePassword;
+    this.trustStoreType = (!StringUtils.isBlank(trustStoreType)) ? trustStoreType : KeyStore.getDefaultType();
     if (sslEnabled) {
-      if (StringUtils.isEmpty(keyStoreLocation)) {
+      if (StringUtils.isBlank(keyStoreLocation)) {
         LOG.warn("Missing keystoreLocation parameter");
       }
-      if (StringUtils.isEmpty(trustStoreLocation)) {
+      if (StringUtils.isBlank(trustStoreLocation)) {
         LOG.warn("Missing trustStoreLocation parameter");
       }
     }
@@ -71,8 +77,10 @@ public class SSLZookeeperFactory implements ZookeeperFactory {
     ClientX509Util x509Util = new ClientX509Util();
     clientConfig.setProperty(x509Util.getSslKeystoreLocationProperty(), this.keyStoreLocation);
     clientConfig.setProperty(x509Util.getSslKeystorePasswdProperty(), this.keyStorePassword);
+    clientConfig.setProperty(x509Util.getSslKeystoreTypeProperty(), this.keyStoreType);
     clientConfig.setProperty(x509Util.getSslTruststoreLocationProperty(), this.trustStoreLocation);
     clientConfig.setProperty(x509Util.getSslTruststorePasswdProperty(), this.trustStorePassword);
+    clientConfig.setProperty(x509Util.getSslTruststoreTypeProperty(), this.trustStoreType);
     return new ZooKeeper(connectString, sessionTimeout, watcher, canBeReadOnly, clientConfig);
   }
 }

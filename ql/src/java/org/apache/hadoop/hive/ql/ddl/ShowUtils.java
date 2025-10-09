@@ -21,11 +21,16 @@ package org.apache.hadoop.hive.ql.ddl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.datasketches.kll.KllFloatsSketch;
+import org.apache.datasketches.memory.Memory;
+import org.apache.datasketches.quantilescommon.QuantileSearchCriteria;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -40,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -50,6 +56,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +64,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
 
 /**
  * Utilities for SHOW ... commands.
@@ -131,9 +139,15 @@ public final class ShowUtils {
     }
   }
 
-
+  // kept for backward compatibility since it's a public static method
+  @SuppressWarnings("unused")
   public static String[] extractColumnValues(FieldSchema column, boolean isColumnStatsAvailable,
       ColumnStatisticsObj columnStatisticsObj) {
+    return extractColumnValues(column, isColumnStatsAvailable, columnStatisticsObj, false);
+  }
+
+  public static String[] extractColumnValues(FieldSchema column, boolean isColumnStatsAvailable,
+      ColumnStatisticsObj columnStatisticsObj, boolean histogramEnabled) {
     List<String> values = new ArrayList<>();
     values.add(column.getName());
     values.add(column.getType());
@@ -146,48 +160,75 @@ public final class ShowUtils {
           values.addAll(Lists.newArrayList("", "", "" + binaryStats.getNumNulls(), "",
               "" + binaryStats.getAvgColLen(), "" + binaryStats.getMaxColLen(), "", "",
               convertToString(binaryStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add("");
+          }
         } else if (statsData.isSetStringStats()) {
           StringColumnStatsData stringStats = statsData.getStringStats();
           values.addAll(Lists.newArrayList("", "", "" + stringStats.getNumNulls(), "" + stringStats.getNumDVs(),
               "" + stringStats.getAvgColLen(), "" + stringStats.getMaxColLen(), "", "",
               convertToString(stringStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add("");
+          }
         } else if (statsData.isSetBooleanStats()) {
           BooleanColumnStatsData booleanStats = statsData.getBooleanStats();
           values.addAll(Lists.newArrayList("", "", "" + booleanStats.getNumNulls(), "", "", "",
               "" + booleanStats.getNumTrues(), "" + booleanStats.getNumFalses(),
               convertToString(booleanStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add("");
+          }
         } else if (statsData.isSetDecimalStats()) {
           DecimalColumnStatsData decimalStats = statsData.getDecimalStats();
           values.addAll(Lists.newArrayList(convertToString(decimalStats.getLowValue()),
               convertToString(decimalStats.getHighValue()), "" + decimalStats.getNumNulls(),
               "" + decimalStats.getNumDVs(), "", "", "", "", convertToString(decimalStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getDecimalStats().getHistogram(), statsData.getSetField()));
+          }
         } else if (statsData.isSetDoubleStats()) {
           DoubleColumnStatsData doubleStats = statsData.getDoubleStats();
           values.addAll(Lists.newArrayList("" + doubleStats.getLowValue(), "" + doubleStats.getHighValue(),
               "" + doubleStats.getNumNulls(), "" + doubleStats.getNumDVs(), "", "", "", "",
               convertToString(doubleStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getDoubleStats().getHistogram(), statsData.getSetField()));
+          }
         } else if (statsData.isSetLongStats()) {
           LongColumnStatsData longStats = statsData.getLongStats();
           values.addAll(Lists.newArrayList("" + longStats.getLowValue(), "" + longStats.getHighValue(),
               "" + longStats.getNumNulls(), "" + longStats.getNumDVs(), "", "", "", "",
               convertToString(longStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getLongStats().getHistogram(), statsData.getSetField()));
+          }
         } else if (statsData.isSetDateStats()) {
           DateColumnStatsData dateStats = statsData.getDateStats();
           values.addAll(Lists.newArrayList(convertToString(dateStats.getLowValue()),
               convertToString(dateStats.getHighValue()), "" + dateStats.getNumNulls(), "" + dateStats.getNumDVs(),
               "", "", "", "", convertToString(dateStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getDateStats().getHistogram(), statsData.getSetField()));
+          }
         } else if (statsData.isSetTimestampStats()) {
           TimestampColumnStatsData timestampStats = statsData.getTimestampStats();
           values.addAll(Lists.newArrayList(convertToString(timestampStats.getLowValue()),
               convertToString(timestampStats.getHighValue()), "" + timestampStats.getNumNulls(),
               "" + timestampStats.getNumDVs(), "", "", "", "", convertToString(timestampStats.getBitVectors())));
+          if (histogramEnabled) {
+            values.add(convertHistogram(statsData.getTimestampStats().getHistogram(), statsData.getSetField()));
+          }
         }
       } else {
         values.addAll(Lists.newArrayList("", "", "", "", "", "", "", "", ""));
+        if (histogramEnabled) {
+          values.add("");
+        }
       }
     }
 
-    values.add(column.getComment() != null ? column.getComment() : "");
+    values.add(column.getComment() == null ? "" : column.getComment());
     return values.toArray(new String[0]);
   }
 
@@ -207,6 +248,47 @@ public final class ShowUtils {
 
     DateWritableV2 writableValue = new DateWritableV2((int) val.getDaysSinceEpoch());
     return writableValue.toString();
+  }
+
+  // converts the histogram from its serialization to a string representing its quantiles
+  private static String convertHistogram(byte[] buffer, ColumnStatisticsData._Fields field) {
+    if (buffer == null || buffer.length == 0) {
+      return "";
+    }
+    final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(buffer));
+    // to keep the visualization compact, we print only the quartiles (Q1, Q2 and Q3),
+    // as min and max are displayed as separate statistics already
+    final float[] quantiles = kll.getQuantiles(new double[]{ 0.25, 0.5, 0.75 },  QuantileSearchCriteria.EXCLUSIVE);
+
+    Function<Float, Object> converter;
+
+    switch(field) {
+      case DATE_STATS:
+        converter = f -> Date.valueOf(Timestamp.ofEpochSecond(f.longValue(), 0, getZoneIdFromConf()).toString());
+        break;
+      case DECIMAL_STATS:
+        converter = HiveDecimal::create;
+        break;
+      case DOUBLE_STATS:
+        converter = f -> f;
+        break;
+      case TIMESTAMP_STATS:
+        converter = f -> Timestamp.ofEpochSecond(f.longValue(), 0, getZoneIdFromConf());
+        break;
+      case LONG_STATS:
+        converter = Float::longValue;
+        break;
+      default:
+        return "";
+    }
+
+    return kll.isEmpty() ? "" : "Q1: " + converter.apply(quantiles[0]) + ", Q2: "
+        + converter.apply(quantiles[1]) + ", Q3: " + converter.apply(quantiles[2]);
+  }
+
+  private static ZoneId getZoneIdFromConf() {
+    return SessionState.get() == null ? new HiveConf().getLocalTimeZone()
+        : SessionState.get().getConf().getLocalTimeZone();
   }
 
   private static String convertToString(byte[] buffer) {

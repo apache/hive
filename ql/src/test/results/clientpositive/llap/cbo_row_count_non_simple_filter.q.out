@@ -1,0 +1,159 @@
+PREHOOK: query: CREATE TABLE `store_sales` (`ss_item_sk` bigint, `ss_hdemo_sk` bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: CREATE TABLE `store_sales` (`ss_item_sk` bigint, `ss_hdemo_sk` bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: CREATE TABLE `household_demographics` (`hd_demo_sk` bigint, `hd_income_band_sk` bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@household_demographics
+POSTHOOK: query: CREATE TABLE `household_demographics` (`hd_demo_sk` bigint, `hd_income_band_sk` bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@household_demographics
+PREHOOK: query: CREATE TABLE `item` (`i_item_sk` bigint, `i_product_name` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@item
+POSTHOOK: query: CREATE TABLE `item` (`i_item_sk` bigint, `i_product_name` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@item
+PREHOOK: query: CREATE TABLE `income_band`(`ib_income_band_sk` bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@income_band
+POSTHOOK: query: CREATE TABLE `income_band`(`ib_income_band_sk` bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@income_band
+PREHOOK: query: CREATE TABLE `customer`(`c_current_hdemo_sk` bigint)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@customer
+POSTHOOK: query: CREATE TABLE `customer`(`c_current_hdemo_sk` bigint)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@customer
+PREHOOK: query: ALTER TABLE `store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: ALTER TABLE `store_sales` ADD CONSTRAINT `pk_ss` PRIMARY KEY (`ss_item_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: ALTER TABLE `item` ADD CONSTRAINT `pk_i` PRIMARY KEY (`i_item_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@item
+PREHOOK: Output: default@item
+POSTHOOK: query: ALTER TABLE `item` ADD CONSTRAINT `pk_i` PRIMARY KEY (`i_item_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@item
+POSTHOOK: Output: default@item
+PREHOOK: query: ALTER TABLE `household_demographics` ADD CONSTRAINT `pk_hd` PRIMARY KEY (`hd_demo_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@household_demographics
+PREHOOK: Output: default@household_demographics
+POSTHOOK: query: ALTER TABLE `household_demographics` ADD CONSTRAINT `pk_hd` PRIMARY KEY (`hd_demo_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Output: default@household_demographics
+PREHOOK: query: ALTER TABLE `income_band` ADD CONSTRAINT `pk_ib` PRIMARY KEY (`ib_income_band_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@income_band
+PREHOOK: Output: default@income_band
+POSTHOOK: query: ALTER TABLE `income_band` ADD CONSTRAINT `pk_ib` PRIMARY KEY (`ib_income_band_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@income_band
+POSTHOOK: Output: default@income_band
+PREHOOK: query: ALTER TABLE `store_sales` ADD CONSTRAINT `ss_i` FOREIGN KEY (`ss_item_sk`) REFERENCES `item`(`i_item_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: default@store_sales
+POSTHOOK: query: ALTER TABLE `store_sales` ADD CONSTRAINT `ss_i` FOREIGN KEY (`ss_item_sk`) REFERENCES `item`(`i_item_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: default@store_sales
+PREHOOK: query: ALTER TABLE `household_demographics` ADD CONSTRAINT `hd_ib` FOREIGN KEY (`hd_income_band_sk`) REFERENCES `income_band`(`ib_income_band_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@household_demographics
+PREHOOK: Output: default@household_demographics
+POSTHOOK: query: ALTER TABLE `household_demographics` ADD CONSTRAINT `hd_ib` FOREIGN KEY (`hd_income_band_sk`) REFERENCES `income_band`(`ib_income_band_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Output: default@household_demographics
+PREHOOK: query: ALTER TABLE `customer` ADD CONSTRAINT `c_hd` FOREIGN KEY (`c_current_hdemo_sk`) REFERENCES `household_demographics`(`hd_demo_sk`) DISABLE NOVALIDATE RELY
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: Input: default@customer
+PREHOOK: Output: default@customer
+POSTHOOK: query: ALTER TABLE `customer` ADD CONSTRAINT `c_hd` FOREIGN KEY (`c_current_hdemo_sk`) REFERENCES `household_demographics`(`hd_demo_sk`) DISABLE NOVALIDATE RELY
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: Input: default@customer
+POSTHOOK: Output: default@customer
+Warning: Shuffle Join MERGEJOIN[78][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: EXPLAIN CBO
+SELECT i_product_name, i_item_sk
+FROM store_sales
+    ,customer
+    ,household_demographics hd1
+    ,household_demographics hd2
+    ,income_band ib2
+    ,item
+WHERE ss_hdemo_sk = hd1.hd_demo_sk AND
+      ss_item_sk = i_item_sk and
+      c_current_hdemo_sk = hd2.hd_demo_sk AND
+      hd2.hd_income_band_sk = ib2.ib_income_band_sk
+GROUP BY i_product_name, i_item_sk
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@income_band
+PREHOOK: Input: default@item
+PREHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT i_product_name, i_item_sk
+FROM store_sales
+    ,customer
+    ,household_demographics hd1
+    ,household_demographics hd2
+    ,income_band ib2
+    ,item
+WHERE ss_hdemo_sk = hd1.hd_demo_sk AND
+      ss_item_sk = i_item_sk and
+      c_current_hdemo_sk = hd2.hd_demo_sk AND
+      hd2.hd_income_band_sk = ib2.ib_income_band_sk
+GROUP BY i_product_name, i_item_sk
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@income_band
+POSTHOOK: Input: default@item
+POSTHOOK: Input: default@store_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(i_product_name=[$1], i_item_sk=[$0])
+  HiveAggregate(group=[{0, 1}])
+    HiveJoin(condition=[=($2, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(i_item_sk=[$0], i_product_name=[$1])
+            HiveTableScan(table=[[default, item]], table:alias=[item])
+          HiveProject(c_current_hdemo_sk=[$0])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, customer]], table:alias=[customer])
+        HiveProject(ss_item_sk=[$0], ss_hdemo_sk=[$1], hd_demo_sk=[$2])
+          HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(ss_item_sk=[$0], ss_hdemo_sk=[$1])
+              HiveFilter(condition=[IS NOT NULL($1)])
+                HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+            HiveProject(hd_demo_sk=[$0])
+              HiveTableScan(table=[[default, household_demographics]], table:alias=[hd1])
+      HiveProject(hd_demo_sk=[$0])
+        HiveFilter(condition=[IS NOT NULL($1)])
+          HiveTableScan(table=[[default, household_demographics]], table:alias=[hd2])
+

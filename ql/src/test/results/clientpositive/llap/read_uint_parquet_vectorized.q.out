@@ -30,10 +30,12 @@ NULL
 PREHOOK: query: drop table testbasicint_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testbasicint_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testbasicint_n0
 POSTHOOK: query: drop table testbasicint_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testbasicint_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testbasicint_n0
 PREHOOK: query: create table testbigintinv_n0
 (col_INT32_UINT_8 bigint,
@@ -79,10 +81,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testbigintinv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testbigintinv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testbigintinv_n0
 POSTHOOK: query: drop table testbigintinv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testbigintinv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testbigintinv_n0
 PREHOOK: query: create table testintinv_n0
 (col_INT32_UINT_8  int,
@@ -128,10 +132,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testintinv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testintinv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testintinv_n0
 POSTHOOK: query: drop table testintinv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testintinv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testintinv_n0
 PREHOOK: query: create table testsmallintinv_n0
 (col_INT32_UINT_8  smallint,
@@ -177,10 +183,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testsmallintinv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testsmallintinv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testsmallintinv_n0
 POSTHOOK: query: drop table testsmallintinv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testsmallintinv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testsmallintinv_n0
 PREHOOK: query: create table testtinyintinv_n0
 (col_INT32_UINT_8  tinyint,
@@ -226,10 +234,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testtinyintinv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testtinyintinv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testtinyintinv_n0
 POSTHOOK: query: drop table testtinyintinv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testtinyintinv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testtinyintinv_n0
 PREHOOK: query: create table testfloatinv_n0
 (col_INT32_UINT_8  float,
@@ -268,17 +278,19 @@ POSTHOOK: Input: default@testfloatinv_n0
 255.0	255.0	255.0	255.0
 32767.0	32767.0	32767.0	32767.0
 65535.0	65535.0	65535.0	65535.0
-2.14748365E9	2.14748365E9	2.14748365E9	2.14748365E9
+2.1474836E9	2.1474836E9	2.1474836E9	2.1474836E9
 NULL	NULL	NULL	4.2949673E9
 NULL	NULL	NULL	9.223372E18
 NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testfloatinv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testfloatinv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testfloatinv_n0
 POSTHOOK: query: drop table testfloatinv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testfloatinv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testfloatinv_n0
 PREHOOK: query: create table testdoubleinv_n0
 (col_INT32_UINT_8  double,
@@ -324,10 +336,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdoubleinv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdoubleinv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdoubleinv_n0
 POSTHOOK: query: drop table testdoubleinv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdoubleinv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdoubleinv_n0
 PREHOOK: query: create table testdecimal22_2inv_n0
 (col_INT32_UINT_8  decimal(22,2),
@@ -373,10 +387,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal22_2inv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal22_2inv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal22_2inv_n0
 POSTHOOK: query: drop table testdecimal22_2inv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal22_2inv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal22_2inv_n0
 PREHOOK: query: create table testdecimal13_2inv_n0
 (col_INT32_UINT_8  decimal(13,2),
@@ -422,10 +438,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal13_2inv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal13_2inv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal13_2inv_n0
 POSTHOOK: query: drop table testdecimal13_2inv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal13_2inv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal13_2inv_n0
 PREHOOK: query: create table testdecimal8_2inv_n0
 (col_INT32_UINT_8  decimal(8,2),
@@ -471,10 +489,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal8_2inv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal8_2inv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal8_2inv_n0
 POSTHOOK: query: drop table testdecimal8_2inv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal8_2inv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal8_2inv_n0
 PREHOOK: query: create table testdecimal6_2inv_n0
 (col_INT32_UINT_8  decimal(6,2),
@@ -520,10 +540,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal6_2inv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal6_2inv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal6_2inv_n0
 POSTHOOK: query: drop table testdecimal6_2inv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal6_2inv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal6_2inv_n0
 PREHOOK: query: create table testdecimal3_2inv_n0
 (col_INT32_UINT_8  decimal(3,2),
@@ -569,10 +591,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal3_2inv_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal3_2inv_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal3_2inv_n0
 POSTHOOK: query: drop table testdecimal3_2inv_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal3_2inv_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal3_2inv_n0
 PREHOOK: query: create table testbigintvalid_n0
 (col_INT32_UINT_8 bigint,
@@ -618,10 +642,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testbigintvalid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testbigintvalid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testbigintvalid_n0
 POSTHOOK: query: drop table testbigintvalid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testbigintvalid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testbigintvalid_n0
 PREHOOK: query: create table testintvalid_n0
 (col_INT32_UINT_8  int,
@@ -667,10 +693,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testintvalid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testintvalid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testintvalid_n0
 POSTHOOK: query: drop table testintvalid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testintvalid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testintvalid_n0
 PREHOOK: query: create table testsmallintvalid_n0
 (col_INT32_UINT_8  smallint,
@@ -716,10 +744,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testsmallintvalid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testsmallintvalid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testsmallintvalid_n0
 POSTHOOK: query: drop table testsmallintvalid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testsmallintvalid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testsmallintvalid_n0
 PREHOOK: query: create table testtinyintvalid_n0
 (col_INT32_UINT_8  tinyint,
@@ -765,10 +795,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testtinyintvalid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testtinyintvalid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testtinyintvalid_n0
 POSTHOOK: query: drop table testtinyintvalid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testtinyintvalid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testtinyintvalid_n0
 PREHOOK: query: create table testfloatvalid_n0
 (col_INT32_UINT_8  float,
@@ -807,17 +839,19 @@ POSTHOOK: Input: default@testfloatvalid_n0
 255.0	255.0	255.0	255.0
 NULL	32767.0	32767.0	32767.0
 NULL	65535.0	65535.0	65535.0
-NULL	NULL	2.14748365E9	2.14748365E9
+NULL	NULL	2.1474836E9	2.1474836E9
 NULL	NULL	NULL	4.2949673E9
 NULL	NULL	NULL	9.223372E18
 NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testfloatvalid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testfloatvalid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testfloatvalid_n0
 POSTHOOK: query: drop table testfloatvalid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testfloatvalid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testfloatvalid_n0
 PREHOOK: query: create table testdoublevalid_n0
 (col_INT32_UINT_8  double,
@@ -863,10 +897,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdoublevalid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdoublevalid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdoublevalid_n0
 POSTHOOK: query: drop table testdoublevalid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdoublevalid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdoublevalid_n0
 PREHOOK: query: create table testdecimal22_2valid_n0
 (col_INT32_UINT_8  decimal(22,2),
@@ -912,10 +948,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal22_2valid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal22_2valid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal22_2valid_n0
 POSTHOOK: query: drop table testdecimal22_2valid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal22_2valid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal22_2valid_n0
 PREHOOK: query: create table testdecimal13_2valid_n0
 (col_INT32_UINT_8  decimal(13,2),
@@ -961,10 +999,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal13_2valid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal13_2valid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal13_2valid_n0
 POSTHOOK: query: drop table testdecimal13_2valid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal13_2valid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal13_2valid_n0
 PREHOOK: query: create table testdecimal8_2valid_n0
 (col_INT32_UINT_8  decimal(8,2),
@@ -1010,10 +1050,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal8_2valid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal8_2valid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal8_2valid_n0
 POSTHOOK: query: drop table testdecimal8_2valid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal8_2valid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal8_2valid_n0
 PREHOOK: query: create table testdecimal6_2valid_n0
 (col_INT32_UINT_8  decimal(6,2),
@@ -1059,10 +1101,12 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal6_2valid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal6_2valid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal6_2valid_n0
 POSTHOOK: query: drop table testdecimal6_2valid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal6_2valid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal6_2valid_n0
 PREHOOK: query: create table testdecimal3_2valid_n0
 (col_INT32_UINT_8  decimal(3,2),
@@ -1108,8 +1152,10 @@ NULL	NULL	NULL	NULL
 PREHOOK: query: drop table testdecimal3_2valid_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testdecimal3_2valid_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testdecimal3_2valid_n0
 POSTHOOK: query: drop table testdecimal3_2valid_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testdecimal3_2valid_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testdecimal3_2valid_n0

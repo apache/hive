@@ -536,24 +536,30 @@ STAGE PLANS:
 PREHOOK: query: drop table foo
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo
+PREHOOK: Output: database:default
 PREHOOK: Output: default@foo
 POSTHOOK: query: drop table foo
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@foo
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo
 PREHOOK: query: drop table foo2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@foo2
 POSTHOOK: query: drop table foo2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@foo2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo2
 PREHOOK: query: drop table foo3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@foo3
 POSTHOOK: query: drop table foo3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@foo3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo3

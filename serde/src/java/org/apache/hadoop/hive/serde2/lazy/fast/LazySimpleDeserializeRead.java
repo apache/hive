@@ -855,9 +855,6 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
 
               decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
               if (!decimalIsNull) {
-                if (HiveDecimalWritable.isPrecisionDecimal64(precision)) {
-                  currentDecimal64 = currentHiveDecimalWritable.serialize64(scale);
-                }
                 return true;
               }
             }
@@ -878,15 +875,11 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         case STRUCT:
         case UNION:
           {
-            if (currentLevel > 0) {
-  
-              // Check for Map which occupies 2 levels (key separator and key/value pair separator).
-              if (currentComplexTypeHelpers[currentLevel - 1] == null) {
-                Preconditions.checkState(currentLevel > 1);
-                Preconditions.checkState(
-                    currentComplexTypeHelpers[currentLevel - 2] instanceof MapComplexTypeHelper);
-                currentLevel++;
-              }
+            // Check for Map which occupies 2 levels (key separator and key/value pair separator).
+            if (currentLevel > 0
+                && currentComplexTypeHelpers[currentLevel] == null
+                && currentComplexTypeHelpers[currentLevel - 1] instanceof MapComplexTypeHelper) {
+              currentLevel++;
             }
             ComplexTypeHelper complexTypeHelper = field.complexTypeHelper; 
             currentComplexTypeHelpers[currentLevel++] = complexTypeHelper;

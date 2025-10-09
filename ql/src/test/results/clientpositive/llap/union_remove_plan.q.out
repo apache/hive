@@ -113,8 +113,10 @@ b
 PREHOOK: query: drop table test_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table
 POSTHOOK: query: drop table test_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table

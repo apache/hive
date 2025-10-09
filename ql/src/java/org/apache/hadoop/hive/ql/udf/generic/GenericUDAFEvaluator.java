@@ -147,7 +147,7 @@ public abstract class GenericUDAFEvaluator implements Closeable {
    *         compilation time,
    */
   public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
-    // This function should be overriden in every sub class
+    // This function should be Overridden in every sub class
     // And the sub class should call super.init(m, parameters) to get mode set.
     mode = m;
     partitionEvaluator = null;
@@ -214,7 +214,8 @@ public abstract class GenericUDAFEvaluator implements Closeable {
     if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
       iterate(agg, parameters);
     } else {
-      assert (parameters.length == 1);
+      // extra parameters are only used to initialize the UDAFs, it's OK
+      // to ignore them here and keep the column parameter (the first one)
       merge(agg, parameters[0]);
     }
   }

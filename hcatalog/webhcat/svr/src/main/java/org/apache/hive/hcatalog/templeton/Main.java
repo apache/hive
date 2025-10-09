@@ -32,6 +32,9 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
+import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -44,6 +47,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
 import org.apache.hadoop.security.authentication.server.PseudoAuthenticationHandler;
 import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.eclipse.jetty.rewrite.handler.RedirectPatternRule;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -69,7 +73,6 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -83,7 +86,7 @@ public class Main {
   private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
   public static final int DEFAULT_PORT = 8080;
-  public static final String DEFAULT_HOST = "0.0.0.0";
+  public static final String DEFAULT_HOST = IPStackUtils.resolveWildcardAddress();
   public static final String DEFAULT_KEY_STORE_PATH = "";
   public static final String DEFAULT_KEY_STORE_PASSWORD = "";
   public static final String DEFAULT_SSL_PROTOCOL_BLACKLIST = "SSLv2,SSLv3";
@@ -137,7 +140,7 @@ public class Main {
 
   public void usage() {
     System.err.println("usage: templeton [-Dtempleton.port=N] [-D...]");
-    System.exit(1);
+    ExitUtil.terminate(1);
   }
 
   public void run() {
@@ -153,7 +156,7 @@ public class Main {
     } catch (Exception e) {
       System.err.println("templeton: Server failed to start: " + e.getMessage());
       LOG.error("Server failed to start: " , e);
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
   }
   void stop() {
@@ -181,7 +184,7 @@ public class Main {
       String msg = "Server failed to start: templeton: Current working directory '.' does not exist!";
       System.err.println(msg);
       LOG.error(msg);
-      System.exit(1);
+      ExitUtil.terminate(1);
     }
   }
 
@@ -249,7 +252,7 @@ public class Main {
     low.setLowResourcesIdleTimeout(10000);
     server.addBean(low);
 
-    server.addConnector(createChannelConnector());
+    server.setConnectors(new Connector[]{ createChannelConnector(server) });
 
     // Start the server
     server.start();
@@ -276,15 +279,17 @@ public class Main {
    Create a channel connector for "http/https" requests.
    */
 
-  private Connector createChannelConnector() {
+  private Connector createChannelConnector(Server server) {
     ServerConnector connector;
     final HttpConfiguration httpConf = new HttpConfiguration();
     httpConf.setRequestHeaderSize(1024 * 64);
+    httpConf.setSendServerVersion(false);
+    httpConf.setSendXPoweredBy(false);
     final HttpConnectionFactory http = new HttpConnectionFactory(httpConf);
 
     if (conf.getBoolean(AppConfig.USE_SSL, false)) {
       LOG.info("Using SSL for templeton.");
-      SslContextFactory sslContextFactory = new SslContextFactory();
+      SslContextFactory sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setKeyStorePath(conf.get(AppConfig.KEY_STORE_PATH, DEFAULT_KEY_STORE_PATH));
       sslContextFactory.setKeyStorePassword(conf.get(AppConfig.KEY_STORE_PASSWORD, DEFAULT_KEY_STORE_PASSWORD));
       Set<String> excludedSSLProtocols = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings()
@@ -306,18 +311,23 @@ public class Main {
   public FilterHolder makeAuthFilter() throws IOException {
     FilterHolder authFilter = new FilterHolder(AuthFilter.class);
     UserNameHandler.allowAnonymous(authFilter);
+  
+    String confPrefix = "dfs.web.authentication";
+    String prefix = confPrefix + ".";
+    authFilter.setInitParameter(AuthenticationFilter.CONFIG_PREFIX, confPrefix);
+    authFilter.setInitParameter(prefix + AuthenticationFilter.COOKIE_PATH, "/");
+    
     if (UserGroupInformation.isSecurityEnabled()) {
-      //http://hadoop.apache.org/docs/r1.1.1/api/org/apache/hadoop/security/authentication/server/AuthenticationFilter.html
-      authFilter.setInitParameter("dfs.web.authentication.signature.secret",
-        conf.kerberosSecret());
-      //https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
+      authFilter.setInitParameter(prefix + AuthenticationFilter.AUTH_TYPE, KerberosAuthenticationHandler.TYPE);
+      
       String serverPrincipal = SecurityUtil.getServerPrincipal(conf.kerberosPrincipal(), "0.0.0.0");
-      authFilter.setInitParameter("dfs.web.authentication.kerberos.principal",
-        serverPrincipal);
-      //http://https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
-      authFilter.setInitParameter("dfs.web.authentication.kerberos.keytab",
-        conf.kerberosKeytab());
+      authFilter.setInitParameter(prefix + KerberosAuthenticationHandler.PRINCIPAL, serverPrincipal);
+      authFilter.setInitParameter(prefix + KerberosAuthenticationHandler.KEYTAB, conf.kerberosKeytab());
+      authFilter.setInitParameter(prefix + AuthenticationFilter.SIGNATURE_SECRET, conf.kerberosSecret());
+    } else {
+      authFilter.setInitParameter(prefix + AuthenticationFilter.AUTH_TYPE, PseudoAuthenticationHandler.TYPE);
     }
+    
     return authFilter;
   }
 

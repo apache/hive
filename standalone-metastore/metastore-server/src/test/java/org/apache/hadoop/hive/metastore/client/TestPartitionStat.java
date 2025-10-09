@@ -17,13 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore.client;
 
+import org.apache.datasketches.kll.KllFloatsSketch;
+import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -37,7 +38,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 
-import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,6 +54,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.HIVE_ENGINE;
+
 /**
  * Tests for updating partition column stats. All the tests will be executed first using embedded metastore and then
  * with remote metastore. For embedded metastore, TRY_DIRECT_SQL is set to false. For remote metastore TRY_DIRECT_SQL
@@ -63,14 +65,13 @@ import java.util.Map;
 @RunWith(Parameterized.class)
 @Category(MetastoreCheckinTest.class)
 public class TestPartitionStat extends MetaStoreClientTest {
-  private AbstractMetaStoreService metaStore;
+  private final AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
   private static final String DB_NAME = "test_part_stat";
   private static final String TABLE_NAME = "test_part_stat_table";
   private static final String DEFAULT_COL_TYPE = "int";
   private static final String PART_COL_NAME = "year";
   private static final Partition[] PARTITIONS = new Partition[5];
-  private static final String HIVE_ENGINE = "hive";
 
   public TestPartitionStat(String name, AbstractMetaStoreService metaStore) {
     this.metaStore = metaStore;
@@ -78,9 +79,11 @@ public class TestPartitionStat extends MetaStoreClientTest {
 
   @BeforeClass
   public static void startMetaStores() {
-    Map<MetastoreConf.ConfVars, String> msConf = new HashMap<MetastoreConf.ConfVars, String>();
+    Map<MetastoreConf.ConfVars, String> msConf = new HashMap<>();
     Map<String, String> extraConf = new HashMap<>();
     extraConf.put(MetastoreConf.ConfVars.HIVE_IN_TEST.getVarname(), "true");
+    extraConf.put(MetastoreConf.ConfVars.STATS_FETCH_BITVECTOR.getVarname(), "true");
+    extraConf.put(MetastoreConf.ConfVars.STATS_FETCH_KLL.getVarname(), "true");
     startMetaStores(msConf, extraConf);
   }
 
@@ -123,11 +126,12 @@ public class TestPartitionStat extends MetaStoreClientTest {
     PARTITIONS[4] = createPartition(Lists.newArrayList("2021"), getYearPartCol());
   }
 
+  @SuppressWarnings("SameParameterValue")
   private Table createTable(String tableName, List<FieldSchema> partCols) throws Exception {
     String type = "MANAGED_TABLE";
     String location = metaStore.getWarehouseRoot() + "/" + tableName;
 
-    Table table = new TableBuilder()
+    return new TableBuilder()
             .setDbName(DB_NAME)
             .setTableName(tableName)
             .setType(type)
@@ -136,7 +140,6 @@ public class TestPartitionStat extends MetaStoreClientTest {
             .setPartCols(partCols)
             .setLocation(location)
             .create(client, metaStore.getConf());
-    return table;
   }
 
   private Partition createPartition(List<String> values,
@@ -147,8 +150,7 @@ public class TestPartitionStat extends MetaStoreClientTest {
             .setValues(values)
             .setCols(partCols)
             .addToTable(client, metaStore.getConf());
-    Partition partition = client.getPartition(DB_NAME, TABLE_NAME, values);
-    return partition;
+    return client.getPartition(DB_NAME, TABLE_NAME, values);
   }
 
   private static List<FieldSchema> getYearPartCol() {
@@ -157,13 +159,17 @@ public class TestPartitionStat extends MetaStoreClientTest {
     return cols;
   }
 
-  private ColumnStatisticsData createStatsData(long numNulls, long numDVs, long low, long high) {
+  @SuppressWarnings("SameParameterValue")
+  private ColumnStatisticsData createStatsData(long numNulls, long numDVs, long low, long high, HyperLogLog hll,
+      KllFloatsSketch kll) {
     ColumnStatisticsData data = new ColumnStatisticsData();
     LongColumnStatsDataInspector stats = new LongColumnStatsDataInspector();
     stats.setLowValue(low);
     stats.setHighValue(high);
     stats.setNumNulls(numNulls);
     stats.setNumDVs(numDVs);
+    stats.setBitVectors(hll.serialize());
+    stats.setHistogram(kll.toByteArray());
     data.setLongStats(stats);
     return data;
   }
@@ -186,16 +192,16 @@ public class TestPartitionStat extends MetaStoreClientTest {
     Assert.assertEquals(expectedData.getHighValue(), actualData.getHighValue());
     Assert.assertEquals(expectedData.getLowValue(), actualData.getLowValue());
     Assert.assertArrayEquals(expectedData.getBitVectors(), actualData.getBitVectors());
+    Assert.assertArrayEquals(expectedData.getHistogram(), actualData.getHistogram());
   }
 
   private List<String> updatePartColStat(Map<List<String>, ColumnStatisticsData> partitionStats) throws Exception {
     SetPartitionsStatsRequest rqst = new SetPartitionsStatsRequest();
     rqst.setEngine(HIVE_ENGINE);
     List<String> pNameList = new ArrayList<>();
-    for (Map.Entry entry : partitionStats.entrySet()) {
-      ColumnStatistics colStats = createPartColStats((List<String>) entry.getKey(),
-              (ColumnStatisticsData) entry.getValue());
-      String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), (List<String>) entry.getKey());
+    for (Map.Entry<List<String>, ColumnStatisticsData> entry : partitionStats.entrySet()) {
+      ColumnStatistics colStats = createPartColStats(entry.getKey(), entry.getValue());
+      String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), entry.getKey());
       rqst.addToColStats(colStats);
       pNameList.add(pName);
     }
@@ -207,10 +213,10 @@ public class TestPartitionStat extends MetaStoreClientTest {
                              List<String> pNameList) throws Exception {
     Map<String, List<ColumnStatisticsObj>> statistics = client.getPartitionColumnStatistics(DB_NAME, TABLE_NAME,
             pNameList, Collections.singletonList(PART_COL_NAME), HIVE_ENGINE);
-    for (Map.Entry entry : partitionStats.entrySet()) {
-      String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), (List<String>) entry.getKey());
+    for (Map.Entry<List<String>, ColumnStatisticsData> entry : partitionStats.entrySet()) {
+      String pName = FileUtils.makePartName(Collections.singletonList(PART_COL_NAME), entry.getKey());
       ColumnStatisticsObj statisticsObjs = statistics.get(pName).get(0);
-      ColumnStatisticsData data = (ColumnStatisticsData) entry.getValue();
+      ColumnStatisticsData data = entry.getValue();
       assertLongStatsEquals(statisticsObjs.getStatsData().getLongStats(), data.getLongStats());
     }
   }
@@ -218,19 +224,50 @@ public class TestPartitionStat extends MetaStoreClientTest {
   @Test
   public void testUpdateStatSingle() throws Exception {
     Map<List<String>, ColumnStatisticsData> partitionStats = new HashMap<>();
-    partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100));
+    HyperLogLog hll = HyperLogLog.builder().build();
+    hll.addLong(1);
+    hll.addLong(2);
+    hll.addLong(3);
+
+    KllFloatsSketch kll = KllFloatsSketch.newHeapInstance();
+    kll.update(1);
+    kll.update(2);
+    kll.update(3);
+
+    partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100, hll, kll));
     List<String> pNameList = updatePartColStat(partitionStats);
     validateStats(partitionStats, pNameList);
   }
 
   @Test
   public void testUpdateStatMultiple() throws Exception {
+    HyperLogLog hll = HyperLogLog.builder().build();
+    hll.addLong(1);
+    hll.addLong(2);
+    hll.addLong(4);
+
+    KllFloatsSketch kll = KllFloatsSketch.newHeapInstance();
+    kll.update(1);
+    kll.update(2);
+    kll.update(5);
+
     Map<List<String>, ColumnStatisticsData> partitionStats = new HashMap<>();
-    partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100));
-    partitionStats.put(PARTITIONS[1].getValues(), createStatsData(100, 500, 1, 100));
-    partitionStats.put(PARTITIONS[2].getValues(), createStatsData(100, 150, 1, 100));
-    partitionStats.put(PARTITIONS[3].getValues(), createStatsData(100, 50, 2, 100));
-    partitionStats.put(PARTITIONS[4].getValues(), createStatsData(100, 50, 1, 1000));
+    partitionStats.put(PARTITIONS[0].getValues(), createStatsData(100, 50, 1, 100, hll, kll));
+    partitionStats.put(PARTITIONS[1].getValues(), createStatsData(100, 500, 1, 100, hll, kll));
+    partitionStats.put(PARTITIONS[2].getValues(), createStatsData(100, 150, 1, 100, hll, kll));
+
+    hll = HyperLogLog.builder().build();
+    hll.addLong(1);
+    hll.addLong(3);
+    hll.addLong(4);
+
+    kll = KllFloatsSketch.newHeapInstance();
+    kll.update(1);
+    kll.update(3);
+    kll.update(5);
+
+    partitionStats.put(PARTITIONS[3].getValues(), createStatsData(100, 50, 2, 100, hll, kll));
+    partitionStats.put(PARTITIONS[4].getValues(), createStatsData(100, 50, 1, 1000, hll, kll));
     List<String> pNameList = updatePartColStat(partitionStats);
     validateStats(partitionStats, pNameList);
   }

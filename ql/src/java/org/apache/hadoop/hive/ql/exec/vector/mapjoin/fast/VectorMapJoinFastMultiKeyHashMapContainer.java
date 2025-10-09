@@ -43,7 +43,6 @@ public class VectorMapJoinFastMultiKeyHashMapContainer
   private static final Logger LOG = LoggerFactory.getLogger(VectorMapJoinFastMultiKeyHashMapContainer.class);
 
   private final VectorMapJoinFastMultiKeyHashMap[] vectorMapJoinFastMultiKeyHashMaps;
-  private BytesWritable testKeyBytesWritable;
   private final int numThreads;
 
   public VectorMapJoinFastMultiKeyHashMapContainer(
@@ -68,10 +67,10 @@ public class VectorMapJoinFastMultiKeyHashMapContainer
     NonMatchedBytesHashMapParallelIterator(MatchTracker matchTracker,
         VectorMapJoinFastBytesHashMap[] hashMaps, int numThreads) {
       super(matchTracker);
-      hashMapIterators = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator[4];
+      hashMapIterators = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator[numThreads];
       for (int i = 0; i < numThreads; ++i) {
-        hashMapIterators[i] = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator(matchTracker,
-            hashMaps[i]);
+        hashMapIterators[i] = new VectorMapJoinFastBytesHashMap.NonMatchedBytesHashMapIterator(
+            matchTracker.getPartition(i), hashMaps[i]);
       }
       index = 0;
       this.numThreads = numThreads;
@@ -154,11 +153,13 @@ public class VectorMapJoinFastMultiKeyHashMapContainer
 
   @Override
   public MatchTracker createMatchTracker() {
-    int count = 0;
-    for (int i = 0; i < numThreads; ++i) {
-      count += vectorMapJoinFastMultiKeyHashMaps[i].logicalHashBucketCount;
+    MatchTracker parentMatchTracker = MatchTracker.createPartitioned(numThreads);
+    for (int i = 0; i < numThreads; i++) {
+      int childSize = vectorMapJoinFastMultiKeyHashMaps[i].logicalHashBucketCount;
+      parentMatchTracker.addPartition(i, childSize);
     }
-    return MatchTracker.create(count);
+
+    return parentMatchTracker;
   }
 
   @Override
@@ -182,8 +183,11 @@ public class VectorMapJoinFastMultiKeyHashMapContainer
   public JoinUtil.JoinResult lookup(byte[] keyBytes, int keyStart, int keyLength,
       VectorMapJoinHashMapResult hashMapResult, MatchTracker matchTracker) throws IOException {
     long hashCode = HashCodeUtil.murmurHash(keyBytes, keyStart, keyLength);
-    return vectorMapJoinFastMultiKeyHashMaps[(int) ((numThreads - 1) & hashCode)].lookup(keyBytes, keyStart, keyLength, hashMapResult,
-        matchTracker);
+    int partition = (int) ((numThreads - 1) & hashCode);
+    MatchTracker childMatchTracker = matchTracker != null ? matchTracker.getPartition(partition) : null;
+
+    return vectorMapJoinFastMultiKeyHashMaps[partition].lookup(keyBytes, keyStart, keyLength, hashMapResult,
+        childMatchTracker);
   }
 
   @Override

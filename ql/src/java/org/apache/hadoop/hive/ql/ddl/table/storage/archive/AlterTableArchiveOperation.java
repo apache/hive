@@ -182,7 +182,7 @@ public class AlterTableArchiveOperation extends DDLOperation<AlterTableArchiveDe
     context.getConsole().printInfo("Creating " + ARCHIVE_NAME + " for " + originalDir.toString() + " in " + tmpPath);
     context.getConsole().printInfo("Please wait... (this may take a while)");
     try {
-      int maxJobNameLength = context.getConf().getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+      int maxJobNameLength = context.getConf().getIntVar(HiveConf.ConfVars.HIVE_JOBNAME_LENGTH);
       String jobName = String.format("Archiving %s@%s", table.getTableName(), partitionSpecInfo.getName());
       jobName = Utilities.abbreviate(jobName, maxJobNameLength - 6);
       context.getConf().set(MRJobConfig.JOB_NAME, jobName);

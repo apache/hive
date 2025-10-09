@@ -160,7 +160,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	48                  
 	rawDataSize         	512                 
-	totalSize           	560                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -232,10 +232,12 @@ POSTHOOK: Input: default@total_ordered
 PREHOOK: query: drop table total_ordered
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@total_ordered
+PREHOOK: Output: database:default
 PREHOOK: Output: default@total_ordered
 POSTHOOK: query: drop table total_ordered
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@total_ordered
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@total_ordered
 PREHOOK: query: create table total_ordered as select * from src5_n2 order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -271,7 +273,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	48                  
 	rawDataSize         	512                 
-	totalSize           	560                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

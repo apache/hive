@@ -100,3 +100,152 @@ POSTHOOK: Input: default@t_n14
 4	5	1	9
 3	7	1	10
 8	9	1	17
+PREHOOK: query: create table store(store_name string, store_sqft int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store
+POSTHOOK: query: create table store(store_name string, store_sqft int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store
+PREHOOK: query: insert into store values ('HQ', 3), ('hq', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@store
+POSTHOOK: query: insert into store values ('HQ', 3), ('hq', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@store
+POSTHOOK: Lineage: store.store_name SCRIPT []
+POSTHOOK: Lineage: store.store_sqft SCRIPT []
+PREHOOK: query: explain cbo
+select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by case store_name when 'HQ' then null else store_name end ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by case store_name when 'HQ' then null else store_name end ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(c0=[$0], c1=[$1], c2=[$2])
+  HiveSortLimit(sort0=[$3], dir0=[ASC])
+    HiveProject(c0=[$0], c1=[$1], c2=[$2], (tok_function when (= (tok_table_or_col store_name) 'HQ') tok_null (tok_table_or_col store_name))=[$1])
+      HiveAggregate(group=[{0, 1, 2}])
+        HiveProject($f0=[$0], $f1=[CASE(=($0, _UTF-16LE'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
+          HiveTableScan(table=[[default, store]], table:alias=[store])
+
+PREHOOK: query: select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by case store_name when 'HQ' then null else store_name end ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by case store_name when 'HQ' then null else store_name end ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+hq	hq	4
+HQ	NULL	3
+PREHOOK: query: explain cbo
+select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by case store_name when 'hq' then null else store_name end ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by case store_name when 'hq' then null else store_name end ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(c0=[$0], c1=[$1], c2=[$2])
+  HiveSortLimit(sort0=[$3], dir0=[ASC])
+    HiveProject(c0=[$0], c1=[$1], c2=[$2], (tok_function when (= (tok_table_or_col store_name) 'hq') tok_null (tok_table_or_col store_name))0=[CASE(=($0, _UTF-16LE'hq'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)])
+      HiveAggregate(group=[{0, 1, 2}])
+        HiveProject($f0=[$0], $f1=[CASE(=($0, _UTF-16LE'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
+          HiveTableScan(table=[[default, store]], table:alias=[store])
+
+PREHOOK: query: select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by case store_name when 'hq' then null else store_name end ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by case store_name when 'hq' then null else store_name end ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+HQ	NULL	3
+hq	hq	4
+PREHOOK: query: explain cbo
+select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by c1 ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by c1 ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$1], dir0=[ASC])
+  HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+    HiveAggregate(group=[{0, 1, 2}])
+      HiveProject($f0=[$0], $f1=[CASE(=($0, _UTF-16LE'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
+        HiveTableScan(table=[[default, store]], table:alias=[store])
+
+PREHOOK: query: select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by c1 ASC
+PREHOOK: type: QUERY
+PREHOOK: Input: default@store
+#### A masked pattern was here ####
+POSTHOOK: query: select store.store_name as c0, case store_name when 'HQ' then null else store_name end as c1,
+       store.store_sqft as c2
+  from store as store
+group by store.store_name, case store_name when 'HQ' then null else store_name end, store.store_sqft
+order by c1 ASC
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@store
+#### A masked pattern was here ####
+hq	hq	4
+HQ	NULL	3

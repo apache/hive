@@ -21,7 +21,10 @@ package org.apache.hadoop.hive.ql.plan;
 import java.io.Serializable;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.hive.ql.plan.DeferredWorkContext;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 /**
@@ -29,7 +32,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  *
  */
 @Explain(displayName = "Copy", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class CopyWork implements Serializable {
+public class CopyWork implements Serializable, BaseCopyWork {
   private static final long serialVersionUID = 1L;
   private Path[] fromPath;
   private Path[] toPath;
@@ -135,5 +138,16 @@ public class CopyWork implements Serializable {
 
   public void setOverwrite(boolean overwrite) {
     this.overwrite = overwrite;
+  }
+
+  public void setToPath(Path[] toPath) {
+    this.toPath = toPath;
+  }
+  public void initializeFromDeferredContext(DeferredWorkContext deferredContext) throws HiveException {
+    if (!deferredContext.isCalculated()) {
+      // Read metadata from metastore and populate the members of the context
+      ImportSemanticAnalyzer.setupDeferredContextFromMetadata(deferredContext);
+    }
+    setToPath(new Path[] { deferredContext.destPath });
   }
 }

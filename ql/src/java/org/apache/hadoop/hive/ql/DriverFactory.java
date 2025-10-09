@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,11 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.reexec.IReExecutionPlugin;
 import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
-import org.apache.hadoop.hive.ql.reexec.ReExecuteLostAMQueryPlugin;
-import org.apache.hadoop.hive.ql.reexec.ReCompileWithoutCBOPlugin;
-import org.apache.hadoop.hive.ql.reexec.ReExecutionOverlayPlugin;
-import org.apache.hadoop.hive.ql.reexec.ReExecutionDagSubmitPlugin;
-import org.apache.hadoop.hive.ql.reexec.ReOptimizePlugin;
+import org.apache.hadoop.hive.ql.reexec.ReExecutionStrategyType;
 
 import com.google.common.base.Strings;
 
@@ -43,7 +40,7 @@ public final class DriverFactory {
   }
 
   public static IDriver newDriver(HiveConf conf) {
-    return newDriver(getNewQueryState(conf), null);
+    return newDriver(getNewQueryState(conf), QueryInfo.getFromConf(conf));
   }
 
   public static IDriver newDriver(QueryState queryState, QueryInfo queryInfo) {
@@ -53,12 +50,13 @@ public final class DriverFactory {
     }
 
     String strategies = queryState.getConf().getVar(ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES);
-    strategies = Strings.nullToEmpty(strategies).trim().toLowerCase();
+    strategies = Strings.nullToEmpty(strategies);
     List<IReExecutionPlugin> plugins = new ArrayList<>();
     for (String string : strategies.split(",")) {
       if (string.trim().isEmpty()) {
         continue;
       }
+
       plugins.add(buildReExecPlugin(string));
     }
 
@@ -66,23 +64,29 @@ public final class DriverFactory {
   }
 
   private static IReExecutionPlugin buildReExecPlugin(String name) throws RuntimeException {
-    if ("overlay".equals(name)) {
-      return new ReExecutionOverlayPlugin();
+    Class<? extends IReExecutionPlugin> pluginType;
+    try {
+      pluginType = ReExecutionStrategyType.getPluginClassByName(name);
+    } catch (IllegalArgumentException e) {
+        try {
+          Class<?> cls = Class.forName(name);
+          if (cls.isAssignableFrom(IReExecutionPlugin.class)) {
+            throw new RuntimeException("Not re-execution plugin: " + name);
+          }
+
+          pluginType = (Class<? extends IReExecutionPlugin>) cls;
+        } catch (ClassNotFoundException e1) {
+          throw new RuntimeException(
+              "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
+        }
     }
-    if ("reoptimize".equals(name)) {
-      return new ReOptimizePlugin();
+
+    try {
+      return pluginType.getDeclaredConstructor(null).newInstance(null);
+    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+      throw new RuntimeException(
+          "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
     }
-    if ("reexecute_lost_am".equals(name)) {
-      return new ReExecuteLostAMQueryPlugin();
-    }
-    if ("recompile_without_cbo".equals(name)) {
-      return new ReCompileWithoutCBOPlugin();
-    }
-    if (name.equals("dagsubmit")) {
-      return new ReExecutionDagSubmitPlugin();
-    }
-    throw new RuntimeException(
-        "Unknown re-execution plugin: " + name + " (" + ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname + ")");
   }
 
   public static QueryState getNewQueryState(HiveConf conf) {

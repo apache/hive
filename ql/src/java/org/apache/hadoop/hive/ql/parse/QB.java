@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -28,7 +29,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -51,7 +51,7 @@ public class QB {
   private HashMap<String, QBExpr> aliasToSubqExpr;
   private HashMap<String, Table> viewAliasToViewSchema;
   private HashMap<String, Map<String, String>> aliasToProps;
-  private HashMap<String, Pair<String, String>> aliasToAsOf;
+  private HashMap<String, QBSystemVersion> aliasToSystemVersion;
   private List<String> aliases;
   private QBParseInfo qbp;
   private QBMetaData qbm;
@@ -134,7 +134,7 @@ public class QB {
     destToWindowingSpec = new LinkedHashMap<String, WindowingSpec>();
     id = getAppendedAliasFromId(outer_id, alias);
     aliasInsideView = new HashSet<>();
-    aliasToAsOf = new LinkedHashMap<>();
+    aliasToSystemVersion = new LinkedHashMap<>();
   }
 
   // For sub-queries, the id. and alias should be appended since same aliases can be re-used
@@ -195,8 +195,8 @@ public class QB {
     aliasToProps.put(alias.toLowerCase(), props);
   }
 
-  public void setAsOf(String alias, Pair<String, String> asOf) {
-    aliasToAsOf.put(alias.toLowerCase(), asOf);
+  public void setSystemVersion(String alias, QBSystemVersion asOf) {
+    aliasToSystemVersion.put(alias.toLowerCase(), asOf);
   }
 
   public void addAlias(String alias) {
@@ -257,8 +257,8 @@ public class QB {
     return aliasToProps.get(alias.toLowerCase());
   }
 
-  public Pair<String, String> getAsOfForAlias(String alias) {
-    return aliasToAsOf.get(alias.toLowerCase());
+  public QBSystemVersion getSystemVersionForAlias(String alias) {
+    return aliasToSystemVersion.get(alias.toLowerCase());
   }
 
   public void rewriteViewToSubq(String alias, String viewName, QBExpr qbexpr, Table tab) {
@@ -316,6 +316,20 @@ public class QB {
 
   public boolean hasTableSample(String alias) {
     return qbp.getTabSample(alias) != null;
+  }
+  
+  public boolean hasTableSampleRecursive() {
+    if (!qbp.getNameToSample().isEmpty()) {
+      return true;
+    }
+    
+    for (QBExpr qbExpr: aliasToSubq.values()) {
+      if (qbExpr.getQB() != null && qbExpr.getQB().hasTableSampleRecursive()) {
+        return true;
+      }
+    }
+    
+    return false;
   }
 
   public CreateTableDesc getTableDesc() {

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -28,12 +29,9 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -41,15 +39,15 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.thrift.transport.TTransportException;
-import org.junit.AfterClass;
-import org.junit.Before;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import org.junit.Ignore;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
@@ -58,17 +56,9 @@ import org.slf4j.LoggerFactory;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-/*
-Tests JWT auth in HiveMetastore server.
- */
 @Category(MetastoreUnitTest.class)
 public class TestRemoteHiveMetastoreWithHttpJwt {
-  private static final Map<String, String> DEFAULTS = new HashMap<>(System.getenv());
-  private static Map<String, String> envMap;
-
   private static String baseDir = System.getProperty("basedir");
   private static final File jwtAuthorizedKeyFile =
       new File(baseDir,"src/test/resources/auth/jwt/jwt-authorized-key.json");
@@ -80,50 +70,17 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
   private static final String USER_1 = "HMS_TEST_USER_1";
   private static final String TEST_DB_NAME_PREFIX = "HMS_JWT_AUTH_DB";
   private static final Logger LOG = LoggerFactory.getLogger(TestRemoteHiveMetastoreWithHttpJwt.class);
-  //private static MiniHS2 miniHS2;
 
   private static final int MOCK_JWKS_SERVER_PORT = 8089;
   @ClassRule
   public static final WireMockRule MOCK_JWKS_SERVER = new WireMockRule(MOCK_JWKS_SERVER_PORT);
 
-  /**
-   * This is a hack to make environment variables modifiable.
-   * Ref: https://stackoverflow.com/questions/318239/how-do-i-set-environment-variables-from-java.
-   */
-  @BeforeClass
-  public static void makeEnvModifiable() throws Exception {
-    envMap = new HashMap<>();
-    Class<?> envClass = Class.forName("java.lang.ProcessEnvironment");
-    Field theEnvironmentField = envClass.getDeclaredField("theEnvironment");
-    Field theUnmodifiableEnvironmentField = envClass.getDeclaredField("theUnmodifiableEnvironment");
-    removeStaticFinalAndSetValue(theEnvironmentField, envMap);
-    removeStaticFinalAndSetValue(theUnmodifiableEnvironmentField, envMap);
-  }
-
-  private static void removeStaticFinalAndSetValue(Field field, Object value) throws Exception {
-    field.setAccessible(true);
-    Field modifiersField = Field.class.getDeclaredField("modifiers");
-    modifiersField.setAccessible(true);
-    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-    field.set(null, value);
-  }
   private static int port;
   private static Configuration conf = null;
-
-  public TestRemoteHiveMetastoreWithHttpJwt() {
-    // default constructor
-  }
-
-  @AfterClass
-  public static void stopServices() throws Exception {
-    System.getenv().remove("HMS_JWT");
-  }
 
   @BeforeClass
   public static void setUp() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
-
-    // set some values to use for getting conf. vars
     MetastoreConf.setBoolVar(conf, ConfVars.METRICS_ENABLED, true);
     conf.set("datanucleus.autoCreateTables", "false");
     conf.set("hive.in.test", "true");
@@ -148,13 +105,7 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
     port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
         conf);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
-    System.out.println("Starting MetaStore Server on port " + port);
-  }
-
-  @Before
-  public void initEnvMap() {
-    envMap.clear();
-    envMap.putAll(DEFAULTS);
+    LOG.info("Starting MetaStore Server on port {}", port);
   }
 
   private static void setupMockServer() throws Exception {
@@ -165,88 +116,52 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
         "http://localhost:" + MOCK_JWKS_SERVER_PORT + "/jwks");
   }
 
-  /*
-  Tests a valid JWT sent to metastore sever
-   */
   @Test
   public void testValidJWT() throws Exception {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
         TimeUnit.MINUTES.toMillis(5));
-    System.getenv().put("HMS_JWT", validJwtToken);
-    String dbName = ("valid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
-    HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
-    try {
-      Database createdDb = new Database();
-      createdDb.setName(dbName);
-      client.createDatabase(createdDb);
-      Database dbFromServer = client.getDatabase(dbName);
-      assertEquals(dbName, dbFromServer.getName());
-    } finally {
-      try {
+
+    new EnvironmentVariables("HMS_JWT", validJwtToken).execute(() -> {
+      String dbName = ("valid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
+      try (HiveMetaStoreClient client = new HiveMetaStoreClient(conf)) {
+        Database createdDb = new Database();
+        createdDb.setName(dbName);
+        client.createDatabase(createdDb);
+        Database dbFromServer = client.getDatabase(dbName);
+        assertEquals(dbName, dbFromServer.getName());
         client.dropDatabase(dbName);
-      } catch (Exception e) {
-        LOG.warn("Failed to drop database: " + dbName + ". Error message: " + e);
       }
-      try {
-        client.close();
-      } catch (Exception e) {
-        LOG.error("Failed to close metastore client");
-      }
-    }
+    });
   }
 
-  /*
-  Tests that an exception is thrown when metastore client (in http mode)
-  sends a expired jwt to metastore server.
-   */
   @Test(expected = TTransportException.class)
   public void testExpiredJWT() throws Exception {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
-        TimeUnit.MILLISECONDS.toMillis(2));
-    System.getenv().put("HMS_JWT", validJwtToken);
-    String dbName = ("expired_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
-    HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
-    try {
-      Thread.sleep(TimeUnit.MILLISECONDS.toMillis(2));
-      Database createdDb = new Database();
-      createdDb.setName(dbName);
-      client.createDatabase(createdDb);
-    } catch (InterruptedException e) {
-      // ignore
-    } finally {
-      try {
-        client.close();
-      } catch (Exception e) {
-        LOG.error("Failed to close metastore client");
+        TimeUnit.MINUTES.toMillis(-2));
+
+    new EnvironmentVariables("HMS_JWT", validJwtToken).execute(() -> {
+      try (HiveMetaStoreClient client = new HiveMetaStoreClient(conf)) {
+        String dbName = ("expired_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
+        Database createdDb = new Database();
+        createdDb.setName(dbName);
+        client.createDatabase(createdDb);
       }
-    }
+    });
   }
 
-  /*
-  Tests that an exception is thrown when metastore client (in http mode) sends an
-  invalid jwt to the metastore server
-   */
   @Test(expected = TTransportException.class)
   public void testInvalidJWT() throws Exception {
     String jwtToken = generateJWT(USER_1, jwtUnauthorizedKeyFile.toPath(),
         TimeUnit.MINUTES.toMillis(2));
-    System.getenv().put("HMS_JWT", jwtToken);
-    String dbName = ("invalid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
-    HiveMetaStoreClient client = new HiveMetaStoreClient(conf);
-    try {
-      Thread.sleep(TimeUnit.MILLISECONDS.toMillis(2));
-      Database createdDb = new Database();
-      createdDb.setName(dbName);
-      client.createDatabase(createdDb);
-    } catch (InterruptedException e) {
-      // ignore
-    } finally {
-      try {
-        client.close();
-      } catch (Exception e) {
-        LOG.error("Failed to close metastore client");
+
+    new EnvironmentVariables("HMS_JWT", jwtToken).execute(() -> {
+      try (HiveMetaStoreClient client = new HiveMetaStoreClient(conf)) {
+        String dbName = ("invalid_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
+        Database createdDb = new Database();
+        createdDb.setName(dbName);
+        client.createDatabase(createdDb);
       }
-    }
+    });
   }
 
   private String generateJWT(String user, Path keyFile, long lifeTimeMillis) throws Exception {

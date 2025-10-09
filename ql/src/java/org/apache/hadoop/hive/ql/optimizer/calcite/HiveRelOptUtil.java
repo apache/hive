@@ -727,6 +727,20 @@ public class HiveRelOptUtil extends RelOptUtil {
     return cannotExtract;
   }
 
+  public static RexNode pushPastProjectUnlessBloat(RexNode node, Project project, int bloat) {
+    if (Bug.CALCITE_6513_FIXED) {
+      throw new IllegalStateException("Method is redundant when the fix for CALCITE-6513 is merged into Calcite. " +
+          "Use RelOptUtil.pushPastProjectUnlessBloat");
+    }
+
+    List<RexNode> newConditions =
+        RelOptUtil.pushPastProjectUnlessBloat(Collections.singletonList(node), project, bloat);
+    if (newConditions == null || newConditions.size() != 1) {
+      return null;
+    }
+    return newConditions.get(0);
+  }
+
   public static class PKFKJoinInfo {
     public final boolean isPkFkJoin;
     public final Pair<ImmutableBitSet, ImmutableBitSet> pkFkJoinColumns;

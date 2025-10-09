@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE NewStructField
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE NewStructField
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE NewStructFieldTable
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE NewStructFieldTable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE NewStructField(a struct<a1:map<string,string>, a2:struct<e1:int>>) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -115,8 +119,10 @@ POSTHOOK: Input: default@newstructfieldtable
 {"a1":{"k1":"v1"},"a2":{"e1":5,"e2":null},"a3":null}	NULL
 PREHOOK: query: DROP TABLE IF EXISTS schema_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS schema_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE schema_test (msg array<struct<f1: string, f2: string, a: array<struct<a1: string, a2: string>>, b: array<struct<b1: int, b2: int>>>>) STORED AS PARQUET
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -167,31 +173,39 @@ POSTHOOK: Input: default@schema_test
 PREHOOK: query: DROP TABLE schema_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@schema_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@schema_test
 POSTHOOK: query: DROP TABLE schema_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@schema_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@schema_test
 PREHOOK: query: DROP TABLE NewStructField
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@newstructfield
+PREHOOK: Output: database:default
 PREHOOK: Output: default@newstructfield
 POSTHOOK: query: DROP TABLE NewStructField
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@newstructfield
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@newstructfield
 PREHOOK: query: DROP TABLE NewStructFieldTable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@newstructfieldtable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@newstructfieldtable
 POSTHOOK: query: DROP TABLE NewStructFieldTable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@newstructfieldtable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@newstructfieldtable
 PREHOOK: query: drop table if exists parq_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists parq_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table parq_test(age int, name string) stored as parquet
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -452,8 +466,10 @@ STAGE PLANS:
 PREHOOK: query: drop table parq_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parq_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parq_test
 POSTHOOK: query: drop table parq_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parq_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parq_test

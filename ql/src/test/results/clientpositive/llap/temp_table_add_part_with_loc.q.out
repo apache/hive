@@ -56,8 +56,10 @@ day=20110103
 PREHOOK: query: drop table supply_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@supply_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@supply_temp
 POSTHOOK: query: drop table supply_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@supply_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@supply_temp

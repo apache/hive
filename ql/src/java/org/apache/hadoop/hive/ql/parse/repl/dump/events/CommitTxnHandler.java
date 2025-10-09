@@ -23,10 +23,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.GetAllWriteEventInfoRequest;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
@@ -38,11 +38,13 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
-import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
@@ -57,7 +59,7 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext,
                               Path dataPath)
-          throws IOException, LoginException, MetaException, HiveFatalException, SemanticException {
+          throws IOException, HiveFatalException, SemanticException {
     boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     if (copyAtLoad) {
       // encoded filename/checksum of files, write into _files
@@ -71,14 +73,14 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private void createDumpFile(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
                   List<Partition> qlPtns, List<List<String>> fileListArray)
-          throws IOException, SemanticException, LoginException, MetaException, HiveFatalException {
+          throws IOException, SemanticException, HiveFatalException {
     if (fileListArray == null || fileListArray.isEmpty()) {
       return;
     }
 
     Path metaDataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
-    // In case of ACID operations, same directory may have many other sub directory for different write id stmt id
-    // combination. So we can not set isreplace to true.
+    // In case of ACID operations, same directory may have many other subdirectory for different write id stmt id
+    // combination. So we can not set isReplace to true.
     withinContext.replicationSpec.setIsReplace(false);
     EximUtil.createExportDump(metaDataPath.getFileSystem(withinContext.hiveConf), metaDataPath,
             qlMdTable, qlPtns,
@@ -87,7 +89,7 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
     if ((null == qlPtns) || qlPtns.isEmpty()) {
       Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
-      writeDumpFiles(qlMdTable, null, fileListArray.get(0), withinContext, dataPath);
+      writeDumpFiles(qlMdTable, null, fileListArray.getFirst(), withinContext, dataPath);
     } else {
       for (int idx = 0; idx < qlPtns.size(); idx++) {
         Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME + File.separator
@@ -99,7 +101,7 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private void createDumpFileForTable(Context withinContext, org.apache.hadoop.hive.ql.metadata.Table qlMdTable,
                     List<Partition> qlPtns, List<List<String>> fileListArray)
-          throws IOException, SemanticException, LoginException, MetaException, HiveFatalException {
+          throws IOException, SemanticException, HiveFatalException {
     Path newPath = HiveUtils.getDumpPath(withinContext.eventRoot, qlMdTable.getDbName(), qlMdTable.getTableName());
     Context context = new Context(withinContext);
     context.setEventRoot(newPath);
@@ -126,6 +128,20 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
                         && ReplUtils.tableIncludedInReplScope(withinContext.oldReplScope, writeEventInfo.getTable())
                         && !withinContext.getTablesForBootstrap().contains(writeEventInfo.getTable().toLowerCase()));
               })));
+  }
+
+  private List<WriteEventInfo> getAllWriteEventInfoExceptMV(List<WriteEventInfo> writeEventInfoList) {
+    return writeEventInfoList.stream().filter(writeEventInfo -> {
+      try {
+        if (writeEventInfo.getTableObj() != null) {
+          Table table = new Table((org.apache.hadoop.hive.metastore.api.Table) MessageBuilder.getTObj(writeEventInfo.getTableObj(), org.apache.hadoop.hive.metastore.api.Table.class));
+          return !table.isMaterializedView();
+        }
+        return true;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }).collect(Collectors.toList());
   }
 
   @Override
@@ -157,26 +173,58 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
       }
 
       List<WriteEventInfo> writeEventInfoList = null;
+      List<WriteEventInfo> allWriteEventInfoExceptMV = null;
       if (replicatingAcidEvents) {
         writeEventInfoList = getAllWriteEventInfo(withinContext);
 
-        if (ReplUtils.filterTransactionOperations(withinContext.hiveConf)
-           && (writeEventInfoList == null || writeEventInfoList.size() == 0)) {
-          // If optimizing transactions, no need to dump this one
-          // if there were no write events.
-          return;
+        if (writeEventInfoList != null) {
+          allWriteEventInfoExceptMV = getAllWriteEventInfoExceptMV(writeEventInfoList);
+        }
+        String dbName = StringUtils.normalizeIdentifier(withinContext.replScope.getDbName());
+
+        if (ReplUtils.filterTransactionOperations(withinContext.hiveConf)) {
+          List<Long> writeIds = eventMessage.getWriteIds();
+          List<String> databases = Optional.ofNullable(eventMessage.getDatabases())
+                  .orElse(Collections.emptyList())
+                  .stream()
+                  .map(StringUtils::normalizeIdentifier)
+                  .toList();
+
+//                                        Truth Table
+//     Operation                | writeIds | writeEventInfoList | databases | allWriteEventInfoExceptMV  | Output
+//       Read                   |  null    | null               | null      | same as writeEventInfoList | Skip
+//      Insert                  | not null | not null           | not null  | same                       | Dump
+//      Truncate                | not null | null               | not null  | same                       | Dump
+//    Materialized view         | not null | not null           | not null  | different                  | Skip
+
+          boolean shouldSkip = (writeIds == null || writeIds.isEmpty() || !databases.contains(dbName));
+          if (writeEventInfoList != null && !writeEventInfoList.isEmpty()) {
+            shouldSkip = writeEventInfoList.size() != allWriteEventInfoExceptMV.size();
+          }
+
+          if (shouldSkip) {
+            // If optimizing transactions, no need to dump this one
+            // if there were no write events.
+            LOG.debug("skipping commit txn event for db: {}, writeIds: {}, writeEventInfoList: {}, databases: {}",
+                dbName, writeIds, writeEventInfoList, databases);
+            return;
+          }
         }
       }
 
+      // Filtering out all write event info related to materialized view
+      if (writeEventInfoList != null) {
+        writeEventInfoList = allWriteEventInfoExceptMV;
+      }
       int numEntry = (writeEventInfoList != null ? writeEventInfoList.size() : 0);
       if (numEntry != 0) {
         eventMessage.addWriteEventInfo(writeEventInfoList);
         payload = jsonMessageEncoder.getSerializer().serialize(eventMessage);
-        LOG.debug("payload for commit txn event : " + eventMessageAsJSON);
+          LOG.debug("payload for commit txn event : {}", eventMessageAsJSON);
       }
 
       org.apache.hadoop.hive.ql.metadata.Table qlMdTablePrev = null;
-      org.apache.hadoop.hive.ql.metadata.Table qlMdTable = null;
+      org.apache.hadoop.hive.ql.metadata.Table qlMdTable;
       List<Partition> qlPtns = new ArrayList<>();
       List<List<String>> filesTobeAdded = new ArrayList<>();
 

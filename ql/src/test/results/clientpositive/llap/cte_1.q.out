@@ -25165,8 +25165,10 @@ NULL	NULL	2735.0
 NULL	NULL	810.5504687159363
 PREHOOK: query: drop table if exists cte9_t1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists cte9_t1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table cte9_t1 as
         with q1 as (select cint, cstring1 from alltypesorc where cint > 70)
         select * from q1
@@ -25185,8 +25187,10 @@ POSTHOOK: Lineage: cte9_t1.cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(nam
 POSTHOOK: Lineage: cte9_t1.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 PREHOOK: query: drop table if exists cte10_t1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists cte10_t1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table cte10_t1 as
     with q1 as (select cint, cstring1 from alltypesorc where cint > 70)
                select * from q1

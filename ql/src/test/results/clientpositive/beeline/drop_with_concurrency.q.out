@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists drop_with_concurrency_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists drop_with_concurrency_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table drop_with_concurrency_1 (c1 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -13,8 +15,10 @@ POSTHOOK: Output: default@drop_with_concurrency_1
 PREHOOK: query: drop table drop_with_concurrency_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@drop_with_concurrency_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@drop_with_concurrency_1
 POSTHOOK: query: drop table drop_with_concurrency_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@drop_with_concurrency_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@drop_with_concurrency_1

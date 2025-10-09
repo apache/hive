@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -47,6 +48,10 @@ public class GenericUDFEnforceConstraint extends GenericUDF {
               + arguments.length);
     }
 
+    if (!(arguments[0] instanceof BooleanObjectInspector)) {
+      throw new UDFArgumentTypeException(0,
+          String.format("%s only takes BOOLEAN, got %s", getFuncName(), arguments[0].getTypeName()));
+    }
     boi = (BooleanObjectInspector) arguments[0];
     return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
   }

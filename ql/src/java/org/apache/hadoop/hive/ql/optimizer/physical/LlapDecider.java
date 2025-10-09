@@ -90,7 +90,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LlapDecider implements PhysicalPlanResolver {
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(LlapDecider.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(LlapDecider.class);
 
   private HiveConf conf;
 
@@ -173,7 +173,7 @@ public class LlapDecider implements PhysicalPlanResolver {
       clusterState.initClusterInfo();
       final int targetCount;
       final int executorCount;
-      final int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+      final int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAX_REDUCERS);
       if (!clusterState.hasClusterInfo()) {
         LOG.warn("Cannot determine LLAP cluster information");
         executorCount = executorsPerNode; // assume 1 node
@@ -190,12 +190,13 @@ public class LlapDecider implements PhysicalPlanResolver {
         if (newMin < reduceWork.getMaxReduceTasks()) {
           reduceWork.setMinReduceTasks(newMin);
           reduceWork.getEdgePropRef().setAutoReduce(conf, true, newMin,
-              reduceWork.getMaxReduceTasks(), conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER));
+              reduceWork.getMaxReduceTasks(), conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER),
+              reduceWork.getMinSrcFraction(), reduceWork.getMaxSrcFraction());
         } else {
           reduceWork.setAutoReduceParallelism(false);
           reduceWork.setNumReduceTasks(newMin);
           // TODO: is this correct? based on the same logic as HIVE-14200
-          reduceWork.getEdgePropRef().setAutoReduce(null, false, 0, 0, 0);
+          reduceWork.getEdgePropRef().setAutoReduce(null, false, 0, 0, 0, 0.0f, 0.0f);
         }
       } else {
         // UNIFORM || AUTOPARALLEL (maxed out)

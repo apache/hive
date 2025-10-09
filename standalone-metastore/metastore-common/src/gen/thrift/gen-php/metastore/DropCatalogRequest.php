@@ -26,18 +26,30 @@ class DropCatalogRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        2 => array(
+            'var' => 'ifExists',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
      * @var string
      */
     public $name = null;
+    /**
+     * @var bool
+     */
+    public $ifExists = true;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['name'])) {
                 $this->name = $vals['name'];
+            }
+            if (isset($vals['ifExists'])) {
+                $this->ifExists = $vals['ifExists'];
             }
         }
     }
@@ -68,6 +80,13 @@ class DropCatalogRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 2:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->ifExists);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -85,6 +104,11 @@ class DropCatalogRequest
         if ($this->name !== null) {
             $xfer += $output->writeFieldBegin('name', TType::STRING, 1);
             $xfer += $output->writeString($this->name);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->ifExists !== null) {
+            $xfer += $output->writeFieldBegin('ifExists', TType::BOOL, 2);
+            $xfer += $output->writeBool($this->ifExists);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS cond_vector
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS cond_vector
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE cond_vector(a STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

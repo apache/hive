@@ -61,21 +61,17 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@serde_regex
 #### A masked pattern was here ####
 Status: Failed
-Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
+Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
-Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
-#### A masked pattern was here ####
-Caused by: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
 Caused by: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
-], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
-Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
-#### A masked pattern was here ####
-Caused by: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
 Caused by: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
@@ -84,21 +80,17 @@ Caused by: org.apache.hadoop.hive.serde2.SerDeException: Number of matching grou
 ]], Vertex did not succeed due to OWN_TASK_FAILURE, failedTasks:1 killedTasks:0, Vertex vertex_#ID# [Map 1] killed/failed due to:OWN_TASK_FAILURE]
 [Masked Vertex killed due to OTHER_VERTEX_FAILURE]
 DAG did not succeed due to VERTEX_FAILURE. failedVertices:1 killedVertices:1
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Task failed, taskId=task_#ID#, diagnostics=[TaskAttempt 0 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
-Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
-#### A masked pattern was here ####
-Caused by: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
 Caused by: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
 Caused by: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
-], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
+], TaskAttempt 1 failed, info=[Error: Error while running task ( failure ) : attempt_#ID#:java.lang.RuntimeException: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
-Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
-#### A masked pattern was here ####
-Caused by: java.io.IOException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
+Caused by: org.apache.hadoop.hive.ql.metadata.HiveException: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####
 Caused by: java.io.IOException: org.apache.hadoop.hive.serde2.SerDeException: Number of matching groups doesn't match the number of columns
 #### A masked pattern was here ####

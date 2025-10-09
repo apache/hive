@@ -41,16 +41,17 @@
         <exclude>**/.project</exclude>
         <exclude>**/.settings/**</exclude>
         <exclude>**/thirdparty/**</exclude>
+        <exclude>packaging/cache/**</exclude>
         <exclude>standalone-metastore/metastore-common/src/gen/version/**</exclude>
         <exclude>standalone-metastore/metastore-server/src/gen/**</exclude>
         <exclude>common/src/gen/**</exclude>
         <exclude>kafka-handler/src/test/gen/**</exclude>
         <exclude>conf/hive-default.xml.template</exclude>
         <exclude>**/dependency-reduced-pom.xml</exclude>
+        <exclude>standalone-metastore/packaging/cache/**</exclude>
       </excludes>
 
       <includes>
-        <include>.arcconfig</include>
         <include>.checkstyle</include>
         <include>.gitattributes</include>
         <include>.gitignore</include>
@@ -104,13 +105,15 @@
         <include>shims/**/*</include>
         <include>storage-api/**/*</include>
         <include>standalone-metastore/metastore-common/**/*</include>
+        <include>standalone-metastore/metastore-client/**/*</include>
         <include>standalone-metastore/metastore-server/**/*</include>
         <include>standalone-metastore/metastore-tools/**/*</include>
+        <include>standalone-metastore/metastore-rest-catalog/**/*</include>
+        <include>standalone-metastore/packaging/**/*</include>
         <include>standalone-metastore/src/assembly/src.xml</include>
         <include>standalone-metastore/pom.xml</include>
         <include>streaming/**/*</include>
         <include>testutils/**/*</include>
-        <include>upgrade-acid/**/*</include>
         <include>vector-code-gen/**/*</include>
         <include>kudu-handler/**/*</include>
         <include>parser/**/*</include>

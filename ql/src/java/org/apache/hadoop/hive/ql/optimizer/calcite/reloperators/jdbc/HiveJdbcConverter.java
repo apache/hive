@@ -27,6 +27,7 @@ import org.apache.calcite.plan.ConventionTraitDef;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.convert.ConverterImpl;
@@ -38,6 +39,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlDialect;
 
 import org.apache.calcite.util.ControlFlowException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.HiveJdbcImplementor;
 
@@ -80,15 +82,18 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
   }
 
   @Override
-  public void implement(Implementor implementor) {
-
-  }
-
-  @Override
   public RelNode copy(
       RelTraitSet traitSet,
       List<RelNode> inputs) {
     return new HiveJdbcConverter(getCluster(), traitSet, sole(inputs), convention, url, user);
+  }
+
+  @Override
+  public RelNode accept(RelShuttle shuttle) {
+    if (shuttle instanceof HiveRelShuttle) {
+      return ((HiveRelShuttle) shuttle).visit(this);
+    }
+    return super.accept(shuttle);
   }
 
   public RelNode copy(RelTraitSet traitSet, RelNode input) {

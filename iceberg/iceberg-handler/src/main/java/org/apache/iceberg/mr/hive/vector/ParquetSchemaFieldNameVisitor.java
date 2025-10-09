@@ -20,16 +20,16 @@ package org.apache.iceberg.mr.hive.vector;
 
 import java.util.List;
 import java.util.Map;
-import org.apache.hive.iceberg.org.apache.parquet.schema.GroupType;
-import org.apache.hive.iceberg.org.apache.parquet.schema.MessageType;
-import org.apache.hive.iceberg.org.apache.parquet.schema.PrimitiveType;
-import org.apache.hive.iceberg.org.apache.parquet.schema.Type;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.parquet.TypeWithSchemaVisitor;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
+import org.apache.parquet.schema.GroupType;
+import org.apache.parquet.schema.MessageType;
+import org.apache.parquet.schema.PrimitiveType;
+import org.apache.parquet.schema.Type;
 
 /**
  * Collects the top level field names from Parquet schema. During schema visit it translates the expected schema's
@@ -112,6 +112,17 @@ class ParquetSchemaFieldNameVisitor extends TypeWithSchemaVisitor<Type> {
       typesById.put(array.getId().intValue(), array);
     }
     return array;
+  }
+
+  @Override
+  public Type variant(Types.VariantType iVariant, GroupType variant, Type result) {
+    if (variant.getId() != null) {
+      typesById.put(variant.getId().intValue(), variant);
+    }
+    // Add the variant field name to the column names list
+    appendToColNamesList(variant instanceof MessageType, variant.getName());
+
+    return variant;
   }
 
   @Override

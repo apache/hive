@@ -93,8 +93,10 @@ POSTHOOK: Input: default@src_temp
 PREHOOK: query: drop table src_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_temp
 POSTHOOK: query: drop table src_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_temp

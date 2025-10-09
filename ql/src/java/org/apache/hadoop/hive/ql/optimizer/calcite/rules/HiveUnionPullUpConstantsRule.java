@@ -38,6 +38,7 @@ import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.optimizer.calcite.Bug;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 import org.slf4j.Logger;
@@ -66,6 +67,10 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
+    if (Bug.CALCITE_5337_FIXED) {
+      throw new IllegalStateException("Class redundant when the fix for CALCITE-5337 is merged into Calcite");
+    }
+
     final Union union = call.rel(0);
 
     final int count = union.getRowType().getFieldCount();
@@ -82,13 +87,11 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
       return;
     }
 
-    Map<RexNode, RexNode> conditionsExtracted = HiveReduceExpressionsRule.predicateConstants(
-            RexNode.class, rexBuilder, predicates);
     Map<RexNode, RexNode> constants = new HashMap<>();
     for (int i = 0; i < count ; i++) {
       RexNode expr = rexBuilder.makeInputRef(union, i);
-      if (conditionsExtracted.containsKey(expr)) {
-        constants.put(expr, conditionsExtracted.get(expr));
+      if (predicates.constantMap.containsKey(expr)) {
+        constants.put(expr, predicates.constantMap.get(expr));
       }
     }
 
@@ -107,7 +110,11 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
       RexNode expr = rexBuilder.makeInputRef(union, i);
       RelDataTypeField field = fields.get(i);
       if (constants.containsKey(expr)) {
-        topChildExprs.add(constants.get(expr));
+        if (constants.get(expr).getType().equals(field.getType())) {
+          topChildExprs.add(constants.get(expr));
+        } else {
+          topChildExprs.add(rexBuilder.makeCast(field.getType(), constants.get(expr), true));
+        }
         topChildExprsFields.add(field.getName());
       } else {
         topChildExprs.add(expr);
@@ -128,16 +135,14 @@ public class HiveUnionPullUpConstantsRule extends RelOptRule {
     for (int i = 0; i < union.getInputs().size() ; i++) {
       RelNode input = union.getInput(i);
       List<Pair<RexNode, String>> newChildExprs = new ArrayList<>();
-      for (int j = 0; j < refsIndex.cardinality(); j++ ) {
+      for (int j = 0; j < refsIndex.cardinality(); j++) {
         int pos = refsIndex.nth(j);
-        newChildExprs.add(
-                Pair.<RexNode, String>of(rexBuilder.makeInputRef(input, pos),
-                        input.getRowType().getFieldList().get(pos).getName()));
+        newChildExprs.add(Pair.of(rexBuilder.makeInputRef(input, pos),
+            input.getRowType().getFieldList().get(pos).getName()));
       }
       if (newChildExprs.isEmpty()) {
         // At least a single item in project is required.
-        newChildExprs.add(Pair.<RexNode,String>of(
-                topChildExprs.get(0), topChildExprsFields.get(0)));
+        newChildExprs.add(Pair.of(topChildExprs.get(0), topChildExprsFields.get(0)));
       }
       // Add the input with project on top
       relBuilder.push(input);

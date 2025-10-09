@@ -19,9 +19,10 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
@@ -34,8 +35,11 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsResult;
 import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
@@ -58,7 +62,6 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -92,6 +95,7 @@ final class HMSClient implements AutoCloseable {
   private ThriftHiveMetastore.Iface client;
   private TTransport transport;
   private URI serverURI;
+  private Configuration hadoopConf;
 
   public URI getServerURI() {
     return serverURI;
@@ -103,12 +107,12 @@ final class HMSClient implements AutoCloseable {
   }
 
   HMSClient(@Nullable URI uri)
-      throws TException, IOException, InterruptedException, LoginException, URISyntaxException {
+      throws TException, IOException, InterruptedException, URISyntaxException {
     this(uri, CONFIG_DIR);
   }
 
   HMSClient(@Nullable URI uri, @Nullable String confDir)
-      throws TException, IOException, InterruptedException, LoginException, URISyntaxException {
+      throws TException, IOException, InterruptedException, URISyntaxException {
     this.confDir = confDir == null ? CONFIG_DIR : confDir;
     getClient(uri);
   }
@@ -133,8 +137,8 @@ final class HMSClient implements AutoCloseable {
    * @throws InterruptedException if interrupted during kerberos setup
    */
   private void getClient(@Nullable URI uri)
-      throws TException, IOException, InterruptedException, URISyntaxException, LoginException {
-    Configuration conf = new HiveConf();
+      throws TException, IOException, InterruptedException, URISyntaxException {
+    Configuration conf = MetastoreConf.newMetastoreConf();
     addResource(conf, HIVE_SITE);
     if (uri != null) {
       conf.set(METASTORE_URI, uri.toString());
@@ -155,7 +159,7 @@ final class HMSClient implements AutoCloseable {
     LOG.debug("Opening kerberos connection to HMS");
     addResource(conf, CORE_SITE);
 
-    Configuration hadoopConf = new Configuration();
+    this.hadoopConf = new Configuration();
     addResource(hadoopConf, HIVE_SITE);
     addResource(hadoopConf, CORE_SITE);
 
@@ -249,12 +253,18 @@ final class HMSClient implements AutoCloseable {
   }
 
   boolean dropTable(@NotNull String dbName, @NotNull String tableName) throws TException {
-    client.drop_table(dbName, tableName, true);
+    return dropTable(dbName, tableName, true);
+  }
+
+  boolean dropTable(@NotNull String dbName, @NotNull String tableName, boolean deleteData)
+    throws TException {
+    client.drop_table(dbName, tableName, deleteData);
     return true;
   }
 
   Table getTable(@NotNull String dbName, @NotNull String tableName) throws TException {
-    return client.get_table(dbName, tableName);
+    GetTableRequest req = new GetTableRequest(dbName, tableName);
+    return client.get_table_req(req).getTable();
   }
 
   Partition createPartition(@NotNull Table table, @NotNull List<String> values) throws TException {
@@ -267,6 +277,10 @@ final class HMSClient implements AutoCloseable {
 
   void addPartitions(List<Partition> partitions) throws TException {
     client.add_partitions(partitions);
+  }
+
+  void updatePartitionColumnStats(ColumnStatistics colStats) throws TException {
+    client.update_partition_column_statistics(colStats);
   }
 
 
@@ -288,6 +302,13 @@ final class HMSClient implements AutoCloseable {
                                @NotNull List<String> arguments)
       throws TException {
     return client.drop_partition(dbName, tableName, arguments, true);
+  }
+
+  public boolean dropPartition(@NotNull String dbName, @NotNull String tableName,
+                               @NotNull String arguments)
+          throws TException {
+    List<String> partVals = Warehouse.getPartValuesFromPartName(arguments);
+    return dropPartition(dbName, tableName, partVals);
   }
 
   List<Partition> getPartitions(@NotNull String dbName, @NotNull String tableName) throws TException {
@@ -313,6 +334,20 @@ final class HMSClient implements AutoCloseable {
           getPartitionNames(dbName, tableName));
     }
     return client.get_partitions_by_names(dbName, tableName, names);
+  }
+
+  List<Partition> getPartitionsByFilter(@NotNull String dbName, @NotNull String tableName,
+                                        @NotNull String filter) throws TException {
+    return client.get_partitions_by_filter(dbName, tableName, filter, (short) -1);
+  }
+
+  List<Partition> getPartitionsByPs(@NotNull String dbName, @NotNull String tableName,
+                                    @NotNull List<String> partVals) throws TException {
+    return client.get_partitions_ps_with_auth(dbName, tableName, partVals, (short) -1, null, null);
+  }
+
+  PartitionsStatsResult getPartitionsStats(PartitionsStatsRequest request) throws TException {
+    return client.get_partitions_statistics_req(request);
   }
 
   boolean alterTable(@NotNull String dbName, @NotNull String tableName, @NotNull Table newTable)
@@ -391,13 +426,15 @@ final class HMSClient implements AutoCloseable {
   }
 
   private TTransport open(Configuration conf, @NotNull URI uri) throws
-      TException, IOException, LoginException {
+      TException, IOException {
     boolean useSSL = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL);
     boolean useFramedTransport = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_FRAMED_TRANSPORT);
     boolean useCompactProtocol = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_COMPACT_PROTOCOL);
     int clientSocketTimeout = (int) MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
+    int connectionTimeout = (int) MetastoreConf.getTimeVar(conf,
+        MetastoreConf.ConfVars.CLIENT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS);
 
     LOG.debug("Connecting to {}, framedTransport = {}", uri, useFramedTransport);
 
@@ -406,7 +443,7 @@ final class HMSClient implements AutoCloseable {
 
     // Sasl/SSL code is copied from HiveMetastoreCLient
     if (!useSSL) {
-      transport = new TSocket(new TConfiguration(),host, port, clientSocketTimeout);
+      transport = new TSocket(new TConfiguration(),host, port, clientSocketTimeout, connectionTimeout);
     } else {
       String trustStorePath = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PATH).trim();
       if (trustStorePath.isEmpty()) {
@@ -421,7 +458,7 @@ final class HMSClient implements AutoCloseable {
               MetastoreConf.getVar(conf, MetastoreConf.ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
 
       // Create an SSL socket and connect
-      transport = SecurityUtils.getSSLSocket(host, port, clientSocketTimeout,
+      transport = SecurityUtils.getSSLSocket(host, port, clientSocketTimeout, connectionTimeout,
           trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
       LOG.info("Opened an SSL connection to metastore, current connections");
     }
@@ -476,9 +513,6 @@ final class HMSClient implements AutoCloseable {
         try {
           UserGroupInformation ugi = SecurityUtils.getUGI();
           client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
-        } catch (LoginException e) {
-          LOG.warn("Failed to do login. set_ugi() is not successful, " +
-              "Continuing without it.", e);
         } catch (IOException e) {
           LOG.warn("Failed to find ugi of client set_ugi() is not successful, " +
               "Continuing without it.", e);
@@ -514,5 +548,9 @@ final class HMSClient implements AutoCloseable {
       LOG.debug("Closing thrift transport");
       transport.close();
     }
+  }
+
+  public Configuration getHadoopConf() {
+    return hadoopConf;
   }
 }

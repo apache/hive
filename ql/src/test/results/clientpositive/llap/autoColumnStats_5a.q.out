@@ -18,7 +18,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned1@part=1
 Explain
 OPTIMIZED SQL: SELECT *
-FROM TABLE(INLINE(ARRAY[ (1, 'original')]))
+FROM TABLE(INLINE(ARRAY[(1, 'original')]))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -254,7 +254,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	10                  
-	totalSize           	11                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -279,7 +279,7 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@partitioned1@part=1
 Explain
 OPTIMIZED SQL: SELECT *
-FROM TABLE(INLINE(ARRAY[ (2, 'original'),  (3, 'original'),  (4, 'original')]))
+FROM TABLE(INLINE(ARRAY[(2, 'original'), (3, 'original'), (4, 'original')]))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -630,7 +630,7 @@ Table Parameters:
 	numPartitions       	1                   
 	numRows             	4                   
 	rawDataSize         	40                  
-	totalSize           	44                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -668,7 +668,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	4                   
 	rawDataSize         	40                  
-	totalSize           	44                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

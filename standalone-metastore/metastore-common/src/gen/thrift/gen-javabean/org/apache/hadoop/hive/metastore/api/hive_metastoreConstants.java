@@ -25,6 +25,10 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String HIVE_FILTER_FIELD_LAST_ACCESS = "hive_filter_field_last_access__";
 
+  public static final java.lang.String HIVE_FILTER_FIELD_TABLE_NAME = "hive_filter_field_tableName__";
+
+  public static final java.lang.String HIVE_FILTER_FIELD_TABLE_TYPE = "hive_filter_field_tableType__";
+
   public static final java.lang.String IS_ARCHIVED = "is_archived";
 
   public static final java.lang.String ORIGINAL_LOCATION = "original_location";
@@ -40,6 +44,8 @@ package org.apache.hadoop.hive.metastore.api;
   public static final java.lang.String BUCKET_COUNT = "bucket_count";
 
   public static final java.lang.String FIELD_TO_DIMENSION = "field_to_dimension";
+
+  public static final java.lang.String IF_PURGE = "ifPurge";
 
   public static final java.lang.String META_TABLE_NAME = "name";
 
@@ -61,7 +67,7 @@ package org.apache.hadoop.hive.metastore.api;
 
   public static final java.lang.String TABLE_IS_TRANSACTIONAL = "transactional";
 
-  public static final java.lang.String TABLE_NO_AUTO_COMPACT = "no_auto_compaction";
+  public static final java.lang.String NO_AUTO_COMPACT = "no_auto_compaction";
 
   public static final java.lang.String TABLE_TRANSACTIONAL_PROPERTIES = "transactional_properties";
 
@@ -86,5 +92,9 @@ package org.apache.hadoop.hive.metastore.api;
   public static final java.lang.String TXN_ID = "txnId";
 
   public static final java.lang.String WRITE_ID = "writeId";
+
+  public static final java.lang.String EXPECTED_PARAMETER_KEY = "expected_parameter_key";
+
+  public static final java.lang.String EXPECTED_PARAMETER_VALUE = "expected_parameter_value";
 
 }

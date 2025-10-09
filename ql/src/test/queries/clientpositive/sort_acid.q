@@ -3,11 +3,11 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
-create table acidtlb(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
-create table othertlb(c int, d int) stored as orc TBLPROPERTIES ('transactional'='true');
+create table acidtlb(a int, b int, e string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
+create table othertlb(c int, d int, f string) stored as orc TBLPROPERTIES ('transactional'='true');
 
-insert into acidtlb values(10,200),(30,500);
-insert into othertlb values(10, 21),(30, 22),(60, 23),(70, 24),(80, 25);
+insert into acidtlb values(10,200,'one'),(30,500,'two');
+insert into othertlb values(10, 21,'one'),(30, 22,'three'),(60, 23,'one'),(70, 24,'three'),(80, 25,'three');
 
 
 explain cbo
@@ -54,12 +54,12 @@ select * from acidtlb order by a;
 explain cbo
 merge into acidtlb as t using othertlb as s on t.a = s.c
 when matched and s.c < 60 then delete
-when matched and s.c = 60 then update set b = 1000
-when not matched then insert values (s.c, 2000 + s.d);
+when matched and s.c = 60 then update set b = 1000, e=NULL
+when not matched then insert values (s.c, 2000 + s.d, NULL);
 
 merge into acidtlb as t using othertlb as s on t.a = s.c
 when matched and s.c < 30 then delete
-when matched and s.c = 30 then update set b = 1000
-when not matched then insert values (s.c, 2000 + s.d);
+when matched and s.c = 30 then update set b = 1000, e=NULL
+when not matched then insert values (s.c, 2000 + s.d, NULL);
 
 select * from acidtlb;

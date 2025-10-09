@@ -39,3 +39,14 @@ select `x+1```, `y&y`, rank() over(partition by `x+1``` order by  `y&y`)
 from v1
 group by `x+1```, `y&y`
 ;
+
+create table test (
+    col1 int,
+    ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` int check (` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` > 10) enable novalidate rely,
+    constraint check_constraint check (col1 + ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` > 15) enable novalidate rely
+);
+
+describe formatted test;
+
+explain analyze
+select 1 as ` "%&'()*+,-/;<=>?[]_|{}$^!~#@```;

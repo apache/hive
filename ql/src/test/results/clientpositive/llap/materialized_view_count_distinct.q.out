@@ -168,7 +168,9 @@ PREHOOK: query: drop table base
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: count_distinct@base
 PREHOOK: Output: count_distinct@base
+PREHOOK: Output: database:count_distinct
 POSTHOOK: query: drop table base
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: count_distinct@base
 POSTHOOK: Output: count_distinct@base
+POSTHOOK: Output: database:count_distinct

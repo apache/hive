@@ -8,7 +8,7 @@ create table acidTbl_n0(a int, b int) clustered by (a) into 2 buckets stored as 
 create table nonAcidOrcTbl_n0(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='false');
 
 --expect a cardinality check because there is update and hive.merge.cardinality.check=true by default
-explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a 
+explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b);
@@ -18,7 +18,6 @@ explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b);
 
 set hive.split.update=false;
-set hive.merge.split.update=false;
 explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7

@@ -47,7 +47,7 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
   public void testPostUpgrade() throws Exception {
     int[][] data = {{1, 2}, {3, 4}, {5, 6}};
     int[][] dataPart = {{1, 2, 10}, {3, 4, 11}, {5, 6, 12}};
-    hiveConf.setVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE, "dynamic");
+    hiveConf.setVar(HiveConf.ConfVars.DYNAMIC_PARTITIONING_MODE, "dynamic");
     runStatementOnDriver("drop table if exists TAcid");
     runStatementOnDriver("drop table if exists TAcidPart");
     runStatementOnDriver("drop table if exists TFlat");
@@ -121,7 +121,7 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
         {"4\t5",""},
         {"5\t6",""},
     };
-    checkResult(expected0, testQuery0, true, "TFlat pre-check", LOG);
+    checkResultAndVectorization(expected0, testQuery0, "TFlat pre-check", LOG);
 
 
     //should be converted to MM
@@ -184,7 +184,7 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":1}\t5\t6",
             "tacid/delta_0000002_0000002/000000_0"}
     };
-    checkResult(expected, testQuery, false, "TAcid post-check", LOG);
+    checkResultAndVectorization(expected, testQuery, "TAcid post-check", LOG);
 
 
     testQuery = "select ROW__ID, a, b, INPUT__FILE__NAME from TAcidPart order by a, b, p, ROW__ID";
@@ -202,7 +202,7 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t5\t6",
             "tacidpart/p=12/delta_0000001_0000001/000000_0"}
     };
-    checkResult(expected2, testQuery, false, "TAcidPart post-check", LOG);
+    checkResultAndVectorization(expected2, testQuery, "TAcidPart post-check", LOG);
 
     /* Verify that we re-arranged/renamed so that files names follow hive naming convention
     and are spread among deltas/buckets
@@ -220,7 +220,7 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
         {"4\t5"},
         {"5\t6"}
     };
-    checkResult(expectedData, testQuery, true, "TFlat post-check data", LOG);
+    checkResultAndVectorization(expectedData, testQuery, "TFlat post-check data", LOG);
 
     testQuery = "select ROW__ID, INPUT__FILE__NAME from TFlat order by INPUT__FILE__NAME";
     String[][] expectedMetaData = new String[][] {
@@ -235,7 +235,7 @@ public class TestUpgradeTool extends TxnCommandsBaseForTests {
         {"{\"writeid\":5,\"bucketid\":536870912,\"rowid\":0}",
             "tflat/delta_0000005_0000005/00000_0"}
     };
-    checkResult(expectedMetaData, testQuery, false, "TFlat post-check files", LOG);
+    checkResultAndVectorization(expectedMetaData, testQuery, "TFlat post-check files", LOG);
   }
   @Test
   public void testGuessNumBuckets() {

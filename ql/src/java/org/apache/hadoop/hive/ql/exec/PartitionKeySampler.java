@@ -1,6 +1,4 @@
 /*
- * Copyright 2010 The Apache Software Foundation
- *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
@@ -135,9 +132,9 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
   // random sampling
   public static FetchOperator createSampler(FetchWork work, JobConf job,
       Operator<?> operator) throws HiveException {
-    int sampleNum = HiveConf.getIntVar(job, HiveConf.ConfVars.HIVESAMPLINGNUMBERFORORDERBY);
+    int sampleNum = HiveConf.getIntVar(job, HiveConf.ConfVars.HIVE_SAMPLING_NUMBER_FOR_ORDERBY);
     float samplePercent =
-        HiveConf.getFloatVar(job, HiveConf.ConfVars.HIVESAMPLINGPERCENTFORORDERBY);
+        HiveConf.getFloatVar(job, HiveConf.ConfVars.HIVE_SAMPLING_PERCENT_FOR_ORDERBY);
     if (samplePercent < 0.0 || samplePercent > 1.0) {
       throw new IllegalArgumentException("Percentile value must be within the range of 0 to 1.");
     }

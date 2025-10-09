@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -61,7 +62,7 @@ public class TestHBaseStorageHandler {
     // written out. At the time this test was written, this was the current
     // behavior, so I left this test as/is. Need to research if a null
     // table can be provided here.
-    Assert.assertEquals("hbase://localhost:2181/null", uri.toString());
+    Assert.assertEquals(String.format("hbase://%s/null", IPStackUtils.concatLoopbackAddressPort(2181)), uri.toString());
   }
 
   @Test

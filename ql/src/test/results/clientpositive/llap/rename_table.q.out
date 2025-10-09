@@ -1,0 +1,378 @@
+PREHOOK: query: CREATE TABLE rename_partition_table0 (key STRING, value STRING) PARTITIONED BY (part STRING)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table0
+POSTHOOK: query: CREATE TABLE rename_partition_table0 (key STRING, value STRING) PARTITIONED BY (part STRING)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rename_partition_table0
+PREHOOK: query: INSERT OVERWRITE TABLE rename_partition_table0 PARTITION (part = '1') SELECT * FROM src where rand(1) < 0.5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rename_partition_table0@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE rename_partition_table0 PARTITION (part = '1') SELECT * FROM src where rand(1) < 0.5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rename_partition_table0@part=1
+POSTHOOK: Lineage: rename_partition_table0 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rename_partition_table0 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE rename_partition_table0 ADD COLUMNS (new_col INT)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@rename_partition_table0
+PREHOOK: Output: default@rename_partition_table0
+POSTHOOK: query: ALTER TABLE rename_partition_table0 ADD COLUMNS (new_col INT)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@rename_partition_table0
+POSTHOOK: Output: default@rename_partition_table0
+PREHOOK: query: INSERT OVERWRITE TABLE rename_partition_table0 PARTITION (part = '2') SELECT src.*, 1 FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rename_partition_table0@part=2
+POSTHOOK: query: INSERT OVERWRITE TABLE rename_partition_table0 PARTITION (part = '2') SELECT src.*, 1 FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rename_partition_table0@part=2
+POSTHOOK: Lineage: rename_partition_table0 PARTITION(part=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rename_partition_table0 PARTITION(part=2).new_col SIMPLE []
+POSTHOOK: Lineage: rename_partition_table0 PARTITION(part=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE rename_partition_table0 RENAME TO rename_partition_table1
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@rename_partition_table0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table0
+PREHOOK: Output: default@rename_partition_table1
+POSTHOOK: query: ALTER TABLE rename_partition_table0 RENAME TO rename_partition_table1
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@rename_partition_table0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rename_partition_table0
+POSTHOOK: Output: default@rename_partition_table1
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table1
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+new_col             	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+part                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	746                 
+	rawDataSize         	133296              
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='1') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='1') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table1
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	198                 
+avg_col_len         	2.8089430894308944  
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	                    
+comment             	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='1') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='1') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table1
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	191                 
+avg_col_len         	6.808943089430894   
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	                    
+comment             	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='2') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='2') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table1
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	                    
+comment             	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='2') value
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='2') value
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table1
+col_name            	value               
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	307                 
+avg_col_len         	6.812               
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	                    
+comment             	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='2') new_col
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table1 PARTITION (part='2') new_col
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table1
+col_name            	new_col             
+data_type           	int                 
+min                 	1                   
+max                 	1                   
+num_nulls           	0                   
+distinct_count      	1                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	Q1: 1, Q2: 1, Q3: 1 
+comment             	from deserializer   
+PREHOOK: query: CREATE EXTERNAL TABLE rename_partition_table_ext0 (key STRING, value STRING) PARTITIONED BY (part STRING)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table_ext0
+POSTHOOK: query: CREATE EXTERNAL TABLE rename_partition_table_ext0 (key STRING, value STRING) PARTITIONED BY (part STRING)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rename_partition_table_ext0
+PREHOOK: query: INSERT OVERWRITE TABLE rename_partition_table_ext0 PARTITION (part = '1') SELECT * FROM src where rand(1) < 0.5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rename_partition_table_ext0@part=1
+POSTHOOK: query: INSERT OVERWRITE TABLE rename_partition_table_ext0 PARTITION (part = '1') SELECT * FROM src where rand(1) < 0.5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rename_partition_table_ext0@part=1
+POSTHOOK: Lineage: rename_partition_table_ext0 PARTITION(part=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rename_partition_table_ext0 PARTITION(part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE rename_partition_table_ext0 CHANGE COLUMN value val STRING CASCADE
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@rename_partition_table_ext0
+PREHOOK: Output: default@rename_partition_table_ext0
+PREHOOK: Output: default@rename_partition_table_ext0@part=1
+POSTHOOK: query: ALTER TABLE rename_partition_table_ext0 CHANGE COLUMN value val STRING CASCADE
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@rename_partition_table_ext0
+POSTHOOK: Output: default@rename_partition_table_ext0
+POSTHOOK: Output: default@rename_partition_table_ext0@part=1
+PREHOOK: query: INSERT OVERWRITE TABLE rename_partition_table_ext0 PARTITION (part = '2') SELECT * FROM src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@rename_partition_table_ext0@part=2
+POSTHOOK: query: INSERT OVERWRITE TABLE rename_partition_table_ext0 PARTITION (part = '2') SELECT * FROM src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@rename_partition_table_ext0@part=2
+POSTHOOK: Lineage: rename_partition_table_ext0 PARTITION(part=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: rename_partition_table_ext0 PARTITION(part=2).val SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: ALTER TABLE rename_partition_table_ext0 RENAME TO rename_partition_table_ext1
+PREHOOK: type: ALTERTABLE_RENAME
+PREHOOK: Input: default@rename_partition_table_ext0
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table_ext0
+PREHOOK: Output: default@rename_partition_table_ext1
+POSTHOOK: query: ALTER TABLE rename_partition_table_ext0 RENAME TO rename_partition_table_ext1
+POSTHOOK: type: ALTERTABLE_RENAME
+POSTHOOK: Input: default@rename_partition_table_ext0
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rename_partition_table_ext0
+POSTHOOK: Output: default@rename_partition_table_ext1
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table_ext1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table_ext1
+# col_name            	data_type           	comment             
+key                 	string              	                    
+val                 	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+part                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	746                 
+	rawDataSize         	131296              
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1 PARTITION (part='1') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table_ext1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1 PARTITION (part='1') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table_ext1
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	198                 
+avg_col_len         	2.8089430894308944  
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	                    
+comment             	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1 PARTITION (part='1') val
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table_ext1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1 PARTITION (part='1') val
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table_ext1
+col_name            	val                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+histogram           	                    
+comment             	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1 PARTITION (part='2') key
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table_ext1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1 PARTITION (part='2') key
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table_ext1
+col_name            	key                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	316                 
+avg_col_len         	2.812               
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	                    
+comment             	from deserializer   
+PREHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1 PARTITION (part='2') val
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@rename_partition_table_ext1
+POSTHOOK: query: DESCRIBE FORMATTED rename_partition_table_ext1 PARTITION (part='2') val
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@rename_partition_table_ext1
+col_name            	val                 
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	307                 
+avg_col_len         	6.812               
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	                    
+comment             	from deserializer   
+PREHOOK: query: DROP TABLE rename_partition_table1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@rename_partition_table1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table1
+POSTHOOK: query: DROP TABLE rename_partition_table1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@rename_partition_table1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rename_partition_table1
+PREHOOK: query: DROP TABLE rename_partition_table_ext1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@rename_partition_table_ext1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@rename_partition_table_ext1
+POSTHOOK: query: DROP TABLE rename_partition_table_ext1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@rename_partition_table_ext1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@rename_partition_table_ext1

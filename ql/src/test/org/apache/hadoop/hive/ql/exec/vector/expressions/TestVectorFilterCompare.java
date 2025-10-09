@@ -84,6 +84,7 @@ public class TestVectorFilterCompare {
     // Arithmetic operations rely on getting conf from SessionState, need to initialize here.
     SessionState ss = new SessionState(new HiveConf());
     ss.getConf().setVar(HiveConf.ConfVars.HIVE_COMPAT, "latest");
+    ss.getConf().setBoolVar(HiveConf.ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION, false);
     SessionState.setCurrentSessionState(ss);
   }
 

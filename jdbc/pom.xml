@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.0.0-alpha-2-SNAPSHOT</version>
+    <version>4.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-jdbc</artifactId>
@@ -34,11 +34,23 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-llap-client</artifactId>
+      <artifactId>hive-standalone-metastore-common</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -46,14 +58,48 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
-          <groupId>org.apache.hive</groupId>
-          <artifactId>hive-exec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.pac4j</groupId>
+          <groupId>*</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-hplsql</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-llap-client</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-serde</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-storage-api</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -83,6 +129,14 @@
       <artifactId>zookeeper</artifactId>
       <exclusions>
         <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-core</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>io.netty</groupId>
           <artifactId>*</artifactId>
         </exclusion>
@@ -104,6 +158,12 @@
       <optional>true</optional>
     </dependency>
     <!-- test inter-project -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -175,15 +235,21 @@
                         <include>org/apache/hadoop/security/*</include>
                         <include>org/apache/hadoop/conf/*</include>
                         <include>org/apache/hadoop/fs/*</include>
-                        <include>org/apache/hadoop/metrics2/*</include>
-                        <include>org/apache/hadoop/metrics2/lib/*</include>
-                        <include>org/apache/hadoop/metrics2/impl/*</include>
-                        <include>org/apache/hadoop/util/ReflectionUtils.class</include>
-                        <include>org/apache/hadoop/util/ReflectionUtils$1.class</include>
-                        <include>org/apache/hadoop/io/Writable.class</include>
-                        <include>org/apache/hadoop/io/DataOutputBuffer.class</include>
-                        <include>org/apache/hadoop/io/DataInputBuffer.class</include>
+                        <include>org/apache/hadoop/fs/impl/*</include>
+                        <include>org/apache/hadoop/fs/statistics/*</include>
+                        <include>org/apache/hadoop/metrics2/**</include>
+                        <include>org/apache/hadoop/security/token/**</include>
+                        <include>org/apache/hadoop/util/*</include>
+                        <include>org/apache/hadoop/net/*</include>
+                        <include>org/apache/hadoop/io/**</include>
                         <include>org/apache/hadoop/HadoopIllegalArgumentException.class</include>
+                      </includes>
+                    </filter>
+                    <filter>
+                      <artifact>org.apache.hadoop:hadoop-auth</artifact>
+                      <includes>
+                        <include>org/apache/hadoop/util/PlatformName.class</include>
+                        <include>org/apache/hadoop/security/authentication/util/*</include>
                       </includes>
                     </filter>
                     <filter>
@@ -200,16 +266,30 @@
                       </includes>
                     </filter>
                     <filter>
+                      <artifact>io.netty:netty-common</artifact>
+                      <includes>
+                        <include>io/netty/util/*</include>
+                        <include>io/netty/util/internal/**</include>
+                      </includes>
+                    </filter>
+                    <filter>
                       <artifact>*:*</artifact>
                       <excludes>
+                        <!--
+                        Shading signed JARs will fail without this.
+                        http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar
+                        -->
                         <exclude>META-INF/*.SF</exclude>
                         <exclude>META-INF/*.DSA</exclude>
                         <exclude>META-INF/*.RSA</exclude>
+                        <!-- Exclude irrelevant webapp files of dependencies. -->
                         <exclude>core-default.xml</exclude>
                         <exclude>webapps/</exclude>
                         <exclude>hive-webapps/</exclude>
                         <exclude>hbase-webapps/</exclude>
                         <exclude>static/</exclude>
+                        <!-- Exclude dependency module descriptors, which would be incorrect in a Hive jar. -->
+                        <exclude>META-INF/versions/*/module-info.class</exclude>
                       </excludes>
                     </filter>
                   </filters>
@@ -218,8 +298,11 @@
                       <exclude>antlr:*</exclude>
                       <exclude>aopalliance:*</exclude>
                       <exclude>asm:*</exclude>
-                      <exclude>com.fasterxml.jackson.core:*</exclude>
+                      <exclude>ch.qos.reload4j:*</exclude>
+                      <exclude>com.cedarsoftware:*</exclude>
+                      <exclude>com.fasterxml.jackson.*:*</exclude>
                       <exclude>com.google.code.gson:*</exclude>
+                      <exclude>com.google.re2j:*</exclude>
                       <exclude>com.google.inject:*</exclude>
                       <exclude>com.google.inject.extensions:*</exclude>
                       <exclude>com.jamesmurty.utils:*</exclude>
@@ -236,7 +319,11 @@
                       <exclude>commons-pool:*</exclude>
                       <exclude>com.google.code.findbugs:*</exclude>
                       <exclude>com.google.protobuf:*</exclude>
+                      <exclude>com.github.pjfanning:*</exclude>
                       <exclude>com.microsoft.sqlserver:mssql-jdbc</exclude>
+                      <exclude>com.nimbusds:*</exclude>
+                      <exclude>com.squareup.okhttp3:*</exclude>
+                      <exclude>com.squareup.okio:*</exclude>
                       <exclude>com.sun.jersey:*</exclude>
                       <exclude>com.sun.jersey.contribs:*</exclude>
                       <exclude>com.sun.xml.bind:*</exclude>
@@ -244,9 +331,18 @@
                       <exclude>com.thoughtworks.paranamer:*</exclude>
                       <exclude>com.twitter:*</exclude>
                       <exclude>com.zaxxer:*</exclude>
+                      <exclude>de.ruedigermoeller:*</exclude>
+                      <exclude>dnsjava:*</exclude>
                       <exclude>io.airlift:*</exclude>
                       <exclude>io.dropwizard.metrics:*</exclude>
-                      <exclude>io.netty:*</exclude>
+                      <exclude>io.netty:netty-handler</exclude>
+                      <exclude>io.netty:netty-resolver</exclude>
+                      <exclude>io.netty:netty-buffer</exclude>
+                      <exclude>io.netty:netty-transport</exclude>
+                      <exclude>io.netty:netty-transport-native-unix-common</exclude>
+                      <exclude>io.netty:netty-codec</exclude>
+                      <exclude>io.netty:netty-transport-native-epoll</exclude>
+                      <exclude>io.netty:netty-transport-classes-epoll</exclude>
                       <exclude>javax.activation:*</exclude>
                       <exclude>javax.inject:*</exclude>
                       <exclude>javax.jdo:*</exclude>
@@ -255,7 +351,7 @@
                       <exclude>javax.servlet:*</exclude>
                       <exclude>javax.servlet.jsp:*</exclude>
                       <exclude>javax.transaction:*</exclude>
-                      <exclude>javax.xml.*:*</exclude>
+                      <exclude>javax.xml.bind:*</exclude>
                       <exclude>jline:*</exclude>
                       <exclude>joda-time:*</exclude>
                       <exclude>junit:*</exclude>
@@ -286,23 +382,30 @@
                       <exclude>org.apache.hadoop:hadoop-yarn-server-applicationhistoryservice</exclude>
                       <exclude>org.apache.hadoop:hadoop-yarn-server-web-proxy</exclude>
                       <exclude>org.apache.hadoop:hadoop-annotations</exclude>
-                      <exclude>org.apache.hadoop:hadoop-auth</exclude>
+                      <exclude>org.apache.hadoop.thirdparty:hadoop-shaded-protobuf_3_7</exclude>
                       <exclude>org.apache.hbase*:*</exclude>
                       <exclude>org.apache.hive:hive-vector-code-gen</exclude>
                       <exclude>org.apache.htrace:*</exclude>
+                      <exclude>org.apache.kerby:*</exclude>
                       <exclude>org.apache.logging.log4j:*</exclude>
                       <exclude>org.apache.orc:*</exclude>
                       <exclude>org.apache.velocity:*</exclude>
+                      <exclude>org.bouncycastle:*</exclude>
+                      <exclude>org.objenesis:objenesis</exclude>
                       <exclude>org.codehaus.jackson:*</exclude>
                       <exclude>org.codehaus.jettison:*</exclude>
                       <exclude>org.datanucleus:*</exclude>
+                      <exclude>org.eclipse.jetty:*</exclude>
                       <exclude>org.eclipse.jetty.aggregate:*</exclude>
+                      <exclude>org.ehcache:*</exclude>
                       <exclude>org.fusesource.leveldbjni:*</exclude>
                       <exclude>org.glassfish.jersey*:*</exclude>
                       <exclude>org.hamcrest:*</exclude>
                       <exclude>org.htrace:*</exclude>
+                      <exclude>org.jetbrains.kotlin:*</exclude>
                       <exclude>org.ow2.asm:*</exclude>
                       <exclude>org.slf4j:slf4j-log4j12</exclude>
+                      <exclude>org.slf4j:slf4j-reload4j</exclude>
                       <exclude>org.tukaani:*</exclude>
                       <exclude>org.xerial.snappy:*</exclude>
                       <exclude>tomcat:*</exclude>
@@ -355,6 +458,18 @@
                     <relocation>
                       <pattern>javolution</pattern>
                       <shadedPattern>org.apache.hive.javolution</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>com.ctc.wstx</pattern>
+                      <shadedPattern>org.apache.hive.com.ctc.wstx</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>org.codehaus.stax2</pattern>
+                      <shadedPattern>org.apache.hive.org.codehaus.stax2</shadedPattern>
+                    </relocation>
+                    <relocation>
+                      <pattern>io.netty</pattern>
+                      <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                     </relocation>
                   </relocations>
                 </configuration>

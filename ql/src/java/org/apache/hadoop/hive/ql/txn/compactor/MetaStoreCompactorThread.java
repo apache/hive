@@ -19,22 +19,14 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.hive.metastore.MetaStoreThread;
-import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.thrift.TException;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -42,16 +34,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * Compactor threads that runs in the metastore. It uses a {@link TxnStore}
  * to access the internal database.
  */
-public class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread {
+public abstract class MetaStoreCompactorThread extends CompactorThread implements MetaStoreThread {
 
   protected TxnStore txnHandler;
   protected ScheduledExecutorService cycleUpdaterExecutorService;
+  protected MetadataCache metadataCache;
 
   @Override
   public void init(AtomicBoolean stop) throws Exception {
@@ -59,6 +51,7 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
 
     // Get our own instance of the transaction handler
     txnHandler = TxnUtils.getTxnStore(conf);
+    metadataCache = new MetadataCache(isCacheEnabled());
     // Initialize the RawStore, with the flag marked as true. Since its stored as a ThreadLocal variable in the
     // HMSHandlerContext, it will use the compactor related pool.
     MetastoreConf.setBoolVar(conf, COMPACTOR_USE_CUSTOM_POOL, true);
@@ -66,41 +59,10 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
   }
 
   @Override Table resolveTable(CompactionInfo ci) throws MetaException {
-    try {
-      return getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
-    } catch (MetaException e) {
-      LOG.error("Unable to find table " + ci.getFullTableName() + ", " + e.getMessage());
-      throw e;
-    }
+    return CompactorUtil.resolveTable(conf, ci.dbname, ci.tableName);
   }
 
-  @Override boolean replIsCompactionDisabledForDatabase(String dbName) throws TException {
-    try {
-      Database database = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), dbName);
-      // Compaction is disabled until after first successful incremental load. Check HIVE-21197 for more detail.
-      boolean isReplCompactDisabled = ReplUtils.isFirstIncPending(database.getParameters());
-      if (isReplCompactDisabled) {
-        LOG.info("Compaction is disabled for database " + dbName);
-      }
-      return isReplCompactDisabled;
-    } catch (NoSuchObjectException e) {
-      LOG.info("Unable to find database " + dbName);
-      return true;
-    }
-  }
-
-  @Override List<Partition> getPartitionsByNames(CompactionInfo ci) throws MetaException {
-    try {
-      return getMSForConf(conf).getPartitionsByNames(getDefaultCatalog(conf), ci.dbname, ci.tableName,
-          Collections.singletonList(ci.partName));
-    } catch (MetaException e) {
-      LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);
-      throw e;
-    } catch (NoSuchObjectException e) {
-      LOG.error("Unable to get partitions by name for CompactionInfo=" + ci);
-      throw new MetaException(e.toString());
-    }
-  }
+  protected abstract boolean isCacheEnabled();
 
   protected void startCycleUpdater(long updateInterval, Runnable taskToRun) {
     if (cycleUpdaterExecutorService == null) {
@@ -134,4 +96,5 @@ public class MetaStoreCompactorThread extends CompactorThread implements MetaSto
     }
     return 0;
   }
+
 }

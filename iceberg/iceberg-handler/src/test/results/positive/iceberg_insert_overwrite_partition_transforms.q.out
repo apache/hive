@@ -1,0 +1,2489 @@
+PREHOOK: query: create external table ice_parquet_date_transform_year(
+  bigintcol bigint,
+  intcol integer,
+  pcol date
+) partitioned by spec (year(pcol))
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_date_transform_year
+POSTHOOK: query: create external table ice_parquet_date_transform_year(
+  bigintcol bigint,
+  intcol integer,
+  pcol date
+) partitioned by spec (year(pcol))
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_date_transform_year
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-05') values (1234567890123345, 2), (23456789012345678, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-05
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-05') values (1234567890123345, 2), (23456789012345678, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-05
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1234567890123345L,2),const struct(23456789012345678L,4)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: bigint), col2 (type: int), DATE'1999-12-05' (type: date)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_year
+                        Select Operator
+                          expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                          outputColumnNames: bigintcol, intcol, pcol
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
+                            keys: iceberg_year(pcol) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: date), _col11 (type: date), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DATE' (type: string), _col10 (type: date), _col11 (type: date), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_year',_col0) (type: struct<pcol_year:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-05
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_year
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, intcol, pcol
+          Column Types: bigint, int, date
+          Table: default.ice_parquet_date_transform_year
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-05') values (1234567890123345, 2), (23456789012345678, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-05
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-05') values (1234567890123345, 2), (23456789012345678, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-05
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-26
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-26
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1234567890123345L,3),const struct(23456789012345678L,5)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: bigint), col2 (type: int), DATE'1999-12-26' (type: date)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_year
+                        Select Operator
+                          expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                          outputColumnNames: bigintcol, intcol, pcol
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
+                            keys: iceberg_year(pcol) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: date), _col11 (type: date), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DATE' (type: string), _col10 (type: date), _col11 (type: date), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_year',_col0) (type: struct<pcol_year:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-26
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_year
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, intcol, pcol
+          Column Types: bigint, int, date
+          Table: default.ice_parquet_date_transform_year
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-26
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-26
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-12
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-12
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(3456789012345678L,4),const struct(34567890123456789L,6)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: bigint), col2 (type: int), DATE'1999-12-12' (type: date)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_year
+                        Select Operator
+                          expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                          outputColumnNames: bigintcol, intcol, pcol
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
+                            keys: iceberg_year(pcol) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: date), _col11 (type: date), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DATE' (type: string), _col10 (type: date), _col11 (type: date), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_year',_col0) (type: struct<pcol_year:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-12
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_year
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, intcol, pcol
+          Column Types: bigint, int, date
+          Table: default.ice_parquet_date_transform_year
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-12
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-12
+PREHOOK: query: select * from ice_parquet_date_transform_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_year
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_date_transform_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_year
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3456789012345678	4	1999-12-12
+34567890123456789	6	1999-12-12
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_year
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-13
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_year
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-13
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_parquet_date_transform_year
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: bigintcol (type: bigint), intcol (type: int), DATE'1999-12-13' (type: date)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.ice_parquet_date_transform_year
+                    Select Operator
+                      expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                      outputColumnNames: bigintcol, intcol, pcol
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
+                        keys: iceberg_year(pcol) (type: int)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: date), _col11 (type: date), _col12 (type: bigint), _col13 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DATE' (type: string), _col10 (type: date), _col11 (type: date), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_year',_col0) (type: struct<pcol_year:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-13
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_year
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, intcol, pcol
+          Column Types: bigint, int, date
+          Table: default.ice_parquet_date_transform_year
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_year
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-13
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_year
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-13
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_year
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-02
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_year
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-02
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_parquet_date_transform_year
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: 234675894076895090L (type: bigint), intcol (type: int), DATE'1999-12-02' (type: date)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.ice_parquet_date_transform_year
+                    Select Operator
+                      expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: date)
+                      outputColumnNames: bigintcol, intcol, pcol
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol)
+                        keys: iceberg_year(pcol) (type: int)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: int), _col8 (type: bigint), _col9 (type: binary), _col10 (type: date), _col11 (type: date), _col12 (type: bigint), _col13 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), UDFToLong(_col6) (type: bigint), UDFToLong(_col7) (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'DATE' (type: string), _col10 (type: date), _col11 (type: date), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_year',_col0) (type: struct<pcol_year:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-02
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_year
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, intcol, pcol
+          Column Types: bigint, int, date
+          Table: default.ice_parquet_date_transform_year
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_year
+PREHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-02
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_year partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_year
+POSTHOOK: Output: default@ice_parquet_date_transform_year@pcol=1999-12-02
+PREHOOK: query: describe formatted ice_parquet_date_transform_year
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_parquet_date_transform_year
+POSTHOOK: query: describe formatted ice_parquet_date_transform_year
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_parquet_date_transform_year
+# col_name            	data_type           	comment             
+bigintcol           	bigint              	                    
+intcol              	int                 	                    
+pcol                	date                	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+pcol                	YEAR                	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bigintcol\":\"true\",\"intcol\":\"true\",\"pcol\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"bigintcol\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"},{\"id\":3,\"name\":\"pcol\",\"required\":false,\"type\":\"date\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_year\",\"transform\":\"year\",\"source-id\":3,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	#Masked#                   
+	numPartitions       	1                   
+	numRows             	2                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	5                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from ice_parquet_date_transform_year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_year
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_date_transform_year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_year
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+234675894076895090	4	1999-12-02
+234675894076895090	6	1999-12-02
+PREHOOK: query: create external table ice_parquet_date_transform_month(
+  bigintcol bigint,
+  pcol date,
+  intcol integer
+) partitioned by spec (month(pcol))
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_date_transform_month
+POSTHOOK: query: create external table ice_parquet_date_transform_month(
+  bigintcol bigint,
+  pcol date,
+  intcol integer
+) partitioned by spec (month(pcol))
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_date_transform_month
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-31
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-31
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1234567890123345L,2),const struct(23456789012345678L,4)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: bigint), DATE'1999-12-31' (type: date), col2 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_month
+                        Select Operator
+                          expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
+                          outputColumnNames: bigintcol, pcol, intcol
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                            keys: iceberg_month(pcol) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: date), _col7 (type: date), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'DATE' (type: string), _col6 (type: date), _col7 (type: date), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_month',_col0) (type: struct<pcol_month:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-31
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_month
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, pcol, intcol
+          Column Types: bigint, date, int
+          Table: default.ice_parquet_date_transform_month
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-31
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-31
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-26
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-26
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1234567890123345L,3),const struct(23456789012345678L,5)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: bigint), DATE'1999-12-26' (type: date), col2 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_month
+                        Select Operator
+                          expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
+                          outputColumnNames: bigintcol, pcol, intcol
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                            keys: iceberg_month(pcol) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: date), _col7 (type: date), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'DATE' (type: string), _col6 (type: date), _col7 (type: date), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_month',_col0) (type: struct<pcol_month:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-26
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_month
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, pcol, intcol
+          Column Types: bigint, date, int
+          Table: default.ice_parquet_date_transform_month
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-26
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-26
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-12
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-12
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(3456789012345678L,4),const struct(34567890123456789L,6)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: bigint), DATE'1999-12-12' (type: date), col2 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_month
+                        Select Operator
+                          expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
+                          outputColumnNames: bigintcol, pcol, intcol
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                            keys: iceberg_month(pcol) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: date), _col7 (type: date), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'DATE' (type: string), _col6 (type: date), _col7 (type: date), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_month',_col0) (type: struct<pcol_month:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-12
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_month
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, pcol, intcol
+          Column Types: bigint, date, int
+          Table: default.ice_parquet_date_transform_month
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-12
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-12
+PREHOOK: query: select * from ice_parquet_date_transform_month
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_month
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_date_transform_month
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_month
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3456789012345678	1999-12-12	4
+34567890123456789	1999-12-12	6
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_month
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_month
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-13
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_month
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_month
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-13
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_parquet_date_transform_month
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: bigintcol (type: bigint), DATE'1999-12-13' (type: date), intcol (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.ice_parquet_date_transform_month
+                    Select Operator
+                      expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
+                      outputColumnNames: bigintcol, pcol, intcol
+                      Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                        keys: iceberg_month(pcol) (type: int)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                        Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: date), _col7 (type: date), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'DATE' (type: string), _col6 (type: date), _col7 (type: date), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_month',_col0) (type: struct<pcol_month:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-13
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_month
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, pcol, intcol
+          Column Types: bigint, date, int
+          Table: default.ice_parquet_date_transform_month
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_month
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_month
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-13
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_month
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_month
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-13
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_month
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_month
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-02
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_month
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_month
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-02
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_parquet_date_transform_month
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: 234675894076895090L (type: bigint), DATE'1999-12-02' (type: date), intcol (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.ice_parquet_date_transform_month
+                    Select Operator
+                      expressions: _col0 (type: bigint), _col1 (type: date), _col2 (type: int)
+                      outputColumnNames: bigintcol, pcol, intcol
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: min(bigintcol), max(bigintcol), count(1), count(bigintcol), compute_bit_vector_hll(bigintcol), min(pcol), max(pcol), count(pcol), compute_bit_vector_hll(pcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                        keys: iceberg_month(pcol) (type: int)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                        Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: date), _col7 (type: date), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'LONG' (type: string), _col1 (type: bigint), _col2 (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'DATE' (type: string), _col6 (type: date), _col7 (type: date), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_month',_col0) (type: struct<pcol_month:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-02
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_month
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: bigintcol, pcol, intcol
+          Column Types: bigint, date, int
+          Table: default.ice_parquet_date_transform_month
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_month
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_month
+PREHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-02
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_month partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_month
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_month
+POSTHOOK: Output: default@ice_parquet_date_transform_month@pcol=1999-12-02
+PREHOOK: query: describe formatted ice_parquet_date_transform_month
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_parquet_date_transform_month
+POSTHOOK: query: describe formatted ice_parquet_date_transform_month
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_parquet_date_transform_month
+# col_name            	data_type           	comment             
+bigintcol           	bigint              	                    
+pcol                	date                	                    
+intcol              	int                 	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+pcol                	MONTH               	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bigintcol\":\"true\",\"intcol\":\"true\",\"pcol\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"bigintcol\",\"required\":false,\"type\":\"long\"},{\"id\":2,\"name\":\"pcol\",\"required\":false,\"type\":\"date\"},{\"id\":3,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_month\",\"transform\":\"month\",\"source-id\":2,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	#Masked#                   
+	numPartitions       	1                   
+	numRows             	2                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	5                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from ice_parquet_date_transform_month
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_month
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_date_transform_month
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_month
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+234675894076895090	1999-12-02	4
+234675894076895090	1999-12-02	6
+PREHOOK: query: create external table ice_parquet_date_transform_day(
+  pcol date,
+  bigintcol bigint,
+  intcol integer
+) partitioned by spec (day(pcol))
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_date_transform_day
+POSTHOOK: query: create external table ice_parquet_date_transform_day(
+  pcol date,
+  bigintcol bigint,
+  intcol integer
+) partitioned by spec (day(pcol))
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_date_transform_day
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-31
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-31
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1234567890123345L,2),const struct(23456789012345678L,4)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: DATE'1999-12-31' (type: date), col1 (type: bigint), col2 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_day
+                        Select Operator
+                          expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
+                          outputColumnNames: pcol, bigintcol, intcol
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                            keys: iceberg_day(pcol) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DATE' (type: string), _col1 (type: date), _col2 (type: date), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), _col6 (type: bigint), _col7 (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_day',_col0) (type: struct<pcol_day:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-31
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_day
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: pcol, bigintcol, intcol
+          Column Types: date, bigint, int
+          Table: default.ice_parquet_date_transform_day
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-31
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-31') values (1234567890123345, 2), (23456789012345678, 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-31
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-26
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-26
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(1234567890123345L,3),const struct(23456789012345678L,5)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: DATE'1999-12-26' (type: date), col1 (type: bigint), col2 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_day
+                        Select Operator
+                          expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
+                          outputColumnNames: pcol, bigintcol, intcol
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                            keys: iceberg_day(pcol) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DATE' (type: string), _col1 (type: date), _col2 (type: date), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), _col6 (type: bigint), _col7 (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_day',_col0) (type: struct<pcol_day:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-26
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_day
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: pcol, bigintcol, intcol
+          Column Types: date, bigint, int
+          Table: default.ice_parquet_date_transform_day
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-26
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-26') values (1234567890123345, 3), (23456789012345678, 5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-26
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-12
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-12
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(3456789012345678L,4),const struct(34567890123456789L,6)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: DATE'1999-12-12' (type: date), col1 (type: bigint), col2 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_day
+                        Select Operator
+                          expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
+                          outputColumnNames: pcol, bigintcol, intcol
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                            keys: iceberg_day(pcol) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 604 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'DATE' (type: string), _col1 (type: date), _col2 (type: date), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), _col6 (type: bigint), _col7 (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_day',_col0) (type: struct<pcol_day:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 932 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-12
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_day
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: pcol, bigintcol, intcol
+          Column Types: date, bigint, int
+          Table: default.ice_parquet_date_transform_day
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-12
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-12') values (3456789012345678, 4), (34567890123456789, 6)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-12
+PREHOOK: query: select * from ice_parquet_date_transform_day
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_day
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_date_transform_day
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_day
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1999-12-12	3456789012345678	4
+1999-12-12	34567890123456789	6
+1999-12-26	1234567890123345	3
+1999-12-26	23456789012345678	5
+1999-12-31	1234567890123345	2
+1999-12-31	23456789012345678	4
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_day
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_day
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-13
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_day
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_day
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-13
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_parquet_date_transform_day
+                  Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: DATE'1999-12-13' (type: date), bigintcol (type: bigint), intcol (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.ice_parquet_date_transform_day
+                    Select Operator
+                      expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
+                      outputColumnNames: pcol, bigintcol, intcol
+                      Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                        keys: iceberg_day(pcol) (type: int)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                        Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'DATE' (type: string), _col1 (type: date), _col2 (type: date), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), _col6 (type: bigint), _col7 (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_day',_col0) (type: struct<pcol_day:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-13
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_day
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: pcol, bigintcol, intcol
+          Column Types: date, bigint, int
+          Table: default.ice_parquet_date_transform_day
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_day
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_day
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-13
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-13') select bigintcol, intcol from ice_parquet_date_transform_day
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_day
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-13
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_day
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_day
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-02
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_day
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_day
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-02
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_parquet_date_transform_day
+                  Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: DATE'1999-12-02' (type: date), 234675894076895090L (type: bigint), intcol (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.ice_parquet_date_transform_day
+                    Select Operator
+                      expressions: _col0 (type: date), _col1 (type: bigint), _col2 (type: int)
+                      outputColumnNames: pcol, bigintcol, intcol
+                      Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: min(pcol), max(pcol), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                        keys: iceberg_day(pcol) (type: int)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                        Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Statistics: Num rows: 12 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: date), _col2 (type: date), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 'DATE' (type: string), _col1 (type: date), _col2 (type: date), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), _col6 (type: bigint), _col7 (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_day',_col0) (type: struct<pcol_day:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol 1999-12-02
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_day
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: pcol, bigintcol, intcol
+          Column Types: date, bigint, int
+          Table: default.ice_parquet_date_transform_day
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_day
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_day
+PREHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-02
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_day partition (pcol = '1999-12-02') select 234675894076895090, intcol from ice_parquet_date_transform_day
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_day
+POSTHOOK: Output: default@ice_parquet_date_transform_day@pcol=1999-12-02
+PREHOOK: query: describe formatted ice_parquet_date_transform_day
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_parquet_date_transform_day
+POSTHOOK: query: describe formatted ice_parquet_date_transform_day
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_parquet_date_transform_day
+# col_name            	data_type           	comment             
+pcol                	date                	                    
+bigintcol           	bigint              	                    
+intcol              	int                 	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+pcol                	DAY                 	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bigintcol\":\"true\",\"intcol\":\"true\",\"pcol\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"pcol\",\"required\":false,\"type\":\"date\"},{\"id\":2,\"name\":\"bigintcol\",\"required\":false,\"type\":\"long\"},{\"id\":3,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"added-records\":\"12\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"24\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_day\",\"transform\":\"day\",\"source-id\":1,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	#Masked#                   
+	numPartitions       	5                   
+	numRows             	24                  
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	5                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from ice_parquet_date_transform_day
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_day
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_date_transform_day
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_day
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1999-12-02	234675894076895090	2
+1999-12-02	234675894076895090	2
+1999-12-02	234675894076895090	3
+1999-12-02	234675894076895090	3
+1999-12-02	234675894076895090	4
+1999-12-02	234675894076895090	4
+1999-12-02	234675894076895090	4
+1999-12-02	234675894076895090	4
+1999-12-02	234675894076895090	5
+1999-12-02	234675894076895090	5
+1999-12-02	234675894076895090	6
+1999-12-02	234675894076895090	6
+1999-12-12	3456789012345678	4
+1999-12-12	34567890123456789	6
+1999-12-13	1234567890123345	2
+1999-12-13	1234567890123345	3
+1999-12-13	23456789012345678	4
+1999-12-13	23456789012345678	5
+1999-12-13	3456789012345678	4
+1999-12-13	34567890123456789	6
+1999-12-26	1234567890123345	3
+1999-12-26	23456789012345678	5
+1999-12-31	1234567890123345	2
+1999-12-31	23456789012345678	4
+PREHOOK: query: create external table ice_parquet_date_transform_truncate(
+  pcol string,
+  bigintcol bigint,
+  intcol integer
+) partitioned by spec (truncate(2, pcol))
+stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_date_transform_truncate
+POSTHOOK: query: create external table ice_parquet_date_transform_truncate(
+  pcol string,
+  bigintcol bigint,
+  intcol integer
+) partitioned by spec (truncate(2, pcol))
+stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_date_transform_truncate
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhutjkgkd') values (567490276, 6785), (67489376589302, 76859)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhutjkgkd
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhutjkgkd') values (567490276, 6785), (67489376589302, 76859)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhutjkgkd
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(567490276,6785),const struct(67489376589302L,76859)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: 'gfhutjkgkd' (type: string), col1 (type: bigint), col2 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_truncate
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: int)
+                          outputColumnNames: pcol, bigintcol, intcol
+                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: max(length(pcol)), avg(COALESCE(length(pcol),0)), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                            keys: iceberg_truncate(pcol, 2) (type: string)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: string)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: string)
+                              Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: int), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 684 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col1,0)) (type: bigint), COALESCE(_col2,0) (type: double), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), _col6 (type: bigint), _col7 (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_trunc',_col0) (type: struct<pcol_trunc:string>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 1018 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1018 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol gfhutjkgkd
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_truncate
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: pcol, bigintcol, intcol
+          Column Types: string, bigint, int
+          Table: default.ice_parquet_date_transform_truncate
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhutjkgkd') values (567490276, 6785), (67489376589302, 76859)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhutjkgkd
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhutjkgkd') values (567490276, 6785), (67489376589302, 76859)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhutjkgkd
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhyuitogh') values (567490276, 6785), (67489376589302, 76859)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhyuitogh
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhyuitogh') values (567490276, 6785), (67489376589302, 76859)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhyuitogh
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(567490276,6785),const struct(67489376589302L,76859)) (type: array<struct<col1:bigint,col2:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: 'gfhyuitogh' (type: string), col1 (type: bigint), col2 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.ice_parquet_date_transform_truncate
+                        Select Operator
+                          expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: int)
+                          outputColumnNames: pcol, bigintcol, intcol
+                          Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: max(length(pcol)), avg(COALESCE(length(pcol),0)), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                            keys: iceberg_truncate(pcol, 2) (type: string)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: string)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: string)
+                              Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: int), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 684 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col1,0)) (type: bigint), COALESCE(_col2,0) (type: double), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), _col6 (type: bigint), _col7 (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_trunc',_col0) (type: struct<pcol_trunc:string>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 1018 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1018 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol gfhyuitogh
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_truncate
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: pcol, bigintcol, intcol
+          Column Types: string, bigint, int
+          Table: default.ice_parquet_date_transform_truncate
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhyuitogh') values (567490276, 6785), (67489376589302, 76859)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhyuitogh
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhyuitogh') values (567490276, 6785), (67489376589302, 76859)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhyuitogh
+PREHOOK: query: explain insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhuiyoprj') select bigintcol, intcol from ice_parquet_date_transform_truncate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_truncate
+PREHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhuiyoprj
+POSTHOOK: query: explain insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhuiyoprj') select bigintcol, intcol from ice_parquet_date_transform_truncate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_truncate
+POSTHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhuiyoprj
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: ice_parquet_date_transform_truncate
+                  Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: 'gfhuiyoprj' (type: string), bigintcol (type: bigint), intcol (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                          output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                          serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                          name: default.ice_parquet_date_transform_truncate
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: bigint), _col2 (type: int)
+                      outputColumnNames: pcol, bigintcol, intcol
+                      Statistics: Num rows: 2 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: max(length(pcol)), avg(COALESCE(length(pcol),0)), count(1), count(pcol), compute_bit_vector_hll(pcol), min(bigintcol), max(bigintcol), count(bigintcol), compute_bit_vector_hll(bigintcol), min(intcol), max(intcol), count(intcol), compute_bit_vector_hll(intcol)
+                        keys: iceberg_truncate(pcol, 2) (type: string)
+                        minReductionHashAggr: 0.5
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                        Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 752 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: int), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+            Execution mode: vectorized
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 684 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col1,0)) (type: bigint), COALESCE(_col2,0) (type: double), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'LONG' (type: string), _col6 (type: bigint), _col7 (type: bigint), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('pcol_trunc',_col0) (type: struct<pcol_trunc:string>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 1018 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1018 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            pcol gfhuiyoprj
+          replace: true
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.ice_parquet_date_transform_truncate
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: pcol, bigintcol, intcol
+          Column Types: string, bigint, int
+          Table: default.ice_parquet_date_transform_truncate
+
+PREHOOK: query: insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhuiyoprj') select bigintcol, intcol from ice_parquet_date_transform_truncate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_truncate
+PREHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhuiyoprj
+POSTHOOK: query: insert overwrite table ice_parquet_date_transform_truncate partition (pcol = 'gfhuiyoprj') select bigintcol, intcol from ice_parquet_date_transform_truncate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_truncate
+POSTHOOK: Output: default@ice_parquet_date_transform_truncate@pcol=gfhuiyoprj
+PREHOOK: query: describe formatted ice_parquet_date_transform_truncate
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_parquet_date_transform_truncate
+POSTHOOK: query: describe formatted ice_parquet_date_transform_truncate
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_parquet_date_transform_truncate
+# col_name            	data_type           	comment             
+pcol                	string              	                    
+bigintcol           	bigint              	                    
+intcol              	int                 	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+pcol                	TRUNCATE[2]         	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"bigintcol\":\"true\",\"intcol\":\"true\",\"pcol\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"pcol\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"bigintcol\",\"required\":false,\"type\":\"long\"},{\"id\":3,\"name\":\"intcol\",\"required\":false,\"type\":\"int\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"replace-partitions\":\"true\",\"added-data-files\":\"1\",\"deleted-data-files\":\"1\",\"added-records\":\"2\",\"deleted-records\":\"2\",\"added-files-size\":\"#Masked#\",\"removed-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"2\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"pcol_trunc\",\"transform\":\"truncate[2]\",\"source-id\":1,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	#Masked#                   
+	numPartitions       	1                   
+	numRows             	2                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	3                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from ice_parquet_date_transform_truncate
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_parquet_date_transform_truncate
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_parquet_date_transform_truncate
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_parquet_date_transform_truncate
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+gfhuiyoprj	567490276	6785
+gfhuiyoprj	67489376589302	76859
+PREHOOK: query: drop table ice_parquet_date_transform_year
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_parquet_date_transform_year
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_date_transform_year
+POSTHOOK: query: drop table ice_parquet_date_transform_year
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_parquet_date_transform_year
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_date_transform_year
+PREHOOK: query: drop table ice_parquet_date_transform_month
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_parquet_date_transform_month
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_date_transform_month
+POSTHOOK: query: drop table ice_parquet_date_transform_month
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_parquet_date_transform_month
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_date_transform_month
+PREHOOK: query: drop table ice_parquet_date_transform_day
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_parquet_date_transform_day
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_date_transform_day
+POSTHOOK: query: drop table ice_parquet_date_transform_day
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_parquet_date_transform_day
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_date_transform_day
+PREHOOK: query: drop table ice_parquet_date_transform_truncate
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_parquet_date_transform_truncate
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_parquet_date_transform_truncate
+POSTHOOK: query: drop table ice_parquet_date_transform_truncate
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_parquet_date_transform_truncate
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_parquet_date_transform_truncate

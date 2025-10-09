@@ -1,5 +1,6 @@
 PREHOOK: query: drop table dest1_n171
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 RUN: Stage-0:DDL
 PREHOOK: query: CREATE TABLE dest1_n171(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE

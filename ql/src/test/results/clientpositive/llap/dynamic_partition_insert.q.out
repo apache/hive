@@ -216,18 +216,22 @@ POSTHOOK: Input: default@t2_n78@p1=5
 PREHOOK: query: DROP TABLE t1_n131
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1_n131
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t1_n131
 POSTHOOK: query: DROP TABLE t1_n131
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t1_n131
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n131
 PREHOOK: query: DROP TABLE t2_n78
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t2_n78
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t2_n78
 POSTHOOK: query: DROP TABLE t2_n78
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t2_n78
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t2_n78
 PREHOOK: query: CREATE TABLE table1_n15 (id int) partitioned by (key string) clustered by (id) into 2 buckets
 PREHOOK: type: CREATETABLE
@@ -292,10 +296,12 @@ POSTHOOK: Input: default@table1_n15@key=505
 PREHOOK: query: DROP TABLE table1_n15
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1_n15
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1_n15
 POSTHOOK: query: DROP TABLE table1_n15
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1_n15
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1_n15
 PREHOOK: query: CREATE TABLE table1_n15 (name string, age int) PARTITIONED BY (country string, state string)
 PREHOOK: type: CREATETABLE
@@ -378,18 +384,22 @@ Jane Doe	22	USA	TX
 PREHOOK: query: DROP TABLE table2_n10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2_n10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table2_n10
 POSTHOOK: query: DROP TABLE table2_n10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2_n10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2_n10
 PREHOOK: query: DROP TABLE table1_n15
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1_n15
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1_n15
 POSTHOOK: query: DROP TABLE table1_n15
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1_n15
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1_n15
 PREHOOK: query: CREATE TABLE dest1_n143(key string) partitioned by (value string)
 PREHOOK: type: CREATETABLE
@@ -936,18 +946,22 @@ value=val_199
 PREHOOK: query: DROP TABLE dest1_n143
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest1_n143
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest1_n143
 POSTHOOK: query: DROP TABLE dest1_n143
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest1_n143
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n143
 PREHOOK: query: DROP TABLE dest2_n37
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dest2_n37
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dest2_n37
 POSTHOOK: query: DROP TABLE dest2_n37
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dest2_n37
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest2_n37
 PREHOOK: query: CREATE TABLE table1_n15 (name string, age int) PARTITIONED BY (country string, state string)
 PREHOOK: type: CREATETABLE
@@ -1162,18 +1176,22 @@ Jane Doe	NULL	USA	__HIVE_DEFAULT_PARTITION__
 PREHOOK: query: DROP TABLE table2_n10
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2_n10
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table2_n10
 POSTHOOK: query: DROP TABLE table2_n10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2_n10
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2_n10
 PREHOOK: query: DROP TABLE table1_n15
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1_n15
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1_n15
 POSTHOOK: query: DROP TABLE table1_n15
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1_n15
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1_n15
 PREHOOK: query: CREATE TABLE pageviews (userid VARCHAR(64), link STRING, source STRING) PARTITIONED BY (datestamp STRING, i int)
     CLUSTERED BY (userid) INTO 256 BUCKETS STORED AS ORC

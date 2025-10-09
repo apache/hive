@@ -132,7 +132,7 @@ class PigHCatUtil {
 
   static public String getHCatServerUri(Job job) {
 
-    return job.getConfiguration().get(HiveConf.ConfVars.METASTOREURIS.varname);
+    return job.getConfiguration().get(HiveConf.ConfVars.METASTORE_URIS.varname);
   }
 
   static public String getHCatServerPrincipal(Job job) {
@@ -153,7 +153,7 @@ class PigHCatUtil {
     HiveConf hiveConf = new HiveConf(job.getConfiguration(), clazz);
 
     if (serverUri != null) {
-      hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, serverUri.trim());
+      hiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, serverUri.trim());
     }
 
     if (serverKerberosPrincipal != null) {

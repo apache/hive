@@ -186,10 +186,6 @@ public class HiveMaterializedViewBoxing {
       return planner.getCostFactory().makeInfiniteCost();
     }
 
-    @Override
-    public void implement(Implementor implementor) {
-    }
-
     private static final class BoxRelOptTable extends RelOptAbstractTable {
       private BoxRelOptTable(RelOptSchema schema, String name, RelDataType rowType) {
         super(schema, name, rowType);

@@ -64,6 +64,8 @@ public class TestGenMapRedUtilsCreateConditionalTask {
   @BeforeClass
   public static void initializeSessionState() {
     hiveConf = new HiveConf();
+    // GenMapRedUtils is an MR compiler class
+    hiveConf.set(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname, "mr");
   }
 
   @Before

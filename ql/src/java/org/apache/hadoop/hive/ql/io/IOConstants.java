@@ -39,7 +39,7 @@ public final class IOConstants {
 
   /**
    * The desired TABLE column names and types for input format schema evolution.
-   * This is different than COLUMNS and COLUMNS_TYPES, which are based on individual partition
+   * This is different from COLUMNS and COLUMNS_TYPES, which are based on individual partition
    * metadata.
    *
    * Virtual columns and partition columns are not included

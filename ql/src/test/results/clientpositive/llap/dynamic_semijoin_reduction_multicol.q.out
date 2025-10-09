@@ -194,20 +194,21 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Reducer 5 (BROADCAST_EDGE)
+        Map 1 <- Reducer 5 (BROADCAST_EDGE), Reducer 6 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: li
-                  filterExpr: (l_partkey is not null and l_suppkey is not null and l_partkey BETWEEN DynamicValue(RS_7_ps_ps_partkey_min) AND DynamicValue(RS_7_ps_ps_partkey_max) and in_bloom_filter(l_partkey, DynamicValue(RS_7_ps_ps_partkey_bloom_filter))) (type: boolean)
+                  filterExpr: (l_partkey is not null and l_suppkey is not null and l_partkey BETWEEN DynamicValue(RS_7_ps_ps_partkey_min) AND DynamicValue(RS_7_ps_ps_partkey_max) and l_suppkey BETWEEN DynamicValue(RS_7_ps_ps_suppkey_min) AND DynamicValue(RS_7_ps_ps_suppkey_max) and in_bloom_filter(l_partkey, DynamicValue(RS_7_ps_ps_partkey_bloom_filter)) and in_bloom_filter(l_suppkey, DynamicValue(RS_7_ps_ps_suppkey_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 6005 Data size: 72060 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (l_partkey is not null and l_suppkey is not null and l_partkey BETWEEN DynamicValue(RS_7_ps_ps_partkey_min) AND DynamicValue(RS_7_ps_ps_partkey_max) and in_bloom_filter(l_partkey, DynamicValue(RS_7_ps_ps_partkey_bloom_filter))) (type: boolean)
+                    predicate: (l_partkey is not null and l_suppkey is not null and l_partkey BETWEEN DynamicValue(RS_7_ps_ps_partkey_min) AND DynamicValue(RS_7_ps_ps_partkey_max) and l_suppkey BETWEEN DynamicValue(RS_7_ps_ps_suppkey_min) AND DynamicValue(RS_7_ps_ps_suppkey_max) and in_bloom_filter(l_partkey, DynamicValue(RS_7_ps_ps_partkey_bloom_filter)) and in_bloom_filter(l_suppkey, DynamicValue(RS_7_ps_ps_suppkey_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 6005 Data size: 72060 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
@@ -251,11 +252,26 @@ STAGE PLANS:
                           minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             null sort order: 
                             sort order: 
-                            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+                      Select Operator
+                        expressions: _col1 (type: int)
+                        outputColumnNames: _col1
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: min(_col1), max(_col1), bloom_filter(_col1, expectedEntries=1000000)
+                          minReductionHashAggr: 0.4
+                          mode: hash
+                          outputColumnNames: _col0, _col1, _col2
+                          Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -297,14 +313,27 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000000)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1000000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1000000)
+                mode: final
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 1 Data size: 152 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: binary)
 
   Stage: Stage-0
@@ -329,27 +358,33 @@ Stage-1 HIVE COUNTERS:
    RECORDS_IN_Map_1: 6005
    RECORDS_IN_Map_4: 800
    RECORDS_OUT_0: 14
-   RECORDS_OUT_INTERMEDIATE_Map_1: 50
-   RECORDS_OUT_INTERMEDIATE_Map_4: 3
+   RECORDS_OUT_INTERMEDIATE_Map_1: 14
+   RECORDS_OUT_INTERMEDIATE_Map_4: 4
    RECORDS_OUT_INTERMEDIATE_Reducer_2: 14
    RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
    RECORDS_OUT_INTERMEDIATE_Reducer_5: 1
+   RECORDS_OUT_INTERMEDIATE_Reducer_6: 1
    RECORDS_OUT_OPERATOR_FIL_38: 2
-   RECORDS_OUT_OPERATOR_FIL_46: 50
-   RECORDS_OUT_OPERATOR_FS_50: 14
-   RECORDS_OUT_OPERATOR_GBY_42: 1
+   RECORDS_OUT_OPERATOR_FIL_51: 14
+   RECORDS_OUT_OPERATOR_FS_55: 14
+   RECORDS_OUT_OPERATOR_GBY_43: 1
    RECORDS_OUT_OPERATOR_GBY_44: 1
+   RECORDS_OUT_OPERATOR_GBY_47: 1
+   RECORDS_OUT_OPERATOR_GBY_49: 1
    RECORDS_OUT_OPERATOR_MAP_0: 0
    RECORDS_OUT_OPERATOR_MERGEJOIN_37: 14
    RECORDS_OUT_OPERATOR_RS_10: 14
    RECORDS_OUT_OPERATOR_RS_40: 2
-   RECORDS_OUT_OPERATOR_RS_43: 1
    RECORDS_OUT_OPERATOR_RS_45: 1
-   RECORDS_OUT_OPERATOR_RS_48: 50
+   RECORDS_OUT_OPERATOR_RS_46: 1
+   RECORDS_OUT_OPERATOR_RS_48: 1
+   RECORDS_OUT_OPERATOR_RS_50: 1
+   RECORDS_OUT_OPERATOR_RS_53: 14
    RECORDS_OUT_OPERATOR_SEL_39: 2
    RECORDS_OUT_OPERATOR_SEL_41: 2
-   RECORDS_OUT_OPERATOR_SEL_47: 50
-   RECORDS_OUT_OPERATOR_SEL_49: 14
+   RECORDS_OUT_OPERATOR_SEL_42: 2
+   RECORDS_OUT_OPERATOR_SEL_52: 14
+   RECORDS_OUT_OPERATOR_SEL_54: 14
    RECORDS_OUT_OPERATOR_SEL_9: 14
    RECORDS_OUT_OPERATOR_TS_0: 6005
    RECORDS_OUT_OPERATOR_TS_3: 800
@@ -504,7 +539,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, expectedEntries=1000000)
+                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, 1, expectedEntries=1000000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
@@ -716,7 +751,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, expectedEntries=3)
+                aggregations: min(VALUE._col0), max(VALUE._col1), min(VALUE._col2), max(VALUE._col3), bloom_filter(VALUE._col4, 1, expectedEntries=3)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE

@@ -430,16 +430,38 @@ POSTHOOK: Input: default@src
 7	NULL	NULL
 8	NULL	NULL
 9	NULL	NULL
+PREHOOK: query: explain cbo
+select percentile_disc(cast(key as bigint), 0.5),
+       percentile_disc(0.5) within group (order by cast(key as bigint))
+from src where false
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select percentile_disc(cast(key as bigint), 0.5),
+       percentile_disc(0.5) within group (order by cast(key as bigint))
+from src where false
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[percentile_disc($0, $1)], agg#1=[percentile_disc($1) WITHIN GROUP ([0])])
+  HiveValues(tuples=[[]])
+
 PREHOOK: query: select percentile_disc(cast(key as bigint), 0.5),
        percentile_disc(0.5) within group (order by cast(key as bigint))
 from src where false
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select percentile_disc(cast(key as bigint), 0.5),
        percentile_disc(0.5) within group (order by cast(key as bigint))
 from src where false
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL	NULL
@@ -588,8 +610,10 @@ POSTHOOK: Input: default@t_test
 PREHOOK: query: DROP TABLE t_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_test
 POSTHOOK: query: DROP TABLE t_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_test

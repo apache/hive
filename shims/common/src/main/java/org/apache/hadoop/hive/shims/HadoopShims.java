@@ -72,6 +72,8 @@ import org.apache.hadoop.util.Progressable;
  */
 public interface HadoopShims {
 
+  String USER_ID = "%s_User:%s";
+
   /**
    * Constructs and Returns TaskAttempt Logger Url
    * or null if the TaskLogServlet is not available
@@ -606,10 +608,11 @@ public interface HadoopShims {
      *
      * @param path1 HDFS path to compare.
      * @param path2 HDFS path to compare.
+     * @param encryptionShim2 The encryption-shim corresponding to path2.
      * @return 1 if path1 is stronger; 0 if paths are equals; -1 if path1 is weaker.
      * @throws IOException If an error occurred attempting to get encryption/key metadata
      */
-    public int comparePathKeyStrength(Path path1, Path path2) throws IOException;
+    public int comparePathKeyStrength(Path path1, Path path2, HdfsEncryptionShim encryptionShim2) throws IOException;
 
     /**
      * Create encryption zone by path and keyname.
@@ -669,7 +672,7 @@ public interface HadoopShims {
     }
 
     @Override
-    public int comparePathKeyStrength(Path path1, Path path2) throws IOException {
+    public int comparePathKeyStrength(Path path1, Path path2, HdfsEncryptionShim encryptionShim2) throws IOException {
     /* not supported */
       return 0;
     }

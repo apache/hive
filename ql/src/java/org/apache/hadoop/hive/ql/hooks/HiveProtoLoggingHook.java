@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
+import static org.apache.hadoop.hive.ql.hooks.Entity.Type.PARTITION;
+import static org.apache.hadoop.hive.ql.hooks.Entity.Type.TABLE;
+import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERCATALOG_LOCATION;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERDATABASE;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERDATABASE_OWNER;
 import static org.apache.hadoop.hive.ql.plan.HiveOperation.ALTERPARTITION_BUCKETNUM;
@@ -149,7 +152,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
         RELOADFUNCTION, CREATEMACRO, DROPMACRO, CREATEVIEW, DROPVIEW, ALTERVIEW_PROPERTIES,
         LOCKTABLE, UNLOCKTABLE, CREATEROLE, DROPROLE, ALTERTABLE_FILEFORMAT,
         ALTERPARTITION_FILEFORMAT, ALTERTABLE_LOCATION, ALTERPARTITION_LOCATION, CREATETABLE,
-        TRUNCATETABLE, CREATETABLE_AS_SELECT, QUERY, ALTERDATABASE, ALTERDATABASE_OWNER,
+        TRUNCATETABLE, CREATETABLE_AS_SELECT, QUERY, ALTERCATALOG_LOCATION, ALTERDATABASE, ALTERDATABASE_OWNER,
         ALTERTABLE_MERGEFILES, ALTERPARTITION_MERGEFILES, ALTERTABLE_SKEWED,
         ALTERTBLPART_SKEWED_LOCATION, ALTERTABLE_PARTCOLTYPE, ALTERTABLE_EXCHANGEPARTITION,
         ALTERTABLE_DROPCONSTRAINT, ALTERTABLE_ADDCONSTRAINT, ALTERVIEW_RENAME, ALTERVIEW_AS,
@@ -166,7 +169,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
 
   public enum OtherInfoType {
     QUERY, STATUS, TEZ, MAPRED, INVOKER_INFO, SESSION_ID, THREAD_NAME, VERSION, CLIENT_IP_ADDRESS,
-    HIVE_ADDRESS, HIVE_INSTANCE_TYPE, CONF, PERF, LLAP_APP_ID, ERROR_MESSAGE
+    HIVE_ADDRESS, HIVE_INSTANCE_TYPE, CONF, PERF, LLAP_APP_ID, ERROR_MESSAGE, QUERY_TYPE
   }
 
   public enum ExecutionMode {
@@ -424,7 +427,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
               plan.getOptimizedQueryString(),
               plan.getOptimizedCBOPlan());
       return new HiveHookEventProtoPartialBuilder(
-              builder, explainWork, otherInfo, plan.getQueryStr(), conf.getVar(ConfVars.HIVESTAGEIDREARRANGE));
+              builder, explainWork, otherInfo, plan.getQueryStr(), conf.getVar(ConfVars.HIVE_STAGE_ID_REARRANGE));
     }
 
     private HiveHookEventProtoPartialBuilder getPostHookEvent(HookContext hookContext, boolean success) {
@@ -443,6 +446,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       }
       addMapEntry(builder, OtherInfoType.STATUS, Boolean.toString(success));
       addMapEntry(builder, OtherInfoType.ERROR_MESSAGE, hookContext.getErrorMessage());
+      addMapEntry(builder, OtherInfoType.QUERY_TYPE, hookContext.getQueryState().getCommandType());
       JSONObject perfObj = new JSONObject();
       for (String key : hookContext.getPerfLogger().getEndTimes().keySet()) {
         perfObj.put(key, hookContext.getPerfLogger().getDuration(key));
@@ -463,11 +467,11 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     }
 
     private String getRequestUser(HookContext hookContext) {
-      String requestuser = hookContext.getUserName();
-      if (requestuser == null) {
-        requestuser = hookContext.getUgi().getUserName();
+      String requestUser = hookContext.getUserName();
+      if (requestUser == null) {
+        requestUser = hookContext.getUgi().getUserName();
       }
-      return requestuser;
+      return requestUser;
     }
 
     private String getQueueName(ExecutionMode mode, HiveConf conf) {
@@ -487,7 +491,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     private List<String> getTablesFromEntitySet(Set<? extends Entity> entities) {
       List<String> tableNames = new ArrayList<>();
       for (Entity entity : entities) {
-        if (entity.getType() == Entity.Type.TABLE) {
+        if (entity.getType() == TABLE || entity.getType() == PARTITION) {
           tableNames.add(entity.getTable().getDbName() + "." + entity.getTable().getTableName());
         }
       }
@@ -553,7 +557,7 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
       EventLogger logger = EventLogger.getInstance(hookContext.getConf());
       logger.handle(hookContext);
     } catch (Exception e) {
-      LOG.error("Got exceptoin while processing event: ", e);
+      LOG.error("Got exception while processing event: ", e);
     }
   }
 }

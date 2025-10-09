@@ -43,16 +43,20 @@ POSTHOOK: Input: default@parquet_map_of_arrays_of_ints_copy
 PREHOOK: query: DROP TABLE parquet_map_of_arrays_of_ints
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_map_of_arrays_of_ints
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_map_of_arrays_of_ints
 POSTHOOK: query: DROP TABLE parquet_map_of_arrays_of_ints
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_map_of_arrays_of_ints
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_map_of_arrays_of_ints
 PREHOOK: query: DROP TABLE parquet_map_of_arrays_of_ints_copy
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_map_of_arrays_of_ints_copy
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_map_of_arrays_of_ints_copy
 POSTHOOK: query: DROP TABLE parquet_map_of_arrays_of_ints_copy
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_map_of_arrays_of_ints_copy
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_map_of_arrays_of_ints_copy

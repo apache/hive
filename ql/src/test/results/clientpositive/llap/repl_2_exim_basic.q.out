@@ -1,27 +1,39 @@
 PREHOOK: query: drop table if exists managed_t
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists managed_t
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists ext_t
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ext_t
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists managed_t_imported
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists managed_t_imported
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists managed_t_r_imported
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists managed_t_r_imported
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists ext_t_imported
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ext_t_imported
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists ext_t_r_imported
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists ext_t_r_imported
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table managed_t (emp_id int comment "employee id")
         partitioned by (emp_country string, emp_state string)
         stored as textfile
@@ -106,18 +118,22 @@ POSTHOOK: Input: default@ext_t@emp_country=us/emp_state=ca
 PREHOOK: query: drop table ext_t
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ext_t
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ext_t
 POSTHOOK: query: drop table ext_t
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ext_t
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ext_t
 PREHOOK: query: drop table managed_t
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@managed_t
+PREHOOK: Output: database:default
 PREHOOK: Output: default@managed_t
 POSTHOOK: query: drop table managed_t
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@managed_t
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@managed_t
 PREHOOK: query: import table managed_t_imported from 'ql/test/data/exports/managed_t'
 PREHOOK: type: IMPORT
@@ -157,9 +173,9 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:1
-totalFileSize:11
-maxFileSize:11
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show create table managed_t_imported
@@ -237,9 +253,9 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:1
-totalFileSize:11
-maxFileSize:11
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show create table managed_t_r_imported
@@ -319,9 +335,9 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:1
-totalFileSize:11
-maxFileSize:11
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show create table ext_t_imported
@@ -399,9 +415,9 @@ columns:struct columns { i32 emp_id}
 partitioned:true
 partitionColumns:struct partition_columns { string emp_country, string emp_state}
 totalNumberFiles:1
-totalFileSize:11
-maxFileSize:11
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: show create table ext_t_r_imported
@@ -446,32 +462,40 @@ POSTHOOK: Input: default@ext_t_r_imported@emp_country=us/emp_state=ca
 PREHOOK: query: drop table managed_t_imported
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@managed_t_imported
+PREHOOK: Output: database:default
 PREHOOK: Output: default@managed_t_imported
 POSTHOOK: query: drop table managed_t_imported
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@managed_t_imported
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@managed_t_imported
 PREHOOK: query: drop table managed_t_r_imported
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@managed_t_r_imported
+PREHOOK: Output: database:default
 PREHOOK: Output: default@managed_t_r_imported
 POSTHOOK: query: drop table managed_t_r_imported
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@managed_t_r_imported
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@managed_t_r_imported
 PREHOOK: query: drop table ext_t_imported
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ext_t_imported
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ext_t_imported
 POSTHOOK: query: drop table ext_t_imported
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ext_t_imported
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ext_t_imported
 PREHOOK: query: drop table ext_t_r_imported
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ext_t_r_imported
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ext_t_r_imported
 POSTHOOK: query: drop table ext_t_r_imported
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ext_t_r_imported
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ext_t_r_imported

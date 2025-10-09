@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
 import org.apache.hadoop.hive.ql.exec.tez.CompileTimeCounters;
 import org.apache.hadoop.hive.ql.exec.tez.HiveInputCounters;
 import org.apache.tez.common.counters.FileSystemCounter;
-import org.apache.tez.dag.api.client.DAGClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -62,7 +61,7 @@ public class PostExecTezSummaryPrinter implements ExecuteWithHookContext {
       LOG.info("Printing summary for tez task: " + tezTask.getName());
       TezCounters counters = tezTask.getTezCounters();
       if (counters != null) {
-        String hiveCountersGroup = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+        String hiveCountersGroup = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_COUNTER_GROUP);
         for (CounterGroup group : counters) {
           if (hiveCountersGroup.equals(group.getDisplayName())) {
             console.printInfo(tezTask.getId() + " HIVE COUNTERS:", false);

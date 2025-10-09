@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +58,7 @@ public class TestLocationQueries extends BaseTestQueries {
    */
   public static class CheckResults extends QTestUtil {
     private final String locationSubdir;
+    private final List<String> outputLines = new ArrayList<>();
 
     /**
      * Validate only that the location is correct.
@@ -65,34 +66,24 @@ public class TestLocationQueries extends BaseTestQueries {
      */
     @Override
     public QTestProcessExecResult checkCliDriverResults() throws Exception {
-      String tname = getInputFile().getName();
-      File logFile = new File(logDir, tname + ".out");
-
       int failedCount = 0;
       StringBuilder fileNames = new StringBuilder("Files failing the location check:");
-      FileReader fr = new FileReader(logFile);
-      BufferedReader in = new BufferedReader(fr);
-      try {
-        String line;
-        int locationCount = 0;
-        Pattern p = Pattern.compile("location:([^,)]+)");
-        while((line = in.readLine()) != null) {
-          Matcher m = p.matcher(line);
-          if (m.find()) {
-            File f = new File(m.group(1));
-            if (!f.getName().equals(locationSubdir)) {
-              failedCount++;
-              fileNames.append(f.getName()).append("\r\n");
-            }
-            locationCount++;
+      int locationCount = 0;
+      Pattern p = Pattern.compile("location:([^,)]+)");
+      for (String line : outputLines) {
+        Matcher m = p.matcher(line);
+        if (m.find()) {
+          File f = new File(m.group(1));
+          if (!f.getName().equals(locationSubdir)) {
+            failedCount++;
+            fileNames.append(f.getName()).append("\r\n");
           }
+          locationCount++;
         }
-        // we always have to find at least one location, otw the test is useless
-        if (locationCount == 0) {
-          return QTestProcessExecResult.create(Integer.MAX_VALUE, "0 locations tested");
-        }
-      } finally {
-        in.close();
+      }
+      // we always have to find at least one location, otw the test is useless
+      if (locationCount == 0) {
+        return QTestProcessExecResult.create(Integer.MAX_VALUE, "0 locations tested");
       }
 
       return QTestProcessExecResult.create(failedCount, fileNames.toString());
@@ -114,6 +105,11 @@ public class TestLocationQueries extends BaseTestQueries {
 
       this.locationSubdir = locationSubdir;
     }
+
+    @Override
+    protected void notifyOutputLine(String line) {
+      outputLines.add(line);
+    }
   }
 
   /**
@@ -130,7 +126,7 @@ public class TestLocationQueries extends BaseTestQueries {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
 
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new CheckResults(resDir, logDir, MiniClusterType.NONE, "parta");
+      qt[i] = new CheckResults(resDir, logDir, MiniClusterType.TEZ_LOCAL, "parta");
       qt[i].postInit();
       qt[i].newSession();
       qt[i].setInputFile(qfiles[i]);

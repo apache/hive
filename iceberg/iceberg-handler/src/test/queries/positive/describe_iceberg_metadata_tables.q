@@ -1,13 +1,10 @@
--- Mask the totalSize value as it can have slight variability, causing test flakiness
---! qt:replace:/(\s+totalSize\s+)\S+(\s+)/$1#Masked#$2/
+--! qt:replace:/Location\s//
 
 drop table if exists ice_meta_desc;
 create external table ice_meta_desc (id int, value string) stored by iceberg stored as orc;
 insert into ice_meta_desc values (1, 'one'),(2,'two'),(3,'three'),(4,'four'),(5,'five');
 insert into ice_meta_desc values (3,'three'),(4,'four'),(5,'five');
 
-describe default.ice_meta_desc;
-describe default.ice_meta_desc;
 describe default.ice_meta_desc;
 
 describe default.ice_meta_desc.files;
@@ -19,6 +16,12 @@ describe default.ice_meta_desc.partitions;
 describe default.ice_meta_desc.all_manifests;
 describe default.ice_meta_desc.all_data_files;
 describe default.ice_meta_desc.all_entries;
+describe default.ice_meta_desc.data_files;
+describe default.ice_meta_desc.delete_files;
+describe default.ice_meta_desc.metadata_log_entries;
+describe default.ice_meta_desc.refs;
+describe default.ice_meta_desc.all_delete_files;
+describe default.ice_meta_desc.all_files;
 
 describe formatted default.ice_meta_desc.files;
 describe formatted default.ice_meta_desc.entries;
@@ -29,6 +32,12 @@ describe formatted default.ice_meta_desc.partitions;
 describe formatted default.ice_meta_desc.all_manifests;
 describe formatted default.ice_meta_desc.all_data_files;
 describe formatted default.ice_meta_desc.all_entries;
+describe formatted default.ice_meta_desc.data_files;
+describe formatted default.ice_meta_desc.delete_files;
+describe formatted default.ice_meta_desc.metadata_log_entries;
+describe formatted default.ice_meta_desc.refs;
+describe formatted default.ice_meta_desc.all_delete_files;
+describe formatted default.ice_meta_desc.all_files;
 
 describe extended default.ice_meta_desc.files;
 describe extended default.ice_meta_desc.entries;
@@ -39,5 +48,11 @@ describe extended default.ice_meta_desc.partitions;
 describe extended default.ice_meta_desc.all_manifests;
 describe extended default.ice_meta_desc.all_data_files;
 describe extended default.ice_meta_desc.all_entries;
+describe formatted default.ice_meta_desc.data_files;
+describe formatted default.ice_meta_desc.delete_files;
+describe formatted default.ice_meta_desc.metadata_log_entries;
+describe formatted default.ice_meta_desc.refs;
+describe formatted default.ice_meta_desc.all_delete_files;
+describe formatted default.ice_meta_desc.all_files;
 
 drop table ice_meta_desc;

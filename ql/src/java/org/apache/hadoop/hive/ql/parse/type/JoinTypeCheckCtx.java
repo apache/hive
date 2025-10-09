@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.type;
 
 import java.util.List;
 
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.hadoop.hive.ql.parse.JoinType;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -51,9 +52,9 @@ public class JoinTypeCheckCtx extends TypeCheckCtx {
   private final ImmutableList<RowResolver> inputRRLst;
   private final boolean outerJoin;
 
-  public JoinTypeCheckCtx(RowResolver leftRR, RowResolver rightRR, JoinType hiveJoinType)
+  public JoinTypeCheckCtx(RowResolver leftRR, RowResolver rightRR, RexBuilder rexBuilder, JoinType hiveJoinType)
       throws SemanticException {
-    super(RowResolver.getCombinedRR(leftRR, rightRR), true, false, false, false, false, false, false, false,
+    super(RowResolver.getCombinedRR(leftRR, rightRR), rexBuilder, true, false, false, false, false, false, false, false,
         true, false);
     this.inputRRLst = ImmutableList.of(leftRR, rightRR);
     this.outerJoin = (hiveJoinType == JoinType.LEFTOUTER) || (hiveJoinType == JoinType.RIGHTOUTER)

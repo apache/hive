@@ -1,0 +1,34 @@
+PREHOOK: query: create table ice_ts_4 (id int, ts timestamp with local time zone) stored by iceberg stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_ts_4
+POSTHOOK: query: create table ice_ts_4 (id int, ts timestamp with local time zone) stored by iceberg stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_ts_4
+PREHOOK: query: insert into ice_ts_4 values (1, cast('2023-07-20 00:00:00' as timestamp with local time zone))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_ts_4
+POSTHOOK: query: insert into ice_ts_4 values (1, cast('2023-07-20 00:00:00' as timestamp with local time zone))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_ts_4
+PREHOOK: query: select * from ice_ts_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_ts_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2023-07-20 00:00:00.0 US/Pacific
+PREHOOK: query: select * from ice_ts_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_ts_4
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice_ts_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_ts_4
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2023-07-20 00:00:00.0 US/Pacific

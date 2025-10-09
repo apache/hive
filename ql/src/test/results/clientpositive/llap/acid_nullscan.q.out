@@ -29,17 +29,19 @@ POSTHOOK: Lineage: acid_vectorized_n1.b SCRIPT []
 PREHOOK: query: explain extended
 select sum(a) from acid_vectorized_n1 where false
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
 POSTHOOK: query: explain extended
 select sum(a) from acid_vectorized_n1 where false
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT SUM(`a`) AS `$f0`
-FROM (SELECT `a`
-FROM `default`.`acid_vectorized_n1`
-LIMIT 0) AS `t0`
+OPTIMIZED SQL: SELECT SUM(`$f0`) AS `$f0`
+FROM (SELECT *
+FROM (SELECT NULL AS `$f0`) AS `t`
+WHERE 1 = 0) AS `t`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -55,18 +57,17 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: acid_vectorized_n1
-                  Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Limit
                     Number of rows: 0
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: a (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: sum(_col0)
+                        aggregations: sum(null)
                         minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
@@ -83,46 +84,41 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Path -> Alias:
-              nullscan://null/default.acid_vectorized_n1/part_ [acid_vectorized_n1]
+              nullscan://null/_dummy_database._dummy_table/part_ [_dummy_table]
             Path -> Partition:
-              nullscan://null/default.acid_vectorized_n1/part_ 
+              nullscan://null/_dummy_database._dummy_table/part_ 
                 Partition
                   input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
-                    bucket_count 2
-                    bucket_field_name a
+                    bucket_count -1
                     bucketing_version 2
                     column.name.delimiter ,
-                    columns a,b
-                    columns.types int:string
+                    columns 
+                    columns.types 
 #### A masked pattern was here ####
-                    name default.acid_vectorized_n1
+                    name _dummy_database._dummy_table
+                    serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
-                    transactional true
-                    transactional_properties default
                   serde: org.apache.hadoop.hive.serde2.NullStructSerDe
                 
-                    input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    input format: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      bucket_count 2
-                      bucket_field_name a
                       bucketing_version 2
                       column.name.delimiter ,
-                      columns a,b
+                      columns 
                       columns.comments 
-                      columns.types int:string
+                      columns.types 
 #### A masked pattern was here ####
-                      name default.acid_vectorized_n1
-                      serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      transactional true
-                      transactional_properties default
-                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                    name: default.acid_vectorized_n1
-                  name: default.acid_vectorized_n1
+                      name _dummy_database._dummy_table
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+                    serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+                    name: _dummy_database._dummy_table
+                  name: _dummy_database._dummy_table
             Truncated Path -> Alias:
-              nullscan://null/default.acid_vectorized_n1/part_ [acid_vectorized_n1]
+              nullscan://null/_dummy_database._dummy_table/part_ [_dummy_table]
         Reducer 2 
             Execution mode: vectorized, llap
             Needs Tagging: false
@@ -165,10 +161,12 @@ STAGE PLANS:
 
 PREHOOK: query: select sum(a) from acid_vectorized_n1 where false
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
 POSTHOOK: query: select sum(a) from acid_vectorized_n1 where false
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
 NULL

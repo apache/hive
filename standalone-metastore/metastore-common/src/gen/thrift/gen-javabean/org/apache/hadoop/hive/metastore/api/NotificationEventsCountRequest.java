@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField TO_EVENT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("toEventId", org.apache.thrift.protocol.TType.I64, (short)4);
   private static final org.apache.thrift.protocol.TField LIMIT_FIELD_DESC = new org.apache.thrift.protocol.TField("limit", org.apache.thrift.protocol.TType.I64, (short)5);
+  private static final org.apache.thrift.protocol.TField TABLE_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("tableNames", org.apache.thrift.protocol.TType.LIST, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new NotificationEventsCountRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new NotificationEventsCountRequestTupleSchemeFactory();
@@ -25,6 +26,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // optional
   private long toEventId; // optional
   private long limit; // optional
+  private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> tableNames; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -32,7 +34,8 @@ package org.apache.hadoop.hive.metastore.api;
     DB_NAME((short)2, "dbName"),
     CAT_NAME((short)3, "catName"),
     TO_EVENT_ID((short)4, "toEventId"),
-    LIMIT((short)5, "limit");
+    LIMIT((short)5, "limit"),
+    TABLE_NAMES((short)6, "tableNames");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -58,6 +61,8 @@ package org.apache.hadoop.hive.metastore.api;
           return TO_EVENT_ID;
         case 5: // LIMIT
           return LIMIT;
+        case 6: // TABLE_NAMES
+          return TABLE_NAMES;
         default:
           return null;
       }
@@ -103,7 +108,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final int __TOEVENTID_ISSET_ID = 1;
   private static final int __LIMIT_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.TO_EVENT_ID,_Fields.LIMIT};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.TO_EVENT_ID,_Fields.LIMIT,_Fields.TABLE_NAMES};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -117,6 +122,9 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.LIMIT, new org.apache.thrift.meta_data.FieldMetaData("limit", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.TABLE_NAMES, new org.apache.thrift.meta_data.FieldMetaData("tableNames", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(NotificationEventsCountRequest.class, metaDataMap);
   }
@@ -148,6 +156,10 @@ package org.apache.hadoop.hive.metastore.api;
     }
     this.toEventId = other.toEventId;
     this.limit = other.limit;
+    if (other.isSetTableNames()) {
+      java.util.List<java.lang.String> __this__tableNames = new java.util.ArrayList<java.lang.String>(other.tableNames);
+      this.tableNames = __this__tableNames;
+    }
   }
 
   public NotificationEventsCountRequest deepCopy() {
@@ -164,6 +176,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.toEventId = 0;
     setLimitIsSet(false);
     this.limit = 0;
+    this.tableNames = null;
   }
 
   public long getFromEventId() {
@@ -280,6 +293,46 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __LIMIT_ISSET_ID, value);
   }
 
+  public int getTableNamesSize() {
+    return (this.tableNames == null) ? 0 : this.tableNames.size();
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Iterator<java.lang.String> getTableNamesIterator() {
+    return (this.tableNames == null) ? null : this.tableNames.iterator();
+  }
+
+  public void addToTableNames(java.lang.String elem) {
+    if (this.tableNames == null) {
+      this.tableNames = new java.util.ArrayList<java.lang.String>();
+    }
+    this.tableNames.add(elem);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.List<java.lang.String> getTableNames() {
+    return this.tableNames;
+  }
+
+  public void setTableNames(@org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> tableNames) {
+    this.tableNames = tableNames;
+  }
+
+  public void unsetTableNames() {
+    this.tableNames = null;
+  }
+
+  /** Returns true if field tableNames is set (has been assigned a value) and false otherwise */
+  public boolean isSetTableNames() {
+    return this.tableNames != null;
+  }
+
+  public void setTableNamesIsSet(boolean value) {
+    if (!value) {
+      this.tableNames = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case FROM_EVENT_ID:
@@ -322,6 +375,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case TABLE_NAMES:
+      if (value == null) {
+        unsetTableNames();
+      } else {
+        setTableNames((java.util.List<java.lang.String>)value);
+      }
+      break;
+
     }
   }
 
@@ -342,6 +403,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case LIMIT:
       return getLimit();
+
+    case TABLE_NAMES:
+      return getTableNames();
 
     }
     throw new java.lang.IllegalStateException();
@@ -364,6 +428,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetToEventId();
     case LIMIT:
       return isSetLimit();
+    case TABLE_NAMES:
+      return isSetTableNames();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -426,6 +492,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_tableNames = true && this.isSetTableNames();
+    boolean that_present_tableNames = true && that.isSetTableNames();
+    if (this_present_tableNames || that_present_tableNames) {
+      if (!(this_present_tableNames && that_present_tableNames))
+        return false;
+      if (!this.tableNames.equals(that.tableNames))
+        return false;
+    }
+
     return true;
   }
 
@@ -450,6 +525,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetLimit()) ? 131071 : 524287);
     if (isSetLimit())
       hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(limit);
+
+    hashCode = hashCode * 8191 + ((isSetTableNames()) ? 131071 : 524287);
+    if (isSetTableNames())
+      hashCode = hashCode * 8191 + tableNames.hashCode();
 
     return hashCode;
   }
@@ -512,6 +591,16 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetTableNames(), other.isSetTableNames());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTableNames()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableNames, other.tableNames);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -564,6 +653,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("limit:");
       sb.append(this.limit);
+      first = false;
+    }
+    if (isSetTableNames()) {
+      if (!first) sb.append(", ");
+      sb.append("tableNames:");
+      if (this.tableNames == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tableNames);
+      }
       first = false;
     }
     sb.append(")");
@@ -659,6 +758,24 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // TABLE_NAMES
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list1016 = iprot.readListBegin();
+                struct.tableNames = new java.util.ArrayList<java.lang.String>(_list1016.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1017;
+                for (int _i1018 = 0; _i1018 < _list1016.size; ++_i1018)
+                {
+                  _elem1017 = iprot.readString();
+                  struct.tableNames.add(_elem1017);
+                }
+                iprot.readListEnd();
+              }
+              struct.setTableNamesIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -697,6 +814,20 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeI64(struct.limit);
         oprot.writeFieldEnd();
       }
+      if (struct.tableNames != null) {
+        if (struct.isSetTableNames()) {
+          oprot.writeFieldBegin(TABLE_NAMES_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.tableNames.size()));
+            for (java.lang.String _iter1019 : struct.tableNames)
+            {
+              oprot.writeString(_iter1019);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -726,7 +857,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetLimit()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetTableNames()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
       }
@@ -735,6 +869,15 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (struct.isSetLimit()) {
         oprot.writeI64(struct.limit);
+      }
+      if (struct.isSetTableNames()) {
+        {
+          oprot.writeI32(struct.tableNames.size());
+          for (java.lang.String _iter1020 : struct.tableNames)
+          {
+            oprot.writeString(_iter1020);
+          }
+        }
       }
     }
 
@@ -745,7 +888,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setFromEventIdIsSet(true);
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
@@ -757,6 +900,19 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(2)) {
         struct.limit = iprot.readI64();
         struct.setLimitIsSet(true);
+      }
+      if (incoming.get(3)) {
+        {
+          org.apache.thrift.protocol.TList _list1021 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.tableNames = new java.util.ArrayList<java.lang.String>(_list1021.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1022;
+          for (int _i1023 = 0; _i1023 < _list1021.size; ++_i1023)
+          {
+            _elem1022 = iprot.readString();
+            struct.tableNames.add(_elem1022);
+          }
+        }
+        struct.setTableNamesIsSet(true);
       }
     }
   }

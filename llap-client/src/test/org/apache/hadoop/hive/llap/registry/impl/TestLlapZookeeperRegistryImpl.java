@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.llap.registry.impl;
 
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryOneTime;
@@ -25,15 +26,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.internal.util.reflection.Fields;
-import org.mockito.internal.util.reflection.InstanceField;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.lang.Integer.parseInt;
@@ -47,6 +48,7 @@ public class TestLlapZookeeperRegistryImpl {
 
   private CuratorFramework curatorFramework;
   private TestingServer server;
+  private final static String NAMESPACE_PREFIX = "llap-";
 
   @Before
   public void setUp() throws Exception {
@@ -64,7 +66,7 @@ public class TestLlapZookeeperRegistryImpl {
             build();
     curatorFramework.start();
 
-    trySetMock(registry, CuratorFramework.class, curatorFramework);
+    trySetMock(registry, "zooKeeperClient", curatorFramework);
 
   }
 
@@ -124,15 +126,28 @@ public class TestLlapZookeeperRegistryImpl {
             attributes.get(LlapRegistryService.LLAP_DAEMON_NUM_ENABLED_EXECUTORS));
   }
 
-  static <T> void trySetMock(Object o, Class<T> clazz, T mock) {
-    List<InstanceField> instanceFields = Fields
-        .allDeclaredFieldsOf(o)
-        .filter(instanceField -> !clazz.isAssignableFrom(instanceField.jdkField().getType()))
-        .instanceFields();
-    if (instanceFields.size() != 1) {
+  @Test
+  public void testPersistentNodePath() {
+    String llapRootNameSpace = "/" + LlapZookeeperRegistryImpl.getRootNamespace(hiveConf,
+        HiveConf.getVar(hiveConf, HiveConf.ConfVars.LLAP_ZK_REGISTRY_NAMESPACE), NAMESPACE_PREFIX);
+    String persistentNodeName = "/pnode0";
+
+    Assert.assertEquals(llapRootNameSpace + "/user-" + System.getProperty("user.name") + persistentNodeName,
+        registry.getPersistentNodePath());
+  }
+
+  static <T> void trySetMock(Object o, String field, T value) {
+    try {
+      Field fieldToChange = Arrays.stream(FieldUtils.getAllFields(o.getClass()))
+              .filter(f -> f.getName().equals(field))
+              .findFirst()
+              .orElseThrow(NoSuchFieldException::new);
+
+      fieldToChange.setAccessible(true);
+
+      fieldToChange.set(o, value);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException("Mocking is only supported, if only one field is assignable from the given class.");
     }
-    InstanceField instanceField = instanceFields.get(0);
-    instanceField.set(mock);
   }
 }

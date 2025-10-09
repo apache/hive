@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,12 +40,17 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlCollation;
+import org.apache.calcite.sql.SqlFunction;
+import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlIntervalQualifier;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlQuantifyOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
+import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.type.ArraySqlType;
 import org.apache.calcite.util.ConversionUtil;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.NlsString;
@@ -67,6 +73,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.Unsu
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSubquerySemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRexExprList;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveComponentAccess;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -165,22 +172,23 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
 
   private int getPosition(ColumnInfo colInfo, List<RowResolver> rowResolverList)
       throws SemanticException {
-    ColumnInfo tmp;
-    ColumnInfo cInfoToRet = null;
     int position = 0;
-    for (RowResolver rr : rowResolverList) {
-      tmp = rr.get(colInfo.getTabAlias(), colInfo.getAlias());
-      if (tmp != null) {
-        if (cInfoToRet != null) {
-          throw new CalciteSemanticException("Could not resolve column name");
-        }
-        cInfoToRet = tmp;
-        position += rr.getPosition(cInfoToRet.getInternalName());
-      } else if (cInfoToRet == null) {
+
+    for (RowResolver rr: rowResolverList) {
+      ColumnInfo tmp = rr.get(colInfo.getTabAlias(), colInfo.getAlias());
+      if (tmp == null) {
+        // if column is not present in the RR, increment position by size of RR
         position += rr.getColumnInfos().size();
+      } else {
+        // if column is present, increment position by the position of the column in RR
+        // and return early.
+        position += rr.getPosition(tmp.getInternalName());
+        return position;
       }
     }
-    return position;
+
+    // If we are out of the for loop, then the column is not present in any RR
+    throw new CalciteSemanticException("Could not resolve column name");
   }
 
   /**
@@ -608,8 +616,9 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
           SqlStdOperatorTable.ROW,
           operands);
     }
-    return rexBuilder.makeLiteral(constantValue,
-        TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory()), false);
+    RelDataType finalType = TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory());
+    boolean allowCast = finalType.getFamily() == SqlTypeFamily.CHARACTER;
+    return rexBuilder.makeLiteral(constantValue, finalType, allowCast);
   }
 
   /**
@@ -621,11 +630,13 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     if (expr.getType().isStruct()) {
       // regular case of accessing nested field in a column
       return rexBuilder.makeFieldAccess(expr, fieldName, true);
+    } else if (expr.getType().getComponentType() != null) {
+      RexNode wrap = rexBuilder.makeCall(expr.getType().getComponentType(), HiveComponentAccess.COMPONENT_ACCESS,
+                  Collections.singletonList(expr));
+      return createNestedColumnRefExpr(typeInfo, wrap, fieldName,
+              expr.getType().getComponentType() instanceof ArraySqlType);
     } else {
-      // This may happen for schema-less tables, where columns are dynamically
-      // supplied by serdes.
-      throw new CalciteSemanticException("Unexpected rexnode : "
-          + expr.getClass().getCanonicalName(), UnsupportedFeature.Schema_less_table);
+      throw new CalciteSemanticException("Unexpected rexnode : " + expr.getClass().getCanonicalName());
     }
   }
 

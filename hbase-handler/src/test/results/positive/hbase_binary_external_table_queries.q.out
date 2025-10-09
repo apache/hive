@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE t_ext_hbase_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t_ext_hbase_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_1
 (key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
  c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
@@ -34,15 +36,19 @@ key-3	NULL	NULL	NULL	NULL	NULL	Test Strings	NULL	NULL
 PREHOOK: query: DROP TABLE t_ext_hbase_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_ext_hbase_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_ext_hbase_1
 POSTHOOK: query: DROP TABLE t_ext_hbase_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_ext_hbase_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_1
 PREHOOK: query: DROP TABLE t_ext_hbase_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t_ext_hbase_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_2
 (key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
  c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
@@ -75,15 +81,19 @@ key-3	true	127	32767	2147483647	9223372036854775807	Test Strings	3.4028235E38	1.
 PREHOOK: query: DROP TABLE t_ext_hbase_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_ext_hbase_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_ext_hbase_2
 POSTHOOK: query: DROP TABLE t_ext_hbase_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_ext_hbase_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_2
 PREHOOK: query: DROP TABLE t_ext_hbase_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t_ext_hbase_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_3
 (key STRING, c_bool BOOLEAN, c_byte TINYINT, c_short SMALLINT,
  c_int INT, c_long BIGINT, c_string STRING, c_float FLOAT, c_double DOUBLE)
@@ -131,8 +141,10 @@ POSTHOOK: Input: default@t_ext_hbase_3
 PREHOOK: query: DROP table t_ext_hbase_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_ext_hbase_3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_ext_hbase_3
 POSTHOOK: query: DROP table t_ext_hbase_3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_ext_hbase_3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_3

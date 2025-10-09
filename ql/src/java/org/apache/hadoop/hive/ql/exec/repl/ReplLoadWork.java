@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuild
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -92,7 +93,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   private Iterator<String> externalTableDataCopyItr;
   private ReplStatsTracker replStatsTracker;
   private String scheduledQueryName;
-  private String executionId;
+  private Long executionId;
   private boolean shouldFailover;
   public boolean isFirstFailover;
   public boolean isSecondFailover;
@@ -150,29 +151,31 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       isFirstFailover = checkFileExists(dumpDirParent, hiveConf, EVENT_ACK_FILE);
       isSecondFailover =
           !isFirstFailover && checkFileExists(dumpDirParent, hiveConf, BOOTSTRAP_TABLES_LIST);
-      incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
-          new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
-          replStatsTracker, shouldFailover);
 
       /*
        * If the current incremental dump also includes bootstrap for some tables, then create iterator
        * for the same.
        */
       Path incBootstrapDir = new Path(dumpDirectory, ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME);
-      if (fs.exists(incBootstrapDir)) {
-        if (isSecondFailover) {
-          String[] bootstrappedTables = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
-          LOG.info("Optimised bootstrap load for database {} with initial bootstrapped table list as {}",
-              dbNameToLoadIn, tablesToBootstrap);
-          // Get list of tables bootstrapped.
+      if (isSecondFailover) {
+        String[] bootstrappedTables = getBootstrapTableList(new Path(dumpDirectory).getParent(), hiveConf);
+        LOG.info("Optimised bootstrap load for database {} with initial bootstrapped table list as {}",
+                dbNameToLoadIn, tablesToBootstrap);
+        // Get list of tables bootstrapped.
+        if (fs.exists(incBootstrapDir)) {
           Path tableMetaPath = new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME + "/" + sourceDbName);
           tablesToBootstrap =
-              Stream.of(fs.listStatus(tableMetaPath)).map(st -> st.getPath().getName()).collect(Collectors.toList());
-          List<String> tableList = Arrays.asList(bootstrappedTables);
-          tablesToDrop = ListUtils.subtract(tableList, tablesToBootstrap);
-          LOG.info("Optimised bootstrap for database {} with drop table list as {} and bootstrap table list as {}",
-              dbNameToLoadIn, tablesToDrop, tablesToBootstrap);
+                  Stream.of(fs.listStatus(tableMetaPath)).map(st -> st.getPath().getName()).collect(Collectors.toList());
         }
+        else {
+          tablesToBootstrap = Collections.emptyList();
+        }
+        List<String> tableList = Arrays.asList(bootstrappedTables);
+        tablesToDrop = ListUtils.subtract(tableList, tablesToBootstrap);
+        LOG.info("Optimised bootstrap for database {} with drop table list as {} and bootstrap table list as {}",
+                dbNameToLoadIn, tablesToDrop, tablesToBootstrap);
+      }
+      if (fs.exists(incBootstrapDir)) {
         this.bootstrapIterator = new BootstrapEventsIterator(
                 new Path(incBootstrapDir, EximUtil.METADATA_PATH_NAME).toString(), dbNameToLoadIn, true,
           hiveConf, metricCollector);
@@ -180,6 +183,13 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       } else {
         this.bootstrapIterator = null;
         this.constraintsIterator = null;
+      }
+      try {
+        incrementalLoadTasksBuilder = new IncrementalLoadTasksBuilder(dbNameToLoadIn, dumpDirectory,
+                new IncrementalLoadEventsIterator(dumpDirectory, hiveConf), hiveConf, eventTo, metricCollector,
+                replStatsTracker, shouldFailover, tablesToBootstrap.size());
+      } catch (HiveException e) {
+        throw new SemanticException(e.getMessage(), e);
       }
     } else {
       this.bootstrapIterator = new BootstrapEventsIterator(new Path(dumpDirectory, EximUtil.METADATA_PATH_NAME)
@@ -195,7 +205,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
       scheduledQueryName = hiveConf.get(SCHEDULED_QUERY_SCHEDULENAME, "");
       // If the scheduled query name isn't available we don't enable JMX.
       if (!StringUtils.isEmpty(scheduledQueryName) || enableMBeansRegistrationForTests) {
-        executionId = hiveConf.get(SCHEDULED_QUERY_EXECUTIONID, "N/A");
+        executionId = hiveConf.getLong(SCHEDULED_QUERY_EXECUTIONID, 0L);
         String metricsName = "Database-" + dbNameToLoadIn + " Policy-" + scheduledQueryName;
         // Clean-up any MBean registered previously, which couldn't be cleaned up due to some previous error.
         unRegisterMBeanIfRegistered("HiveServer2", metricsName, Collections.emptyMap());
@@ -208,7 +218,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
     return null;
   }
 
-  // Unregisters MBeans by forming the Metrics same as how the Hadoop code forms during MBean registeration.
+  // Unregisters MBeans by forming the Metrics same as how the Hadoop code forms during MBean registration.
   private void unRegisterMBeanIfRegistered(String serviceName, String nameName,
       Map<String, String> additionalParameters) {
 
@@ -274,7 +284,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
 
   @Override
   public String getDumpDirectory() {return dumpDirectory;}
-  
+
   public void setRootTask(Task<?> rootTask) {
     this.rootTask = rootTask;
   }
@@ -368,7 +378,7 @@ public class ReplLoadWork implements Serializable, ReplLoadWorkMBean {
   }
 
   @Override
-  public String getExecutionId() {
+  public Long getExecutionId() {
     return executionId;
   }
 

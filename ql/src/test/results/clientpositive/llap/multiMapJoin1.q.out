@@ -704,10 +704,12 @@ RUN: Stage-1:MAPRED
 PREHOOK: query: drop table bigTbl
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@bigtbl
+PREHOOK: Output: database:default
 PREHOOK: Output: default@bigtbl
 POSTHOOK: query: drop table bigTbl
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@bigtbl
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@bigtbl
 RUN: Stage-0:DDL
 PREHOOK: query: create table bigTbl(key1 string, key2 string, value string)

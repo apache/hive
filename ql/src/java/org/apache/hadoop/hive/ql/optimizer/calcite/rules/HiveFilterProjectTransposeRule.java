@@ -36,6 +36,7 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.rules.FilterProjectTransposeRule;
+import org.apache.calcite.rel.rules.ProjectMergeRule;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
@@ -66,43 +67,47 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
   public static final HiveFilterProjectTransposeRule DETERMINISTIC_WINDOWING_ON_NON_FILTERING_JOIN =
       new HiveFilterProjectTransposeRule(
           operand(Filter.class, operand(Project.class, operand(Join.class, any()))),
-          HiveRelFactories.HIVE_BUILDER, true, true);
+          HiveRelFactories.HIVE_BUILDER, true, true, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule DETERMINISTIC_WINDOWING =
           new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
-                  HiveRelFactories.HIVE_BUILDER, true, true);
+                  HiveRelFactories.HIVE_BUILDER, true, true, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule DETERMINISTIC_ON_NON_FILTERING_JOIN =
       new HiveFilterProjectTransposeRule(
           operand(Filter.class, operand(Project.class, operand(Join.class, any()))),
-          HiveRelFactories.HIVE_BUILDER, true, false);
+          HiveRelFactories.HIVE_BUILDER, true, false, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule DETERMINISTIC =
           new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
-                  HiveRelFactories.HIVE_BUILDER, true, false);
+                  HiveRelFactories.HIVE_BUILDER, true, false, ProjectMergeRule.DEFAULT_BLOAT);
 
   public static final HiveFilterProjectTransposeRule INSTANCE =
           new HiveFilterProjectTransposeRule(Filter.class, HiveProject.class,
-                  HiveRelFactories.HIVE_BUILDER, false, false);
+                  HiveRelFactories.HIVE_BUILDER, false, false, ProjectMergeRule.DEFAULT_BLOAT);
 
   private final boolean onlyDeterministic;
 
   private final boolean pushThroughWindowing;
 
+  private final int bloat;
+
   private HiveFilterProjectTransposeRule(Class<? extends Filter> filterClass,
       Class<? extends Project> projectClass, RelBuilderFactory relBuilderFactory,
-      boolean onlyDeterministic,boolean pushThroughWindowing) {
+      boolean onlyDeterministic,boolean pushThroughWindowing, int bloat) {
     super(filterClass, projectClass, false, false, relBuilderFactory);
     this.onlyDeterministic = onlyDeterministic;
     this.pushThroughWindowing = pushThroughWindowing;
+    this.bloat = bloat;
   }
 
   private HiveFilterProjectTransposeRule(RelOptRuleOperand operand,
       RelBuilderFactory relBuilderFactory,
-      boolean onlyDeterministic, boolean pushThroughWindowing) {
+      boolean onlyDeterministic, boolean pushThroughWindowing, int bloat) {
     super(operand, false, false, relBuilderFactory);
     this.onlyDeterministic = onlyDeterministic;
     this.pushThroughWindowing = pushThroughWindowing;
+    this.bloat = bloat;
   }
 
   @Override
@@ -113,7 +118,11 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
     // as part of the select list when a view is in play.  But the condition after the pushdown
     // will resolve to using the udf from select list.  The check here for deterministic filters
     // should be based on the resolved expression.  Refer to test case cbo_ppd_non_deterministic.q.
-    RexNode condition = RelOptUtil.pushPastProject(filterRel.getCondition(), call.rel(1));
+    RexNode condition = HiveRelOptUtil.pushPastProjectUnlessBloat(
+        filterRel.getCondition(), call.rel(1), bloat);
+    if (condition == null) {
+      return false;
+    }
 
     if (this.onlyDeterministic && !HiveCalciteUtil.isDeterministic(condition)) {
       return false;
@@ -131,6 +140,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
     return super.matches(call);
   }
 
+  @Override
   public void onMatch(RelOptRuleCall call) {
     final Filter filter = call.rel(0);
     final Project origproject = call.rel(1);
@@ -166,8 +176,8 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
         // from t1 where value < 10)t1)t2
         if (!commonPartitionKeys.isEmpty()) {
           for (RexNode ce : RelOptUtil.conjunctions(origFilterCond)) {
-            RexNode newCondition = RelOptUtil.pushPastProject(ce, origproject);
-            if (HiveCalciteUtil.isDeterministicFuncWithSingleInputRef(newCondition,
+            RexNode newCondition = HiveRelOptUtil.pushPastProjectUnlessBloat(ce, origproject, bloat);
+            if (newCondition != null && HiveCalciteUtil.isDeterministicFuncWithSingleInputRef(newCondition,
                 commonPartitionKeys)) {
               newPartKeyFilConds.add(ce);
             } else {
@@ -193,15 +203,21 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       RelNode newProjRel = getNewProject(filterCondToPushBelowProj, unPushedFilCondAboveProj, origproject, filter.getCluster()
           .getTypeFactory(), call.builder());
 
-      call.transformTo(newProjRel);
+      if (newProjRel != null) {
+        call.transformTo(newProjRel);
+      }
     }
   }
 
-  private static RelNode getNewProject(RexNode filterCondToPushBelowProj, RexNode unPushedFilCondAboveProj, Project oldProj,
+  private RelNode getNewProject(RexNode filterCondToPushBelowProj, RexNode unPushedFilCondAboveProj, Project oldProj,
       RelDataTypeFactory typeFactory, RelBuilder relBuilder) {
 
     // convert the filter to one that references the child of the project.
-    RexNode newPushedCondition = RelOptUtil.pushPastProject(filterCondToPushBelowProj, oldProj);
+    RexNode newPushedCondition =
+        HiveRelOptUtil.pushPastProjectUnlessBloat(filterCondToPushBelowProj, oldProj, bloat);
+    if (newPushedCondition == null) {
+      return null;
+    }
 
     // Remove cast of BOOLEAN NOT NULL to BOOLEAN or vice versa. Filter accepts
     // nullable and not-nullable conditions, but a CAST might get in the way of
@@ -262,7 +278,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
   // in cases when a filter using IS NOT NULL is applied to an input $i down the subtree,
   // creating another filter IS NOT NULL(FUNC_CALL+($i)) is of a doubtful usefulness and
   // might lead to infinite loops in predicate pull-up and push-down, like in HIVE-25275
-  private static boolean isRedundantIsNotNull(Project project, RexNode newCondition) {
+  private boolean isRedundantIsNotNull(Project project, RexNode newCondition) {
     if (!newCondition.isA(SqlKind.IS_NOT_NULL)) {
       return false;
     }
@@ -272,7 +288,7 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       return false;
     }
 
-    RedundancyChecker redundancyChecker = new RedundancyChecker(newCondition);
+    RedundancyChecker redundancyChecker = new RedundancyChecker(newCondition, bloat);
     redundancyChecker.go(project);
     return redundancyChecker.isRedundant;
   }
@@ -282,9 +298,11 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
 
     final RexNode newCondition;
     final Map<RelNode, RexNode> filter2newConditionMap = new HashMap<>();
+    private final int bloat;
 
-    protected RedundancyChecker(RexNode newCondition) {
+    protected RedundancyChecker(RexNode newCondition, int bloat) {
       this.newCondition = newCondition;
+      this.bloat = bloat;
     }
 
     @Override
@@ -305,7 +323,11 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
         if (node instanceof Filter) {
           check((Filter) node);
         } else if (node instanceof Project) {
-          filterCondition = RelOptUtil.pushPastProject(filterCondition, (Project) node);
+          RexNode condition = HiveRelOptUtil.pushPastProjectUnlessBloat(
+              filterCondition, (Project) node, bloat);
+          if (condition != null) {
+            filterCondition = condition;
+          }
         } else {
           // we do not support other operators for now
           return;
@@ -371,18 +393,22 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       this.includedPredDigest = includedPred.toString();
     }
 
+    @Override
     public Boolean visitInputRef(RexInputRef inputRef) {
       return false;
     }
 
+    @Override
     public Boolean visitLiteral(RexLiteral literal) {
       return false;
     }
 
+    @Override
     public Boolean visitCorrelVariable(RexCorrelVariable correlVariable) {
       return false;
     }
 
+    @Override
     public Boolean visitCall(RexCall call) {
       if (call.isA(SqlKind.AND)) {
         return call.getOperands().stream().anyMatch(o -> o.accept(this));
@@ -392,14 +418,17 @@ public class HiveFilterProjectTransposeRule extends FilterProjectTransposeRule {
       return includedPredDigest.equals(call.toString());
     }
 
+    @Override
     public Boolean visitDynamicParam(RexDynamicParam dynamicParam) {
       return false;
     }
 
+    @Override
     public Boolean visitRangeRef(RexRangeRef rangeRef) {
       return false;
     }
 
+    @Override
     public Boolean visitFieldAccess(RexFieldAccess fieldAccess) {
       return false;
     }

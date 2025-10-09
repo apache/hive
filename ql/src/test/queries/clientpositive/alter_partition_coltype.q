@@ -63,6 +63,7 @@ insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) selec
 
 insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '1', '2', '1' from src where key=150 limit 5;
 insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select NULL, '1', '1' from src where key=150 limit 5;
+insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '2', '2', NULL;
 
 alter table pt.alterdynamic_part_table partition column (partcol1 int);
 
@@ -70,6 +71,9 @@ explain extended select intcol from pt.alterdynamic_part_table where partcol1='1
 
 explain extended select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__');
 select intcol from pt.alterdynamic_part_table where (partcol1='2' and partcol2='1')or (partcol1='1' and partcol2='__HIVE_DEFAULT_PARTITION__');
+
+alter table pt.alterdynamic_part_table partition column (partcol2 int);
+select intcol from pt.alterdynamic_part_table where (partcol1=2 and partcol2=1) or (partcol1=2 and isnull(partcol2));
 
 drop table pt.alterdynamic_part_table;
 drop database pt;

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists predicate_fold_tb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists predicate_fold_tb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table predicate_fold_tb(value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -39,9 +41,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: predicate_fold_tb
-          filterExpr: ((value <> 3) or value is null) (type: boolean)
+          filterExpr: (value is null or (value < 3) or (value > 3)) (type: boolean)
           Filter Operator
-            predicate: ((value <> 3) or value is null) (type: boolean)
+            predicate: (value is null or (value < 3) or (value > 3)) (type: boolean)
             Select Operator
               expressions: value (type: int)
               outputColumnNames: _col0

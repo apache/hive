@@ -1,23 +1,33 @@
 PREHOOK: query: drop table if exists multiinsert_test_text
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists multiinsert_test_text
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists multiinsert_test_text_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists multiinsert_test_text_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists multiinsert_test_acid
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists multiinsert_test_acid
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists multiinsert_test_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists multiinsert_test_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists multiinsert_test_acid_nondi
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists multiinsert_test_acid_nondi
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table multiinsert_test_text (a int, b int, c int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -269,26 +279,32 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists multiinsert_test_acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_acid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_acid
 POSTHOOK: query: drop table if exists multiinsert_test_acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_acid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_acid
 PREHOOK: query: drop table if exists multiinsert_test_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_mm
 POSTHOOK: query: drop table if exists multiinsert_test_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_mm
 PREHOOK: query: drop table if exists multiinsert_test_acid_nondi
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_acid_nondi
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_acid_nondi
 POSTHOOK: query: drop table if exists multiinsert_test_acid_nondi
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_acid_nondi
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_acid_nondi
 PREHOOK: query: create table multiinsert_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -503,26 +519,32 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists multiinsert_test_acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_acid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_acid
 POSTHOOK: query: drop table if exists multiinsert_test_acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_acid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_acid
 PREHOOK: query: drop table if exists multiinsert_test_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_mm
 POSTHOOK: query: drop table if exists multiinsert_test_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_mm
 PREHOOK: query: drop table if exists multiinsert_test_acid_nondi
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_acid_nondi
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_acid_nondi
 POSTHOOK: query: drop table if exists multiinsert_test_acid_nondi
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_acid_nondi
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_acid_nondi
 PREHOOK: query: create table multiinsert_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -737,40 +759,50 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists multiinsert_test_text
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_text
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_text
 POSTHOOK: query: drop table if exists multiinsert_test_text
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_text
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_text
 PREHOOK: query: drop table if exists multiinsert_test_text_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_text_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_text_2
 POSTHOOK: query: drop table if exists multiinsert_test_text_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_text_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_text_2
 PREHOOK: query: drop table if exists multiinsert_test_acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_acid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_acid
 POSTHOOK: query: drop table if exists multiinsert_test_acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_acid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_acid
 PREHOOK: query: drop table if exists multiinsert_test_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_mm
 POSTHOOK: query: drop table if exists multiinsert_test_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_mm
 PREHOOK: query: drop table if exists multiinsert_test_acid_nondi
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@multiinsert_test_acid_nondi
+PREHOOK: Output: database:default
 PREHOOK: Output: default@multiinsert_test_acid_nondi
 POSTHOOK: query: drop table if exists multiinsert_test_acid_nondi
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@multiinsert_test_acid_nondi
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@multiinsert_test_acid_nondi

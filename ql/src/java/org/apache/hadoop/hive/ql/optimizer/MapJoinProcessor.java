@@ -413,7 +413,7 @@ public class MapJoinProcessor extends Transform {
     boolean isVectorizationMapJoinNativeEnabled = HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_ENABLED);
     boolean isHybridHashJoin = HiveConf.getBoolVar(hiveConf,
-        HiveConf.ConfVars.HIVEUSEHYBRIDGRACEHASHJOIN);
+        HiveConf.ConfVars.HIVE_USE_HYBRIDGRACE_HASHJOIN);
     if (isVectorizationMapJoinNativeEnabled && isHybridHashJoin) {
       LOG.debug("FULL OUTER MapJoin not enabled: Native Vector MapJoin and Hybrid Grace not supported");
       return false;
@@ -423,6 +423,32 @@ public class MapJoinProcessor extends Transform {
         joinDesc.getResidualFilterExprs().size() != 0) {
       LOG.debug("FULL OUTER MapJoin not enabled: non-equi joins not supported");
       return false;
+    }
+
+    // Do not convert to MapJoin if FullOuterJoin has any filter expression.
+    // This partially disables HIVE-18908 optimization and solves the MapJoin correctness problems
+    // described in HIVE-27226.
+    if (joinDesc.getFilters() != null) {
+      // Unlike CommonJoinOperator.hasFilter(), we check getFilters() instead of getFilterMap() because
+      // getFilterMap() can be non-null while getFilters() is empty.
+
+      boolean hasFullOuterJoinWithFilter = Arrays.stream(joinDesc.getConds()).anyMatch(cond -> {
+        if (cond.getType() == JoinDesc.FULL_OUTER_JOIN) {
+          Byte left = (byte) cond.getLeft();
+          Byte right = (byte) cond.getRight();
+          boolean leftHasFilter =
+              joinDesc.getFilters().containsKey(left) && !joinDesc.getFilters().get(left).isEmpty();
+          boolean rightHasFilter =
+              joinDesc.getFilters().containsKey(right) && !joinDesc.getFilters().get(right).isEmpty();
+          return leftHasFilter || rightHasFilter;
+        } else {
+          return false;
+        }
+      });
+      if (hasFullOuterJoinWithFilter) {
+        LOG.debug("FULL OUTER MapJoin not enabled: FullOuterJoin with filters not supported");
+        return false;
+      }
     }
 
     return true;
@@ -464,17 +490,17 @@ public class MapJoinProcessor extends Transform {
         HiveConf.getVar(hiveConf,
             HiveConf.ConfVars.HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE);
     EnabledOverride mapJoinFullOuterOverride =
-        EnabledOverride.nameMap.get(testMapJoinFullOuterOverrideString);
+        EnabledOverride.NAME_MAP.get(testMapJoinFullOuterOverrideString);
 
     final boolean isEnabled =
         HiveConf.getBoolVar(
             hiveConf,
-            HiveConf.ConfVars.HIVEMAPJOINFULLOUTER);
+            HiveConf.ConfVars.HIVE_MAPJOIN_FULL_OUTER);
     switch (mapJoinFullOuterOverride) {
     case NONE:
       {
         if (!isEnabled) {
-          LOG.debug("FULL OUTER MapJoin not enabled: {} is false", HiveConf.ConfVars.HIVEMAPJOINFULLOUTER.varname);
+          LOG.debug("FULL OUTER MapJoin not enabled: {} is false", HiveConf.ConfVars.HIVE_MAPJOIN_FULL_OUTER.varname);
           return false;
         }
       }
@@ -483,18 +509,18 @@ public class MapJoinProcessor extends Transform {
       if (LOG.isDebugEnabled()) {
         LOG.debug("FULL OUTER MapJoin not enabled: " +
             HiveConf.ConfVars.HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE.varname + " is disable (" +
-            " " + HiveConf.ConfVars.HIVEMAPJOINFULLOUTER.varname + " is " + isEnabled + ")");
+            " " + HiveConf.ConfVars.HIVE_MAPJOIN_FULL_OUTER.varname + " is " + isEnabled + ")");
       }
       return false;
     case ENABLE:
 
       // Different parts of the code may rely on this being set...
       HiveConf.setBoolVar(hiveConf,
-          HiveConf.ConfVars.HIVEMAPJOINFULLOUTER, true);
+          HiveConf.ConfVars.HIVE_MAPJOIN_FULL_OUTER, true);
       if (LOG.isDebugEnabled()) {
         LOG.debug("FULL OUTER MapJoin is enabled: " +
             HiveConf.ConfVars.HIVE_TEST_MAPJOINFULLOUTER_OVERRIDE.varname + " is enable (" +
-            " " + HiveConf.ConfVars.HIVEMAPJOINFULLOUTER.varname + " is " + isEnabled + ")");
+            " " + HiveConf.ConfVars.HIVE_MAPJOIN_FULL_OUTER.varname + " is " + isEnabled + ")");
       }
       break;
     default:
@@ -520,9 +546,9 @@ public class MapJoinProcessor extends Transform {
     final boolean isOptimizedHashTableEnabled =
         HiveConf.getBoolVar(
             hiveConf,
-            HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE);
+            HiveConf.ConfVars.HIVE_MAPJOIN_USE_OPTIMIZED_TABLE);
     if (!isOptimizedHashTableEnabled) {
-      LOG.debug("FULL OUTER MapJoin not enabled: {} is false", HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE.varname);
+      LOG.debug("FULL OUTER MapJoin not enabled: {} is false", HiveConf.ConfVars.HIVE_MAPJOIN_USE_OPTIMIZED_TABLE.varname);
       return false;
     }
 
@@ -652,8 +678,8 @@ public class MapJoinProcessor extends Transform {
       int mapJoinPos) throws SemanticException {
     HiveConf hiveConf = pctx.getConf();
     boolean noCheckOuterJoin = HiveConf.getBoolVar(hiveConf,
-        HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN)
-        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN);
+        HiveConf.ConfVars.HIVE_OPT_SORT_MERGE_BUCKET_MAPJOIN)
+        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_BUCKET_MAPJOIN);
 
     MapJoinOperator mapJoinOp = convertMapJoin(pctx.getConf(), op,
         op.getConf().isLeftInputJoin(), op.getConf().getBaseSrc(),
@@ -1306,7 +1332,8 @@ public class MapJoinProcessor extends Transform {
         List<ExprNodeDesc> keyExprList =
             ExprNodeDescUtils.resolveJoinKeysAsRSColumns(mapEntry.getValue(), rsParent);
         if (keyExprList == null) {
-          throw new SemanticException("Error resolving join keys");
+          LOG.warn("Error resolving join keys {} in {} {}", mapEntry.getValue(), rsParent, rsParent.getColumnExprMap());
+          return null;
         }
         newKeyExprMap.put(pos, keyExprList);
       }

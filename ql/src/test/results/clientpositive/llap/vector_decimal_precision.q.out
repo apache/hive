@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_PRECISION_txt
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_PRECISION_txt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_PRECISION
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_PRECISION
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_PRECISION_txt_small
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_PRECISION_txt_small
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE DECIMAL_PRECISION_txt(`dec` decimal(20,10))
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
@@ -658,13 +664,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 120 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), CAST( _col0 AS decimal(30,10)) (type: decimal(30,10))
+                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), _col0 (type: decimal(30,10))
                   outputColumnNames: _col0, _col1
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [4, 5]
-                      selectExpressions: CastDecimalToDecimal(col 3:decimal(38,18))(children: DecimalColDivideDecimalColumn(col 0:decimal(30,10), col 2:decimal(19,0))(children: CastLongToDecimal(col 1:bigint) -> 2:decimal(19,0)) -> 3:decimal(38,18)) -> 4:decimal(24,14), CastDecimalToDecimal(col 0:decimal(30,10)) -> 5:decimal(30,10)
+                      projectedOutputColumnNums: [4, 0]
+                      selectExpressions: CastDecimalToDecimal(col 3:decimal(38,18))(children: DecimalColDivideDecimalColumn(col 0:decimal(30,10), col 2:decimal(19,0))(children: CastLongToDecimal(col 1:bigint) -> 2:decimal(19,0)) -> 3:decimal(38,18)) -> 4:decimal(24,14)
                   Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1282,13 +1288,13 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), CAST( _col0 AS decimal(30,10)) (type: decimal(30,10))
+                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), _col0 (type: decimal(30,10))
                   outputColumnNames: _col0, _col1
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [4, 5]
-                      selectExpressions: CastDecimalToDecimal(col 3:decimal(38,18))(children: DecimalColDivideDecimalColumn(col 0:decimal(30,10), col 2:decimal(19,0))(children: CastLongToDecimal(col 1:bigint) -> 2:decimal(19,0)) -> 3:decimal(38,18)) -> 4:decimal(24,14), CastDecimalToDecimal(col 0:decimal(30,10)) -> 5:decimal(30,10)
+                      projectedOutputColumnNums: [4, 0]
+                      selectExpressions: CastDecimalToDecimal(col 3:decimal(38,18))(children: DecimalColDivideDecimalColumn(col 0:decimal(30,10), col 2:decimal(19,0))(children: CastLongToDecimal(col 1:bigint) -> 2:decimal(19,0)) -> 3:decimal(38,18)) -> 4:decimal(24,14)
                   Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -1363,24 +1369,30 @@ POSTHOOK: Input: default@decimal_precision_txt_small
 PREHOOK: query: DROP TABLE DECIMAL_PRECISION_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_precision_txt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_precision_txt
 POSTHOOK: query: DROP TABLE DECIMAL_PRECISION_txt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_precision_txt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_precision_txt
 PREHOOK: query: DROP TABLE DECIMAL_PRECISION
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_precision
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_precision
 POSTHOOK: query: DROP TABLE DECIMAL_PRECISION
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_precision
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_precision
 PREHOOK: query: DROP TABLE DECIMAL_PRECISION_txt_small
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_precision_txt_small
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_precision_txt_small
 POSTHOOK: query: DROP TABLE DECIMAL_PRECISION_txt_small
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_precision_txt_small
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_precision_txt_small

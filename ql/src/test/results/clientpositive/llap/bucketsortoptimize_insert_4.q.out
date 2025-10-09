@@ -294,10 +294,12 @@ POSTHOOK: Input: default@test_table3_n8@ds=1
 PREHOOK: query: DROP TABLE test_table3_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table3_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table3_n8
 POSTHOOK: query: DROP TABLE test_table3_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table3_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table3_n8
 PREHOOK: query: CREATE TABLE test_table3_n8 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
@@ -546,8 +548,10 @@ POSTHOOK: Input: default@test_table3_n8@ds=1
 PREHOOK: query: DROP TABLE test_table3_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table3_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table3_n8
 POSTHOOK: query: DROP TABLE test_table3_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table3_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table3_n8

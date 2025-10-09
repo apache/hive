@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE t_hbase
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE t_hbase
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE t_hbase(key STRING,
                      tinyint_col TINYINT,
                      smallint_col SMALLINT,
@@ -67,7 +69,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	storage_handler     	org.apache.hadoop.hive.hbase.HBaseStorageHandler
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -177,8 +179,10 @@ user2	127	327	2147	9223372036854775807	211.31	2.687465320571E8	false
 PREHOOK: query: DROP TABLE t_hbase
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_hbase
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase
 POSTHOOK: query: DROP TABLE t_hbase
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_hbase
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase

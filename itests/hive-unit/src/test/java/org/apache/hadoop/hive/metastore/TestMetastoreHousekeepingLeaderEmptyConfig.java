@@ -36,7 +36,7 @@ public class TestMetastoreHousekeepingLeaderEmptyConfig extends MetastoreHouseke
   @Before
   public void setUp() throws Exception {
     // Empty string for leader indicates that the HMS is leader.
-    internalSetup("");
+    internalSetup("", true);
   }
 
   @Test

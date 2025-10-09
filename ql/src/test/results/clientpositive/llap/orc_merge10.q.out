@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE orcfile_merge1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orcfile_merge1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orcfile_merge1b
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orcfile_merge1b
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orcfile_merge1c
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orcfile_merge1c
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orcfile_merge1 (key INT, value STRING) 
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC tblproperties("orc.compress"="SNAPPY","orc.compress.size"="4096")
 PREHOOK: type: CREATETABLE
@@ -79,7 +85,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -182,7 +188,7 @@ POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       1756 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -227,7 +233,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -375,7 +381,7 @@ POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=0).value SIMPLE [(src)src
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       1756 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -420,7 +426,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string)
-                      null sort order: a
+                      null sort order: z
                       sort order: +
                       Map-reduce partition columns: _col2 (type: string)
                       Statistics: Num rows: 500 Data size: 139500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -560,7 +566,7 @@ POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).value SIMPLE [(src)src
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       1756 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1 WHERE ds='1'
@@ -641,10 +647,10 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Concatenate
+      table name: default.orcfile_merge1
       partition spec:
         ds 1
         part 0
-      table name: default.orcfile_merge1
 
   Stage: Stage-1
     Move Operator
@@ -672,7 +678,7 @@ POSTHOOK: type: ALTER_PARTITION_MERGE
 POSTHOOK: Input: default@orcfile_merge1
 POSTHOOK: Output: default@orcfile_merge1@ds=1/part=0
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       1756 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1c WHERE ds='1'
@@ -744,7 +750,7 @@ PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 -- BEGIN ORC FILE DUMP --
 Structure for hdfs://### HDFS PATH ###
-File Version: 0.12 with ORC_14
+File Version:#Masked#
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
@@ -781,7 +787,8 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
 
-File length: 1756 bytes
+File length: 1763 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -795,7 +802,7 @@ PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 PREHOOK: Output: hdfs://### HDFS PATH ###
 -- BEGIN ORC FILE DUMP --
 Structure for hdfs://### HDFS PATH ###
-File Version: 0.12 with ORC_14
+File Version:#Masked#
 Rows: 242
 Compression: SNAPPY
 Compression size: 4096
@@ -832,7 +839,8 @@ Stripes:
     Row group indices for column 2:
       Entry 0: count: 242 hasNull: false min: val_0 max: val_97 sum: 1646 positions: 0,0,0
 
-File length: 1756 bytes
+File length: 1763 bytes
+File raw data size: #Masked#
 Padding length: 0 bytes
 Padding ratio: 0%
 ________________________________________________________________________________________________________________________
@@ -842,12 +850,15 @@ ________________________________________________________________________________
 PREHOOK: query: DROP TABLE orcfile_merge1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1
 PREHOOK: query: DROP TABLE orcfile_merge1b
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge1b
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1b
 PREHOOK: query: DROP TABLE orcfile_merge1c
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge1c
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1c

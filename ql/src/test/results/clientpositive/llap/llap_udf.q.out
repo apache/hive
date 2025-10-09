@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists src_orc_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists src_orc_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table src_orc_n0 stored as orc as select * from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -63,27 +65,27 @@ STAGE PLANS:
 
 PREHOOK: query: CREATE FUNCTION test_udf2 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.test_udf2
 POSTHOOK: query: CREATE FUNCTION test_udf2 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.test_udf2
 PREHOOK: query: CREATE FUNCTION test_udf3 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.test_udf3
 POSTHOOK: query: CREATE FUNCTION test_udf3 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.test_udf3
 PREHOOK: query: CREATE FUNCTION test_udf4 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.test_udf4
 POSTHOOK: query: CREATE FUNCTION test_udf4 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFEvaluateNPE'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.test_udf4
 PREHOOK: query: EXPLAIN
 SELECT test_udf2(cast(key as string)), test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
@@ -175,11 +177,11 @@ STAGE PLANS:
 
 PREHOOK: query: DROP FUNCTION test_udf2
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.test_udf2
 POSTHOOK: query: DROP FUNCTION test_udf2
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.test_udf2
 PREHOOK: query: EXPLAIN
 SELECT test_udf3(cast(key as string)), test_udf4(cast(key as string)) from src_orc_n0
@@ -227,11 +229,11 @@ STAGE PLANS:
 
 PREHOOK: query: DROP FUNCTION test_udf4
 PREHOOK: type: DROPFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.test_udf4
 POSTHOOK: query: DROP FUNCTION test_udf4
 POSTHOOK: type: DROPFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.test_udf4
 PREHOOK: query: EXPLAIN
 SELECT test_udf0(cast(key as string)) from src_orc_n0
@@ -322,8 +324,10 @@ STAGE PLANS:
 PREHOOK: query: drop table if exists src_orc_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc_n0
 POSTHOOK: query: drop table if exists src_orc_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_orc_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_n0

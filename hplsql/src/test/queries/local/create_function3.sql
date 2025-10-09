@@ -53,6 +53,6 @@ FUNCTION gettype(tag1 varchar2, srcvalue varchar2) return varchar2 as
     return srcvalue;
 
   END;
-  
+
   gettype('YHHPD', 'a');
   gettype('YHHPD', '@I');

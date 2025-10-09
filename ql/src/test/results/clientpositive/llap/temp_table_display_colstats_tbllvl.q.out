@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS UserVisits_web_text_none
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TEMPORARY EXTERNAL TABLE UserVisits_web_text_none (
   sourceIP string,
   destURL string,
@@ -64,7 +66,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -114,7 +116,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	7060                
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -401,13 +403,13 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}
 	EXTERNAL            	TRUE                
 	bucketing_version   	2                   
 	numFiles            	1                   
 	numRows             	55                  
 	rawDataSize         	7005                
-	totalSize           	7060                
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -438,7 +440,7 @@ num_trues
 num_falses          	                    
 bit_vector          	HL                  
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}
 PREHOOK: query: desc formatted UserVisits_web_text_none avgTimeOnSite
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
@@ -457,7 +459,7 @@ num_trues
 num_falses          	                    
 bit_vector          	HL                  
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}
 PREHOOK: query: desc formatted UserVisits_web_text_none adRevenue
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@uservisits_web_text_none
@@ -476,7 +478,7 @@ num_trues
 num_falses          	                    
 bit_vector          	HL                  
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}
 PREHOOK: query: CREATE TEMPORARY TABLE empty_tab(
    a int,
    b double,
@@ -707,7 +709,7 @@ POSTHOOK: query: desc extended default.UserVisits_web_text_none sourceIP
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@uservisits_web_text_none
 sourceIP            	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}	 
 PREHOOK: query: desc formatted UserVisits_web_text_none sourceIP
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test@uservisits_web_text_none
@@ -762,7 +764,7 @@ num_trues
 num_falses          	                    
 bit_vector          	HL                  
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adRevenue\":\"true\",\"avgTimeOnSite\":\"true\",\"sourceIP\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"adrevenue\":\"true\",\"avgtimeonsite\":\"true\",\"sourceip\":\"true\"}}
 PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sKeyword
 PREHOOK: type: ANALYZE_TABLE
 PREHOOK: Input: test@uservisits_web_text_none
@@ -780,7 +782,7 @@ POSTHOOK: query: desc extended UserVisits_web_text_none sKeyword
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: test@uservisits_web_text_none
 sKeyword            	string              	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}	 
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"skeyword\":\"true\"}}	 
 PREHOOK: query: desc formatted UserVisits_web_text_none sKeyword
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test@uservisits_web_text_none
@@ -799,7 +801,7 @@ num_trues
 num_falses          	                    
 bit_vector          	HL                  
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"skeyword\":\"true\"}}
 PREHOOK: query: desc formatted test.UserVisits_web_text_none sKeyword
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test@uservisits_web_text_none
@@ -818,4 +820,4 @@ num_trues
 num_falses          	                    
 bit_vector          	HL                  
 comment             	from deserializer   
-COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"sKeyword\":\"true\"}}
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"skeyword\":\"true\"}}

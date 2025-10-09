@@ -1,0 +1,224 @@
+PREHOOK: query: create external table default.tbl_ice_puffin_time_travel(a int, b string, c int) stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice_puffin_time_travel
+POSTHOOK: query: create external table default.tbl_ice_puffin_time_travel(a int, b string, c int) stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice_puffin_time_travel
+PREHOOK: query: insert into default.tbl_ice_puffin_time_travel values (1, 'one', 50), (2, 'two', 51)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice_puffin_time_travel
+POSTHOOK: query: insert into default.tbl_ice_puffin_time_travel values (1, 'one', 50), (2, 'two', 51)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice_puffin_time_travel
+PREHOOK: query: alter table default.tbl_ice_puffin_time_travel create tag checkpoint
+PREHOOK: type: ALTERTABLE_CREATETAG
+PREHOOK: Input: default@tbl_ice_puffin_time_travel
+POSTHOOK: query: alter table default.tbl_ice_puffin_time_travel create tag checkpoint
+POSTHOOK: type: ALTERTABLE_CREATETAG
+POSTHOOK: Input: default@tbl_ice_puffin_time_travel
+PREHOOK: query: explain select * from default.tbl_ice_puffin_time_travel
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_puffin_time_travel
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.tbl_ice_puffin_time_travel
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_puffin_time_travel
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_ice_puffin_time_travel
+                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: a (type: int), b (type: string), c (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from default.tbl_ice_puffin_time_travel.tag_checkpoint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_puffin_time_travel
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.tbl_ice_puffin_time_travel.tag_checkpoint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_puffin_time_travel
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_ice_puffin_time_travel
+                  Snapshot ref: tag_checkpoint
+                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: a (type: int), b (type: string), c (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: insert into tbl_ice_puffin_time_travel values
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice_puffin_time_travel
+POSTHOOK: query: insert into tbl_ice_puffin_time_travel values
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null),
+(null, null, null)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice_puffin_time_travel
+PREHOOK: query: explain select * from default.tbl_ice_puffin_time_travel
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_puffin_time_travel
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.tbl_ice_puffin_time_travel
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_puffin_time_travel
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_ice_puffin_time_travel
+                  Statistics: Num rows: 14 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: a (type: int), b (type: string), c (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 14 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 14 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select * from default.tbl_ice_puffin_time_travel.tag_checkpoint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_puffin_time_travel
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from default.tbl_ice_puffin_time_travel.tag_checkpoint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_puffin_time_travel
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: tbl_ice_puffin_time_travel
+                  Snapshot ref: tag_checkpoint
+                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: a (type: int), b (type: string), c (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

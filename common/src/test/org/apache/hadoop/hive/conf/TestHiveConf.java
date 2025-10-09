@@ -71,19 +71,19 @@ public class TestHiveConf {
     // checkHiveConf(ConfVars.HADOOPFS.varname, "core-site.xml");
 
     // Make sure non-null-valued ConfVar properties *do* override the Hadoop Configuration
-    checkHadoopConf(ConfVars.HADOOPNUMREDUCERS.varname, "1");
-    checkConfVar(ConfVars.HADOOPNUMREDUCERS, "-1");
-    checkHiveConf(ConfVars.HADOOPNUMREDUCERS.varname, "-1");
+    checkHadoopConf(ConfVars.HADOOP_NUM_REDUCERS.varname, "1");
+    checkConfVar(ConfVars.HADOOP_NUM_REDUCERS, "-1");
+    checkHiveConf(ConfVars.HADOOP_NUM_REDUCERS.varname, "-1");
 
     // Non-null ConfVar only defined in ConfVars
-    checkHadoopConf(ConfVars.HIVESKEWJOINKEY.varname, null);
-    checkConfVar(ConfVars.HIVESKEWJOINKEY, "100000");
-    checkHiveConf(ConfVars.HIVESKEWJOINKEY.varname, "100000");
+    checkHadoopConf(ConfVars.HIVE_SKEWJOIN_KEY.varname, null);
+    checkConfVar(ConfVars.HIVE_SKEWJOIN_KEY, "100000");
+    checkHiveConf(ConfVars.HIVE_SKEWJOIN_KEY.varname, "100000");
 
     // ConfVar overridden in in hive-site.xml
-    checkHadoopConf(ConfVars.HIVETESTMODEDUMMYSTATAGGR.varname, null);
-    checkConfVar(ConfVars.HIVETESTMODEDUMMYSTATAGGR, "");
-    checkHiveConf(ConfVars.HIVETESTMODEDUMMYSTATAGGR.varname, "value2");
+    checkHadoopConf(ConfVars.HIVE_TEST_MODE_DUMMY_STAT_AGGR.varname, null);
+    checkConfVar(ConfVars.HIVE_TEST_MODE_DUMMY_STAT_AGGR, "");
+    checkHiveConf(ConfVars.HIVE_TEST_MODE_DUMMY_STAT_AGGR.varname, "value2");
 
     //Property defined for hive masking algorithm
     checkConfVar(ConfVars.HIVE_MASKING_ALGO, "sha256");
@@ -94,7 +94,7 @@ public class TestHiveConf {
     checkHiveConf("test.property1", "value1");
 
     // Test HiveConf property variable substitution in hive-site.xml
-    checkHiveConf("test.var.hiveconf.property", ConfVars.DEFAULTPARTITIONNAME.getDefaultValue());
+    checkHiveConf("test.var.hiveconf.property", ConfVars.DEFAULT_PARTITION_NAME.getDefaultValue());
   }
 
   @Test
@@ -150,7 +150,7 @@ public class TestHiveConf {
     }
 
     ArrayList<String> hiddenList = Lists.newArrayList(
-        HiveConf.ConfVars.METASTOREPWD.varname,
+        HiveConf.ConfVars.METASTORE_PWD.varname,
         HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
         HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname,
         "fs.s3.awsSecretAccessKey",
@@ -177,11 +177,26 @@ public class TestHiveConf {
   }
 
   @Test
+  public void testLockedConfig() throws Exception {
+    HiveConf conf = new HiveConf();
+    // Set the default value of the config
+    conf.setVar(ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    String defaultVal = conf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname);
+    // Update the lockedSet variable
+    conf.addToLockedSet(ConfVars.HIVE_EXECUTION_ENGINE.varname);
+    // Update the value of sample/test config
+    conf.verifyAndSet(ConfVars.HIVE_EXECUTION_ENGINE.varname, "tez");
+    String modifiedVal = conf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname);
+    // Check if the value is changed.
+    Assert.assertEquals(defaultVal, modifiedVal);
+  }
+
+  @Test
   public void testEncodingDecoding() throws UnsupportedEncodingException {
     HiveConf conf = new HiveConf();
     String query = "select blah, '\u0001' from random_table";
     conf.setQueryString(query);
-    Assert.assertEquals(URLEncoder.encode(query, "UTF-8"), conf.get(ConfVars.HIVEQUERYSTRING.varname));
+    Assert.assertEquals(URLEncoder.encode(query, "UTF-8"), conf.get(ConfVars.HIVE_QUERY_STRING.varname));
     Assert.assertEquals(query, conf.getQueryString());
   }
 
@@ -214,15 +229,17 @@ public class TestHiveConf {
 
     FileUtils.writeStringToFile(fileHiveSite, testHiveSiteString);
 
-    String testLdapString = "<?xml version=\"1.0\"?>\n" +
-            "<?xml-stylesheet type=\"text/xsl\" href=\"configuration.xsl\"?>\n" +
-            "<configuration>\n" +
-            "  <property>\n" +
-            "  <name>hive.server2.authentication.ldap.Domain</name>\n" +
-            "  <value>b.com</value>\n" +
-            "</property>\n" +
-            "\n" +
-            "</configuration>";
+    String testLdapString = """
+            <?xml version="1.0"?>
+            <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+            <configuration>
+              <property>
+              <name>hive.server2.authentication.ldap.Domain</name>
+              <value>b.com</value>
+            </property>
+            
+            </configuration>\
+            """;
 
 
     String newFileName = parFolder+"/ldap-site.xml";

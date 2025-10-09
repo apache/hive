@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -69,7 +70,15 @@ class RecordReaderWrapper extends LineRecordReader {
       JobConf jobConf, Reporter reporter) throws IOException {
     int headerCount = Utilities.getHeaderCount(tableDesc);
     int footerCount = Utilities.getFooterCount(tableDesc, jobConf);
-    RecordReader innerReader = inputFormat.getRecordReader(split.getInputSplit(), jobConf, reporter);
+
+    RecordReader innerReader = null;
+    try {
+     innerReader = inputFormat.getRecordReader(split.getInputSplit(), jobConf, reporter);
+    } catch (InterruptedIOException iioe) {
+      // If reading from the underlying record reader is interrupted, return a no-op record reader
+      LOG.info("Interrupted while getting the input reader for {}", split.getInputSplit());
+      return new ZeroRowsInputFormat().getRecordReader(split.getInputSplit(), jobConf, reporter);
+    }
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Using {} to read data with skip.header.line.count {} and skip.footer.line.count {}",

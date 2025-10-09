@@ -41,7 +41,7 @@ import org.reflections.Reflections;
 public final class DDLTask extends Task<DDLWork> implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private static final Map<Class<? extends DDLDesc>, Class<? extends DDLOperation>> DESC_TO_OPARATION =
+  private static final Map<Class<? extends DDLDesc>, Class<? extends DDLOperation>> DESC_TO_OPERATION =
       new HashMap<>();
 
   static {
@@ -55,7 +55,7 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
       ParameterizedType parameterizedType = (ParameterizedType) operationClass.getGenericSuperclass();
       @SuppressWarnings("unchecked")
       Class<? extends DDLDesc> descClass = (Class<? extends DDLDesc>) parameterizedType.getActualTypeArguments()[0];
-      DESC_TO_OPARATION.put(descClass, operationClass);
+      DESC_TO_OPERATION.put(descClass, operationClass);
     }
   }
 
@@ -74,24 +74,28 @@ public final class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       DDLDesc ddlDesc = work.getDDLDesc();
 
-      if (DESC_TO_OPARATION.containsKey(ddlDesc.getClass())) {
+      if (DESC_TO_OPERATION.containsKey(ddlDesc.getClass())) {
         DDLOperationContext ddlOperationContext = new DDLOperationContext(conf, context, this, (DDLWork)work,
             queryState, queryPlan, console);
-        Class<? extends DDLOperation> ddlOpertaionClass = DESC_TO_OPARATION.get(ddlDesc.getClass());
+        Class<? extends DDLOperation> ddlOperationClass = DESC_TO_OPERATION.get(ddlDesc.getClass());
         Constructor<? extends DDLOperation> constructor =
-            ddlOpertaionClass.getConstructor(DDLOperationContext.class, ddlDesc.getClass());
+            ddlOperationClass.getConstructor(DDLOperationContext.class, ddlDesc.getClass());
         ddlOperation = constructor.newInstance(ddlOperationContext, ddlDesc);
         return ddlOperation.execute();
       } else {
         throw new IllegalArgumentException("Unknown DDL request: " + ddlDesc.getClass());
       }
     } catch (Throwable e) {
+      if(work.isReplication() && ReplUtils.shouldIgnoreOnError(ddlOperation, e)) {
+        LOG.warn("Error while table creation: ", e);
+        return 0;
+      }
       failed(e);
       if(ddlOperation != null) {
         LOG.error("DDLTask failed, DDL Operation: " + ddlOperation.getClass().toString(), e);
       }
       return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(),
-                                       work.getMetricCollector(), getName(), conf); 
+                                       work.getMetricCollector(), getName(), conf);
     }
   }
 

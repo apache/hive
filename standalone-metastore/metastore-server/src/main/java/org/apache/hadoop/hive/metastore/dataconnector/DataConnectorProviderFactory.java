@@ -18,29 +18,54 @@
 
 package org.apache.hadoop.hive.metastore.dataconnector;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
+import com.github.benmanes.caffeine.cache.RemovalListener;
+import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.*;
+import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.DERBY_TYPE;
+import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.HIVE_JDBC_TYPE;
+import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.MSSQL_TYPE;
+import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.MYSQL_TYPE;
+import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.ORACLE_TYPE;
+import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.POSTGRES_TYPE;
 
 public class DataConnectorProviderFactory {
-  Logger LOG = LoggerFactory.getLogger(DataConnectorProviderFactory.class);
+  static final Logger LOG = LoggerFactory.getLogger(DataConnectorProviderFactory.class);
 
-  private static Map<String, IDataConnectorProvider> cache = null;
+  private static Cache<String, IDataConnectorProvider> dataConnectorCache = null;
   private static DataConnectorProviderFactory singleton = null;
   private static IHMSHandler hmsHandler = null;
 
+  private static class CacheRemoveListener implements RemovalListener<String, IDataConnectorProvider> {
+    @Override
+    public void onRemoval(@Nullable String dcName, @Nullable IDataConnectorProvider dataConnectorProvider,
+                          @NonNull RemovalCause cause) {
+      try {
+        LOG.info("Closing dataConnectorProvider :{}", dcName);
+        dataConnectorProvider.close();
+      } catch (Exception e) {
+        LOG.warn("Exception when closing dataConnectorProvider: {} due to: {}" + dcName, e.getMessage());
+      }
+    }
+  }
+
   private DataConnectorProviderFactory(IHMSHandler hmsHandler) {
-    cache = new HashMap<String, IDataConnectorProvider>();
+    dataConnectorCache = Caffeine.newBuilder()
+        .removalListener(new CacheRemoveListener())
+        .maximumSize(100)
+        .expireAfterAccess(1, TimeUnit.HOURS).build();
     this.hmsHandler = hmsHandler;
   }
 
@@ -59,11 +84,9 @@ public class DataConnectorProviderFactory {
     }
 
     String scopedDb = (db.getRemote_dbname() != null) ? db.getRemote_dbname() : db.getName();
-    if (cache.containsKey(db.getConnector_name().toLowerCase())) {
-      provider = cache.get(db.getConnector_name().toLowerCase());
-      if (provider != null) {
-        provider.setScope(scopedDb);
-      }
+    provider = dataConnectorCache.getIfPresent(db.getConnector_name().toLowerCase());
+    if (provider != null) {
+      provider.setScope(scopedDb);
       return provider;
     }
 
@@ -76,6 +99,7 @@ public class DataConnectorProviderFactory {
     String type = connector.getType();
     switch (type) {
     case DERBY_TYPE:
+    case HIVE_JDBC_TYPE:
     case MSSQL_TYPE:
     case MYSQL_TYPE:
     case ORACLE_TYPE:
@@ -89,19 +113,23 @@ public class DataConnectorProviderFactory {
     default:
       throw new MetaException("Data connector of type " + connector.getType() + " not implemented yet");
     }
-    cache.put(connector.getName().toLowerCase(), provider);
+    dataConnectorCache.put(connector.getName().toLowerCase(), provider);
     return provider;
   }
 
-  public void shutdown() {
-    for (IDataConnectorProvider provider: cache.values()) {
-      try {
-        provider.close();
-      } catch(Exception e) {
-        LOG.warn("Exception invoking close on dataconnectorprovider:" + provider, e);
-      } finally {
-        cache.clear();
+  /**
+   * After executing Drop or Alter DDL on a dataConnector, we should update cache to clean the dataConnector
+   * to avoid using the invalid dataConnector next time.
+   * @param dcName dataConnector to be cleaned
+   */
+  public static synchronized void invalidateDataConnectorFromCache(String dcName) {
+    try {
+      IDataConnectorProvider dataConnectorProvider = dataConnectorCache.getIfPresent(dcName);
+      if (dataConnectorProvider != null) {
+        dataConnectorCache.invalidate(dcName);
       }
+    } catch (Exception e) {
+      LOG.warn("Exception when removing dataConnectorProvider: {} from cache due to: {}" + dcName, e.getMessage());
     }
   }
 }

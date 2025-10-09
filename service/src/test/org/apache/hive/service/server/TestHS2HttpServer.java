@@ -24,11 +24,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.SessionManager;
+import org.apache.hive.service.cli.thrift.AbstractThriftCLITest;
 import org.apache.hive.service.rpc.thrift.TProtocolVersion;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -36,7 +37,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -59,12 +59,10 @@ import static org.junit.Assert.assertNull;
 /**
  * TestHS2HttpServer -- executes tests of HiveServer2 HTTP Server.
  */
-public class TestHS2HttpServer {
+public class TestHS2HttpServer extends AbstractThriftCLITest {
 
-  private static HiveServer2 hiveServer2 = null;
   private static CLIService client = null;
   private static SessionManager sm = null;
-  private static HiveConf hiveConf = null;
   private static String metastorePasswd = "61ecbc41cdae3e6b32712a06c73606fa"; //random md5
   private static Integer webUIPort = null;
   private static String apiBaseURL = null;
@@ -72,39 +70,21 @@ public class TestHS2HttpServer {
 
   @BeforeClass
   public static void beforeTests() throws Exception {
-    webUIPort = MetaStoreTestUtils.findFreePortExcepting(
+    initConf(TestHS2HttpServer.class);
+    webUIPort = findFreePortExcepting(
         Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
     apiBaseURL = "http://localhost:" + webUIPort + "/api/v1";
-    hiveConf = new HiveConf();
-    hiveConf.set(ConfVars.METASTOREPWD.varname, metastorePasswd);
+    hiveConf.set(ConfVars.METASTORE_PWD.varname, metastorePasswd);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
 
-    Exception hs2Exception = null;
-    boolean hs2Started = false;
-    for (int tryCount = 0; (tryCount < MetaStoreTestUtils.RETRY_COUNT); tryCount++) {
-      try {
-        hiveServer2 = new HiveServer2();
-        hiveServer2.init(hiveConf);
-        hiveServer2.start();
-        client = hiveServer2.getCliService();
-        Thread.sleep(5000);
-        hs2Started = true;
-        break;
-      } catch (Exception t) {
-        HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT,
-            MetaStoreTestUtils.findFreePort());
-        HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT,
-            MetaStoreTestUtils.findFreePort());
-        HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT,
-            MetaStoreTestUtils.findFreePort());
-        webUIPort = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT);
-      }
-    }
-    if (!hs2Started) {
-      throw (hs2Exception);
-    }
+    startHiveServer2WithConf(hiveConf);
+    client = hiveServer2.getCliService();
+    webUIPort = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT);
     sm = hiveServer2.getCliService().getSessionManager();
   }
 
@@ -188,7 +168,7 @@ public class TestHS2HttpServer {
     String historicalQueriesRoute = "/queries/historical";
 
     final SessionHandle handle =
-        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
+        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", IPStackUtils.resolveLoopbackAddress(),
             new HashMap());
 
     String queryString = "SET " + HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname
@@ -218,8 +198,8 @@ public class TestHS2HttpServer {
     Assert.assertTrue("[]".equals(initNoSessionsResponse));
 
     SessionHandle handle1 =
-        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
-            new HashMap());
+        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw",
+            IPStackUtils.resolveLoopbackAddress(), new HashMap());
 
     String oneSessionResponse = readFromUrl(apiBaseURL + sessionsRoute);
 
@@ -229,13 +209,13 @@ public class TestHS2HttpServer {
     JsonNode session = sessionNodes.get(0);
     Assert.assertEquals(session.path("sessionId").asText(), handle1.getSessionId().toString());
     Assert.assertEquals(session.path("username").asText(), "user");
-    Assert.assertEquals(session.path("ipAddress").asText(), "127.0.0.1");
+    Assert.assertEquals(session.path("ipAddress").asText(), IPStackUtils.resolveLoopbackAddress());
     Assert.assertEquals(session.path("operationCount").asInt(), 0);
     Assert.assertTrue(session.path("activeTime").canConvertToInt());
     Assert.assertTrue(session.path("idleTime").canConvertToInt());
 
-    SessionHandle handle2 = sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
-        new HashMap());
+    SessionHandle handle2 = sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9,
+        "user", "passw", IPStackUtils.resolveLoopbackAddress(), new HashMap());
 
     String twoSessionsResponse = readFromUrl(apiBaseURL + sessionsRoute);
     List<JsonNode> twoSessionsNodes = getListOfNodes(twoSessionsResponse);
@@ -298,7 +278,7 @@ public class TestHS2HttpServer {
           if (line.contains(metastorePasswd)) {
             pwdValFound = line;
           }
-          if (line.contains(ConfVars.METASTOREPWD.varname)) {
+          if (line.contains(ConfVars.METASTORE_PWD.varname)) {
             pwdKeyFound = line;
           }
         }
@@ -323,11 +303,5 @@ public class TestHS2HttpServer {
     StringWriter writer = new StringWriter();
     IOUtils.copy(conn.getInputStream(), writer, "UTF-8");
     return writer.toString();
-  }
-
-
-  @AfterClass
-  public static void afterTests() throws Exception {
-    hiveServer2.stop();
   }
 }

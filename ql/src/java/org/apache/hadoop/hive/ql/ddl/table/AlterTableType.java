@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 public enum AlterTableType {
   // column
   ADDCOLS("add columns"),
+  DROP_COLUMN("drop column"),
   REPLACE_COLUMNS("replace columns"),
   RENAME_COLUMN("rename column"),
   UPDATE_COLUMNS("update columns"),
@@ -40,6 +41,12 @@ public enum AlterTableType {
   ALTERPARTITION("alter partition"), // Note: this is never used in AlterTableDesc.
   SETPARTITIONSPEC("set partition spec"),
   EXECUTE("execute"),
+  CREATE_BRANCH("create branch"),
+  DROP_BRANCH("drop branch"),
+  RENAME_BRANCH("rename branch"),
+  CREATE_TAG("create tag"),
+  DROP_TAG("drop tag"),
+  REPLACE_SNAPSHOTREF("replace branch/tag"),
   // constraint
   ADD_CONSTRAINT("add constraint"),
   DROP_CONSTRAINT("drop constraint"),
@@ -82,6 +89,6 @@ public enum AlterTableType {
       ImmutableList.of(ADDPROPS, DROPPROPS, ADDCOLS, EXECUTE);
 
   public static final Set<AlterTableType> SUPPORT_PARTIAL_PARTITION_SPEC =
-      ImmutableSet.of(ADDCOLS, REPLACE_COLUMNS, RENAME_COLUMN, ADDPROPS, DROPPROPS, SET_SERDE,
+      ImmutableSet.of(ADDCOLS, DROP_COLUMN, REPLACE_COLUMNS, RENAME_COLUMN, ADDPROPS, DROPPROPS, SET_SERDE,
           SET_SERDE_PROPS, SET_FILE_FORMAT);
 }

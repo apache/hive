@@ -58,6 +58,7 @@ public class LogUtils {
    */
   public static final String SESSIONID_LOG_KEY = "sessionId";
   public static final String QUERYID_LOG_KEY = "queryId";
+  public static final String DAGID_KEY = "dagId";
   public static final String OPERATIONLOG_LEVEL_KEY = "operationLogLevel";
   public static final String OPERATIONLOG_LOCATION_KEY = "operationLogLocation";
 
@@ -116,11 +117,11 @@ public class LogUtils {
         // property specified file found in local file system
         // use the specified file
         if (confVarName == HiveConf.ConfVars.HIVE_EXEC_LOG4J_FILE) {
-          String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+          String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
           if(queryId == null || (queryId = queryId.trim()).isEmpty()) {
             queryId = "unknown-" + System.currentTimeMillis();
           }
-          System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
+          System.setProperty(HiveConf.ConfVars.HIVE_QUERY_ID.toString(), queryId);
         }
         final boolean async = checkAndSetAsyncLogging(conf);
         // required for MDC based routing appender so that child threads can inherit the MDC context
@@ -156,8 +157,8 @@ public class LogUtils {
         if (hive_l4j == null) {
           hive_l4j = LogUtils.class.getClassLoader().getResource(HIVE_L4J);
         }
-        System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(),
-          HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
+        System.setProperty(HiveConf.ConfVars.HIVE_QUERY_ID.toString(),
+          HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID));
         break;
       case HIVE_LOG4J_FILE:
         hive_l4j = LogUtils.class.getClassLoader().getResource(HIVE_L4J);
@@ -215,8 +216,8 @@ public class LogUtils {
    */
   public static void registerLoggingContext(Configuration conf) {
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED)) {
-      MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVESESSIONID));
-      MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
+      MDC.put(SESSIONID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SESSION_ID));
+      MDC.put(QUERYID_LOG_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID));
       MDC.put(OPERATIONLOG_LEVEL_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL));
       MDC.put(OPERATIONLOG_LOCATION_KEY, HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION));
       l4j.info("Thread context registration is done.");
@@ -232,6 +233,7 @@ public class LogUtils {
     // Remove the keys added, don't use clear, as it may clear all other things which are not intended to be removed.
     MDC.remove(SESSIONID_LOG_KEY);
     MDC.remove(QUERYID_LOG_KEY);
+    MDC.remove(DAGID_KEY); // it was put by TezTask after submitting DAG
     MDC.remove(OPERATIONLOG_LEVEL_KEY);
     MDC.remove(OPERATIONLOG_LOCATION_KEY);
     l4j.info("Unregistered logging context.");
@@ -243,20 +245,21 @@ public class LogUtils {
   public static String getLogFilePath() {
     String logFilePath = null;
     org.apache.logging.log4j.Logger rootLogger = LogManager.getRootLogger();
-    if (rootLogger instanceof org.apache.logging.log4j.core.Logger) {
-      org.apache.logging.log4j.core.Logger coreLogger =
-          (org.apache.logging.log4j.core.Logger)rootLogger;
+    if (rootLogger instanceof org.apache.logging.log4j.core.Logger coreLogger) {
       for (Appender appender : coreLogger.getAppenders().values()) {
-        if (appender instanceof FileAppender) {
-          logFilePath = ((FileAppender) appender).getFileName();
-        } else if (appender instanceof RollingFileAppender) {
-          logFilePath = ((RollingFileAppender) appender).getFileName();
-        } else if (appender instanceof RollingRandomAccessFileAppender) {
-          logFilePath = ((RollingRandomAccessFileAppender) appender).getFileName();
+        if (appender instanceof FileAppender fileAppender) {
+          logFilePath = fileAppender.getFileName();
+        } else if (appender instanceof RollingFileAppender fileAppender) {
+          logFilePath = fileAppender.getFileName();
+        } else if (appender instanceof RollingRandomAccessFileAppender fileAppender) {
+          logFilePath = fileAppender.getFileName();
         }
       }
     }
     return logFilePath;
   }
 
+  public static void putToMDC(String key, String value) {
+    MDC.put(key, value);
+  }
 }

@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde.serdeConstants;
 
 /**
  * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
@@ -159,8 +160,8 @@ public class IfExprDoubleColumnDoubleColumn extends VectorExpression {
         .setNumArguments(3)
         .setArgumentTypes(
             VectorExpressionDescriptor.ArgumentType.getType("long"),
-            VectorExpressionDescriptor.ArgumentType.getType("double"),
-            VectorExpressionDescriptor.ArgumentType.getType("double"))
+            VectorExpressionDescriptor.ArgumentType.getType(serdeConstants.DOUBLE_TYPE_NAME),
+            VectorExpressionDescriptor.ArgumentType.getType(serdeConstants.DOUBLE_TYPE_NAME))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.COLUMN,
             VectorExpressionDescriptor.InputExpressionType.COLUMN,

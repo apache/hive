@@ -51,6 +51,12 @@
   </property>
   -->
 
+  <!-- HIVE-28031: Adapt some cli driver tests to Tez where it's applicable -->
+  <property>
+    <name>hive.execution.engine</name>
+    <value>mr</value>
+  </property>
+
   <property>
     <name>hive.exec.scratchdir</name>
     <value>${test.tmp.dir}/scratchdir</value>
@@ -111,14 +117,6 @@
   </property>
 
   <property>
-    <name>hive.metastore.metadb.dir</name>
-    <value>file://${test.tmp.dir}/metadb/</value>
-    <description>
-      Required by metastore server or if the uris argument below is not supplied
-    </description>
-  </property>
-
-  <property>
     <name>test.log.dir</name>
     <value>${test.tmp.dir}/log/</value>
     <description></description>
@@ -152,6 +150,12 @@
     <name>hive.querylog.location</name>
     <value>${test.tmp.dir}/tmp</value>
     <description>Location of the structured hive logs</description>
+  </property>
+
+  <property>
+    <name>hive.lineage.statement.filter</name>
+    <value>ALL</value>
+    <description>Specify the types of statements for which column lineage information is generated.</description>
   </property>
 
   <property>
@@ -224,11 +228,6 @@
   </property>
 
   <property>
-    <name>hive.stats.key.prefix.reserve.length</name>
-    <value>0</value>
-  </property>
-
-  <property>
     <name>hive.conf.restricted.list</name>
     <value>dummy.config.value</value>
     <description>Using dummy config value above because you cannot override config with empty value</description>
@@ -292,6 +291,11 @@
 
   <property>
     <name>hive.query.results.cache.enabled</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>hive.txn.xlock.ctas</name>
     <value>false</value>
   </property>
 

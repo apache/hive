@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_PRECISION_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_PRECISION_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE DECIMAL_PRECISION_n0(`dec` decimal(20,10))
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
@@ -573,7 +575,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), CAST( _col0 AS decimal(30,10)) (type: decimal(30,10))
+                  expressions: CAST( (_col0 / _col1) AS decimal(24,14)) (type: decimal(24,14)), _col0 (type: decimal(30,10))
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 232 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
@@ -646,10 +648,12 @@ POSTHOOK: Input: default@decimal_precision_n0
 PREHOOK: query: DROP TABLE DECIMAL_PRECISION_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_precision_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_precision_n0
 POSTHOOK: query: DROP TABLE DECIMAL_PRECISION_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_precision_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_precision_n0
 PREHOOK: query: CREATE TABLE DECIMAL_PRECISION_n0(`dec` decimal(38,18))
 PREHOOK: type: CREATETABLE
@@ -680,8 +684,10 @@ NULL
 PREHOOK: query: DROP TABLE DECIMAL_PRECISION_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_precision_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_precision_n0
 POSTHOOK: query: DROP TABLE DECIMAL_PRECISION_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_precision_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_precision_n0

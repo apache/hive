@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -53,7 +56,7 @@ public class FilterStructColumnInList extends FilterStringColumnInList implement
   /**
    * After construction you must call setInListValues() to add the values to the IN set
    * (on the IStringInExpr interface).
-   *
+   * <p>
    * And, call a and b on the IStructInExpr interface.
    */
   public FilterStructColumnInList() {
@@ -172,6 +175,12 @@ public class FilterStructColumnInList extends FilterStringColumnInList implement
     return "structExpressions " + Arrays.toString(structExpressions) +
         ", fieldVectorColumnTypes " + Arrays.toString(fieldVectorColumnTypes) +
         ", structColumnMap " + Arrays.toString(structColumnMap);
+  }
+
+  protected Collection<VectorExpression> getChildExpressionsForTransientInit() {
+    Collection<VectorExpression> result = new ArrayList<>(super.getChildExpressionsForTransientInit());
+    Collections.addAll(result, structExpressions);
+    return result;
   }
 
 }

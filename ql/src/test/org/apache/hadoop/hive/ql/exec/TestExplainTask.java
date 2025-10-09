@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.hooks.Entity;
@@ -51,19 +52,19 @@ import static org.mockito.Mockito.when;
 public class TestExplainTask {
 
   private static final String BACKUP_ID = "backup-id-mock";
-  private static final String AST = "ast-mock";
 
   private PrintStream out;
   private ExplainTask uut;
+  private HiveConf hiveConf;
   private ObjectMapper objectMapper = new ObjectMapper();
 
   @Before
   public void setUp() {
+    hiveConf = new HiveConfForTest(getClass());
     uut = new ExplainTask();
-    uut.conf = mock(HiveConf.class);
+    uut.conf = hiveConf;
     out = mock(PrintStream.class);
     QueryState qs = mock(QueryState.class);
-    HiveConf hiveConf = new HiveConf();
     when(qs.getConf()).thenReturn(hiveConf);
     uut.queryState = qs;
   }
@@ -165,6 +166,7 @@ public class TestExplainTask {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     work.setConfig(new ExplainConfiguration());
     ExplainTask newExplainTask = new ExplainTask();
+    newExplainTask.conf = uut.conf;
     newExplainTask.queryState = uut.queryState;
     newExplainTask.getJSONLogicalPlan(new PrintStream(baos), work);
     baos.close();
@@ -209,7 +211,7 @@ public class TestExplainTask {
 
   @Test
   public void testGetJSONPlan() throws Exception {
-    when(uut.conf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE)).thenReturn("EXECUTION");
+    uut.conf.setVar(HiveConf.ConfVars.HIVE_STAGE_ID_REARRANGE, "EXECUTION");
     Task mockTask = mockTask();
     when(mockTask.getId()).thenReturn("mockTaskId");
     ExplainWork explainWorkMock = mockExplainWork();
@@ -321,7 +323,7 @@ public class TestExplainTask {
     when(qs.getHiveOperation()).thenReturn(HiveOperation.EXPLAIN);
     uut.queryState = qs;
 
-    SessionState.start(new HiveConf(ExplainTask.class));
+    SessionState.start(hiveConf);
     // SessionState.get().setCommandType(HiveOperation.EXPLAIN);
     HiveAuthenticationProvider authenticationProviderMock = mock(HiveAuthenticationProvider.class);
     when(authenticationProviderMock.getUserName()).thenReturn("test-user");
@@ -339,7 +341,6 @@ public class TestExplainTask {
   public void testOutputPlanVectorizationJsonShouldMatch() throws Exception {
     QueryState qs = mock(QueryState.class);
     when(qs.getHiveOperation()).thenReturn(HiveOperation.EXPLAIN);
-    HiveConf hiveConf = new HiveConf();
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     when(qs.getConf()).thenReturn(hiveConf);
     uut.queryState = qs;

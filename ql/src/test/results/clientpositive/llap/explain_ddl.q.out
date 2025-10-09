@@ -8,8 +8,8 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@V1_n0
-POSTHOOK: Lineage: V1_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: V1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: v1_n0.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: v1_n0.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select count(*) from V1_n0 where key > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -530,10 +530,12 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN DROP TABLE M1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@m1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@m1
 POSTHOOK: query: EXPLAIN DROP TABLE M1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@m1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@m1
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -541,7 +543,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Drop Table
-      table: M1
+      table: default.M1
 
 PREHOOK: query: select count(*) from M1 where key > 0
 PREHOOK: type: QUERY

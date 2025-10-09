@@ -202,10 +202,10 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: VALUE._col0:string, VALUE._col1:string, VALUE._col2:binary
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=16)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=16)
                 Group By Vectorization:
                     aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 1:string) -> string, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
                     className: VectorGroupByOperator
@@ -2338,10 +2338,10 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: VALUE._col0:int, VALUE._col1:int, VALUE._col2:binary
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=25)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=25)
                 Group By Vectorization:
                     aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
                     className: VectorGroupByOperator
@@ -2376,10 +2376,10 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: VALUE._col0:string, VALUE._col1:string, VALUE._col2:binary
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=19)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=19)
                 Group By Vectorization:
                     aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 1:string) -> string, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
                     className: VectorGroupByOperator
@@ -3474,10 +3474,10 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: VALUE._col0:int, VALUE._col1:int, VALUE._col2:binary
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=25)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=25)
                 Group By Vectorization:
                     aggregators: VectorUDAFMinLong(col 0:int) -> int, VectorUDAFMaxLong(col 1:int) -> int, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
                     className: VectorGroupByOperator
@@ -3512,10 +3512,10 @@ STAGE PLANS:
                     dataColumnCount: 3
                     dataColumns: VALUE._col0:string, VALUE._col1:string, VALUE._col2:binary
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=19)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=19)
                 Group By Vectorization:
                     aggregators: VectorUDAFMinString(col 0:string) -> string, VectorUDAFMaxString(col 1:string) -> string, VectorUDAFBloomFilterMerge(col 2:binary) -> binary
                     className: VectorGroupByOperator
@@ -4097,34 +4097,27 @@ POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 0	val_0	2008-04-08	NULL	NULL	NULL
 NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
-Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a right outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n9
-PREHOOK: Input: default@tab_n9@ds=2008-04-08
 PREHOOK: Input: default@tab_part_n10
 PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from (select * from tab_n9 where tab_n9.key = 0)a right outer join (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n9
-POSTHOOK: Input: default@tab_n9@ds=2008-04-08
 POSTHOOK: Input: default@tab_part_n10
 POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from
 (select * from tab_n9 where tab_n9.key = 0)a
 full outer join
 (select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n9
-PREHOOK: Input: default@tab_n9@ds=2008-04-08
 PREHOOK: Input: default@tab_part_n10
-PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 POSTHOOK: query: select * from
 (select * from tab_n9 where tab_n9.key = 0)a
@@ -4132,19 +4125,15 @@ full outer join
 (select * from tab_part_n10 where tab_part_n10.key = 98)b join tab_part_n10 c on a.key = b.key and b.key = c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n9
-POSTHOOK: Input: default@tab_n9@ds=2008-04-08
 POSTHOOK: Input: default@tab_part_n10
-POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from
 (select * from tab_n9 where tab_n9.key = 0)a
 full outer join
 (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key join tab_part_n10 c on b.key = c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n9
-PREHOOK: Input: default@tab_n9@ds=2008-04-08
 PREHOOK: Input: default@tab_part_n10
 PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
@@ -4154,7 +4143,6 @@ full outer join
 (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key join tab_part_n10 c on b.key = c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n9
-POSTHOOK: Input: default@tab_n9@ds=2008-04-08
 POSTHOOK: Input: default@tab_part_n10
 POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
@@ -4690,15 +4678,12 @@ NULL	NULL	NULL	NULL	NULL	NULL	97	val_97	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	97	val_97	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
-Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from
 (select * from tab_n9 where tab_n9.key = 0)a
 join
 (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key full outer join tab_part_n10 c on b.key = c.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_n9
-PREHOOK: Input: default@tab_n9@ds=2008-04-08
 PREHOOK: Input: default@tab_part_n10
 PREHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
@@ -4708,7 +4693,6 @@ join
 (select * from tab_part_n10 where tab_part_n10.key = 98)b on a.key = b.key full outer join tab_part_n10 c on b.key = c.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_n9
-POSTHOOK: Input: default@tab_n9@ds=2008-04-08
 POSTHOOK: Input: default@tab_part_n10
 POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####

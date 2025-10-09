@@ -38,7 +38,7 @@ public class TestVectorRowBytesContainer  {
     int count = Math.min(maxCount, random.nextInt(500));
     for (int i = 0; i < count; i++) {
       byte[] bytes = randomByteArrayStream.next();
-      Output output = vectorMapJoinRowBytesContainer.getOuputForRowBytes();
+      Output output = vectorMapJoinRowBytesContainer.getOutputForRowBytes();
       output.write(bytes);
       vectorMapJoinRowBytesContainer.finishRow();
     }

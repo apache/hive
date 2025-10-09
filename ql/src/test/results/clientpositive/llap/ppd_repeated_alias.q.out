@@ -1,11 +1,15 @@
 PREHOOK: query: drop table pokes_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pokes_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table pokes2_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pokes2_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table pokes_n0 (foo int, bar int, blah int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -453,16 +457,20 @@ STAGE PLANS:
 PREHOOK: query: drop table pokes_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pokes_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pokes_n0
 POSTHOOK: query: drop table pokes_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pokes_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes_n0
 PREHOOK: query: drop table pokes2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pokes2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pokes2_n0
 POSTHOOK: query: drop table pokes2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pokes2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pokes2_n0

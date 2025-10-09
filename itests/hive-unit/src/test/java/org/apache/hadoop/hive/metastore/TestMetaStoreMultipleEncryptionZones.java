@@ -84,18 +84,18 @@ public class TestMetaStoreMultipleEncryptionZones {
     DFSTestUtil.createKey("test_key_cm", miniDFSCluster, conf);
     DFSTestUtil.createKey("test_key_db", miniDFSCluster, conf);
     hiveConf = new HiveConf(TestReplChangeManager.class);
-    hiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    hiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
             "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
 
     cmroot = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmroot";
     cmrootFallBack = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootFallback";
     cmrootEncrypted = "cmrootEncrypted";
-    hiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmroot);
-    hiveConf.set(HiveConf.ConfVars.REPLCMENCRYPTEDDIR.varname, cmrootEncrypted);
-    hiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmrootFallBack);
+    hiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmroot);
+    hiveConf.set(HiveConf.ConfVars.REPL_CM_ENCRYPTED_DIR.varname, cmrootEncrypted);
+    hiveConf.set(HiveConf.ConfVars.REPL_CM_FALLBACK_NONENCRYPTED_DIR.varname, cmrootFallBack);
     initReplChangeManager();
 
     try {
@@ -1253,14 +1253,14 @@ public class TestMetaStoreMultipleEncryptionZones {
   @Test
   public void testClearerEncrypted() throws Exception {
     HiveConf hiveConfCmClearer = new HiveConf(TestReplChangeManager.class);
-    hiveConfCmClearer.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    hiveConfCmClearer.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     hiveConfCmClearer.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    hiveConfCmClearer.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+    hiveConfCmClearer.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
             "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
 
     String cmrootCmClearer = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootClearer";
-    hiveConfCmClearer.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootCmClearer);
+    hiveConfCmClearer.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmrootCmClearer);
     Warehouse warehouseCmClearer = new Warehouse(hiveConfCmClearer);
     FileSystem cmfs = new Path(cmrootCmClearer).getFileSystem(hiveConfCmClearer);
     cmfs.mkdirs(warehouseCmClearer.getWhRoot());
@@ -1359,21 +1359,21 @@ public class TestMetaStoreMultipleEncryptionZones {
   @Test
   public void testCmRootAclPermissions() throws Exception {
     HiveConf hiveConfAclPermissions = new HiveConf(TestReplChangeManager.class);
-    hiveConfAclPermissions.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    hiveConfAclPermissions.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     hiveConfAclPermissions.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    hiveConfAclPermissions.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+    hiveConfAclPermissions.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
             "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
 
     String cmRootAclPermissions = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmRootAclPermissions";
-    hiveConfAclPermissions.set(HiveConf.ConfVars.REPLCMDIR.varname, cmRootAclPermissions);
+    hiveConfAclPermissions.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmRootAclPermissions);
     Warehouse warehouseCmPermissions = new Warehouse(hiveConfAclPermissions);
     FileSystem cmfs = new Path(cmRootAclPermissions).getFileSystem(hiveConfAclPermissions);
     cmfs.mkdirs(warehouseCmPermissions.getWhRoot());
 
     FileSystem fsWarehouse = warehouseCmPermissions.getWhRoot().getFileSystem(hiveConfAclPermissions);
     //change the group of warehouse for testing
-    Path warehouse = new Path(hiveConfAclPermissions.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname));
+    Path warehouse = new Path(hiveConfAclPermissions.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname));
     fsWarehouse.setOwner(warehouse, null, "testgroup");
 
     long now = System.currentTimeMillis();
@@ -1434,7 +1434,7 @@ public class TestMetaStoreMultipleEncryptionZones {
       return null;
     });
 
-    String cmEncrypted = hiveConf.get(HiveConf.ConfVars.REPLCMENCRYPTEDDIR.varname, cmrootEncrypted);
+    String cmEncrypted = hiveConf.get(HiveConf.ConfVars.REPL_CM_ENCRYPTED_DIR.varname, cmrootEncrypted);
     AclStatus aclStatus = fsWarehouse.getAclStatus(new Path(dirTbl1 + Path.SEPARATOR + cmEncrypted));
     AclStatus aclStatus2 = fsWarehouse.getAclStatus(new Path(dirTbl2 + Path.SEPARATOR + cmEncrypted));
     AclStatus aclStatus3 = fsWarehouse.getAclStatus(new Path(dirTbl3 + Path.SEPARATOR + cmEncrypted));
@@ -1501,17 +1501,17 @@ public class TestMetaStoreMultipleEncryptionZones {
   @Test
   public void testCmrootEncrypted() throws Exception {
     HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
-    encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+    encryptedHiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
             "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
 
     String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootDirEncrypted";
-    encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
+    encryptedHiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmrootdirEncrypted);
     FileSystem cmrootdirEncryptedFs = new Path(cmrootdirEncrypted).getFileSystem(hiveConf);
     cmrootdirEncryptedFs.mkdirs(new Path(cmrootdirEncrypted));
-    encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmrootFallBack);
+    encryptedHiveConf.set(HiveConf.ConfVars.REPL_CM_FALLBACK_NONENCRYPTED_DIR.varname, cmrootFallBack);
 
     //Create cm in encrypted zone
     EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);
@@ -1562,11 +1562,11 @@ public class TestMetaStoreMultipleEncryptionZones {
   @Test
   public void testCmrootFallbackEncrypted() throws Exception {
     HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
-    encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+    encryptedHiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
             "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
     String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootIsEncrypted";
     String cmRootFallbackEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
             + "/cmrootFallbackEncrypted";
@@ -1574,8 +1574,8 @@ public class TestMetaStoreMultipleEncryptionZones {
     try {
       cmrootdirEncryptedFs.mkdirs(new Path(cmrootdirEncrypted));
       cmrootdirEncryptedFs.mkdirs(new Path(cmRootFallbackEncrypted));
-      encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
-      encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmRootFallbackEncrypted);
+      encryptedHiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmrootdirEncrypted);
+      encryptedHiveConf.set(HiveConf.ConfVars.REPL_CM_FALLBACK_NONENCRYPTED_DIR.varname, cmRootFallbackEncrypted);
 
       //Create cm in encrypted zone
       EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);
@@ -1600,19 +1600,19 @@ public class TestMetaStoreMultipleEncryptionZones {
   @Test
   public void testCmrootFallbackRelative() throws Exception {
     HiveConf encryptedHiveConf = new HiveConf(TestReplChangeManager.class);
-    encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    encryptedHiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     encryptedHiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    encryptedHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+    encryptedHiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
             "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
-                    + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+                    + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
     String cmrootdirEncrypted = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmrootIsEncrypted";
     String cmRootFallbackEncrypted = "cmrootFallbackEncrypted";
     FileSystem cmrootdirEncryptedFs = new Path(cmrootdirEncrypted).getFileSystem(encryptedHiveConf);
     try {
       cmrootdirEncryptedFs.mkdirs(new Path(cmrootdirEncrypted));
       cmrootdirEncryptedFs.mkdirs(new Path(cmRootFallbackEncrypted));
-      encryptedHiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmrootdirEncrypted);
-      encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmRootFallbackEncrypted);
+      encryptedHiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmrootdirEncrypted);
+      encryptedHiveConf.set(HiveConf.ConfVars.REPL_CM_FALLBACK_NONENCRYPTED_DIR.varname, cmRootFallbackEncrypted);
 
       //Create cm in encrypted zone
       EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);

@@ -36,6 +36,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
+import org.apache.hadoop.hive.llap.daemon.impl.LlapPooledIOThread;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache.LlapMetadataBuffer;
@@ -215,84 +216,96 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
     if (proactiveEvictionEnabled && !instantProactiveEviction) {
       buffer.removeProactiveEvictionMark();
     }
-    BPWrapper bpWrapper = threadLocalBPWrapper.get();
 
-    // This will only block in a very very rare scenario only.
-    bpWrapper.lock.lock();
-    try {
-      final LlapCacheableBuffer[] cacheableBuffers = bpWrapper.buffers;
-      if (bpWrapper.count < maxQueueSize) {
-        cacheableBuffers[bpWrapper.count] = buffer;
-        ++bpWrapper.count;
-      }
-      if (bpWrapper.count <= maxQueueSize / 2) {
-        // case too early to flush
-        return;
-      }
+    if (Thread.currentThread() instanceof LlapPooledIOThread) {
+      BPWrapper bpWrapper = threadLocalBPWrapper.get();
 
-      if (bpWrapper.count == maxQueueSize) {
-        // case we have to flush thus block on heap lock
-        bpWrapper.flush();
-        return;
+      // This will only block in a very very rare scenario only.
+      bpWrapper.lock.lock();
+      try {
+        final LlapCacheableBuffer[] cacheableBuffers = bpWrapper.buffers;
+        if (bpWrapper.count < maxQueueSize) {
+          cacheableBuffers[bpWrapper.count] = buffer;
+          ++bpWrapper.count;
+        }
+        if (bpWrapper.count <= maxQueueSize / 2) {
+          // case too early to flush
+          return;
+        }
+
+        if (bpWrapper.count == maxQueueSize) {
+          // case we have to flush thus block on heap lock
+          bpWrapper.flush();
+          return;
+        }
+        bpWrapper.tryFlush(); //case 50% < queue usage < 100%, flush is preferred but not required yet
+      } finally {
+        bpWrapper.lock.unlock();
       }
-      bpWrapper.tryFlush(); //case 50% < queue usage < 100%, flush is preferred but not required yet
-    } finally {
-      bpWrapper.lock.unlock();
+    } else {
+      heapLock.lock();
+      try {
+        doNotifyUnderHeapLock(buffer);
+      } finally {
+        heapLock.unlock();
+      }
     }
   }
 
   private void doNotifyUnderHeapLock(int count, LlapCacheableBuffer[] cacheableBuffers) {
-    LlapCacheableBuffer buffer;
     for (int i = 0; i < count; i++) {
-      buffer = cacheableBuffers[i];
-      long time = timer.incrementAndGet();
-      if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
-        LlapIoImpl.CACHE_LOGGER.trace("Touching {} at {}", buffer, time);
-      }
-      // First, update buffer priority - we have just been using it.
-      buffer.priority = (buffer.lastUpdate == -1) ? F0
-          : touchPriority(time, buffer.lastUpdate, buffer.priority);
-      buffer.lastUpdate = time;
-      // Then, if the buffer was in the list, remove it.
-      if (buffer.indexInHeap == LlapCacheableBuffer.IN_LIST) {
-        listLock.lock();
-        removeFromListAndUnlock(buffer);
-      }
-      // The only concurrent change that can happen when we hold the heap lock is list removal;
-      // we have just ensured the item is not in the list, so we have a definite state now.
-      if (buffer.indexInHeap >= 0) {
-        // The buffer has lived in the heap all along. Restore heap property.
-        heapifyDownUnderLock(buffer, time);
-      } else if (heapSize == heap.length) {
-        // The buffer is not in the (full) heap. Demote the top item of the heap into the list.
-        LlapCacheableBuffer demoted = heap[0];
-        listLock.lock();
-        try {
-          assert demoted.indexInHeap == 0; // Noone could have moved it, we have the heap lock.
-          demoted.indexInHeap = LlapCacheableBuffer.IN_LIST;
-          demoted.prev = null;
-          if (listHead != null) {
-            demoted.next = listHead;
-            listHead.prev = demoted;
-            listHead = demoted;
-          } else {
-            listHead = demoted;
-            listTail = demoted;
-            demoted.next = null;
-          }
-        } finally {
-          listLock.unlock();
+      doNotifyUnderHeapLock(cacheableBuffers[i]);
+    }
+  }
+
+  private void doNotifyUnderHeapLock(LlapCacheableBuffer buffer) {
+    long time = timer.incrementAndGet();
+    if (LlapIoImpl.CACHE_LOGGER.isTraceEnabled()) {
+      LlapIoImpl.CACHE_LOGGER.trace("Touching {} at {}", buffer, time);
+    }
+    // First, update buffer priority - we have just been using it.
+    buffer.priority = (buffer.lastUpdate == -1) ? F0
+        : touchPriority(time, buffer.lastUpdate, buffer.priority);
+    buffer.lastUpdate = time;
+    // Then, if the buffer was in the list, remove it.
+    if (buffer.indexInHeap == LlapCacheableBuffer.IN_LIST) {
+      listLock.lock();
+      removeFromListAndUnlock(buffer);
+    }
+    // The only concurrent change that can happen when we hold the heap lock is list removal;
+    // we have just ensured the item is not in the list, so we have a definite state now.
+    if (buffer.indexInHeap >= 0) {
+      // The buffer has lived in the heap all along. Restore heap property.
+      heapifyDownUnderLock(buffer, time);
+    } else if (heapSize == heap.length) {
+      // The buffer is not in the (full) heap. Demote the top item of the heap into the list.
+      LlapCacheableBuffer demoted = heap[0];
+      listLock.lock();
+      try {
+        assert demoted.indexInHeap == 0; // Noone could have moved it, we have the heap lock.
+        demoted.indexInHeap = LlapCacheableBuffer.IN_LIST;
+        demoted.prev = null;
+        if (listHead != null) {
+          demoted.next = listHead;
+          listHead.prev = demoted;
+          listHead = demoted;
+        } else {
+          listHead = demoted;
+          listTail = demoted;
+          demoted.next = null;
         }
-        // Now insert the new buffer in its place and restore heap property.
-        buffer.indexInHeap = 0;
-        heapifyDownUnderLock(buffer, time);
-      } else {
-        // Heap is not full, add the buffer to the heap and restore heap property up.
-        assert heapSize < heap.length : heap.length + " < " + heapSize;
-        buffer.indexInHeap = heapSize;
-        heapifyUpUnderLock(buffer, time);
-        ++heapSize;
+      } finally {
+        listLock.unlock();
       }
+      // Now insert the new buffer in its place and restore heap property.
+      buffer.indexInHeap = 0;
+      heapifyDownUnderLock(buffer, time);
+    } else {
+      // Heap is not full, add the buffer to the heap and restore heap property up.
+      assert heapSize < heap.length : heap.length + " < " + heapSize;
+      buffer.indexInHeap = heapSize;
+      heapifyUpUnderLock(buffer, time);
+      ++heapSize;
     }
   }
 

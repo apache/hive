@@ -268,5 +268,5 @@ FROM   (SELECT Sum(agg1.col2) AS a1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@agg1
 #### A masked pattern was here ####
-42	42
 41	41
+42	42

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table over10k_n16
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table over10k_n16
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table over10k_n16(
            t tinyint,
            si smallint,

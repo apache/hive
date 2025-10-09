@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -43,7 +44,9 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.EdgeType;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -155,6 +158,11 @@ public class ParallelEdgeFixer extends Transform {
         rs.getChildOperators().clear();
         ts.getParentOperators().remove(rs);
         rs2sj.put((ReduceSinkOperator) rs, sji);
+
+        if (pctx.getRsToRuntimeValuesInfoMap().containsKey(e.getKey())) {
+          RuntimeValuesInfo rvi = pctx.getRsToRuntimeValuesInfoMap().remove(e.getKey());
+          pctx.getRsToRuntimeValuesInfoMap().put((ReduceSinkOperator) rs, rvi);
+        }
       }
       pctx.setRsToSemiJoinBranchInfo(rs2sj);
     }
@@ -179,23 +187,37 @@ public class ParallelEdgeFixer extends Transform {
     }
   }
 
+  private static class ActualEdgePredicate implements OperatorGraph.OperatorEdgePredicate {
+    private static final EnumSet<EdgeType> ACCEPTABLE_EDGE_TYPES =
+        EnumSet.of(EdgeType.FLOW, EdgeType.SEMIJOIN, EdgeType.BROADCAST);
+
+    @Override
+    public boolean accept(Operator<?> s, Operator<?> t, OperatorGraph.OpEdge opEdge) {
+      return ACCEPTABLE_EDGE_TYPES.contains(opEdge.getEdgeType());
+    }
+  }
+
   private void fixParallelEdges(OperatorGraph og) throws SemanticException {
 
     // Identify edge operators
+    ActualEdgePredicate actualEdgePredicate = new ActualEdgePredicate();
+
     ListValuedMap<Pair<Cluster, Cluster>, Pair<Operator<?>, Operator<?>>> edgeOperators =
         new ArrayListValuedHashMap<>();
-    for (Cluster c : og.getClusters()) {
-      for (Operator<?> o : c.getMembers()) {
-        for (Operator<? extends OperatorDesc> p : o.getParentOperators()) {
-          Cluster parentCluster = og.clusterOf(p);
-          if (parentCluster == c) {
-            continue;
+    for (Cluster cluster: og.getClusters()) {
+      for (Cluster parentCluster: cluster.parentClusters(actualEdgePredicate)) {
+        Set<Operator<?>> parentOperators = parentCluster.getMembers();
+        for (Operator<?> operator: cluster.getMembers()) {
+          for (Operator<?> parentOperator: operator.getParentOperators()) {
+            if (parentOperators.contains(parentOperator)) {
+              edgeOperators.put(new Pair<>(parentCluster, cluster), new Pair<>(parentOperator, operator));
+            }
           }
-          edgeOperators.put(new Pair<>(parentCluster, c), new Pair<>(p, o));
         }
       }
     }
 
+    HashSet<Pair<Operator<?>, Operator<?>>> processedEdge = new HashSet<>();
     // process all edges and fix parallel edges if there are any
     for (Pair<Cluster, Cluster> key : edgeOperators.keySet()) {
       List<Pair<Operator<?>, Operator<?>>> values = edgeOperators.get(key);
@@ -211,7 +233,10 @@ public class ParallelEdgeFixer extends Transform {
       Iterator<Pair<Operator<?>, Operator<?>>> it = values.iterator();
       while (it.hasNext()) {
         Pair<Operator<?>, Operator<?>> pair = it.next();
-        fixParallelEdge(pair.left, pair.right);
+        if (!processedEdge.contains(pair)) {
+          fixParallelEdge(pair.left, pair.right);
+          processedEdge.add(pair);
+        }
       }
     }
   }
@@ -325,6 +350,12 @@ public class ParallelEdgeFixer extends Transform {
     Map<String, String> ret = new HashMap<String, String>();
     Map<String, ExprNodeDesc> exprMap = rs.getColumnExprMap();
     Set<String> neededColumns = new HashSet<String>();
+
+    if (!rs.getSchema().getColumnNames().stream().allMatch(exprMap::containsKey)) {
+      // Cannot invert RS because exprMap does not contain all of RS's input columns.
+      return Optional.empty();
+    }
+
     try {
       for (Entry<String, ExprNodeDesc> e : exprMap.entrySet()) {
         String columnName = extractColumnName(e.getValue());
@@ -344,6 +375,6 @@ public class ParallelEdgeFixer extends Transform {
     } catch (SemanticException e) {
       return Optional.empty();
     }
-
   }
 }
+

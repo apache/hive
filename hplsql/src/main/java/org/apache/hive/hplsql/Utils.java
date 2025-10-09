@@ -32,18 +32,22 @@ public class Utils {
 	  }
 	  
 	  int len = s.length();
-	  StringBuilder s2 = new StringBuilder(len);	  
+	  StringBuilder s2 = new StringBuilder(len);
+	  boolean isEscape = true;
 	  
 	  for (int i = 0; i < len; i++) {
 		char ch = s.charAt(i);
 		char ch2 = (i < len - 1) ? s.charAt(i+1) : 0;
 		  
-	    if((i == 0 || i == len -1) && (ch == '\'' || ch == '"'))
+	    if((i == 0 || i == len - 1) && (ch == '\'' || ch == '"'))
 	      continue;
 	    else
-	    // \' and '' escape sequences
-	    if((ch == '\\' && ch2 == '\'') || (ch == '\'' && ch2 == '\''))
+	    // \' and '' escape sequences and include ' if last two characters are ''
+	    if((ch == '\\' && ch2 == '\'') || (ch == '\'' && ch2 == '\'' && isEscape && i != len - 2)) {
+	      isEscape = false;
 	      continue;
+	    }
+	    isEscape = true;
 	    
 	    s2.append(ch);	
 	  }
@@ -209,8 +213,9 @@ public class Utils {
     int len = in.length();
     int i = 0;
     while (i < len) {
-      if (i + 4 <= len && in.substring(i, i + 4).compareTo("YYYY") == 0) {
-        out.append("yyyy");
+      if (i + 4 <= len && (in.substring(i, i + 4).compareTo("YYYY") == 0 || in.substring(i, i + 4)
+          .compareTo("yyyy") == 0)) {
+        out.append("uuuu");
         i += 4;
       }
       else if (i + 2 <= len && in.substring(i, i + 2).compareTo("mm") == 0) {

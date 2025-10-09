@@ -26,7 +26,6 @@ import org.junit.After;
 
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.List;
 
@@ -91,14 +90,14 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
 
     warehouseDir = new Path(new Path(fs.getUri()), "/warehouse");
     fs.mkdirs(warehouseDir);
-    conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, warehouseDir.toString());
+    conf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE, warehouseDir.toString());
     extWarehouseDir = new Path(new Path(fs.getUri()), "/external");
     fs.mkdirs(extWarehouseDir);
     conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, extWarehouseDir.toString());
 
     // Set up scratch directory
     Path scratchDir = new Path(new Path(fs.getUri()), "/scratchdir");
-    conf.setVar(HiveConf.ConfVars.SCRATCHDIR, scratchDir.toString());
+    conf.setVar(HiveConf.ConfVars.SCRATCH_DIR, scratchDir.toString());
 
     return conf;
   }

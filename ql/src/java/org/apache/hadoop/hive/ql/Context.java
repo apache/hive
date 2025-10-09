@@ -26,15 +26,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.runtime.TokenRewriteStream;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.ContentSummary;
@@ -44,7 +44,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.cleanup.CleanupService;
+import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -60,6 +63,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
@@ -122,7 +126,7 @@ public class Context {
   // Some statements, e.g., UPDATE, DELETE, or MERGE, get rewritten into different
   // subqueries that create new contexts. We keep them here so we can clean them
   // up when we are done.
-  private final Set<Context> subContexts;
+  private final List<Context> subContexts;
 
   private String replPolicy;
 
@@ -137,6 +141,7 @@ public class Context {
   private AtomicInteger sequencer = new AtomicInteger();
 
   private final Map<String, Table> cteTables = new HashMap<String, Table>();
+  private final Map<TableName, Statistics> cteTableStats = new HashMap<>();
 
   // Keep track of the mapping from load table desc to the output and the lock
   private final Map<LoadTableDesc, WriteEntity> loadTableOutputMap =
@@ -166,6 +171,7 @@ public class Context {
   private Map<Integer, DestClausePrefix> insertBranchToNamePrefix = new HashMap<>();
   private int deleteBranchOfUpdateIdx = -1;
   private Operation operation = Operation.OTHER;
+  private boolean splitUpdate = false;
   private WmContext wmContext;
 
   private boolean isExplainPlan = false;
@@ -191,8 +197,15 @@ public class Context {
 
   private List<Pair<String, String>> parsedTables = new ArrayList<>();
 
+  private Path location;
+
   public void setOperation(Operation operation) {
     this.operation = operation;
+  }
+
+  public void setOperation(Operation operation, boolean splitUpdate) {
+    setOperation(operation);
+    this.splitUpdate = splitUpdate;
   }
 
   public Operation getOperation() {
@@ -215,13 +228,21 @@ public class Context {
     return this.replPolicy;
   }
 
+  public Path getLocation() {
+    return location;
+  }
+
+  public void setLocation(Path location) {
+    this.location = location;
+  }
+
   /**
    * These ops require special handling in various places
    * (note that Insert into Acid table is in OTHER category)
    */
-  public enum Operation {UPDATE, DELETE, MERGE, OTHER}
+  public enum Operation {UPDATE, DELETE, MERGE, IOW, OTHER}
   public enum DestClausePrefix {
-    INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-");
+    INSERT("insclause-"), UPDATE("updclause-"), DELETE("delclause-"), MERGE("mergeclause-");
     private final String prefix;
     DestClausePrefix(String prefix) {
       this.prefix = prefix;
@@ -229,6 +250,28 @@ public class Context {
     @Override
     public String toString() {
       return prefix;
+    }
+  }
+  public enum RewritePolicy {
+
+    DEFAULT,
+    PARTITION,
+    FULL_TABLE;
+
+    public static RewritePolicy fromString(String rewritePolicy) {
+      if (rewritePolicy == null) {
+        return DEFAULT;
+      }
+
+      try {
+        return valueOf(rewritePolicy.toUpperCase(Locale.ENGLISH));
+      } catch (IllegalArgumentException var2) {
+        throw new IllegalArgumentException(String.format("Invalid rewrite policy: %s", rewritePolicy), var2);
+      }
+    }
+
+    public static RewritePolicy get(HiveConf conf) {
+      return fromString(conf.get(HiveConf.ConfVars.REWRITE_POLICY.varname));
     }
   }
   private String getMatchedText(ASTNode n) {
@@ -292,7 +335,7 @@ public class Context {
       case OTHER:
         return DestClausePrefix.INSERT;
       case UPDATE:
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE)) {
+        if (splitUpdate) {
           return getMergeDestClausePrefix(curNode);
         }
         return DestClausePrefix.UPDATE;
@@ -318,12 +361,21 @@ public class Context {
     assert insert != null && insert.getType() == HiveParser.TOK_INSERT;
     ASTNode query = (ASTNode) insert.getParent();
     assert query != null && query.getType() == HiveParser.TOK_QUERY;
-
-    for(int childIdx = 1; childIdx < query.getChildCount(); childIdx++) {//1st child is TOK_FROM
+    ASTNode from = (ASTNode) query.getFirstChildWithType(HiveParser.TOK_FROM);
+    
+    if (from == null) {
+      // We are here when TOK_FROM is missing from the AST.
+      // This can happen for merge queries with a predicate like `<joining_column> is null`
+      // in the matched clause.
+      return DestClausePrefix.MERGE;
+    }
+    
+    int tokFromIdx = from.getChildIndex();
+    for (int childIdx = tokFromIdx + 1; childIdx < query.getChildCount(); childIdx++) {
       assert query.getChild(childIdx).getType() == HiveParser.TOK_INSERT;
-      if(insert == query.getChild(childIdx)) {
-        DestClausePrefix prefix = insertBranchToNamePrefix.get(childIdx);
-        if(prefix == null) {
+      if (insert == query.getChild(childIdx)) {
+        DestClausePrefix prefix = insertBranchToNamePrefix.get(childIdx - tokFromIdx);
+        if (prefix == null) {
           throw new IllegalStateException("Found a node w/o branch mapping: '" +
             getMatchedText(insert) + "'");
         }
@@ -361,14 +413,14 @@ public class Context {
   private Context(Configuration conf, String executionId) {
     this.conf = conf;
     this.executionId = executionId;
-    this.subContexts = new HashSet<>();
+    this.subContexts = Lists.newArrayList();
 
     // local & non-local tmp location is configurable. however it is the same across
     // all external file systems
     nonLocalScratchPath = new Path(SessionState.getHDFSSessionPath(conf), executionId);
     localScratchDir = new Path(SessionState.getLocalSessionPath(conf), executionId).toUri().getPath();
-    scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
-    stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGINGDIR);
+    scratchDirPermission = HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCH_DIR_PERMISSION);
+    stagingDir = HiveConf.getVar(conf, HiveConf.ConfVars.STAGING_DIR);
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
@@ -416,12 +468,13 @@ public class Context {
     this.isUpdateDeleteMerge = ctx.isUpdateDeleteMerge;
     this.isLoadingMaterializedView = ctx.isLoadingMaterializedView;
     this.operation = ctx.operation;
+    this.splitUpdate = ctx.splitUpdate;
     this.wmContext = ctx.wmContext;
     this.isExplainPlan = ctx.isExplainPlan;
     this.statsSource = ctx.statsSource;
     this.executionIndex = ctx.executionIndex;
     this.viewsTokenRewriteStreams = new HashMap<>();
-    this.subContexts = new HashSet<>();
+    this.subContexts = Lists.newArrayList();
     this.opContext = new CompilationOpContext();
     this.enableUnparse = ctx.enableUnparse;
     this.scheduledQuery = ctx.scheduledQuery;
@@ -635,7 +688,7 @@ public class Context {
    *
    */
   public Path getMRScratchDir() {
-    return getMRScratchDir(!isExplainSkipExecution());
+    return getMRScratchDir(!isExplainSkipExecution() && !isLoadingMaterializedView());
   }
 
   /**
@@ -731,7 +784,10 @@ public class Context {
           // because that will be taken care by removeResultCacheDir
           FileSystem fs = p.getFileSystem(conf);
           LOG.info("Deleting scratch dir: {}", p);
-          sessionState.getCleanupService().deleteRecursive(p, fs);
+          CleanupService cleanupService = sessionState != null
+              ? sessionState.getCleanupService()
+              : SyncCleanupService.INSTANCE;
+          cleanupService.deleteRecursive(p, fs);
         }
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch", e);
@@ -808,7 +864,9 @@ public class Context {
   }
 
   public Path getMRTmpPath(URI uri) {
-    return new Path(getStagingDir(new Path(uri), !isExplainSkipExecution()), MR_PREFIX + nextPathId());
+    return new Path(getStagingDir(new Path(uri),
+        !isExplainSkipExecution() && !isLoadingMaterializedView()),
+        MR_PREFIX + nextPathId());
   }
 
   public Path getMRTmpPath(boolean mkDir) {
@@ -1186,8 +1244,14 @@ public class Context {
     return cteTables.get(cteName);
   }
 
-  public void addMaterializedTable(String cteName, Table table) {
+  public void addMaterializedTable(String cteName, Table table, Statistics statistics) {
     cteTables.put(cteName, table);
+    cteTables.put(table.getFullyQualifiedName(), table);
+    cteTableStats.put(table.getFullTableName(), statistics);
+  }
+
+  public Statistics getMaterializedTableStats(TableName tableName) {
+    return cteTableStats.get(tableName);
   }
 
   public AtomicInteger getSequencer() {
@@ -1330,8 +1394,7 @@ public class Context {
   }
 
   public boolean isDeleteBranchOfUpdate(String dest) {
-    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.SPLIT_UPDATE) &&
-            !HiveConf.getBoolVar(conf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE)) {
+    if (!splitUpdate) {
       return false;
     }
 

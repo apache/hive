@@ -1,0 +1,11 @@
+PREHOOK: query: CREATE DATABASE auth_db_fail
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:auth_db_fail
+POSTHOOK: query: CREATE DATABASE auth_db_fail
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:auth_db_fail
+PREHOOK: query: GRANT DROP ON DATABASE auth_db_fail TO USER hive_test_user
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT DROP ON DATABASE auth_db_fail TO USER hive_test_user
+POSTHOOK: type: GRANT_PRIVILEGE
+FAILED: SemanticException [Error 10001]: Table not found auth_db_fail.auth_permanent_table

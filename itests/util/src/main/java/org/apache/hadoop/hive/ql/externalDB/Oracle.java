@@ -30,7 +30,7 @@ public class Oracle extends AbstractExternalDB {
 
   @Override
   public String getJdbcUrl() {
-    return "jdbc:oracle:thin:@//" + getContainerHostAddress() + ":1521/xe";
+    return "jdbc:oracle:thin:@//" + getContainerHostAddress() + ":" + getPort() + "/xe";
   }
 
   @Override
@@ -39,13 +39,18 @@ public class Oracle extends AbstractExternalDB {
   }
 
   @Override
+  protected int getPort() {
+    return 1521;
+  }
+
+  @Override
   protected String getDockerImageName() {
-    return "pvargacl/oracle-xe-18.4.0";
+    return "abstractdog/oracle-xe:18.4.0-slim";
   }
 
   @Override
   protected String[] getDockerAdditionalArgs() {
-    return new String[] { "-p", "1521:1521", "-d" };
+    return new String[] { "-p", getPort() + ":1521", "-d", "-e", "ORACLE_PASSWORD=" + getRootPassword() };
   }
 
   @Override

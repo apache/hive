@@ -43,13 +43,12 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
-import org.apache.orc.OrcProto;
 import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.kryo5.Kryo;
+import com.esotericsoftware.kryo.kryo5.io.Output;
 import com.google.common.collect.Lists;
 
 /** Metastore-based footer cache storing serialized footers. Also has a local cache. */
@@ -98,7 +97,7 @@ public class ExternalCache implements FooterCache {
   public void configure(HiveConf queryConfig) {
     this.conf = queryConfig;
     this.sarg = ConvertAstToSearchArg.createFromConf(conf);
-    this.isPpdEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVEOPTINDEXFILTER)
+    this.isPpdEnabled = HiveConf.getBoolVar(conf, ConfVars.HIVE_OPT_INDEX_FILTER)
         && HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_MS_FOOTER_CACHE_PPD);
     this.isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
     this.sargIsOriginal = this.sargNotIsOriginal = null;

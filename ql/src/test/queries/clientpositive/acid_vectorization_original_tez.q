@@ -72,7 +72,7 @@ dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/over10k_orc_bucketed_n0;
 select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed_n0;
 
 -- convert table to acid
-alter table over10k_orc_bucketed_n0 set TBLPROPERTIES ('transactional'='true');
+alter table over10k_orc_bucketed_n0 convert to acid;
 
 -- this should vectorize (and push predicate to storage: filterExpr in TableScan )
 --             Execution mode: vectorized (both Map and Reducer)

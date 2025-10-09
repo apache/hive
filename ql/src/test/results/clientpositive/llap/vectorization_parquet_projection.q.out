@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS parquet_types_staging_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS parquet_types_staging_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE parquet_types_staging_n0 (
   cint int,
   ctinyint tinyint,
@@ -56,8 +58,10 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@parquet_types_staging_n0
 PREHOOK: query: DROP TABLE IF EXISTS parquet_project_test
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS parquet_project_test
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE parquet_project_test(
 cint int,
 m1 map<string, string>
@@ -699,24 +703,30 @@ POSTHOOK: Input: default@parquet_nullsplit
 PREHOOK: query: drop table parquet_nullsplit
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_nullsplit
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_nullsplit
 POSTHOOK: query: drop table parquet_nullsplit
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_nullsplit
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_nullsplit
 PREHOOK: query: drop table parquet_project_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_project_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_project_test
 POSTHOOK: query: drop table parquet_project_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_project_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_project_test
 PREHOOK: query: drop table parquet_types_staging_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_types_staging_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_types_staging_n0
 POSTHOOK: query: drop table parquet_types_staging_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_types_staging_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_types_staging_n0

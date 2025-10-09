@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists mysource
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists mysource
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table mysource (p int,key int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -32,8 +34,10 @@ POSTHOOK: Lineage: mysource.key SCRIPT []
 POSTHOOK: Lineage: mysource.p SCRIPT []
 PREHOOK: query: drop table if exists stats_nonpartitioned
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists stats_nonpartitioned
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table stats_nonpartitioned(key int, value int) stored as orc tblproperties ("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -91,7 +95,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -239,7 +243,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	720                 
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

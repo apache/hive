@@ -32,6 +32,7 @@ import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DataOutputBuffer;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.common.util.Retry;
 import org.apache.tez.runtime.library.common.shuffle.orderedgrouped.ShuffleHeader;
 import org.junit.Assert;
@@ -179,8 +180,8 @@ public class TestShuffleHandler {
 
     shuffleHandler.start();
 
-    String shuffleBaseURL = "http://127.0.0.1:"
-        + conf.get(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY);
+    String shuffleBaseURL = String.format("http://%s", IPStackUtils.concatLoopbackAddressPort(
+        conf.getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT)));
     URL url = new URL(shuffleBaseURL + "/mapOutput?job=job_12345_1&dag=1&reduce=1&"
         + "map=attempt_12345_1_m_1_0");
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -238,8 +239,8 @@ public class TestShuffleHandler {
     try {
       shuffleHandler.start();
 
-      String shuffleBaseURL = "http://127.0.0.1:"
-          + conf.get(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY);
+      String shuffleBaseURL = String.format("http://%s", IPStackUtils.concatLoopbackAddressPort(
+          conf.getInt(ShuffleHandler.SHUFFLE_PORT_CONFIG_KEY, ShuffleHandler.DEFAULT_SHUFFLE_PORT)));
       URL url = new URL(shuffleBaseURL + "/mapOutput?job=job_12345_1&dag=1&reduce=1&"
           + "map=attempt_12345_1_m_1_0");
       conn = (HttpURLConnection) url.openConnection();

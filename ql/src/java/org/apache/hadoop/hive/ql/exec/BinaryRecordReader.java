@@ -40,7 +40,7 @@ public class BinaryRecordReader implements RecordReader {
 
   public void initialize(InputStream in, Configuration conf, Properties tbl) throws IOException {
     this.in = in;
-    maxRecordLength = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVEBINARYRECORDMAX);
+    maxRecordLength = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_BINARY_RECORD_MAX);
   }
 
   public Writable createRow() throws IOException {

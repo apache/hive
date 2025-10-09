@@ -51,7 +51,7 @@ SLEEP_TIME_AFTER_START=10
 #See if the default configs have been overwritten
 #================================================
 
-#These parameters can be overriden by webhcat-env.sh
+#These parameters can be Overridden by webhcat-env.sh
 # the root of the WEBHCAT installation  ('this' is defined in webhcat_server.sh)
 export WEBHCAT_PREFIX=`dirname "$this"`/..
 

@@ -75,11 +75,11 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: string), value (type: string), array(1,2,3) (type: array<int>)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 500 Data size: 117000 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Lateral View Forward
-                      Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: _col0, _col1
@@ -99,7 +99,7 @@ STAGE PLANS:
                               Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col0 (type: int), _col2 (type: string)
                       Select Operator
-                        expressions: _col2 (type: array<int>)
+                        expressions: Const array<int> [1, 2, 3] (type: array<int>)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1000 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
                         UDTF Operator
@@ -128,11 +128,11 @@ STAGE PLANS:
                   filterExpr: ((ds = '2008-04-08') and (hr = '12')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: string), value (type: string), array(1,2,3) (type: array<int>)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 500 Data size: 117000 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Lateral View Forward
-                      Statistics: Num rows: 1000 Data size: 234000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string), _col1 (type: string)
                         outputColumnNames: _col0, _col1
@@ -152,7 +152,7 @@ STAGE PLANS:
                               Statistics: Num rows: 1000 Data size: 231000 Basic stats: COMPLETE Column stats: COMPLETE
                               value expressions: _col0 (type: int), _col2 (type: string)
                       Select Operator
-                        expressions: _col2 (type: array<int>)
+                        expressions: Const array<int> [1, 2, 3] (type: array<int>)
                         outputColumnNames: _col0
                         Statistics: Num rows: 1000 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
                         UDTF Operator
@@ -178,13 +178,21 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Reduce Output Operator
-                    key expressions: key (type: string)
-                    null sort order: z
-                    sort order: +
-                    Map-reduce partition columns: key (type: string)
+                  Filter Operator
+                    predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 3 
@@ -195,16 +203,16 @@ STAGE PLANS:
                      Left Outer Join 0 to 1
                 keys:
                   0 _col1 (type: string)
-                  1 key (type: string)
+                  1 _col0 (type: string)
                 outputColumnNames: _col0, _col2, _col3
-                Statistics: Num rows: 1552 Data size: 234527 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1582 Data size: 287924 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: UDFToInteger(_col3) (type: int), _col0 (type: int), _col2 (type: string)
                   outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 1552 Data size: 147440 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1582 Data size: 150290 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
-                    Statistics: Num rows: 1552 Data size: 147440 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1582 Data size: 150290 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -213,7 +221,7 @@ STAGE PLANS:
                   Select Operator
                     expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
                     outputColumnNames: key, arr_ele, value
-                    Statistics: Num rows: 1552 Data size: 147440 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1582 Data size: 150290 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: min(key), max(key), count(1), count(key), compute_bit_vector_hll(key), min(arr_ele), max(arr_ele), count(arr_ele), compute_bit_vector_hll(arr_ele), max(length(value)), avg(COALESCE(length(value),0)), count(value), compute_bit_vector_hll(value)
                       minReductionHashAggr: 0.99

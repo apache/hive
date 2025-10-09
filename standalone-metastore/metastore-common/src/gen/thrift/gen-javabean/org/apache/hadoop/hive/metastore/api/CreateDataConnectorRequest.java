@@ -82,7 +82,7 @@ package org.apache.hadoop.hive.metastore.api;
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.CONNECTOR, new org.apache.thrift.meta_data.FieldMetaData("connector", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.CONNECTOR, new org.apache.thrift.meta_data.FieldMetaData("connector", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, DataConnector.class)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CreateDataConnectorRequest.class, metaDataMap);
@@ -264,6 +264,10 @@ package org.apache.hadoop.hive.metastore.api;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
+    if (!isSetConnector()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'connector' is unset! Struct:" + toString());
+    }
+
     // check for sub-struct validity
     if (connector != null) {
       connector.validate();
@@ -348,25 +352,15 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, CreateDataConnectorRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet optionals = new java.util.BitSet();
-      if (struct.isSetConnector()) {
-        optionals.set(0);
-      }
-      oprot.writeBitSet(optionals, 1);
-      if (struct.isSetConnector()) {
-        struct.connector.write(oprot);
-      }
+      struct.connector.write(oprot);
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, CreateDataConnectorRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(1);
-      if (incoming.get(0)) {
-        struct.connector = new DataConnector();
-        struct.connector.read(iprot);
-        struct.setConnectorIsSet(true);
-      }
+      struct.connector = new DataConnector();
+      struct.connector.read(iprot);
+      struct.setConnectorIsSet(true);
     }
   }
 

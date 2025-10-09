@@ -94,13 +94,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: query: explain extended execute pPart1 using '2001-01-01',1
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@daysales
 PREHOOK: Input: default@daysales@dt=2001-01-01
 PREHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: query: explain extended execute pPart1 using '2001-01-01',1
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01
@@ -229,13 +229,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+PREHOOK: query: execute pPart1 using '2001-01-01',1
 PREHOOK: type: EXECUTE QUERY
 PREHOOK: Input: default@daysales
 PREHOOK: Input: default@daysales@dt=2001-01-01
 PREHOOK: Input: default@daysales@dt=2001-01-03
 #### A masked pattern was here ####
-POSTHOOK: query: prepare pPart1 from select count(*) from daysales where dt=? and customer=?
+POSTHOOK: query: execute pPart1 using '2001-01-01',1
 POSTHOOK: type: EXECUTE QUERY
 POSTHOOK: Input: default@daysales
 POSTHOOK: Input: default@daysales@dt=2001-01-01

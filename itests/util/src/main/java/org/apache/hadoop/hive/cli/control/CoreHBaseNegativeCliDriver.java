@@ -42,11 +42,12 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
   @Override
   public void beforeClass() throws Exception {
     MiniClusterType miniMR = cliConfig.getClusterType();
+    String hiveConfDir = cliConfig.getHiveConfDir();
     String initScript = cliConfig.getInitScript();
     String cleanupScript = cliConfig.getCleanupScript();
 
-    qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, new HBaseTestSetup(), initScript,
-        cleanupScript);
+    qt = new HBaseQTestUtil(cliConfig.getResultsDir(), cliConfig.getLogDir(), miniMR, new HBaseTestSetup(), hiveConfDir,
+        initScript, cleanupScript);
   }
 
   @Override

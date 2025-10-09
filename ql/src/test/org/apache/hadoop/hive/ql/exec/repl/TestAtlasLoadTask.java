@@ -17,20 +17,21 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
-import org.apache.hadoop.hive.ql.parse.repl.ReplState;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.logging.log4j.Level;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Unit test class for testing Atlas metadata load.
@@ -55,8 +56,10 @@ public class TestAtlasLoadTask {
     atlasLoadTask = new AtlasLoadTask(conf, work);
     AtlasLoadTask atlasLoadTaskSpy = Mockito.spy(atlasLoadTask);
     Mockito.when(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)).thenReturn(true);
-    Logger logger = Mockito.mock(Logger.class);
-    Whitebox.setInternalState(ReplState.class, logger);
+    Logger logger = LoggerFactory.getLogger("ReplState");
+    StringAppender appender = StringAppender.createStringAppender(null);
+    appender.addToLogger(logger.getName(), Level.INFO);
+    appender.start();
     AtlasReplInfo atlasReplInfo = new AtlasReplInfo("http://localhost:21000/atlas", "srcDB",
         "tgtDB", "srcCluster", "tgtCluster", new Path("hdfs://tmp"), null, conf);
     atlasReplInfo.setSrcFsUri("hdfs://srcFsUri:8020");
@@ -64,19 +67,13 @@ public class TestAtlasLoadTask {
     Mockito.doReturn(atlasReplInfo).when(atlasLoadTaskSpy).createAtlasReplInfo();
     int status = atlasLoadTaskSpy.execute();
     Assert.assertEquals(0, status);
-    ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
-    ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
-    ArgumentCaptor<Object> eventDetailsCaptor = ArgumentCaptor.forClass(Object.class);
-    Mockito.verify(logger,
-            Mockito.times(2)).info(replStateCaptor.capture(),
-            eventCaptor.capture(), eventDetailsCaptor.capture());
-    Assert.assertEquals("REPL::{}: {}", replStateCaptor.getAllValues().get(0));
-    Assert.assertEquals("ATLAS_LOAD_START", eventCaptor.getAllValues().get(0));
-    Assert.assertEquals("ATLAS_LOAD_END", eventCaptor.getAllValues().get(1));
-    Assert.assertTrue(eventDetailsCaptor.getAllValues().get(0)
-            .toString().contains("{\"sourceDbName\":\"srcDB\",\"targetDbName\":\"tgtDB\",\"loadStartTime\":"));
-    Assert.assertTrue(eventDetailsCaptor
-            .getAllValues().get(1).toString().contains("{\"sourceDbName\":\"srcDB\",\"targetDbName\""
-                    + ":\"tgtDB\",\"numOfEntities\":0,\"loadEndTime\""));
+    String logStr = appender.getOutput();
+    Assert.assertEquals(2, StringUtils.countMatches(logStr, "REPL::"));
+    Assert.assertTrue(logStr.contains("ATLAS_LOAD_START"));
+    Assert.assertTrue(logStr.contains("ATLAS_LOAD_END"));
+    Assert.assertTrue(logStr.contains("{\"sourceDbName\":\"srcDB\",\"targetDbName\":\"tgtDB\",\"loadStartTime\":"));
+    Assert.assertTrue(logStr.contains("{\"sourceDbName\":\"srcDB\",\"targetDbName\""
+            + ":\"tgtDB\",\"numOfEntities\":0,\"loadEndTime\""));
+    appender.removeFromLogger(logger.getName());
   }
 }

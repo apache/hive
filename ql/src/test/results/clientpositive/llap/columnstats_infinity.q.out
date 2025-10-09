@@ -102,7 +102,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1250                
-	totalSize           	1255                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -162,7 +162,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1250                
-	totalSize           	1255                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -191,10 +191,12 @@ POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string
 PREHOOK: query: drop table table_change_numeric_group_string_group_floating_string_group_n13
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
 POSTHOOK: query: drop table table_change_numeric_group_string_group_floating_string_group_n13
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group_n13
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group_n13
 PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group_n13(insert_num int,
               c1 decimal(38,18), c2 float, c3 double,
@@ -282,7 +284,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1250                
-	totalSize           	1255                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

@@ -76,7 +76,7 @@ DATA_VALIDATE="$(pwd)/dbs/$DB_SERVER/validate.sh"
 [ ! -e "$SCRIPT_VALIDATE" ] && log "Error: $SCRIPT_VALIDATE does not exist." && exit 1
 [ ! -e "$DATA_VALIDATE" ] && log "Error: $DATA_VALIDATE does not exist." && exit 1
 
-HMS_UPGRADE_DIR="$(pwd)/../../metastore/scripts/upgrade"
+HMS_UPGRADE_DIR="$(pwd)/../../standalone-metastore/metastore-server/src/main/sql"
 if [ ! -d "$HMS_UPGRADE_DIR/$DB_SERVER" ]; then
 	log "Error: $DB_SERVER upgrade scripts are not found on $HMS_UPGRADE_DIR."
 	exit 1

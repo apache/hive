@@ -32,7 +32,7 @@ Table Parameters:
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -78,7 +78,7 @@ Table Parameters:
 	numPartitions       	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -114,7 +114,7 @@ Partition Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -162,7 +162,7 @@ Table Parameters:
 	numPartitions       	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -198,7 +198,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	1                   
-	totalSize           	2                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -211,3 +211,65 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
+PREHOOK: query: drop table test_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table test_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table test_part(a int) partitioned by (b string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_part
+POSTHOOK: query: create table test_part(a int) partitioned by (b string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_part
+PREHOOK: query: alter table test_part add partition(b='one')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@test_part
+POSTHOOK: query: alter table test_part add partition(b='one')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@test_part
+POSTHOOK: Output: default@test_part@b=one
+PREHOOK: query: alter table test_part add partition(b='random_access_memory')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@test_part
+POSTHOOK: query: alter table test_part add partition(b='random_access_memory')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@test_part
+POSTHOOK: Output: default@test_part@b=random_access_memory
+PREHOOK: query: show partitions test_part
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@test_part
+POSTHOOK: query: show partitions test_part
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@test_part
+b=one
+b=random_access_memory
+PREHOOK: query: alter table test_part add partition(b='partition_random')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@test_part
+POSTHOOK: query: alter table test_part add partition(b='partition_random')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@test_part
+POSTHOOK: Output: default@test_part@b=partition_random
+PREHOOK: query: show partitions test_part
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@test_part
+POSTHOOK: query: show partitions test_part
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@test_part
+b=one
+b=partition_random
+b=random_access_memory
+PREHOOK: query: drop table test_part
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_part
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_part
+POSTHOOK: query: drop table test_part
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_part
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_part

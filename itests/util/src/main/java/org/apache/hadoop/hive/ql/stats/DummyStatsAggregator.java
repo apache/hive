@@ -34,7 +34,7 @@ public class DummyStatsAggregator implements StatsAggregator {
   // denotes the method which needs to throw an error.
   @Override
   public boolean connect(StatsCollectionContext scc) {
-    errorMethod = HiveConf.getVar(scc.getHiveConf(), HiveConf.ConfVars.HIVETESTMODEDUMMYSTATAGGR);
+    errorMethod = HiveConf.getVar(scc.getHiveConf(), HiveConf.ConfVars.HIVE_TEST_MODE_DUMMY_STAT_AGGR);
     if (errorMethod.equalsIgnoreCase("connect")) {
       return false;
     }

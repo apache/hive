@@ -1,6 +1,6 @@
 PREHOOK: query: create function lookup as 'org.apache.hadoop.hive.ql.udf.UDFFileLookup' using file '../../data/files/sales.txt'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.lookup
 PREHOOK: Output: hdfs://### HDFS PATH ###
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. Hive warehouse is non-local, but ../../data/files/sales.txt specifies file on local filesystem. Resources on non-local warehouse should specify a non-local scheme/path

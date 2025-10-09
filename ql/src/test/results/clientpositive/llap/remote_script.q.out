@@ -42,8 +42,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table tmp_tmp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_tmp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_tmp
 POSTHOOK: query: drop table tmp_tmp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_tmp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_tmp

@@ -160,10 +160,12 @@ insert_num	c
 PREHOOK: query: drop table table_add_int_permute_select
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_add_int_permute_select
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_add_int_permute_select
 POSTHOOK: query: drop table table_add_int_permute_select
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_add_int_permute_select
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_add_int_permute_select
 PREHOOK: query: CREATE TABLE table_add_int_string_permute_select(insert_num int, a INT, b STRING)  clustered by (a) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -370,10 +372,12 @@ insert_num	d
 PREHOOK: query: drop table table_add_int_string_permute_select
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_add_int_string_permute_select
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_add_int_string_permute_select
 POSTHOOK: query: drop table table_add_int_string_permute_select
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_add_int_string_permute_select
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_add_int_string_permute_select
 PREHOOK: query: CREATE TABLE table_change_string_group_double(insert_num int, c1 STRING, c2 CHAR(50), c3 VARCHAR(50), b STRING)  clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -492,10 +496,12 @@ insert_num	c1	c2	c3	b
 PREHOOK: query: drop table table_change_string_group_double
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_string_group_double
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_string_group_double
 POSTHOOK: query: drop table table_change_string_group_double
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_string_group_double
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_string_group_double
 PREHOOK: query: CREATE TABLE table_change_date_group_string_group_date_group(insert_num int, c1 DATE, c2 DATE, c3 DATE, c4 DATE, c5 DATE, c6 TIMESTAMP, c7 TIMESTAMP, c8 TIMESTAMP, c9 TIMESTAMP, c10 TIMESTAMP, b STRING) clustered by (c1) into 2 buckets STORED AS ORC TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -628,10 +634,12 @@ insert_num	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	b
 PREHOOK: query: drop table table_change_date_group_string_group_date_group
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_date_group_string_group_date_group
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_date_group_string_group_date_group
 POSTHOOK: query: drop table table_change_date_group_string_group_date_group
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_date_group_string_group_date_group
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_date_group_string_group_date_group
 PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_multi_ints_string_group(insert_num int,
              c1 tinyint, c2 smallint, c3 int, c4 bigint,
@@ -885,10 +893,12 @@ insert_num	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19	c2
 PREHOOK: query: drop table table_change_numeric_group_string_group_multi_ints_string_group
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
 POSTHOOK: query: drop table table_change_numeric_group_string_group_multi_ints_string_group
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
 PREHOOK: query: CREATE TABLE table_change_numeric_group_string_group_floating_string_group(insert_num int,
               c1 decimal(38,18), c2 float, c3 double,
@@ -1132,10 +1142,12 @@ insert_num	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	b
 PREHOOK: query: drop table table_change_numeric_group_string_group_floating_string_group
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
 POSTHOOK: query: drop table table_change_numeric_group_string_group_floating_string_group
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
 PREHOOK: query: CREATE TABLE table_change_string_group_string_group_string(insert_num int,
            c1 string, c2 string, c3 string, c4 string,
@@ -1365,10 +1377,12 @@ insert_num	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	b
 PREHOOK: query: drop table table_change_string_group_string_group_string
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_string_group_string_group_string
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_string_group_string_group_string
 POSTHOOK: query: drop table table_change_string_group_string_group_string
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_string_group_string_group_string
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_string_group_string_group_string
 PREHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_tinyint_to_bigint(insert_num int,
                                 c1 tinyint, c2 tinyint, c3 tinyint, c4 tinyint, c5 tinyint, c6 tinyint,
@@ -1617,19 +1631,21 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 #### A masked pattern was here ####
 insert_num	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	b
-101	-128	-128	-128	-128.000000000000000000	-128.0	-128.0	NULL	NULL	NULL	NULL	NULL	-2147483648	-2147483648.000000000000000000	-2.14748365E9	-2.147483648E9	NULL	NULL	NULL	original
-102	127	127	127	127.000000000000000000	127.0	127.0	32767	32767	32767.000000000000000000	32767.0	32767.0	2147483647	2147483647.000000000000000000	2.14748365E9	2.147483647E9	9223372036854775807.000000000000000000	9.223372E18	9.223372036854776E18	original
+101	-128	-128	-128	-128.000000000000000000	-128.0	-128.0	NULL	NULL	NULL	NULL	NULL	-2147483648	-2147483648.000000000000000000	-2.1474836E9	-2.147483648E9	NULL	NULL	NULL	original
+102	127	127	127	127.000000000000000000	127.0	127.0	32767	32767	32767.000000000000000000	32767.0	32767.0	2147483647	2147483647.000000000000000000	2.1474836E9	2.147483647E9	9223372036854775807.000000000000000000	9.223372E18	9.223372036854776E18	original
 103	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	23	23	23	23.000000000000000000	23.0	23.0	834	834	834.000000000000000000	834.0	834.0	203332	203332.000000000000000000	203332.0	203332.0	888888857923222.000000000000000000	8.8888885E14	8.88888857923222E14	original
-105	-99	-99	-99	-99.000000000000000000	-99.0	-99.0	-28300	-28300	-28300.000000000000000000	-28300.0	-28300.0	-999992	-999992.000000000000000000	-999992.0	-999992.0	-222282153733.000000000000000000	-2.22282154E11	-2.22282153733E11	original
+105	-99	-99	-99	-99.000000000000000000	-99.0	-99.0	-28300	-28300	-28300.000000000000000000	-28300.0	-28300.0	-999992	-999992.000000000000000000	-999992.0	-999992.0	-222282153733.000000000000000000	-2.2228215E11	-2.22282153733E11	original
 111	7000	80000	90000000	1234.567800000000000000	9876.543	789.321	80000	90000000	1234.567800000000000000	9876.543	789.321	90000000	1234.567800000000000000	9876.543	789.321	1234.567800000000000000	9876.543	789.321	new
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 PREHOOK: query: CREATE TABLE table_change_lower_to_higher_numeric_group_decimal_to_float(insert_num int,
            c1 decimal(38,18), c2 decimal(38,18),
@@ -1829,8 +1845,10 @@ insert_num	c1	c2	c3	b
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_float
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
 POSTHOOK: query: drop table table_change_lower_to_higher_numeric_group_decimal_to_float
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float

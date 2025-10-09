@@ -289,7 +289,7 @@ public class FunctionLocalizer implements GenericUDFBridge.UdfWhitelistChecker {
       return;
     }
     rcr = new RefCountedResource();
-    List<URI> localUris = resourceDownloader.downloadExternal(srcUri, fqfn, false);
+    List<URI> localUris = resourceDownloader.downloadExternal(srcUri, fqfn);
     if (localUris == null || localUris.isEmpty()) {
       LOG.error("Cannot download " + srcUri + " for " + fqfn);
       return;

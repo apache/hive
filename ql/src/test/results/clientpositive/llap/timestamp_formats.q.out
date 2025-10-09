@@ -134,10 +134,12 @@ POSTHOOK: Input: default@timestamp_formats
 PREHOOK: query: DROP TABLE timestamp_formats
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@timestamp_formats
+PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamp_formats
 POSTHOOK: query: DROP TABLE timestamp_formats
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamp_formats
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_formats
 PREHOOK: query: create table tstable(date_created timestamp)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
@@ -186,8 +188,10 @@ POSTHOOK: Input: default@tstable
 PREHOOK: query: drop table tstable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstable
 POSTHOOK: query: drop table tstable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstable

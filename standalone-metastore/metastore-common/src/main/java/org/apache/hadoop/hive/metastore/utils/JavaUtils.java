@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -71,7 +73,8 @@ public class JavaUtils {
           "Number of constructor parameter types doesn't match number of arguments");
     }
     for (int i = 0; i < parameterTypes.length; i++) {
-      Class<?> clazz = parameterTypes[i];
+      // initargs are boxed to Object, so we need to wrapper primitive types here.
+      Class<?> clazz = ClassUtils.primitiveToWrapper(parameterTypes[i]);
       if (initargs[i] != null && !(clazz.isInstance(initargs[i]))) {
         throw new IllegalArgumentException("Object : " + initargs[i]
             + " is not an instance of " + clazz);
@@ -109,6 +112,18 @@ public class JavaUtils {
       return InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
       LOG.error("Unable to resolve my host name " + e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> void setField(T req, String methodName, Class[] argsCls, Object... args) {
+    try {
+      Method method = req.getClass().getDeclaredMethod(methodName, argsCls);
+      method.setAccessible(true);
+      method.invoke(req, args);
+    } catch (Exception e) {
+      LOG.error("Unable to invoke the underlying method: {} of the instance: {}, message: {}",
+          methodName, req, e.getMessage());
       throw new RuntimeException(e);
     }
   }

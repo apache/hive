@@ -34,8 +34,10 @@ POSTHOOK: type: SHOW_TABLESTATUS
 PREHOOK: query: DROP TABLE jsontable2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@jsontable2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@jsontable2
 POSTHOOK: query: DROP TABLE jsontable2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@jsontable2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@jsontable2

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists testAltCol_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltCol_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltCol_n1
 (cId        TINYINT,
  cBigInt    BIGINT,
@@ -126,8 +128,10 @@ POSTHOOK: Input: default@testaltcol_n1
 4	-1234567890123456789	-1234567890	-12345	-123
 PREHOOK: query: drop table if exists testAltColT_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColT_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColT_n1 stored as textfile as select * from testAltCol_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
@@ -301,10 +305,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolt_n1
 #### A masked pattern was here ####
-1	1.23456794E18	1.23456794E9	12345.0	123.0
+1	1.234568E18	1.234568E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456794E18	1.23456794E9	12345.0	123.0
-4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+3	1.234568E18	1.234568E9	12345.0	123.0
+4	-1.234568E18	-1.234568E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColT_n1 replace columns
 (cId        TINYINT,
  cBigInt    DOUBLE,
@@ -331,10 +335,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolt_n1
 #### A masked pattern was here ####
-1	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+1	1.2345678901234568E18	1.23456789E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456789012345677E18	1.23456789E9	12345.0	123.0
-4	-1.23456789012345677E18	-1.23456789E9	-12345.0	-123.0
+3	1.2345678901234568E18	1.23456789E9	12345.0	123.0
+4	-1.2345678901234568E18	-1.23456789E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColT_n1 replace columns
 (cId        TINYINT,
  cBigInt    DECIMAL(22,2),
@@ -488,15 +492,19 @@ POSTHOOK: Input: default@testaltcolt_n1
 PREHOOK: query: drop table if exists testAltColT_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolt_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolt_n1
 POSTHOOK: query: drop table if exists testAltColT_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolt_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolt_n1
 PREHOOK: query: drop table if exists testAltColSF_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColSF_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColSF_n1 stored as sequencefile as select * from testAltCol_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
@@ -670,10 +678,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolsf_n1
 #### A masked pattern was here ####
-1	1.23456794E18	1.23456794E9	12345.0	123.0
+1	1.234568E18	1.234568E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456794E18	1.23456794E9	12345.0	123.0
-4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+3	1.234568E18	1.234568E9	12345.0	123.0
+4	-1.234568E18	-1.234568E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColSF_n1 replace columns
 (cId        TINYINT,
  cBigInt    DOUBLE,
@@ -700,10 +708,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolsf_n1
 #### A masked pattern was here ####
-1	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+1	1.2345678901234568E18	1.23456789E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456789012345677E18	1.23456789E9	12345.0	123.0
-4	-1.23456789012345677E18	-1.23456789E9	-12345.0	-123.0
+3	1.2345678901234568E18	1.23456789E9	12345.0	123.0
+4	-1.2345678901234568E18	-1.23456789E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColSF_n1 replace columns
 (cId        TINYINT,
  cBigInt    DECIMAL(22,2),
@@ -857,15 +865,19 @@ POSTHOOK: Input: default@testaltcolsf_n1
 PREHOOK: query: drop table if exists testAltColSF_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolsf_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolsf_n1
 POSTHOOK: query: drop table if exists testAltColSF_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolsf_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolsf_n1
 PREHOOK: query: drop table if exists testAltColRCF_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColRCF_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColRCF_n1 stored as rcfile as select * from testAltCol_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
@@ -1039,10 +1051,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColR
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolrcf_n1
 #### A masked pattern was here ####
-1	1.23456794E18	1.23456794E9	12345.0	123.0
+1	1.234568E18	1.234568E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456794E18	1.23456794E9	12345.0	123.0
-4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+3	1.234568E18	1.234568E9	12345.0	123.0
+4	-1.234568E18	-1.234568E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColRCF_n1 replace columns
 (cId        TINYINT,
  cBigInt    DOUBLE,
@@ -1069,10 +1081,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColR
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolrcf_n1
 #### A masked pattern was here ####
-1	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+1	1.2345678901234568E18	1.23456789E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456789012345677E18	1.23456789E9	12345.0	123.0
-4	-1.23456789012345677E18	-1.23456789E9	-12345.0	-123.0
+3	1.2345678901234568E18	1.23456789E9	12345.0	123.0
+4	-1.2345678901234568E18	-1.23456789E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColRCF_n1 replace columns
 (cId        TINYINT,
  cBigInt    DECIMAL(22,2),
@@ -1226,15 +1238,19 @@ POSTHOOK: Input: default@testaltcolrcf_n1
 PREHOOK: query: drop table if exists testAltColRCF_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolrcf_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolrcf_n1
 POSTHOOK: query: drop table if exists testAltColRCF_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolrcf_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolrcf_n1
 PREHOOK: query: drop table if exists testAltColORC_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColORC_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColORC_n1 stored as orc as select * from testAltCol_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
@@ -1408,10 +1424,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColO
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolorc_n1
 #### A masked pattern was here ####
-1	1.23456794E18	1.23456794E9	12345.0	123.0
+1	1.234568E18	1.234568E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456794E18	1.23456794E9	12345.0	123.0
-4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+3	1.234568E18	1.234568E9	12345.0	123.0
+4	-1.234568E18	-1.234568E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColORC_n1 replace columns
 (cId        TINYINT,
  cBigInt    DOUBLE,
@@ -1438,10 +1454,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColO
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolorc_n1
 #### A masked pattern was here ####
-1	1.23456789012345677E18	1.23456789E9	12345.0	123.0
+1	1.2345678901234568E18	1.23456789E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456789012345677E18	1.23456789E9	12345.0	123.0
-4	-1.23456789012345677E18	-1.23456789E9	-12345.0	-123.0
+3	1.2345678901234568E18	1.23456789E9	12345.0	123.0
+4	-1.2345678901234568E18	-1.23456789E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColORC_n1 replace columns
 (cId        TINYINT,
  cBigInt    DECIMAL(22,2),
@@ -1595,15 +1611,19 @@ POSTHOOK: Input: default@testaltcolorc_n1
 PREHOOK: query: drop table if exists testAltColORC_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolorc_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolorc_n1
 POSTHOOK: query: drop table if exists testAltColORC_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolorc_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolorc_n1
 PREHOOK: query: drop table if exists testAltColPDE_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColPDE_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColPDE_n0 stored as parquet as select * from testAltCol_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@testaltcol_n1
@@ -1777,10 +1797,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColP
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolpde_n0
 #### A masked pattern was here ####
-1	1.23456794E18	1.23456794E9	12345.0	123.0
+1	1.234568E18	1.234568E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456794E18	1.23456794E9	12345.0	123.0
-4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+3	1.234568E18	1.234568E9	12345.0	123.0
+4	-1.234568E18	-1.234568E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColPDE_n0 replace columns
 (cId        TINYINT,
  cBigInt    DOUBLE,
@@ -1807,10 +1827,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColP
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolpde_n0
 #### A masked pattern was here ####
-1	1.23456789012345677E18	1.234567936E9	12345.0	123.0
+1	1.2345678901234568E18	1.234567936E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456789012345677E18	1.234567936E9	12345.0	123.0
-4	-1.23456789012345677E18	-1.234567936E9	-12345.0	-123.0
+3	1.2345678901234568E18	1.234567936E9	12345.0	123.0
+4	-1.2345678901234568E18	-1.234567936E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColPDE_n0 replace columns
 (cId        TINYINT,
  cBigInt    DECIMAL(22,2),
@@ -1964,15 +1984,19 @@ POSTHOOK: Input: default@testaltcolpde_n0
 PREHOOK: query: drop table if exists testAltColPDE_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolpde_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolpde_n0
 POSTHOOK: query: drop table if exists testAltColPDE_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolpde_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolpde_n0
 PREHOOK: query: drop table if exists testAltColPDD_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testAltColPDD_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testAltColPDD_n0 stored as parquet tblproperties ("parquet.enable.dictionary"="false") as
 select * from testAltCol_n1
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -2148,10 +2172,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColP
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolpdd_n0
 #### A masked pattern was here ####
-1	1.23456794E18	1.23456794E9	12345.0	123.0
+1	1.234568E18	1.234568E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456794E18	1.23456794E9	12345.0	123.0
-4	-1.23456794E18	-1.23456794E9	-12345.0	-123.0
+3	1.234568E18	1.234568E9	12345.0	123.0
+4	-1.234568E18	-1.234568E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColPDD_n0 replace columns
 (cId        TINYINT,
  cBigInt    DOUBLE,
@@ -2178,10 +2202,10 @@ POSTHOOK: query: select cId, cBigInt, cInt, cSmallInt, cTinyint from testAltColP
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testaltcolpdd_n0
 #### A masked pattern was here ####
-1	1.23456789012345677E18	1.234567936E9	12345.0	123.0
+1	1.2345678901234568E18	1.234567936E9	12345.0	123.0
 2	1.0	2.0	3.0	4.0
-3	1.23456789012345677E18	1.234567936E9	12345.0	123.0
-4	-1.23456789012345677E18	-1.234567936E9	-12345.0	-123.0
+3	1.2345678901234568E18	1.234567936E9	12345.0	123.0
+4	-1.2345678901234568E18	-1.234567936E9	-12345.0	-123.0
 PREHOOK: query: alter table testAltColPDD_n0 replace columns
 (cId        TINYINT,
  cBigInt    DECIMAL(22,2),
@@ -2335,8 +2359,10 @@ POSTHOOK: Input: default@testaltcolpdd_n0
 PREHOOK: query: drop table if exists testAltColPDD_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testaltcolpdd_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testaltcolpdd_n0
 POSTHOOK: query: drop table if exists testAltColPDD_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testaltcolpdd_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testaltcolpdd_n0

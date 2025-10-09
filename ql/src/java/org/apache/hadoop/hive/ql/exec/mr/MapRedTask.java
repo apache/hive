@@ -107,7 +107,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
       // auto-determine local mode if allowed
       if (!ctx.isLocalOnlyExecutionMode() &&
-          conf.getBoolVar(HiveConf.ConfVars.LOCALMODEAUTO)) {
+          conf.getBoolVar(HiveConf.ConfVars.LOCAL_MODE_AUTO)) {
 
         if (inputSummary == null) {
           inputSummary = Utilities.getInputSummary(ctx, work.getMapWork(), null);
@@ -142,7 +142,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         }
       }
 
-      runningViaChild = conf.getBoolVar(HiveConf.ConfVars.SUBMITVIACHILD);
+      runningViaChild = conf.getBoolVar(HiveConf.ConfVars.SUBMIT_VIA_CHILD);
 
       if (!runningViaChild) {
         // since we are running the mapred task in the same jvm, we should update the job conf
@@ -172,7 +172,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       super.setInputAttributes(conf);
 
       // enable assertion
-      String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
+      String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOP_BIN);
       String hiveJar = conf.getJar();
 
       String libJars = super.getResource(conf, ResourceType.JAR);
@@ -247,7 +247,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         // if we are running in local mode - then the amount of memory used
         // by the child jvm can no longer default to the memory used by the
         // parent jvm
-        int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVEHADOOPMAXMEM);
+        int hadoopMem = conf.getIntVar(HiveConf.ConfVars.HIVE_HADOOP_MAX_MEM);
         if (hadoopMem == 0) {
           // remove env var that would default child jvm to use parent's memory
           // as default. child jvm would use default memory for a hadoop client
@@ -453,13 +453,13 @@ public class MapRedTask extends ExecDriver implements Serializable {
       }
       console
           .printInfo("In order to change the average load for a reducer (in bytes):");
-      console.printInfo("  set " + HiveConf.ConfVars.BYTESPERREDUCER.varname
+      console.printInfo("  set " + HiveConf.ConfVars.BYTES_PER_REDUCER.varname
           + "=<number>");
       console.printInfo("In order to limit the maximum number of reducers:");
-      console.printInfo("  set " + HiveConf.ConfVars.MAXREDUCERS.varname
+      console.printInfo("  set " + HiveConf.ConfVars.MAX_REDUCERS.varname
           + "=<number>");
       console.printInfo("In order to set a constant number of reducers:");
-      console.printInfo("  set " + HiveConf.ConfVars.HADOOPNUMREDUCERS
+      console.printInfo("  set " + HiveConf.ConfVars.HADOOP_NUM_REDUCERS
           + "=<number>");
     }
   }
@@ -478,13 +478,13 @@ public class MapRedTask extends ExecDriver implements Serializable {
                                               long inputLength,
                                               long inputFileCount) {
 
-    long maxBytes = conf.getLongVar(HiveConf.ConfVars.LOCALMODEMAXBYTES);
-    long maxInputFiles = conf.getIntVar(HiveConf.ConfVars.LOCALMODEMAXINPUTFILES);
+    long maxBytes = conf.getLongVar(HiveConf.ConfVars.LOCAL_MODE_MAX_BYTES);
+    long maxInputFiles = conf.getIntVar(HiveConf.ConfVars.LOCAL_MODE_MAX_INPUT_FILES);
 
     // check for max input size
     if (inputLength > maxBytes) {
       return "Input Size (= " + inputLength + ") is larger than " +
-        HiveConf.ConfVars.LOCALMODEMAXBYTES.varname + " (= " + maxBytes + ")";
+        HiveConf.ConfVars.LOCAL_MODE_MAX_BYTES.varname + " (= " + maxBytes + ")";
     }
 
     // ideally we would like to do this check based on the number of splits
@@ -494,7 +494,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
     if (inputFileCount > maxInputFiles) {
       return "Number of Input Files (= " + inputFileCount +
         ") is larger than " +
-        HiveConf.ConfVars.LOCALMODEMAXINPUTFILES.varname + "(= " + maxInputFiles + ")";
+        HiveConf.ConfVars.LOCAL_MODE_MAX_INPUT_FILES.varname + "(= " + maxInputFiles + ")";
     }
 
     // since local mode only runs with 1 reducers - make sure that the

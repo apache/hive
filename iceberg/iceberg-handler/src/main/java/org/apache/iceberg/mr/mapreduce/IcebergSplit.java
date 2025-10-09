@@ -24,21 +24,19 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.FileScanTask;
-import org.apache.iceberg.Table;
+import org.apache.iceberg.ScanTaskGroup;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.util.SerializationUtil;
 
 // Since this class extends `mapreduce.InputSplit and implements `mapred.InputSplit`, it can be returned by both MR v1
 // and v2 file formats.
-public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred.InputSplit, IcebergSplitContainer {
+public class IcebergSplit extends InputSplit implements IcebergSplitContainer {
 
   public static final String[] ANYWHERE = new String[]{"*"};
 
-  private Table table;
-  private CombinedScanTask task;
+  private ScanTaskGroup<FileScanTask> taskGroup;
 
   private transient String[] locations;
   private transient Configuration conf;
@@ -47,14 +45,13 @@ public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred
   public IcebergSplit() {
   }
 
-  IcebergSplit(Table table, Configuration conf, CombinedScanTask task) {
-    this.table = table;
-    this.task = task;
+  IcebergSplit(Configuration conf, ScanTaskGroup<FileScanTask> taskGroup) {
+    this.taskGroup = taskGroup;
     this.conf = conf;
   }
 
-  public CombinedScanTask task() {
-    return task;
+  public ScanTaskGroup<FileScanTask> taskGroup() {
+    return taskGroup;
   }
 
   @Override
@@ -64,7 +61,7 @@ public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred
 
   @Override
   public long getLength() {
-    return task.files().stream().mapToLong(FileScanTask::length).sum();
+    return taskGroup.tasks().stream().mapToLong(FileScanTask::length).sum();
   }
 
   @Override
@@ -73,7 +70,7 @@ public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred
     // getLocations() won't be accurate when called on worker nodes and will always return "*"
     if (locations == null && conf != null) {
       boolean localityPreferred = conf.getBoolean(InputFormatConfig.LOCALITY, false);
-      locations = localityPreferred ? Util.blockLocations(task, conf) : ANYWHERE;
+      locations = localityPreferred ? Util.blockLocations(taskGroup, conf) : ANYWHERE;
     } else {
       locations = ANYWHERE;
     }
@@ -83,27 +80,15 @@ public class IcebergSplit extends InputSplit implements org.apache.hadoop.mapred
 
   @Override
   public void write(DataOutput out) throws IOException {
-    byte[] tableData = SerializationUtil.serializeToBytes(table);
-    out.writeInt(tableData.length);
-    out.write(tableData);
-
-    byte[] data = SerializationUtil.serializeToBytes(this.task);
+    byte[] data = SerializationUtil.serializeToBytes(this.taskGroup);
     out.writeInt(data.length);
     out.write(data);
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    byte[] tableData = new byte[in.readInt()];
-    in.readFully(tableData);
-    this.table = SerializationUtil.deserializeFromBytes(tableData);
-
     byte[] data = new byte[in.readInt()];
     in.readFully(data);
-    this.task = SerializationUtil.deserializeFromBytes(data);
-  }
-
-  public Table table() {
-    return table;
+    this.taskGroup = SerializationUtil.deserializeFromBytes(data);
   }
 }

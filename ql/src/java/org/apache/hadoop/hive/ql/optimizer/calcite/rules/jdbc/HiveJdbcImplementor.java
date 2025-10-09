@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.adapter.jdbc.JdbcImplementor;
+import org.apache.calcite.adapter.jdbc.JdbcTableScan;
 import org.apache.calcite.linq4j.tree.Expressions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
@@ -65,41 +66,6 @@ public class HiveJdbcImplementor extends JdbcImplementor {
     return builder.result();
   }
 
-  @Override public Result visit(Sort e) {
-    Result x = visitInput(e, 0, Clause.ORDER_BY, Clause.FETCH, Clause.OFFSET);
-    Builder builder = x.builder(e);
-    List<SqlNode> orderByList = Expressions.list();
-    for (RelFieldCollation field : e.getCollation().getFieldCollations()) {
-      builder.addOrderItem(orderByList, field);
-    }
-
-    // Create select list as we want to keep the column aliases
-    // instead of producing STAR
-    final List<SqlNode> selectList = new ArrayList<>();
-    for (int i = 0; i < e.getRowType().getFieldCount(); i++) {
-      RexInputRef ref = RexInputRef.of(i, e.getRowType());
-      SqlNode sqlExpr = builder.context.toSql(null, ref);
-      addSelect(selectList, sqlExpr, e.getRowType());
-    }
-    builder.setSelect(new SqlNodeList(selectList, POS));
-
-    if (!orderByList.isEmpty()) {
-      builder.setOrderBy(new SqlNodeList(orderByList, POS));
-      x = builder.result();
-    }
-    if (e.fetch != null) {
-      builder = x.builder(e);
-      builder.setFetch(builder.context.toSql(null, e.fetch));
-      x = builder.result();
-    }
-    if (e.offset != null) {
-      builder = x.builder(e);
-      builder.setOffset(builder.context.toSql(null, e.offset));
-      x = builder.result();
-    }
-    return x;
-  }
-
   @Override public Result visit(Join e) {
     final Result leftResult = visitInput(e, 0).resetAlias();
     final Result rightResult = visitInput(e, 1).resetAlias();
@@ -126,6 +92,10 @@ public class HiveJdbcImplementor extends JdbcImplementor {
             condType,
             sqlCondition);
     return result(join, leftResult, rightResult);
+  }
+
+  public Result visit(JdbcTableScan scan) {
+    return result(scan.jdbcTable.tableName(), ImmutableList.of(Clause.FROM), scan, null);
   }
 
   /**

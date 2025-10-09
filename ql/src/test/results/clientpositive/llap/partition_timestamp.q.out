@@ -1,7 +1,9 @@
 PREHOOK: query: drop table partition_timestamp_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table partition_timestamp_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table partition_timestamp_1 (key string, value string) partitioned by (dt timestamp, region string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -239,8 +241,10 @@ POSTHOOK: Input: default@partition_timestamp_1
 PREHOOK: query: drop table partition_timestamp_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partition_timestamp_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partition_timestamp_1
 POSTHOOK: query: drop table partition_timestamp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partition_timestamp_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_timestamp_1

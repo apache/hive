@@ -73,6 +73,7 @@ public class ReplDumpWork implements Serializable {
   private ReplLogger replLogger;
   private FailoverMetaData fmd;
   private boolean firstDumpAfterFailover;
+  private boolean secondDumpAfterFailover;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
     injectNextDumpDirForTest(dumpDir, false);
@@ -145,8 +146,8 @@ public class ReplDumpWork implements Serializable {
   void overrideLastEventToDump(Hive fromDb, long bootstrapLastId, long failoverEventId) throws Exception {
     // If we are bootstrapping ACID tables, we need to dump all the events upto the event id at
     // the beginning of the bootstrap dump and also not dump any event after that. So we override
-    // both, the last event as well as any user specified limit on the number of events. See
-    // bootstrampDump() for more details.
+    // both, the last event and any user specified limit on the number of events. See
+    // bootstrapDump() for more details.
     if (failoverEventId > 0) {
       LOG.info("eventTo : {} marked as failover eventId.", eventTo);
       eventTo = failoverEventId;
@@ -354,5 +355,13 @@ public class ReplDumpWork implements Serializable {
 
   public void setReplLogger(ReplLogger replLogger) {
     this.replLogger = replLogger;
+  }
+
+  public boolean isSecondDumpAfterFailover() {
+    return secondDumpAfterFailover;
+  }
+
+  public void setSecondDumpAfterFailover(boolean secondDumpAfterFailover) {
+    this.secondDumpAfterFailover = secondDumpAfterFailover;
   }
 }

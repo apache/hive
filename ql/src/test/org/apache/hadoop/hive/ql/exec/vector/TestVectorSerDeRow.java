@@ -49,10 +49,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.fast.SerializeWrite;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 
 
 import static org.junit.Assert.fail;
@@ -388,19 +390,20 @@ public class TestVectorSerDeRow {
   }
 
   void testVectorDeserializeRow(
-      Random r, SerializationType serializationType,
+      Random r, SerializationType serializationType, boolean testDecimal64,
       boolean alternate1, boolean alternate2, boolean useExternalBuffer)
       throws HiveException, IOException, SerDeException {
 
     for (int i = 0; i < 20; i++) {
       innerTestVectorDeserializeRow(
-          r, i,serializationType, alternate1, alternate2, useExternalBuffer);
+          r, i,serializationType, testDecimal64, alternate1, alternate2, useExternalBuffer);
     }
   }
 
   void innerTestVectorDeserializeRow(
       Random r, int iteration,
       SerializationType serializationType,
+      boolean testDecimal64,
       boolean alternate1, boolean alternate2, boolean useExternalBuffer)
       throws HiveException, IOException, SerDeException {
 
@@ -418,6 +421,22 @@ public class TestVectorSerDeRow {
     VectorizedRowBatchCtx batchContext = new VectorizedRowBatchCtx();
     batchContext.init(source.rowStructObjectInspector(), emptyScratchTypeNames);
     VectorizedRowBatch batch = batchContext.createVectorizedRowBatch();
+
+    // For Decimal64 tests, we manually change the VectorizedRowBatch to contain
+    // a Decimal64ColumnVector.  While this may seem hacky, this is the way that it
+    // is done within the VectorPTFOperator.
+    if (testDecimal64) {
+      for (int i = 0; i < batch.cols.length; ++i) {
+        if (batch.cols[i] instanceof DecimalColumnVector) {
+          DecimalColumnVector dcv = (DecimalColumnVector) batch.cols[i];
+          if (dcv.precision <= 18) {
+            String newType = String.format("decimal(%d,%d)", dcv.precision, dcv.scale);
+            TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(newType);
+            batch.cols[i] = VectorizedBatchUtil.createColumnVector(typeInfo, DataTypePhysicalVariation.DECIMAL_64);
+          }
+        }
+      }
+    }
 
     // junk the destination for the 1st pass
     for (ColumnVector cv : batch.cols) {
@@ -581,48 +600,56 @@ public class TestVectorSerDeRow {
     Random r = new Random(8732);
     testVectorDeserializeRow(r,
         SerializationType.BINARY_SORTABLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useColumnSortOrderIsDesc */ false,
         /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
         /* useExternalBuffer */ false);
 
     testVectorDeserializeRow(r,
         SerializationType.BINARY_SORTABLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useColumnSortOrderIsDesc */ true,
         /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
         /* useExternalBuffer */ false);
 
     testVectorDeserializeRow(r,
         SerializationType.BINARY_SORTABLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useColumnSortOrderIsDesc */ false,
         /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
         /* useExternalBuffer */ true);
 
     testVectorDeserializeRow(r,
         SerializationType.BINARY_SORTABLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useColumnSortOrderIsDesc */ true,
         /* alternate2 = useBinarySortableCharsNeedingEscape */ false,
         /* useExternalBuffer */ true);
 
     testVectorDeserializeRow(r,
         SerializationType.BINARY_SORTABLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useColumnSortOrderIsDesc */ false,
         /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
         /* useExternalBuffer */ false);
 
     testVectorDeserializeRow(r,
         SerializationType.BINARY_SORTABLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useColumnSortOrderIsDesc */ true,
         /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
         /* useExternalBuffer */ false);
 
     testVectorDeserializeRow(r,
         SerializationType.BINARY_SORTABLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useColumnSortOrderIsDesc */ false,
         /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
         /* useExternalBuffer */ true);
 
     testVectorDeserializeRow(r,
         SerializationType.BINARY_SORTABLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useColumnSortOrderIsDesc */ true,
         /* alternate2 = useBinarySortableCharsNeedingEscape */ true,
         /* useExternalBuffer */ true);
@@ -633,15 +660,24 @@ public class TestVectorSerDeRow {
     Random r = new Random(8732);
     testVectorDeserializeRow(r,
         SerializationType.LAZY_BINARY,
+        /* testDecimal64 */ false,
         /* alternate1 = unused */ false,
         /* alternate2 = unused */ false,
         /* useExternalBuffer */ false);
 
     testVectorDeserializeRow(r,
         SerializationType.LAZY_BINARY,
+        /* testDecimal64 */ false,
         /* alternate1 = unused */ false,
         /* alternate2 = unused */ false,
         /* useExternalBuffer */ true);
+
+    testVectorDeserializeRow(r,
+        SerializationType.LAZY_BINARY,
+        /* testDecimal64 */ true,
+        /* alternate1 = unused */ false,
+        /* alternate2 = unused */ false,
+        /* useExternalBuffer */ false);
   }
 
   @Test
@@ -649,26 +685,38 @@ public class TestVectorSerDeRow {
     Random r = new Random(8732);
     testVectorDeserializeRow(r,
         SerializationType.LAZY_SIMPLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useLazySimpleEscapes */ false,
         /* alternate2 = unused */ false,
         /* useExternalBuffer */ false);
 
     testVectorDeserializeRow(r,
         SerializationType.LAZY_SIMPLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useLazySimpleEscapes */ false,
         /* alternate2 = unused */ false,
         /* useExternalBuffer */ true);
 
     testVectorDeserializeRow(r,
         SerializationType.LAZY_SIMPLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useLazySimpleEscapes */ true,
         /* alternate2 = unused */ false,
         /* useExternalBuffer */ false);
 
     testVectorDeserializeRow(r,
         SerializationType.LAZY_SIMPLE,
+        /* testDecimal64 */ false,
         /* alternate1 = useLazySimpleEscapes */ true,
         /* alternate2 = unused */ false,
         /* useExternalBuffer */ true);
+
+    testVectorDeserializeRow(r,
+        SerializationType.LAZY_SIMPLE,
+        /* testDecimal64 */ true,
+        /* alternate1 = useLazySimpleEscapes */ false,
+        /* alternate2 = unused */ false,
+        /* useExternalBuffer */ false);
+
   }
 }

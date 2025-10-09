@@ -7,7 +7,10 @@ create external table avro_extschema_insert1 (name string) partitioned by (p1 st
 
 describe avro_extschema_insert1;
 
-create external table avro_extschema_insert2 like avro_extschema_insert1;
+create external table avro_extschema_insert2 like avro_extschema_insert1 stored as avro
+  tblproperties ('avro.schema.url'='${system:test.tmp.dir}/avro_extschema_insert.avsc');
+
+desc formatted avro_extschema_insert2;
 
 insert overwrite table avro_extschema_insert1 partition (p1='part1') values ('col1_value', 1, 'col3_value');
 

@@ -277,7 +277,8 @@ public class ReduceSinkMapJoinProc implements SemanticNodeProcessor {
         edgeType = EdgeType.CUSTOM_SIMPLE_EDGE;
       }
     }
-    if (edgeType == EdgeType.CUSTOM_EDGE) {
+    if (edgeType == EdgeType.CUSTOM_EDGE || (edgeType == EdgeType.CUSTOM_SIMPLE_EDGE && !mapJoinOp.getConf()
+        .isDynamicPartitionHashJoin())) {
       // disable auto parallelism for bucket map joins
       parentRS.getConf().setReducerTraits(EnumSet.of(FIXED));
     }

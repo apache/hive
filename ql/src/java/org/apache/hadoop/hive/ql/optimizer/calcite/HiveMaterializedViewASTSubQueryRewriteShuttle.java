@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
+import org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
@@ -36,17 +37,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Collections.unmodifiableSet;
-import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.NON_CALCITE;
+import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.NON_CALCITE;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 
 /**
@@ -65,6 +66,7 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
   private final RelBuilder relBuilder;
   private final Hive db;
   private final Set<TableName> tablesUsedByOriginalPlan;
+  private final Supplier<String> validTxnsList;
   private final HiveTxnManager txnManager;
 
   public HiveMaterializedViewASTSubQueryRewriteShuttle(
@@ -74,6 +76,7 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
           RelBuilder relBuilder,
           Hive db,
           Set<TableName> tablesUsedByOriginalPlan,
+          Supplier<String> validTxnsList,
           HiveTxnManager txnManager) {
     this.subQueryMap = unmodifiableMap(subQueryMap);
     this.originalAST = originalAST;
@@ -81,6 +84,7 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
     this.relBuilder = relBuilder;
     this.db = db;
     this.tablesUsedByOriginalPlan = unmodifiableSet(tablesUsedByOriginalPlan);
+    this.validTxnsList = validTxnsList;
     this.txnManager = txnManager;
   }
 
@@ -114,7 +118,8 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
     // Deal only with MVs which are not supported by the Calcite based rewrite algorithm since that algorithm
     // also makes cost based decisions and can produce better plans.
     RelNode match = getMaterializedViewByAST(
-            expandedSubqAST, relBuilder.getCluster(), NON_CALCITE, db, tablesUsedByOriginalPlan, txnManager);
+        expandedSubqAST, relBuilder.getCluster(), NON_CALCITE, db, tablesUsedByOriginalPlan,
+        validTxnsList, txnManager);
     if (match != null) {
       return match;
     }
@@ -138,15 +143,14 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
    * 3. Validate if they are up-to-date
    */
   public static RelNode getMaterializedViewByAST(
-          ASTNode expandedAST,
-          RelOptCluster optCluster,
-          Predicate<EnumSet<HiveRelOptMaterialization.RewriteAlgorithm>> filter,
+          ASTNode expandedAST, RelOptCluster optCluster,
+          Predicate<Set<RewriteAlgorithm>> filter,
           Hive db,
           Set<TableName> tablesUsedByOriginalPlan,
-          HiveTxnManager txnManager) {
+          Supplier<String> validTxnsList, HiveTxnManager txnManager) {
     try {
       List<HiveRelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsByAST(
-              expandedAST, tablesUsedByOriginalPlan, txnManager);
+          expandedAST, tablesUsedByOriginalPlan, validTxnsList, txnManager);
       for (HiveRelOptMaterialization relOptMaterialization : relOptMaterializationList) {
         if (!filter.test(relOptMaterialization.getScope())) {
           LOG.debug("Filter out materialized view {} scope {}",
@@ -160,7 +164,7 @@ public class HiveMaterializedViewASTSubQueryRewriteShuttle extends HiveRelShuttl
             Set<TableName> sourceTables = new HashSet<>(1);
             sourceTables.add(hiveTableMD.getFullTableName());
             if (db.validateMaterializedViewsFromRegistry(
-                    singletonList(hiveTableMD), sourceTables, txnManager)) {
+                  singletonList(hiveTableMD), sourceTables, validTxnsList, txnManager)) {
               return relOptMaterialization.copyToNewCluster(optCluster).tableRel;
             }
           } else {

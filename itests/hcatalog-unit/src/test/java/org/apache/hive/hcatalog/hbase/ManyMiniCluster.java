@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.testutils.MiniZooKeeperCluster;
 
 import java.io.File;
@@ -261,7 +262,7 @@ public class ManyMiniCluster {
       hbaseConf.set("hbase.rootdir", hbaseRoot);
       hbaseConf.set("hbase.master", "local");
       hbaseConf.setInt(HConstants.ZOOKEEPER_CLIENT_PORT, zookeeperPort);
-      hbaseConf.set(HConstants.ZOOKEEPER_QUORUM, "127.0.0.1");
+      hbaseConf.set(HConstants.ZOOKEEPER_QUORUM, IPStackUtils.resolveLoopbackAddress());
       hbaseConf.setInt("hbase.master.port", findFreePort());
       hbaseConf.setInt("hbase.master.info.port", -1);
       hbaseConf.setInt("hbase.regionserver.port", findFreePort());
@@ -299,12 +300,12 @@ public class ManyMiniCluster {
 
     //The default org.apache.hadoop.hive.ql.hooks.PreExecutePrinter hook
     //is present only in the ql/test directory
-    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    hiveConf.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+    hiveConf.set(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname,
       "jdbc:derby:" + new File(workDir + "/metastore_db") + ";create=true");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.toString(),
+    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.toString(),
       new File(workDir, "warehouse").toString());
     //set where derby logs
     File derbyLogFile = new File(workDir + "/derby.log");

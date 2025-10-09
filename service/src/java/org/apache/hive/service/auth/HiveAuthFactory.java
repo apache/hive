@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.AuthenticationException;
 import javax.security.sasl.Sasl;
@@ -40,7 +41,7 @@ import org.apache.hadoop.security.SaslRpcServer.AuthMethod;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.ProxyUsers;
-import org.apache.hive.service.auth.HiveAuthConstants.AuthTypes;
+import org.apache.hive.service.auth.ldap.LdapGroupCallbackHandler;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.thrift.TProcessorFactory;
@@ -58,33 +59,33 @@ public class HiveAuthFactory {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAuthFactory.class);
 
   private HadoopThriftAuthBridge.Server saslServer;
-  private String authTypeStr;
-  private final String transportMode;
   private final HiveConf conf;
+  private final AuthType authType;
   private String hadoopAuth;
   private MetastoreDelegationTokenManager delegationTokenManager = null;
 
-  public HiveAuthFactory(HiveConf conf) throws TTransportException {
+  public HiveAuthFactory(HiveConf conf, boolean isHttpMode) throws TTransportException {
     this.conf = conf;
-    transportMode = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
-    authTypeStr = conf.getVar(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION);
     // ShimLoader.getHadoopShims().isSecurityEnabled() will only check that
     // hadoopAuth is not simple, it does not guarantee it is kerberos
     hadoopAuth = conf.get(HADOOP_SECURITY_AUTHENTICATION, "simple");
-    // In http mode we use NOSASL as the default auth type
-    if (authTypeStr == null) {
-      if ("http".equalsIgnoreCase(transportMode)) {
-        authTypeStr = HiveAuthConstants.AuthTypes.NOSASL.getAuthName();
-      } else {
-        authTypeStr = HiveAuthConstants.AuthTypes.NONE.getAuthName();
-      }
-    }
+    authType = AuthType.authTypeFromConf(conf, isHttpMode);
     if (isSASLWithKerberizedHadoop()) {
-      saslServer =
-          HadoopThriftAuthBridge.getBridge().createServer(
-              conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
-              conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
-              conf.getVar(ConfVars.HIVE_SERVER2_CLIENT_KERBEROS_PRINCIPAL));
+      boolean enableLdapGroupCheck = conf.getBoolVar(
+          ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS);
+      if (enableLdapGroupCheck) {
+        CallbackHandler callbackHandler = new LdapGroupCallbackHandler(conf);
+        saslServer = HadoopThriftAuthBridge.getBridge().createServer(
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+            conf.getVar(ConfVars.HIVE_SERVER2_CLIENT_KERBEROS_PRINCIPAL),
+            callbackHandler);
+      } else {
+        saslServer = HadoopThriftAuthBridge.getBridge().createServer(
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB),
+            conf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL),
+            conf.getVar(ConfVars.HIVE_SERVER2_CLIENT_KERBEROS_PRINCIPAL));
+      }
 
       // Start delegation token manager
       delegationTokenManager = new MetastoreDelegationTokenManager();
@@ -133,12 +134,8 @@ public class HiveAuthFactory {
       } catch (TTransportException e) {
         throw new LoginException(e.getMessage());
       }
-      if (authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.KERBEROS.getAuthName())) {
-        // no-op
-      } else if (authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NONE.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.LDAP.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.PAM.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.CUSTOM.getAuthName())) {
+      if (authType.isPasswordBasedAuthEnabled()) {
+        String authTypeStr = authType.getPasswordBasedAuthStr();
         try {
           serverTransportFactory.addServerDefinition("PLAIN",
               authTypeStr, null, new HashMap<String, String>(),
@@ -146,20 +143,15 @@ public class HiveAuthFactory {
         } catch (AuthenticationException e) {
           throw new LoginException ("Error setting callback handler" + e);
         }
-      } else {
-        throw new LoginException("Unsupported authentication type " + authTypeStr);
       }
       transportFactory = saslServer.wrapTransportFactory(serverTransportFactory);
-    } else if (authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NONE.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.LDAP.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.PAM.getAuthName()) ||
-          authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.CUSTOM.getAuthName())) {
+    } else if (authType.isPasswordBasedAuthEnabled()) {
+      String authTypeStr = authType.getPasswordBasedAuthStr();
       transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
-    } else if (authTypeStr
-        .equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.getAuthName())) {
+    } else if (authType.isEnabled(HiveAuthConstants.AuthTypes.NOSASL)) {
       transportFactory = new TTransportFactory();
     } else {
-      throw new LoginException("Unsupported authentication type " + authTypeStr);
+      throw new LoginException("Unsupported authentication type " + authType.getAuthTypes());
     }
 
     String trustedDomain = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TRUSTED_DOMAIN).trim();
@@ -201,7 +193,7 @@ public class HiveAuthFactory {
 
   public boolean isSASLWithKerberizedHadoop() {
     return "kerberos".equalsIgnoreCase(hadoopAuth)
-        && !authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.NOSASL.getAuthName());
+        && !authType.isEnabled(HiveAuthConstants.AuthTypes.NOSASL);
   }
 
   public boolean isSASLKerberosUser() {

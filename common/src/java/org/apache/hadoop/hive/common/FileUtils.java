@@ -18,14 +18,18 @@
 
 package org.apache.hadoop.hive.common;
 
+import static org.apache.hadoop.hive.shims.Utils.RAW_RESERVED_VIRTUAL_PATH;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.nio.file.Paths;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -34,10 +38,13 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
@@ -56,18 +63,19 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.PathExistsException;
 import org.apache.hadoop.fs.PathIsDirectoryException;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.security.auth.login.LoginException;
 
 /**
  * Collection of file manipulation utilities common across Hive.
@@ -257,6 +265,11 @@ public final class FileUtils {
     }
   }
 
+  /**
+   * Hex encoding characters indexed by integer value
+   */
+  private static final char[] HEX_UPPER_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
   static boolean needsEscaping(char c) {
     return c < charToEscape.size() && charToEscape.get(c);
   }
@@ -286,12 +299,28 @@ public final class FileUtils {
       }
     }
 
-    StringBuilder sb = new StringBuilder();
+    //  Fast-path detection, no escaping and therefore no copying necessary
+    int firstEscapeIndex = -1;
     for (int i = 0; i < path.length(); i++) {
+      if (needsEscaping(path.charAt(i))) {
+        firstEscapeIndex = i;
+        break;
+      }
+    }
+    if (firstEscapeIndex == -1) {
+      return path;
+    }
+
+    // slow path, escape beyond the first required escape character into a new string
+    StringBuilder sb = new StringBuilder();
+    if (firstEscapeIndex > 0) {
+      sb.append(path, 0, firstEscapeIndex);
+    }
+
+    for (int i = firstEscapeIndex; i < path.length(); i++) {
       char c = path.charAt(i);
       if (needsEscaping(c)) {
-        sb.append('%');
-        sb.append(String.format("%1$02X", (int) c));
+        sb.append('%').append(HEX_UPPER_CHARS[(0xF0 & c) >>> 4]).append(HEX_UPPER_CHARS[(0x0F & c)]);
       } else {
         sb.append(c);
       }
@@ -300,8 +329,17 @@ public final class FileUtils {
   }
 
   public static String unescapePathName(String path) {
+    int firstUnescapeIndex = path.indexOf('%');
+    if (firstUnescapeIndex == -1) {
+      return path;
+    }
+
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < path.length(); i++) {
+    if (firstUnescapeIndex > 0) {
+      sb.append(path, 0, firstUnescapeIndex);
+    }
+
+    for (int i = firstUnescapeIndex; i < path.length(); i++) {
       char c = path.charAt(i);
       if (c == '%' && i + 2 < path.length()) {
         int code = -1;
@@ -480,7 +518,7 @@ public final class FileUtils {
     }
   }
 
-  public static UserGroupInformation getProxyUser(final String user) throws LoginException, IOException {
+  public static UserGroupInformation getProxyUser(final String user) throws IOException {
     UserGroupInformation ugi = Utils.getUGI();
     String currentUser = ugi.getShortUserName();
     UserGroupInformation proxyUser = null;
@@ -694,8 +732,9 @@ public final class FileUtils {
       FileSystem dstFS, Path dst,
       boolean deleteSource,
       boolean overwrite,
-      HiveConf conf) throws IOException {
-    return copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf, ShimLoader.getHadoopShims());
+      HiveConf conf, DataCopyStatistics copyStatistics
+  ) throws IOException {
+    return copy(srcFS, src, dstFS, dst, deleteSource, overwrite, conf, ShimLoader.getHadoopShims(), copyStatistics);
   }
 
   @VisibleForTesting
@@ -703,7 +742,7 @@ public final class FileUtils {
     FileSystem dstFS, Path dst,
     boolean deleteSource,
     boolean overwrite,
-    HiveConf conf, HadoopShims shims) throws IOException {
+    HiveConf conf, HadoopShims shims, DataCopyStatistics copyStatistics) throws IOException {
 
     boolean copied = false;
     boolean triedDistcp = false;
@@ -721,6 +760,8 @@ public final class FileUtils {
         LOG.info("Launch distributed copy (distcp) job.");
         triedDistcp = true;
         copied = distCp(srcFS, Collections.singletonList(src), dst, deleteSource, null, conf, shims);
+        // increment bytes copied counter
+        copyStatistics.incrementBytesCopiedCounter(srcContentSummary.getLength());
       }
     }
     if (!triedDistcp) {
@@ -728,13 +769,13 @@ public final class FileUtils {
       // is tried and it fails. We depend upon that behaviour in cases like replication,
       // wherein if distcp fails, there is good reason to not plod along with a trivial
       // implementation, and fail instead.
-      copied = copy(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, shouldPreserveXAttrs(conf, srcFS, dstFS), conf);
+      copied = doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, shouldPreserveXAttrs(conf, srcFS, dstFS, src), conf, copyStatistics);
     }
     return copied;
   }
 
-  public static boolean copy(FileSystem srcFS, FileStatus srcStatus, FileSystem dstFS, Path dst, boolean deleteSource,
-                             boolean overwrite, boolean preserveXAttrs, Configuration conf) throws IOException {
+  public static boolean doIOUtilsCopyBytes(FileSystem srcFS, FileStatus srcStatus, FileSystem dstFS, Path dst, boolean deleteSource,
+                             boolean overwrite, boolean preserveXAttrs, Configuration conf, DataCopyStatistics copyStatistics) throws IOException {
     Path src = srcStatus.getPath();
     dst = checkDest(src.getName(), dstFS, dst, overwrite);
     if (srcStatus.isDirectory()) {
@@ -745,8 +786,7 @@ public final class FileUtils {
 
       FileStatus[] fileStatus = srcFS.listStatus(src);
       for (FileStatus file : fileStatus) {
-        copy(srcFS, file, dstFS, new Path(dst, file.getPath().getName()), deleteSource, overwrite, preserveXAttrs,
-            conf);
+        doIOUtilsCopyBytes(srcFS, file, dstFS, new Path(dst, file.getPath().getName()), deleteSource, overwrite, preserveXAttrs, conf, copyStatistics);
       }
       if (preserveXAttrs) {
         preserveXAttr(srcFS, src, dstFS, dst);
@@ -762,6 +802,8 @@ public final class FileUtils {
         if (preserveXAttrs) {
           preserveXAttr(srcFS, src, dstFS, dst);
         }
+        final long bytesCopied = srcFS.getFileStatus(src).getLen();
+        copyStatistics.incrementBytesCopiedCounter(bytesCopied);
       } catch (IOException var11) {
         IOUtils.closeStream(in);
         IOUtils.closeStream(out);
@@ -772,12 +814,13 @@ public final class FileUtils {
     return deleteSource ? srcFS.delete(src, true) : true;
   }
 
-  public static boolean copy(FileSystem srcFS, Path[] srcs, FileSystem dstFS, Path dst, boolean deleteSource, boolean overwrite, boolean preserveXAttr, Configuration conf) throws IOException {
+  public static boolean copy(FileSystem srcFS, Path[] srcs, FileSystem dstFS, Path dst, boolean deleteSource, boolean overwrite, boolean preserveXAttr, Configuration conf,
+                             DataCopyStatistics copyStatistics) throws IOException {
     boolean gotException = false;
     boolean returnVal = true;
     StringBuilder exceptions = new StringBuilder();
     if (srcs.length == 1) {
-      return copy(srcFS, srcFS.getFileStatus(srcs[0]), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf);
+      return doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(srcs[0]), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf, copyStatistics);
     } else {
       try {
         FileStatus sdst = dstFS.getFileStatus(dst);
@@ -795,7 +838,7 @@ public final class FileUtils {
         Path src = var17[var12];
 
         try {
-          if (!copy(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf)) {
+          if (!doIOUtilsCopyBytes(srcFS, srcFS.getFileStatus(src), dstFS, dst, deleteSource, overwrite, preserveXAttr, conf, copyStatistics)) {
             returnVal = false;
           }
         } catch (IOException var15) {
@@ -854,11 +897,21 @@ public final class FileUtils {
     }
   }
 
-  public static boolean shouldPreserveXAttrs(HiveConf conf, FileSystem srcFS, FileSystem dstFS) throws IOException {
-    if (!Utils.checkFileSystemXAttrSupport(srcFS) || !Utils.checkFileSystemXAttrSupport(dstFS)){
-      return false;
+  public static boolean shouldPreserveXAttrs(HiveConf conf, FileSystem srcFS, FileSystem dstFS, Path path) throws IOException {
+    Preconditions.checkNotNull(path);
+    if (conf.getBoolVar(ConfVars.DFS_XATTR_ONLY_SUPPORTED_ON_RESERVED_NAMESPACE)) {
+
+      if (!(path.toUri().getPath().startsWith(RAW_RESERVED_VIRTUAL_PATH)
+        && Utils.checkFileSystemXAttrSupport(srcFS, new Path(RAW_RESERVED_VIRTUAL_PATH))
+        && Utils.checkFileSystemXAttrSupport(dstFS, new Path(RAW_RESERVED_VIRTUAL_PATH)))) {
+        return false;
+      }
+    } else {
+      if (!Utils.checkFileSystemXAttrSupport(srcFS) || !Utils.checkFileSystemXAttrSupport(dstFS)) {
+        return false;
+      }
     }
-    for (Map.Entry<String,String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()) {
+    for (Map.Entry<String, String> entry : conf.getPropsWithPrefix(Utils.DISTCP_OPTIONS_PREFIX).entrySet()) {
       String distCpOption = entry.getKey();
       if (distCpOption.startsWith("p")) {
         return distCpOption.contains("x");
@@ -953,7 +1006,7 @@ public final class FileUtils {
     // into destPath without failing. So check it before renaming.
     if (fs.exists(destPath)) {
       throw new IOException("Cannot rename the source path. The destination "
-          + "path already exists.");
+              + "path already exists.");
     }
     return fs.rename(sourcePath, destPath);
   }
@@ -1039,8 +1092,10 @@ public final class FileUtils {
     if (childStatus.getOwner().equals(user)) {
       return;
     }
-    String msg = String.format("Permission Denied: User %s can't delete %s because sticky bit is"
-        + " set on the parent dir and user does not own this file or its parent", user, path);
+    String msg = ("""
+        Permission Denied: User %s can't delete %s because sticky bit is\
+         set on the parent dir and user does not own this file or its parent\
+        """).formatted(user, path);
     throw new IOException(msg);
 
   }
@@ -1332,6 +1387,141 @@ public final class FileUtils {
       fs.delete(path, true);
     } catch (IOException e) {
       LOG.debug("Unable to delete {}", path, e);
+    }
+  }
+
+  public static RemoteIterator<FileStatus> listStatusIterator(FileSystem fs, Path path, PathFilter filter)
+        throws IOException {
+    return RemoteIterators.filteringRemoteIterator(fs.listStatusIterator(path),
+        status -> filter.accept(status.getPath()));
+  }
+
+  public static RemoteIterator<LocatedFileStatus> listFiles(FileSystem fs, Path path, boolean recursive, PathFilter filter)
+        throws IOException {
+    return RemoteIterators.filteringRemoteIterator(fs.listFiles(path, recursive),
+        status -> filter.accept(status.getPath()));
+  }
+
+  /**
+   * Resolves a symlink on a local filesystem. In case of any exceptions or scheme other than "file"
+   * it simply returns the original path. Refer to DEBUG level logs for further details.
+   * @param path input path to be resolved
+   * @param conf a Configuration instance to be used while e.g. resolving the FileSystem if necessary
+   * @return the resolved target Path or the original if the input Path is not a symlink
+   * @throws IOException
+   */
+  public static Path resolveSymlinks(Path path, Configuration conf) throws IOException {
+    if (path == null) {
+      throw new IllegalArgumentException("Cannot resolve symlink for a null Path");
+    }
+
+    URI uri = path.toUri();
+    String scheme = uri.getScheme();
+
+    /*
+     * If you're about to extend this method to e.g. HDFS, simply remove this check.
+     * There is a known exception reproduced by whroot_external1.q, which can be referred to,
+     * which is because java.nio is not prepared by default for other schemes like "hdfs".
+     */
+    if (scheme != null && !"file".equalsIgnoreCase(scheme)) {
+      LOG.debug("scheme '{}' is not supported for resolving symlinks", scheme);
+      return path;
+    }
+
+    // we're expecting 'file' scheme, so if scheme == null, we need to add it to path before resolving,
+    // otherwise Paths.get will fail with java.lang.IllegalArgumentException: Missing scheme
+    if (scheme == null) {
+      try {
+        uri =  new URI("file", uri.getAuthority(), uri.toString(), null, null);
+      } catch (URISyntaxException e) {
+        // e.g. in case of relative URI, we cannot create a new URI
+        LOG.debug("URISyntaxException while creating uri from path without scheme {}", path, e);
+        return path;
+      }
+    }
+
+    try {
+      java.nio.file.Path srcPath = Paths.get(uri);
+      URI targetUri = srcPath.toRealPath().toUri();
+      // stick to the original scheme
+      return new Path(scheme, targetUri.getAuthority(),
+          Path.getPathWithoutSchemeAndAuthority(new Path(targetUri)).toString());
+    } catch (Exception e) {
+      LOG.debug("Exception while calling toRealPath of {}", path, e);
+      return path;
+    }
+  }
+
+  public static class AdaptingIterator<T> implements Iterator<T> {
+
+    private final RemoteIterator<T> iterator;
+
+    @Override
+    public boolean hasNext() {
+      try {
+        return iterator.hasNext();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+
+    @Override
+    public T next() {
+      try {
+        if (iterator.hasNext()) {
+          return iterator.next();
+        } else {
+          throw new NoSuchElementException();
+        }
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
+      }
+    }
+
+    public AdaptingIterator(RemoteIterator<T> iterator) {
+      this.iterator = iterator;
+    }
+  }
+
+  /**
+   * Checks whether the filesystem are equal, if they are equal and belongs to ozone then check if they belong to
+   * same bucket and volume.
+   * @param srcFs source filesystem
+   * @param destFs target filesystem
+   * @param src source path
+   * @param dest target path
+   * @return true if filesystems are equal, if Ozone fs, then the path belongs to same bucket-volume.
+   */
+  public static boolean isEqualFileSystemAndSameOzoneBucket(FileSystem srcFs, FileSystem destFs, Path src, Path dest) {
+    if (!equalsFileSystem(srcFs, destFs)) {
+      return false;
+    }
+    if (srcFs.getScheme().equalsIgnoreCase("ofs") || srcFs.getScheme().equalsIgnoreCase("o3fs")) {
+      return isSameOzoneBucket(src, dest);
+    }
+    return true;
+  }
+
+  public static boolean isSameOzoneBucket(Path src, Path dst) {
+    String[] src1 = getVolumeAndBucket(src);
+    String[] dst1 = getVolumeAndBucket(dst);
+
+    return ((src1[0] == null && dst1[0] == null) || (src1[0] != null && src1[0].equalsIgnoreCase(dst1[0]))) &&
+        ((src1[1] == null && dst1[1] == null) || (src1[1] != null && src1[1].equalsIgnoreCase(dst1[1])));
+  }
+
+  private static String[] getVolumeAndBucket(Path path) {
+    URI uri = path.toUri();
+    final String pathStr = uri.getPath();
+    StringTokenizer token = new StringTokenizer(pathStr, "/");
+    int numToken = token.countTokens();
+
+    if (numToken >= 2) {
+      return new String[] { token.nextToken(), token.nextToken() };
+    } else if (numToken == 1) {
+      return new String[] { token.nextToken(), null };
+    } else {
+      return new String[] { null, null };
     }
   }
 }

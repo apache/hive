@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Detects the condition where there is a error with one of the input files in
+ * Detects the condition where there is an error with one of the input files in
  * the query.
  *
  * Conditions to check:

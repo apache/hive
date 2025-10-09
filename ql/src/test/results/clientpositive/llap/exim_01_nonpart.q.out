@@ -30,10 +30,12 @@ POSTHOOK: Input: default@exim_department_n7
 PREHOOK: query: drop table exim_department_n7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@exim_department_n7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@exim_department_n7
 POSTHOOK: query: drop table exim_department_n7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@exim_department_n7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@exim_department_n7
 PREHOOK: query: create database importer
 PREHOOK: type: CREATEDATABASE
@@ -77,9 +79,9 @@ columns:struct columns { i32 dep_id}
 partitioned:false
 partitionColumns:
 totalNumberFiles:1
-totalFileSize:11
-maxFileSize:11
-minFileSize:11
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 #### A masked pattern was here ####
@@ -100,10 +102,12 @@ POSTHOOK: Input: importer@exim_department_n7
 PREHOOK: query: drop table exim_department_n7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: importer@exim_department_n7
+PREHOOK: Output: database:importer
 PREHOOK: Output: importer@exim_department_n7
 POSTHOOK: query: drop table exim_department_n7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: importer@exim_department_n7
+POSTHOOK: Output: database:importer
 POSTHOOK: Output: importer@exim_department_n7
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE

@@ -1,15 +1,229 @@
 PREHOOK: query: DROP TABLE IF EXISTS llap_orders PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS llap_orders PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS llap_items PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS llap_items PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS mig_source PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS mig_source PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS target_ice PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS target_ice PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS calls PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS calls PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS display PURGE
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS display PURGE
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE calls (
+  s_key bigint,
+  year int
+) PARTITIONED BY SPEC (year)
+STORED BY Iceberg STORED AS ORC
+TBLPROPERTIES ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@calls
+POSTHOOK: query: CREATE EXTERNAL TABLE calls (
+  s_key bigint,
+  year int
+) PARTITIONED BY SPEC (year)
+STORED BY Iceberg STORED AS ORC
+TBLPROPERTIES ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@calls
+PREHOOK: query: INSERT INTO calls (s_key, year) VALUES (1090969, 2022)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@calls
+POSTHOOK: query: INSERT INTO calls (s_key, year) VALUES (1090969, 2022)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@calls
+PREHOOK: query: CREATE EXTERNAL TABLE display (
+  skey bigint,
+  hierarchy_number string,
+  hierarchy_name string,
+  language_id int,
+  hierarchy_display string,
+  orderby string
+)
+STORED BY Iceberg STORED AS ORC
+TBLPROPERTIES ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@display
+POSTHOOK: query: CREATE EXTERNAL TABLE display (
+  skey bigint,
+  hierarchy_number string,
+  hierarchy_name string,
+  language_id int,
+  hierarchy_display string,
+  orderby string
+)
+STORED BY Iceberg STORED AS ORC
+TBLPROPERTIES ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@display
+PREHOOK: query: INSERT INTO display (skey, language_id, hierarchy_display) VALUES
+  (1090969, 3, 'f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1'),
+  (1090969, 3, 'f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1-insertnew1')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@display
+POSTHOOK: query: INSERT INTO display (skey, language_id, hierarchy_display) VALUES
+  (1090969, 3, 'f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1'),
+  (1090969, 3, 'f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1-insertnew1')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@display
+Warning: Shuffle Join MERGEJOIN[65][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: MERGE INTO display USING (
+  SELECT distinct display_skey, display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub1
+
+  UNION ALL
+
+  SELECT distinct display_skey, null as display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub2
+) sub
+ON display.skey = sub.display_skey
+    and display.hierarchy_display = sub.display
+
+WHEN MATCHED THEN
+  UPDATE SET hierarchy_display = concat(sub.display, '-mergeupdated1')
+WHEN NOT MATCHED THEN
+  INSERT (skey, language_id, hierarchy_display) values (sub.display_skey, 3, concat(sub.orig_display, '-mergenew1'))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@calls
+PREHOOK: Input: default@display
+PREHOOK: Output: default@display
+PREHOOK: Output: default@display
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: MERGE INTO display USING (
+  SELECT distinct display_skey, display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub1
+
+  UNION ALL
+
+  SELECT distinct display_skey, null as display, display as orig_display
+  FROM (
+    SELECT D.skey display_skey, D.hierarchy_display display
+    FROM (
+      SELECT s_key FROM calls WHERE s_key =  1090969
+    ) R
+    INNER JOIN display D
+      ON R.s_key = D.skey AND D.language_id = 3
+    GROUP BY D.skey,
+      D.hierarchy_display
+  ) sub2
+) sub
+ON display.skey = sub.display_skey
+    and display.hierarchy_display = sub.display
+
+WHEN MATCHED THEN
+  UPDATE SET hierarchy_display = concat(sub.display, '-mergeupdated1')
+WHEN NOT MATCHED THEN
+  INSERT (skey, language_id, hierarchy_display) values (sub.display_skey, 3, concat(sub.orig_display, '-mergenew1'))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@calls
+POSTHOOK: Input: default@display
+POSTHOOK: Output: default@display
+POSTHOOK: Output: default@display
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(display)display.null, ]
+PREHOOK: query: SELECT * FROM display
+PREHOOK: type: QUERY
+PREHOOK: Input: default@display
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM display
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@display
+#### A masked pattern was here ####
+1090969	NULL	NULL	3	f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1-insertnew1-mergenew1	NULL
+1090969	NULL	NULL	3	f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1-insertnew1-mergeupdated1	NULL
+1090969	NULL	NULL	3	f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1-mergenew1	NULL
+1090969	NULL	NULL	3	f9e59bae9b131de1d8f02d887ee91e20-mergeupdated1-updated1-mergeupdated1	NULL
+PREHOOK: query: CREATE EXTERNAL TABLE target_ice(a int, b string, c int)  STORED BY ICEBERG STORED AS ORC tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@target_ice
+POSTHOOK: query: CREATE EXTERNAL TABLE target_ice(a int, b string, c int)  STORED BY ICEBERG STORED AS ORC tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@target_ice
+PREHOOK: query: INSERT INTO target_ice values (1, 'one', 50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@target_ice
+POSTHOOK: query: INSERT INTO target_ice values (1, 'one', 50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@target_ice
+PREHOOK: query: DELETE FROM target_ice WHERE a = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target_ice
+#### A masked pattern was here ####
+POSTHOOK: query: DELETE FROM target_ice WHERE a = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target_ice
+#### A masked pattern was here ####
+PREHOOK: query: SELECT * FROM target_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@target_ice
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM target_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@target_ice
+#### A masked pattern was here ####
 PREHOOK: query: CREATE EXTERNAL TABLE llap_items (itemid INT, price INT, category STRING, name STRING, description STRING) STORED BY ICEBERG STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -40,11 +254,11 @@ POSTHOOK: query: INSERT INTO llap_items VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_items
-PREHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS ORC
+PREHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, P2 STRING) STORED BY ICEBERG STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@llap_orders
-POSTHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, p2 STRING) STORED BY ICEBERG STORED AS ORC
+POSTHOOK: query: CREATE EXTERNAL TABLE llap_orders (orderid INT, quantity INT, itemid INT, tradets TIMESTAMP) PARTITIONED BY (p1 STRING, P2 STRING) STORED BY ICEBERG STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@llap_orders
@@ -98,6 +312,160 @@ POSTHOOK: query: INSERT INTO llap_orders VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@llap_orders
+PREHOOK: query: explain select sum(quantity)
+    from llap_orders o, llap_items i
+    where
+        o.itemid = i.itemid and i.price != 83000 and
+        (
+            (o.quantity > 0 and o.quantity < 39)
+                or
+            (o.quantity > 39 and o.quantity < 69)
+                or
+            (o.quantity > 70 )
+        )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_items
+PREHOOK: Input: default@llap_orders
+#### A masked pattern was here ####
+POSTHOOK: query: explain select sum(quantity)
+    from llap_orders o, llap_items i
+    where
+        o.itemid = i.itemid and i.price != 83000 and
+        (
+            (o.quantity > 0 and o.quantity < 39)
+                or
+            (o.quantity > 39 and o.quantity < 69)
+                or
+            (o.quantity > 70 )
+        )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_items
+POSTHOOK: Input: default@llap_orders
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Map 3 (BROADCAST_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: o
+                  filterExpr: ((((quantity > 0) and (quantity < 39)) or ((quantity > 39) and (quantity < 69)) or (quantity > 70)) and itemid is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:itemid, smallTablePos:1, keyRatio:0.9523809523809523
+                  Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((((quantity > 0) and (quantity < 39)) or ((quantity > 39) and (quantity < 69)) or (quantity > 70)) and itemid is not null) (type: boolean)
+                    Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: quantity (type: int), itemid (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                      Map Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col1 (type: int)
+                          1 _col0 (type: int)
+                        outputColumnNames: _col0
+                        input vertices:
+                          1 Map 3
+                        Statistics: Num rows: 21 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                        Group By Operator
+                          aggregations: sum(_col0)
+                          minReductionHashAggr: 0.95238096
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                            value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: i
+                  filterExpr: ((price <> 83000) and itemid is not null) (type: boolean)
+                  Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((price <> 83000) and itemid is not null) (type: boolean)
+                    Statistics: Num rows: 7 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: itemid (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 7 Data size: 28 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(quantity)
+from llap_orders o, llap_items i
+where
+    o.itemid = i.itemid and i.price != 83000 and
+    (
+        (o.quantity > 0 and o.quantity < 39)
+            or
+        (o.quantity > 39 and o.quantity < 69)
+            or
+        (o.quantity > 70 )
+    )
+PREHOOK: type: QUERY
+PREHOOK: Input: default@llap_items
+PREHOOK: Input: default@llap_orders
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(quantity)
+from llap_orders o, llap_items i
+where
+    o.itemid = i.itemid and i.price != 83000 and
+    (
+        (o.quantity > 0 and o.quantity < 39)
+            or
+        (o.quantity > 39 and o.quantity < 69)
+            or
+        (o.quantity > 70 )
+    )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@llap_items
+POSTHOOK: Input: default@llap_orders
+#### A masked pattern was here ####
+774
 PREHOOK: query: SELECT i.name, i.description, SUM(o.quantity) FROM llap_items i JOIN llap_orders o ON i.itemid = o.itemid  WHERE p1 = 'EU' and i.price >= 50000 GROUP BY i.name, i.description
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_items
@@ -203,11 +571,11 @@ Cybertruck	4.5	50000
 Model S	NULL	123000
 Model X	2.5	113000
 Model Y	NULL	55000
-PREHOOK: query: ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER p2
+PREHOOK: query: ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER P2
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@llap_orders
 PREHOOK: Output: default@llap_orders
-POSTHOOK: query: ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER p2
+POSTHOOK: query: ALTER TABLE llap_orders CHANGE tradets ordertime timestamp AFTER P2
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
@@ -239,11 +607,11 @@ POSTHOOK: Input: default@llap_orders
 #### A masked pattern was here ####
 EU	2000-01-04 19:55:46.129	153
 US	2007-06-24 19:23:22.829	12
-PREHOOK: query: ALTER TABLE llap_orders CHANGE p2 state string
+PREHOOK: query: ALTER TABLE llap_orders CHANGE P2 state string
 PREHOOK: type: ALTERTABLE_RENAMECOL
 PREHOOK: Input: default@llap_orders
 PREHOOK: Output: default@llap_orders
-POSTHOOK: query: ALTER TABLE llap_orders CHANGE p2 state string
+POSTHOOK: query: ALTER TABLE llap_orders CHANGE P2 state string
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@llap_orders
 POSTHOOK: Output: default@llap_orders
@@ -397,9 +765,9 @@ POSTHOOK: Input: default@llap_orders
 #### A masked pattern was here ####
 München	Cybertruck	50000	4.5	99
 NULL	Model 3	50000	NULL	42
-Venezia	Model S	123000	NULL	89
 NULL	Model S	83000	NULL	185
 NULL	Model Y	55000	NULL	76
+Venezia	Model S	123000	NULL	89
 PREHOOK: query: SELECT i.name, i.description, SUM(o.quantity) FROM llap_items i JOIN llap_orders o ON i.itemid = o.itemid  WHERE region = 'EU' and i.cost >= 50000 GROUP BY i.name, i.description
 PREHOOK: type: QUERY
 PREHOOK: Input: default@llap_items
@@ -435,12 +803,11 @@ POSTHOOK: Output: default@mig_source@region=EU
 POSTHOOK: Output: default@mig_source@region=US
 POSTHOOK: Lineage: mig_source PARTITION(region=EU).id SCRIPT []
 POSTHOOK: Lineage: mig_source PARTITION(region=US).id SCRIPT []
-PREHOOK: query: ALTER TABLE mig_source SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: ALTER TABLE mig_source CONVERT TO ICEBERG
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@mig_source
-PREHOOK: Output: default@mig_source
-POSTHOOK: query: ALTER TABLE mig_source SET TBLPROPERTIES ('storage_handler'='org.apache.iceberg.mr.hive.HiveIcebergStorageHandler')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: ALTER TABLE mig_source CONVERT TO ICEBERG
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@mig_source
 POSTHOOK: Output: default@mig_source
 PREHOOK: query: SELECT region, SUM(id) from mig_source GROUP BY region

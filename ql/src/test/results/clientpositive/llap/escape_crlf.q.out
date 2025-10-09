@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS base_tab_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS base_tab_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE base_tab_n0(a STRING, b STRING)
 ROW FORMAT DELIMITED
     FIELDS TERMINATED BY '|'
@@ -85,8 +87,10 @@ multi-line field	field2-2
 PREHOOK: query: DROP TABLE base_tab_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@base_tab_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@base_tab_n0
 POSTHOOK: query: DROP TABLE base_tab_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@base_tab_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@base_tab_n0

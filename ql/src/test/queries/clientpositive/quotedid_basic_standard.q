@@ -54,4 +54,16 @@ create table lv_table(c1 string) partitioned by(c2 string);
 create view "lv~!@#$%^&*()_q<>" partitioned on (c2) as select c1, c2 from lv_table;
 alter view "lv~!@#$%^&*()_q<>" add partition (c2='a');
 
+-- quoted identifier in check constraint
+create table test (
+    col1 int,
+    " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" int check (" ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" > 10) enable novalidate rely,
+    constraint check_constraint check (col1 + " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`" > 15) enable novalidate rely
+);
+
+describe formatted test;
+
+explain analyze
+select 1 as " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`";
+
 set hive.support.quoted.identifiers=column;

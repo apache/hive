@@ -1,7 +1,9 @@
 PREHOOK: query: drop table srclimit
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table srclimit
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table srclimit as select * from src limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -115,8 +117,10 @@ POSTHOOK: Input: default@srclimit
 PREHOOK: query: drop table srclimit
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srclimit
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srclimit
 POSTHOOK: query: drop table srclimit
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srclimit
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srclimit

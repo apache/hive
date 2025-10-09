@@ -64,7 +64,7 @@ public class GenericUDFCbrt extends GenericUDF {
       return null;
     }
 
-    double cbrt = Math.cbrt(val);
+    double cbrt = StrictMath.cbrt(val);
     output.set(cbrt);
     return output;
   }

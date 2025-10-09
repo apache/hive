@@ -22,14 +22,57 @@ p1                  	string
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 p1                  	string              	                    
-PREHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1
+PREHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1 stored as avro
+#### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_extschema_insert2
-POSTHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1
+POSTHOOK: query: create external table avro_extschema_insert2 like avro_extschema_insert1 stored as avro
+#### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_extschema_insert2
+PREHOOK: query: desc formatted avro_extschema_insert2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@avro_extschema_insert2
+POSTHOOK: query: desc formatted avro_extschema_insert2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@avro_extschema_insert2
+# col_name            	data_type           	comment             
+col1                	string              	                    
+col2                	bigint              	                    
+col3                	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+#### A masked pattern was here ####
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.avro.AvroSerDe	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.avro.AvroContainerInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
 PREHOOK: query: insert overwrite table avro_extschema_insert1 partition (p1='part1') values ('col1_value', 1, 'col3_value')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -69,17 +112,21 @@ col1_value	1	col3_value	part1
 PREHOOK: query: drop table avro_extschema_insert1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_extschema_insert1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_extschema_insert1
 POSTHOOK: query: drop table avro_extschema_insert1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_extschema_insert1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_extschema_insert1
 PREHOOK: query: drop table avro_extschema_insert2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_extschema_insert2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_extschema_insert2
 POSTHOOK: query: drop table avro_extschema_insert2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_extschema_insert2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_extschema_insert2
 #### A masked pattern was here ####

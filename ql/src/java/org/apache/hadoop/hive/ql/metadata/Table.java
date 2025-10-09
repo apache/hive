@@ -31,7 +31,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -48,7 +50,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -59,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -84,6 +86,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.serde.serdeConstants.VARIANT_TYPE_NAME;
 
 /**
  * A Hive Table: is a fundamental unit of data in Hive that shares a common schema/DDL.
@@ -134,12 +139,15 @@ public class Table implements Serializable {
    * The version of the table. For Iceberg tables this is the snapshotId.
    */
   private String asOfVersion = null;
+  private String versionIntervalFrom = null;
 
   /**
    * The version of the table at the given timestamp. The format will be parsed with
    * TimestampTZUtil.parse.
    */
   private String asOfTimestamp = null;
+
+  private String snapshotRef;
 
   /**
    * Used only for serialization.
@@ -180,8 +188,10 @@ public class Table implements Serializable {
 
     newTab.setAsOfTimestamp(this.asOfTimestamp);
     newTab.setAsOfVersion(this.asOfVersion);
+    newTab.setVersionIntervalFrom(this.versionIntervalFrom);
 
     newTab.setMetaTable(this.getMetaTable());
+    newTab.setSnapshotRef(this.getSnapshotRef());
     return newTab;
   }
 
@@ -246,7 +256,7 @@ public class Table implements Serializable {
       // set create time
       t.setCreateTime((int) (System.currentTimeMillis() / 1000));
     }
-    // Explictly set the bucketing version
+    // Explicitly set the bucketing version
     t.getParameters().put(hive_metastoreConstants.TABLE_BUCKETING_VERSION,
         "2");
     return t;
@@ -254,15 +264,13 @@ public class Table implements Serializable {
 
   public void checkValidity(Configuration conf) throws HiveException {
     // check for validity
-    String name = tTable.getTableName();
-    if (null == name || name.length() == 0
-        || !MetaStoreUtils.validateName(name, conf)) {
-      throw new HiveException("[" + name + "]: is not a valid table name");
+    validateName(conf);
+
+    if (getCols().isEmpty()) {
+      throw new HiveException("at least one column must be specified for the table");
     }
-    if (0 == getCols().size()) {
-      throw new HiveException(
-          "at least one column must be specified for the table");
-    }
+    validateColumns(getCols(), getPartCols(), DDLUtils.isIcebergTable(this));
+
     if (!isView()) {
       if (null == getDeserializer(false)) {
         throw new HiveException("must specify a non-null serDe");
@@ -282,8 +290,13 @@ public class Table implements Serializable {
       assert(getViewOriginalText() == null);
       assert(getViewExpandedText() == null);
     }
+  }
 
-    validateColumns(getCols(), getPartCols());
+  public void validateName(Configuration conf) throws HiveException {
+    String name = tTable.getTableName();
+    if (StringUtils.isBlank(name) || !MetaStoreUtils.validateName(name, conf)) {
+      throw new HiveException("[" + name + "]: is not a valid table name");
+    }
   }
 
   public StorageDescriptor getSd() {
@@ -317,7 +330,7 @@ public class Table implements Serializable {
   }
 
   public TableName getFullTableName() {
-    return new TableName(getCatName(), getDbName(), getTableName());
+    return new TableName(getCatName(), getDbName(), getTableName(), getSnapshotRef());
   }
 
   final public Path getDataLocation() {
@@ -332,10 +345,6 @@ public class Table implements Serializable {
       deserializer = getDeserializerFromMetaStore(false);
     }
     return deserializer;
-  }
-
-  final public Class<? extends Deserializer> getDeserializerClass() throws Exception {
-    return HiveMetaStoreUtils.getDeserializerClass(SessionState.getSessionConf(), tTable);
   }
 
   final public Deserializer getDeserializer(boolean skipConfError) {
@@ -366,6 +375,18 @@ public class Table implements Serializable {
       throw new RuntimeException(e);
     }
     return storageHandler;
+  }
+
+  public HiveStorageHandler getStorageHandlerWithoutCaching() {
+    if (storageHandler != null || !isNonNative()) {
+      return storageHandler;
+    }
+    try {
+      return HiveUtils.getStorageHandler(SessionState.getSessionConf(),
+          getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void setStorageHandler(HiveStorageHandler sh){
@@ -438,13 +459,13 @@ public class Table implements Serializable {
     public ValidationFailureSemanticException(String s) {
       super(s);
     }
-  };
+  }
 
   final public void validatePartColumnNames(
       Map<String, String> spec, boolean shouldBeFull) throws SemanticException {
     List<FieldSchema> partCols = tTable.getPartitionKeys();
     final String tableName = Warehouse.getQualifiedName(tTable);
-    if (partCols == null || (partCols.size() == 0)) {
+    if (CollectionUtils.isEmpty(partCols)) {
       if (spec != null) {
         throw new ValidationFailureSemanticException(tableName +
             " table is not partitioned but partition spec exists: " + spec);
@@ -481,7 +502,7 @@ public class Table implements Serializable {
   }
 
   // Please note : Be very careful in using this function. If not used carefully,
-  // you may end up overwriting all the existing properties. If the usecase is to
+  // you may end up overwriting all the existing properties. If the use case is to
   // add or update certain properties use setProperty() instead.
   public void setParameters(Map<String, String> params) {
     tTable.setParameters(params);
@@ -515,9 +536,7 @@ public class Table implements Serializable {
           .getObjectInspector();
       List<? extends StructField> fld_lst = structObjectInspector
           .getAllStructFieldRefs();
-      for (StructField field : fld_lst) {
-        fields.add(field);
-      }
+      fields.addAll(fld_lst);
     } catch (SerDeException e) {
       throw new RuntimeException(e);
     }
@@ -583,34 +602,36 @@ public class Table implements Serializable {
     if (!Objects.equals(asOfVersion, other.asOfVersion)) {
       return false;
     }
+    if (!Objects.equals(versionIntervalFrom, other.versionIntervalFrom)) {
+      return false;
+    }
     return true;
   }
-
 
   public List<FieldSchema> getPartCols() {
     List<FieldSchema> partKeys = tTable.getPartitionKeys();
     if (partKeys == null) {
-      partKeys = new ArrayList<FieldSchema>();
+      partKeys = new ArrayList<>();
       tTable.setPartitionKeys(partKeys);
     }
     return partKeys;
   }
 
   public FieldSchema getPartColByName(String colName) {
-    for (FieldSchema key : getPartCols()) {
-      if (key.getName().toLowerCase().equals(colName)) {
-        return key;
-      }
-    }
-    return null;
+    return getPartCols().stream()
+      .filter(key -> key.getName().toLowerCase().equals(colName))
+      .findFirst().orElse(null);
   }
 
   public List<String> getPartColNames() {
-    List<String> partColNames = new ArrayList<String>();
-    for (FieldSchema key : getPartCols()) {
-      partColNames.add(key.getName());
-    }
-    return partColNames;
+    List<FieldSchema> partCols = hasNonNativePartitionSupport() ?
+        getStorageHandler().getPartitionKeys(this) : getPartCols();
+    return partCols.stream().map(FieldSchema::getName)
+      .collect(Collectors.toList());
+  }
+
+  public boolean hasNonNativePartitionSupport() {
+    return getStorageHandler() != null && getStorageHandler().supportsPartitioning();
   }
 
   public boolean isPartitionKey(String colName) {
@@ -620,7 +641,7 @@ public class Table implements Serializable {
   // TODO merge this with getBucketCols function
   public String getBucketingDimensionId() {
     List<String> bcols = tTable.getSd().getBucketCols();
-    if (bcols == null || bcols.size() == 0) {
+    if (CollectionUtils.isEmpty(bcols)) {
       return null;
     }
 
@@ -660,8 +681,7 @@ public class Table implements Serializable {
     tTable.getSd().setSortCols(sortOrder);
   }
 
-  public void setSkewedValueLocationMap(List<String> valList, String dirName)
-      throws HiveException {
+  public void setSkewedValueLocationMap(List<String> valList, String dirName) {
     Map<List<String>, String> mappings = tTable.getSd().getSkewedInfo()
         .getSkewedColValueLocationMaps();
     if (null == mappings) {
@@ -678,7 +698,7 @@ public class Table implements Serializable {
         .getSkewedColValueLocationMaps() : new HashMap<List<String>, String>();
   }
 
-  public void setSkewedColValues(List<List<String>> skewedValues) throws HiveException {
+  public void setSkewedColValues(List<List<String>> skewedValues) {
     tTable.getSd().getSkewedInfo().setSkewedColValues(skewedValues);
   }
 
@@ -687,7 +707,7 @@ public class Table implements Serializable {
         .getSkewedColValues() : new ArrayList<List<String>>();
   }
 
-  public void setSkewedColNames(List<String> skewedColNames) throws HiveException {
+  public void setSkewedColNames(List<String> skewedColNames) {
     tTable.getSd().getSkewedInfo().setSkewedColNames(skewedColNames);
   }
 
@@ -700,7 +720,7 @@ public class Table implements Serializable {
     return tTable.getSd().getSkewedInfo();
   }
 
-  public void setSkewedInfo(SkewedInfo skewedInfo) throws HiveException {
+  public void setSkewedInfo(SkewedInfo skewedInfo) {
     tTable.getSd().setSkewedInfo(skewedInfo);
   }
 
@@ -804,12 +824,10 @@ public class Table implements Serializable {
       throw new HiveException("Class not found: " + name, e);
     }
   }
-
+  
   public boolean isPartitioned() {
-    if (getPartCols() == null) {
-      return false;
-    }
-    return (getPartCols().size() != 0);
+    return hasNonNativePartitionSupport() ? getStorageHandler().isPartitioned(this) : 
+        CollectionUtils.isNotEmpty(getPartCols());
   }
 
   public void setFields(List<FieldSchema> fields) {
@@ -1133,7 +1151,7 @@ public class Table implements Serializable {
     return deserializer.shouldStoreFieldsInMetastore(tableParams);
   }
 
-  public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols)
+  public static void validateColumns(List<FieldSchema> columns, List<FieldSchema> partCols, boolean icebergTable)
       throws HiveException {
     Set<String> colNames = new HashSet<>();
     for (FieldSchema col: columns) {
@@ -1141,6 +1159,10 @@ public class Table implements Serializable {
       if (colNames.contains(colName)) {
         throw new HiveException("Duplicate column name " + colName
             + " in the table definition.");
+      }
+      if (!icebergTable && VARIANT_TYPE_NAME.equalsIgnoreCase(col.getType())) {
+        throw new HiveException(
+            "Column name " + colName + " cannot be of type 'variant' as it is not supported in non-Iceberg tables.");
       }
       colNames.add(colName);
     }
@@ -1170,10 +1192,6 @@ public class Table implements Serializable {
 
   public void setTableSpec(TableSpec tableSpec) {
     this.tableSpec = tableSpec;
-  }
-
-  public boolean hasDeserializer() {
-    return deserializer != null;
   }
 
   public String getCatalogName() {
@@ -1315,6 +1333,14 @@ public class Table implements Serializable {
     this.asOfVersion = asOfVersion;
   }
 
+  public String getVersionIntervalFrom() {
+    return versionIntervalFrom;
+  }
+
+  public void setVersionIntervalFrom(String versionIntervalFrom) {
+    this.versionIntervalFrom = versionIntervalFrom;
+  }
+
   public String getAsOfTimestamp() {
     return asOfTimestamp;
   }
@@ -1331,6 +1357,14 @@ public class Table implements Serializable {
     this.metaTable = metaTable;
   }
 
+  public String getSnapshotRef() {
+    return snapshotRef;
+  }
+
+  public void setSnapshotRef(String snapshotRef) {
+    this.snapshotRef = snapshotRef;
+  }
+
   public SourceTable createSourceTable() {
     SourceTable sourceTable = new SourceTable();
     sourceTable.setTable(this.tTable);
@@ -1339,4 +1373,20 @@ public class Table implements Serializable {
     sourceTable.setDeletedCount(0L);
     return sourceTable;
   }
-};
+
+  public List<VirtualColumn> getVirtualColumns() {
+    List<VirtualColumn> virtualColumns = new ArrayList<>();
+    if (!isNonNative()) {
+      virtualColumns.addAll(VirtualColumn.getRegistry());
+    }
+    if (isNonNative() && AcidUtils.isNonNativeAcidTable(this)) {
+      virtualColumns.addAll(getStorageHandler().acidVirtualColumns());
+    }
+    if (isNonNative() && getStorageHandler().areSnapshotsSupported() &&
+        isBlank(getMetaTable())) {
+      virtualColumns.add(VirtualColumn.SNAPSHOT_ID);
+    }
+    
+    return virtualColumns;
+  }
+}

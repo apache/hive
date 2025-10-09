@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +33,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -125,6 +132,25 @@ public class TestSerializationUtilities {
         false);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=1", "rawDataSize", false);
     assertPartitionDescPropertyPresence(mapWork, "/warehouse/test_table/p=1", "serialization.ddl", false);
+  }
+
+  @Test
+  public void testUnsupportedDeserialization() throws Exception {
+    ArrayList<Long> invalidExpr = new ArrayList<>();
+    invalidExpr.add(1L);
+    byte[] buf = SerializationUtilities.serializeObjectWithTypeInformation(invalidExpr);
+    try {
+      SerializationUtilities.deserializeObjectWithTypeInformation(buf, true);
+      Assert.fail("Should throw exception as the input is not a valid filter");
+    } catch (UnsupportedOperationException e) {
+      // ignore
+    }
+
+    ExprNodeDesc validExpr = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPNull(),
+        Arrays.asList(new ExprNodeColumnDesc(new ColumnInfo("_c0", TypeInfoFactory.stringTypeInfo, "a", false))));
+    buf = SerializationUtilities.serializeObjectWithTypeInformation(validExpr);
+    ExprNodeDesc desc = SerializationUtilities.deserializeObjectWithTypeInformation(buf, true);
+    Assert.assertTrue(ExprNodeDescUtils.isSame(validExpr, desc));
   }
 
   private MapWork doSerDeser(Configuration configuration) throws Exception, IOException {

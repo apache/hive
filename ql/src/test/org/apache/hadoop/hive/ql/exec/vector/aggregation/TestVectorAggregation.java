@@ -18,28 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.aggregation;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.DataTypePhysicalVariation;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomBatchSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource;
 import org.apache.hadoop.hive.ql.exec.vector.VectorRandomRowSource.GenerationSpec;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount.GenericUDAFCountEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVariance;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
@@ -55,6 +47,8 @@ import org.junit.Assert;
 
 import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.apache.hadoop.hive.ql.exec.FunctionRegistry.BLOOM_FILTER_FUNCTION;
 
 public class TestVectorAggregation extends AggregationBase {
 
@@ -183,14 +177,14 @@ public class TestVectorAggregation extends AggregationBase {
   public void testBloomFilter() throws Exception {
     Random random = new Random(7743);
 
-    doIntegerTests("bloom_filter", random);
-    doFloatingTests("bloom_filter", random);
-    doDecimalTests("bloom_filter", random, /* tryDecimal64 */ false);
+    doIntegerTests(BLOOM_FILTER_FUNCTION, random);
+    doFloatingTests(BLOOM_FILTER_FUNCTION, random);
+    doDecimalTests(BLOOM_FILTER_FUNCTION, random, /* tryDecimal64 */ false);
 
     doTests(
-        random, "bloom_filter", TypeInfoFactory.timestampTypeInfo);
+        random, BLOOM_FILTER_FUNCTION, TypeInfoFactory.timestampTypeInfo);
 
-    doStringFamilyTests("bloom_filter", random);
+    doStringFamilyTests(BLOOM_FILTER_FUNCTION, random);
   }
 
   private final static Set<String> varianceNames = new HashSet<String>();
@@ -312,19 +306,35 @@ public class TestVectorAggregation extends AggregationBase {
     return result;
   }
 
+  /**
+   * Generate a random number according to a distribution with the following properties:
+   *
+   * <ul>
+   *   <li>the probability decreases linearly from 1 (most probable) to <code>maxSize</code> (least probable)</li>
+   *   <li>1 is <emph>maxSize</emph>-times more likely than <code>maxSize</code></li>
+   * </ul>
+   *
+   * @return a number from 1 to <code>maxSize</code> (both inclusive)
+   */
   public static int getLinearRandomNumber(Random random, int maxSize) {
-    //Get a linearly multiplied random number
-    int randomMultiplier = maxSize * (maxSize + 1) / 2;
-    int randomInt = random.nextInt(randomMultiplier);
+    // Explanatory example: maxSize is 4, then the numbers 1 to 4 are distributed according to
+    // 1:****, 2:***, 3:**, 4:*
+    // The number of stars is a triangular number, so 10 in the example
+    int triangularNumber = maxSize * (maxSize + 1) / 2;
+    // Pick a random star
+    int randomInt = random.nextInt(triangularNumber);
 
-    //Linearly iterate through the possible values to find the correct one
-    int linearRandomNumber = 0;
-    for(int i=maxSize; randomInt >= 0; i--){
-        randomInt -= i;
-        linearRandomNumber++;
-    }
-
-    return linearRandomNumber;
+    // Invert the problem: 1:*, 2:**, 3:***, 4:****
+    // So in the example, star index 0 becomes index 9 and vice versa
+    randomInt = triangularNumber - randomInt - 1;
+    // Use the formula for triangular numbers to convert from the star index to the number
+    // n*(n+1)/2 = s
+    // n*n + n - 2s = 0
+    // then use the larger solution of the quadratic formula
+    // n = ( -1 + sqrt(1-4*1*(-2s)) )/2
+    int n = (int)(-1 + Math.sqrt(1+8*randomInt))/2;
+    // Invert the result, so that we get the desired distribution
+    return maxSize - n;
   }
 
   private static final int TEST_ROW_COUNT = 100000;
@@ -507,7 +517,7 @@ public class TestVectorAggregation extends AggregationBase {
 
     VectorRandomRowSource partial1RowSource = new VectorRandomRowSource();
 
-    boolean allowNull = !aggregationName.equals("bloom_filter");
+    boolean allowNull = !aggregationName.equals(BLOOM_FILTER_FUNCTION);
     partial1RowSource.initGenerationSpecSchema(
         random, dataAggrGenerationSpecList, /* maxComplexDepth */ 0,
         allowNull,  /* isUnicodeOk */ true,
@@ -585,7 +595,7 @@ public class TestVectorAggregation extends AggregationBase {
       case "avg":
         hasDifferentCompleteExpr = true;
         break;
-      case "bloom_filter":
+      case BLOOM_FILTER_FUNCTION:
       case "count":
       case "max":
       case "min":
@@ -678,7 +688,7 @@ public class TestVectorAggregation extends AggregationBase {
       case "avg":
         hasDifferentPartial2Expr = true;
         break;
-      case "bloom_filter":
+      case BLOOM_FILTER_FUNCTION:
       case "count":
       case "max":
       case "min":
@@ -719,7 +729,7 @@ public class TestVectorAggregation extends AggregationBase {
       case "avg":
         hasDifferentFinalExpr = true;
         break;
-      case "bloom_filter":
+      case BLOOM_FILTER_FUNCTION:
       case "count":
         hasDifferentFinalExpr = true;
         break;

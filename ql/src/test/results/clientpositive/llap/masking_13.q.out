@@ -111,11 +111,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: masking_test
-          filterExpr: ((key < 10) and (key > 6) and ((key % 2) = 0)) (type: boolean)
+          filterExpr: ((key > 6) and (key < 10) and ((key % 2) = 0)) (type: boolean)
           properties:
             insideView TRUE
           Filter Operator
-            predicate: ((key < 10) and (key > 6) and ((key % 2) = 0)) (type: boolean)
+            predicate: ((key > 6) and (key < 10) and ((key % 2) = 0)) (type: boolean)
             Select Operator
               expressions: UDFToInteger((UDFToDouble(key) / 2.0D)) (type: int)
               outputColumnNames: _col0

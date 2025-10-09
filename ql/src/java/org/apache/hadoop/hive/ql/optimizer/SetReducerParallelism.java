@@ -61,9 +61,9 @@ public class SetReducerParallelism implements SemanticNodeProcessor {
     ReduceSinkOperator sink = (ReduceSinkOperator) nd;
     ReduceSinkDesc desc = sink.getConf();
 
-    long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
-    int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
-    int constantReducers = context.conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
+    long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER);
+    int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAX_REDUCERS);
+    int constantReducers = context.conf.getIntVar(HiveConf.ConfVars.HADOOP_NUM_REDUCERS);
 
     if (context.visitedReduceSinks.contains(sink)) {
       // skip walking the children

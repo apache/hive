@@ -62,4 +62,30 @@ public class HiveJdbcSamlRedirectStrategy extends DefaultRedirectStrategy {
     }
     return super.isRedirected(request, response, context);
   }
+
+  @Override
+  public URI getLocationURI(HttpRequest request, HttpResponse response, HttpContext context) throws ProtocolException {
+    // add our own check to super-call
+    return checkSsoUri(super.getLocationURI(request, response, context));
+  }
+
+  /**
+   * Checks that the URI used to redirect SSO is valid.
+   * @param uri the uri to validate
+   * @return the uri
+   * @throws ProtocolException if uri is null or not http(s) or not absolute
+   */
+  static URI checkSsoUri(URI uri) throws ProtocolException {
+    if (uri == null) {
+      throw new ProtocolException("SSO Url is null");
+    }
+    final String scheme = uri.getScheme();
+    // require https or https and absolute
+    final boolean valid = ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))
+                          && uri.isAbsolute();
+    if (!valid) {
+      throw new ProtocolException("SSO Url "+uri.toString()+ "is invalid");
+    }
+    return uri;
+  }
 }

@@ -1,11 +1,15 @@
 PREHOOK: query: drop table IF EXISTS encryptedTable PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table IF EXISTS encryptedTable PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table IF EXISTS unencryptedTable PURGE
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table IF EXISTS unencryptedTable PURGE
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table encryptedTable(key string,
     value string) partitioned by (ds string) clustered by (key) into 2 buckets stored as orc
 #### A masked pattern was here ####
@@ -137,17 +141,21 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table encryptedTable PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encryptedtable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@encryptedtable
 POSTHOOK: query: drop table encryptedTable PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encryptedtable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encryptedtable
 Encryption key deleted: 'key_1'
 PREHOOK: query: drop table unencryptedTable PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@unencryptedtable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@unencryptedtable
 POSTHOOK: query: drop table unencryptedTable PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@unencryptedtable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@unencryptedtable

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists srcpart_acid
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists srcpart_acid
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcpart_acid (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -142,17 +144,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_acid
-                  filterExpr: ((UDFToInteger(key)) IN (413, 43) and (hr = '11')) (type: boolean)
+                  filterExpr: ((UDFToInteger(key)) IN (43, 413) and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)
+                    predicate: (UDFToInteger(key)) IN (43, 413) (type: boolean)
                     Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
-                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: string), concat(value, 'updated') (type: string), ds (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), ds (type: string), key (type: string), concat(value, 'updated') (type: string)
+                      outputColumnNames: _col0, _col1, _col3, _col4
                       Statistics: Num rows: 500 Data size: 265500 Basic stats: COMPLETE Column stats: PARTIAL
                       Select Operator
-                        expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col3 (type: string)
+                        expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: string)
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 500 Data size: 130000 Basic stats: COMPLETE Column stats: PARTIAL
                         Reduce Output Operator
@@ -160,10 +162,10 @@ STAGE PLANS:
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                          Statistics: Num rows: 500 Data size: 130000 Basic stats: COMPLETE Column stats: PARTIAL
-                          value expressions: _col1 (type: string)
+                          Statistics: Num rows: 500 Data size: 173000 Basic stats: COMPLETE Column stats: PARTIAL
+                          value expressions: _col1 (type: string), '11' (type: string)
                       Select Operator
-                        expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), '11' (type: string)
+                        expressions: _col3 (type: string), _col4 (type: string), _col1 (type: string), '11' (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
                         File Output Operator
@@ -181,7 +183,7 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), '11' (type: string)
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: string), VALUE._col1 (type: string)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 500 Data size: 173000 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
@@ -334,7 +336,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	2003                
 	rawDataSize         	0                   
-	totalSize           	18043               
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -444,7 +446,7 @@ Table Parameters:
 	numPartitions       	4                   
 	numRows             	2003                
 	rawDataSize         	0                   
-	totalSize           	18043               
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -655,7 +657,7 @@ POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_acid@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acid)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acid)t.FieldSchema(name:ds, type:string, comment:null), (srcpart_acid)t.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acid)srcpart_acid.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acid)srcpart_acid.FieldSchema(name:ds, type:string, comment:null), (srcpart_acid)srcpart_acid.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).key SIMPLE []
 POSTHOOK: Lineage: srcpart_acid PARTITION(ds=2008-04-08,hr=11).value SIMPLE []
 PREHOOK: query: select count(*) from srcpart_acid where ds='2008-04-08' and hr=='12'
@@ -696,15 +698,19 @@ POSTHOOK: Input: default@srcpart_acid
 PREHOOK: query: drop table if exists srcpart_acid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_acid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_acid
 POSTHOOK: query: drop table if exists srcpart_acid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_acid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_acid
 PREHOOK: query: drop table if exists srcpart_acidb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists srcpart_acidb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcpart_acidb (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) CLUSTERED BY(key) INTO 2 BUCKETS stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -846,17 +852,17 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_acidb
-                  filterExpr: ((UDFToInteger(key)) IN (413, 43) and (hr = '11')) (type: boolean)
+                  filterExpr: ((UDFToInteger(key)) IN (43, 413) and (hr = '11')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: (UDFToInteger(key)) IN (413, 43) (type: boolean)
+                    predicate: (UDFToInteger(key)) IN (43, 413) (type: boolean)
                     Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
-                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: string), concat(value, 'updated') (type: string), ds (type: string)
-                      outputColumnNames: _col0, _col1, _col2, _col3
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), ds (type: string), key (type: string), concat(value, 'updated') (type: string)
+                      outputColumnNames: _col0, _col1, _col3, _col4
                       Statistics: Num rows: 500 Data size: 265500 Basic stats: COMPLETE Column stats: PARTIAL
                       Select Operator
-                        expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col3 (type: string)
+                        expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: string)
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 500 Data size: 130000 Basic stats: COMPLETE Column stats: PARTIAL
                         Reduce Output Operator
@@ -867,7 +873,7 @@ STAGE PLANS:
                           Statistics: Num rows: 500 Data size: 173000 Basic stats: COMPLETE Column stats: PARTIAL
                           value expressions: _col1 (type: string), '11' (type: string)
                       Select Operator
-                        expressions: _col1 (type: string), _col2 (type: string), _col3 (type: string), '11' (type: string)
+                        expressions: _col3 (type: string), _col4 (type: string), _col1 (type: string), '11' (type: string)
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 500 Data size: 270500 Basic stats: COMPLETE Column stats: PARTIAL
                         Reduce Output Operator
@@ -1253,7 +1259,7 @@ POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_acidb@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidb)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acidb)t.FieldSchema(name:ds, type:string, comment:null), (srcpart_acidb)t.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidb)srcpart_acidb.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acidb)srcpart_acidb.FieldSchema(name:ds, type:string, comment:null), (srcpart_acidb)srcpart_acidb.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).key SIMPLE []
 POSTHOOK: Lineage: srcpart_acidb PARTITION(ds=2008-04-08,hr=11).value SIMPLE []
 PREHOOK: query: select count(*) from srcpart_acidb where ds='2008-04-08' and hr=='12'
@@ -1294,15 +1300,19 @@ POSTHOOK: Input: default@srcpart_acidb
 PREHOOK: query: drop table if exists srcpart_acidb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_acidb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_acidb
 POSTHOOK: query: drop table if exists srcpart_acidb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_acidb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_acidb
 PREHOOK: query: drop table if exists srcpart_acidv
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists srcpart_acidv
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcpart_acidv (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1451,11 +1461,11 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 6:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 6:int)
+                        predicateExpression: FilterLongColumnInList(col 6:int, values [43, 413])(children: CastStringToLong(col 0:string) -> 6:int)
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 7, 2]
+                          projectedOutputColumnNums: [4, 2, 0, 7]
                           selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
                         Select Vectorization:
                             className: VectorSelectOperator
@@ -1467,7 +1477,8 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                               partitionColumns: 6:int
-                              valueColumns: 2:string
+                              valueColumns: 2:string, 9:string
+                              valueExpressions: ConstantVectorExpression(val 11) -> 9:string
                         Select Vectorization:
                             className: VectorSelectOperator
                             native: true
@@ -1494,7 +1505,7 @@ STAGE PLANS:
                     neededVirtualColumns: [ROWID]
                     partitionColumnCount: 2
                     partitionColumns: ds:string, hr:string
-                    scratchColumnTypeNames: [bigint, string, string]
+                    scratchColumnTypeNames: [bigint, string, string, string]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1506,16 +1517,15 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
                 rowBatchContext:
-                    dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:string
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:string, VALUE._col1:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [string]
+                    scratchColumnTypeNames: []
             Reduce Operator Tree:
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2]
-                    selectExpressions: ConstantVectorExpression(val 11) -> 2:string
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
@@ -1886,10 +1896,10 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                          projectedOutputColumnNums: [4, 2, 3, 0, 1]
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumns: 0:string, 1:string, 2:string, 3:string
+                            keyColumns: 2:string, 3:string, 0:string, 1:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
@@ -1924,7 +1934,7 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
+                          keyExpressions: col 2:string, col 3:string, col 0:string, col 1:string
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
@@ -2032,43 +2042,39 @@ STAGE PLANS:
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumnNums: []
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkMultiKeyOperator
+                      keyColumns: 0:string, 1:string, 2:string, 3:string
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [2, 3, 0, 1]
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkMultiKeyOperator
-                        keyColumns: 0:string, 1:string, 2:string, 3:string
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [2]
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 2:string
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
-                        App Master Event Vectorization:
-                            className: VectorAppMasterEventOperator
-                            native: true
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [3]
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 3:string
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
-                        App Master Event Vectorization:
-                            className: VectorAppMasterEventOperator
-                            native: true
+                      projectedOutputColumnNums: [0]
+                    Group By Vectorization:
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        keyExpressions: col 0:string
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: []
+                      App Master Event Vectorization:
+                          className: VectorAppMasterEventOperator
+                          native: true
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1]
+                    Group By Vectorization:
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        keyExpressions: col 1:string
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: []
+                      App Master Event Vectorization:
+                          className: VectorAppMasterEventOperator
+                          native: true
 
   Stage: Stage-6
 
@@ -2127,7 +2133,7 @@ POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_acidv@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidv)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acidv)t.FieldSchema(name:ds, type:string, comment:null), (srcpart_acidv)t.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidv)srcpart_acidv.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acidv)srcpart_acidv.FieldSchema(name:ds, type:string, comment:null), (srcpart_acidv)srcpart_acidv.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).key SIMPLE []
 POSTHOOK: Lineage: srcpart_acidv PARTITION(ds=2008-04-08,hr=11).value SIMPLE []
 PREHOOK: query: select count(*) from srcpart_acidv where ds='2008-04-08' and hr=='12'
@@ -2168,15 +2174,19 @@ POSTHOOK: Input: default@srcpart_acidv
 PREHOOK: query: drop table if exists srcpart_acidv
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_acidv
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_acidv
 POSTHOOK: query: drop table if exists srcpart_acidv
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_acidv
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_acidv
 PREHOOK: query: drop table if exists srcpart_acidvb
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists srcpart_acidvb
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE srcpart_acidvb (key STRING, value STRING) PARTITIONED BY (ds STRING, hr STRING) CLUSTERED BY(key) INTO 2 BUCKETS stored as ORC TBLPROPERTIES ('transactional'='true', 'transactional_properties'='default')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -2326,11 +2336,11 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterLongColumnInList(col 6:int, values [413, 43])(children: CastStringToLong(col 0:string) -> 6:int)
+                        predicateExpression: FilterLongColumnInList(col 6:int, values [43, 413])(children: CastStringToLong(col 0:string) -> 6:int)
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [4, 0, 7, 2]
+                          projectedOutputColumnNums: [4, 2, 0, 7]
                           selectExpressions: StringGroupColConcatStringScalar(col 1:string, val updated) -> 7:string
                         Select Vectorization:
                             className: VectorSelectOperator
@@ -2790,10 +2800,10 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                          projectedOutputColumnNums: [4, 2, 3, 0, 1]
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
-                            keyColumns: 0:string, 1:string, 2:string, 3:string
+                            keyColumns: 2:string, 3:string, 0:string, 1:string
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumns: 4:struct<writeid:bigint,bucketid:int,rowid:bigint>
@@ -2828,7 +2838,7 @@ STAGE PLANS:
                       Group By Vectorization:
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 0:string, col 1:string, col 2:string, col 3:string
+                          keyExpressions: col 2:string, col 3:string, col 0:string, col 1:string
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
@@ -2983,43 +2993,39 @@ STAGE PLANS:
                     native: false
                     vectorProcessingMode: MERGE_PARTIAL
                     projectedOutputColumnNums: []
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkMultiKeyOperator
+                      keyColumns: 0:string, 1:string, 2:string, 3:string
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [2, 3, 0, 1]
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkMultiKeyOperator
-                        keyColumns: 0:string, 1:string, 2:string, 3:string
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [2]
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 2:string
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
-                        App Master Event Vectorization:
-                            className: VectorAppMasterEventOperator
-                            native: true
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [3]
-                      Group By Vectorization:
-                          className: VectorGroupByOperator
-                          groupByMode: HASH
-                          keyExpressions: col 3:string
-                          native: false
-                          vectorProcessingMode: HASH
-                          projectedOutputColumnNums: []
-                        App Master Event Vectorization:
-                            className: VectorAppMasterEventOperator
-                            native: true
+                      projectedOutputColumnNums: [0]
+                    Group By Vectorization:
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        keyExpressions: col 0:string
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: []
+                      App Master Event Vectorization:
+                          className: VectorAppMasterEventOperator
+                          native: true
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1]
+                    Group By Vectorization:
+                        className: VectorGroupByOperator
+                        groupByMode: HASH
+                        keyExpressions: col 1:string
+                        native: false
+                        vectorProcessingMode: HASH
+                        projectedOutputColumnNums: []
+                      App Master Event Vectorization:
+                          className: VectorAppMasterEventOperator
+                          native: true
 
   Stage: Stage-6
 
@@ -3078,7 +3084,7 @@ POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=11
 POSTHOOK: Output: default@srcpart_acidvb@ds=2008-04-09/hr=12
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidvb)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acidvb)t.FieldSchema(name:ds, type:string, comment:null), (srcpart_acidvb)t.FieldSchema(name:hr, type:string, comment:null), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(srcpart_acidvb)srcpart_acidvb.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (srcpart_acidvb)srcpart_acidvb.FieldSchema(name:ds, type:string, comment:null), (srcpart_acidvb)srcpart_acidvb.FieldSchema(name:hr, type:string, comment:null), ]
 POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).key SIMPLE []
 POSTHOOK: Lineage: srcpart_acidvb PARTITION(ds=2008-04-08,hr=11).value SIMPLE []
 PREHOOK: query: select count(*) from srcpart_acidvb where ds='2008-04-08' and hr=='12'
@@ -3119,8 +3125,10 @@ POSTHOOK: Input: default@srcpart_acidvb
 PREHOOK: query: drop table if exists srcpart_acidvb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_acidvb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_acidvb
 POSTHOOK: query: drop table if exists srcpart_acidvb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_acidvb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_acidvb

@@ -12,5 +12,6 @@ POSTHOOK: Lineage: xxx6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, 
 PREHOOK: query: DROP TABLE xxx6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@xxx6
+PREHOOK: Output: database:default
 PREHOOK: Output: default@xxx6
 FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Cannot drop a view with DROP TABLE

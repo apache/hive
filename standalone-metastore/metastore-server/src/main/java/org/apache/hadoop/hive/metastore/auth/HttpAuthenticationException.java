@@ -14,6 +14,9 @@
 
 package org.apache.hadoop.hive.metastore.auth;
 
+import java.util.Optional;
+import javax.servlet.http.HttpServletResponse;
+
 /*
 Encapsulates any exceptions thrown by HiveMetastore server
 when authenticating http requests
@@ -22,18 +25,14 @@ public class HttpAuthenticationException extends Exception {
 
   private static final long serialVersionUID = 0;
 
-  /**
-   * @param cause original exception
-   */
-  public HttpAuthenticationException(Throwable cause) {
-    super(cause);
-  }
+  private final int statusCode;
+  private final String wwwAuthenticateHeader;
 
   /**
    * @param msg exception message
    */
   public HttpAuthenticationException(String msg) {
-    super(msg);
+    this(msg, null);
   }
 
   /**
@@ -41,7 +40,28 @@ public class HttpAuthenticationException extends Exception {
    * @param cause original exception
    */
   public HttpAuthenticationException(String msg, Throwable cause) {
-    super(msg, cause);
+    this(msg, cause, HttpServletResponse.SC_UNAUTHORIZED);
   }
 
+  public HttpAuthenticationException(String msg, Throwable cause, int statusCode) {
+    this(msg, cause, statusCode, null);
+  }
+
+  public HttpAuthenticationException(String msg, int statusCode, String wwwAuthenticateHeader) {
+    this(msg, null, statusCode, wwwAuthenticateHeader);
+  }
+
+  public HttpAuthenticationException(String msg, Throwable cause, int statusCode, String wwwAuthenticateHeader) {
+    super(msg, cause);
+    this.statusCode = statusCode;
+    this.wwwAuthenticateHeader = wwwAuthenticateHeader;
+  }
+
+  public int getStatusCode() {
+    return statusCode;
+  }
+
+  public Optional<String> getWwwAuthenticateHeader() {
+    return Optional.ofNullable(wwwAuthenticateHeader);
+  }
 }

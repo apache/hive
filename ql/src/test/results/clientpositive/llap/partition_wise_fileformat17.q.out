@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE PW17
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE PW17
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE PW17(`USER` STRING, COMPLEXDT ARRAY<INT>) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -52,8 +54,10 @@ NULL	NULL	1
 NULL	NULL	1
 PREHOOK: query: DROP TABLE PW17_2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE PW17_2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE PW17_2(`USER` STRING, COMPLEXDT ARRAY<INT>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -81,8 +85,10 @@ POSTHOOK: Input: default@pw17_2
 4
 PREHOOK: query: DROP TABLE PW17_3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE PW17_3
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE PW17_3(`USER` STRING, COMPLEXDT ARRAY<ARRAY<INT> >) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -133,8 +139,10 @@ NULL	NULL	1
 NULL	NULL	1
 PREHOOK: query: DROP TABLE PW17_4
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE PW17_4
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE PW17_4(`USER` STRING, COMPLEXDT ARRAY<ARRAY<INT> >) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

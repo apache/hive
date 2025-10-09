@@ -1,15 +1,21 @@
 PREHOOK: query: drop table if exists dummy_n7
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists dummy_n7
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists partunion1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists partunion1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists partunion1_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists partunion1_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table dummy_n7(i int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -130,24 +136,30 @@ part1=2015
 PREHOOK: query: drop table dummy_n7
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@dummy_n7
+PREHOOK: Output: database:default
 PREHOOK: Output: default@dummy_n7
 POSTHOOK: query: drop table dummy_n7
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@dummy_n7
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dummy_n7
 PREHOOK: query: drop table partunion1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partunion1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partunion1_n0
 POSTHOOK: query: drop table partunion1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partunion1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partunion1_n0
 PREHOOK: query: drop table partunion1_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partunion1_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partunion1_n1
 POSTHOOK: query: drop table partunion1_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partunion1_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partunion1_n1

@@ -94,10 +94,12 @@ STAGE PLANS:
 PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table2_n16
 POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key desc) INTO 2 BUCKETS
@@ -234,10 +236,12 @@ STAGE PLANS:
 PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table2_n16
 POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key, value) INTO 2 BUCKETS
@@ -373,10 +377,12 @@ STAGE PLANS:
 PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table2_n16
 POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (value) INTO 2 BUCKETS
@@ -513,10 +519,12 @@ STAGE PLANS:
 PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table2_n16
 POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS
@@ -653,10 +661,12 @@ STAGE PLANS:
 PREHOOK: query: drop table test_table2_n16
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table2_n16
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table2_n16
 POSTHOOK: query: drop table test_table2_n16
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table2_n16
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table2_n16
 PREHOOK: query: CREATE TABLE test_table2_n16 (key INT, value STRING) PARTITIONED BY (ds STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS

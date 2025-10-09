@@ -22,6 +22,7 @@ FROM TC)
 SELECT C
 FROM TD
 ORDER BY C;
+
 -- Execution fails before HIVE-24104
 WITH
 TC AS

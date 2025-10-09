@@ -488,7 +488,7 @@ public class TestReplicationScenariosUsingSnapshots extends BaseReplicationAcros
       // Ignore
     }
     // Check if there is a non-recoverable error or not.
-    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPL_DIR));
     Path nonRecoverablePath =
         TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
     assertTrue(fs.exists(nonRecoverablePath));

@@ -1,0 +1,176 @@
+PREHOOK: query: DROP TABLE IF EXISTS tbl_x
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS tbl_x
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: DROP TABLE IF EXISTS tbl_y
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS tbl_y
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_x
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_x
+PREHOOK: query: INSERT INTO tbl_x values(1, 'aaa', 12, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_x
+POSTHOOK: query: INSERT INTO tbl_x values(1, 'aaa', 12, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_x
+POSTHOOK: Output: default@tbl_x@month=12/day=2
+POSTHOOK: Lineage: tbl_x PARTITION(month=12,day=2).id SCRIPT []
+POSTHOOK: Lineage: tbl_x PARTITION(month=12,day=2).name SCRIPT []
+PREHOOK: query: INSERT INTO tbl_x values(2, 'bbb', 12, 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_x
+POSTHOOK: query: INSERT INTO tbl_x values(2, 'bbb', 12, 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_x
+POSTHOOK: Output: default@tbl_x@month=12/day=3
+POSTHOOK: Lineage: tbl_x PARTITION(month=12,day=3).id SCRIPT []
+POSTHOOK: Lineage: tbl_x PARTITION(month=12,day=3).name SCRIPT []
+PREHOOK: query: INSERT INTO tbl_x (id, name, month) values(3, 'ccc', 12)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_x
+POSTHOOK: query: INSERT INTO tbl_x (id, name, month) values(3, 'ccc', 12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_x
+POSTHOOK: Output: default@tbl_x@month=12/day=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: tbl_x PARTITION(month=12,day=__HIVE_DEFAULT_PARTITION__).id SCRIPT []
+POSTHOOK: Lineage: tbl_x PARTITION(month=12,day=__HIVE_DEFAULT_PARTITION__).name SCRIPT []
+PREHOOK: query: INSERT INTO tbl_x (id, name, day) values(4, 'ddd', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_x
+POSTHOOK: query: INSERT INTO tbl_x (id, name, day) values(4, 'ddd', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_x
+POSTHOOK: Output: default@tbl_x@month=ANOTHER_PARTITION/day=3
+POSTHOOK: Lineage: tbl_x PARTITION(month=ANOTHER_PARTITION,day=3).id SCRIPT []
+POSTHOOK: Lineage: tbl_x PARTITION(month=ANOTHER_PARTITION,day=3).name SCRIPT []
+PREHOOK: query: SHOW PARTITIONS tbl_x
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_x
+POSTHOOK: query: SHOW PARTITIONS tbl_x
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_x
+month=12/day=2
+month=12/day=3
+month=12/day=__HIVE_DEFAULT_PARTITION__
+month=ANOTHER_PARTITION/day=3
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_y
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_y
+PREHOOK: query: MSCK REPAIR TABLE tbl_y
+PREHOOK: type: MSCK
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: MSCK REPAIR TABLE tbl_y
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@tbl_y
+Partitions not in metastore:	tbl_y:month=12/day=2	tbl_y:month=12/day=3	tbl_y:month=ANOTHER_PARTITION/day=3
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS tbl_y
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_y
+POSTHOOK: query: SHOW PARTITIONS tbl_y
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_y
+month=12/day=2
+month=12/day=3
+month=ANOTHER_PARTITION/day=3
+PREHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_y
+POSTHOOK: Output: default@tbl_y@month=SECOND_PARTITION/day=3
+POSTHOOK: Lineage: tbl_y PARTITION(month=SECOND_PARTITION,day=3).id SCRIPT []
+POSTHOOK: Lineage: tbl_y PARTITION(month=SECOND_PARTITION,day=3).name SCRIPT []
+PREHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: INSERT INTO tbl_y (id, name, day) values(4, 'ddd', 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_y
+POSTHOOK: Output: default@tbl_y@month=OTHER_PARTITION/day=3
+POSTHOOK: Lineage: tbl_y PARTITION(month=OTHER_PARTITION,day=3).id SCRIPT []
+POSTHOOK: Lineage: tbl_y PARTITION(month=OTHER_PARTITION,day=3).name SCRIPT []
+PREHOOK: query: SHOW PARTITIONS tbl_y
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_y
+POSTHOOK: query: SHOW PARTITIONS tbl_y
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_y
+month=12/day=2
+month=12/day=3
+month=ANOTHER_PARTITION/day=3
+month=OTHER_PARTITION/day=3
+month=SECOND_PARTITION/day=3
+PREHOOK: query: MSCK REPAIR TABLE tbl_y
+PREHOOK: type: MSCK
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: MSCK REPAIR TABLE tbl_y
+POSTHOOK: type: MSCK
+POSTHOOK: Output: default@tbl_y
+Partitions not in metastore:	tbl_y:month=12/day=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+PREHOOK: query: SHOW PARTITIONS tbl_y
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@tbl_y
+POSTHOOK: query: SHOW PARTITIONS tbl_y
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@tbl_y
+month=12/day=2
+month=12/day=3
+month=12/day=__HIVE_DEFAULT_PARTITION__
+month=ANOTHER_PARTITION/day=3
+month=OTHER_PARTITION/day=3
+month=SECOND_PARTITION/day=3
+PREHOOK: query: DROP TABLE tbl_x
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_x
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_x
+POSTHOOK: query: DROP TABLE tbl_x
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_x
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_x
+PREHOOK: query: DROP TABLE tbl_y
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tbl_y
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_y
+POSTHOOK: query: DROP TABLE tbl_y
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tbl_y
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_y

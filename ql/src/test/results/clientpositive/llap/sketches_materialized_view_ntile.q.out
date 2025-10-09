@@ -184,18 +184,18 @@ rewrite; mv matching	1	1
 rewrite; mv matching	2	1
 rewrite; mv matching	3	1
 rewrite; mv matching	4	1
-rewrite; mv matching	5	1
+rewrite; mv matching	5	2
 rewrite; mv matching	6	2
 rewrite; mv matching	6	2
 rewrite; mv matching	6	2
 rewrite; mv matching	7	2
 rewrite; mv matching	7	2
-rewrite; mv matching	8	2
-rewrite; mv matching	8	2
+rewrite; mv matching	8	3
+rewrite; mv matching	8	3
 rewrite; mv matching	9	3
 rewrite; mv matching	9	3
-rewrite; mv matching	10	3
-rewrite; mv matching	10	3
+rewrite; mv matching	10	4
+rewrite; mv matching	10	4
 rewrite; mv matching	11	4
 rewrite; mv matching	12	4
 rewrite; mv matching	13	4
@@ -398,7 +398,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -436,7 +436,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -480,8 +480,8 @@ rewrite; no mv matching	3	1
 rewrite; no mv matching	3	1
 rewrite; no mv matching	4	1
 rewrite; no mv matching	4	1
-rewrite; no mv matching	5	1
-rewrite; no mv matching	5	1
+rewrite; no mv matching	5	2
+rewrite; no mv matching	5	2
 rewrite; no mv matching	6	2
 rewrite; no mv matching	6	2
 rewrite; no mv matching	6	2
@@ -492,18 +492,18 @@ rewrite; no mv matching	7	2
 rewrite; no mv matching	7	2
 rewrite; no mv matching	7	2
 rewrite; no mv matching	7	2
-rewrite; no mv matching	8	2
-rewrite; no mv matching	8	2
-rewrite; no mv matching	8	2
-rewrite; no mv matching	8	2
+rewrite; no mv matching	8	3
+rewrite; no mv matching	8	3
+rewrite; no mv matching	8	3
+rewrite; no mv matching	8	3
 rewrite; no mv matching	9	3
 rewrite; no mv matching	9	3
 rewrite; no mv matching	9	3
 rewrite; no mv matching	9	3
-rewrite; no mv matching	10	3
-rewrite; no mv matching	10	3
-rewrite; no mv matching	10	3
-rewrite; no mv matching	10	3
+rewrite; no mv matching	10	4
+rewrite; no mv matching	10	4
+rewrite; no mv matching	10	4
+rewrite; no mv matching	10	4
 rewrite; no mv matching	11	4
 rewrite; no mv matching	11	4
 rewrite; no mv matching	12	4
@@ -571,7 +571,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: char(1))
                           Statistics: Num rows: 2 Data size: 458 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 6 
             Map Operator Tree:
@@ -864,8 +864,8 @@ rewrite; mv matching	3	1
 rewrite; mv matching	3	1
 rewrite; mv matching	4	1
 rewrite; mv matching	4	1
-rewrite; mv matching	5	1
-rewrite; mv matching	5	1
+rewrite; mv matching	5	2
+rewrite; mv matching	5	2
 rewrite; mv matching	6	2
 rewrite; mv matching	6	2
 rewrite; mv matching	6	2
@@ -876,18 +876,18 @@ rewrite; mv matching	7	2
 rewrite; mv matching	7	2
 rewrite; mv matching	7	2
 rewrite; mv matching	7	2
-rewrite; mv matching	8	2
-rewrite; mv matching	8	2
-rewrite; mv matching	8	2
-rewrite; mv matching	8	2
+rewrite; mv matching	8	3
+rewrite; mv matching	8	3
+rewrite; mv matching	8	3
+rewrite; mv matching	8	3
 rewrite; mv matching	9	3
 rewrite; mv matching	9	3
 rewrite; mv matching	9	3
 rewrite; mv matching	9	3
-rewrite; mv matching	10	3
-rewrite; mv matching	10	3
-rewrite; mv matching	10	3
-rewrite; mv matching	10	3
+rewrite; mv matching	10	4
+rewrite; mv matching	10	4
+rewrite; mv matching	10	4
+rewrite; mv matching	10	4
 rewrite; mv matching	11	4
 rewrite; mv matching	11	4
 rewrite; mv matching	12	4
@@ -1014,20 +1014,20 @@ rewrite; mv matching	a	1	1
 rewrite; mv matching	a	1	1
 rewrite; mv matching	a	1	1
 rewrite; mv matching	a	1	1
-rewrite; mv matching	a	2	1
-rewrite; mv matching	a	2	1
+rewrite; mv matching	a	2	2
+rewrite; mv matching	a	2	2
 rewrite; mv matching	a	3	2
 rewrite; mv matching	a	3	2
 rewrite; mv matching	a	4	2
 rewrite; mv matching	a	4	2
-rewrite; mv matching	a	5	2
-rewrite; mv matching	a	5	2
+rewrite; mv matching	a	5	3
+rewrite; mv matching	a	5	3
 rewrite; mv matching	a	6	3
 rewrite; mv matching	a	6	3
 rewrite; mv matching	a	7	3
 rewrite; mv matching	a	7	3
-rewrite; mv matching	a	8	3
-rewrite; mv matching	a	8	3
+rewrite; mv matching	a	8	4
+rewrite; mv matching	a	8	4
 rewrite; mv matching	a	9	4
 rewrite; mv matching	a	9	4
 rewrite; mv matching	a	10	4
@@ -1036,20 +1036,20 @@ rewrite; mv matching	b	6	1
 rewrite; mv matching	b	6	1
 rewrite; mv matching	b	6	1
 rewrite; mv matching	b	6	1
-rewrite; mv matching	b	7	1
-rewrite; mv matching	b	7	1
+rewrite; mv matching	b	7	2
+rewrite; mv matching	b	7	2
 rewrite; mv matching	b	8	2
 rewrite; mv matching	b	8	2
 rewrite; mv matching	b	9	2
 rewrite; mv matching	b	9	2
-rewrite; mv matching	b	10	2
-rewrite; mv matching	b	10	2
+rewrite; mv matching	b	10	3
+rewrite; mv matching	b	10	3
 rewrite; mv matching	b	11	3
 rewrite; mv matching	b	11	3
 rewrite; mv matching	b	12	3
 rewrite; mv matching	b	12	3
-rewrite; mv matching	b	13	3
-rewrite; mv matching	b	13	3
+rewrite; mv matching	b	13	4
+rewrite; mv matching	b	13	4
 rewrite; mv matching	b	14	4
 rewrite; mv matching	b	14	4
 rewrite; mv matching	b	15	4

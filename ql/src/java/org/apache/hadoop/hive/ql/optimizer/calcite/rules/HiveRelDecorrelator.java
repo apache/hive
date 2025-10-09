@@ -3014,18 +3014,10 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
   }
   /** Builds a {@link org.apache.calcite.sql2rel.RelDecorrelator.CorelMap}. */
   private static class CorelMapBuilder extends HiveRelShuttleImpl {
-    private final SortedMap<CorrelationId, RelNode> mapCorToCorRel =
-        new TreeMap<>();
+    private final SortedMap<CorrelationId, RelNode> mapCorToCorRel = new TreeMap<>();
 
-    private final SortedSetMultimap<RelNode, CorRef> mapRefRelToCorRef =
-        Multimaps.newSortedSetMultimap(
-            new HashMap<RelNode, Collection<CorRef>>(),
-            new Supplier<TreeSet<CorRef>>() {
-              @Override
-              public TreeSet<CorRef> get() {
-                return Sets.newTreeSet();
-              }
-            });
+    private final Multimap<RelNode, CorRef> mapRefRelToCorRef =
+        Multimaps.newListMultimap(new HashMap<>(), Lists::newArrayList);
 
     private final Map<RexFieldAccess, CorRef> mapFieldAccessToCorVar = new HashMap<>();
 

@@ -26,15 +26,15 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
+                  filterExpr: (((UDFToDouble(key) % 3.0D) = 0.0D) or ((UDFToDouble(key) % 3.0D) = 1.0D) or ((UDFToDouble(key) % 3.0D) = 2.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -52,14 +52,6 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -76,14 +68,6 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -119,7 +103,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 5 
+        Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
@@ -136,7 +120,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 7 
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
@@ -210,10 +194,9 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
-        Reducer 5 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 5 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -236,16 +219,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
-        Map 7 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: s1
@@ -258,12 +234,6 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         null sort order: z
@@ -299,6 +269,12 @@ STAGE PLANS:
                       sort order: +
                       Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: string)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: string)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -317,33 +293,6 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
-            Reduce Operator Tree:
-              Merge Join Operator
-                condition map:
-                     Inner Join 0 to 1
-                keys:
-                  0 _col0 (type: string)
-                  1 _col0 (type: string)
-                outputColumnNames: _col1, _col2
-                Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                Top N Key Operator
-                  sort order: +
-                  keys: _col2 (type: string)
-                  null sort order: z
-                  Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                  top n: 10
-                  Select Operator
-                    expressions: _col2 (type: string), _col1 (type: string)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: string)
-        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
@@ -437,15 +386,15 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (CUSTOM_SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 6 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
+                  filterExpr: (((UDFToDouble(key) % 3.0D) = 0.0D) or ((UDFToDouble(key) % 3.0D) = 1.0D) or ((UDFToDouble(key) % 3.0D) = 2.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -463,14 +412,6 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -487,14 +428,6 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -565,7 +498,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
@@ -598,7 +531,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
-        Reducer 8 
+        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
@@ -737,15 +670,15 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (CUSTOM_SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 6 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
+                  filterExpr: (((UDFToDouble(key) % 3.0D) = 0.0D) or ((UDFToDouble(key) % 3.0D) = 1.0D) or ((UDFToDouble(key) % 3.0D) = 2.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -763,14 +696,6 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -787,14 +712,6 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -865,7 +782,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
@@ -898,7 +815,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
-        Reducer 8 
+        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
@@ -1025,15 +942,15 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
         Reducer 4 <- Union 3 (CUSTOM_SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 5 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 6 <- Map 1 (CUSTOM_SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
+                  filterExpr: (((UDFToDouble(key) % 3.0D) = 0.0D) or ((UDFToDouble(key) % 3.0D) = 1.0D) or ((UDFToDouble(key) % 3.0D) = 2.0D)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
@@ -1051,14 +968,6 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1075,14 +984,6 @@ STAGE PLANS:
                           Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
                           TopN Hash Memory Usage: 0.1
                           value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: src
-                  filterExpr: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1153,7 +1054,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
@@ -1186,7 +1087,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: int), _col7 (type: bigint), _col8 (type: binary)
-        Reducer 8 
+        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Limit
@@ -1365,10 +1266,12 @@ POSTHOOK: Input: default@union_top_view
 PREHOOK: query: drop table union_top
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@union_top
+PREHOOK: Output: database:default
 PREHOOK: Output: default@union_top
 POSTHOOK: query: drop table union_top
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@union_top
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_top
 PREHOOK: query: drop view union_top_view
 PREHOOK: type: DROPVIEW

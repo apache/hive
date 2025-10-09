@@ -48,7 +48,7 @@ public class TestMetaStoreInitListener {
 
   @Test
   public void testMetaStoreInitListener() throws Exception {
-    // DummyMataStoreInitListener's onInit will be called at HMSHandler
+    // DummyMetaStoreInitListener's onInit will be called at HMSHandler
     // initialization, and set this to true
     Assert.assertTrue(DummyMetaStoreInitListener.wasCalled);
   }

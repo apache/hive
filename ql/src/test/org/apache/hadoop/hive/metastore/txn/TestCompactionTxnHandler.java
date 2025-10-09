@@ -44,12 +44,14 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,14 +62,16 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_FETCH_SIZE;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME;
+import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_RETRY_TIME;
-import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD;
 
 /**
  * Tests for CompactionTxnHandler.
@@ -200,7 +204,9 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
     
     ci.highestWriteId = 41;
-    txnHandler.updateCompactorState(ci, 0);
+    long txnid = openTxn();
+    ci.txnId = txnid;
+    txnHandler.updateCompactorState(ci, txnid);
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
 
@@ -230,7 +236,9 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
     
     ci.highestWriteId = 41;
-    txnHandler.updateCompactorState(ci, 0);
+    long txnid = openTxn();
+    ci.txnId = txnid;
+    txnHandler.updateCompactorState(ci, txnid);
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
 
@@ -739,24 +747,18 @@ public class TestCompactionTxnHandler {
   public void testFindPotentialCompactions() throws Exception {
     // Test that committing unlocks
     long txnid = openTxn();
-    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB,
-        "mydb");
-    comp.setTablename("mytable");
-    comp.setOperationType(DataOperationType.UPDATE);
-    List<LockComponent> components = new ArrayList<LockComponent>(1);
-    components.add(comp);
-    comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB,
-        "mydb");
-    comp.setTablename("yourtable");
-    comp.setPartitionname("mypartition=myvalue");
-    comp.setOperationType(DataOperationType.UPDATE);
-    components.add(comp);
+
+    List<LockComponent> components = new ArrayList<>();
+
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "mytable", null, DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
+
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     assertTrue(res.getState() == LockState.ACQUIRED);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
-    assertEquals(0, txnHandler.numLocksInLockTable());
+    assertEquals(0, txnHandler.getNumLocks());
 
     Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
     assertEquals(2, potentials.size());
@@ -770,13 +772,15 @@ public class TestCompactionTxnHandler {
     assertTrue(sawMyTable);
     assertTrue(sawYourTable);
 
-    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 
+      Instant.now().minusSeconds(1).toEpochMilli());
     assertEquals(2, potentials.size());
 
     //simulate auto-compaction interval
     TimeUnit.SECONDS.sleep(2);
 
-    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 
+      Instant.now().minusSeconds(1).toEpochMilli());
     assertEquals(0, potentials.size());
 
     //simulate prev failed compaction
@@ -785,7 +789,8 @@ public class TestCompactionTxnHandler {
     CompactionInfo ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
     txnHandler.markFailed(ci);
 
-    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 
+      Instant.now().minusSeconds(1).toEpochMilli());
     assertEquals(1, potentials.size());
   }
 
@@ -856,7 +861,8 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
     
     ci.highestWriteId = mytableWriteId;
-    txnHandler.updateCompactorState(ci, 0);
+    ci.txnId = 1;
+    txnHandler.updateCompactorState(ci, 1);
     txnHandler.markCompacted(ci);
     
     Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
@@ -883,7 +889,8 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
 
     ci.highestWriteId = fooWriteId;
-    txnHandler.updateCompactorState(ci, 0);
+    txnHandler.updateCompactorState(ci, 2);
+    ci.txnId = 2;
     txnHandler.markCompacted(ci);
 
     toClean = txnHandler.findReadyToClean(0, 0);
@@ -999,6 +1006,62 @@ public class TestCompactionTxnHandler {
     checkEnqueueTime(enqueueTime);
   }
 
+  @Test
+  public void testFindPotentialCompactions_limitFetchSize() throws Exception {
+    MetastoreConf.setLongVar(conf, COMPACTOR_FETCH_SIZE, 1);
+
+    long txnId = openTxn();
+
+    List<LockComponent> components = new ArrayList<>();
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "mytable", "mypartition=myvalue", DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnId);
+    LockResponse res = txnHandler.lock(req);
+    assertSame(res.getState(), LockState.ACQUIRED);
+    txnHandler.commitTxn(new CommitTxnRequest(txnId));
+    assertEquals(0, txnHandler.getNumLocks());
+
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
+    assertEquals(1, potentials.size());
+  }
+
+  @Test
+  public void testFindNextToClean_limitFetchSize() throws Exception {
+    MetastoreConf.setLongVar(conf, COMPACTOR_FETCH_SIZE, 1);
+
+    createAReadyToCleanCompaction("foo", "bar", "ds=today", CompactionType.MINOR);
+    createAReadyToCleanCompaction("foo2", "bar2", "ds=today", CompactionType.MINOR);
+
+    assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
+
+    List<CompactionInfo> toClean = txnHandler.findReadyToClean(0, 0);
+    assertEquals(1, toClean.size());
+    assertNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION)));
+  }
+
+  @Test
+  public void testFindReadyToCleanAborts_limitFetchSize() throws Exception {
+    MetastoreConf.setLongVar(conf, COMPACTOR_FETCH_SIZE, 1);
+
+    long txnId = openTxn();
+
+    List<LockComponent> components = new ArrayList<>();
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "mytable", "mypartition=myvalue", DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
+
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnId);
+    LockResponse res = txnHandler.lock(req);
+    assertSame(res.getState(), LockState.ACQUIRED);
+
+    txnHandler.abortTxn(new AbortTxnRequest((txnId)));
+
+    List<CompactionInfo> potentials = txnHandler.findReadyToCleanAborts(1, 0);
+    assertEquals(1, potentials.size());
+  }
+
   private static FindNextCompactRequest aFindNextCompactRequest(String workerId, String workerVersion) {
     FindNextCompactRequest request = new FindNextCompactRequest();
     request.setWorkerId(workerId);
@@ -1035,4 +1098,27 @@ public class TestCompactionTxnHandler {
     return writeIds.getTxnToWriteIds().get(0).getWriteId();
   }
 
+  private void createAReadyToCleanCompaction(String dbName, String tableName, String partitionName, CompactionType compactionType) throws MetaException {
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, compactionType);
+    rqst.setPartitionname(partitionName);
+    txnHandler.compact(rqst);
+
+    CompactionInfo ci = txnHandler.findNextToCompact(aFindNextCompactRequest("fred", WORKER_VERSION));
+    assertNotNull(ci);
+
+    ci.highestWriteId = 41;
+    long txnId = openTxn();
+    ci.txnId = txnId;
+    txnHandler.updateCompactorState(ci, txnId);
+    txnHandler.markCompacted(ci);
+  }
+
+  private LockComponent createLockComponent(LockType lockType, LockLevel lockLevel, String dbName, String tableName, String partitionName, DataOperationType dataOperationType){
+    LockComponent lockComponent = new LockComponent(lockType, lockLevel, dbName);
+    lockComponent.setTablename(tableName);
+    lockComponent.setPartitionname(partitionName);
+    lockComponent.setOperationType(dataOperationType);
+
+    return lockComponent;
+  }
 }

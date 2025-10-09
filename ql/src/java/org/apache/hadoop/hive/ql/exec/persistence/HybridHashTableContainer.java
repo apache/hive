@@ -39,7 +39,6 @@ import org.apache.hadoop.hive.ql.exec.JoinUtil;
 import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer.KeyValueHelper;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.NonMatchedSmallTableIterator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.rowbytescontainer.VectorRowBytesContainer;
 import org.apache.hadoop.hive.ql.exec.vector.wrapper.VectorHashKeyWrapperBase;
@@ -64,7 +63,7 @@ import org.apache.hive.common.util.HashCodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.kryo5.Kryo;
 
 /**
  * Hash table container that can have many partitions -- each partition has its own hashmap,
@@ -180,7 +179,7 @@ public class HybridHashTableContainer
         return new BytesBytesMultiHashMap(rowCount, loadFactor, wbSize, -1);
       } else {
         InputStream inputStream = Files.newInputStream(hashMapLocalPath);
-        com.esotericsoftware.kryo.io.Input input = new com.esotericsoftware.kryo.io.Input(inputStream);
+        com.esotericsoftware.kryo.kryo5.io.Input input = new com.esotericsoftware.kryo.kryo5.io.Input(inputStream);
         Kryo kryo = SerializationUtilities.borrowKryo();
         BytesBytesMultiHashMap restoredHashMap = null;
         try {
@@ -279,15 +278,15 @@ public class HybridHashTableContainer
   public HybridHashTableContainer(Configuration hconf, long keyCount, long memoryAvailable,
                                   long estimatedTableSize, HybridHashTableConf nwayConf)
       throws SerDeException, IOException {
-    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEKEYCOUNTADJUSTMENT),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD),
-        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMEMCHECKFREQ),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINWBSIZE),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLEWBSIZE),
-        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINMINNUMPARTITIONS),
-        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVEMAPJOINOPTIMIZEDTABLEPROBEPERCENT),
-        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVEHYBRIDGRACEHASHJOINBLOOMFILTER),
+    this(HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_KEY_COUNT_ADJUSTMENT),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_THRESHOLD),
+        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_LOAD_FACTOR),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MEMCHECK_FREQ),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MIN_WB_SIZE),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HASHTABLE_WB_SIZE),
+        HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_MIN_NUM_PARTITIONS),
+        HiveConf.getFloatVar(hconf, HiveConf.ConfVars.HIVE_MAPJOIN_OPTIMIZED_TABLE_PROBE_PERCENT),
+        HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVE_HYBRIDGRACE_HASHJOIN_BLOOMFILTER),
         estimatedTableSize, keyCount, memoryAvailable, nwayConf,
         HiveUtils.getLocalDirList(hconf));
   }
@@ -348,7 +347,7 @@ public class HybridHashTableContainer
 
     if (useBloomFilter) {
       if (newKeyCount <= BLOOM_FILTER_MAX_SIZE) {
-        this.bloom1 = new BloomFilter(newKeyCount);
+        this.bloom1 = BloomFilter.build(newKeyCount);
       } else {
         // To avoid having a huge BloomFilter we need to scale up False Positive Probability
         double fpp = calcFPP(newKeyCount);
@@ -357,7 +356,7 @@ public class HybridHashTableContainer
           LOG.warn("BloomFilter FPP is greater than 0.5!");
         }
         LOG.info("BloomFilter is using FPP: " + fpp);
-        this.bloom1 = new BloomFilter(newKeyCount, fpp);
+        this.bloom1 = BloomFilter.build(newKeyCount, fpp);
       }
       LOG.info(String.format("Using a bloom-1 filter %d keys of size %d bytes",
         newKeyCount, bloom1.sizeInBytes()));
@@ -468,7 +467,7 @@ public class HybridHashTableContainer
       if (hp.hashMap != null) {
         memUsed += hp.hashMap.memorySize();
       } else {
-        // also include the still-in-memory sidefile, before it has been truely spilled
+        // also include the still-in-memory sidefile, before it has been truly spilled
         if (hp.sidefileKVContainer != null) {
           memUsed += hp.sidefileKVContainer.numRowsInReadBuffer() * tableRowSize;
         }
@@ -627,7 +626,7 @@ public class HybridHashTableContainer
       }
     }
 
-    // It can happen that although there're some partitions in memory, but their sizes are all 0.
+    // It can happen that although there are some partitions in memory, but their sizes are all 0.
     // In that case we just pick one and spill.
     if (res == -1) {
       for (int i = 0; i < hashPartitions.length; i++) {
@@ -657,8 +656,8 @@ public class HybridHashTableContainer
         spillLocalDirs, "partition-" + partitionId + "-", null, false);
     OutputStream outputStream = new FileOutputStream(file, false);
 
-    com.esotericsoftware.kryo.io.Output output =
-        new com.esotericsoftware.kryo.io.Output(outputStream);
+    com.esotericsoftware.kryo.kryo5.io.Output output =
+        new com.esotericsoftware.kryo.kryo5.io.Output(outputStream);
     Kryo kryo = SerializationUtilities.borrowKryo();
     try {
       LOG.info("Trying to spill hash partition " + partitionId + " ...");

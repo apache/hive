@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -124,7 +125,7 @@ public class RCFileOutputFormat extends
       boolean isCompressed, Properties tableProperties, Progressable progress) throws IOException {
 
     String[] cols = null;
-    String columns = tableProperties.getProperty("columns");
+    String columns = tableProperties.getProperty(serdeConstants.LIST_COLUMNS);
     if (columns == null || columns.trim().equals("")) {
       cols = new String[0];
     } else {

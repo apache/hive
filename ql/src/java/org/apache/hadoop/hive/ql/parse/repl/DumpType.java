@@ -200,6 +200,18 @@ public enum DumpType {
       return new DefaultHandler();
     }
   },
+  PRE_OPTIMIZED_BOOTSTRAP("PRE_OPTIMIZED_BOOTSTRAP") {
+    @Override
+    public MessageHandler handler() {
+      return new DefaultHandler();
+    }
+  },
+  OPTIMIZED_BOOTSTRAP("OPTIMIZED_BOOTSTRAP") {
+    @Override
+    public MessageHandler handler() {
+      return new DefaultHandler();
+    }
+  },
   EVENT_CREATE_DATABASE("EVENT_CREATE_DATABASE") {
     @Override
     public MessageHandler handler() {

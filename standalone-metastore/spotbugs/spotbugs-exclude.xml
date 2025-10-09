@@ -27,4 +27,7 @@
             <Class name="~org.apache.hadoop.hive.metastore.Metastore.*" />
         </Or>
     </Match>
-</FindBugsFilter>
+    <Match>
+        <Class name="~org.apache.hadoop.hive.metastore.grpc.*" />
+    </Match>
+  </FindBugsFilter>

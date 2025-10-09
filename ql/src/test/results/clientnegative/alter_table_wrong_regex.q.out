@@ -1,7 +1,9 @@
 PREHOOK: query: drop table aa
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table aa
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table aa ( test STRING )
   ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'
   WITH SERDEPROPERTIES ("input.regex" = "(.*)", "output.format.string" = "$1s")

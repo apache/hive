@@ -21,8 +21,12 @@ package org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -30,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.ddl.table.info.desc.DescTableDesc;
@@ -47,7 +52,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec;
+import org.apache.hadoop.hive.ql.parse.TransformSpec;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -83,7 +88,7 @@ class TextDescTableFormatter extends DescTableFormatter {
       Partition partition, List<FieldSchema> columns, boolean isFormatted, boolean isExtended, boolean isOutputPadded,
       List<ColumnStatisticsObj> columnStats) throws HiveException {
     try {
-      addStatsData(out, columnPath, columns, isFormatted, columnStats, isOutputPadded);
+      addStatsData(out, conf, columnPath, columns, isFormatted, columnStats, isOutputPadded);
       addPartitionData(out, conf, columnPath, table, isFormatted, isOutputPadded);
 
       boolean isIcebergMetaTable = table.getMetaTable() != null;
@@ -110,19 +115,13 @@ class TextDescTableFormatter extends DescTableFormatter {
     if (table.isNonNative() && table.getStorageHandler() != null &&
         table.getStorageHandler().supportsPartitionTransform()) {
 
-      List<PartitionTransformSpec> partSpecs = table.getStorageHandler().getPartitionTransformSpec(table);
+      List<TransformSpec> partSpecs = table.getStorageHandler().getPartitionTransformSpec(table);
       if (partSpecs != null && !partSpecs.isEmpty()) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();
         partitionTransformOutput += LINE_DELIM + "# Partition Transform Information" + LINE_DELIM + "# ";
         metaDataTable.addRow(DescTableDesc.PARTITION_TRANSFORM_SPEC_SCHEMA.split("#")[0].split(","));
-        for (PartitionTransformSpec spec : partSpecs) {
-          String[] row = new String[2];
-          row[0] = spec.getColumnName();
-          if (spec.getTransformType() != null) {
-            row[1] = spec.getTransformParam().isPresent() ?
-                spec.getTransformType().name() + "[" + spec.getTransformParam().get() + "]" :
-                spec.getTransformType().name();
-          }
+        for (TransformSpec spec : partSpecs) {
+          String[] row = new String[]{spec.getColumnName(), spec.transformTypeString()};
           metaDataTable.addRow(row);
         }
         partitionTransformOutput += metaDataTable.renderTable(isOutputPadded);
@@ -131,21 +130,22 @@ class TextDescTableFormatter extends DescTableFormatter {
     out.write(partitionTransformOutput.getBytes(StandardCharsets.UTF_8));
   }
 
-  private void addStatsData(DataOutputStream out, String columnPath, List<FieldSchema> columns, boolean isFormatted,
-      List<ColumnStatisticsObj> columnStats, boolean isOutputPadded) throws IOException {
+  private void addStatsData(DataOutputStream out, HiveConf conf, String columnPath, List<FieldSchema> columns,
+      boolean isFormatted, List<ColumnStatisticsObj> columnStats, boolean isOutputPadded) throws IOException {
     String statsData = "";
     
     TextMetaDataTable metaDataTable = new TextMetaDataTable();
     boolean needColStats = isFormatted && columnPath != null;
+    boolean histogramEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
     if (needColStats) {
-      metaDataTable.addRow(DescTableDesc.COLUMN_STATISTICS_HEADERS.toArray(new String[0]));
+      metaDataTable.addRow(DescTableDesc.getColumnStatisticsHeaders(histogramEnabled).toArray(new String[0]));
     } else if (isFormatted && !SessionState.get().isHiveServerQuery()) {
       statsData += "# ";
       metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
     }
     for (FieldSchema column : columns) {
       metaDataTable.addRow(ShowUtils.extractColumnValues(column, needColStats,
-          getColumnStatisticsObject(column.getName(), column.getType(), columnStats)));
+          getColumnStatisticsObject(column.getName(), column.getType(), columnStats), histogramEnabled));
     }
     if (needColStats) {
       metaDataTable.transpose();
@@ -175,10 +175,12 @@ class TextDescTableFormatter extends DescTableFormatter {
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();
+        boolean histogramEnabled = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_FETCH_KLL);
         partitionData += LINE_DELIM + "# Partition Information" + LINE_DELIM + "# ";
         metaDataTable.addRow(DescTableDesc.SCHEMA.split("#")[0].split(","));
         for (FieldSchema partitionColumn : partitionColumns) {
-          metaDataTable.addRow(ShowUtils.extractColumnValues(partitionColumn, false, null));
+          metaDataTable.addRow(ShowUtils.extractColumnValues(
+              partitionColumn, false, null, histogramEnabled));
         }
         partitionData += metaDataTable.renderTable(isOutputPadded);
       }
@@ -244,27 +246,58 @@ class TextDescTableFormatter extends DescTableFormatter {
     formatOutput("Original Query:", table.getViewOriginalText(), tableInfo);
     formatOutput("Expanded Query:", table.getViewExpandedText(), tableInfo);
     if (table.isMaterializedView()) {
-      formatOutput("Rewrite Enabled:", table.isRewriteEnabled() ? "Yes" : "No", tableInfo);
-      formatOutput("Outdated for Rewriting:", table.isOutdatedForRewriting() == null ? "Unknown"
-          : table.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
-      tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
-      TextMetaDataTable metaDataTable = new TextMetaDataTable();
-      metaDataTable.addRow("Table name", "I/U/D since last rebuild");
-      List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
-
-      sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
-              .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
-      for (SourceTable sourceTable : sourceTableList) {
-        String qualifiedTableName = TableName.getQualified(
-                sourceTable.getTable().getCatName(),
-                sourceTable.getTable().getDbName(),
-                sourceTable.getTable().getTableName());
-        metaDataTable.addRow(qualifiedTableName,
-                String.format("%d/%d/%d",
-                        sourceTable.getInsertedCount(), sourceTable.getUpdatedCount(), sourceTable.getDeletedCount()));
-      }
-      tableInfo.append(metaDataTable.renderTable(isOutputPadded));
+      getMaterializedViewInfo(tableInfo, table, isOutputPadded);
     }
+  }
+
+  private static void getMaterializedViewInfo(StringBuilder tableInfo, Table table, boolean isOutputPadded) {
+    formatOutput("Rewrite Enabled:", table.isRewriteEnabled() ? "Yes" : "No", tableInfo);
+    formatOutput("Outdated for Rewriting:", table.isOutdatedForRewriting() == null ? "Unknown"
+        : table.isOutdatedForRewriting() ? "Yes" : "No", tableInfo);
+    tableInfo.append(LINE_DELIM).append("# Materialized View Source table information").append(LINE_DELIM);
+    TextMetaDataTable metaDataTable = new TextMetaDataTable();
+    metaDataTable.addRow("Table name", "Snapshot");
+    List<SourceTable> sourceTableList = new ArrayList<>(table.getMVMetadata().getSourceTables());
+
+    sourceTableList.sort(Comparator.<SourceTable, String>comparing(sourceTable -> sourceTable.getTable().getDbName())
+            .thenComparing(sourceTable -> sourceTable.getTable().getTableName()));
+
+    MaterializationSnapshotFormatter snapshotFormatter =
+            createMaterializationSnapshotFormatter(table.getMVMetadata().getSnapshot());
+
+    for (SourceTable sourceTable : sourceTableList) {
+      String qualifiedTableName = TableName.getDbTable(
+              sourceTable.getTable().getDbName(),
+              sourceTable.getTable().getTableName());
+      metaDataTable.addRow(qualifiedTableName,
+              snapshotFormatter.getSnapshotOf(qualifiedTableName));
+    }
+    tableInfo.append(metaDataTable.renderTable(isOutputPadded));
+  }
+
+  private static MaterializationSnapshotFormatter createMaterializationSnapshotFormatter(
+          MaterializationSnapshot snapshot) {
+    if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+      return qualifiedTableName -> {
+        SnapshotContext snapshotContext = snapshot.getTableSnapshots().get(qualifiedTableName);
+        if (snapshotContext == null) {
+          return "Unknown";
+        }
+        return String.format("SnapshotContext{snapshotId=%d}", snapshotContext.getSnapshotId());
+      };
+    } else if (snapshot != null && snapshot.getValidTxnList() != null) {
+      ValidTxnWriteIdList validReaderWriteIdList = ValidTxnWriteIdList.fromValue(snapshot.getValidTxnList());
+      return qualifiedTableName -> {
+        ValidWriteIdList writeIdList = validReaderWriteIdList.getTableValidWriteIdList(qualifiedTableName);
+        return writeIdList != null ? writeIdList.toString().replace(qualifiedTableName, "") : "Unknown";
+      };
+    } else {
+      return qualifiedTableName -> "N/A";
+    }
+  }
+
+  private interface MaterializationSnapshotFormatter {
+    String getSnapshotOf(String qualifiedTableName);
   }
 
   private void getStorageDescriptorInfo(StringBuilder tableInfo, Table table, StorageDescriptor storageDesc) {
@@ -278,7 +311,14 @@ class TextDescTableFormatter extends DescTableFormatter {
       formatOutput("Num Buckets:", String.valueOf(storageDesc.getNumBuckets()), tableInfo);
       formatOutput("Bucket Columns:", storageDesc.getBucketCols().toString(), tableInfo);
     }
-    formatOutput("Sort Columns:", storageDesc.getSortCols().toString(), tableInfo);
+
+    String sortColumnsInfo;
+    if (table.isNonNative() && table.getStorageHandler() != null && table.getStorageHandler().supportsSortColumns()) {
+      sortColumnsInfo = table.getStorageHandler().sortColumns(table).toString();
+    } else {
+      sortColumnsInfo = storageDesc.getSortCols().toString();
+    }
+    formatOutput("Sort Columns:", sortColumnsInfo, tableInfo);
 
     if (storageDesc.isStoredAsSubDirectories()) {
       formatOutput("Stored As SubDirectories:", "Yes", tableInfo);

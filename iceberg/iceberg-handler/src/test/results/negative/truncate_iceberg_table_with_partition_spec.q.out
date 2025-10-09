@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists test_truncate_neg2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists test_truncate_neg2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table test_truncate_neg2 (id int, value string) stored by iceberg stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -26,4 +28,4 @@ POSTHOOK: query: insert into test_truncate_neg2 values (1, 'one'),(2,'two'),(3,'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_truncate_neg2
-FAILED: UnsupportedOperationException Using partition spec in query is unsupported for non-native table backed by: org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+FAILED: SemanticException Writing data into a partition fails when the Iceberg table is unpartitioned.

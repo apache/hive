@@ -236,7 +236,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
 
     public ReportStats(Reporter rp, Configuration conf) {
       this.rp = rp;
-      this.groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVECOUNTERGROUP);
+      this.groupName = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_COUNTER_GROUP);
     }
 
     @Override

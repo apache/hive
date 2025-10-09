@@ -1,0 +1,292 @@
+PREHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+PREHOOK: type: CREATEFUNCTION
+PREHOOK: Output: dboutput
+POSTHOOK: query: CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput'
+POSTHOOK: type: CREATEFUNCTION
+POSTHOOK: Output: dboutput
+PREHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE person ("id" INTEGER, "name" VARCHAR(25), "jid" INTEGER, "cid" INTEGER)' )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE person ("id" INTEGER, "name" VARCHAR(25), "jid" INTEGER, "cid" INTEGER)' )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE country ("id" INTEGER, "name" VARCHAR(25))' )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE country ("id" INTEGER, "name" VARCHAR(25))' )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0
+PREHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE job ("id" INTEGER, "title" VARCHAR(20))' )
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+#### A masked pattern was here ####
+'CREATE TABLE job ("id" INTEGER, "title" VARCHAR(20))' )
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+0
+PREHOOK: query: CREATE EXTERNAL TABLE person
+(
+    id int,
+    name varchar(25),
+    jid int,
+    cid int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "DERBY",
+    "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+    "hive.sql.dbcp.username" = "APP",
+    "hive.sql.dbcp.password" = "mine",
+    "hive.sql.table" = "PERSON",
+    "hive.sql.dbcp.maxActive" = "1"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@person
+POSTHOOK: query: CREATE EXTERNAL TABLE person
+(
+    id int,
+    name varchar(25),
+    jid int,
+    cid int
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "DERBY",
+    "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+    "hive.sql.dbcp.username" = "APP",
+    "hive.sql.dbcp.password" = "mine",
+    "hive.sql.table" = "PERSON",
+    "hive.sql.dbcp.maxActive" = "1"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@person
+PREHOOK: query: INSERT INTO `person` VALUES (1, 'Laszlo', 1, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@person
+POSTHOOK: query: INSERT INTO `person` VALUES (1, 'Laszlo', 1, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@person
+PREHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(25)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "DERBY",
+    "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+    "hive.sql.dbcp.username" = "APP",
+    "hive.sql.dbcp.password" = "mine",
+    "hive.sql.table" = "COUNTRY",
+    "hive.sql.dbcp.maxActive" = "1",
+    "hive.sql.numPartitions"="2",
+    "hive.sql.partitionColumn"="id"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country
+POSTHOOK: query: CREATE EXTERNAL TABLE country
+(
+    id int,
+    name varchar(25)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "DERBY",
+    "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+    "hive.sql.dbcp.username" = "APP",
+    "hive.sql.dbcp.password" = "mine",
+    "hive.sql.table" = "COUNTRY",
+    "hive.sql.dbcp.maxActive" = "1",
+    "hive.sql.numPartitions"="2",
+    "hive.sql.partitionColumn"="id"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country
+PREHOOK: query: INSERT INTO `country` VALUES (1, 'Hungary')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@country
+POSTHOOK: query: INSERT INTO `country` VALUES (1, 'Hungary')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@country
+PREHOOK: query: INSERT INTO `country` VALUES (2, 'Poland')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@country
+POSTHOOK: query: INSERT INTO `country` VALUES (2, 'Poland')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@country
+PREHOOK: query: INSERT INTO `country` VALUES (3, 'Germany')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@country
+POSTHOOK: query: INSERT INTO `country` VALUES (3, 'Germany')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@country
+PREHOOK: query: CREATE EXTERNAL TABLE job
+(
+    id int,
+    title varchar(20)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "DERBY",
+    "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+    "hive.sql.dbcp.username" = "APP",
+    "hive.sql.dbcp.password" = "mine",
+    "hive.sql.schema" = "APP",
+    "hive.sql.table" = "JOB",
+    "hive.sql.dbcp.maxActive" = "1",
+    "hive.sql.numPartitions"="2",
+    "hive.sql.partitionColumn"="id"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@job
+POSTHOOK: query: CREATE EXTERNAL TABLE job
+(
+    id int,
+    title varchar(20)
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "DERBY",
+    "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+#### A masked pattern was here ####
+    "hive.sql.dbcp.username" = "APP",
+    "hive.sql.dbcp.password" = "mine",
+    "hive.sql.schema" = "APP",
+    "hive.sql.table" = "JOB",
+    "hive.sql.dbcp.maxActive" = "1",
+    "hive.sql.numPartitions"="2",
+    "hive.sql.partitionColumn"="id"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@job
+PREHOOK: query: INSERT INTO `job` VALUES (1, 'Software Engineer')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@job
+POSTHOOK: query: INSERT INTO `job` VALUES (1, 'Software Engineer')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@job
+PREHOOK: query: INSERT INTO `job` VALUES (2, 'Architect')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@job
+POSTHOOK: query: INSERT INTO `job` VALUES (2, 'Architect')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@job
+PREHOOK: query: INSERT INTO `job` VALUES (3, 'Quality Assurance')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@job
+POSTHOOK: query: INSERT INTO `job` VALUES (3, 'Quality Assurance')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@job
+PREHOOK: query: CREATE VIEW v1 AS 
+SELECT id FROM job WHERE title = 'Software Engineer'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@job
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v1
+POSTHOOK: query: CREATE VIEW v1 AS 
+SELECT id FROM job WHERE title = 'Software Engineer'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@job
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v1
+POSTHOOK: Lineage: v1.id SIMPLE [(job)job.FieldSchema(name:id, type:int, comment:from deserializer), ]
+PREHOOK: query: select * from v1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@job
+PREHOOK: Input: default@v1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@job
+POSTHOOK: Input: default@v1
+#### A masked pattern was here ####
+1
+PREHOOK: query: CREATE VIEW v2 AS 
+SELECT person.* FROM person 
+    JOIN v1 job on person.jid = job.id
+    JOIN country on person.cid = country.id
+WHERE country.name = 'Hungary'
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@country
+PREHOOK: Input: default@job
+PREHOOK: Input: default@person
+PREHOOK: Input: default@v1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v2
+POSTHOOK: query: CREATE VIEW v2 AS 
+SELECT person.* FROM person 
+    JOIN v1 job on person.jid = job.id
+    JOIN country on person.cid = country.id
+WHERE country.name = 'Hungary'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@country
+POSTHOOK: Input: default@job
+POSTHOOK: Input: default@person
+POSTHOOK: Input: default@v1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v2
+POSTHOOK: Lineage: v2.cid SIMPLE [(person)person.FieldSchema(name:cid, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: v2.id SIMPLE [(person)person.FieldSchema(name:id, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: v2.jid SIMPLE [(person)person.FieldSchema(name:jid, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: v2.name SIMPLE [(person)person.FieldSchema(name:name, type:varchar(25), comment:from deserializer), ]
+PREHOOK: query: select * from v2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country
+PREHOOK: Input: default@job
+PREHOOK: Input: default@person
+PREHOOK: Input: default@v1
+PREHOOK: Input: default@v2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from v2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country
+POSTHOOK: Input: default@job
+POSTHOOK: Input: default@person
+POSTHOOK: Input: default@v1
+POSTHOOK: Input: default@v2
+#### A masked pattern was here ####
+1	Laszlo	1	1

@@ -53,8 +53,8 @@ public class MiniHiveKdc {
   public static String AUTHENTICATION_TYPE = "KERBEROS";
   private static final String HIVE_METASTORE_SERVICE_PRINCIPAL = "hive";
 
-  private final MiniKdc miniKdc;
-  private final File workDir;
+  final MiniKdc miniKdc;
+  final File workDir;
   private final Map<String, String> userPrincipals =
       new HashMap<String, String>();
   private final Properties kdcConf = MiniKdc.createConf();
@@ -238,10 +238,13 @@ public class MiniHiveKdc {
     String hiveMetastoreKeytab = miniHiveKdc.getKeyTabFile(
         miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_METASTORE_SERVICE_PRINCIPAL));
 
-    return new MiniHS2.Builder().withTransactionalTables(false).withConf(hiveConf)
+    MiniHS2.Builder b = new MiniHS2.Builder().withTransactionalTables(false).withConf(hiveConf)
         .withSecureRemoteMetastore(hiveMetastorePrincipal, hiveMetastoreKeytab).
-            withMiniKdc(hivePrincipal, hiveKeytab).withAuthenticationType(authenticationType)
-        .build();
+            withMiniKdc(hivePrincipal, hiveKeytab).withAuthenticationType(authenticationType);
+    if(HiveServer2.isHttpTransportMode(hiveConf)){
+      b.withHTTPTransport();
+    }
+    return b.build();
   }
 
   /**

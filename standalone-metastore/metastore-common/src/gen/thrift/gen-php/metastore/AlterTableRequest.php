@@ -72,6 +72,16 @@ class AlterTableRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        10 => array(
+            'var' => 'expectedParameterKey',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        11 => array(
+            'var' => 'expectedParameterValue',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -110,6 +120,14 @@ class AlterTableRequest
      * @var string
      */
     public $processorIdentifier = null;
+    /**
+     * @var string
+     */
+    public $expectedParameterKey = null;
+    /**
+     * @var string
+     */
+    public $expectedParameterValue = null;
 
     public function __construct($vals = null)
     {
@@ -140,6 +158,12 @@ class AlterTableRequest
             }
             if (isset($vals['processorIdentifier'])) {
                 $this->processorIdentifier = $vals['processorIdentifier'];
+            }
+            if (isset($vals['expectedParameterKey'])) {
+                $this->expectedParameterKey = $vals['expectedParameterKey'];
+            }
+            if (isset($vals['expectedParameterValue'])) {
+                $this->expectedParameterValue = $vals['expectedParameterValue'];
             }
         }
     }
@@ -217,13 +241,13 @@ class AlterTableRequest
                 case 8:
                     if ($ftype == TType::LST) {
                         $this->processorCapabilities = array();
-                        $_size1140 = 0;
-                        $_etype1143 = 0;
-                        $xfer += $input->readListBegin($_etype1143, $_size1140);
-                        for ($_i1144 = 0; $_i1144 < $_size1140; ++$_i1144) {
-                            $elem1145 = null;
-                            $xfer += $input->readString($elem1145);
-                            $this->processorCapabilities []= $elem1145;
+                        $_size1290 = 0;
+                        $_etype1293 = 0;
+                        $xfer += $input->readListBegin($_etype1293, $_size1290);
+                        for ($_i1294 = 0; $_i1294 < $_size1290; ++$_i1294) {
+                            $elem1295 = null;
+                            $xfer += $input->readString($elem1295);
+                            $this->processorCapabilities []= $elem1295;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -233,6 +257,20 @@ class AlterTableRequest
                 case 9:
                     if ($ftype == TType::STRING) {
                         $xfer += $input->readString($this->processorIdentifier);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 10:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->expectedParameterKey);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 11:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->expectedParameterValue);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -298,8 +336,8 @@ class AlterTableRequest
             }
             $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 8);
             $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
-            foreach ($this->processorCapabilities as $iter1146) {
-                $xfer += $output->writeString($iter1146);
+            foreach ($this->processorCapabilities as $iter1296) {
+                $xfer += $output->writeString($iter1296);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -307,6 +345,16 @@ class AlterTableRequest
         if ($this->processorIdentifier !== null) {
             $xfer += $output->writeFieldBegin('processorIdentifier', TType::STRING, 9);
             $xfer += $output->writeString($this->processorIdentifier);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->expectedParameterKey !== null) {
+            $xfer += $output->writeFieldBegin('expectedParameterKey', TType::STRING, 10);
+            $xfer += $output->writeString($this->expectedParameterKey);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->expectedParameterValue !== null) {
+            $xfer += $output->writeFieldBegin('expectedParameterValue', TType::STRING, 11);
+            $xfer += $output->writeString($this->expectedParameterValue);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

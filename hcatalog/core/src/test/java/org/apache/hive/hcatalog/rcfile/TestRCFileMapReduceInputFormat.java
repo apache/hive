@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.serde2.columnar.BytesRefWritable;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
@@ -46,6 +45,8 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.util.ExitUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.junit.Assert.assertEquals;
@@ -129,7 +130,7 @@ public class TestRCFileMapReduceInputFormat {
     String usage = "Usage: RCFile " + "[-count N]" + " file";
     if (args.length == 0) {
       LOG.error(usage);
-      System.exit(-1);
+      ExitUtil.terminate(-1);
     }
 
     try {
@@ -146,7 +147,7 @@ public class TestRCFileMapReduceInputFormat {
 
       if (file == null) {
         LOG.error(usage);
-        System.exit(-1);
+        ExitUtil.terminate(-1);
       }
 
       LOG.info("count = {}", count);
@@ -233,7 +234,7 @@ public class TestRCFileMapReduceInputFormat {
     jonconf.set("mapred.input.dir", testDir.toString());
     JobContext context = new Job(jonconf);
     HiveConf.setLongVar(context.getConfiguration(),
-        HiveConf.ConfVars.MAPREDMAXSPLITSIZE, maxSplitSize);
+        HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE, maxSplitSize);
     List<InputSplit> splits = inputFormat.getSplits(context);
     assertEquals("splits length should be " + splitNumber, splitNumber, splits.size());
     int readCount = 0;

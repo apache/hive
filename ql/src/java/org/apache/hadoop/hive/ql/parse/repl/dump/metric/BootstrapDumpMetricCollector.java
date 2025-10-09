@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata;
  * Bootstrap Dump Metric Collector
  */
 public class BootstrapDumpMetricCollector extends ReplicationMetricCollector {
-  public BootstrapDumpMetricCollector(String dbName, String stagingDir, HiveConf conf) {
-    super(dbName, Metadata.ReplicationType.BOOTSTRAP, stagingDir, 0, conf);
+  public BootstrapDumpMetricCollector(String dbName, String stagingDir, HiveConf conf, Long executorId) {
+    super(dbName, Metadata.ReplicationType.BOOTSTRAP, stagingDir, executorId, conf);
   }
 }

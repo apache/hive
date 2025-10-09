@@ -1,5 +1,6 @@
 PREHOOK: query: drop table if exists src2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table src2 as select key key2, value value2 from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
@@ -27,6 +28,7 @@ PREHOOK: Input: default@src1
 255	val_255
 PREHOOK: query: drop table if exists dest1_n56
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table dest1_n56 as select * from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
@@ -458,6 +460,7 @@ PREHOOK: Input: default@dest1_n56
 15
 PREHOOK: query: drop table if exists dest2_n11
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table dest2_n11 as select * from src1 JOIN src2 ON src1.key = src2.key2
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
@@ -523,6 +526,7 @@ PREHOOK: Input: default@src1
 406	val_406
 PREHOOK: query: drop table if exists dest3_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table dest3_n0 as
   select * from src1 JOIN src2 ON src1.key = src2.key2 WHERE length(key) > 1
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -542,6 +546,7 @@ Result schema has 4 fields, but we don't get as many dependencies
 {"version":"1.0","engine":"tez","database":"default","hash":"fb315308480b6e64466a6db5246895d6","queryText":"insert overwrite table dest2_n11\n  select * from src1 JOIN src2 ON src1.key = src2.key2 WHERE length(key) > 3","edges":[{"sources":[4],"targets":[0],"edgeType":"PROJECTION"},{"sources":[5],"targets":[1],"edgeType":"PROJECTION"},{"sources":[6],"targets":[2],"edgeType":"PROJECTION"},{"sources":[7],"targets":[3],"edgeType":"PROJECTION"},{"sources":[4],"targets":[0,1,2,3],"expression":"((length(src1.key) > 3) and src1.key is not null)","edgeType":"PREDICATE"},{"sources":[4,6],"targets":[0,1,2,3],"expression":"(src1.key = src2.key2)","edgeType":"PREDICATE"},{"sources":[6],"targets":[0,1,2,3],"expression":"((length(src2.key2) > 3) and src2.key2 is not null)","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest2_n11.key"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest2_n11.value"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest2_n11.key2"},{"id":3,"vertexType":"COLUMN","vertexId":"default.dest2_n11.value2"},{"id":4,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":5,"vertexType":"COLUMN","vertexId":"default.src1.value"},{"id":6,"vertexType":"COLUMN","vertexId":"default.src2.key2"},{"id":7,"vertexType":"COLUMN","vertexId":"default.src2.value2"}]}
 PREHOOK: query: drop table if exists dest_l1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE dest_l1_n0(key INT, value STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -565,12 +570,16 @@ Result schema has 2 fields, but we don't get as many dependencies
 {"version":"1.0","engine":"tez","database":"default","hash":"40b5d904f13549d8c25bd0be758f5b6f","queryText":"INSERT OVERWRITE TABLE dest_l1_n0\nSELECT j.*\nFROM (SELECT t1.key, p1.value\n      FROM src1 t1\n      LEFT OUTER JOIN src p1\n      ON (t1.key = p1.key)\n      UNION ALL\n      SELECT t2.key, p2.value\n      FROM src1 t2\n      LEFT OUTER JOIN src p2\n      ON (t2.key = p2.key)) j","edges":[{"sources":[2],"targets":[0],"expression":"UDFToInteger(j.key)","edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"j.value","edgeType":"PROJECTION"},{"sources":[4],"targets":[0,1],"expression":"p1.key is not null","edgeType":"PREDICATE"},{"sources":[4,2],"targets":[0,1],"expression":"(p1.key = t1.key)","edgeType":"PREDICATE"},{"sources":[4],"targets":[0,1],"expression":"p2.key is not null","edgeType":"PREDICATE"},{"sources":[4,2],"targets":[0,1],"expression":"(p2.key = t2.key)","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.dest_l1_n0.key"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l1_n0.value"},{"id":2,"vertexType":"COLUMN","vertexId":"default.src1.key"},{"id":3,"vertexType":"COLUMN","vertexId":"default.src.value"},{"id":4,"vertexType":"COLUMN","vertexId":"default.src.key"}]}
 PREHOOK: query: drop table if exists emp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: drop table if exists dept_n10
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: drop table if exists project_n10
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: drop table if exists tgt_n10
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table emp(emp_id int, name string, mgr_id int, dept_id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -607,6 +616,7 @@ Result schema has 6 fields, but we don't get as many dependencies
 {"version":"1.0","engine":"tez","database":"default","hash":"bd297ef302d63c60b0bfb692af732b04","queryText":"INSERT INTO TABLE tgt_n10\nSELECT emd.dept_name, emd.name, emd.emp_id, emd.mgr_id, p.project_id, p.project_name\nFROM (\n  SELECT d.dept_name, em.name, em.emp_id, em.mgr_id, em.dept_id\n  FROM (\n    SELECT e.name, e.dept_id, e.emp_id emp_id, m.emp_id mgr_id\n    FROM emp e JOIN emp m ON e.emp_id = m.emp_id\n    ) em\n  JOIN dept_n10 d ON d.dept_id = em.dept_id\n  ) emd JOIN project_n10 p ON emd.dept_id = p.project_id","edges":[{"sources":[6],"targets":[0],"edgeType":"PROJECTION"},{"sources":[7],"targets":[1],"edgeType":"PROJECTION"},{"sources":[8],"targets":[2,3],"edgeType":"PROJECTION"},{"sources":[9],"targets":[4],"edgeType":"PROJECTION"},{"sources":[10],"targets":[5],"edgeType":"PROJECTION"},{"sources":[8,11],"targets":[0,1,2,3,4,5],"expression":"(e.emp_id is not null and e.dept_id is not null)","edgeType":"PREDICATE"},{"sources":[8],"targets":[0,1,2,3,4,5],"expression":"(e.emp_id = m.emp_id)","edgeType":"PREDICATE"},{"sources":[8],"targets":[0,1,2,3,4,5],"expression":"m.emp_id is not null","edgeType":"PREDICATE"},{"sources":[11,12],"targets":[0,1,2,3,4,5],"expression":"(e.dept_id = d.dept_id)","edgeType":"PREDICATE"},{"sources":[12],"targets":[0,1,2,3,4,5],"expression":"d.dept_id is not null","edgeType":"PREDICATE"},{"sources":[11,9],"targets":[0,1,2,3,4,5],"expression":"(e.dept_id = p.project_id)","edgeType":"PREDICATE"},{"sources":[9],"targets":[0,1,2,3,4,5],"expression":"p.project_id is not null","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.tgt_n10.dept_name"},{"id":1,"vertexType":"COLUMN","vertexId":"default.tgt_n10.name"},{"id":2,"vertexType":"COLUMN","vertexId":"default.tgt_n10.emp_id"},{"id":3,"vertexType":"COLUMN","vertexId":"default.tgt_n10.mgr_id"},{"id":4,"vertexType":"COLUMN","vertexId":"default.tgt_n10.proj_id"},{"id":5,"vertexType":"COLUMN","vertexId":"default.tgt_n10.proj_name"},{"id":6,"vertexType":"COLUMN","vertexId":"default.dept_n10.dept_name"},{"id":7,"vertexType":"COLUMN","vertexId":"default.emp.name"},{"id":8,"vertexType":"COLUMN","vertexId":"default.emp.emp_id"},{"id":9,"vertexType":"COLUMN","vertexId":"default.project_n10.project_id"},{"id":10,"vertexType":"COLUMN","vertexId":"default.project_n10.project_name"},{"id":11,"vertexType":"COLUMN","vertexId":"default.emp.dept_id"},{"id":12,"vertexType":"COLUMN","vertexId":"default.dept_n10.dept_id"}]}
 PREHOOK: query: drop table if exists dest_l2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table dest_l2 (id int, c1 tinyint, c2 int, c3 bigint) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -629,6 +639,7 @@ PREHOOK: Input: default@dest_l2
 10000
 PREHOOK: query: drop table if exists dest_l3
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table dest_l3 (id int, c1 string, c2 string, c3 int) stored as textfile
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -647,7 +658,7 @@ having count(a.c2) > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest_l2
 #### A masked pattern was here ####
-{"version":"1.0","engine":"tez","database":"default","hash":"4e60ca1e72d985639b2027021a199297","queryText":"select sum(a.c1) over (partition by a.c1 order by a.id)\nfrom dest_l2 a\nwhere a.c2 != 10\ngroup by a.c1, a.c2, a.id\nhaving count(a.c2) > 0","edges":[{"sources":[1,2,3],"targets":[0],"expression":"(tok_function sum (. (tok_table_or_col $hdt$_0) c1) (tok_windowspec (tok_partitioningspec (tok_distributeby (. (tok_table_or_col $hdt$_0) c1)) (tok_orderby (tok_tabsortcolnameasc (tok_nulls_last (. (tok_table_or_col $hdt$_0) id))))) (tok_windowvalues (preceding unbounded) current)))","edgeType":"PROJECTION"},{"sources":[2],"targets":[0],"expression":"(a.c2 <> 10)","edgeType":"PREDICATE"},{"sources":[2],"targets":[0],"expression":"(count(default.dest_l2.c2) > 0L)","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"sum_window_0"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l2.c1"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l2.c2"},{"id":3,"vertexType":"COLUMN","vertexId":"default.dest_l2.id"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"4e60ca1e72d985639b2027021a199297","queryText":"select sum(a.c1) over (partition by a.c1 order by a.id)\nfrom dest_l2 a\nwhere a.c2 != 10\ngroup by a.c1, a.c2, a.id\nhaving count(a.c2) > 0","edges":[{"sources":[1,2],"targets":[0],"expression":"sum(a.c1) over (partition by a.c1 order by a.id RANGE between unbounded and current_row)","edgeType":"PROJECTION"},{"sources":[3],"targets":[0],"expression":"(a.c2 <> 10)","edgeType":"PREDICATE"},{"sources":[3],"targets":[0],"expression":"(count(default.dest_l2.c2) > 0L)","edgeType":"PREDICATE"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"sum_window_0"},{"id":1,"vertexType":"COLUMN","vertexId":"default.dest_l2.c1"},{"id":2,"vertexType":"COLUMN","vertexId":"default.dest_l2.id"},{"id":3,"vertexType":"COLUMN","vertexId":"default.dest_l2.c2"}]}
 1
 PREHOOK: query: select sum(a.c1), count(b.c1), b.c2, b.c3
 from dest_l2 a join dest_l3 b on (a.id = b.id)
@@ -663,6 +674,7 @@ PREHOOK: Input: default@dest_l3
 1	1	s2	15
 PREHOOK: query: drop table if exists t_n10
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table t_n10 as
 select distinct a.c2, a.c3 from dest_l2 a
 inner join dest_l3 b on (a.id = b.id)
@@ -691,6 +703,7 @@ PREHOOK: Input: default@src1
 9	1	998.0
 PREHOOK: query: drop table if exists relations
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table relations (identity char(32), type string,
   ep1_src_type string, ep1_type string, ep2_src_type string, ep2_type string,
   ep1_ids array<string>, ep2_ids array<string>)
@@ -699,6 +712,7 @@ PREHOOK: Output: database:default
 PREHOOK: Output: default@relations
 PREHOOK: query: drop table if exists rels_exploded
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 PREHOOK: query: create table rels_exploded (identity char(32), type string,
   ep1_src_type string, ep1_type string, ep2_src_type string, ep2_type string,
   ep1_id char(32), ep2_id char(32))
@@ -710,7 +724,7 @@ PREHOOK: query: select identity, ep1_id from relations
 PREHOOK: type: QUERY
 PREHOOK: Input: default@relations
 #### A masked pattern was here ####
-{"version":"1.0","engine":"tez","database":"default","hash":"436a649a0d9540e8f093f8353d86813a","queryText":"select identity, ep1_id from relations\n  lateral view explode(ep1_ids) nav_rel as ep1_id","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"nav_rel._col12","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"identity"},{"id":1,"vertexType":"COLUMN","vertexId":"ep1_id"},{"id":2,"vertexType":"COLUMN","vertexId":"default.relations.identity"},{"id":3,"vertexType":"COLUMN","vertexId":"default.relations.ep1_ids"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"436a649a0d9540e8f093f8353d86813a","queryText":"select identity, ep1_id from relations\n  lateral view explode(ep1_ids) nav_rel as ep1_id","edges":[{"sources":[2],"targets":[0],"edgeType":"PROJECTION"},{"sources":[3],"targets":[1],"expression":"nav_rel.ep1_id","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"identity"},{"id":1,"vertexType":"COLUMN","vertexId":"ep1_id"},{"id":2,"vertexType":"COLUMN","vertexId":"default.relations.identity"},{"id":3,"vertexType":"COLUMN","vertexId":"default.relations.ep1_ids"}]}
 PREHOOK: query: insert into rels_exploded select identity, type,
   ep1_src_type, ep1_type, ep2_src_type, ep2_type, ep1_id, ep2_id
 from relations lateral view explode(ep1_ids) rel1 as ep1_id
@@ -719,4 +733,4 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@relations
 PREHOOK: Output: default@rels_exploded
 Result schema has 8 fields, but we don't get as many dependencies
-{"version":"1.0","engine":"tez","database":"default","hash":"56b2b197f394a30537ce1acf835ff8e1","queryText":"insert into rels_exploded select identity, type,\n  ep1_src_type, ep1_type, ep2_src_type, ep2_type, ep1_id, ep2_id\nfrom relations lateral view explode(ep1_ids) rel1 as ep1_id\n  lateral view explode (ep2_ids) rel2 as ep2_id","edges":[{"sources":[8],"targets":[0],"edgeType":"PROJECTION"},{"sources":[9],"targets":[1],"edgeType":"PROJECTION"},{"sources":[10],"targets":[2],"edgeType":"PROJECTION"},{"sources":[11],"targets":[3],"edgeType":"PROJECTION"},{"sources":[12],"targets":[4],"edgeType":"PROJECTION"},{"sources":[13],"targets":[5],"edgeType":"PROJECTION"},{"sources":[14],"targets":[6],"expression":"CAST( rel1._col12 AS CHAR(32))","edgeType":"PROJECTION"},{"sources":[15],"targets":[7],"expression":"CAST( rel2._col13 AS CHAR(32))","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.rels_exploded.identity"},{"id":1,"vertexType":"COLUMN","vertexId":"default.rels_exploded.type"},{"id":2,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep1_src_type"},{"id":3,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep1_type"},{"id":4,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep2_src_type"},{"id":5,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep2_type"},{"id":6,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep1_id"},{"id":7,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep2_id"},{"id":8,"vertexType":"COLUMN","vertexId":"default.relations.identity"},{"id":9,"vertexType":"COLUMN","vertexId":"default.relations.type"},{"id":10,"vertexType":"COLUMN","vertexId":"default.relations.ep1_src_type"},{"id":11,"vertexType":"COLUMN","vertexId":"default.relations.ep1_type"},{"id":12,"vertexType":"COLUMN","vertexId":"default.relations.ep2_src_type"},{"id":13,"vertexType":"COLUMN","vertexId":"default.relations.ep2_type"},{"id":14,"vertexType":"COLUMN","vertexId":"default.relations.ep1_ids"},{"id":15,"vertexType":"COLUMN","vertexId":"default.relations.ep2_ids"}]}
+{"version":"1.0","engine":"tez","database":"default","hash":"56b2b197f394a30537ce1acf835ff8e1","queryText":"insert into rels_exploded select identity, type,\n  ep1_src_type, ep1_type, ep2_src_type, ep2_type, ep1_id, ep2_id\nfrom relations lateral view explode(ep1_ids) rel1 as ep1_id\n  lateral view explode (ep2_ids) rel2 as ep2_id","edges":[{"sources":[8],"targets":[0],"edgeType":"PROJECTION"},{"sources":[9],"targets":[1],"edgeType":"PROJECTION"},{"sources":[10],"targets":[2],"edgeType":"PROJECTION"},{"sources":[11],"targets":[3],"edgeType":"PROJECTION"},{"sources":[12],"targets":[4],"edgeType":"PROJECTION"},{"sources":[13],"targets":[5],"edgeType":"PROJECTION"},{"sources":[14],"targets":[6],"expression":"CAST( rel1.ep1_id AS CHAR(32))","edgeType":"PROJECTION"},{"sources":[15],"targets":[7],"expression":"CAST( rel2.ep2_id AS CHAR(32))","edgeType":"PROJECTION"}],"vertices":[{"id":0,"vertexType":"COLUMN","vertexId":"default.rels_exploded.identity"},{"id":1,"vertexType":"COLUMN","vertexId":"default.rels_exploded.type"},{"id":2,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep1_src_type"},{"id":3,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep1_type"},{"id":4,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep2_src_type"},{"id":5,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep2_type"},{"id":6,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep1_id"},{"id":7,"vertexType":"COLUMN","vertexId":"default.rels_exploded.ep2_id"},{"id":8,"vertexType":"COLUMN","vertexId":"default.relations.identity"},{"id":9,"vertexType":"COLUMN","vertexId":"default.relations.type"},{"id":10,"vertexType":"COLUMN","vertexId":"default.relations.ep1_src_type"},{"id":11,"vertexType":"COLUMN","vertexId":"default.relations.ep1_type"},{"id":12,"vertexType":"COLUMN","vertexId":"default.relations.ep2_src_type"},{"id":13,"vertexType":"COLUMN","vertexId":"default.relations.ep2_type"},{"id":14,"vertexType":"COLUMN","vertexId":"default.relations.ep1_ids"},{"id":15,"vertexType":"COLUMN","vertexId":"default.relations.ep2_ids"}]}

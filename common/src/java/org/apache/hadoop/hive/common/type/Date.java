@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.common.type;
 
 import org.apache.hive.common.util.SuppressFBWarnings;
 
+import java.text.ParsePosition;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,9 +28,11 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.Objects;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
@@ -39,7 +42,8 @@ import static java.time.temporal.ChronoField.YEAR;
 /**
  * This is the internal type for Date. The full qualified input format of Date
  * is "uuuu-MM-dd". For example: "2021-02-11".
- * <table border="2" summary="">
+ * <table border="1">
+ *     <caption></caption>
  * <tr>
  * <th>Field</th>
  * <th>Format</th>
@@ -81,7 +85,7 @@ public class Date implements Comparable<Date> {
   private static final LocalDate EPOCH = LocalDate.of(1970, 1, 1);
 
   private static final DateTimeFormatter PARSE_FORMATTER =
-      new DateTimeFormatterBuilder().appendValue(YEAR, 1, 10, SignStyle.NORMAL).appendLiteral('-')
+      new DateTimeFormatterBuilder().appendValue(YEAR, 1, 4, SignStyle.NORMAL).appendLiteral('-')
           .appendValue(MONTH_OF_YEAR, 1, 2, SignStyle.NORMAL).appendLiteral('-')
           .appendValue(DAY_OF_MONTH, 1, 2, SignStyle.NORMAL).toFormatter().withResolverStyle(ResolverStyle.STRICT);
 
@@ -113,8 +117,8 @@ public class Date implements Comparable<Date> {
 
   @Override
   public boolean equals(Object other) {
-    if (other instanceof Date) {
-      return compareTo((Date) other) == 0;
+    if (other instanceof Date date) {
+      return compareTo(date) == 0;
     }
     return false;
   }
@@ -174,23 +178,26 @@ public class Date implements Comparable<Date> {
    * @throws NullPointerException if {@code text} is null
    */
   public static Date valueOf(final String text) {
-    String s = Objects.requireNonNull(text).trim();
-    int idx = s.indexOf(" ");
-    if (idx != -1) {
-      s = s.substring(0, idx);
-    } else {
-      idx = s.indexOf('T');
-      if (idx != -1) {
-        s = s.substring(0, idx);
-      }
-    }
-    LocalDate localDate;
+    String trimedText = Objects.requireNonNull(text).trim();
+    ParsePosition pos = new ParsePosition(0);
     try {
-      localDate = LocalDate.parse(s, PARSE_FORMATTER);
+      TemporalAccessor t = PARSE_FORMATTER.parse(trimedText, pos);
+      if (pos.getErrorIndex() >= 0) {
+        throw new DateTimeParseException("Text could not be parsed to date", trimedText, pos.getErrorIndex());
+      }
+      //Check if there is still text left after parsing
+      if(pos.getIndex() < trimedText.length()) {
+        char lastChar = trimedText.charAt(pos.getIndex());
+        //Check if the first character of the remaining is a digit, e.g. "2023-08-0800" if yes, then it is a parse error and must throw an exception
+        if (lastChar >= '0' && lastChar <= '9'){
+          throw new DateTimeParseException("Text '" + trimedText + "' could not be parsed, unparsed text found at index " + pos.getIndex(), trimedText,
+              pos.getIndex());
+        }
+      }  
+      return new Date(LocalDate.of(t.get(YEAR), t.get(MONTH_OF_YEAR), t.get(DAY_OF_MONTH)));
     } catch (DateTimeException e) {
       throw new IllegalArgumentException("Cannot create date, parsing error");
     }
-    return new Date(localDate);
   }
 
   public static Date ofEpochDay(int epochDay) {

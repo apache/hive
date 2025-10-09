@@ -102,6 +102,9 @@ STAGE PLANS:
   Stage: Stage-4
     Create Materialized View
       columns: key int
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
       name: default.masking_test_view_n_mv
       original text: select key from masking_test_n_mv
@@ -160,7 +163,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	2000                
-	totalSize           	976                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -179,8 +182,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.masking_test_n_mv	0/0/0               	 
+Table name          	Snapshot            	 
+default.masking_test_n_mv	:1:9223372036854775807::	 
 PREHOOK: query: explain
 select key from `masking_test_n_mv`
 PREHOOK: type: QUERY
@@ -203,9 +206,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: default.masking_test_view_n_mv
-          filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+          filterExpr: ((key < 10) and (0 = (key % 2))) (type: boolean)
           Filter Operator
-            predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+            predicate: ((key < 10) and (0 = (key % 2))) (type: boolean)
             Select Operator
               expressions: key (type: int)
               outputColumnNames: _col0
@@ -269,10 +272,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.masking_test_view_n_mv
-                  filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+                  filterExpr: ((key < 10) and (0 = (key % 2))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+                    predicate: ((key < 10) and (0 = (key % 2))) (type: boolean)
                     Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: int)
@@ -545,10 +548,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.masking_test_view_n_mv_4
-                  filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+                  filterExpr: ((key < 10) and (0 = (key % 2))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+                    predicate: ((key < 10) and (0 = (key % 2))) (type: boolean)
                     Statistics: Num rows: 5 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: reverse(value) (type: string)
@@ -636,10 +639,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.masking_test_view_n_mv_4
-                  filterExpr: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+                  filterExpr: ((key < 10) and (0 = (key % 2))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key < 10) and ((key % 2) = 0)) (type: boolean)
+                    predicate: ((key < 10) and (0 = (key % 2))) (type: boolean)
                     Statistics: Num rows: 5 Data size: 475 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: reverse(value) (type: string), key (type: int)
@@ -804,6 +807,9 @@ STAGE PLANS:
   Stage: Stage-4
     Create Materialized View
       columns: key int
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       expanded text: select `srctnx`.`key` from `default`.`srcTnx`
       name: default.masking_test_view_n_mv_2
       original text: select key from srcTnx
@@ -862,7 +868,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	2000                
-	totalSize           	976                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -881,8 +887,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.srctnx 	0/0/0               	 
+Table name          	Snapshot            	 
+default.srctnx      	:1:9223372036854775807::	 
 PREHOOK: query: explain
 select key from `masking_test_view_n_mv_2` order by key
 PREHOOK: type: QUERY
@@ -1485,16 +1491,20 @@ POSTHOOK: Output: default@masking_test_view_n_mv_4
 PREHOOK: query: drop table `masking_test_n_mv`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@masking_test_n_mv
+PREHOOK: Output: database:default
 PREHOOK: Output: default@masking_test_n_mv
 POSTHOOK: query: drop table `masking_test_n_mv`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@masking_test_n_mv
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_n_mv
 PREHOOK: query: drop table `srcTnx`
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srctnx
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srctnx
 POSTHOOK: query: drop table `srcTnx`
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srctnx
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srctnx

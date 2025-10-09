@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.parse.repl.ReplState.LogTag;
 /**
  * IncrementalLoadLogger.
  *
- * Repllogger for Incremental Load.
+ * ReplLogger for Incremental Load.
  **/
 public class IncrementalLoadLogger extends ReplLogger<String> {
   private final ReplStatsTracker replStatsTracker;

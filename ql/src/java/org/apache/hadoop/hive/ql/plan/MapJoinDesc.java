@@ -34,7 +34,6 @@ import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
-import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
@@ -531,7 +530,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
       conditionList.add(
           new VectorizationCondition(
               vectorMapJoinDesc.getUseOptimizedTable(),
-              HiveConf.ConfVars.HIVEMAPJOINUSEOPTIMIZEDTABLE.varname));
+              HiveConf.ConfVars.HIVE_MAPJOIN_USE_OPTIMIZED_TABLE.varname));
       conditionList.add(
           new VectorizationCondition(
               enabled,

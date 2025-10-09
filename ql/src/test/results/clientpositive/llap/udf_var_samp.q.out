@@ -36,8 +36,10 @@ Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDAFVarianceSample
 Function type:BUILTIN
 PREHOOK: query: drop table if exists t_n27
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists t_n27
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table t_n27 (a int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

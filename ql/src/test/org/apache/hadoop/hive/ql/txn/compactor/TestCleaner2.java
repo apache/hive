@@ -23,6 +23,6 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 public class TestCleaner2 extends TestCleaner {
   @Override
   boolean useHive130DeltaDirName() {
-    return false;
+    return true;
   }
 }

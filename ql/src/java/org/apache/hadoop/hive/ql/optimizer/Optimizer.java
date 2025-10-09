@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
+import static org.apache.hadoop.hive.conf.HiveConf.shouldComputeLineage;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
@@ -42,10 +42,6 @@ import org.apache.hadoop.hive.ql.ppd.SimplePredicatePushDown;
 import org.apache.hadoop.hive.ql.ppd.SyntheticJoinPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 
 /**
  * Implementation of the optimizer.
@@ -72,44 +68,38 @@ public class Optimizer {
     transformations.add(new HiveOpConverterPostProc());
 
     // Add the transformation that computes the lineage information.
-    Set<String> postExecHooks = Sets.newHashSet(
-      Splitter.on(",").trimResults().omitEmptyStrings().split(
-        Strings.nullToEmpty(HiveConf.getVar(hiveConf, HiveConf.ConfVars.POSTEXECHOOKS))));
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_LINEAGE_INFO)
-        || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.PostExecutePrinter")
-        || postExecHooks.contains("org.apache.hadoop.hive.ql.hooks.LineageLogger")
-        || postExecHooks.contains("org.apache.atlas.hive.hook.HiveHook")) {
-      transformations.add(new Generator(postExecHooks));
+    if (shouldComputeLineage(hiveConf)) {
+      transformations.add(Generator.fromConf(hiveConf));
     }
 
     // Try to transform OR predicates in Filter into simpler IN clauses first
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZER) &&
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER) &&
             !pctx.getContext().isCboSucceeded()) {
       final int min = HiveConf.getIntVar(hiveConf,
-          HiveConf.ConfVars.HIVEPOINTLOOKUPOPTIMIZERMIN);
+          HiveConf.ConfVars.HIVE_POINT_LOOKUP_OPTIMIZER_MIN);
       transformations.add(new PointLookupOptimizer(min));
     }
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEPARTITIONCOLUMNSEPARATOR)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_PARTITION_COLUMN_SEPARATOR)) {
         transformations.add(new PartitionColumnsSeparator());
     }
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD) &&
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_PPD) &&
             !pctx.getContext().isCboSucceeded()) {
       transformations.add(new PredicateTransitivePropagate());
-      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION)) {
+      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_CONSTANT_PROPAGATION)) {
         transformations.add(new ConstantPropagate());
       }
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new PredicatePushDown());
-    } else if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD) &&
+    } else if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_PPD) &&
             pctx.getContext().isCboSucceeded()) {
       transformations.add(new SyntheticJoinPredicate());
       transformations.add(new SimplePredicatePushDown());
       transformations.add(new RedundantDynamicPruningConditionsRemoval());
     }
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION) &&
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_CONSTANT_PROPAGATION) &&
         (!pctx.getContext().isCboSucceeded() || pctx.getContext().getOperation() == Context.Operation.MERGE)) {
       // We run constant propagation twice because after predicate pushdown, filter expressions
       // are combined and may become eligible for reduction (like is not null filter).
@@ -121,26 +111,26 @@ public class Optimizer {
 
     transformations.add(new SortedDynPartitionTimeGranularityOptimizer());
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_PPD)) {
       transformations.add(new PartitionPruner());
       transformations.add(new PartitionConditionRemover());
-      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTLISTBUCKETING)) {
+      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_LIST_BUCKETING)) {
         /* Add list bucketing pruner. */
         transformations.add(new ListBucketingPruner());
       }
-      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION) &&
+      if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_CONSTANT_PROPAGATION) &&
               !pctx.getContext().isCboSucceeded()) {
         // PartitionPruner may create more folding opportunities, run ConstantPropagate again.
         transformations.add(new ConstantPropagate());
       }
     }
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGROUPBY) ||
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_GROUPBY) ||
         HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_MAP_GROUPBY_SORT)) {
       transformations.add(new GroupByOptimizer());
     }
     transformations.add(new ColumnPruner());
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVECOUNTDISTINCTOPTIMIZER)
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_COUNT_DISTINCT_OPTIMIZER)
         && (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEST) || isTezExecEngine)) {
       transformations.add(new CountDistinctRewriteProc());
     }
@@ -156,7 +146,7 @@ public class Optimizer {
     MapJoinProcessor mapJoinProcessor = new MapJoinProcessor();
     transformations.add(mapJoinProcessor);
 
-    if ((HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTBUCKETMAPJOIN))
+    if ((HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_BUCKET_MAPJOIN))
       && !isTezExecEngine) {
       transformations.add(new BucketMapJoinOptimizer());
       bucketMapJoinOptimizer = true;
@@ -164,7 +154,7 @@ public class Optimizer {
 
     // If optimize hive.optimize.bucketmapjoin.sortedmerge is set, add both
     // BucketMapJoinOptimizer and SortedMergeBucketMapJoinOptimizer
-    if ((HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTSORTMERGEBUCKETMAPJOIN))
+    if ((HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_SORT_MERGE_BUCKET_MAPJOIN))
         && !isTezExecEngine) {
       if (!bucketMapJoinOptimizer) {
         // No need to add BucketMapJoinOptimizer twice
@@ -173,20 +163,20 @@ public class Optimizer {
       transformations.add(new SortedMergeBucketMapJoinOptimizer());
     }
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEBUCKETINGSORTING)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_BUCKETING_SORTING)) {
       transformations.add(new BucketingSortingReduceSinkOptimizer());
     }
 
     transformations.add(new UnionProcessor());
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.NWAYJOINREORDER)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.N_WAY_JOIN_REORDER)) {
       transformations.add(new JoinReorder());
     }
 
     if (HiveConf.getBoolVar(hiveConf,
         HiveConf.ConfVars.TEZ_OPTIMIZE_BUCKET_PRUNING)
-        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTPPD)
-        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTINDEXFILTER)) {
+        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_PPD)
+        && HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_INDEX_FILTER)) {
       final boolean compatMode =
           HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT);
       transformations.add(new FixedBucketPruningOptimizer(compatMode));
@@ -194,31 +184,31 @@ public class Optimizer {
 
     transformations.add(new BucketVersionPopulator());
 
-    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTREDUCEDEDUPLICATION) &&
+    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_REDUCE_DEDUPLICATION) &&
         !isTezExecEngine) {
       transformations.add(new ReduceSinkDeDuplication());
     }
     transformations.add(new NonBlockingOpDeDupProc());
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEIDENTITYPROJECTREMOVER)
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IDENTITY_PROJECT_REMOVER)
         && !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
       transformations.add(new IdentityProjectRemover());
     }
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVELIMITOPTENABLE)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_LIMIT_OPT_ENABLE)) {
       transformations.add(new GlobalLimitOptimizer());
     }
-    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCORRELATION) &&
-        !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEGROUPBYSKEW) &&
+    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPT_CORRELATION) &&
+        !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_GROUPBY_SKEW) &&
         !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME) &&
         !isTezExecEngine) {
       transformations.add(new CorrelationOptimizer());
     }
-    if (HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE) > 0) {
+    if (HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVE_LIMIT_PUSHDOWN_MEMORY_USAGE) > 0) {
       transformations.add(new LimitPushdownOptimizer());
     }
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT)) {
       transformations.add(new OrderlessLimitPushDownOptimizer());
     }
-    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES)) {
+    if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES)) {
       transformations.add(new StatsOptimizer());
     }
     if (pctx.getContext().isExplainSkipExecution() && !isTezExecEngine) {
@@ -226,11 +216,11 @@ public class Optimizer {
       transformations.add(new AnnotateWithOpTraits());
     }
 
-    if (!HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVEFETCHTASKCONVERSION).equals("none")) {
+    if (!HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION).equals("none")) {
       transformations.add(new SimpleFetchOptimizer()); // must be called last
     }
 
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEFETCHTASKAGGR)) {
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_FETCH_TASK_AGGR)) {
       transformations.add(new SimpleFetchAggregation());
     }
 

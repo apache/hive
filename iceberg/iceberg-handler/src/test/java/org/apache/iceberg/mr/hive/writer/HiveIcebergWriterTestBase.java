@@ -22,9 +22,11 @@ package org.apache.iceberg.mr.hive.writer;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskType;
@@ -41,6 +43,7 @@ import org.apache.iceberg.data.IcebergGenerics2;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
@@ -83,16 +86,24 @@ public class HiveIcebergWriterTestBase {
   @Parameterized.Parameter(1)
   public boolean partitioned;
 
-  @Parameterized.Parameters(name = "fileFormat={0}, partitioned={1}")
+  @Parameterized.Parameter(2)
+  public boolean skipRowData;
+
+  @Parameterized.Parameters(name = "fileFormat={0}, partitioned={1}, skipRowData={2}")
   public static Collection<Object[]> parameters() {
     return Lists.newArrayList(new Object[][] {
-        { FileFormat.PARQUET, true },
-        { FileFormat.ORC, true },
-        { FileFormat.AVRO, true },
-        { FileFormat.PARQUET, false },
+        { FileFormat.PARQUET, true, true },
+        { FileFormat.ORC, true, true },
+        { FileFormat.AVRO, true, true },
+        { FileFormat.PARQUET, false, true },
+        { FileFormat.PARQUET, true, false },
+        { FileFormat.ORC, true, false },
+        { FileFormat.AVRO, true, false },
+        { FileFormat.PARQUET, false, false },
 // Skip this until the ORC reader is fixed - test only issue
 //        { FileFormat.ORC, false },
-        { FileFormat.AVRO, false }
+        { FileFormat.AVRO, false, true },
+        { FileFormat.AVRO, false, false }
     });
   }
 
@@ -105,7 +116,8 @@ public class HiveIcebergWriterTestBase {
         PartitionSpec.builderFor(SCHEMA)
             .bucket("data", 3)
             .build();
-    this.helper = new TestHelper(new HiveConf(), tables, location.toString(), SCHEMA, spec, fileFormat, temp);
+    this.helper = new TestHelper(new HiveConf(), tables, location.toString(), SCHEMA, spec, fileFormat,
+        Collections.singletonMap(WriterBuilder.ICEBERG_DELETE_SKIPROWDATA, String.valueOf(skipRowData)), temp);
     this.table = helper.createTable();
     helper.appendToTable(RECORDS);
 
@@ -113,13 +125,15 @@ public class HiveIcebergWriterTestBase {
     TableMetadata meta = ops.current();
     ops.commit(meta, meta.upgradeToFormatVersion(2));
 
+    JobConf jc = new JobConf();
+    jc.set(Catalogs.NAME, "dummy");
     JobID jobId = new JobID("test", 0);
+
     TaskAttemptID taskAttemptID =
         new TaskAttemptID(jobId.getJtIdentifier(), jobId.getId(), TaskType.MAP, 0, 0);
-    writerBuilder = WriterBuilder.builderFor(table)
+    writerBuilder = WriterBuilder.builderFor(table, jc::get)
         .attemptID(taskAttemptID)
-        .queryId("Q_ID")
-        .tableName("dummy");
+        .queryId("Q_ID");
   }
 
   @After

@@ -652,48 +652,60 @@ POSTHOOK: Input: default@votertab10k_part
 PREHOOK: query: drop table studenttab10k
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@studenttab10k
+PREHOOK: Output: database:default
 PREHOOK: Output: default@studenttab10k
 POSTHOOK: query: drop table studenttab10k
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@studenttab10k
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@studenttab10k
 PREHOOK: query: drop table votertab10k
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@votertab10k
+PREHOOK: Output: database:default
 PREHOOK: Output: default@votertab10k
 POSTHOOK: query: drop table votertab10k
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@votertab10k
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@votertab10k
 PREHOOK: query: drop table studenttab10k_smb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@studenttab10k_smb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@studenttab10k_smb
 POSTHOOK: query: drop table studenttab10k_smb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@studenttab10k_smb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@studenttab10k_smb
 PREHOOK: query: drop table votertab10k_smb
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@votertab10k_smb
+PREHOOK: Output: database:default
 PREHOOK: Output: default@votertab10k_smb
 POSTHOOK: query: drop table votertab10k_smb
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@votertab10k_smb
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@votertab10k_smb
 PREHOOK: query: drop table studenttab10k_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@studenttab10k_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@studenttab10k_part
 POSTHOOK: query: drop table studenttab10k_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@studenttab10k_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@studenttab10k_part
 PREHOOK: query: drop table votertab10k_part
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@votertab10k_part
+PREHOOK: Output: database:default
 PREHOOK: Output: default@votertab10k_part
 POSTHOOK: query: drop table votertab10k_part
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@votertab10k_part
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@votertab10k_part

@@ -80,24 +80,24 @@ POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 1	a	1	1
 1	a	1	1
-2	a	1	1
+2	a	1	2
 3	a	2	2
 4	a	2	2
-5	a	2	2
+5	a	2	3
 6	a	3	3
 7	a	3	3
-8	a	3	3
+8	a	3	4
 9	a	4	4
 10	a	4	4
 6	b	1	1
 6	b	1	1
-7	b	1	1
+7	b	1	2
 8	b	2	2
 9	b	2	2
-10	b	2	2
+10	b	2	3
 11	b	3	3
 12	b	3	3
-13	b	3	3
+13	b	3	4
 14	b	4	4
 15	b	4	4
 WARNING: Comparing bigint and double may result in loss of information.
@@ -159,7 +159,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: char(1))
                         Statistics: Num rows: 3 Data size: 687 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -198,7 +198,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -231,27 +231,27 @@ POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 1	rewrite	1
 1	rewrite	1
-2	rewrite	1
+2	rewrite	2
 3	rewrite	2
 4	rewrite	2
-5	rewrite	2
+5	rewrite	3
 6	rewrite	3
 7	rewrite	3
-8	rewrite	3
+8	rewrite	4
 9	rewrite	4
 10	rewrite	4
 6	rewrite	1
 6	rewrite	1
-7	rewrite	1
+7	rewrite	2
 8	rewrite	2
 9	rewrite	2
-10	rewrite	2
+10	rewrite	3
 11	rewrite	3
 12	rewrite	3
-13	rewrite	3
+13	rewrite	4
 14	rewrite	4
 15	rewrite	4
 1	rewrite	1
-2	rewrite	1
-10	rewrite	2
-13	rewrite	3
+2	rewrite	2
+10	rewrite	3
+13	rewrite	4

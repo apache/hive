@@ -48,9 +48,9 @@ columns:struct columns { i32 key, string value}
 partitioned:false
 partitionColumns:
 totalNumberFiles:3
-totalFileSize:7596
-maxFileSize:2532
-minFileSize:2532
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc extended src_orc_merge_test_stat
@@ -93,7 +93,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	147000              
-	totalSize           	7596                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -144,7 +144,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	1500                
 	rawDataSize         	147000              
-	totalSize           	7216                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -214,9 +214,9 @@ columns:struct columns { i32 key, string value}
 partitioned:true
 partitionColumns:struct partition_columns { string ds}
 totalNumberFiles:3
-totalFileSize:7596
-maxFileSize:2532
-minFileSize:2532
+totalFileSize:#Masked#
+maxFileSize:#Masked#
+minFileSize:#Masked#
 #### A masked pattern was here ####
 
 PREHOOK: query: desc formatted src_orc_merge_test_part_stat partition (ds='2011')
@@ -243,7 +243,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	141000              
-	totalSize           	7596                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -290,7 +290,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	1500                
 	rawDataSize         	147000              
-	totalSize           	7596                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -345,7 +345,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	1500                
 	rawDataSize         	147000              
-	totalSize           	7216                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -361,16 +361,20 @@ Storage Desc Params:
 PREHOOK: query: drop table src_orc_merge_test_stat
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_merge_test_stat
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc_merge_test_stat
 POSTHOOK: query: drop table src_orc_merge_test_stat
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_orc_merge_test_stat
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_merge_test_stat
 PREHOOK: query: drop table src_orc_merge_test_part_stat
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_orc_merge_test_part_stat
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_orc_merge_test_part_stat
 POSTHOOK: query: drop table src_orc_merge_test_part_stat
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_orc_merge_test_part_stat
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_orc_merge_test_part_stat

@@ -20,9 +20,13 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -31,10 +35,14 @@ import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
+import org.apache.iceberg.types.Types.NestedField;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runners.Parameterized;
+
 
 /**
  * Tests verifying correct statistics generation behaviour on Iceberg tables triggered by: ANALYZE queries, inserts,
@@ -42,8 +50,32 @@ import org.junit.Test;
  */
 public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngineBase {
 
+  @Parameterized.Parameter(4)
+  public String statsSource;
+
+  @Parameterized.Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}, statsSource={4}")
+  public static Collection<Object[]> parameters() {
+    Collection<Object[]> baseParams = HiveIcebergStorageHandlerWithEngineBase.parameters();
+
+    Collection<Object[]> testParams = Lists.newArrayList();
+    for (String statsSource : new String[]{"iceberg", "metastore"}) {
+      for (Object[] params : baseParams) {
+        testParams.add(ArrayUtils.add(params, statsSource));
+      }
+    }
+    return testParams;
+  }
+
+  @Before
+  public void setStatsSource() {
+    HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_STATS_SOURCE, statsSource);
+  }
+
   @Test
   public void testAnalyzeTableComputeStatistics() throws IOException, TException, InterruptedException {
+    Assume.assumeTrue(statsSource.equals("iceberg") ||
+        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+
     String dbName = "default";
     String tableName = "customers";
     Table table = testTables
@@ -77,7 +109,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   public void testStatsWithInsert() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
@@ -100,10 +132,44 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
+  public void testStatsWithPessimisticLockInsert() {
+    Assume.assumeTrue(testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    TableIdentifier identifier = getTableIdentifierWithPessimisticLock("false");
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxValue(identifier.name(), "customer_id", 0, 2);
+  }
+
+  @Test
+  public void testStatsWithPessimisticLockInsertWhenHiveLockEnabled() {
+    Assume.assumeTrue(testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    TableIdentifier identifier = getTableIdentifierWithPessimisticLock("true");
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
+    AssertHelpers.assertThrows(
+        "Should throw RuntimeException when Hive locking is on with 'engine.hive.lock-enabled=true'",
+        RuntimeException.class,
+        () -> shell.executeStatement(insert)
+    );
+  }
+
+  private TableIdentifier getTableIdentifierWithPessimisticLock(String hiveLockEnabled) {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of(), formatVersion,
+        ImmutableMap.of(TableProperties.HIVE_LOCK_ENABLED, hiveLockEnabled));
+    return identifier;
+  }
+
+  @Test
   public void testStatsWithInsertOverwrite() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
@@ -121,7 +187,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("last_name").build();
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
         fileFormat, ImmutableList.of());
 
@@ -146,7 +212,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     shell.executeStatement(String.format(
         "CREATE TABLE target STORED BY ICEBERG %s %s AS SELECT * FROM source",
         testTables.locationForCreateTableSQL(TableIdentifier.of("default", "target")),
@@ -165,11 +231,16 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     shell.executeStatement(testTables.getInsertQuery(
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, TableIdentifier.of("default", "source"), false));
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     shell.executeStatement(String.format(
         "CREATE TABLE target PARTITIONED BY (dept, name) STORED BY ICEBERG %s AS SELECT * FROM source s",
         testTables.propertiesForCreateTableSQL(
             ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, fileFormat.toString()))));
+
+    if (statsSource.equals("iceberg")) {
+      // TODO: Propagate partition spec from CREATE statement to the ColumnStatsSemanticAnalyzer
+      shell.executeStatement("ANALYZE TABLE target COMPUTE STATISTICS FOR COLUMNS");
+    }
 
     checkColStat("target", "id", true);
     checkColStat("target", "dept", true);
@@ -185,7 +256,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
-    shell.setHiveSessionValue(HiveConf.ConfVars.HIVESTATSAUTOGATHER.varname, true);
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
@@ -205,6 +276,82 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     checkColStat(identifier.name(), "customer_id", false);
+  }
+
+  @Test
+  public void testColumnStatsAccurate() throws Exception {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+            PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, true);
+    shell.executeStatement(insert);
+
+    org.apache.hadoop.hive.metastore.api.Table hmsTable = shell.metastore().getTable("default", identifier.name());
+
+    // Assert whether basic stats and column stats are accurate.
+    Assert.assertTrue(hmsTable.getParameters().containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE));
+    Assert.assertTrue(StatsSetupConst.areBasicStatsUptoDate(hmsTable.getParameters()));
+    for (NestedField nestedField : HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA.columns()) {
+      Assert.assertTrue(StatsSetupConst.areColumnStatsUptoDate(hmsTable.getParameters(), nestedField.name()));
+    }
+  }
+
+  @Test
+  public void testMergeStatsWithInsert() {
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+      // If the location is set and we have to gather stats, then we have to update the table stats now
+      shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
+    }
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxDistinctValue(identifier.name(), "customer_id", 0, 2, 3, 0);
+
+    insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1, identifier, false);
+    shell.executeStatement(insert);
+
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxDistinctValue(identifier.name(), "customer_id", 0, 5, 6, 0);
+
+    insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, identifier, false);
+    shell.executeStatement(insert);
+    checkColStat(identifier.name(), "customer_id", true);
+    checkColStatMinMaxDistinctValue(identifier.name(), "customer_id", 0, 5, 6, 0);
+  }
+
+  @Test
+  public void testIcebergColStatsPath() throws IOException {
+    Assume.assumeTrue(statsSource.equals("iceberg"));
+
+    TableIdentifier identifier = TableIdentifier.of("default", "customers");
+
+    shell.setHiveSessionValue(HiveConf.ConfVars.HIVE_STATS_AUTOGATHER.varname, true);
+    Table table = testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
+
+    String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
+    shell.executeStatement(insert);
+
+    table.refresh();
+
+    Path tblColPath = new Path(IcebergTableUtil.getColStatsPath(table));
+    Assert.assertNotNull(tblColPath);
+    // Check that if colPath is created correctly
+    Assert.assertTrue(tblColPath.getFileSystem(shell.getHiveConf()).exists(tblColPath));
+    List<Object[]> result = shell.executeStatement("SELECT * FROM customers");
+    HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, result));
   }
 
   private void checkColStat(String tableName, String colName, boolean accurate) {
@@ -247,6 +394,27 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     // Check max length
     Assert.assertEquals("max_col_len", rows.get(7)[0]);
     Assert.assertEquals(String.valueOf(maxLength), rows.get(7)[1]);
+
+    // Check distinct
+    Assert.assertEquals("distinct_count", rows.get(5)[0]);
+    Assert.assertEquals(String.valueOf(distinct), rows.get(5)[1]);
+  }
+
+  private void checkColStatMinMaxDistinctValue(String tableName, String colName, int minValue, int maxValue,
+      int distinct, int nulls) {
+    List<Object[]> rows = shell.executeStatement("DESCRIBE FORMATTED " + tableName + " " + colName);
+
+    // Check min
+    Assert.assertEquals("min", rows.get(2)[0]);
+    Assert.assertEquals(String.valueOf(minValue), rows.get(2)[1]);
+
+    // Check max
+    Assert.assertEquals("max", rows.get(3)[0]);
+    Assert.assertEquals(String.valueOf(maxValue), rows.get(3)[1]);
+
+    // Check num of nulls
+    Assert.assertEquals("num_nulls", rows.get(4)[0]);
+    Assert.assertEquals(String.valueOf(nulls), rows.get(4)[1]);
 
     // Check distinct
     Assert.assertEquals("distinct_count", rows.get(5)[0]);

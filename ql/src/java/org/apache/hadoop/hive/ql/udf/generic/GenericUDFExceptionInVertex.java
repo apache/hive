@@ -76,27 +76,35 @@ public class GenericUDFExceptionInVertex extends GenericUDF {
     return PrimitiveObjectInspectorFactory.javaLongObjectInspector;
   }
 
-  public static String getVertexName(ObjectInspector[] parameters, int index) {
-    return ((WritableConstantStringObjectInspector) parameters[index]).getWritableConstantValue()
-        .toString();
+  public static String getVertexName(ObjectInspector[] parameters, int index) throws UDFArgumentTypeException {
+    if (parameters[index] instanceof WritableConstantStringObjectInspector) {
+      return ((WritableConstantStringObjectInspector) parameters[index]).getWritableConstantValue()
+          .toString();
+    } else {
+      throw new UDFArgumentTypeException(index, String.format(
+          "This argument takes only constant STRING, got %s", parameters[index].getTypeName()));
+    }
   }
 
-  public static String getTaskNumber(ObjectInspector[] parameters, int index) {
+  public static String getTaskNumber(ObjectInspector[] parameters, int index) throws UDFArgumentTypeException {
     return getExpressionAtIndex(parameters, index);
   }
 
-  public static String getTaskAttemptNumber(ObjectInspector[] parameters, int index) {
+  public static String getTaskAttemptNumber(ObjectInspector[] parameters, int index) throws UDFArgumentTypeException {
     return getExpressionAtIndex(parameters, index);
   }
 
-  private static String getExpressionAtIndex(ObjectInspector[] parameters, int index) {
+  private static String getExpressionAtIndex(ObjectInspector[] parameters, int index) throws UDFArgumentTypeException {
     if (parameters.length > index) {
       if (parameters[index] instanceof WritableConstantStringObjectInspector) {
         return ((WritableConstantStringObjectInspector) parameters[index])
             .getWritableConstantValue().toString();
-      } else {
+      } else if (parameters[index] instanceof WritableConstantIntObjectInspector) {
         return ((WritableConstantIntObjectInspector) parameters[index]).getWritableConstantValue()
             .toString();
+      } else {
+        throw new UDFArgumentTypeException(index, String.format(
+            "This argument takes only constant STRING or INT, got %s", parameters[index].getTypeName()));
       }
     } else {
       return "*";

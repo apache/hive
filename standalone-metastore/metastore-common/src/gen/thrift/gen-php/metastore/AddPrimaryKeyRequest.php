@@ -69,14 +69,14 @@ class AddPrimaryKeyRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->primaryKeyCols = array();
-                        $_size426 = 0;
-                        $_etype429 = 0;
-                        $xfer += $input->readListBegin($_etype429, $_size426);
-                        for ($_i430 = 0; $_i430 < $_size426; ++$_i430) {
-                            $elem431 = null;
-                            $elem431 = new \metastore\SQLPrimaryKey();
-                            $xfer += $elem431->read($input);
-                            $this->primaryKeyCols []= $elem431;
+                        $_size467 = 0;
+                        $_etype470 = 0;
+                        $xfer += $input->readListBegin($_etype470, $_size467);
+                        for ($_i471 = 0; $_i471 < $_size467; ++$_i471) {
+                            $elem472 = null;
+                            $elem472 = new \metastore\SQLPrimaryKey();
+                            $xfer += $elem472->read($input);
+                            $this->primaryKeyCols []= $elem472;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class AddPrimaryKeyRequest
             }
             $xfer += $output->writeFieldBegin('primaryKeyCols', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->primaryKeyCols));
-            foreach ($this->primaryKeyCols as $iter432) {
-                $xfer += $iter432->write($output);
+            foreach ($this->primaryKeyCols as $iter473) {
+                $xfer += $iter473->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

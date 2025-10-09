@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10016]: Line 1:17 Argument type mismatch '1': opnottrue only takes primitive types as 1st argument, got LIST

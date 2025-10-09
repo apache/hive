@@ -9,7 +9,6 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set hive.default.fileformat=RCFILE;
 set hive.exec.pre.hooks = org.apache.hadoop.hive.ql.hooks.PreExecutePrinter,org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables,org.apache.hadoop.hive.ql.hooks.UpdateInputAccessTimeHook$PreExec;
 
-
 create table srcpartbucket (key string, value string) partitioned by (ds string, hr string) clustered by (key) into 4 buckets;
 
 insert overwrite table srcpartbucket partition(ds, hr) select * from srcpart where ds is not null and key < 10;

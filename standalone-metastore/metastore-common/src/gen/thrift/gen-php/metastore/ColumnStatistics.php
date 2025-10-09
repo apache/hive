@@ -64,7 +64,7 @@ class ColumnStatistics
     /**
      * @var string
      */
-    public $engine = null;
+    public $engine = "hive";
 
     public function __construct($vals = null)
     {
@@ -114,14 +114,14 @@ class ColumnStatistics
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->statsObj = array();
-                        $_size248 = 0;
-                        $_etype251 = 0;
-                        $xfer += $input->readListBegin($_etype251, $_size248);
-                        for ($_i252 = 0; $_i252 < $_size248; ++$_i252) {
-                            $elem253 = null;
-                            $elem253 = new \metastore\ColumnStatisticsObj();
-                            $xfer += $elem253->read($input);
-                            $this->statsObj []= $elem253;
+                        $_size289 = 0;
+                        $_etype292 = 0;
+                        $xfer += $input->readListBegin($_etype292, $_size289);
+                        for ($_i293 = 0; $_i293 < $_size289; ++$_i293) {
+                            $elem294 = null;
+                            $elem294 = new \metastore\ColumnStatisticsObj();
+                            $xfer += $elem294->read($input);
+                            $this->statsObj []= $elem294;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -170,8 +170,8 @@ class ColumnStatistics
             }
             $xfer += $output->writeFieldBegin('statsObj', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->statsObj));
-            foreach ($this->statsObj as $iter254) {
-                $xfer += $iter254->write($output);
+            foreach ($this->statsObj as $iter295) {
+                $xfer += $iter295->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

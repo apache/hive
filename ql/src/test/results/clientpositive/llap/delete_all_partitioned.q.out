@@ -59,17 +59,11 @@ POSTHOOK: Input: default@acid_dap@ds=tomorrow
 6981	sF2CRfgt2K	tomorrow
 6981	NULL	tomorrow
 PREHOOK: query: delete from acid_dap
-PREHOOK: type: QUERY
-PREHOOK: Input: default@acid_dap
-PREHOOK: Input: default@acid_dap@ds=today
-PREHOOK: Input: default@acid_dap@ds=tomorrow
+PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@acid_dap@ds=today
 PREHOOK: Output: default@acid_dap@ds=tomorrow
 POSTHOOK: query: delete from acid_dap
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@acid_dap
-POSTHOOK: Input: default@acid_dap@ds=today
-POSTHOOK: Input: default@acid_dap@ds=tomorrow
+POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@acid_dap@ds=today
 POSTHOOK: Output: default@acid_dap@ds=tomorrow
 PREHOOK: query: select * from acid_dap

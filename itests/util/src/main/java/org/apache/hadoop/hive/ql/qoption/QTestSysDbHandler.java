@@ -47,7 +47,7 @@ public class QTestSysDbHandler implements QTestOptionHandler {
     if (enabled) {
       String schemaVersion = MetaStoreSchemaInfoFactory.get(qt.getConf()).getHiveSchemaVersion();
       String stsdbPath =
-          HiveTestEnvSetup.HIVE_ROOT + "/metastore/scripts/upgrade/hive/hive-schema-" + schemaVersion + ".hive.sql";
+          HiveTestEnvSetup.HIVE_ROOT + "/standalone-metastore/metastore-server/src/main/sql/hive/hive-schema-" + schemaVersion + ".hive.sql";
       qt.getCliDriver().processLine("source " + stsdbPath);
       qt.getCliDriver().processLine("use default");
     }

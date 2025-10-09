@@ -16,19 +16,27 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules.views;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptMaterialization;
+import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
@@ -40,6 +48,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
@@ -49,13 +58,22 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.type.SnapshotContext;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
+import org.apache.hadoop.hive.common.MaterializationSnapshot;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteCteException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -63,13 +81,16 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.DruidSqlOperatorConverter;
+import org.apache.hadoop.hive.ql.parse.QueryTables;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hive.common.util.TxnIdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,29 +120,47 @@ public class HiveMaterializedViewUtils {
    * materialized view definition uses external tables.
    */
   public static Boolean isOutdatedMaterializedView(
-      String validTxnsList, HiveTxnManager txnMgr,
-      Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
+      Supplier<String> validTxnsList, HiveTxnManager txnMgr, Hive db,
+      Set<TableName> tablesUsed, Table materializedViewTable) throws HiveException {
+
+    MaterializedViewMetadata mvMetadata = materializedViewTable.getMVMetadata();
+    MaterializationSnapshot snapshot = mvMetadata.getSnapshot();
+
+    if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+      return isOutdatedMaterializedView(snapshot, db, tablesUsed, materializedViewTable);
+    }
+    String txnString = validTxnsList.get();
+    if (txnString == null) {
+      return null;
+    }
+    String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
+    
+    return isOutdatedMaterializedView(
+        materializationTxnList, txnString, txnMgr, tablesUsed, materializedViewTable);
+  }
+
+  private static Boolean isOutdatedMaterializedView(
+    String materializationTxnList, String validTxnsList, HiveTxnManager txnMgr,
+    Set<TableName> tablesUsed, Table materializedViewTable) throws LockException {
     List<String> tablesUsedNames = tablesUsed.stream()
         .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
         .collect(Collectors.toList());
-    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsedNames, validTxnsList);
+    ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsedNames,
+        validTxnsList);
     if (currentTxnWriteIds == null) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain current txn ids");
       return null;
     }
 
-    MaterializedViewMetadata mvMetadata = materializedViewTable.getMVMetadata();
     Set<String> storedTablesUsed = materializedViewTable.getMVMetadata().getSourceTableFullNames();
-    if (mvMetadata.getValidTxnList() == null ||
-            mvMetadata.getValidTxnList().isEmpty()) {
+    if (materializationTxnList == null || materializationTxnList.isEmpty()) {
       LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " ignored for rewriting as we could not obtain materialization txn ids");
       return null;
     }
+    ValidTxnWriteIdList materializationTxnWriteIds = ValidTxnWriteIdList.fromValue(materializationTxnList);
     boolean ignore = false;
-    ValidTxnWriteIdList mvTxnWriteIds = new ValidTxnWriteIdList(
-            mvMetadata.getValidTxnList());
     for (String fullyQualifiedTableName : tablesUsedNames) {
       // Note. If the materialized view does not contain a table that is contained in the query,
       // we do not need to check whether that specific table is outdated or not. If a rewriting
@@ -139,12 +178,12 @@ public class HiveMaterializedViewUtils {
         ignore = true;
         break;
       }
-      ValidWriteIdList tableWriteIds = mvTxnWriteIds.getTableValidWriteIdList(fullyQualifiedTableName);
+      ValidWriteIdList tableWriteIds = materializationTxnWriteIds.getTableValidWriteIdList(fullyQualifiedTableName);
       if (tableWriteIds == null) {
         // This should not happen, but we ignore for safety
         LOG.warn("Materialized view " + materializedViewTable.getFullyQualifiedName() +
                 " ignored for rewriting as details about txn ids for table " + fullyQualifiedTableName +
-                " could not be found in " + mvTxnWriteIds);
+                " could not be found in " + materializationTxnWriteIds);
         ignore = true;
         break;
       }
@@ -161,12 +200,82 @@ public class HiveMaterializedViewUtils {
     return false;
   }
 
+  private static Boolean isOutdatedMaterializedView(
+          MaterializationSnapshot snapshot, Hive db,
+          Set<TableName> tablesUsed, Table materializedViewTable) throws HiveException {
+    List<String> tablesUsedNames = tablesUsed.stream()
+        .map(tableName -> TableName.getDbTable(tableName.getDb(), tableName.getTable()))
+        .collect(Collectors.toList());
+
+    Map<String, SnapshotContext> snapshotMap = snapshot.getTableSnapshots();
+    if (snapshotMap == null || snapshotMap.isEmpty()) {
+      LOG.debug("Materialized view {} ignored for rewriting as we could not obtain current snapshot ids",
+              materializedViewTable.getFullyQualifiedName());
+      return null;
+    }
+
+    Set<String> storedTablesUsed = materializedViewTable.getMVMetadata().getSourceTableFullNames();
+    for (String fullyQualifiedTableName : tablesUsedNames) {
+      // Note. If the materialized view does not contain a table that is contained in the query,
+      // we do not need to check whether that specific table is outdated or not. If a rewriting
+      // is produced in those cases, it is because that additional table is joined with the
+      // existing tables with an append-columns only join, i.e., PK-FK + not null.
+      if (!storedTablesUsed.contains(fullyQualifiedTableName)) {
+        continue;
+      }
+
+      Table table = db.getTable(fullyQualifiedTableName);
+      if (table.getStorageHandler() == null) {
+        LOG.debug("Materialized view {} ignored for rewriting as we could not get storage handler of table {}",
+                materializedViewTable.getFullyQualifiedName(), fullyQualifiedTableName);
+        return null;
+      }
+      if (!table.getStorageHandler().areSnapshotsSupported()) {
+        LOG.debug("Materialized view {} ignored for rewriting as storage handler of table {} " +
+                        "does not support snapshots.",
+                materializedViewTable.getFullyQualifiedName(), fullyQualifiedTableName);
+        return null;
+      }
+      SnapshotContext currentTableSnapshot = table.getStorageHandler().getCurrentSnapshotContext(table);
+      SnapshotContext storedTableSnapshot = snapshotMap.get(fullyQualifiedTableName);
+      if (!Objects.equals(currentTableSnapshot, storedTableSnapshot)) {
+        LOG.debug("Materialized view {} contents are outdated", materializedViewTable.getFullyQualifiedName());
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /**
    * Method to enrich the materialization query contained in the input with
    * its invalidation.
    */
   public static HiveRelOptMaterialization augmentMaterializationWithTimeInformation(
-      HiveRelOptMaterialization materialization, String validTxnsList,
+      HiveRelOptMaterialization materialization, Supplier<String> validTxnsList,
+      MaterializationSnapshot snapshot) throws LockException {
+
+    RelNode modifiedQueryRel;
+    if (snapshot != null && snapshot.getTableSnapshots() != null && !snapshot.getTableSnapshots().isEmpty()) {
+      modifiedQueryRel = applyRule(
+              materialization.queryRel, HiveAugmentSnapshotMaterializationRule.with(snapshot.getTableSnapshots()));
+    } else {
+      String materializationTxnList = snapshot != null ? snapshot.getValidTxnList() : null;
+      modifiedQueryRel = augmentMaterializationWithTimeInformation(
+              materialization, validTxnsList, ValidTxnWriteIdList.fromValue(materializationTxnList));
+    }
+
+    return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,
+            null, materialization.qualifiedTableName, materialization.getScope(), materialization.getRebuildMode(),
+            materialization.getAst());
+  }
+
+  /**
+   * Method to enrich the materialization query contained in the input with
+   * its invalidation when materialization has native acid source tables.
+   */
+  private static RelNode augmentMaterializationWithTimeInformation(
+      HiveRelOptMaterialization materialization, Supplier<String>  validTxnsList,
       ValidTxnWriteIdList materializationTxnList) throws LockException {
     // Extract tables used by the query which will in turn be used to generate
     // the corresponding txn write ids
@@ -182,18 +291,25 @@ public class HiveMaterializedViewUtils {
       }
     }.go(materialization.queryRel);
     ValidTxnWriteIdList currentTxnList =
-        SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
+        SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList.get());
     // Augment
     final RexBuilder rexBuilder = materialization.queryRel.getCluster().getRexBuilder();
-    final HepProgramBuilder augmentMaterializationProgram = new HepProgramBuilder()
-        .addRuleInstance(new HiveAugmentMaterializationRule(rexBuilder, currentTxnList, materializationTxnList));
-    final HepPlanner augmentMaterializationPlanner = new HepPlanner(
-        augmentMaterializationProgram.build());
-    augmentMaterializationPlanner.setRoot(materialization.queryRel);
-    final RelNode modifiedQueryRel = augmentMaterializationPlanner.findBestExp();
-    return new HiveRelOptMaterialization(materialization.tableRel, modifiedQueryRel,
-        null, materialization.qualifiedTableName, materialization.getScope(), materialization.getRebuildMode(),
-            materialization.getAst());
+    return applyRule(
+            materialization.queryRel, new HiveAugmentMaterializationRule(rexBuilder, currentTxnList, materializationTxnList));
+  }
+
+  /**
+   * Method to apply a rule to a query plan.
+   */
+  @VisibleForTesting
+  static RelNode applyRule(
+          RelNode basePlan, RelOptRule relOptRule) {
+    final HepProgramBuilder programBuilder = new HepProgramBuilder();
+    programBuilder.addRuleInstance(relOptRule);
+    final HepPlanner planner = new HepPlanner(
+        programBuilder.build());
+    planner.setRoot(basePlan);
+    return planner.findBestExp();
   }
 
   /**
@@ -404,5 +520,61 @@ public class HiveMaterializedViewUtils {
           null, false, false);
     }
     return newScan;
+  }
+
+  public static MaterializationSnapshot getSnapshotOf(DDLOperationContext context, Set<TableName> tables)
+          throws HiveException {
+    Map<String, SnapshotContext> snapshot = getSnapshotOf(context.getDb(), tables);
+    if (snapshot.isEmpty()) {
+      return new MaterializationSnapshot(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+    }
+
+    return new MaterializationSnapshot(snapshot);
+  }
+
+  private static Map<String, SnapshotContext> getSnapshotOf(Hive db, Set<TableName> tables) throws HiveException {
+    Map<String, SnapshotContext> snapshot = new HashMap<>(tables.size());
+    for (TableName tableName : tables) {
+      Table table = db.getTable(tableName);
+      if (table.getStorageHandler() != null) {
+        HiveStorageHandler storageHandler = table.getStorageHandler();
+        if (!storageHandler.areSnapshotsSupported()) {
+          return Collections.emptyMap();
+        }
+        snapshot.put(table.getFullyQualifiedName(), storageHandler.getCurrentSnapshotContext(table));
+      } else {
+        return Collections.emptyMap();
+      }
+    }
+    return snapshot;
+  }
+
+  public static RelOptMaterialization createCTEMaterialization(String viewName, RelNode body, HiveConf conf) {
+    RelOptCluster cluster = body.getCluster();
+    List<ColumnInfo> columns = new ArrayList<>();
+    for (RelDataTypeField f : body.getRowType().getFieldList()) {
+      TypeInfo info = TypeConverter.convert(f.getType());
+      columns.add(new ColumnInfo(f.getName(), info, f.getType().isNullable(), viewName, false, false));
+    }
+    List<String> fullName = Arrays.asList("cte", viewName);
+    org.apache.hadoop.hive.metastore.api.Table metaTable = Table.getEmptyTable("cte", viewName);
+    metaTable.setTemporary(true);
+    try {
+      // Setting a location avoids a NPE when fetching statistics
+      metaTable.getSd().setLocation(SessionState.generateTempTableLocation(conf));
+    } catch (MetaException e) {
+      throw new CalciteCteException("Failed to create temporary location", e);
+    }
+    Table hiveTable = new Table(metaTable);
+    hiveTable.setMaterializedTable(true);
+    RelOptHiveTable optTable =
+        new RelOptHiveTable(null, cluster.getTypeFactory(), fullName, body.getRowType(), hiveTable, columns,
+            Collections.emptyList(), Collections.emptyList(), new HiveConf(), new QueryTables(true), new HashMap<>(),
+            new HashMap<>(), new AtomicInteger());
+    optTable.setRowCount(cluster.getMetadataQuery().getRowCount(body));
+    final TableScan scan =
+        new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable, viewName, null, false, false);
+
+    return new RelOptMaterialization(scan, body, null, fullName);
   }
 }

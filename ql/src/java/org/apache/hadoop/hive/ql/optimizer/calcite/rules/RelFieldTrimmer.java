@@ -16,6 +16,18 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import org.apache.calcite.adapter.jdbc.JdbcConvention;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregate;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcAggregateRule;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilter;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcFilterRule;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcJoin;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcJoinRule;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProject;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcProjectRule;
+import org.apache.calcite.adapter.jdbc.JdbcRules.JdbcSort;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
@@ -64,9 +76,10 @@ import org.apache.calcite.util.mapping.IntPair;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.HiveJdbcConverter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.jdbc.JdbcHiveTableScan;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -74,8 +87,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class comes from Calcite almost as-is. The only change concerns
@@ -350,6 +361,51 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     return result(rel,
         Mappings.createIdentity(rel.getRowType().getFieldCount()));
   }
+  
+  public TrimResult trimFields(
+      HiveJdbcConverter converter,
+      ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+    final int fieldCount = converter.getRowType().getFieldCount();
+    final RelNode input = converter.getInput();
+    
+    TrimResult trimResult = trimChild(converter, converter.getInput(), fieldsUsed, extraFields);
+    RelNode newInput = trimResult.left;
+    final Mapping inputMapping = trimResult.right;
+
+    // If the input is unchanged, and we need to project all columns,
+    // there's nothing we can do.
+    if (newInput == input
+        && fieldsUsed.cardinality() == fieldCount) {
+      return result(converter, Mappings.createIdentity(fieldCount));
+    }
+    
+    HiveJdbcConverter newConverter = (HiveJdbcConverter) converter.copy(converter.getTraitSet(), newInput);
+    
+    return result(newConverter, inputMapping);
+  }
+
+  public TrimResult trimFields(
+      final JdbcProject jdbcProject,
+      ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+
+    TrimResult trimResult = trimFields((Project) jdbcProject, fieldsUsed, extraFields);
+    RelNode newInput = trimResult.left;
+    final Mapping inputMapping = trimResult.right;
+    
+    if (newInput instanceof JdbcProject) {
+      return trimResult;
+    }
+    
+    if (newInput instanceof Project) {
+      JdbcProject newProject =
+          (JdbcProject) JdbcProjectRule.create((JdbcConvention) jdbcProject.getConvention()).convert(newInput);
+      return result(newProject, inputMapping);
+    }
+
+    return trimFields((RelNode) jdbcProject, fieldsUsed, extraFields);
+  }
 
   /**
    * Variant of {@link #trimFields(RelNode, ImmutableBitSet, Set)} for
@@ -446,6 +502,28 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     return result(relBuilder.build(), mapping);
   }
 
+  public TrimResult trimFields(
+      final JdbcFilter jdbcFilter,
+      ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+
+    TrimResult trimResult = trimFields((Filter) jdbcFilter, fieldsUsed, extraFields);
+    RelNode newInput = trimResult.left;
+    final Mapping inputMapping = trimResult.right;
+
+    if (newInput instanceof JdbcFilter) {
+      return trimResult;
+    }
+
+    if (newInput instanceof Filter) {
+      JdbcFilter newFilter = 
+          (JdbcFilter) JdbcFilterRule.create((JdbcConvention) jdbcFilter.getConvention()).convert(newInput);
+      return result(newFilter, inputMapping);
+    }
+
+    return trimFields((RelNode) jdbcFilter, fieldsUsed, extraFields);
+  }
+
   /**
    * Variant of {@link #trimFields(RelNode, ImmutableBitSet, Set)} for
    * {@link org.apache.calcite.rel.logical.LogicalFilter}.
@@ -496,6 +574,13 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     // return fields that the consumer didn't ask for, because the filter
     // needs them for its condition.
     return result(relBuilder.build(), inputMapping);
+  }
+
+  public TrimResult trimFields(
+      JdbcSort rel,
+      ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+    return result(rel, Mappings.createIdentity(rel.getRowType().getFieldCount()));
   }
 
   /**
@@ -553,6 +638,28 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     // return fields that the consumer didn't ask for, because the filter
     // needs them for its condition.
     return result(relBuilder.build(), inputMapping);
+  }
+
+  public TrimResult trimFields(
+      final JdbcJoin jdbcJoin,
+      ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+
+    TrimResult trimResult = trimFields((Join) jdbcJoin, fieldsUsed, extraFields);
+    RelNode newInput = trimResult.left;
+    final Mapping inputMapping = trimResult.right;
+
+    if (newInput instanceof JdbcJoin) {
+      return trimResult;
+    }
+
+    if (newInput instanceof Join) {
+      JdbcJoin newJoin =
+          (JdbcJoin) JdbcJoinRule.create((JdbcConvention) jdbcJoin.getConvention()).convert(newInput);
+      return result(newJoin, inputMapping);
+    }
+
+    return trimFields((RelNode) jdbcJoin, fieldsUsed, extraFields);
   }
 
   /**
@@ -779,6 +886,28 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
         throw new AssertionError("unknown setOp " + setOp);
     }
     return result(relBuilder.build(), mapping);
+  }
+
+  public TrimResult trimFields(
+      final JdbcAggregate jdbcAggregate,
+      ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+
+    TrimResult trimResult = trimFields((Aggregate) jdbcAggregate, fieldsUsed, extraFields);
+    RelNode newInput = trimResult.left;
+    final Mapping inputMapping = trimResult.right;
+
+    if (newInput instanceof JdbcAggregate) {
+      return trimResult;
+    }
+
+    if (newInput instanceof Aggregate) {
+      JdbcAggregate newAggregate =
+          (JdbcAggregate) JdbcAggregateRule.create((JdbcConvention) jdbcAggregate.getConvention()).convert(newInput);
+      return result(newAggregate, inputMapping);
+    }
+
+    return trimFields((RelNode) jdbcAggregate, fieldsUsed, extraFields);
   }
 
   /**
@@ -1044,6 +1173,33 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     return mapping;
   }
 
+  public TrimResult trimFields(
+      final JdbcHiveTableScan jdbcHiveTableScan,
+      ImmutableBitSet fieldsUsed,
+      Set<RelDataTypeField> extraFields) {
+    
+    TrimResult trimResult = trimFields((TableScan) jdbcHiveTableScan, fieldsUsed, extraFields);
+    RelNode newInput = trimResult.left;
+    final Mapping inputMapping = trimResult.right;
+    
+    if (newInput instanceof JdbcHiveTableScan) {
+      return trimResult;
+    }
+    
+    if (newInput instanceof Project && ((Project) newInput).getInput() instanceof JdbcHiveTableScan) {
+      JdbcProject newProject = new JdbcProject(
+          newInput.getCluster(),
+          jdbcHiveTableScan.getTraitSet(),
+          ((Project) newInput).getInput(),
+          ((Project) newInput).getProjects(),
+          newInput.getRowType()
+      );
+      return result(newProject, inputMapping);
+    }
+    
+    return trimFields((RelNode) jdbcHiveTableScan, fieldsUsed, extraFields);
+  }
+
   /**
    * Variant of {@link #trimFields(RelNode, ImmutableBitSet, Set)} for
    * {@link org.apache.calcite.rel.logical.LogicalTableScan}.
@@ -1094,7 +1250,7 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
    * <p>The mapping is a
    * {@link org.apache.calcite.util.mapping.Mappings.SourceMapping}, which means
    * that no column can be used more than once, and some columns are not used.
-   * {@code columnsUsed.getSource(i)} returns the source of the i'th output
+   * {@code columnsUsed.getSource(i)} returns the source of the i-th output
    * field.
    *
    * <p>For example, consider the mapping for a relational expression that

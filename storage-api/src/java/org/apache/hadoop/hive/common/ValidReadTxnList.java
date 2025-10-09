@@ -18,10 +18,10 @@
 
 package org.apache.hadoop.hive.common;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.common.util.SuppressFBWarnings;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,8 +59,10 @@ public class ValidReadTxnList implements ValidTxnList {
     this.highWatermark = highWatermark;
   }
 
-  public ValidReadTxnList(String value) {
-    readFromString(value);
+  public static ValidReadTxnList fromValue(String value) {
+    ValidReadTxnList txnList = new ValidReadTxnList();
+    txnList.readFromString(value);
+    return txnList;
   }
 
   @Override

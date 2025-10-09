@@ -504,7 +504,10 @@ STAGE PLANS:
                           keyColumns: 0:bigint
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 3:smallint
+                          valueExpressions: ConstantVectorExpression(val 0) -> 3:smallint
                       Statistics: Num rows: 11 Data size: 124 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 0S (type: smallint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -521,7 +524,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: key:bigint
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1087,7 +1090,10 @@ STAGE PLANS:
                           keyColumns: 0:smallint
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 3:smallint
+                          valueExpressions: ConstantVectorExpression(val 0) -> 3:smallint
                       Statistics: Num rows: 13 Data size: 63 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 0S (type: smallint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1104,7 +1110,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: key:smallint
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1466,9 +1472,10 @@ STAGE PLANS:
                           keyColumns: 0:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumns: 1:string
+                          valueColumns: 1:string, 4:smallint
+                          valueExpressions: ConstantVectorExpression(val 0) -> 4:smallint
                       Statistics: Num rows: 11 Data size: 173 Basic stats: COMPLETE Column stats: NONE
-                      value expressions: _col1 (type: string)
+                      value expressions: _col1 (type: string), 0S (type: smallint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1485,7 +1492,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key:int, b_string:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1856,7 +1863,10 @@ STAGE PLANS:
                           keyColumns: 0:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 3:smallint
+                          valueExpressions: ConstantVectorExpression(val 0) -> 3:smallint
                       Statistics: Num rows: 12 Data size: 106 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 0S (type: smallint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1873,7 +1883,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: key:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -2319,7 +2329,10 @@ STAGE PLANS:
                           keyColumns: 0:smallint, 1:int
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 4:smallint
+                          valueExpressions: ConstantVectorExpression(val 0) -> 4:smallint
                       Statistics: Num rows: 13 Data size: 140 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 0S (type: smallint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -2336,7 +2349,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: key0:smallint, key1:int
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -3077,7 +3090,10 @@ STAGE PLANS:
                           keyColumns: 0:timestamp, 1:smallint, 2:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 5:smallint
+                          valueExpressions: ConstantVectorExpression(val 0) -> 5:smallint
                       Statistics: Num rows: 17 Data size: 1729 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 0S (type: smallint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -3094,7 +3110,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2]
                     dataColumns: key0:timestamp, key1:smallint, key2:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -3625,7 +3641,10 @@ STAGE PLANS:
                           keyColumns: 0:string
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          valueColumns: 3:smallint
+                          valueExpressions: ConstantVectorExpression(val 0) -> 3:smallint
                       Statistics: Num rows: 13 Data size: 1108 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 0S (type: smallint)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -3642,7 +3661,7 @@ STAGE PLANS:
                     includeColumns: [0]
                     dataColumns: key:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                    scratchColumnTypeNames: [bigint]
         Map 2 
             Map Operator Tree:
                 TableScan

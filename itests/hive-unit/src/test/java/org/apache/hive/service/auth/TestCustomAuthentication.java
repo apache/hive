@@ -50,6 +50,9 @@ public class TestCustomAuthentication {
     hiveConf.set("hive.server2.authentication", "CUSTOM");
     hiveConf.set("hive.server2.custom.authentication.class",
         "org.apache.hive.service.auth.TestCustomAuthentication$SimpleAuthenticationProviderImpl");
+    // query history adds no value to this test
+    // this should be handled with HiveConfForTests when it's used here too
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
     FileOutputStream fos = new FileOutputStream(new File(hiveConf.getHiveSiteLocation().toURI()));
     hiveConf.writeXml(fos);
     fos.close();
@@ -108,7 +111,7 @@ public class TestCustomAuthentication {
     }
 
     @Override
-    public void Authenticate(String user, String password) throws AuthenticationException {
+    public void authenticate(String user, String password) throws AuthenticationException {
 
       if(!userMap.containsKey(user)){
         throw new AuthenticationException("Invalid user : "+user);

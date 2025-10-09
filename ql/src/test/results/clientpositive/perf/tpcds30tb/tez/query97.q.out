@@ -37,7 +37,7 @@ STAGE PLANS:
                       Statistics: Num rows: 16221796254 Data size: 243989868272 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col1 (type: bigint), _col0 (type: bigint)
-                        minReductionHashAggr: 0.7123034
+                        minReductionHashAggr: 0.71317357
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 16221796254 Data size: 243989868272 Basic stats: COMPLETE Column stats: COMPLETE
@@ -71,7 +71,7 @@ STAGE PLANS:
                       Statistics: Num rows: 8395118768 Data size: 133476173240 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: bigint), _col1 (type: bigint)
-                        minReductionHashAggr: 0.44997114
+                        minReductionHashAggr: 0.4516346
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 8395118768 Data size: 133476173240 Basic stats: COMPLETE Column stats: COMPLETE
@@ -214,6 +214,7 @@ STAGE PLANS:
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint)
                   Statistics: Num rows: 8395118768 Data size: 133476173240 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: 0S (type: smallint)
 
   Stage: Stage-0
     Fetch Operator

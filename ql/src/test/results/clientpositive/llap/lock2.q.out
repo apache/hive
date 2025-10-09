@@ -1,7 +1,9 @@
 PREHOOK: query: drop table tstsrc
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tstsrc
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tstsrc like src
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -22,8 +24,10 @@ POSTHOOK: Lineage: tstsrc.key SIMPLE [(src)src.FieldSchema(name:key, type:string
 POSTHOOK: Lineage: tstsrc.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: drop table tstsrcpart_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tstsrcpart_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tstsrcpart_n0 like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -140,16 +144,20 @@ POSTHOOK: type: SHOWLOCKS
 PREHOOK: query: drop table tstsrc
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstsrc
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstsrc
 POSTHOOK: query: drop table tstsrc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstsrc
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrc
 PREHOOK: query: drop table tstsrcpart_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tstsrcpart_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tstsrcpart_n0
 POSTHOOK: query: drop table tstsrcpart_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tstsrcpart_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tstsrcpart_n0

@@ -200,7 +200,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	3                   
 	rawDataSize         	279                 
-	totalSize           	#Masked#                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -221,8 +221,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.emps_parquet_n3	0/0/0               	 
+Table name          	Snapshot            	 
+default.emps_parquet_n3	:3:9223372036854775807::	 
 PREHOOK: query: explain cbo
 select *
 from (select * from emps_parquet_n3 where empid < 120) t

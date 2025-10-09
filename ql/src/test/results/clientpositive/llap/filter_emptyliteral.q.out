@@ -1,0 +1,34 @@
+PREHOOK: query: create table employee(firstname varchar(255), lastname char(25), id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@employee
+POSTHOOK: query: create table employee(firstname varchar(255), lastname char(25), id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@employee
+PREHOOK: query: explain cbo SELECT id FROM employee where firstname = ''
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo SELECT id FROM employee where firstname = ''
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(id=[$2])
+  HiveFilter(condition=[=($0, _UTF-16LE'')])
+    HiveTableScan(table=[[default, employee]], table:alias=[employee])
+
+PREHOOK: query: explain cbo SELECT id FROM employee where lastname = ''
+PREHOOK: type: QUERY
+PREHOOK: Input: default@employee
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo SELECT id FROM employee where lastname = ''
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@employee
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(id=[$2])
+  HiveFilter(condition=[=($1, _UTF-16LE'                         ')])
+    HiveTableScan(table=[[default, employee]], table:alias=[employee])
+

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists users_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists users_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE users_table(
   `field_1` int,
   `field_2` string,

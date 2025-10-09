@@ -39,7 +39,7 @@ public class UtilsForTest {
   public static void setNewDerbyDbLocation(HiveConf conf, String newloc) {
     String newDbLoc = System.getProperty("test.tmp.dir") + newloc + "metastore_db";
 
-    conf.setVar(ConfVars.METASTORECONNECTURLKEY, "jdbc:derby:;databaseName=" + newDbLoc
+    conf.setVar(ConfVars.METASTORE_CONNECT_URL_KEY, "jdbc:derby:;databaseName=" + newDbLoc
         + ";create=true");
   }
 

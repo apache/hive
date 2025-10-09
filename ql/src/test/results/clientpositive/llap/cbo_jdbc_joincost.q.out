@@ -8,7 +8,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "MYSQL",
     "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
-    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
+    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qdb",
     "hive.sql.dbcp.username" = "root",
     "hive.sql.dbcp.password" = "qtestpassword",
     "hive.sql.table" = "author"
@@ -26,7 +26,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "MYSQL",
     "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
-    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
+    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qdb",
     "hive.sql.dbcp.username" = "root",
     "hive.sql.dbcp.password" = "qtestpassword",
     "hive.sql.table" = "author"
@@ -44,7 +44,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "MYSQL",
     "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
-    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
+    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qdb",
     "hive.sql.dbcp.username" = "root",
     "hive.sql.dbcp.password" = "qtestpassword",
     "hive.sql.table" = "book"
@@ -62,7 +62,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "MYSQL",
     "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
-    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qtestDB",
+    "hive.sql.jdbc.url" = "jdbc:mysql://localhost:3306/qdb",
     "hive.sql.dbcp.username" = "root",
     "hive.sql.dbcp.password" = "qtestpassword",
     "hive.sql.table" = "book"
@@ -84,10 +84,12 @@ CBO PLAN:
 HiveJdbcConverter(convention=[JDBC.MYSQL]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
   JdbcProject(lname=[$1], title=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
     JdbcJoin(condition=[=($0, $3)], joinType=[inner]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-      JdbcProject(id=[$0], lname=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+      JdbcProject(id=[$0], lname=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
         JdbcFilter(condition=[IS NOT NULL($0)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-          JdbcHiveTableScan(table=[[default, author]], table:alias=[a]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-      JdbcProject(title=[$1], author=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-        JdbcFilter(condition=[IS NOT NULL($2)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-          JdbcHiveTableScan(table=[[default, book]], table:alias=[b]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+          JdbcProject(id=[$0], lname=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+            JdbcHiveTableScan(table=[[default, author]], table:alias=[a]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+      JdbcProject(title=[$0], author=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+        JdbcFilter(condition=[IS NOT NULL($1)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+          JdbcProject(title=[$1], author=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+            JdbcHiveTableScan(table=[[default, book]], table:alias=[b]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
 

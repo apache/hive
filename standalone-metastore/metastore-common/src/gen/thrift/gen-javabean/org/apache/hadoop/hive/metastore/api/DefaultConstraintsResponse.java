@@ -329,14 +329,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // DEFAULT_CONSTRAINTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list466 = iprot.readListBegin();
-                struct.defaultConstraints = new java.util.ArrayList<SQLDefaultConstraint>(_list466.size);
-                @org.apache.thrift.annotation.Nullable SQLDefaultConstraint _elem467;
-                for (int _i468 = 0; _i468 < _list466.size; ++_i468)
+                org.apache.thrift.protocol.TList _list512 = iprot.readListBegin();
+                struct.defaultConstraints = new java.util.ArrayList<SQLDefaultConstraint>(_list512.size);
+                @org.apache.thrift.annotation.Nullable SQLDefaultConstraint _elem513;
+                for (int _i514 = 0; _i514 < _list512.size; ++_i514)
                 {
-                  _elem467 = new SQLDefaultConstraint();
-                  _elem467.read(iprot);
-                  struct.defaultConstraints.add(_elem467);
+                  _elem513 = new SQLDefaultConstraint();
+                  _elem513.read(iprot);
+                  struct.defaultConstraints.add(_elem513);
                 }
                 iprot.readListEnd();
               }
@@ -362,9 +362,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(DEFAULT_CONSTRAINTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.defaultConstraints.size()));
-          for (SQLDefaultConstraint _iter469 : struct.defaultConstraints)
+          for (SQLDefaultConstraint _iter515 : struct.defaultConstraints)
           {
-            _iter469.write(oprot);
+            _iter515.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -389,9 +389,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.defaultConstraints.size());
-        for (SQLDefaultConstraint _iter470 : struct.defaultConstraints)
+        for (SQLDefaultConstraint _iter516 : struct.defaultConstraints)
         {
-          _iter470.write(oprot);
+          _iter516.write(oprot);
         }
       }
     }
@@ -400,14 +400,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, DefaultConstraintsResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list471 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-        struct.defaultConstraints = new java.util.ArrayList<SQLDefaultConstraint>(_list471.size);
-        @org.apache.thrift.annotation.Nullable SQLDefaultConstraint _elem472;
-        for (int _i473 = 0; _i473 < _list471.size; ++_i473)
+        org.apache.thrift.protocol.TList _list517 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+        struct.defaultConstraints = new java.util.ArrayList<SQLDefaultConstraint>(_list517.size);
+        @org.apache.thrift.annotation.Nullable SQLDefaultConstraint _elem518;
+        for (int _i519 = 0; _i519 < _list517.size; ++_i519)
         {
-          _elem472 = new SQLDefaultConstraint();
-          _elem472.read(iprot);
-          struct.defaultConstraints.add(_elem472);
+          _elem518 = new SQLDefaultConstraint();
+          _elem518.read(iprot);
+          struct.defaultConstraints.add(_elem518);
         }
       }
       struct.setDefaultConstraintsIsSet(true);

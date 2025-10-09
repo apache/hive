@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE orcfile_merge2a
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orcfile_merge2a
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orcfile_merge2a (key INT, value STRING)
     PARTITIONED BY (one string, two string, three string)
     STORED AS ORC
@@ -53,7 +55,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 231500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col2 (type: string), _col3 (type: string)
-                      null sort order: aa
+                      null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: _col2 (type: string), _col3 (type: string)
                       Statistics: Num rows: 500 Data size: 231500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -213,7 +215,7 @@ POSTHOOK: Lineage: orcfile_merge2a PARTITION(one=1,two=9,three=1).value SIMPLE [
 POSTHOOK: Lineage: orcfile_merge2a PARTITION(one=1,two=9,three=7).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge2a PARTITION(one=1,two=9,three=7).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###        351 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge2a
@@ -289,8 +291,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE orcfile_merge2a
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orcfile_merge2a
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge2a
 POSTHOOK: query: DROP TABLE orcfile_merge2a
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orcfile_merge2a
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orcfile_merge2a

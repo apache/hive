@@ -52,7 +52,7 @@ public class DateUtils {
     if (strVal != null) {
       result = Integer.parseInt(strVal);
       if (result < minValue || result > maxValue) {
-        throw new IllegalArgumentException(String.format("%s value %d outside range [%d, %d]",
+        throw new IllegalArgumentException("%s value %d outside range [%d, %d]".formatted(
             fieldName, result, minValue, maxValue));
       }
     }
@@ -73,7 +73,7 @@ public class DateUtils {
    * @param field the calendar field
    * @return the calendar field name
    * @exception IndexOutOfBoundsException if <code>field</code> is negative,
-   * equal to or greater then <code>FIELD_COUNT</code>.
+   * equal to or greater than <code>FIELD_COUNT</code>.
    */
   public static String getFieldName(int field) {
       return FIELD_NAME[field];

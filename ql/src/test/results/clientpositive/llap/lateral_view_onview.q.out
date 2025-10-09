@@ -175,6 +175,8 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lv_table_n0
+          properties:
+            insideView TRUE
           Select Operator
             Lateral View Forward
               Select Operator
@@ -220,6 +222,8 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lv_table_n0
+          properties:
+            insideView TRUE
           Select Operator
             Lateral View Forward
               Select Operator
@@ -303,6 +307,8 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lv_table_n0
+          properties:
+            insideView TRUE
           Select Operator
             Lateral View Forward
               Select Operator
@@ -440,6 +446,8 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: lv_table_n0
+          properties:
+            insideView TRUE
           Select Operator
             expressions: c1 (type: string), c2 (type: array<int>), c3 (type: int), c4 (type: char(1))
             outputColumnNames: _col0, _col1, _col2, _col3

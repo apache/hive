@@ -397,17 +397,11 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
 
           decimalIsNull = !currentHiveDecimalWritable.mutateEnforcePrecisionScale(precision, scale);
           if (!decimalIsNull) {
-            if (HiveDecimalWritable.isPrecisionDecimal64(precision)) {
-              currentDecimal64 = currentHiveDecimalWritable.serialize64(scale);
-            }
             return true;
           }
         }
-        if (decimalIsNull) {
-          return false;
-        }
+        return false;
       }
-      break;
     default:
       throw new Error("Unexpected primitive category " + primitiveCategory.name());
     }

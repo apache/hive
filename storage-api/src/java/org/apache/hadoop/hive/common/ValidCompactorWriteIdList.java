@@ -24,7 +24,7 @@ import java.util.BitSet;
 /**
  * An implementation of {@link ValidWriteIdList} for use by the compactor.
  *
- * Compaction should only include txns up to smallest open txn (exclussive).
+ * Compaction should only include txns up to smallest open txn (exclusive).
  * There may be aborted write ids in the snapshot represented by this ValidCompactorWriteIdList.
  * Thus {@link #isWriteIdRangeValid(long, long)} returns NONE for any range that includes any unresolved
  * write ids.  Any write id above {@code highWatermark} is unresolved.
@@ -74,8 +74,11 @@ public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
      */
     this.exceptions = Arrays.copyOf(this.exceptions, lastElementPos + 1);
   }
-  public ValidCompactorWriteIdList(String value) {
-    super(value);
+
+  public static ValidCompactorWriteIdList fromValue(String value) {
+    ValidCompactorWriteIdList cmpWrtList = new ValidCompactorWriteIdList();
+    cmpWrtList.readFromString(value);
+    return cmpWrtList;
   }
   /**
    * Returns org.apache.hadoop.hive.common.ValidWriteIdList.RangeResponse.ALL if all write ids in

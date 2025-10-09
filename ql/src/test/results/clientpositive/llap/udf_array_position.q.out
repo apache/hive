@@ -1,0 +1,172 @@
+PREHOOK: query: DESCRIBE FUNCTION array_position
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION array_position
+POSTHOOK: type: DESCFUNCTION
+array_position(array, element) - Returns the position of the first occurrence of element in array. Array indexing starts at 1. If the element value is NULL, a NULL is returned.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED array_position
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED array_position
+POSTHOOK: type: DESCFUNCTION
+array_position(array, element) - Returns the position of the first occurrence of element in array. Array indexing starts at 1. If the element value is NULL, a NULL is returned.
+Example:
+  > SELECT array_position(array(1, 2, 3,4,2), 2) FROM src;
+  2
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayPosition
+Function type:BUILTIN
+PREHOOK: query: SELECT array_position(array(1, 2, 3, null,3,4), 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_position(array(1, 2, 3, null,3,4), 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+3
+PREHOOK: query: SELECT array_position(array(1.12, 2.23, 3.34, null,1.11,1.12,2.9),1.12)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_position(array(1.12, 2.23, 3.34, null,1.11,1.12,2.9),1.12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT array(1,2,3),array_position(array(1, 2, 3),3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array(1,2,3),array_position(array(1, 2, 3),3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3]	3
+PREHOOK: query: SELECT array(1,2,3),array_position(array(1, 2, 3),5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array(1,2,3),array_position(array(1, 2, 3),5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3]	0
+PREHOOK: query: SELECT array_position(array(1, 2, 3), CAST(null AS int))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_position(array(1, 2, 3), CAST(null AS int))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+NULL
+PREHOOK: query: SELECT array_position(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),1.1234567890)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_position(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),1.1234567890)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT array_position(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),11234567890)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_position(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),11234567890)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT array_position(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d")),array("a","b","c","d"))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_position(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d")),array("a","b","c","d"))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: SELECT array_position(array("aa","bb","cc"),"cc")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_position(array("aa","bb","cc"),"cc")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+3
+PREHOOK: query: create table test as select array('a', 'b', 'c', 'b') as a union all select array('a', 'c', 'd') as a
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: create table test as select array('a', 'b', 'c', 'b') as a union all select array('a', 'c', 'd') as a
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+POSTHOOK: Lineage: test.a SCRIPT []
+PREHOOK: query: select * from test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+["a","b","c","b"]
+["a","c","d"]
+PREHOOK: query: select a, array_position(a, 'b') from test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: select a, array_position(a, 'b') from test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+["a","b","c","b"]	2
+["a","c","d"]	0
+PREHOOK: query: create external table test_null_array (id string, value Array<String>) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_null_array
+POSTHOOK: query: create external table test_null_array (id string, value Array<String>) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_null_array
+PREHOOK: query: select id,value from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select id,value from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+1	[]
+2	["NULL"]
+3	["null","null"]
+PREHOOK: query: select id,array_position(value,id) from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select id,array_position(value,id) from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+1	0
+2	0
+3	0
+PREHOOK: query: select value, array_position(value,id) from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select value, array_position(value,id) from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+["NULL"]	0
+["null","null"]	0
+[]	0

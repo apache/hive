@@ -41,10 +41,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store
-                  filterExpr: (s_city) IN ('Cedar Grove', 'Wildwood', 'Union', 'Salem', 'Highland Park') (type: boolean)
+                  filterExpr: (s_city) IN ('Cedar Grove', 'Highland Park', 'Salem', 'Union', 'Wildwood') (type: boolean)
                   Statistics: Num rows: 1704 Data size: 172104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (s_city) IN ('Cedar Grove', 'Wildwood', 'Union', 'Salem', 'Highland Park') (type: boolean)
+                    predicate: (s_city) IN ('Cedar Grove', 'Highland Park', 'Salem', 'Union', 'Wildwood') (type: boolean)
                     Statistics: Num rows: 32 Data size: 3232 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: s_store_sk (type: bigint)
@@ -161,10 +161,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: date_dim
-                  filterExpr: ((d_year) IN (1998, 1999, 2000) and (d_dow) IN (6, 0)) (type: boolean)
+                  filterExpr: ((d_year) IN (1998, 1999, 2000) and (d_dow) IN (0, 6)) (type: boolean)
                   Statistics: Num rows: 73049 Data size: 1168784 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((d_year) IN (1998, 1999, 2000) and (d_dow) IN (6, 0)) (type: boolean)
+                    predicate: ((d_year) IN (1998, 1999, 2000) and (d_dow) IN (0, 6)) (type: boolean)
                     Statistics: Num rows: 315 Data size: 5040 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_date_sk (type: bigint)

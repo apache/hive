@@ -1,7 +1,9 @@
 PREHOOK: query: drop table partition_char_1_temp
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table partition_char_1_temp
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create temporary table partition_char_1_temp (key string, value char(20)) partitioned by (dt char(10), region int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -36,8 +38,10 @@ POSTHOOK: Input: default@partition_char_1_temp@dt=2000-01-01/region=1
 PREHOOK: query: drop table partition_char_1_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partition_char_1_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partition_char_1_temp
 POSTHOOK: query: drop table partition_char_1_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partition_char_1_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partition_char_1_temp

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table t
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table t
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop view r0
 PREHOOK: type: DROPVIEW
 POSTHOOK: query: drop view r0

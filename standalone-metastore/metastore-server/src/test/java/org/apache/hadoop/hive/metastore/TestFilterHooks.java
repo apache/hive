@@ -20,10 +20,17 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsRequest;
+import org.apache.hadoop.hive.metastore.api.GetDatabaseObjectsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -47,7 +54,9 @@ import com.google.common.collect.Lists;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.junit.experimental.categories.Category;
 
@@ -82,8 +91,11 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
-      return filterTableNames(getDefaultCatalog(conf), dbName, tableList);
+    public List<Database> filterDatabaseObjects(List<Database> databaseList) throws MetaException {
+      if (blockResults) {
+        return new ArrayList<>();
+      }
+      return databaseList;
     }
 
     @Override
@@ -112,7 +124,17 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<TableMeta> filterTableMetas(String catName, String dbName,List<TableMeta> tableMetas) throws MetaException {
+    @Deprecated
+    public List<TableMeta> filterTableMetas(String catName, String dbName,List<TableMeta> tableMetas)
+        throws MetaException {
+      return filterTableMetas(tableMetas);
+    }
+
+    @Override
+    public List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException {
+      if (blockResults) {
+        return new ArrayList<>();
+      }
       return tableMetas;
     }
 
@@ -142,18 +164,20 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<String> filterPartitionNames(String dbName, String tblName, List<String> partitionNames)
-        throws MetaException {
-      return filterPartitionNames(getDefaultCatalog(conf), dbName, tblName, partitionNames);
-    }
-
-    @Override
     public List<String> filterPartitionNames(String catName, String dbName, String tblName,
         List<String> partitionNames) throws MetaException {
       if (blockResults) {
         return new ArrayList<>();
       }
       return partitionNames;
+    }
+
+    @Override
+    public List<String> filterDataConnectors(List<String> dcList) throws MetaException {
+      if (blockResults) {
+        return new ArrayList<>();
+      }
+      return dcList;
     }
   }
 
@@ -167,6 +191,12 @@ public class TestFilterHooks {
   private static String DBNAME2 = "testdb2";
   private static final String TAB1 = "tab1";
   private static final String TAB2 = "tab2";
+  private static String DCNAME1 = "test_connector1";
+  private static String DCNAME2 = "test_connector2";
+  private static String mysql_type = "mysql";
+  private static String mysql_url = "jdbc:mysql://localhost:3306/hive";
+  private static String postgres_type = "postgres";
+  private static String postgres_url = "jdbc:postgresql://localhost:5432";
 
 
   protected HiveMetaStoreClient createClient(Configuration metaStoreConf) throws Exception {
@@ -224,6 +254,8 @@ public class TestFilterHooks {
 
     client.dropDatabase(DBNAME1, true, true, true);
     client.dropDatabase(DBNAME2, true, true, true);
+    client.dropDataConnector(DCNAME1, true, true);
+    client.dropDataConnector(DCNAME2, true, true);
     Database db1 = new DatabaseBuilder()
         .setName(DBNAME1)
         .setCatalogName(Warehouse.DEFAULT_CATALOG_NAME)
@@ -252,11 +284,26 @@ public class TestFilterHooks {
         .inTable(tab2)
         .addValue("value2")
         .addToTable(client, conf);
+    DataConnector dc1 = new DataConnector(DCNAME1, mysql_type, mysql_url);
+    DataConnector dc2 = new DataConnector(DCNAME2, postgres_type, postgres_url);
+    client.createDataConnector(dc1);
+    client.createDataConnector(dc2);
 
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
-    client.compact2(DBNAME1, TAB1, null, CompactionType.MAJOR, new HashMap<>());
-    client.compact2(DBNAME1, TAB2, "name=value1", CompactionType.MINOR, new HashMap<>());
+
+    CompactionRequest tbl1CompactionRequest = new CompactionRequest();
+    tbl1CompactionRequest.setDbname(DBNAME1);
+    tbl1CompactionRequest.setTablename(TAB1);
+    tbl1CompactionRequest.setType(CompactionType.MAJOR);
+    client.compact2(tbl1CompactionRequest);
+
+    CompactionRequest tbl2CompactionRequest = new CompactionRequest();
+    tbl2CompactionRequest.setDbname(DBNAME1);
+    tbl2CompactionRequest.setTablename(TAB2);
+    tbl2CompactionRequest.setType(CompactionType.MINOR);
+    tbl2CompactionRequest.setPartitionname("name=value1");
+    client.compact2(tbl2CompactionRequest);
   }
 
   /**
@@ -285,6 +332,8 @@ public class TestFilterHooks {
     assertEquals(1, client.getPartitionsByNames(DBNAME1, TAB2, Lists.newArrayList("name=value1")).size());
 
     assertEquals(2, client.showCompactions().getCompacts().size());
+
+    assertEquals(2, client.getAllDataConnectorNames().size());
   }
 
   /**
@@ -304,6 +353,7 @@ public class TestFilterHooks {
     testFilterForTables(true);
     testFilterForPartition(true);
     testFilterForCompaction();
+    testFilterForDataConnector();
   }
 
   /**
@@ -332,6 +382,8 @@ public class TestFilterHooks {
     assertEquals(1, client.getPartitionsByNames(DBNAME1, TAB2, Lists.newArrayList("name=value1")).size());
 
     assertEquals(2, client.showCompactions().getCompacts().size());
+
+    assertEquals(2, client.getAllDataConnectorNames().size());
   }
 
   /**
@@ -350,6 +402,7 @@ public class TestFilterHooks {
     testFilterForTables(false);
     testFilterForPartition(false);
     testFilterForCompaction();
+    testFilterForDataConnector();
   }
 
   protected void testFilterForDb(boolean filterAtServer) throws Exception {
@@ -368,6 +421,38 @@ public class TestFilterHooks {
     assertEquals(0, client.getDatabases("*").size());
     assertEquals(0, client.getAllDatabases().size());
     assertEquals(0, client.getDatabases(DBNAME1).size());
+
+    GetDatabaseObjectsRequest request = new GetDatabaseObjectsRequest();
+    request.setCatalogName(Warehouse.DEFAULT_CATALOG_NAME);
+    String testPrefix = DBNAME1.substring(0, DBNAME1.lastIndexOf("_"));
+    request.setPattern(testPrefix + "_*");
+
+    // Call the method with filtering enabled
+    GetDatabaseObjectsResponse response = client.get_databases_req(request);
+    assertEquals("With filtering enabled, should return empty list", 0, response.getDatabasesSize());
+
+    // Temporarily disable blocking to test without filtering
+    boolean originalBlockResults = DummyMetaStoreFilterHookImpl.blockResults;
+    DummyMetaStoreFilterHookImpl.blockResults = false;
+
+    try {
+      response = client.get_databases_req(request);
+      System.out.println("Returned databases:");
+      for (Database db : response.getDatabases()) {
+        System.out.println("DB name: " + db.getName());
+      }
+      assertEquals("With filtering disabled, should return all databases", 2, response.getDatabasesSize());
+
+      // Verify the returned database objects have the correct names
+      Set<String> returnedDbNames = new HashSet<>();
+      for (Database db : response.getDatabases()) {
+        returnedDbNames.add(db.getName());
+      }
+      assertTrue("Should contain first database", returnedDbNames.contains(DBNAME1.toLowerCase()));
+      assertTrue("Should contain second database", returnedDbNames.contains(DBNAME2.toLowerCase()));
+    } finally {
+      DummyMetaStoreFilterHookImpl.blockResults = originalBlockResults;
+    }
   }
 
   protected void testFilterForTables(boolean filterAtServer) throws Exception {
@@ -417,5 +502,10 @@ public class TestFilterHooks {
 
   protected void testFilterForCompaction() throws Exception {
     assertEquals(0, client.showCompactions().getCompacts().size());
+  }
+
+  protected void testFilterForDataConnector() throws Exception {
+    assertNotNull(client.getDataConnector(DCNAME1));
+    assertEquals(0, client.getAllDataConnectorNames().size());
   }
 }

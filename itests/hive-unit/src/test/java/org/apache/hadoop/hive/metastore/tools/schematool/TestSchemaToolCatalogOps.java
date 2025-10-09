@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.tools.schematool;
 
+import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -47,6 +48,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
@@ -60,6 +62,7 @@ public class TestSchemaToolCatalogOps {
   private static PrintStream errStream;
   private static PrintStream outStream;
   private static String argsBase;
+  private static File catalogLocation;
 
   @BeforeClass
   public static void initDb() throws HiveMetaException, IOException {
@@ -83,6 +86,7 @@ public class TestSchemaToolCatalogOps {
     outStream = System.out;
 
     argsBase = "-dbType derby -userName " + userName + " -passWord " + passWord + " ";
+    catalogLocation = Files.createTempDir();
     execute(new SchemaToolTaskInit(), "-initSchema"); // Pre-install the database so all the tables are there.
   }
 
@@ -91,6 +95,9 @@ public class TestSchemaToolCatalogOps {
     File metaStoreDir = new File(testMetastoreDB);
     if (metaStoreDir.exists()) {
       FileUtils.forceDeleteOnExit(metaStoreDir);
+    }
+    if (catalogLocation.exists()) {
+      FileUtils.forceDeleteOnExit(catalogLocation);
     }
     System.setOut(outStream);
     System.setErr(errStream);
@@ -205,92 +212,88 @@ public class TestSchemaToolCatalogOps {
     String funcName = "movedbfunc";
     String partVal = "moveDbKey";
 
-    new CatalogBuilder()
-        .setName(toCatName)
-        .setLocation("file:///tmp")
-        .create(client);
+    withCatalog(toCatName, catName -> {
+      Database db = new DatabaseBuilder()
+          .setCatalogName(DEFAULT_CATALOG_NAME)
+          .setName(dbName)
+          .create(client, conf);
 
-    Database db = new DatabaseBuilder()
-        .setCatalogName(DEFAULT_CATALOG_NAME)
-        .setName(dbName)
-        .create(client, conf);
+      new FunctionBuilder()
+          .inDb(db)
+          .setName(funcName)
+          .setClass("org.apache.hive.myudf")
+          .create(client, conf);
 
-    new FunctionBuilder()
-        .inDb(db)
-        .setName(funcName)
-        .setClass("org.apache.hive.myudf")
-        .create(client, conf);
+      Table table = new TableBuilder()
+          .inDb(db)
+          .setTableName(tableName)
+          .addCol("a", "int")
+          .addPartCol("p", "string")
+          .create(client, conf);
 
-    Table table = new TableBuilder()
-        .inDb(db)
-        .setTableName(tableName)
-        .addCol("a", "int")
-        .addPartCol("p", "string")
-        .create(client, conf);
+      new PartitionBuilder()
+          .inTable(table)
+          .addValue(partVal)
+          .addToTable(client, conf);
 
-    new PartitionBuilder()
-        .inTable(table)
-        .addValue(partVal)
-        .addToTable(client, conf);
+      String argsMoveDB = String.format("-moveDatabase %s -fromCatalog %s -toCatalog %s", dbName,
+          DEFAULT_CATALOG_NAME, catName);
+      execute(new SchemaToolTaskMoveDatabase(), argsMoveDB);
 
-    String argsMoveDB = String.format("-moveDatabase %s -fromCatalog %s -toCatalog %s", dbName,
-        DEFAULT_CATALOG_NAME, toCatName);
-    execute(new SchemaToolTaskMoveDatabase(), argsMoveDB);
+      Database fetchedDb = client.getDatabase(catName, dbName);
+      Assert.assertNotNull(fetchedDb);
+      Assert.assertEquals(catName.toLowerCase(), fetchedDb.getCatalogName());
 
-    Database fetchedDb = client.getDatabase(toCatName, dbName);
-    Assert.assertNotNull(fetchedDb);
-    Assert.assertEquals(toCatName.toLowerCase(), fetchedDb.getCatalogName());
+      Function fetchedFunction = client.getFunction(catName, dbName, funcName);
+      Assert.assertNotNull(fetchedFunction);
+      Assert.assertEquals(catName.toLowerCase(), fetchedFunction.getCatName());
+      Assert.assertEquals(dbName.toLowerCase(), fetchedFunction.getDbName());
 
-    Function fetchedFunction = client.getFunction(toCatName, dbName, funcName);
-    Assert.assertNotNull(fetchedFunction);
-    Assert.assertEquals(toCatName.toLowerCase(), fetchedFunction.getCatName());
-    Assert.assertEquals(dbName.toLowerCase(), fetchedFunction.getDbName());
+      Table fetchedTable = client.getTable(catName, dbName, tableName);
+      Assert.assertNotNull(fetchedTable);
+      Assert.assertEquals(catName.toLowerCase(), fetchedTable.getCatName());
+      Assert.assertEquals(dbName.toLowerCase(), fetchedTable.getDbName());
 
-    Table fetchedTable = client.getTable(toCatName, dbName, tableName);
-    Assert.assertNotNull(fetchedTable);
-    Assert.assertEquals(toCatName.toLowerCase(), fetchedTable.getCatName());
-    Assert.assertEquals(dbName.toLowerCase(), fetchedTable.getDbName());
+      Partition fetchedPart =
+          client.getPartition(catName, dbName, tableName, Collections.singletonList(partVal));
+      Assert.assertNotNull(fetchedPart);
+      Assert.assertEquals(catName.toLowerCase(), fetchedPart.getCatName());
+      Assert.assertEquals(dbName.toLowerCase(), fetchedPart.getDbName());
+      Assert.assertEquals(tableName.toLowerCase(), fetchedPart.getTableName());
 
-    Partition fetchedPart =
-        client.getPartition(toCatName, dbName, tableName, Collections.singletonList(partVal));
-    Assert.assertNotNull(fetchedPart);
-    Assert.assertEquals(toCatName.toLowerCase(), fetchedPart.getCatName());
-    Assert.assertEquals(dbName.toLowerCase(), fetchedPart.getDbName());
-    Assert.assertEquals(tableName.toLowerCase(), fetchedPart.getTableName());
+      // drop the function
+      client.dropFunction(catName, dbName, funcName);
+    });
   }
 
   @Test
   public void moveDatabaseWithExistingDbOfSameNameAlreadyInTargetCatalog()
       throws TException, HiveMetaException {
     String catName = "clobberCatalog";
-    new CatalogBuilder()
-        .setName(catName)
-        .setLocation("file:///tmp")
-        .create(client);
-    try {
-      String argsMoveDB = String.format("-moveDatabase %s -fromCatalog %s -toCatalog %s",
-          DEFAULT_DATABASE_NAME, catName, DEFAULT_CATALOG_NAME);
-      execute(new SchemaToolTaskMoveDatabase(), argsMoveDB);
-      Assert.fail("Attempt to move default database should have failed.");
-    } catch (HiveMetaException e) {
-      // good
-    }
+    withCatalog(catName, name -> {
+      try {
+        String argsMoveDB = String.format("-moveDatabase %s -fromCatalog %s -toCatalog %s",
+            DEFAULT_DATABASE_NAME, catName, DEFAULT_CATALOG_NAME);
+        execute(new SchemaToolTaskMoveDatabase(), argsMoveDB);
+        Assert.fail("Attempt to move default database should have failed.");
+      } catch (HiveMetaException e) {
+        // good
+      }
 
-    // Make sure nothing really moved
-    Set<String> dbNames = new HashSet<>(client.getAllDatabases(DEFAULT_CATALOG_NAME));
-    Assert.assertTrue(dbNames.contains(DEFAULT_DATABASE_NAME));
+      // Make sure nothing really moved
+      Set<String> dbNames = new HashSet<>(client.getAllDatabases(DEFAULT_CATALOG_NAME));
+      Assert.assertTrue(dbNames.contains(DEFAULT_DATABASE_NAME));
+    });
   }
 
   @Test(expected = HiveMetaException.class)
   public void moveNonExistentDatabase() throws TException, HiveMetaException {
     String catName = "moveNonExistentDb";
-    new CatalogBuilder()
-        .setName(catName)
-        .setLocation("file:///tmp")
-        .create(client);
-    String argsMoveDB = String.format("-moveDatabase nosuch -fromCatalog %s -toCatalog %s",
-        catName, DEFAULT_CATALOG_NAME);
-    execute(new SchemaToolTaskMoveDatabase(), argsMoveDB);
+    withCatalog(catName, name -> {
+      String argsMoveDB = String.format("-moveDatabase nosuch -fromCatalog %s -toCatalog %s",
+          name, DEFAULT_CATALOG_NAME);
+      execute(new SchemaToolTaskMoveDatabase(), argsMoveDB);
+    });
   }
 
   @Test
@@ -320,42 +323,39 @@ public class TestSchemaToolCatalogOps {
     String tableName = "moveTableTable";
     String partVal = "moveTableKey";
 
-    new CatalogBuilder()
-        .setName(toCatName)
-        .setLocation("file:///tmp")
-        .create(client);
+    withCatalog(toCatName, catName -> {
+      new DatabaseBuilder()
+          .setCatalogName(toCatName)
+          .setName(toDbName)
+          .create(client, conf);
 
-    new DatabaseBuilder()
-        .setCatalogName(toCatName)
-        .setName(toDbName)
-        .create(client, conf);
+      Table table = new TableBuilder()
+          .setTableName(tableName)
+          .addCol("a", "int")
+          .addPartCol("p", "string")
+          .create(client, conf);
 
-    Table table = new TableBuilder()
-        .setTableName(tableName)
-        .addCol("a", "int")
-        .addPartCol("p", "string")
-        .create(client, conf);
+      new PartitionBuilder()
+          .inTable(table)
+          .addValue(partVal)
+          .addToTable(client, conf);
 
-    new PartitionBuilder()
-        .inTable(table)
-        .addValue(partVal)
-        .addToTable(client, conf);
+      String argsMoveTable = String.format("-moveTable %s -fromCatalog %s -toCatalog %s -fromDatabase %s -toDatabase %s",
+          tableName, DEFAULT_CATALOG_NAME, toCatName, DEFAULT_DATABASE_NAME, toDbName);
+      execute(new SchemaToolTaskMoveTable(), argsMoveTable);
 
-    String argsMoveTable = String.format("-moveTable %s -fromCatalog %s -toCatalog %s -fromDatabase %s -toDatabase %s",
-        tableName, DEFAULT_CATALOG_NAME, toCatName, DEFAULT_DATABASE_NAME, toDbName);
-    execute(new SchemaToolTaskMoveTable(), argsMoveTable);
+      Table fetchedTable = client.getTable(toCatName, toDbName, tableName);
+      Assert.assertNotNull(fetchedTable);
+      Assert.assertEquals(toCatName.toLowerCase(), fetchedTable.getCatName());
+      Assert.assertEquals(toDbName.toLowerCase(), fetchedTable.getDbName());
 
-    Table fetchedTable = client.getTable(toCatName, toDbName, tableName);
-    Assert.assertNotNull(fetchedTable);
-    Assert.assertEquals(toCatName.toLowerCase(), fetchedTable.getCatName());
-    Assert.assertEquals(toDbName.toLowerCase(), fetchedTable.getDbName());
-
-    Partition fetchedPart =
-        client.getPartition(toCatName, toDbName, tableName, Collections.singletonList(partVal));
-    Assert.assertNotNull(fetchedPart);
-    Assert.assertEquals(toCatName.toLowerCase(), fetchedPart.getCatName());
-    Assert.assertEquals(toDbName.toLowerCase(), fetchedPart.getDbName());
-    Assert.assertEquals(tableName.toLowerCase(), fetchedPart.getTableName());
+      Partition fetchedPart =
+          client.getPartition(toCatName, toDbName, tableName, Collections.singletonList(partVal));
+      Assert.assertNotNull(fetchedPart);
+      Assert.assertEquals(toCatName.toLowerCase(), fetchedPart.getCatName());
+      Assert.assertEquals(toDbName.toLowerCase(), fetchedPart.getDbName());
+      Assert.assertEquals(tableName.toLowerCase(), fetchedPart.getTableName());
+    });
   }
 
   @Test
@@ -482,5 +482,32 @@ public class TestSchemaToolCatalogOps {
 
     task.setHiveSchemaTool(schemaTool);
     task.execute();
+  }
+
+  @FunctionalInterface
+  private interface CheckFunc<T> {
+    void apply(T t) throws HiveMetaException, TException;
+  }
+
+  // Function will build catalog itself and clean the catalog after the operation.
+  private void withCatalog(String catName, CheckFunc<String> f)
+      throws HiveMetaException, TException {
+    try {
+      new CatalogBuilder()
+          .setName(catName)
+          .setLocation(catalogLocation.toString())
+          .create(client);
+      f.apply(catName);
+    } finally {
+      List<String> dbNames = client.getAllDatabases(catName);
+      for (String dbName : dbNames) {
+        List<String> tblNames = client.getAllTables(catName, dbName);
+        for (String tblName : tblNames) {
+          client.dropTable(catName, dbName, tblName);
+        }
+        client.dropDatabase(catName, dbName, true, false, false);
+      }
+      client.dropCatalog(catName);
+    }
   }
 }

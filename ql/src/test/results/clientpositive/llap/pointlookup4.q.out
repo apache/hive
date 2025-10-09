@@ -1,7 +1,9 @@
 PREHOOK: query: drop table pcr_t1_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table pcr_t1_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table pcr_t1_n0 (key int, value string) partitioned by (ds1 string, ds2 string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -62,7 +64,7 @@ POSTHOOK: Input: default@pcr_t1_n0@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, `ds2`
 FROM `default`.`pcr_t1_n0`
-WHERE `ds1` = '2000-04-08' AND (`ds2` = '2001-04-08' AND `key` = 1) OR `ds1` = '2000-04-09' AND (`ds2` = '2001-04-09' AND `key` = 2)
+WHERE `ds1` = '2000-04-08' AND `ds2` = '2001-04-08' AND `key` = 1 OR `ds1` = '2000-04-09' AND `ds2` = '2001-04-09' AND `key` = 2
 ORDER BY `key`, `value`, `ds1`, `ds2`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -262,7 +264,7 @@ POSTHOOK: Input: default@pcr_t1_n0@ds1=2000-04-09/ds2=2001-04-09
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, `ds1`, `ds2`
 FROM `default`.`pcr_t1_n0`
-WHERE  (`key`, `ds1`, `ds2`) IN ( (1, '2000-04-08', '2001-04-08'),  (2, '2000-04-09', '2001-04-09'))
+WHERE (`key`, `ds1`, `ds2`) IN ((1, '2000-04-08', '2001-04-08'), (2, '2000-04-09', '2001-04-09'))
 ORDER BY `key`, `value`, `ds1`, `ds2`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -443,8 +445,10 @@ POSTHOOK: Input: default@pcr_t1_n0@ds1=2000-04-09/ds2=2001-04-09
 PREHOOK: query: drop table pcr_t1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@pcr_t1_n0
 POSTHOOK: query: drop table pcr_t1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@pcr_t1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@pcr_t1_n0

@@ -1,0 +1,115 @@
+PREHOOK: query: create table t1 (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create table t2 (id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2 (id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select id,
+  (select count(*) from t1 join t2 on t1.id=t2.id)
+  from t2
+order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select id,
+  (select count(*) from t1 join t2 on t1.id=t2.id)
+  from t2
+order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC])
+  HiveProject(id=[$0], $f0=[$1])
+    HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
+      HiveProject(id=[$0])
+        HiveTableScan(table=[[default, t2]], table:alias=[t2])
+      HiveProject($f0=[$0])
+        HiveAggregate(group=[{}], agg#0=[count()])
+          HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(id=[$0])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, t1]], table:alias=[t1])
+            HiveProject(id=[$0])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, t2]], table:alias=[t2])
+
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select id,
+  (select count(*) from t1 join t2 using (id))
+  from t2
+order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select id,
+  (select count(*) from t1 join t2 using (id))
+  from t2
+order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC])
+  HiveProject(id=[$0], $f0=[$1])
+    HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
+      HiveProject(id=[$0])
+        HiveTableScan(table=[[default, t2]], table:alias=[t2])
+      HiveProject($f0=[$0])
+        HiveAggregate(group=[{}], agg#0=[count()])
+          HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(id=[$0])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, t1]], table:alias=[t1])
+            HiveProject(id=[$0])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, t2]], table:alias=[t2])
+
+Warning: Shuffle Join MERGEJOIN[38][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain cbo select id,
+  (select count(*) from t1 join t2 where t1.id=t2.id)
+  from t2
+order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select id,
+  (select count(*) from t1 join t2 where t1.id=t2.id)
+  from t2
+order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[ASC])
+  HiveProject(id=[$0], $f0=[$1])
+    HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
+      HiveProject(id=[$0])
+        HiveTableScan(table=[[default, t2]], table:alias=[t2])
+      HiveProject($f0=[$0])
+        HiveAggregate(group=[{}], agg#0=[count()])
+          HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+            HiveProject(id=[$0])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, t1]], table:alias=[t1])
+            HiveProject(id=[$0])
+              HiveFilter(condition=[IS NOT NULL($0)])
+                HiveTableScan(table=[[default, t2]], table:alias=[t2])
+

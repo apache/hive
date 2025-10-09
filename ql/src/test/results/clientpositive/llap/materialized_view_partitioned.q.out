@@ -60,7 +60,7 @@ STAGE PLANS:
                       Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
@@ -126,8 +126,11 @@ STAGE PLANS:
 
   Stage: Stage-4
     Create Materialized View
-      partition columns: key string
       columns: value string
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      partition columns: key string
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       expanded text: SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_1`
       name: default.partition_mv_1
       original text: SELECT value, key FROM src_txn where key > 200 and key < 250
@@ -263,7 +266,7 @@ Table Parameters:
 	numPartitions       	32                  
 	numRows             	55                  
 	rawDataSize         	5005                
-	totalSize           	7682                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -282,8 +285,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.src_txn	0/0/0               	 
+Table name          	Snapshot            	 
+default.src_txn     	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT * FROM partition_mv_1 where key = 238
 PREHOOK: type: QUERY
@@ -660,7 +663,7 @@ STAGE PLANS:
                       Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: string)
-                        null sort order: a
+                        null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col1 (type: string)
                         Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1044,7 +1047,7 @@ STAGE PLANS:
                   Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col1 (type: string)
-                    null sort order: a
+                    null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col1 (type: string)
                     Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1154,11 +1157,11 @@ POSTHOOK: Input: default@partition_mv_3
 POSTHOOK: Input: default@partition_mv_3@key=238
 #### A masked pattern was here ####
 val_238_n	238
+val_238	238
+val_238	238
+val_238	238
+val_238	238
 val_238_n	238
-val_238	238
-val_238	238
-val_238	238
-val_238	238
 val_238_n2	238
 val_238_n2	238
 PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_1

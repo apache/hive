@@ -56,10 +56,10 @@ public class TestServerSpecificConfig {
 
     // check config properties expected with embedded metastore client
     assertTrue(HiveConf.isLoadMetastoreConfig());
-    assertEquals("from.hivemetastore-site.xml",
+    assertEquals("from.metastore-site.xml",
         conf.get("hive.dummyparam.test.server.specific.config.override"));
 
-    assertEquals("from.hivemetastore-site.xml",
+    assertEquals("from.metastore-site.xml",
         conf.get("hive.dummyparam.test.server.specific.config.metastoresite"));
 
     assertEquals("from.hive-site.xml",
@@ -74,7 +74,7 @@ public class TestServerSpecificConfig {
     conf = new HiveConf();
     verifyHS2ConfParams(conf);
 
-    assertEquals("from.hivemetastore-site.xml",
+    assertEquals("from.metastore-site.xml",
         conf.get("hive.dummyparam.test.server.specific.config.metastoresite"));
   }
 
@@ -131,7 +131,7 @@ public class TestServerSpecificConfig {
   }
 
   /**
-   * Test to ensure that HiveConf does not try to load hivemetastore-site.xml,
+   * Test to ensure that HiveConf does not try to load metastore-site.xml,
    * when remote metastore is used.
    *
    * @throws IOException
@@ -181,7 +181,7 @@ public class TestServerSpecificConfig {
     FileOutputStream out = new FileOutputStream(hiveSite);
     HiveConf.setHiveSiteLocation(oldDefaultHiveSite);
     HiveConf defaultHiveConf = new HiveConf();
-    defaultHiveConf.setVar(ConfVars.METASTOREURIS, "dummyvalue");
+    defaultHiveConf.setVar(ConfVars.METASTORE_URIS, "dummyvalue");
     // reset to the hive-site.xml values for following param
     defaultHiveConf.set("hive.dummyparam.test.server.specific.config.override",
         "from.hive-site.xml");

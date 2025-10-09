@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS ttest1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS ttest1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS ttest2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS ttest2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE ttest1 (
   `id1` bigint COMMENT 'from deserializer',
   `ts1` string COMMENT 'from deserializer',
@@ -249,33 +253,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest1
-                  filterExpr: (ts1 = '2015-11-20') (type: boolean)
-                  Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ts1 = '2015-11-20') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
-                      outputColumnNames: _col8, _col9
-                      Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col8 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col8 (type: string)
-                        Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col9 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: ttest2
@@ -295,6 +277,17 @@ STAGE PLANS:
                         Map-reduce partition columns: _col8 (type: string)
                         Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
+                    Select Operator
+                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
+                      outputColumnNames: _col1, _col8, _col9
+                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col8 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col8 (type: string)
+                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col9 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
@@ -317,28 +310,17 @@ STAGE PLANS:
                         Map-reduce partition columns: _col8 (type: string)
                         Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest2
-                  filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-                    Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
-                      outputColumnNames: _col1, _col8, _col9
-                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
+                      outputColumnNames: _col8, _col9
+                      Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col8 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col8 (type: string)
-                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string), _col9 (type: string)
+                        Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col9 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -370,7 +352,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -599,36 +581,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest1
-                  filterExpr: (ts1 = '2015-11-20') (type: boolean)
-                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ts1 = '2015-11-20') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                      Filter Operator
-                        predicate: _col0 is not null (type: boolean)
-                        Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: ttest2
@@ -648,6 +605,17 @@ STAGE PLANS:
                         Map-reduce partition columns: _col5 (type: string)
                         Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: bigint), _col6 (type: string)
+                    Select Operator
+                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
@@ -673,28 +641,20 @@ STAGE PLANS:
                           Map-reduce partition columns: _col3 (type: string)
                           Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest2
-                  filterExpr: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col2 (type: string)
+                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      Filter Operator
+                        predicate: _col0 is not null (type: boolean)
+                        Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -726,7 +686,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -955,33 +915,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest1
-                  filterExpr: (ts1 = '2015-11-20') (type: boolean)
-                  Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ts1 = '2015-11-20') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
-                      outputColumnNames: _col8, _col9
-                      Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col8 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col8 (type: string)
-                        Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col9 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: ttest2
@@ -1001,6 +939,17 @@ STAGE PLANS:
                         Map-reduce partition columns: _col8 (type: string)
                         Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
+                    Select Operator
+                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
+                      outputColumnNames: _col1, _col8, _col9
+                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col8 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col8 (type: string)
+                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col9 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
@@ -1023,28 +972,17 @@ STAGE PLANS:
                         Map-reduce partition columns: _col8 (type: string)
                         Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest2
-                  filterExpr: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-                    Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
-                      outputColumnNames: _col1, _col8, _col9
-                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
+                      outputColumnNames: _col8, _col9
+                      Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col8 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col8 (type: string)
-                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string), _col9 (type: string)
+                        Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col9 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1083,7 +1021,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -1319,32 +1257,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest1
-                  Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ts1 = '2015-11-20') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
-                      outputColumnNames: _col8, _col9
-                      Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col8 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col8 (type: string)
-                        Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col9 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: ttest2
@@ -1363,6 +1280,17 @@ STAGE PLANS:
                         Map-reduce partition columns: _col8 (type: string)
                         Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col2 (type: string), _col3 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
+                    Select Operator
+                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
+                      outputColumnNames: _col1, _col8, _col9
+                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col8 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col8 (type: string)
+                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: string), _col9 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
@@ -1384,27 +1312,17 @@ STAGE PLANS:
                         Map-reduce partition columns: _col8 (type: string)
                         Statistics: Num rows: 1 Data size: 294 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: string), _col6 (type: string), _col7 (type: bigint), _col9 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest2
-                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: '2015-11-20' BETWEEN dt1 AND dt2 (type: boolean)
-                    Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
-                      outputColumnNames: _col1, _col8, _col9
-                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
+                      outputColumnNames: _col8, _col9
+                      Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col8 (type: string)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col8 (type: string)
-                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string), _col9 (type: string)
+                        Statistics: Num rows: 1 Data size: 110 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col9 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1443,7 +1361,7 @@ STAGE PLANS:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -1679,35 +1597,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest1
-                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: (ts1 = '2015-11-20') (type: boolean)
-                    Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                      Filter Operator
-                        predicate: _col0 is not null (type: boolean)
-                        Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: string)
-                          null sort order: z
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col1 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 4 
             Map Operator Tree:
                 TableScan
                   alias: ttest2
@@ -1726,6 +1620,17 @@ STAGE PLANS:
                         Map-reduce partition columns: _col5 (type: string)
                         Statistics: Num rows: 1 Data size: 936 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: string), _col3 (type: string), _col4 (type: bigint), _col6 (type: string)
+                    Select Operator
+                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
@@ -1750,27 +1655,20 @@ STAGE PLANS:
                           Map-reduce partition columns: _col3 (type: string)
                           Statistics: Num rows: 1 Data size: 384 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint), _col1 (type: string), _col2 (type: bigint), _col4 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: ttest2
-                  Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: ('2015-11-20' BETWEEN dt1 AND dt2 and khash is not null) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: ts1 (type: string), khash (type: string), rhash (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col1 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col1 (type: string)
-                        Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col0 (type: string), _col2 (type: string)
+                      expressions: reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( id1 AS STRING))) (type: string), reflect('org.apache.commons.codec.digest.DigestUtils','sha256Hex',concat(CAST( at1 AS STRING))) (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      Filter Operator
+                        predicate: _col0 is not null (type: boolean)
+                        Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1802,7 +1700,7 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -1843,16 +1741,20 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE ttest1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ttest1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ttest1
 POSTHOOK: query: DROP TABLE ttest1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ttest1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ttest1
 PREHOOK: query: DROP TABLE ttest2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ttest2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ttest2
 POSTHOOK: query: DROP TABLE ttest2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ttest2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ttest2

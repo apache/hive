@@ -27,11 +27,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -95,8 +94,6 @@ public class CLIService extends CompositeService implements ICLIService {
         this.serviceUGI = Utils.getUGI();
       } catch (IOException e) {
         throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
-      } catch (LoginException e) {
-        throw new ServiceException("Unable to login to kerberos with given principal/keytab", e);
       }
 
       // Also try creating a UGI object for the SPNego principal
@@ -129,9 +126,7 @@ public class CLIService extends CompositeService implements ICLIService {
       MetaException {
     // authorization setup using SessionState should be revisited eventually, as
     // authorization and authentication are not session specific settings
-    SessionState ss = new SessionState(newHiveConf);
-    ss.setIsHiveServerQuery(true);
-    SessionState.start(ss);
+    SessionState ss = DriverUtils.setUpAndStartSessionState(newHiveConf);
     ss.applyAuthorizationPolicy();
   }
 
@@ -510,6 +505,10 @@ public class CLIService extends CompositeService implements ICLIService {
     opStatus.setJobProgressUpdate(progressUpdateLog(getProgressUpdate, operation, conf));
     return opStatus;
   }
+  public HiveConf getHiveSessionConf(OperationHandle opHandle) throws HiveSQLException {
+    Operation operation = sessionManager.getOperationManager().getOperation(opHandle);
+    return operation.getParentSession().getHiveConf();
+  }
 
   public HiveConf getSessionConf(SessionHandle sessionHandle)
       throws HiveSQLException {
@@ -599,7 +598,7 @@ public class CLIService extends CompositeService implements ICLIService {
 
   // obtain delegation token for the give user from metastore
   public String getDelegationTokenFromMetaStore(String owner)
-      throws HiveSQLException, UnsupportedOperationException, LoginException, IOException {
+      throws HiveSQLException, UnsupportedOperationException, IOException {
     HiveConf hiveConf = getHiveConf();
     if (!hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL) ||
         !hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {

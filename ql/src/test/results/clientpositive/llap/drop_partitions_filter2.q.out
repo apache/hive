@@ -133,8 +133,10 @@ c=30/d=2
 PREHOOK: query: drop table ptestfilter_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ptestfilter_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ptestfilter_n0
 POSTHOOK: query: drop table ptestfilter_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ptestfilter_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ptestfilter_n0

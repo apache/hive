@@ -76,6 +76,8 @@ public class TestThriftCliServiceWithInfoMessage {
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, "binary");
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT, webuiPort);
     hiveConf.setBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST, true);
+    // disable Query History Service for similar reason as described in MiniHS2
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_QUERY_HISTORY_ENABLED, false);
 
     // Enable showing operation drilldown link
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK, true);

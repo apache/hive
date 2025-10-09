@@ -23,3 +23,4 @@ org.apache.hadoop.hive.ql.io.SingleFileSystem$FILE
 org.apache.hadoop.hive.ql.io.SingleFileSystem$PFILE
 org.apache.hadoop.hive.ql.io.SingleFileSystem$GS
 org.apache.hadoop.hive.ql.io.SingleFileSystem$O3FS
+org.apache.hadoop.hive.ql.io.SingleFileSystem$OFS

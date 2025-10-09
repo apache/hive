@@ -42,7 +42,7 @@ Partition Parameters:
 	numFiles            	13                  
 	numRows             	309                 
 	rawDataSize         	1482                
-	totalSize           	1791                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -91,7 +91,7 @@ Partition Parameters:
 	numFiles            	53                  
 	numRows             	1028                
 	rawDataSize         	10968               
-	totalSize           	11996               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -140,7 +140,7 @@ Partition Parameters:
 	numFiles            	71                  
 	numRows             	1028                
 	rawDataSize         	10968               
-	totalSize           	11996               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -189,7 +189,7 @@ Partition Parameters:
 	numFiles            	88                  
 	numRows             	2654                
 	rawDataSize         	28466               
-	totalSize           	31120               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -238,7 +238,7 @@ Partition Parameters:
 	numFiles            	74                  
 	numRows             	2654                
 	rawDataSize         	28466               
-	totalSize           	31120               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -287,7 +287,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	5                   
 	rawDataSize         	19                  
-	totalSize           	24                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

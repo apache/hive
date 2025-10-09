@@ -99,7 +99,7 @@ public class MapRecordProcessor extends RecordProcessor {
 
   public MapRecordProcessor(final JobConf jconf, final ProcessorContext context) throws Exception {
     super(jconf, context);
-    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = HiveConf.getVar(jconf, HiveConf.ConfVars.HIVE_QUERY_ID);
     if (LlapProxy.isDaemon()) {
       setLlapOfFragmentId(context);
     }

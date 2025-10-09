@@ -88,7 +88,7 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
     this.dynamicContexts = new HashMap<String, org.apache.hadoop.mapred.TaskAttemptContext>();
     this.dynamicObjectInspectors = new HashMap<String, ObjectInspector>();
     this.dynamicOutputJobInfo = new HashMap<String, OutputJobInfo>();
-    this.HIVE_DEFAULT_PARTITION_VALUE = HiveConf.getVar(context.getConfiguration(), HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    this.HIVE_DEFAULT_PARTITION_VALUE = HiveConf.getVar(context.getConfiguration(), HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
   }
 
   @Override
@@ -149,7 +149,7 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
         throw new HCatException(ErrorType.ERROR_TOO_MANY_DYNAMIC_PTNS,
             "Number of dynamic partitions being created "
                 + "exceeds configured max allowable partitions[" + maxDynamicPartitions
-                + "], increase parameter [" + HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTS.varname
+                + "], increase parameter [" + HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS.varname
                 + "] if needed.");
       }
 
@@ -208,9 +208,10 @@ class DynamicPartitionFileRecordWriterContainer extends FileRecordWriterContaine
       baseOutputCommitter.setupTask(currTaskContext);
 
       Path parentDir = new Path(currTaskContext.getConfiguration().get("mapred.work.output.dir"));
+      String extension = HiveConf.getVar(currTaskContext.getConfiguration(), HiveConf.ConfVars.OUTPUT_FILE_EXTENSION, "");
       Path childPath =
           new Path(parentDir, FileOutputFormat.getUniqueFile(currTaskContext,
-              currTaskContext.getConfiguration().get("mapreduce.output.basename", "part"), ""));
+              currTaskContext.getConfiguration().get("mapreduce.output.basename", "part"), extension));
 
       RecordWriter baseRecordWriter =
           baseOF.getRecordWriter(parentDir.getFileSystem(currTaskContext.getConfiguration()),

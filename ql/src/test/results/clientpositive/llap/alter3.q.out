@@ -159,26 +159,32 @@ pcol2               	string
 PREHOOK: query: DROP TABLE alter3_src
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter3_src
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter3_src
 POSTHOOK: query: DROP TABLE alter3_src
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter3_src
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter3_src
 PREHOOK: query: DROP TABLE alter3_renamed
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter3_renamed
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter3_renamed
 POSTHOOK: query: DROP TABLE alter3_renamed
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter3_renamed
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter3_renamed
 PREHOOK: query: DROP TABLE alter3_like_renamed
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter3_like_renamed
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter3_like_renamed
 POSTHOOK: query: DROP TABLE alter3_like_renamed
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter3_like_renamed
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter3_like_renamed
 PREHOOK: query: SHOW TABLES LIKE "alter3_%"
 PREHOOK: type: SHOWTABLES

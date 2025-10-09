@@ -44,12 +44,12 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.CanAggregateDistinct;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumEmptyIsZeroAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
@@ -179,38 +179,38 @@ public class SqlFunctionConverter {
       TypeInfo castType = TypeConverter.convert(dt);
 
       if (castType.equals(TypeInfoFactory.byteTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("tinyint");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.TINYINT_TYPE_NAME);
       } else if (castType instanceof CharTypeInfo) {
-        castUDF = handleCastForParameterizedType(castType, FunctionRegistry.getFunctionInfo("char"));
+        castUDF = handleCastForParameterizedType(castType, FunctionRegistry.getFunctionInfo(serdeConstants.CHAR_TYPE_NAME));
       } else if (castType instanceof VarcharTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
-            FunctionRegistry.getFunctionInfo("varchar"));
+            FunctionRegistry.getFunctionInfo(serdeConstants.VARCHAR_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.stringTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("string");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.STRING_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.booleanTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("boolean");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.BOOLEAN_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.shortTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("smallint");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.SMALLINT_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.intTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("int");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INT_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.longTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("bigint");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.BIGINT_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.floatTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("float");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.FLOAT_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.doubleTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("double");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.DOUBLE_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.timestampTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("timestamp");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
       } else if (castType instanceof TimestampLocalTZTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
             FunctionRegistry.getFunctionInfo(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.dateTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("date");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.DATE_TYPE_NAME);
       } else if (castType instanceof DecimalTypeInfo) {
         castUDF = handleCastForParameterizedType(castType,
-            FunctionRegistry.getFunctionInfo("decimal"));
+            FunctionRegistry.getFunctionInfo(serdeConstants.DECIMAL_TYPE_NAME));
       } else if (castType.equals(TypeInfoFactory.binaryTypeInfo)) {
-        castUDF = FunctionRegistry.getFunctionInfo("binary");
+        castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.BINARY_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.intervalDayTimeTypeInfo)) {
         castUDF = FunctionRegistry.getFunctionInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
       } else if (castType.equals(TypeInfoFactory.intervalYearMonthTypeInfo)) {
@@ -241,7 +241,6 @@ public class SqlFunctionConverter {
     ASTNode node;
     if (hToken != null) {
       switch (op.kind) {
-        case IN:
         case BETWEEN:
         case ROW:
         case ARRAY_VALUE_CONSTRUCTOR:
@@ -386,7 +385,8 @@ public class SqlFunctionConverter {
       registerFunction("in", HiveIn.INSTANCE, hToken(HiveParser.Identifier, "in"));
       registerFunction("between", HiveBetween.INSTANCE, hToken(HiveParser.Identifier, "between"));
       registerFunction("struct", SqlStdOperatorTable.ROW, hToken(HiveParser.Identifier, "struct"));
-      registerFunction("array", SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR, hToken(HiveParser.Identifier, "array"));
+      registerFunction(FunctionRegistry.ARRAY_FUNC_NAME,
+          SqlStdOperatorTable.ARRAY_VALUE_CONSTRUCTOR, hToken(HiveParser.Identifier, FunctionRegistry.ARRAY_FUNC_NAME));
       registerFunction("map", SqlStdOperatorTable.MAP_VALUE_CONSTRUCTOR, hToken(HiveParser.Identifier, "map"));
       registerFunction("isnotnull", SqlStdOperatorTable.IS_NOT_NULL, hToken(HiveParser.Identifier, "isnotnull"));
       registerFunction("isnull", SqlStdOperatorTable.IS_NULL, hToken(HiveParser.Identifier, "isnull"));
@@ -606,6 +606,13 @@ public class SqlFunctionConverter {
       switch (hiveUdfName.toLowerCase()) {
       case "sum":
         calciteAggFn = new HiveSqlSumAggFunction(
+            isDistinct,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
+      case "$sum0":
+        calciteAggFn = new HiveSqlSumEmptyIsZeroAggFunction(
             isDistinct,
             udfInfo.returnTypeInference,
             udfInfo.operandTypeInference,

@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField TXN_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("txnIds", org.apache.thrift.protocol.TType.LIST, (short)3);
   private static final org.apache.thrift.protocol.TField REPL_POLICY_FIELD_DESC = new org.apache.thrift.protocol.TField("replPolicy", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField SRC_TXN_TO_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("srcTxnToWriteIdList", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField REALLOCATE_FIELD_DESC = new org.apache.thrift.protocol.TField("reallocate", org.apache.thrift.protocol.TType.BOOL, (short)6);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AllocateTableWriteIdsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AllocateTableWriteIdsRequestTupleSchemeFactory();
@@ -25,6 +26,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> txnIds; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String replPolicy; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<TxnToWriteId> srcTxnToWriteIdList; // optional
+  private boolean reallocate; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -32,7 +34,8 @@ package org.apache.hadoop.hive.metastore.api;
     TABLE_NAME((short)2, "tableName"),
     TXN_IDS((short)3, "txnIds"),
     REPL_POLICY((short)4, "replPolicy"),
-    SRC_TXN_TO_WRITE_ID_LIST((short)5, "srcTxnToWriteIdList");
+    SRC_TXN_TO_WRITE_ID_LIST((short)5, "srcTxnToWriteIdList"),
+    REALLOCATE((short)6, "reallocate");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -58,6 +61,8 @@ package org.apache.hadoop.hive.metastore.api;
           return REPL_POLICY;
         case 5: // SRC_TXN_TO_WRITE_ID_LIST
           return SRC_TXN_TO_WRITE_ID_LIST;
+        case 6: // REALLOCATE
+          return REALLOCATE;
         default:
           return null;
       }
@@ -99,7 +104,9 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.TXN_IDS,_Fields.REPL_POLICY,_Fields.SRC_TXN_TO_WRITE_ID_LIST};
+  private static final int __REALLOCATE_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.TXN_IDS,_Fields.REPL_POLICY,_Fields.SRC_TXN_TO_WRITE_ID_LIST,_Fields.REALLOCATE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -115,11 +122,15 @@ package org.apache.hadoop.hive.metastore.api;
     tmpMap.put(_Fields.SRC_TXN_TO_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("srcTxnToWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TxnToWriteId.class))));
+    tmpMap.put(_Fields.REALLOCATE, new org.apache.thrift.meta_data.FieldMetaData("reallocate", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AllocateTableWriteIdsRequest.class, metaDataMap);
   }
 
   public AllocateTableWriteIdsRequest() {
+    this.reallocate = false;
+
   }
 
   public AllocateTableWriteIdsRequest(
@@ -135,6 +146,7 @@ package org.apache.hadoop.hive.metastore.api;
    * Performs a deep copy on <i>other</i>.
    */
   public AllocateTableWriteIdsRequest(AllocateTableWriteIdsRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
@@ -155,6 +167,7 @@ package org.apache.hadoop.hive.metastore.api;
       }
       this.srcTxnToWriteIdList = __this__srcTxnToWriteIdList;
     }
+    this.reallocate = other.reallocate;
   }
 
   public AllocateTableWriteIdsRequest deepCopy() {
@@ -168,6 +181,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.txnIds = null;
     this.replPolicy = null;
     this.srcTxnToWriteIdList = null;
+    this.reallocate = false;
+
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -322,6 +337,28 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public boolean isReallocate() {
+    return this.reallocate;
+  }
+
+  public void setReallocate(boolean reallocate) {
+    this.reallocate = reallocate;
+    setReallocateIsSet(true);
+  }
+
+  public void unsetReallocate() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __REALLOCATE_ISSET_ID);
+  }
+
+  /** Returns true if field reallocate is set (has been assigned a value) and false otherwise */
+  public boolean isSetReallocate() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __REALLOCATE_ISSET_ID);
+  }
+
+  public void setReallocateIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __REALLOCATE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case DB_NAME:
@@ -364,6 +401,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case REALLOCATE:
+      if (value == null) {
+        unsetReallocate();
+      } else {
+        setReallocate((java.lang.Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -384,6 +429,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case SRC_TXN_TO_WRITE_ID_LIST:
       return getSrcTxnToWriteIdList();
+
+    case REALLOCATE:
+      return isReallocate();
 
     }
     throw new java.lang.IllegalStateException();
@@ -406,6 +454,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetReplPolicy();
     case SRC_TXN_TO_WRITE_ID_LIST:
       return isSetSrcTxnToWriteIdList();
+    case REALLOCATE:
+      return isSetReallocate();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -468,6 +518,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_reallocate = true && this.isSetReallocate();
+    boolean that_present_reallocate = true && that.isSetReallocate();
+    if (this_present_reallocate || that_present_reallocate) {
+      if (!(this_present_reallocate && that_present_reallocate))
+        return false;
+      if (this.reallocate != that.reallocate)
+        return false;
+    }
+
     return true;
   }
 
@@ -494,6 +553,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetSrcTxnToWriteIdList()) ? 131071 : 524287);
     if (isSetSrcTxnToWriteIdList())
       hashCode = hashCode * 8191 + srcTxnToWriteIdList.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetReallocate()) ? 131071 : 524287);
+    if (isSetReallocate())
+      hashCode = hashCode * 8191 + ((reallocate) ? 131071 : 524287);
 
     return hashCode;
   }
@@ -552,6 +615,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetSrcTxnToWriteIdList()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.srcTxnToWriteIdList, other.srcTxnToWriteIdList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetReallocate(), other.isSetReallocate());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetReallocate()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.reallocate, other.reallocate);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -622,6 +695,12 @@ package org.apache.hadoop.hive.metastore.api;
       }
       first = false;
     }
+    if (isSetReallocate()) {
+      if (!first) sb.append(", ");
+      sb.append("reallocate:");
+      sb.append(this.reallocate);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -649,6 +728,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -692,13 +773,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 3: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list798 = iprot.readListBegin();
-                struct.txnIds = new java.util.ArrayList<java.lang.Long>(_list798.size);
-                long _elem799;
-                for (int _i800 = 0; _i800 < _list798.size; ++_i800)
+                org.apache.thrift.protocol.TList _list868 = iprot.readListBegin();
+                struct.txnIds = new java.util.ArrayList<java.lang.Long>(_list868.size);
+                long _elem869;
+                for (int _i870 = 0; _i870 < _list868.size; ++_i870)
                 {
-                  _elem799 = iprot.readI64();
-                  struct.txnIds.add(_elem799);
+                  _elem869 = iprot.readI64();
+                  struct.txnIds.add(_elem869);
                 }
                 iprot.readListEnd();
               }
@@ -718,18 +799,26 @@ package org.apache.hadoop.hive.metastore.api;
           case 5: // SRC_TXN_TO_WRITE_ID_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list801 = iprot.readListBegin();
-                struct.srcTxnToWriteIdList = new java.util.ArrayList<TxnToWriteId>(_list801.size);
-                @org.apache.thrift.annotation.Nullable TxnToWriteId _elem802;
-                for (int _i803 = 0; _i803 < _list801.size; ++_i803)
+                org.apache.thrift.protocol.TList _list871 = iprot.readListBegin();
+                struct.srcTxnToWriteIdList = new java.util.ArrayList<TxnToWriteId>(_list871.size);
+                @org.apache.thrift.annotation.Nullable TxnToWriteId _elem872;
+                for (int _i873 = 0; _i873 < _list871.size; ++_i873)
                 {
-                  _elem802 = new TxnToWriteId();
-                  _elem802.read(iprot);
-                  struct.srcTxnToWriteIdList.add(_elem802);
+                  _elem872 = new TxnToWriteId();
+                  _elem872.read(iprot);
+                  struct.srcTxnToWriteIdList.add(_elem872);
                 }
                 iprot.readListEnd();
               }
               struct.setSrcTxnToWriteIdListIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // REALLOCATE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.reallocate = iprot.readBool();
+              struct.setReallocateIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -762,9 +851,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txnIds.size()));
-            for (long _iter804 : struct.txnIds)
+            for (long _iter874 : struct.txnIds)
             {
-              oprot.writeI64(_iter804);
+              oprot.writeI64(_iter874);
             }
             oprot.writeListEnd();
           }
@@ -783,14 +872,19 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(SRC_TXN_TO_WRITE_ID_LIST_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.srcTxnToWriteIdList.size()));
-            for (TxnToWriteId _iter805 : struct.srcTxnToWriteIdList)
+            for (TxnToWriteId _iter875 : struct.srcTxnToWriteIdList)
             {
-              _iter805.write(oprot);
+              _iter875.write(oprot);
             }
             oprot.writeListEnd();
           }
           oprot.writeFieldEnd();
         }
+      }
+      if (struct.isSetReallocate()) {
+        oprot.writeFieldBegin(REALLOCATE_FIELD_DESC);
+        oprot.writeBool(struct.reallocate);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -821,13 +915,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetSrcTxnToWriteIdList()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetReallocate()) {
+        optionals.set(3);
+      }
+      oprot.writeBitSet(optionals, 4);
       if (struct.isSetTxnIds()) {
         {
           oprot.writeI32(struct.txnIds.size());
-          for (long _iter806 : struct.txnIds)
+          for (long _iter876 : struct.txnIds)
           {
-            oprot.writeI64(_iter806);
+            oprot.writeI64(_iter876);
           }
         }
       }
@@ -837,11 +934,14 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetSrcTxnToWriteIdList()) {
         {
           oprot.writeI32(struct.srcTxnToWriteIdList.size());
-          for (TxnToWriteId _iter807 : struct.srcTxnToWriteIdList)
+          for (TxnToWriteId _iter877 : struct.srcTxnToWriteIdList)
           {
-            _iter807.write(oprot);
+            _iter877.write(oprot);
           }
         }
+      }
+      if (struct.isSetReallocate()) {
+        oprot.writeBool(struct.reallocate);
       }
     }
 
@@ -852,16 +952,16 @@ package org.apache.hadoop.hive.metastore.api;
       struct.setDbNameIsSet(true);
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(3);
+      java.util.BitSet incoming = iprot.readBitSet(4);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list808 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
-          struct.txnIds = new java.util.ArrayList<java.lang.Long>(_list808.size);
-          long _elem809;
-          for (int _i810 = 0; _i810 < _list808.size; ++_i810)
+          org.apache.thrift.protocol.TList _list878 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
+          struct.txnIds = new java.util.ArrayList<java.lang.Long>(_list878.size);
+          long _elem879;
+          for (int _i880 = 0; _i880 < _list878.size; ++_i880)
           {
-            _elem809 = iprot.readI64();
-            struct.txnIds.add(_elem809);
+            _elem879 = iprot.readI64();
+            struct.txnIds.add(_elem879);
           }
         }
         struct.setTxnIdsIsSet(true);
@@ -872,17 +972,21 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list811 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.srcTxnToWriteIdList = new java.util.ArrayList<TxnToWriteId>(_list811.size);
-          @org.apache.thrift.annotation.Nullable TxnToWriteId _elem812;
-          for (int _i813 = 0; _i813 < _list811.size; ++_i813)
+          org.apache.thrift.protocol.TList _list881 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.srcTxnToWriteIdList = new java.util.ArrayList<TxnToWriteId>(_list881.size);
+          @org.apache.thrift.annotation.Nullable TxnToWriteId _elem882;
+          for (int _i883 = 0; _i883 < _list881.size; ++_i883)
           {
-            _elem812 = new TxnToWriteId();
-            _elem812.read(iprot);
-            struct.srcTxnToWriteIdList.add(_elem812);
+            _elem882 = new TxnToWriteId();
+            _elem882.read(iprot);
+            struct.srcTxnToWriteIdList.add(_elem882);
           }
         }
         struct.setSrcTxnToWriteIdListIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.reallocate = iprot.readBool();
+        struct.setReallocateIsSet(true);
       }
     }
   }

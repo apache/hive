@@ -105,7 +105,7 @@ public class VectorRowBytesContainer {
     }
   }
 
-  public Output getOuputForRowBytes() {
+  public Output getOutputForRowBytes() {
     if (!isOpen) {
       initFile();
       isOpen = true;

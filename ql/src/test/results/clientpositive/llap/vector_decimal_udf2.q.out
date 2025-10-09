@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE DECIMAL_UDF2_txt (key decimal(14,5), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
@@ -154,18 +158,18 @@ POSTHOOK: Input: default@decimal_udf2_n0
 #### A masked pattern was here ####
 NULL	NULL	1.4711276743037347	-0.8390715290764524	-0.5440211108893698	0.6483608274590866	0.17453292519943295
 PREHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), round(radians(key),12)
 FROM DECIMAL_UDF2_n0) q
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf2_n0
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), round(radians(key),12)
 FROM DECIMAL_UDF2_n0) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2_n0
 #### A masked pattern was here ####
--3806982713
+-3762999953
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   exp(key), ln(key),
@@ -388,18 +392,18 @@ POSTHOOK: Input: default@decimal_udf2_txt
 #### A masked pattern was here ####
 NULL	NULL	1.4711276743037347	-0.8390715290764524	-0.5440211108893698	0.6483608274590866	0.17453292519943295
 PREHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), round(radians(key), 12)
 FROM DECIMAL_UDF2_txt) q
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf2_txt
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT SUM(HASH(*))
-FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), round(radians(key), 12)
 FROM DECIMAL_UDF2_txt) q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2_txt
 #### A masked pattern was here ####
--3806982713
+-3762999953
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   exp(key), ln(key),
@@ -529,16 +533,20 @@ POSTHOOK: Input: default@decimal_udf2_txt
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_udf2_txt
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_udf2_txt
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_udf2_txt
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_udf2_txt
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_udf2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_udf2_n0
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_udf2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_udf2_n0

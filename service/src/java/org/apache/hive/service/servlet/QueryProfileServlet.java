@@ -53,7 +53,7 @@ public class QueryProfileServlet extends HttpServlet {
       LOG.debug("No display object found for operation {} ", opId);
       return;
     }
-
+    response.setContentType("text/html; charset=utf-8");
     new QueryProfileTmpl().render(response.getWriter(), queryInfo, hiveConf);
   }
 }

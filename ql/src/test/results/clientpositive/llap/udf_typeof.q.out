@@ -1,0 +1,49 @@
+PREHOOK: query: DESCRIBE FUNCTION typeof
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION typeof
+POSTHOOK: type: DESCFUNCTION
+typeof(x) - returns the type of the supplied argument
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED typeof
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED typeof
+POSTHOOK: type: DESCFUNCTION
+typeof(x) - returns the type of the supplied argument
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTypeOf
+Function type:BUILTIN
+PREHOOK: query: SELECT typeof(1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT typeof(1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+int
+PREHOOK: query: SELECT typeof("string")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT typeof("string")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+string
+PREHOOK: query: SELECT typeof(CAST(1 as DECIMAL(4,3)))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT typeof(CAST(1 as DECIMAL(4,3)))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+decimal(4,3)
+PREHOOK: query: SELECT typeof(key) FROM src LIMIT 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT typeof(key) FROM src LIMIT 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+string
+string

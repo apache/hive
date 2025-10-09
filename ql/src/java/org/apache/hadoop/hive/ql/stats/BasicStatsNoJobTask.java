@@ -76,16 +76,16 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * StatsNoJobTask is used in cases where stats collection is the only task for the given query (no
  * parent MR or Tez job). It is used in the following cases 1) ANALYZE with noscan for
  * file formats that implement StatsProvidingRecordReader interface: ORC format (implements
- * StatsProvidingRecordReader) stores column statistics for all columns in the file footer. Its much
+ * StatsProvidingRecordReader) stores column statistics for all columns in the file footer. It's much
  * faster to compute the table/partition statistics by reading the footer than scanning all the
  * rows. This task can be used for computing basic stats like numFiles, numRows, fileSize,
  * rawDataSize from ORC footer.
- * However, this cannot be used for full ACID tables, since some of the files may contain updates
+ * However, this cannot be used for full ACID tables, since some files may contain updates
  * and deletes to existing rows, so summing up the per-file row counts is invalid.
  **/
 public class BasicStatsNoJobTask implements IStatsProcessor {
 
-  private static transient final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
+  private static final Logger LOG = LoggerFactory.getLogger(BasicStatsNoJobTask.class);
   private HiveConf conf;
 
   private BasicStatsNoJobWork work;
@@ -231,7 +231,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
         }
         ThreadPoolExecutor tpE = null;
         List<Future<FileStats>> futures = null;
-        int numThreadsFactor = HiveConf.getIntVar(jc, HiveConf.ConfVars.BASICSTATSTASKSMAXTHREADSFACTOR);
+        int numThreadsFactor = HiveConf.getIntVar(jc, HiveConf.ConfVars.BASIC_STATS_TASKS_MAX_THREADS_FACTOR);
         if (fileList.size() > 1 && numThreadsFactor > 0) {
           int numThreads = Math.min(fileList.size(), numThreadsFactor * Runtime.getRuntime().availableProcessors());
           ThreadFactory threadFactory = new ThreadFactoryBuilder().setNameFormat("Basic-Stats-Thread-%d").build();
@@ -313,7 +313,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
   private Collection<Partition> getPartitions(Table table) {
     Collection<Partition> partitions = null;
     if (work.getPartitions() == null || work.getPartitions().isEmpty()) {
-      if (table.isPartitioned()) {
+      if (table.isPartitioned() && !table.hasNonNativePartitionSupport()) {
         partitions = table.getTableSpec().partitions;
       }
     } else {

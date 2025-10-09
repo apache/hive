@@ -33,16 +33,22 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.HadoopShims;
 
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hive.common.util.MockFileSystem;
+import org.apache.hive.common.util.MockFileSystem.MockFile;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -227,7 +233,8 @@ public class TestFileUtils {
     HadoopShims shims = mock(HadoopShims.class);
     when(shims.runDistCp(Collections.singletonList(copySrc), copyDst, conf)).thenReturn(true);
 
-    Assert.assertTrue(FileUtils.copy(mockFs, copySrc, mockFs, copyDst, false, false, conf, shims));
+    DataCopyStatistics copyStatistics = new DataCopyStatistics();
+    Assert.assertTrue(FileUtils.copy(mockFs, copySrc, mockFs, copyDst, false, false, conf, shims, copyStatistics));
     verify(shims).runDistCp(Collections.singletonList(copySrc), copyDst, conf);
   }
 
@@ -280,5 +287,114 @@ public class TestFileUtils {
     childPath = new Path("/user/hive/database1/table/dir/subdir");
     relativePath = FileUtils.makeRelative(parentPath, childPath);
     assertEquals(childPath.toString(), relativePath.toString());
+  }
+
+  @Test
+  public void testListStatusIterator() throws Exception {
+    MockFileSystem fs = new MockFileSystem(new HiveConf(),
+        new MockFile("mock:/tmp/.staging", 500, new byte[0]),
+        new MockFile("mock:/tmp/_dummy", 500, new byte[0]),
+        new MockFile("mock:/tmp/dummy", 500, new byte[0]));
+    Path path = new MockFileSystem.MockPath(fs, "/tmp");
+    
+    RemoteIterator<FileStatus> it = FileUtils.listStatusIterator(fs, path, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    assertEquals(1, assertExpectedFilePaths(it, Collections.singletonList("mock:/tmp/dummy")));
+    
+    RemoteIterator<LocatedFileStatus> itr = FileUtils.listFiles(fs, path, true, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    assertEquals(1, assertExpectedFilePaths(itr, Collections.singletonList("mock:/tmp/dummy")));
+  }
+
+  @Test
+  public void testPathEscapeChars() {
+    StringBuilder sb = new StringBuilder();
+    FileUtils.charToEscape.stream().forEach(integer -> sb.append((char) integer));
+    String path = sb.toString();
+    assertEquals(path, FileUtils.unescapePathName(FileUtils.escapePathName(path)));
+  }
+
+  @Test
+  public void testOzoneSameBucket() {
+    assertTrue(FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/bucket1/dir1"),
+        new Path("ofs://ozone1/vol1/bucket1/dir2/file1")));
+    assertTrue(FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/bucket1/"),
+        new Path("ofs://ozone1/vol1/bucket1/dir2/file1")));
+
+    assertFalse(
+        FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/"), new Path("ofs://ozone1/vol1/bucket1/dir2/file1")));
+
+    assertFalse(FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/bucket1/"),
+        new Path("ofs://ozone1/vol2/bucket1/dir2/file1")));
+
+    assertFalse(FileUtils.isSameOzoneBucket(new Path("ofs://ozone1/vol1/bucket1/"),
+        new Path("ofs://ozone1/vol1/bucket2/dir2/file1")));
+  }
+
+  private int assertExpectedFilePaths(RemoteIterator<? extends FileStatus> lfs, List<String> expectedPaths)
+      throws Exception {
+    int count = 0;
+    while (lfs.hasNext()) {
+      assertTrue(expectedPaths.contains(lfs.next().getPath().toString()));
+      count++;
+    }
+    return count;
+  }
+
+  @Test
+  public void testResolveSymlinks() throws IOException {
+    HiveConf conf = new HiveConf();
+
+    java.nio.file.Path original = java.nio.file.Files.createTempFile("", "");
+    java.nio.file.Path symlinkPath = java.nio.file.Paths.get(original.toString() + ".symlink");
+    java.nio.file.Path symlinkOfSymlinkPath = java.nio.file.Paths.get(original.toString() + ".symlink.symlink");
+
+    // symlink -> original
+    java.nio.file.Files.createSymbolicLink(symlinkPath, original);
+    // symlink -> symlink -> original
+    java.nio.file.Files.createSymbolicLink(symlinkOfSymlinkPath, symlinkPath);
+
+    Assert.assertTrue(java.nio.file.Files.isSymbolicLink(symlinkPath));
+    Assert.assertTrue(java.nio.file.Files.isSymbolicLink(symlinkOfSymlinkPath));
+
+    // average usage 1: symlink points to the original
+    Path originalPathResolved = FileUtils.resolveSymlinks(new Path(symlinkPath.toUri()), conf);
+    Assert.assertEquals(original.toUri(), originalPathResolved.toUri());
+
+    // average usage 2: symlink2 -> symlink -> original points to the original
+    Path originalPathResolved2 = FileUtils.resolveSymlinks(new Path(symlinkOfSymlinkPath.toUri()), conf);
+    Assert.assertEquals(original.toUri(), originalPathResolved2.toUri());
+
+    // providing a symlink path without scheme: still resolving it as it was 'file' scheme
+    // resolve to the original path then returning without scheme
+    Path originalPathWithoutScheme = Path.getPathWithoutSchemeAndAuthority(new Path(original.toUri()));
+    Path symlinkPathWithoutScheme = Path.getPathWithoutSchemeAndAuthority(new Path(symlinkPath.toUri()));
+    Assert.assertNull(originalPathWithoutScheme.toUri().getScheme());
+    Assert.assertNull(symlinkPathWithoutScheme.toUri().getScheme());
+
+    Path originalPathResolvedWithoutInputScheme = FileUtils.resolveSymlinks(symlinkPathWithoutScheme, conf);
+    // return path also hasn't got a scheme
+    Assert.assertNull("Path without scheme should be resolved to another Path without scheme",
+        originalPathResolvedWithoutInputScheme.toUri().getScheme());
+    Assert.assertEquals(originalPathResolvedWithoutInputScheme, originalPathWithoutScheme);
+
+    // a non-symlink is resolved to itself
+    Path originalPathResolvedFromOriginal = FileUtils.resolveSymlinks(new Path(original.toUri()), conf);
+    Assert.assertEquals(original.toUri(), originalPathResolvedFromOriginal.toUri());
+
+    // 1. a nonexistent path is resolved to itself, resolveSymlinks doesn't care if the path doesn't exist
+    // 2. a relative path without a scheme cannot be used to construct an URI, hence we get the input Path back
+    Path nonexistentPath = new Path("./nonexistent-" + System.currentTimeMillis());
+    Assert.assertEquals(nonexistentPath.toUri(), FileUtils.resolveSymlinks(nonexistentPath, conf).toUri());
+
+    try {
+      FileUtils.resolveSymlinks(null, conf);
+      Assert.fail("IllegalArgumentException should be thrown in case of null input");
+    } catch (IllegalArgumentException e) {
+      Assert.assertEquals("Cannot resolve symlink for a null Path", e.getMessage());
+    }
+
+    // hdfs is not supported, return safely with the original path
+    Path hdfsPath = new Path("hdfs://localhost:0/user/hive/warehouse/src");
+    Path resolvedHdfsPath = FileUtils.resolveSymlinks(hdfsPath, conf);
+    Assert.assertEquals(hdfsPath.toUri(), resolvedHdfsPath.toUri());
   }
 }

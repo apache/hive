@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists newtable
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists newtable
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table newtable(
             a string,
             b int,
@@ -24,8 +26,10 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@newtable
 PREHOOK: query: drop table if exists newtable_acid
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists newtable_acid
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table newtable_acid (b int, a varchar(50),c decimal(3,2), d int)
 clustered by (b) into 2 buckets
 stored as orc

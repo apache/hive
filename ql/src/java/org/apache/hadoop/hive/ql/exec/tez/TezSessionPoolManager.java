@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -91,6 +89,8 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   private TriggerValidatorRunnable triggerValidatorRunnable;
   private YarnQueueHelper yarnQueueChecker;
 
+  private TezSessionPoolManagerMetrics metrics = null;
+
   /** Note: this is not thread-safe. */
   public static TezSessionPoolManager getInstance() {
     TezSessionPoolManager local = instance;
@@ -102,6 +102,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   }
 
   protected TezSessionPoolManager() {
+    metrics = new TezSessionPoolManagerMetrics(this);
   }
 
   public void startPool(HiveConf conf, final WMFullResourcePlan resourcePlan) throws Exception {
@@ -118,8 +119,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     if (resourcePlan != null) {
       Collection<String> appliedTriggers = updateTriggers(resourcePlan);
       LOG.info("Updated tez session pool manager with triggers {} from active resource plan: {}",
-          appliedTriggers, resourcePlan.getPlan().getName());
+          appliedTriggers, resourcePlan.getPlan() == null ? "null" : resourcePlan.getPlan().getName());
     }
+    metrics.start(conf);
   }
 
   public void setupPool(HiveConf conf) throws Exception {
@@ -278,7 +280,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     // TODO Session re-use completely disabled for doAs=true. Always launches a new session.
     boolean nonDefaultUser = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
-    boolean jobNameSet = !HiveConf.getVar(conf, ConfVars.HIVETEZJOBNAME).equals("HIVE-%s");
+    boolean jobNameSet = !HiveConf.getVar(conf, ConfVars.HIVE_TEZ_JOB_NAME).equals("HIVE-%s");
 
     /*
      * if the user has specified a queue name themselves or job name is set, we create a new
@@ -288,7 +290,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
      */
     if (nonDefaultUser || !hasInitialSessions || hasQueue || jobNameSet) {
       LOG.info("QueueName: {} nonDefaultUser: {} defaultQueuePool: {} hasInitialSessions: {}" +
-                      " jobNameSet: ", queueName, nonDefaultUser, defaultSessionPool,
+                      " jobNameSet: {}.", queueName, nonDefaultUser, defaultSessionPool,
               hasInitialSessions, jobNameSet);
       return getNewSessionState(conf, queueName, doOpen);
     }
@@ -384,6 +386,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
       stopTriggerValidator();
     }
 
+    metrics.stop();
     instance = null;
   }
 
@@ -538,7 +541,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   private void updateSessions() {
     if (sessionTriggerProvider != null) {
-      sessionTriggerProvider.setSessions(new LinkedList<>(openSessions));
+      sessionTriggerProvider.setSessions(getSessions());
     }
   }
 
@@ -589,5 +592,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
       }
     }
     return counterNames;
+  }
+
+  public List<TezSessionState> getSessions() {
+    return new LinkedList<>(openSessions);
   }
 }

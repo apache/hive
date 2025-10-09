@@ -78,11 +78,11 @@ STAGE PLANS:
                                 minReductionHashAggr: 0.99
                                 mode: hash
                                 outputColumnNames: _col0, _col1, _col2
-                                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                                 Reduce Output Operator
                                   null sort order: 
                                   sort order: 
-                                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: binary)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -122,7 +122,7 @@ STAGE PLANS:
                       Statistics: Num rows: 21594635145 Data size: 345470962208 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: bigint), _col1 (type: bigint)
-                        minReductionHashAggr: 0.5581621
+                        minReductionHashAggr: 0.5589319
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 21594635145 Data size: 345470962208 Basic stats: COMPLETE Column stats: COMPLETE
@@ -239,11 +239,11 @@ STAGE PLANS:
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
                         sort order: 
-                        Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: binary)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -262,16 +262,16 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: sum(_col5), sum(_col6)
                   keys: _col4 (type: bigint)
-                  minReductionHashAggr: 0.91645867
+                  minReductionHashAggr: 0.9166043
                   mode: hash
                   outputColumnNames: _col0, _col2, _col3
-                  Statistics: Num rows: 2159952 Data size: 501108864 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2156188 Data size: 500235616 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: _col0 (type: bigint)
                     null sort order: z
                     sort order: +
                     Map-reduce partition columns: _col0 (type: bigint)
-                    Statistics: Num rows: 2159952 Data size: 501108864 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2156188 Data size: 500235616 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: decimal(17,2)), _col3 (type: decimal(17,2))
         Reducer 4 
             Execution mode: vectorized, llap
@@ -281,7 +281,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: bigint)
                 mode: partial2
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 2159952 Data size: 501108864 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2156188 Data size: 500235616 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count(_col0), sum(_col1), sum(_col2)
                   mode: partial2
@@ -311,27 +311,27 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000000)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1000000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: binary)
         Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, expectedEntries=1000000)
+                aggregations: min(VALUE._col0), max(VALUE._col1), bloom_filter(VALUE._col2, 1, expectedEntries=1000000)
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: binary)
 
   Stage: Stage-0

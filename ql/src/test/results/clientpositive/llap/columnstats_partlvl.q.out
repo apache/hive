@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE Employee_Part
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE Employee_Part
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String) partitioned by (employeeSalary double)
 row format delimited fields terminated by '|'  stored as textfile
 PREHOOK: type: CREATETABLE
@@ -303,7 +305,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	13                  
 	rawDataSize         	92                  
-	totalSize           	105                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

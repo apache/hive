@@ -53,7 +53,7 @@ public class TestSQLStdHiveAccessControllerCLI {
 
     // check that hook to disable transforms has not been added
     assertFalse("Check for transform query disabling hook",
-        processedConf.getVar(ConfVars.PREEXECHOOKS).contains(DisallowTransformHook.class.getName()));
+        processedConf.getVar(ConfVars.PRE_EXEC_HOOKS).contains(DisallowTransformHook.class.getName()));
 
     // verify that some dummy param can be set
     processedConf.verifyAndSet("dummy.param", "dummy.val");

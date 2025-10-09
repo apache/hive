@@ -105,7 +105,7 @@ public abstract class AbstractBaseAlterTableAnalyzer extends BaseSemanticAnalyze
         if (!AlterTableType.SUPPORT_PARTIAL_PARTITION_SPEC.contains(op)) {
           throw new SemanticException(
               ErrorMsg.ALTER_TABLE_TYPE_PARTIAL_PARTITION_SPEC_NO_SUPPORTED, op.getName());
-        } else if (!conf.getBoolVar(HiveConf.ConfVars.DYNAMICPARTITIONING)) {
+        } else if (!conf.getBoolVar(HiveConf.ConfVars.DYNAMIC_PARTITIONING)) {
           throw new SemanticException(ErrorMsg.DYNAMIC_PARTITION_DISABLED);
         }
 

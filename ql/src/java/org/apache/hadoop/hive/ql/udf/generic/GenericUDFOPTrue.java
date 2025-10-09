@@ -39,6 +39,7 @@ public class GenericUDFOPTrue extends GenericUDF {
     if (arguments.length != 1) {
       throw new UDFArgumentLengthException("Invalid number of arguments");
     }
+    checkArgPrimitive(arguments, 0);
     conditionConverter = ObjectInspectorConverters.getConverter(arguments[0],
         PrimitiveObjectInspectorFactory.writableBooleanObjectInspector);
 

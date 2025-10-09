@@ -52,7 +52,7 @@ class TableStatsRequest
         ),
         6 => array(
             'var' => 'engine',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
         7 => array(
@@ -85,7 +85,7 @@ class TableStatsRequest
     /**
      * @var string
      */
-    public $engine = null;
+    public $engine = "hive";
     /**
      * @var int
      */
@@ -154,13 +154,13 @@ class TableStatsRequest
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->colNames = array();
-                        $_size505 = 0;
-                        $_etype508 = 0;
-                        $xfer += $input->readListBegin($_etype508, $_size505);
-                        for ($_i509 = 0; $_i509 < $_size505; ++$_i509) {
-                            $elem510 = null;
-                            $xfer += $input->readString($elem510);
-                            $this->colNames []= $elem510;
+                        $_size546 = 0;
+                        $_etype549 = 0;
+                        $xfer += $input->readListBegin($_etype549, $_size546);
+                        for ($_i550 = 0; $_i550 < $_size546; ++$_i550) {
+                            $elem551 = null;
+                            $xfer += $input->readString($elem551);
+                            $this->colNames []= $elem551;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -225,8 +225,8 @@ class TableStatsRequest
             }
             $xfer += $output->writeFieldBegin('colNames', TType::LST, 3);
             $output->writeListBegin(TType::STRING, count($this->colNames));
-            foreach ($this->colNames as $iter511) {
-                $xfer += $output->writeString($iter511);
+            foreach ($this->colNames as $iter552) {
+                $xfer += $output->writeString($iter552);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

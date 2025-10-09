@@ -61,6 +61,11 @@ class LockRequest
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        8 => array(
+            'var' => 'locklessReadsEnabled',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -91,6 +96,10 @@ class LockRequest
      * @var bool
      */
     public $exclusiveCTAS = false;
+    /**
+     * @var bool
+     */
+    public $locklessReadsEnabled = false;
 
     public function __construct($vals = null)
     {
@@ -115,6 +124,9 @@ class LockRequest
             }
             if (isset($vals['exclusiveCTAS'])) {
                 $this->exclusiveCTAS = $vals['exclusiveCTAS'];
+            }
+            if (isset($vals['locklessReadsEnabled'])) {
+                $this->locklessReadsEnabled = $vals['locklessReadsEnabled'];
             }
         }
     }
@@ -141,14 +153,14 @@ class LockRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->component = array();
-                        $_size724 = 0;
-                        $_etype727 = 0;
-                        $xfer += $input->readListBegin($_etype727, $_size724);
-                        for ($_i728 = 0; $_i728 < $_size724; ++$_i728) {
-                            $elem729 = null;
-                            $elem729 = new \metastore\LockComponent();
-                            $xfer += $elem729->read($input);
-                            $this->component []= $elem729;
+                        $_size786 = 0;
+                        $_etype789 = 0;
+                        $xfer += $input->readListBegin($_etype789, $_size786);
+                        for ($_i790 = 0; $_i790 < $_size786; ++$_i790) {
+                            $elem791 = null;
+                            $elem791 = new \metastore\LockComponent();
+                            $xfer += $elem791->read($input);
+                            $this->component []= $elem791;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -197,6 +209,13 @@ class LockRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 8:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->locklessReadsEnabled);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -217,8 +236,8 @@ class LockRequest
             }
             $xfer += $output->writeFieldBegin('component', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->component));
-            foreach ($this->component as $iter730) {
-                $xfer += $iter730->write($output);
+            foreach ($this->component as $iter792) {
+                $xfer += $iter792->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -251,6 +270,11 @@ class LockRequest
         if ($this->exclusiveCTAS !== null) {
             $xfer += $output->writeFieldBegin('exclusiveCTAS', TType::BOOL, 7);
             $xfer += $output->writeBool($this->exclusiveCTAS);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->locklessReadsEnabled !== null) {
+            $xfer += $output->writeFieldBegin('locklessReadsEnabled', TType::BOOL, 8);
+            $xfer += $output->writeBool($this->locklessReadsEnabled);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

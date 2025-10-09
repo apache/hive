@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: ### test.blobstore.path ###/table1
@@ -57,7 +59,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@table1
 OPTIMIZED SQL: SELECT *
-FROM TABLE(INLINE(ARRAY[ (1)]))
+FROM TABLE(INLINE(ARRAY[(1)]))
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
@@ -263,6 +265,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int
 #### A masked pattern was here ####
+                    file.sink.merge.task.enabled.default.table1 true
                     location ### test.blobstore.path ###/table1
                     name default.table1
                     serialization.format 1
@@ -355,6 +358,7 @@ STAGE PLANS:
                     columns.comments 
                     columns.types int
 #### A masked pattern was here ####
+                    file.sink.merge.task.enabled.default.table1 true
                     location ### test.blobstore.path ###/table1
                     name default.table1
                     serialization.format 1
@@ -414,8 +418,10 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE table1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1
 POSTHOOK: query: DROP TABLE table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1

@@ -36,7 +36,7 @@ STAGE PLANS:
       db name: default
       partitions:
           Partition
-            params: {totalSize=0, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}, numFiles=0, numFilesErasureCoded=0}
+            params: {totalSize=#Masked#, numRows=0, rawDataSize=0, COLUMN_STATS_ACCURATE={"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true"}}, numFiles=0, numFilesErasureCoded=0}
             partition spec: {c=US, d=1}
       table name: ptestfilter_n1_temp
 
@@ -280,8 +280,10 @@ c=France/d=4
 PREHOOK: query: drop table ptestfilter_n1_temp
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@ptestfilter_n1_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@ptestfilter_n1_temp
 POSTHOOK: query: drop table ptestfilter_n1_temp
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@ptestfilter_n1_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ptestfilter_n1_temp

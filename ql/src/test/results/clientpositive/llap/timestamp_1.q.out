@@ -1,7 +1,9 @@
 PREHOOK: query: drop table timestamp_1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table timestamp_1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table timestamp_1 (t timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -82,7 +84,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-1.29384371E9
+1.2938437E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -237,7 +239,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-1.29384371E9
+1.2938437E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -320,7 +322,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-1.29384371E9
+1.2938437E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -403,7 +405,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-1.29384371E9
+1.2938437E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -486,7 +488,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-1.29384371E9
+1.2938437E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -569,7 +571,7 @@ POSTHOOK: query: select cast(t as float) from timestamp_1 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_1
 #### A masked pattern was here ####
-1.29384371E9
+1.2938437E9
 PREHOOK: query: select cast(t as double) from timestamp_1 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_1
@@ -591,8 +593,10 @@ POSTHOOK: Input: default@timestamp_1
 PREHOOK: query: drop table timestamp_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@timestamp_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@timestamp_1
 POSTHOOK: query: drop table timestamp_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@timestamp_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@timestamp_1

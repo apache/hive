@@ -73,6 +73,8 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
   // The column number for this one column join specialization.
   protected transient int singleJoinColumn;
 
+  private transient boolean isDebugEnabled;
+
   //---------------------------------------------------------------------------
   // Pass-thru constructors.
   //
@@ -80,15 +82,18 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
   /** Kryo ctor. */
   protected VectorMapJoinOuterStringOperator() {
     super();
+    isDebugEnabled = LOG.isDebugEnabled();
   }
 
   public VectorMapJoinOuterStringOperator(CompilationOpContext ctx) {
     super(ctx);
+    isDebugEnabled = LOG.isDebugEnabled();
   }
 
   public VectorMapJoinOuterStringOperator(CompilationOpContext ctx, OperatorDesc conf,
       VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
     super(ctx, conf, vContext, vectorDesc);
+    isDebugEnabled = LOG.isDebugEnabled();
   }
 
   //---------------------------------------------------------------------------
@@ -204,7 +209,7 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
          * Common repeated join result processing.
          */
 
-        if (LOG.isDebugEnabled()) {
+        if (isDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter + " repeated joinResult " + joinResult.name());
         }
         finishOuterRepeated(batch, joinResult, hashMapResults[0], someRowsFilteredOut,
@@ -318,7 +323,7 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
                 equalKeySeriesAllMatchIndices[equalKeySeriesCount] = allMatchCount;
                 equalKeySeriesIsSingleValue[equalKeySeriesCount] = hashMapResults[hashMapResultCount].isSingleRow();
                 equalKeySeriesDuplicateCounts[equalKeySeriesCount] = 1;
-                allMatchs[allMatchCount++] = batchIndex;
+                allMatches[allMatchCount++] = batchIndex;
                 break;
 
               case SPILL:
@@ -338,7 +343,7 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
               switch (saveJoinResult) {
               case MATCH:
                 equalKeySeriesDuplicateCounts[equalKeySeriesCount]++;
-                allMatchs[allMatchCount++] = batchIndex;
+                allMatches[allMatchCount++] = batchIndex;
                 break;
 
               case SPILL:
@@ -369,9 +374,9 @@ public class VectorMapJoinOuterStringOperator extends VectorMapJoinOuterGenerate
           }
         }
 
-        if (LOG.isDebugEnabled()) {
+        if (isDebugEnabled) {
           LOG.debug(CLASS_NAME + " batch #" + batchCounter +
-              " allMatchs " + intArrayToRangesString(allMatchs,allMatchCount) +
+              " allMatches " + intArrayToRangesString(allMatches,allMatchCount) +
               " equalKeySeriesHashMapResultIndices " + intArrayToRangesString(equalKeySeriesHashMapResultIndices, equalKeySeriesCount) +
               " equalKeySeriesAllMatchIndices " + intArrayToRangesString(equalKeySeriesAllMatchIndices, equalKeySeriesCount) +
               " equalKeySeriesIsSingleValue " + Arrays.toString(Arrays.copyOfRange(equalKeySeriesIsSingleValue, 0, equalKeySeriesCount)) +

@@ -44,7 +44,7 @@ explain cbo select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.ke
 select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key join t3_n12 c on a.key=c.key where b.key is null  sort by a.key, a.value;
 
 -- single extra simple filter on right side.
-explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and b.value > 'val_1';
+explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and b.value is null;
 
 -- single extra simple filter on left side.
 explain select a.key from t1_n55 a left join t2_n33 b on a.key = b.key where b.key is null and a.key > 100;

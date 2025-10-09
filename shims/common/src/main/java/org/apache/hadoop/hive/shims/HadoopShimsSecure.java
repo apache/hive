@@ -19,9 +19,7 @@ package org.apache.hadoop.hive.shims;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.security.AccessControlException;
@@ -30,19 +28,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.DefaultFileAccess;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -71,7 +65,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     }
 
     public InputSplitShim(JobConf conf, Path[] paths, long[] startOffsets,
-      long[] lengths, String[] locations) throws IOException {
+      long[] lengths, String[] locations) {
       super(conf, paths, startOffsets, lengths, dedup(locations));
       _isShrinked = false;
     }
@@ -137,7 +131,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     public boolean next(K key, V value) throws IOException {
 
       while ((curReader == null)
-          || !doNextWithExceptionHandler((K) ((CombineHiveKey) key).getKey(),
+          || !doNext((K) ((CombineHiveKey) key).getKey(),
               value)) {
         if (!initNextRecordReader(key)) {
           return false;
@@ -185,10 +179,25 @@ public abstract class HadoopShimsSecure implements HadoopShims {
      * A generic RecordReader that can hand out different recordReaders
      * for each chunk in the CombineFileSplit.
      */
-    public CombineFileRecordReader(JobConf job, CombineFileSplit split,
-        Reporter reporter,
-        Class<RecordReader<K, V>> rrClass)
-        throws IOException {
+    public static <K, V> CombineFileRecordReader<K, V> createInstance(JobConf job, CombineFileSplit split,
+        Reporter reporter, Class<RecordReader<K, V>> rrClass) throws IOException {
+      CombineFileRecordReader<K, V> cfrr = new CombineFileRecordReader<>(job, split, reporter);
+      assert (split instanceof InputSplitShim);
+      if (((InputSplitShim) split).isShrinked()) {
+        cfrr.isShrinked = true;
+        cfrr.shrinkedLength = ((InputSplitShim) split).getShrinkedLength();
+      }
+      try {
+        cfrr.rrConstructor = rrClass.getDeclaredConstructor(constructorSignature);
+        cfrr.rrConstructor.setAccessible(true);
+      } catch (Exception e) {
+        throw new RuntimeException(rrClass.getName() + " does not have valid constructor", e);
+      }
+      cfrr.initNextRecordReader(null);
+      return cfrr;
+    }
+
+    private CombineFileRecordReader(JobConf job, CombineFileSplit split, Reporter reporter) {
       this.split = split;
       this.jc = job;
       this.reporter = reporter;
@@ -197,21 +206,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       this.progress = 0;
 
       isShrinked = false;
-
-      assert (split instanceof InputSplitShim);
-      if (((InputSplitShim) split).isShrinked()) {
-        isShrinked = true;
-        shrinkedLength = ((InputSplitShim) split).getShrinkedLength();
-      }
-
-      try {
-        rrConstructor = rrClass.getDeclaredConstructor(constructorSignature);
-        rrConstructor.setAccessible(true);
-      } catch (Exception e) {
-        throw new RuntimeException(rrClass.getName() +
-            " does not have valid constructor", e);
-      }
-      initNextRecordReader(null);
     }
 
     /**
@@ -221,13 +215,8 @@ public abstract class HadoopShimsSecure implements HadoopShims {
      * @return
      * @throws IOException
      */
-    private boolean doNextWithExceptionHandler(K key, V value) throws IOException {
-      try {
-        return curReader.next(key, value);
-      } catch (Exception e) {
-        return HiveIOExceptionHandlerUtil
-            .handleRecordReaderNextException(e, jc);
-      }
+    private boolean doNext(K key, V value) throws IOException {
+      return curReader.next(key, value);
     }
 
     /**
@@ -265,8 +254,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
         jc.setLong("map.input.start", split.getOffset(idx));
         jc.setLong("map.input.length", split.getLength(idx));
       } catch (Exception e) {
-        curReader = HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(
-            e, jc);
+        throw new IOException(e);
       }
       idx++;
       return true;
@@ -339,7 +327,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
         Class<RecordReader<K, V>> rrClass)
         throws IOException {
       CombineFileSplit cfSplit = split;
-      return new CombineFileRecordReader(job, cfSplit, reporter, rrClass);
+      return CombineFileRecordReader.createInstance(job, cfSplit, reporter, rrClass);
     }
   }
 
@@ -377,7 +365,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   @Override
   abstract public FileSystem getNonCachedFileSystem(URI uri, Configuration conf) throws IOException;
 
-  private static String[] dedup(String[] locations) throws IOException {
+  private static String[] dedup(String[] locations) {
     Set<String> dedup = new HashSet<String>();
     Collections.addAll(dedup, locations);
     return dedup.toArray(new String[dedup.size()]);

@@ -86,7 +86,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
   private final Deserializer sourceSerDe;
   final ColumnVectorProducer cvp;
   final ExecutorService executor;
-  private final String hostName;
+  private static final String hostName = HiveStringUtils.getHostname();
 
   private final Configuration daemonConf;
 
@@ -100,7 +100,6 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     this.sourceASC = (sourceInputFormat instanceof AvoidSplitCombination)
         ? (AvoidSplitCombination)sourceInputFormat : null;
     this.sourceSerDe = sourceSerDe;
-    this.hostName = HiveStringUtils.getHostname();
   }
 
   @Override
@@ -141,6 +140,8 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       // This starts the reader in the background.
       rr.start();
       return result;
+    } catch (IOException ioe) {
+      throw ioe;
     } catch (Exception ex) {
       Throwable rootCause = JavaUtils.findRootCause(ex);
       if (checkLimitReached(job)

@@ -138,10 +138,6 @@
         <value>false</value>
     </property>
     <property>
-        <name>hive.execution.engine</name>
-        <value>tez</value>
-    </property>
-    <property>
         <name>hive.vectorized.execution.mapjoin.minmax.enabled</name>
         <value>true</value>
     </property>
@@ -182,6 +178,10 @@
         <name>hive.tez.auto.reducer.parallelism</name>
         <value>true</value>
     </property>
+    <property>
+        <name>hive.tez.exec.print.summary</name>
+        <value>true</value>
+    </property>
     <!-- Metastore properties -->
     <property>
         <name>hive.metastore.db.type</name>
@@ -210,5 +210,9 @@
     <property>
         <name>hive.explain.user</name>
         <value>false</value>
+    </property>
+    <property>
+        <name>hive.lock.sleep.between.retries</name>
+        <value>2</value>
     </property>
 </configuration>

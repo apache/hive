@@ -41,6 +41,7 @@ SELECT host, size, status, `time` from serde_regex ORDER BY `time`;
 
 DROP TABLE serde_regex;
 
+
 EXPLAIN
 CREATE TABLE serde_regex1(
   key decimal(38,18),
@@ -65,3 +66,31 @@ LOAD DATA LOCAL INPATH "../../data/files/kv7.txt" INTO TABLE serde_regex1;
 SELECT key, value FROM serde_regex1 ORDER BY key, value;
 
 DROP TABLE serde_regex1;
+
+
+EXPLAIN
+CREATE TABLE serde_regex2(
+  key STRING,
+  value STRING)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
+WITH SERDEPROPERTIES (
+  "input.regex" = "([^ ]*),([^ ]*)",
+  "serialization.encoding" = "ISO8859_1"
+)
+STORED AS TEXTFILE;
+
+CREATE TABLE serde_regex2(
+  key STRING,
+  value STRING)
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
+WITH SERDEPROPERTIES (
+  "input.regex" = "([^ ]*),([^ ]*)",
+  "serialization.encoding" = "ISO8859_1"
+)
+STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH "../../data/files/encoding_iso-8859-1.txt" INTO TABLE serde_regex2;
+
+SELECT key, value FROM serde_regex2 ORDER BY key, value;
+
+DROP TABLE serde_regex2;

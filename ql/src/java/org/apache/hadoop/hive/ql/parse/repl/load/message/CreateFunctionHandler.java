@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
+import org.apache.hadoop.util.Time;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -187,7 +188,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
           pathBuilder
               .addDescendant(destinationDbName.toLowerCase())
               .addDescendant(metadata.function.getFunctionName().toLowerCase())
-              .addDescendant(String.valueOf(System.nanoTime()))
+              .addDescendant(String.valueOf(Time.monotonicNowNanos()))
               .addDescendant(split[split.length - 1])
               .build(),
           new Path(functionsRootDir).getFileSystem(context.hiveConf)

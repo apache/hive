@@ -23,6 +23,8 @@ class hive_metastoreConstants {
   std::string HIVE_FILTER_FIELD_OWNER;
   std::string HIVE_FILTER_FIELD_PARAMS;
   std::string HIVE_FILTER_FIELD_LAST_ACCESS;
+  std::string HIVE_FILTER_FIELD_TABLE_NAME;
+  std::string HIVE_FILTER_FIELD_TABLE_TYPE;
   std::string IS_ARCHIVED;
   std::string ORIGINAL_LOCATION;
   std::string IS_IMMUTABLE;
@@ -31,6 +33,7 @@ class hive_metastoreConstants {
   std::string BUCKET_FIELD_NAME;
   std::string BUCKET_COUNT;
   std::string FIELD_TO_DIMENSION;
+  std::string IF_PURGE;
   std::string META_TABLE_NAME;
   std::string META_TABLE_DB;
   std::string META_TABLE_LOCATION;
@@ -41,7 +44,7 @@ class hive_metastoreConstants {
   std::string FILE_OUTPUT_FORMAT;
   std::string META_TABLE_STORAGE;
   std::string TABLE_IS_TRANSACTIONAL;
-  std::string TABLE_NO_AUTO_COMPACT;
+  std::string NO_AUTO_COMPACT;
   std::string TABLE_TRANSACTIONAL_PROPERTIES;
   std::string TABLE_BUCKETING_VERSION;
   std::string DRUID_CONFIG_PREFIX;
@@ -54,6 +57,8 @@ class hive_metastoreConstants {
   std::string DEFAULT_TABLE_TYPE;
   std::string TXN_ID;
   std::string WRITE_ID;
+  std::string EXPECTED_PARAMETER_KEY;
+  std::string EXPECTED_PARAMETER_VALUE;
 };
 
 extern const hive_metastoreConstants g_hive_metastore_constants;

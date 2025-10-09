@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists tbl_ice
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists tbl_ice
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table tbl_ice(a int, b string) partitioned by (c int) stored by iceberg stored as orc tblproperties ('format-version'='2')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -18,6 +20,21 @@ POSTHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 50), (3, 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: select tbl_ice.ROW__POSITION from tbl_ice
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select tbl_ice.ROW__POSITION from tbl_ice
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+1
+2
+0
+1
+0
+0
 PREHOOK: query: select a, c, tbl_ice.PARTITION__SPEC__ID, tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION from tbl_ice
 order by tbl_ice.PARTITION__HASH, tbl_ice.ROW__POSITION desc
 PREHOOK: type: QUERY
@@ -52,3 +69,29 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	52	0	83	0
 5	54	0	85	0
 333	56	0	87	0
+PREHOOK: query: create table ice01 (a int, b int, c int, d int, e int) stored by iceberg tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice01
+POSTHOOK: query: create table ice01 (a int, b int, c int, d int, e int) stored by iceberg tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice01
+PREHOOK: query: insert into ice01 values (1,2,3,4,5), (6,7,8,9,10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice01
+POSTHOOK: query: insert into ice01 values (1,2,3,4,5), (6,7,8,9,10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select ice01.ROW__POSITION from ice01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select ice01.ROW__POSITION from ice01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+0
+1

@@ -1,0 +1,160 @@
+PREHOOK: query: CREATE TABLE metadata_test1(
+    emp_number int,
+    emp_name string,
+    city string)
+PARTITIONED BY(state string)
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@metadata_test1
+POSTHOOK: query: CREATE TABLE metadata_test1(
+    emp_number int,
+    emp_name string,
+    city string)
+PARTITIONED BY(state string)
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@metadata_test1
+PREHOOK: query: DESC FORMATTED metadata_test1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@metadata_test1
+POSTHOOK: query: DESC FORMATTED metadata_test1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@metadata_test1
+# col_name            	data_type           	comment             
+emp_number          	int                 	                    
+emp_name            	string              	                    
+city                	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+state               	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+### TABLE DIRECTORY ###	 
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	EXTERNAL            	TRUE                
+	TRANSLATED_TO_EXTERNAL	TRUE                
+	bucketing_version   	2                   
+	external.table.purge	TRUE                
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: INSERT INTO metadata_test1 PARTITION(state='A') VALUES (11, 'ABC', 'AA')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@metadata_test1@state=A
+POSTHOOK: query: INSERT INTO metadata_test1 PARTITION(state='A') VALUES (11, 'ABC', 'AA')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@metadata_test1@state=A
+POSTHOOK: Lineage: metadata_test1 PARTITION(state=A).city SCRIPT []
+POSTHOOK: Lineage: metadata_test1 PARTITION(state=A).emp_name SCRIPT []
+POSTHOOK: Lineage: metadata_test1 PARTITION(state=A).emp_number SCRIPT []
+PREHOOK: query: INSERT INTO metadata_test1 PARTITION(state='B') VALUES (12, 'XYZ', 'BX'), (13, 'UVW', 'BU')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@metadata_test1@state=B
+POSTHOOK: query: INSERT INTO metadata_test1 PARTITION(state='B') VALUES (12, 'XYZ', 'BX'), (13, 'UVW', 'BU')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@metadata_test1@state=B
+POSTHOOK: Lineage: metadata_test1 PARTITION(state=B).city SCRIPT []
+POSTHOOK: Lineage: metadata_test1 PARTITION(state=B).emp_name SCRIPT []
+POSTHOOK: Lineage: metadata_test1 PARTITION(state=B).emp_number SCRIPT []
+PREHOOK: query: select * from default.metadata_test1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@metadata_test1
+PREHOOK: Input: default@metadata_test1@state=A
+PREHOOK: Input: default@metadata_test1@state=B
+#### A masked pattern was here ####
+POSTHOOK: query: select * from default.metadata_test1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@metadata_test1
+POSTHOOK: Input: default@metadata_test1@state=A
+POSTHOOK: Input: default@metadata_test1@state=B
+#### A masked pattern was here ####
+11	ABC	AA	A
+12	XYZ	BX	B
+13	UVW	BU	B
+PREHOOK: query: select "======================== list table directory ========================="
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "======================== list table directory ========================="
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+======================== list table directory =========================
+Found 2 items
+### TABLE DIRECTORY ###/state=A
+### TABLE DIRECTORY ###/state=B
+PREHOOK: query: ALTER TABLE default.metadata_test1 PARTITION (state='A') RENAME TO PARTITION (state='C')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@metadata_test1
+PREHOOK: Output: default@metadata_test1@state=A
+POSTHOOK: query: ALTER TABLE default.metadata_test1 PARTITION (state='A') RENAME TO PARTITION (state='C')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@metadata_test1
+POSTHOOK: Input: default@metadata_test1@state=A
+POSTHOOK: Output: default@metadata_test1@state=A
+POSTHOOK: Output: default@metadata_test1@state=C
+PREHOOK: query: select * from metadata_test1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@metadata_test1
+PREHOOK: Input: default@metadata_test1@state=B
+PREHOOK: Input: default@metadata_test1@state=C
+#### A masked pattern was here ####
+POSTHOOK: query: select * from metadata_test1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@metadata_test1
+POSTHOOK: Input: default@metadata_test1@state=B
+POSTHOOK: Input: default@metadata_test1@state=C
+#### A masked pattern was here ####
+12	XYZ	BX	B
+13	UVW	BU	B
+11	ABC	AA	C
+PREHOOK: query: select "======================== list table directory ========================="
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select "======================== list table directory ========================="
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+======================== list table directory =========================
+Found 2 items
+### TABLE DIRECTORY ###/state=B
+### TABLE DIRECTORY ###/state=C
+PREHOOK: query: drop table metadata_test1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@metadata_test1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@metadata_test1
+POSTHOOK: query: drop table metadata_test1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@metadata_test1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@metadata_test1

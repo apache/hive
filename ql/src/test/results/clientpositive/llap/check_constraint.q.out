@@ -58,22 +58,22 @@ Sort Columns:       	[]
 # Check Constraints	 	 
 Table:              	default.table1_n0   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:a       	Check Value:a BETWEEN i AND j	 
+Column Name:a       	Check Value:`a` BETWEEN `i` AND `j`	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:d       	Check Value:d > round(567.6) AND d < round(1000.4)	 
+Column Name:d       	Check Value:`d` > round(567.6) AND `d` < round(1000.4)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:i       	Check Value:-i > -10	 
+Column Name:i       	Check Value:-`i` > -10	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:j       	Check Value:+j > 10 	 
+Column Name:j       	Check Value:+`j` > 10	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:ij      	Check Value:ij IS NOT NULL	 
+Column Name:ij      	Check Value:`ij` IS NOT NULL	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:bb      	Check Value:bb IN (23.4,56,4)	 
+Column Name:bb      	Check Value:`bb` IN (23.4,56,4)	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO table1_n0 values(1,100,true, 5, 23.4, 700.5)
 PREHOOK: type: QUERY
@@ -110,23 +110,19 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
-                        expressions: col1 (type: int), col2 (type: int), col3 (type: boolean), col4 (type: int), col5 (type: decimal(3,1)), col6 (type: decimal(4,1))
+                        expressions: col1 (type: int), col2 (type: int), col3 (type: boolean), col4 (type: int), UDFToFloat(col5) (type: float), UDFToLong(col6) (type: bigint)
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
-                          predicate: enforce_constraint((((((((- _col0) > -10) is not false and (_col1 > 10) is not false) and _col2 is not null is not false) and _col3 BETWEEN _col0 AND _col1 is not false) and ((_col4) IN (23.4) or (_col4) IN (56) or (_col4) IN (4)) is not false) and ((_col5 > round(567.6)) and (_col5 < round(1000.4))) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: _col0 (type: int), _col1 (type: int), _col2 (type: boolean), _col3 (type: int), UDFToFloat(_col4) (type: float), UDFToLong(_col5) (type: bigint)
-                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                          predicate: enforce_constraint((((((((- _col0) > -10) is not false and (_col1 > 10) is not false) and _col2 is not null is not false) and _col3 BETWEEN _col0 AND _col1 is not false) and (_col4) IN (23.4, 56.0, 4.0) is not false) and ((_col5 > round(567.6)) and (_col5 < round(1000.4))) is not false)) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col0 (type: int)
+                            null sort order: a
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: int)
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                            Reduce Output Operator
-                              key expressions: _col0 (type: int)
-                              null sort order: a
-                              sort order: +
-                              Map-reduce partition columns: _col0 (type: int)
-                              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                              value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: int), _col4 (type: float), _col5 (type: bigint)
+                            value expressions: _col1 (type: int), _col2 (type: boolean), _col3 (type: int), _col4 (type: float), _col5 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -186,10 +182,12 @@ POSTHOOK: Input: default@table1_n0
 PREHOOK: query: DROP TABLE table1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table1_n0
 POSTHOOK: query: DROP TABLE table1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1_n0
 PREHOOK: query: CREATE TABLE table2_n0(i int CHECK (i + NULL > 0))
 PREHOOK: type: CREATETABLE
@@ -234,7 +232,7 @@ Storage Desc Params:
 # Check Constraints	 	 
 Table:              	default.table2_n0   	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:i       	Check Value:i + NULL > 0	 
+Column Name:i       	Check Value:`i` + NULL > 0	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO table2_n0 values(8)
 PREHOOK: type: QUERY
@@ -319,18 +317,20 @@ POSTHOOK: Input: default@table2_n0
 PREHOOK: query: Drop table table2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table2_n0
 POSTHOOK: query: Drop table table2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table2_n0
 PREHOOK: query: CREATE FUNCTION test_udf2 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.test_udf2
 POSTHOOK: query: CREATE FUNCTION test_udf2 AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaString'
 POSTHOOK: type: CREATEFUNCTION
-POSTHOOK: Output: database:default
+POSTHOOK: Input: database:default
 POSTHOOK: Output: default.test_udf2
 PREHOOK: query: CREATE TABLE tudf(v string CHECK (test_udf2(v) <> 'vin'))
 PREHOOK: type: CREATETABLE
@@ -405,10 +405,12 @@ STAGE PLANS:
 PREHOOK: query: Drop table tudf
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tudf
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tudf
 POSTHOOK: query: Drop table tudf
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tudf
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tudf
 PREHOOK: query: create table tmulti(url string NOT NULL ENABLE, userName string, numClicks int CHECK (numClicks > 0), d date)
 PREHOOK: type: CREATETABLE
@@ -493,13 +495,13 @@ Column Name:        	url
 # Check Constraints	 	 
 Table:              	default.tmulti      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:numclicks	Check Value:numClicks > 0	 
+Column Name:numclicks	Check Value:`numClicks` > 0	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmulti
-POSTHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+POSTHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tmulti
@@ -520,31 +522,27 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct('hive.apache.com','user1',48,'12-01-2018')) (type: array<struct<col1:string,col2:string,col3:int,col4:string>>)
+                    expressions: array(const struct('hive.apache.com','user1',48,'2018-01-12')) (type: array<struct<col1:string,col2:string,col3:int,col4:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
                       Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
-                        expressions: col1 (type: string), col2 (type: string), col3 (type: int), col4 (type: string)
+                        expressions: col1 (type: string), col2 (type: string), col3 (type: int), CAST( col4 AS DATE) (type: date)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
                           predicate: enforce_constraint((_col0 is not null and (_col2 > 0) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), CAST( _col3 AS DATE) (type: date)
-                            outputColumnNames: _col0, _col1, _col2, _col3
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
                             Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
-                              table:
-                                  input format: org.apache.hadoop.mapred.TextInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                  name: default.tmulti
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                name: default.tmulti
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -561,11 +559,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.tmulti
 
-PREHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+PREHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmulti
-POSTHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+POSTHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tmulti
@@ -581,7 +579,7 @@ POSTHOOK: query: Select * from tmulti
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmulti
 #### A masked pattern was here ####
-hive.apache.com	user1	48	NULL
+hive.apache.com	user1	48	2018-01-12
 PREHOOK: query: truncate table tmulti
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@tmulti
@@ -626,7 +624,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	numFiles            	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -658,19 +656,19 @@ Column Name:        	url
 # Check Constraints	 	 
 Table:              	default.tmulti      	 
 Constraint Name:    	chk1                	 
-Column Name:null    	Check Value:userName != NULL	 
+Column Name:null    	Check Value:`userName` != NULL	 
 	 	 
 Constraint Name:    	chk2                	 
-Column Name:null    	Check Value:numClicks <= 10000 AND userName != ''	 
+Column Name:null    	Check Value:`numClicks` <= 10000 AND `userName` != ''	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:numclicks	Check Value:numClicks > 0	 
+Column Name:numclicks	Check Value:`numClicks` > 0	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+PREHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmulti
-POSTHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+POSTHOOK: query: EXPLAIN INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tmulti
@@ -691,31 +689,27 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct('hive.apache.com','user1',48,'12-01-2018')) (type: array<struct<col1:string,col2:string,col3:int,col4:string>>)
+                    expressions: array(const struct('hive.apache.com','user1',48,'2018-01-12')) (type: array<struct<col1:string,col2:string,col3:int,col4:string>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
                       Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
-                        expressions: col1 (type: string), col2 (type: string), col3 (type: int), col4 (type: string)
+                        expressions: col1 (type: string), col2 (type: string), col3 (type: int), CAST( col4 AS DATE) (type: date)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
                           predicate: enforce_constraint((_col0 is not null and (((_col2 > 0) is not false and (_col1 <> null) is not false) and ((_col2 <= 10000) and (_col1 <> '')) is not false))) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), CAST( _col3 AS DATE) (type: date)
-                            outputColumnNames: _col0, _col1, _col2, _col3
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
                             Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
-                              table:
-                                  input format: org.apache.hadoop.mapred.TextInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                  name: default.tmulti
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                name: default.tmulti
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -732,11 +726,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.tmulti
 
-PREHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+PREHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tmulti
-POSTHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '12-01-2018')
+POSTHOOK: query: INSERT INTO tmulti values('hive.apache.com', 'user1', 48, '2018-01-12')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tmulti
@@ -752,14 +746,16 @@ POSTHOOK: query: Select * from tmulti
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmulti
 #### A masked pattern was here ####
-hive.apache.com	user1	48	NULL
+hive.apache.com	user1	48	2018-01-12
 PREHOOK: query: Drop table tmulti
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmulti
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmulti
 POSTHOOK: query: Drop table tmulti
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmulti
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmulti
 PREHOOK: query: create table tcase(url string NOT NULL ENABLE, userName string, d date, numClicks int CHECK (numclicks > 0))
 PREHOOK: type: CREATETABLE
@@ -813,13 +809,13 @@ Column Name:        	url
 # Check Constraints	 	 
 Table:              	default.tcase       	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:numclicks	Check Value:numclicks > 0	 
+Column Name:numclicks	Check Value:`numclicks` > 0	 
 	 	 
-PREHOOK: query: EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48)
+PREHOOK: query: EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tcase
-POSTHOOK: query: EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48)
+POSTHOOK: query: EXPLAIN INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tcase
@@ -840,31 +836,27 @@ STAGE PLANS:
                   Row Limit Per Split: 1
                   Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: array(const struct('hive.apache.com','user1','12-01-2018',48)) (type: array<struct<col1:string,col2:string,col3:string,col4:int>>)
+                    expressions: array(const struct('hive.apache.com','user1','2018-01-12',48)) (type: array<struct<col1:string,col2:string,col3:string,col4:int>>)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                     UDTF Operator
                       Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
-                        expressions: col1 (type: string), col2 (type: string), col3 (type: string), col4 (type: int)
+                        expressions: col1 (type: string), col2 (type: string), CAST( col3 AS DATE) (type: date), col4 (type: int)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
                           predicate: enforce_constraint((_col0 is not null and (_col3 > 0) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: _col0 (type: string), _col1 (type: string), CAST( _col2 AS DATE) (type: date), _col3 (type: int)
-                            outputColumnNames: _col0, _col1, _col2, _col3
+                          Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
                             Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
-                              table:
-                                  input format: org.apache.hadoop.mapred.TextInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                  name: default.tcase
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                name: default.tcase
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -881,11 +873,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.tcase
 
-PREHOOK: query: INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48)
+PREHOOK: query: INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tcase
-POSTHOOK: query: INSERT INTO tcase values('hive.apache.com', 'user1', '12-01-2018', 48)
+POSTHOOK: query: INSERT INTO tcase values('hive.apache.com', 'user1', '2018-01-12', 48)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tcase
@@ -901,14 +893,16 @@ POSTHOOK: query: Select * from tcase
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tcase
 #### A masked pattern was here ####
-hive.apache.com	user1	NULL	48
+hive.apache.com	user1	2018-01-12	48
 PREHOOK: query: Drop table tcase
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tcase
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tcase
 POSTHOOK: query: Drop table tcase
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tcase
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tcase
 PREHOOK: query: create table tcast(url string NOT NULL ENABLE, numClicks int,
     price FLOAT CHECK (cast(numClicks as FLOAT)*price > 10.00))
@@ -963,7 +957,7 @@ Column Name:        	url
 # Check Constraints	 	 
 Table:              	default.tcast       	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:price   	Check Value:cast(numClicks as FLOAT)*price > 10.00	 
+Column Name:price   	Check Value:cast(`numClicks` as FLOAT)*`price` > 10.00	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO tcast values('www.google.com', 100, cast(0.5 as float))
 PREHOOK: type: QUERY
@@ -1079,24 +1073,20 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
-                        expressions: col1 (type: string), null (type: int), col2 (type: decimal(1,1))
+                        expressions: col1 (type: string), null (type: int), UDFToFloat(col2) (type: float)
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
-                          predicate: enforce_constraint((_col0 is not null and ((UDFToFloat(null) * _col2) > 10) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: _col0 (type: string), _col1 (type: int), UDFToFloat(_col2) (type: float)
-                            outputColumnNames: _col0, _col1, _col2
+                          predicate: enforce_constraint((_col0 is not null and ((UDFToFloat(_col1) * _col2) > 10) is not false)) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
                             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                              table:
-                                  input format: org.apache.hadoop.mapred.TextInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                  name: default.tcast
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                name: default.tcast
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -1137,10 +1127,12 @@ www.yahoo.com	NULL	0.5
 PREHOOK: query: DROP TABLE tcast
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tcast
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tcast
 POSTHOOK: query: DROP TABLE tcast
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tcast
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tcast
 PREHOOK: query: create table texpr(i int DEFAULT 89, f float NOT NULL ENABLE, d decimal(4,1),
     b boolean CHECK (((cast(d as float) + f) < cast(i as float) + (i*i))))
@@ -1202,7 +1194,7 @@ Column Name:i       	Default Value:89
 # Check Constraints	 	 
 Table:              	default.texpr       	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b       	Check Value:((cast(d as float) + f) < cast(i as float) + (i*i))	 
+Column Name:b       	Check Value:((cast(`d` as float) + `f`) < cast(`i` as float) + (`i`*`i`))	 
 	 	 
 PREHOOK: query: explain insert into texpr values(3,3.4,5.6,true)
 PREHOOK: type: QUERY
@@ -1236,24 +1228,20 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
-                        expressions: col1 (type: int), col2 (type: decimal(2,1)), col3 (type: decimal(2,1)), col4 (type: boolean)
+                        expressions: col1 (type: int), UDFToFloat(col2) (type: float), CAST( col3 AS decimal(4,1)) (type: decimal(4,1)), col4 (type: boolean)
                         outputColumnNames: _col0, _col1, _col2, _col3
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
                           predicate: enforce_constraint((_col1 is not null and ((UDFToFloat(_col2) + _col1) < (UDFToFloat(_col0) + (_col0 * _col0))) is not false)) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: _col0 (type: int), UDFToFloat(_col1) (type: float), CAST( _col2 AS decimal(4,1)) (type: decimal(4,1)), _col3 (type: boolean)
-                            outputColumnNames: _col0, _col1, _col2, _col3
+                          Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                          File Output Operator
+                            compressed: false
                             Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                            File Output Operator
-                              compressed: false
-                              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
-                              table:
-                                  input format: org.apache.hadoop.mapred.TextInputFormat
-                                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                                  name: default.texpr
+                            table:
+                                input format: org.apache.hadoop.mapred.TextInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                                name: default.texpr
             Execution mode: llap
             LLAP IO: no inputs
 
@@ -1294,10 +1282,12 @@ POSTHOOK: Input: default@texpr
 PREHOOK: query: DROP TABLE texpr
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@texpr
+PREHOOK: Output: database:default
 PREHOOK: Output: default@texpr
 POSTHOOK: query: DROP TABLE texpr
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@texpr
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@texpr
 PREHOOK: query: create table acid_uami_n0(i int,
                  de decimal(5,2) constraint nn1 not null enforced,
@@ -1356,7 +1346,7 @@ Column Name:        	de
 # Check Constraints	 	 
 Table:              	default.acid_uami_n0	 
 Constraint Name:    	ch2                 	 
-Column Name:vc      	Check Value:de >= cast(i as decimal(5,2))	 
+Column Name:vc      	Check Value:`de` >= cast(`i` as decimal(5,2))	 
 	 	 
 PREHOOK: query: explain insert into table acid_uami_n0 select cast(key as int), cast (key as decimal(5,2)), value from src
 PREHOOK: type: QUERY
@@ -1385,23 +1375,19 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: UDFToInteger(key) (type: int), CAST( key AS decimal(5,2)) (type: decimal(5,2)), value (type: string)
+                    expressions: UDFToInteger(key) (type: int), CAST( key AS decimal(5,2)) (type: decimal(5,2)), CAST( value AS varchar(128)) (type: varchar(128))
                     outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 500 Data size: 103500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 164000 Basic stats: COMPLETE Column stats: COMPLETE
                     Filter Operator
                       predicate: enforce_constraint((_col1 is not null and (_col1 >= CAST( _col0 AS decimal(5,2))) is not false)) (type: boolean)
-                      Statistics: Num rows: 250 Data size: 51750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: _col0 (type: int), _col1 (type: decimal(5,2)), CAST( _col2 AS varchar(128)) (type: varchar(128))
-                        outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 250 Data size: 82000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: a
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 250 Data size: 82000 Basic stats: COMPLETE Column stats: COMPLETE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: int)
-                          null sort order: a
-                          sort order: +
-                          Map-reduce partition columns: _col0 (type: int)
-                          Statistics: Num rows: 250 Data size: 82000 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col1 (type: decimal(5,2)), _col2 (type: varchar(128))
+                        value expressions: _col1 (type: decimal(5,2)), _col2 (type: varchar(128))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1503,12 +1489,12 @@ STAGE PLANS:
                 Limit
                   Number of rows: 10
                   Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: enforce_constraint((_col1 is not null and (_col1 >= CAST( _col0 AS decimal(5,2))) is not false)) (type: boolean)
-                    Statistics: Num rows: 5 Data size: 1035 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: decimal(5,2)), CAST( _col2 AS varchar(128)) (type: varchar(128))
-                      outputColumnNames: _col0, _col1, _col2
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: decimal(5,2)), CAST( _col2 AS varchar(128)) (type: varchar(128))
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 10 Data size: 3280 Basic stats: COMPLETE Column stats: COMPLETE
+                    Filter Operator
+                      predicate: enforce_constraint((_col1 is not null and (_col1 >= CAST( _col0 AS decimal(5,2))) is not false)) (type: boolean)
                       Statistics: Num rows: 5 Data size: 1640 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
@@ -1664,23 +1650,19 @@ STAGE PLANS:
                 Number of rows: 10
                 Statistics: Num rows: 10 Data size: 1734 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: VALUE._col0 (type: int), VALUE._col1 (type: decimal(5,2)), VALUE._col2 (type: string)
+                  expressions: VALUE._col0 (type: int), VALUE._col1 (type: decimal(5,2)), CAST( VALUE._col2 AS varchar(128)) (type: varchar(128))
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 10 Data size: 1734 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: enforce_constraint((_col1 is not null and (_col1 >= CAST( _col0 AS decimal(5,2))) is not false)) (type: boolean)
-                    Statistics: Num rows: 5 Data size: 923 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: decimal(5,2)), CAST( _col2 AS varchar(128)) (type: varchar(128))
-                      outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 5 Data size: 1528 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: a
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 5 Data size: 1528 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 5 Data size: 1528 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: decimal(5,2)), _col2 (type: varchar(128))
+                      value expressions: _col1 (type: decimal(5,2)), _col2 (type: varchar(128))
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1844,12 +1826,12 @@ STAGE PLANS:
                 Limit
                   Number of rows: 10
                   Statistics: Num rows: 10 Data size: 2070 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: enforce_constraint((_col1 is not null and (_col1 >= CAST( _col0 AS decimal(5,2))) is not false)) (type: boolean)
-                    Statistics: Num rows: 5 Data size: 1035 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: _col0 (type: int), _col1 (type: decimal(5,2)), CAST( _col2 AS varchar(128)) (type: varchar(128))
-                      outputColumnNames: _col0, _col1, _col2
+                  Select Operator
+                    expressions: _col0 (type: int), _col1 (type: decimal(5,2)), CAST( _col2 AS varchar(128)) (type: varchar(128))
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 10 Data size: 3280 Basic stats: COMPLETE Column stats: COMPLETE
+                    Filter Operator
+                      predicate: enforce_constraint((_col1 is not null and (_col1 >= CAST( _col0 AS decimal(5,2))) is not false)) (type: boolean)
                       Statistics: Num rows: 5 Data size: 1640 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
@@ -2044,10 +2026,12 @@ STAGE PLANS:
 PREHOOK: query: drop table src_multi2_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_multi2_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@src_multi2_n0
 POSTHOOK: query: drop table src_multi2_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@src_multi2_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@src_multi2_n0
 PREHOOK: query: select * from acid_uami_n0 order by de desc limit 15
 PREHOOK: type: QUERY
@@ -2289,23 +2273,19 @@ STAGE PLANS:
                           Map-reduce partition columns: UDFToInteger(_col0) (type: int)
                           Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: _col1 (type: int), 893.14 (type: decimal(5,2)), 'apache_hive' (type: string)
+                        expressions: _col1 (type: int), 893.14 (type: decimal(5,2)), 'apache_hive' (type: varchar(128))
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                         Filter Operator
                           predicate: enforce_constraint(_col1 is not null) (type: boolean)
                           Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
-                          Select Operator
-                            expressions: _col0 (type: int), _col1 (type: decimal(5,2)), CAST( _col2 AS varchar(128)) (type: varchar(128))
-                            outputColumnNames: _col0, _col1, _col2
+                          Reduce Output Operator
+                            key expressions: _col0 (type: int)
+                            null sort order: a
+                            sort order: +
+                            Map-reduce partition columns: _col0 (type: int)
                             Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
-                            Reduce Output Operator
-                              key expressions: _col0 (type: int)
-                              null sort order: a
-                              sort order: +
-                              Map-reduce partition columns: _col0 (type: int)
-                              Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
-                              value expressions: _col1 (type: decimal(5,2)), _col2 (type: varchar(128))
+                            value expressions: _col1 (type: decimal(5,2)), _col2 (type: varchar(128))
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -2390,10 +2370,12 @@ POSTHOOK: Input: default@acid_uami_n0
 PREHOOK: query: DROP TABLE acid_uami_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@acid_uami_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@acid_uami_n0
 POSTHOOK: query: DROP TABLE acid_uami_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@acid_uami_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_uami_n0
 PREHOOK: query: create table tmerge(key int CHECK (key > 0 AND (key < 100 OR key = 5)) enable, a1 string NOT NULL, value string)
 clustered by (value) into 2 buckets stored as orc
@@ -2450,7 +2432,7 @@ Column Name:        	a1
 # Check Constraints	 	 
 Table:              	default.tmerge      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:key     	Check Value:key > 0 AND (key < 100 OR key = 5)	 
+Column Name:key     	Check Value:`key` > 0 AND (`key` < 100 OR `key` = 5)	 
 	 	 
 PREHOOK: query: create table nonacid (key int, a1 string, value string) stored as orc
 PREHOOK: type: CREATETABLE
@@ -2519,23 +2501,23 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: tmerge
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: int), value (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col1 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string), _col2 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        value expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -2546,11 +2528,11 @@ STAGE PLANS:
                      Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int)
-                  1 _col0 (type: int)
+                  1 _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), _col0 (type: int), _col4 (type: string), _col5 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string), _col3 (type: int)
+                  expressions: _col1 (type: string), _col0 (type: int), _col5 (type: string), _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string), _col4 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -2788,23 +2770,23 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: tmerge
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: int), value (type: string), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: int), value (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col1 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string), _col2 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        value expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -2815,11 +2797,11 @@ STAGE PLANS:
                      Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int)
-                  1 _col0 (type: int)
+                  1 _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), _col0 (type: int), _col4 (type: string), _col5 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string), _col3 (type: int)
+                  expressions: _col1 (type: string), _col0 (type: int), _col5 (type: string), _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string), _col4 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -3106,23 +3088,23 @@ STAGE PLANS:
         Map 6 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: tmerge
                   filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: key (type: int), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), key (type: int)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col1 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        value expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -3133,11 +3115,11 @@ STAGE PLANS:
                      Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int)
-                  1 _col0 (type: int)
+                  1 _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), _col0 (type: int), _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string), _col3 (type: int)
+                  expressions: _col1 (type: string), _col0 (type: int), _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col2 (type: string), _col4 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
                   Statistics: Num rows: 1 Data size: 409 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -3286,18 +3268,22 @@ STAGE PLANS:
 PREHOOK: query: DROP TABLE tmerge
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmerge
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmerge
 POSTHOOK: query: DROP TABLE tmerge
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmerge
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmerge
 PREHOOK: query: DROP TABLE nonacid
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@nonacid
+PREHOOK: Output: database:default
 PREHOOK: Output: default@nonacid
 POSTHOOK: query: DROP TABLE nonacid
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@nonacid
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nonacid
 PREHOOK: query: CREATE TABLE numericDataType(a TINYINT CONSTRAINT tinyint_constraint DEFAULT 127Y ENABLE,
     b bigint CONSTRAINT check1 CHECK (b in(4,5)) ENABLE)
@@ -3353,7 +3339,7 @@ Column Name:a       	Default Value:127Y
 # Check Constraints	 	 
 Table:              	default.numericdatatype	 
 Constraint Name:    	check1              	 
-Column Name:b       	Check Value:b in(4,5)	 
+Column Name:b       	Check Value:`b` in(4,5)	 
 	 	 
 PREHOOK: query: ALTER TABLE numericDataType DROP CONSTRAINT check1
 PREHOOK: type: ALTERTABLE_DROPCONSTRAINT
@@ -3501,10 +3487,12 @@ POSTHOOK: Input: default@numericdatatype
 PREHOOK: query: DROP TABLE numericDataType
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@numericdatatype
+PREHOOK: Output: database:default
 PREHOOK: Output: default@numericdatatype
 POSTHOOK: query: DROP TABLE numericDataType
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@numericdatatype
 PREHOOK: query: CREATE TABLE tcheck(a TINYINT, b bigint CONSTRAINT check1 CHECK (b in(4,5)) ENABLE)
     clustered by (b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
@@ -3552,7 +3540,7 @@ Sort Columns:       	[]
 # Check Constraints	 	 
 Table:              	default.tcheck      	 
 Constraint Name:    	check1              	 
-Column Name:b       	Check Value:b in(4,5)	 
+Column Name:b       	Check Value:`b` in(4,5)	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO tcheck(a) values(1)
 PREHOOK: type: QUERY
@@ -3589,23 +3577,19 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
-                        expressions: col1 (type: int), null (type: bigint)
+                        expressions: UDFToByte(col1) (type: tinyint), null (type: bigint)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
-                          predicate: enforce_constraint((null) IN (4, 5) is not false) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: UDFToByte(_col0) (type: tinyint), _col1 (type: bigint)
-                            outputColumnNames: _col0, _col1
+                          predicate: enforce_constraint((_col1) IN (4L, 5L) is not false) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col1 (type: bigint)
+                            null sort order: a
+                            sort order: +
+                            Map-reduce partition columns: _col1 (type: bigint)
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                            Reduce Output Operator
-                              key expressions: _col1 (type: bigint)
-                              null sort order: a
-                              sort order: +
-                              Map-reduce partition columns: _col1 (type: bigint)
-                              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                              value expressions: _col0 (type: tinyint)
+                            value expressions: _col0 (type: tinyint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -3674,23 +3658,19 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: inline
                       Select Operator
-                        expressions: null (type: tinyint), col1 (type: int)
+                        expressions: null (type: tinyint), UDFToLong(col1) (type: bigint)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
-                          predicate: enforce_constraint((_col1) IN (4, 5) is not false) (type: boolean)
-                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                          Select Operator
-                            expressions: _col0 (type: tinyint), UDFToLong(_col1) (type: bigint)
-                            outputColumnNames: _col0, _col1
+                          predicate: enforce_constraint((_col1) IN (4L, 5L) is not false) (type: boolean)
+                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                          Reduce Output Operator
+                            key expressions: _col1 (type: bigint)
+                            null sort order: a
+                            sort order: +
+                            Map-reduce partition columns: _col1 (type: bigint)
                             Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                            Reduce Output Operator
-                              key expressions: _col1 (type: bigint)
-                              null sort order: a
-                              sort order: +
-                              Map-reduce partition columns: _col1 (type: bigint)
-                              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
-                              value expressions: _col0 (type: tinyint)
+                            value expressions: _col0 (type: tinyint)
             Execution mode: llap
             LLAP IO: no inputs
         Reducer 2 
@@ -3746,10 +3726,12 @@ NULL	4
 PREHOOK: query: DROP TABLE tcheck
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tcheck
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tcheck
 POSTHOOK: query: DROP TABLE tcheck
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tcheck
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tcheck
 PREHOOK: query: create table part_mm(key int check (key > 0 and key < 5000) enforced) partitioned by (key_mm int)
     stored as orc tblproperties ("transactional"="true", "transactional_properties"="insert_only")
@@ -3815,12 +3797,12 @@ STAGE PLANS:
                 Limit
                   Number of rows: 3
                   Statistics: Num rows: 3 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: enforce_constraint(((_col0 > 0) and (_col0 < 5000)) is not false) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: UDFToInteger(_col0) (type: int)
-                      outputColumnNames: _col0
+                  Select Operator
+                    expressions: UDFToInteger(_col0) (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Filter Operator
+                      predicate: enforce_constraint(((_col0 > 0) and (_col0 < 5000)) is not false) (type: boolean)
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -3885,10 +3867,12 @@ POSTHOOK: Input: default@part_mm@key_mm=455
 PREHOOK: query: drop table part_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_mm
 POSTHOOK: query: drop table part_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_mm
 PREHOOK: query: create table trely(i int)
 PREHOOK: type: CREATETABLE
@@ -3944,15 +3928,17 @@ Storage Desc Params:
 # Check Constraints	 	 
 Table:              	default.trely       	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:i       	Check Value:i>0     	 
+Column Name:i       	Check Value:`i`>0   	 
 	 	 
 PREHOOK: query: DROP TABLE trely
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@trely
+PREHOOK: Output: database:default
 PREHOOK: Output: default@trely
 POSTHOOK: query: DROP TABLE trely
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@trely
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@trely
 PREHOOK: query: create table tbl1_n1(a string, b int, CONSTRAINT check1 CHECK (a != '' AND b > 4))
 PREHOOK: type: CREATETABLE
@@ -4000,7 +3986,7 @@ Storage Desc Params:
 # Check Constraints	 	 
 Table:              	default.tbl1_n1     	 
 Constraint Name:    	check1              	 
-Column Name:null    	Check Value:a != '' AND b > 4	 
+Column Name:null    	Check Value:`a` != '' AND `b` > 4	 
 	 	 
 PREHOOK: query: explain insert into tbl1_n1 values('a', 69)
 PREHOOK: type: QUERY
@@ -4113,7 +4099,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	1                   
-	totalSize           	5                   
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	insert_only         
 #### A masked pattern was here ####
@@ -4134,10 +4120,10 @@ Storage Desc Params:
 # Check Constraints	 	 
 Table:              	default.tbl1_n1     	 
 Constraint Name:    	check1              	 
-Column Name:null    	Check Value:a != '' AND b > 4	 
+Column Name:null    	Check Value:`a` != '' AND `b` > 4	 
 	 	 
 Constraint Name:    	chk2                	 
-Column Name:null    	Check Value:b < 100 	 
+Column Name:null    	Check Value:`b` < 100	 
 	 	 
 PREHOOK: query: explain insert into tbl1_n1 values('a', 69)
 PREHOOK: type: QUERY
@@ -4207,8 +4193,10 @@ STAGE PLANS:
 PREHOOK: query: drop table tbl1_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tbl1_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tbl1_n1
 POSTHOOK: query: drop table tbl1_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tbl1_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl1_n1

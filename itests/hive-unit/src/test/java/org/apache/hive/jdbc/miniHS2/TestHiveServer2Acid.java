@@ -54,6 +54,7 @@ public class TestHiveServer2Acid {
     TestTxnDbUtil.prepDb(conf);
     miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.TEZ);
     confOverlay.put(ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "false");
+    confOverlay.put(ConfVars.CREATE_TABLES_AS_ACID.varname, "true");
     miniHS2.start(confOverlay);
   }
 
@@ -79,7 +80,7 @@ public class TestHiveServer2Acid {
     CLIServiceClient serviceClient = miniHS2.getServiceClient();
     SessionHandle sessHandle = serviceClient.openSession("foo", "bar");
     serviceClient.executeStatement(sessHandle, "DROP TABLE IF EXISTS " + tableName, confOverlay);
-    serviceClient.executeStatement(sessHandle, "CREATE TABLE " + tableName + " (id INT)", confOverlay);
+    serviceClient.executeStatement(sessHandle, "CREATE TABLE " + tableName + " (id INT) STORED AS ORC", confOverlay);
     serviceClient.executeStatement(sessHandle, "insert into " + tableName + " values(5)", confOverlay);
 
     serviceClient.executeStatement(sessHandle,
@@ -110,7 +111,7 @@ public class TestHiveServer2Acid {
     CLIServiceClient serviceClient = miniHS2.getServiceClient();
     SessionHandle sessHandle = serviceClient.openSession("foo", "bar");
     serviceClient.executeStatement(sessHandle, "DROP TABLE IF EXISTS " + tableName, confOverlay);
-    serviceClient.executeStatement(sessHandle, "CREATE TABLE " + tableName + " (id INT)", confOverlay);
+    serviceClient.executeStatement(sessHandle, "CREATE TABLE " + tableName + " (id INT) STORED AS ORC", confOverlay);
     serviceClient.executeStatement(sessHandle, "insert into " + tableName + " values(5)", confOverlay);
     OperationHandle opHandle =
         serviceClient.executeStatementAsync(sessHandle, "select * from " + tableName, confOverlay);
@@ -128,7 +129,6 @@ public class TestHiveServer2Acid {
     assertOperationFinished(serviceClient, opHandle2);
     rowSet = serviceClient.fetchResults(opHandle2);
     assertEquals(1, rowSet.numRows());
-    serviceClient.executeStatement(sessHandle, "DROP TABLE IF EXISTS " + tableName, confOverlay);
     serviceClient.closeSession(sessHandle);
   }
 

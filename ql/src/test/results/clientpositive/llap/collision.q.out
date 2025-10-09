@@ -12,8 +12,10 @@ POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:cpn_view
 PREHOOK: query: drop table if exists cpn.mytable_1000_n
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:cpn
 POSTHOOK: query: drop table if exists cpn.mytable_1000_n
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:cpn
 PREHOOK: query: CREATE external TABLE IF NOT EXISTS cpn.mytable_1000_n (
 col0 decimal(18,0),
 col1 decimal(18,0),
@@ -813,7 +815,9 @@ PREHOOK: query: drop table cpn.mytable_1000_n
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: cpn@mytable_1000_n
 PREHOOK: Output: cpn@mytable_1000_n
+PREHOOK: Output: database:cpn
 POSTHOOK: query: drop table cpn.mytable_1000_n
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: cpn@mytable_1000_n
 POSTHOOK: Output: cpn@mytable_1000_n
+POSTHOOK: Output: database:cpn

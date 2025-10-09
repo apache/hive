@@ -41,6 +41,8 @@ public class TezEdgeProperty {
   private int minReducer;
   private int maxReducer;
   private long inputSizePerReducer;
+  private float minSrcFraction;
+  private float maxSrcFraction;
   private Integer bufferSize;
 
   public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType,
@@ -51,19 +53,22 @@ public class TezEdgeProperty {
   }
 
   public TezEdgeProperty(HiveConf hiveConf, EdgeType edgeType, boolean isAutoReduce,
-      boolean isSlowStart, int minReducer, int maxReducer, long bytesPerReducer) {
+      boolean isSlowStart, int minReducer, int maxReducer, long bytesPerReducer,
+      float minSrcFraction, float maxSrcFraction) {
     this(hiveConf, edgeType, -1);
-    setAutoReduce(hiveConf, isAutoReduce, minReducer, maxReducer, bytesPerReducer);
+    setAutoReduce(hiveConf, isAutoReduce, minReducer, maxReducer, bytesPerReducer, minSrcFraction, maxSrcFraction);
     this.isSlowStart = isSlowStart;
   }
 
   public void setAutoReduce(HiveConf hiveConf, boolean isAutoReduce, int minReducer,
-      int maxReducer, long bytesPerReducer) {
+      int maxReducer, long bytesPerReducer, float minSrcFraction, float maxSrcFraction) {
     this.hiveConf = hiveConf;
     this.minReducer = minReducer;
     this.maxReducer = maxReducer;
     this.isAutoReduce = isAutoReduce;
     this.inputSizePerReducer = bytesPerReducer;
+    this.minSrcFraction = minSrcFraction;
+    this.maxSrcFraction = maxSrcFraction;
   }
 
   public TezEdgeProperty(EdgeType edgeType) {
@@ -100,6 +105,14 @@ public class TezEdgeProperty {
 
   public boolean isSlowStart() {
     return isSlowStart;
+  }
+
+  public float getMinSrcFraction() {
+    return minSrcFraction;
+  }
+
+  public float getMaxSrcFraction() {
+    return maxSrcFraction;
   }
 
   public void setSlowStart(boolean slowStart) {

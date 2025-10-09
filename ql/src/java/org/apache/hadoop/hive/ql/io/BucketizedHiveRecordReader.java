@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.FileSplit;
@@ -118,12 +117,7 @@ public class BucketizedHiveRecordReader<K extends WritableComparable, V extends 
     }
 
     // get a record reader for the idx-th chunk
-    try {
-      recordReader = inputFormat.getRecordReader(split.getSplit(idx), jobConf,
-          reporter);
-    } catch (Exception e) {
-      recordReader = HiveIOExceptionHandlerUtil.handleRecordReaderCreationException(e, jobConf);
-    }
+    recordReader = inputFormat.getRecordReader(split.getSplit(idx), jobConf, reporter);
 
     // if we're performing a binary search, we need to restart it
     if (isSorted) {

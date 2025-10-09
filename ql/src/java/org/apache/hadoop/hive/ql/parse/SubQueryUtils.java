@@ -26,7 +26,6 @@ import java.util.Deque;
 import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
@@ -107,7 +106,7 @@ public class SubQueryUtils {
   }
 
   static public void subqueryRestrictionCheck(QB qb, ASTNode subqueryExprNode, RelNode srcRel,
-      boolean forHavingClause, Set<ASTNode> corrScalarQueries, Context ctx,
+      boolean forHavingClause, Context ctx,
       LinkedHashMap<RelNode, RowResolver> relToHiveRR)
       throws SemanticException {
 
@@ -157,14 +156,8 @@ public class SubQueryUtils {
 
     String havingInputAlias = null;
 
-    boolean [] subqueryConfig = {false, false};
     subQuery.subqueryRestrictionsCheck(inputRR, forHavingClause,
-        havingInputAlias, subqueryConfig);
-
-    if(subqueryConfig[0]) {
-      corrScalarQueries.add(subqueryExprNode);
-    }
-    //}
+        havingInputAlias);
   }
 
 

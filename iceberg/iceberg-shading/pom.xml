@@ -14,7 +14,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-iceberg</artifactId>
-    <version>4.0.0-alpha-2-SNAPSHOT</version>
+    <version>4.2.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -87,10 +87,6 @@
                       <shadedPattern>${shade.relocation.package.prefix}.org.apache.orc</shadedPattern>
                     </relocation>
                     <relocation>
-                      <pattern>org.apache.parquet</pattern>
-                      <shadedPattern>${shade.relocation.package.prefix}.org.apache.parquet</shadedPattern>
-                    </relocation>
-                    <relocation>
                       <pattern>shaded.parquet</pattern>
                       <shadedPattern>${shade.relocation.package.prefix}.shaded.parquet</shadedPattern>
                     </relocation>
@@ -112,7 +108,13 @@
                       <include>com.google*:*</include>
                       <include>com.fasterxml*:*</include>
                       <include>com.github.ben-manes*:*</include>
+                      <include>org.apache.hive:patched-iceberg-api</include>
+                      <include>org.apache.hive:patched-iceberg-core</include>
                     </includes>
+                    <excludes>
+                      <exclude>org.apache.iceberg:iceberg-api</exclude>
+                      <exclude>org.apache.iceberg:iceberg-core</exclude>
+                    </excludes>
                   </artifactSet>
                   <filters>
                     <filter>

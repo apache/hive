@@ -44,7 +44,8 @@ import static java.time.temporal.ChronoField.YEAR;
  * Timestamp is "uuuu-MM-dd HH:mm:ss[.SSS...]", where the time part is optional.
  * If time part is absent, a default '00:00:00.0' will be used.
  *
- * <table border="2" summary="">
+ * <table border="1">
+ * <caption></caption>
  * <tr>
  * <th>Field</th>
  * <th>Format</th>
@@ -134,8 +135,8 @@ public class Timestamp implements Comparable<Timestamp> {
 
   @Override
   public boolean equals(Object other) {
-    if (other instanceof Timestamp) {
-      return compareTo((Timestamp) other) == 0;
+    if (other instanceof Timestamp timestamp) {
+      return compareTo(timestamp) == 0;
     }
     return false;
   }
@@ -191,10 +192,15 @@ public class Timestamp implements Comparable<Timestamp> {
       try {
         localDateTime = LocalDateTime.parse(s);
       } catch (DateTimeException e2) {
-        throw new IllegalArgumentException("Cannot create timestamp, parsing error " + s);
+        throw new IllegalArgumentException("Cannot create timestamp, parsing error " + s, e);
       }
     }
     return new Timestamp(localDateTime);
+  }
+
+  public Timestamp minusDays(long days) {
+    localDateTime = localDateTime.minusDays(days);
+    return this;
   }
 
   public static Timestamp getTimestampFromTime(String s) {

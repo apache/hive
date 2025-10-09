@@ -23,10 +23,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,6 +61,7 @@ public class TestOperationLogManager {
     HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES, 1);
     HiveConf.setIntVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT, 8080);
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_IN_TEST, true);
+    HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_TESTING_REMOVE_LOGS, false);
     HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_HISTORIC_OPERATION_LOG_FETCH_MAXBYTES, "128B");
     HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     HiveConf.setVar(hiveConf, HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION,
@@ -90,26 +91,25 @@ public class TestOperationLogManager {
     Operation operation1 = sessionManager.getOperationManager().getOperation(opHandle1);
 
     String logLocation = operation1.getOperationLog().toString();
-    // as the historic log is enabled, the log dir of the operation1 should be under the historic dir
-    assertTrue(logLocation.startsWith(OperationLogManager.getHistoricLogDir()));
+
+    assertEquals(logLocation, ((SQLOperation)operation1).getQueryInfo().getOperationLogLocation());
 
     File operationLogFile = new File(operation1.getOperationLog().toString());
     assertTrue(operationLogFile.exists());
+
     client.closeOperation(opHandle1);
-    // now close the session1
+    String op1HistoricLogLocation = ((SQLOperation)operation1).getQueryInfo().getOperationLogLocation();
+    File op1HistoricLogFile = new File(op1HistoricLogLocation);
+    assertTrue(op1HistoricLogFile.exists());
+
+    // check that the log of operation1 exists even if the session1 has been closed
     client.closeSession(session1);
-    // check that the log of operation1 is exist even if the session1 has been closed
-    assertTrue(operationLogFile.exists());
+    assertTrue(op1HistoricLogFile.exists());
 
     SessionHandle session2 = client.openSession("user1", "foobar",
         Collections.<String, String>emptyMap());
-    OperationHandle opHandle2 = client.executeStatement(session2, "select 1 + 1", null);
+    OperationHandle opHandle2 = client.executeStatement(session2, "select 2 + 2", null);
     Operation operation2 = sessionManager.getOperationManager().getOperation(opHandle2);
-
-    // as the historic log is enabled, the log dir of the operation2 should be under the historic dir
-    logLocation = operation2.getOperationLog().toString();
-    assertTrue(logLocation.startsWith(OperationLogManager.getHistoricLogDir()));
-    // remove the query info of operation1 from the cache
     client.closeOperation(opHandle2);
 
     // the operation1 becomes unreachable
@@ -118,33 +118,22 @@ public class TestOperationLogManager {
         && operationManager.getLiveQueryInfos().isEmpty());
     assertNull(operationManager.getQueryInfo(opHandle1.getHandleIdentifier().toString()));
 
-    // now the session1 is closed and has no cached query info, the historic session log dir should be returned.
+
+    // OperationLogManager cleans up operation1's historical log, operation2's historical log remains.
     OperationLogManager logManager = sessionManager.getLogManager().get();
-    List<File> expiredLogDirs = logManager.getExpiredSessionLogDirs();
-    List<File> expiredOperationLogs = logManager.getExpiredOperationLogFiles();
-
-    assertEquals(operation1.getQueryId(), expiredOperationLogs.get(0).getName());
-    assertEquals(session1.getHandleIdentifier().toString(), expiredLogDirs.get(0).getName());
-
-    logManager.removeExpiredOperationLogAndDir();
-    // the historic session log dir has been cleanup
-    assertFalse(operationLogFile.exists());
-    assertFalse(expiredLogDirs.get(0).exists());
+    logManager.deleteHistoricQueryLogs();
+    assertFalse(op1HistoricLogFile.exists());
 
     // though session2 is closed, but there exists his operation(operation2) in cache and
     // log file under the historic session log dir, so the historic log dir of session2 would not be cleaned
+    String op2LogLocation = ((SQLOperation)operation2).getQueryInfo().getOperationLogLocation();
     client.closeSession(session2);
     assertNotNull(operationManager.getQueryInfo(opHandle2.getHandleIdentifier().toString()));
     assertTrue(operationManager.getAllCachedQueryIds().size() == 1
         && operationManager.getLiveQueryInfos().isEmpty());
 
-    expiredOperationLogs = logManager.getExpiredOperationLogFiles();
-    expiredLogDirs = logManager.getExpiredSessionLogDirs();
-    assertTrue(expiredLogDirs.isEmpty());
-    assertTrue(expiredOperationLogs.isEmpty());
-
-    logManager.removeExpiredOperationLogAndDir();
-    assertTrue(new File(logLocation).getParentFile().exists());
+    logManager.deleteHistoricQueryLogs();
+    assertTrue(new File(op2LogLocation).exists());
     FileUtils.deleteQuietly(new File(OperationLogManager.getHistoricLogDir()));
   }
 
@@ -164,6 +153,7 @@ public class TestOperationLogManager {
     byte[] content = writeBytes(logFile, 2 * readLenght);
     operation.getQueryInfo().setOperationLogLocation(logLocation);
     String operationLog = OperationLogManager.getOperationLog(operation.getQueryInfo());
+    assertEquals(logLocation, operation.getQueryInfo().getOperationLogLocation());
     assertEquals(new String(content, content.length - readLenght, readLenght), operationLog);
     FileUtils.deleteQuietly(new File(OperationLogManager.getHistoricLogDir()));
   }
@@ -187,7 +177,7 @@ public class TestOperationLogManager {
   private class FakeHiveSession extends HiveSessionImpl {
     public FakeHiveSession(SessionHandle sessionHandle, HiveConf serverConf) {
       super(sessionHandle, TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V11, "dummy", "",
-          serverConf, "0.0.0.0", null);
+          serverConf, IPStackUtils.resolveWildcardAddress(), null);
     }
   }
 

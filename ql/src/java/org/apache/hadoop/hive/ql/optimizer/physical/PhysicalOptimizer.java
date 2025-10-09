@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
@@ -46,7 +45,7 @@ public class PhysicalOptimizer {
    */
   private void initialize(HiveConf hiveConf) {
     resolvers = new ArrayList<PhysicalPlanResolver>();
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN)) {
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN)) {
       resolvers.add(new CommonJoinResolver());
 
       // The joins have been automatically converted to map-joins.
@@ -56,18 +55,18 @@ public class PhysicalOptimizer {
         resolvers.add(new SortMergeJoinResolver());
       }
     }
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVESKEWJOIN)) {
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SKEW_JOIN)) {
       resolvers.add(new SkewJoinResolver());
     }
 
     resolvers.add(new MapJoinResolver());
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_METADATA_ONLY_QUERIES)) {
       resolvers.add(new MetadataOnlyOptimizer());
     }
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVENULLSCANOPTIMIZE)) {
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_NULL_SCAN_OPTIMIZE)) {
       resolvers.add(new NullScanOptimizer());
     }
-    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVESAMPLINGFORORDERBY)) {
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SAMPLING_FOR_ORDERBY)) {
       resolvers.add(new SamplingOptimizer());
     }
 
@@ -91,7 +90,7 @@ public class PhysicalOptimizer {
                 "enable")) {
       resolvers.add(new Vectorizer());
     }
-    if (!"none".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE))) {
+    if (!"none".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVE_STAGE_ID_REARRANGE))) {
       resolvers.add(new StageIDsRearranger());
     }
 

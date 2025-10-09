@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -42,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.*;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.*;
@@ -49,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.TezEdgeProperty.EdgeType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.tez.dag.library.vertexmanager.ShuffleVertexManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,6 +80,11 @@ public class GenTezUtils {
     return unionWork;
   }
 
+  private static boolean isRestrictReducerExtrapolation(Context context) {
+    return context.getOperation() == Context.Operation.DELETE && context.getLoadTableOutputMap().values()
+            .stream().map(WriteEntity::getTable).anyMatch(DDLUtils::isIcebergTable);
+  }
+
   public static ReduceWork createReduceWork(
       GenTezProcContext context, Operator<?> root, TezWork tezWork) {
     assert !root.getParentOperators().isEmpty();
@@ -86,7 +95,7 @@ public class GenTezUtils {
     float maxPartitionFactor =
         context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MAX_PARTITION_FACTOR);
     float minPartitionFactor = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_MIN_PARTITION_FACTOR);
-    long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTESPERREDUCER);
+    long bytesPerReducer = context.conf.getLongVar(HiveConf.ConfVars.BYTES_PER_REDUCER);
     int defaultTinyBufferSize = context.conf.getIntVar(HiveConf.ConfVars.TEZ_SIMPLE_CUSTOM_EDGE_TINY_BUFFER_SIZE_MB);
 
     ReduceWork reduceWork = new ReduceWork(Utilities.REDUCENAME + context.nextSequenceNumber());
@@ -103,12 +112,25 @@ public class GenTezUtils {
 
     reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
     reduceWork.setSlowStart(reduceSink.getConf().isSlowStart());
+    float minSrcFraction = context.conf.getFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION,
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MIN_SRC_FRACTION_DEFAULT);
+    reduceWork.setMinSrcFraction(minSrcFraction);
+    float maxSrcFraction = context.conf.getFloat(
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION,
+        ShuffleVertexManager.TEZ_SHUFFLE_VERTEX_MANAGER_MAX_SRC_FRACTION_DEFAULT);
+    reduceWork.setMaxSrcFraction(maxSrcFraction);
     reduceWork.setUniformDistribution(reduceSink.getConf().getReducerTraits().contains(UNIFORM));
+
+    // Disabling TEZ_AUTO_REDUCER_PARALLELISM for BucketMapJoin until TEZ-4603 is fixed.
+    if (hasBucketMapJoin(reduceSink, 0)) {
+      reduceSink.getConf().getReducerTraits().remove(AUTOPARALLEL);
+    }
 
     if (isAutoReduceParallelism && reduceSink.getConf().getReducerTraits().contains(AUTOPARALLEL)) {
 
       // configured limit for reducers
-      final int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
+      final int maxReducers = context.conf.getIntVar(HiveConf.ConfVars.MAX_REDUCERS);
       // estimated number of reducers
       final int nReducers = reduceSink.getConf().getNumReducers();
 
@@ -116,13 +138,19 @@ public class GenTezUtils {
       int minPartition = Math.max(1, (int) (nReducers * minPartitionFactor));
       minPartition = (minPartition > maxReducers) ? maxReducers : minPartition;
 
+      if (isRestrictReducerExtrapolation(context.parseContext.getContext())) {
+        LOG.debug("Overriding maxPartitionFactor to 1.0 to prevent creation of small files after delete operation");
+        maxPartitionFactor = 1f;
+      }
+      
       // max we allow tez to pick
       int maxPartition = Math.max(1, (int) (nReducers * maxPartitionFactor));
       maxPartition = (maxPartition > maxReducers) ? maxReducers : maxPartition;
+      LOG.debug("max partition factor={}, max partition={}", maxPartitionFactor, maxPartition);
 
       // reduce only if the parameters are significant
-      if (minPartition < maxPartition &&
-          nReducers * minPartitionFactor >= 1.0) {
+      final float minThreshold = context.conf.getFloatVar(HiveConf.ConfVars.TEZ_AUTO_REDUCER_PARALLELISM_MIN_THRESHOLD);
+      if (minPartition < maxPartition && nReducers * minPartitionFactor >= minThreshold) {
         reduceWork.setAutoReduceParallelism(true);
 
         reduceWork.setMinReduceTasks(minPartition);
@@ -142,7 +170,8 @@ public class GenTezUtils {
     if (reduceWork.isAutoReduceParallelism()) {
       edgeProp =
           new TezEdgeProperty(context.conf, edgeType, true, reduceWork.isSlowStart(),
-              reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer);
+              reduceWork.getMinReduceTasks(), reduceWork.getMaxReduceTasks(), bytesPerReducer,
+              reduceWork.getMinSrcFraction(), reduceWork.getMaxSrcFraction());
     } else {
       edgeProp = new TezEdgeProperty(edgeType);
       edgeProp.setSlowStart(reduceWork.isSlowStart());
@@ -156,6 +185,41 @@ public class GenTezUtils {
     context.connectedReduceSinks.add(reduceSink);
 
     return reduceWork;
+  }
+
+  /**
+   * Checks if there is a Bucket Map Join (BMJ) following a hierarchy:
+   * ReduceSinkOperator (RS) -> ReduceSinkOperator (RS) -> MapJoinOperator (MJ).
+   * Ensures at most **two** RSOs before MJ.
+   */
+  private static boolean hasBucketMapJoin(Operator<? extends OperatorDesc> operator, int rsoCount) {
+    if (operator == null) {
+      return false;
+    }
+    if (operator instanceof ReduceSinkOperator) {
+      rsoCount++;
+      if (rsoCount > 2) {
+        return false; // Stop if more than 2 RSOs
+      }
+    }
+
+    // Iterate over child operators
+    for (Operator<? extends OperatorDesc> childOp : operator.getChildOperators()) {
+      // Check if this is a MapJoinOperator and is a Bucket Map Join
+      if (childOp instanceof MapJoinOperator) {
+        MapJoinOperator mjOp = (MapJoinOperator) childOp;
+        if (mjOp.getConf().isBucketMapJoin()) {
+          return true; // Found BMJ, no need to check further
+        }
+      }
+
+      // Recursively check children
+      if (hasBucketMapJoin(childOp, rsoCount)) {
+        return true;
+      }
+    }
+
+    return false; // No Bucket Map Join found
   }
 
   private static void setupReduceSink(
@@ -445,6 +509,7 @@ public class GenTezUtils {
           replacementMap.put(current, current.getChildOperators().get(0));
         } else {
           parent.removeChildAndAdoptItsChildren(current);
+          operators.remove(current);
         }
       }
 

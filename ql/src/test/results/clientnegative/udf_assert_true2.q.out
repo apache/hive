@@ -23,7 +23,7 @@ STAGE PLANS:
                 Limit
                   Number of rows: 2
                   Select Operator
-                    expressions: (1 + assert_true((_col6 < 2))) (type: int)
+                    expressions: (1 + UDFToInteger(assert_true((_col6 < 2)))) (type: int)
                     outputColumnNames: _col0
                     ListSink
             Select Operator
@@ -36,7 +36,7 @@ STAGE PLANS:
                   Limit
                     Number of rows: 2
                     Select Operator
-                      expressions: (1 + assert_true((_col6 < 2))) (type: int)
+                      expressions: (1 + UDFToInteger(assert_true((_col6 < 2)))) (type: int)
                       outputColumnNames: _col0
                       ListSink
 

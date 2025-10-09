@@ -372,10 +372,10 @@ POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.Fie
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 4 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8746 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7525 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7167 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7058 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: insert into over10k_orc_bucketed_n0 select * from over10k_n9
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_n9
@@ -396,14 +396,14 @@ POSTHOOK: Lineage: over10k_orc_bucketed_n0.si SIMPLE [(over10k_n9)over10k_n9.Fie
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.t SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed_n0.ts SIMPLE [(over10k_n9)over10k_n9.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 8 items
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8746 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       8746 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7525 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7525 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7167 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7167 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7058 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###       7058 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed_n0
@@ -420,12 +420,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
 7	hdfs://### HDFS PATH ###
-PREHOOK: query: alter table over10k_orc_bucketed_n0 set TBLPROPERTIES ('transactional'='true')
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: alter table over10k_orc_bucketed_n0 convert to acid
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@over10k_orc_bucketed_n0
-PREHOOK: Output: default@over10k_orc_bucketed_n0
-POSTHOOK: query: alter table over10k_orc_bucketed_n0 set TBLPROPERTIES ('transactional'='true')
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: alter table over10k_orc_bucketed_n0 convert to acid
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: default@over10k_orc_bucketed_n0
 PREHOOK: query: explain select t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by t, si, i
@@ -818,8 +817,12 @@ POSTHOOK: Input: default@over10k_orc_bucketed_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: default@over10k_orc_bucketed_n0
 POSTHOOK: query: explain alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -827,6 +830,12 @@ STAGE PLANS:
   Stage: Stage-0
     Compact
       compaction type: major
+      table name: default.over10k_orc_bucketed_n0
+      numberOfBuckets: 0
+      properties:
+        compactor.hive.tez.container.size 500
+        compactor.mapreduce.map.memory.mb 500
+        compactor.mapreduce.reduce.memory.mb 500
       properties:
         compactor.hive.tez.container.size 500
         compactor.mapreduce.map.memory.mb 500
@@ -835,8 +844,12 @@ STAGE PLANS:
 
 PREHOOK: query: alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@over10k_orc_bucketed_n0
+PREHOOK: Output: default@over10k_orc_bucketed_n0
 POSTHOOK: query: alter table over10k_orc_bucketed_n0 compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@over10k_orc_bucketed_n0
+POSTHOOK: Output: default@over10k_orc_bucketed_n0
 PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed_n0 where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed_n0

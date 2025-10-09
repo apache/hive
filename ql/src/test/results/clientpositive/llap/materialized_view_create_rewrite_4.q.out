@@ -219,6 +219,9 @@ STAGE PLANS:
   Stage: Stage-4
     Create Materialized View
       columns: a int, c decimal(10,2), _c2 bigint
+      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+      serde name: org.apache.hadoop.hive.ql.io.orc.OrcSerde
       table properties:
         transactional true
       expanded text: SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)
@@ -296,7 +299,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	1542                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -323,9 +326,9 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:1:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -540,7 +543,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	1542                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -567,9 +570,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	Yes                 	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	1/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:1:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -732,24 +735,27 @@ POSTHOOK: Input: default@cmv_mat_view_n5
 POSTHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: Output: default@cmv_mat_view_n5
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
-  Stage-6 depends on stages: Stage-4, Stage-5
-  Stage-1 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-1
+  Stage-3 is a root stage
+  Stage-4 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-0
+  Stage-8 depends on stages: Stage-5, Stage-6, Stage-7
+  Stage-1 depends on stages: Stage-4
+  Stage-6 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-4
+  Stage-7 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-3
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 7 <- Map 6 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -770,7 +776,7 @@ STAGE PLANS:
                       value expressions: _col2 (type: bigint), _col3 (type: boolean), _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
-        Map 5 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
@@ -791,7 +797,7 @@ STAGE PLANS:
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: may be used (ACID table)
-        Map 8 
+        Map 9 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
@@ -826,7 +832,20 @@ STAGE PLANS:
                 outputColumnNames: _col2, _col3, _col4, _col5, _col6, _col7
                 Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: _col3 is null (type: boolean)
+                  predicate: _col3 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                      Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col3 (type: boolean)
                   Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col5 (type: int), _col6 (type: decimal(10,2)), CASE WHEN (_col2 is null) THEN (_col7) WHEN (_col7 is null) THEN (_col2) ELSE ((_col7 + _col2)) END (type: bigint)
@@ -857,20 +876,53 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary)
                 Filter Operator
-                  predicate: _col3 (type: boolean)
+                  predicate: _col3 is null (type: boolean)
                   Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col5 (type: int), _col6 (type: decimal(10,2)), CASE WHEN (_col2 is null) THEN (_col7) WHEN (_col7 is null) THEN (_col2) ELSE ((_col7 + _col2)) END (type: bigint)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: int), _col2 (type: decimal(10,2)), _col3 (type: bigint)
+                    expressions: _col5 (type: int), _col6 (type: decimal(10,2)), CASE WHEN (_col2 is null) THEN (_col7) WHEN (_col7 is null) THEN (_col2) ELSE ((_col7 + _col2)) END (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.cmv_mat_view_n5
+                      Write Type: INSERT
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: decimal(10,2)), _col2 (type: bigint)
+                      outputColumnNames: a, c, _c2
+                      Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(a), max(a), count(1), count(a), compute_bit_vector_hll(a), min(c), max(c), count(c), compute_bit_vector_hll(c), min(_c2), max(_c2), count(_c2), compute_bit_vector_hll(_c2)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                        Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary)
         Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.cmv_mat_view_n5
+                  Write Type: DELETE
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -889,23 +941,26 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: decimal(10,2)), VALUE._col2 (type: bigint)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.cmv_mat_view_n5
-                  Write Type: UPDATE
-        Reducer 6 
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DECIMAL' (type: string), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), _col9 (type: bigint), _col10 (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 1003 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1003 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 7 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -930,7 +985,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: bigint)
-        Reducer 7 
+        Reducer 8 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -947,7 +1002,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: bigint)
 
-  Stage: Stage-3
+  Stage: Stage-4
     Dependency Collection
 
   Stage: Stage-0
@@ -959,13 +1014,13 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.cmv_mat_view_n5
-          Write Type: INSERT
+          Write Type: DELETE
 
-  Stage: Stage-4
+  Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
-  Stage: Stage-6
+  Stage: Stage-8
     Materialized View Update
       name: default.cmv_mat_view_n5
       update creation metadata: true
@@ -979,9 +1034,24 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.cmv_mat_view_n5
-          Write Type: UPDATE
+          Write Type: INSERT
 
-  Stage: Stage-5
+  Stage: Stage-6
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.cmv_mat_view_n5
+          Write Type: INSERT
+
+  Stage: Stage-7
     Stats Work
       Basic Stats Work:
       Column Stats Desc:
@@ -1004,7 +1074,10 @@ POSTHOOK: Input: default@cmv_mat_view_n5
 POSTHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: Lineage: cmv_mat_view_n5._c2 EXPRESSION [(cmv_mat_view_n5)default.cmv_mat_view_n5.FieldSchema(name:_c2, type:bigint, comment:null), (cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5._c2 EXPRESSION [(cmv_mat_view_n5)default.cmv_mat_view_n5.FieldSchema(name:_c2, type:bigint, comment:null), (cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.a SIMPLE [(cmv_basetable_n5)cmv_basetable_n5.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5.a SIMPLE [(cmv_basetable_n5)cmv_basetable_n5.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
 PREHOOK: type: DESCTABLE
@@ -1029,7 +1102,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	0                   
-	totalSize           	2301                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1056,9 +1129,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:2:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1345,7 +1418,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	3                   
 	rawDataSize         	0                   
-	totalSize           	1047                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1372,9 +1445,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:3:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1655,7 +1728,7 @@ Table Parameters:
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	1044                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1682,9 +1755,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:4:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)
@@ -1774,24 +1847,27 @@ POSTHOOK: Input: default@cmv_mat_view_n5
 POSTHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: Output: default@cmv_mat_view_n5
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-0 depends on stages: Stage-3
-  Stage-4 depends on stages: Stage-0
-  Stage-6 depends on stages: Stage-4, Stage-5
-  Stage-1 depends on stages: Stage-3
-  Stage-5 depends on stages: Stage-1
+  Stage-3 is a root stage
+  Stage-4 depends on stages: Stage-3
+  Stage-0 depends on stages: Stage-4
+  Stage-5 depends on stages: Stage-0
+  Stage-8 depends on stages: Stage-5, Stage-6, Stage-7
+  Stage-1 depends on stages: Stage-4
+  Stage-6 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-4
+  Stage-7 depends on stages: Stage-2
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-3
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-        Reducer 4 <- Reducer 2 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 5 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+        Reducer 7 <- Map 6 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1812,7 +1888,7 @@ STAGE PLANS:
                       value expressions: _col2 (type: bigint), _col3 (type: boolean), _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
             Execution mode: llap
             LLAP IO: may be used (ACID table)
-        Map 5 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_n5
@@ -1833,7 +1909,7 @@ STAGE PLANS:
                         Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: may be used (ACID table)
-        Map 8 
+        Map 9 
             Map Operator Tree:
                 TableScan
                   alias: cmv_basetable_2_n2
@@ -1868,7 +1944,20 @@ STAGE PLANS:
                 outputColumnNames: _col2, _col3, _col4, _col5, _col6, _col7
                 Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: _col3 is null (type: boolean)
+                  predicate: _col3 (type: boolean)
+                  Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: UDFToInteger(_col0) (type: int)
+                      Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col3 (type: boolean)
                   Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col5 (type: int), _col6 (type: decimal(10,2)), CASE WHEN (_col2 is null) THEN (_col7) WHEN (_col7 is null) THEN (_col2) ELSE ((_col7 + _col2)) END (type: bigint)
@@ -1899,20 +1988,53 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary)
                 Filter Operator
-                  predicate: _col3 (type: boolean)
+                  predicate: _col3 is null (type: boolean)
                   Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col4 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col5 (type: int), _col6 (type: decimal(10,2)), CASE WHEN (_col2 is null) THEN (_col7) WHEN (_col7 is null) THEN (_col2) ELSE ((_col7 + _col2)) END (type: bigint)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
-                      null sort order: a
-                      sort order: +
-                      Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: int), _col2 (type: decimal(10,2)), _col3 (type: bigint)
+                    expressions: _col5 (type: int), _col6 (type: decimal(10,2)), CASE WHEN (_col2 is null) THEN (_col7) WHEN (_col7 is null) THEN (_col2) ELSE ((_col7 + _col2)) END (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                          serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                          name: default.cmv_mat_view_n5
+                      Write Type: INSERT
+                    Select Operator
+                      expressions: _col0 (type: int), _col1 (type: decimal(10,2)), _col2 (type: bigint)
+                      outputColumnNames: a, c, _c2
+                      Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(a), max(a), count(1), count(a), compute_bit_vector_hll(a), min(c), max(c), count(c), compute_bit_vector_hll(c), min(_c2), max(_c2), count(_c2), compute_bit_vector_hll(_c2)
+                        minReductionHashAggr: 0.4
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                        Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), _col7 (type: bigint), _col8 (type: binary), _col9 (type: bigint), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: binary)
         Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 76 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                      name: default.cmv_mat_view_n5
+                  Write Type: DELETE
+        Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -1931,23 +2053,26 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 4 
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int), VALUE._col1 (type: decimal(10,2)), VALUE._col2 (type: bigint)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
-                      serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                      name: default.cmv_mat_view_n5
-                  Write Type: UPDATE
-        Reducer 6 
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Statistics: Num rows: 1 Data size: 712 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col0) (type: bigint), UDFToLong(_col1) (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DECIMAL' (type: string), _col5 (type: decimal(10,2)), _col6 (type: decimal(10,2)), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), _col9 (type: bigint), _col10 (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
+                  Statistics: Num rows: 1 Data size: 1003 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 1003 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 7 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -1972,7 +2097,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: decimal(10,2))
                     Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col2 (type: bigint)
-        Reducer 7 
+        Reducer 8 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -1989,7 +2114,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col2 (type: bigint)
 
-  Stage: Stage-3
+  Stage: Stage-4
     Dependency Collection
 
   Stage: Stage-0
@@ -2001,13 +2126,13 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.cmv_mat_view_n5
-          Write Type: INSERT
+          Write Type: DELETE
 
-  Stage: Stage-4
+  Stage: Stage-5
     Stats Work
       Basic Stats Work:
 
-  Stage: Stage-6
+  Stage: Stage-8
     Materialized View Update
       name: default.cmv_mat_view_n5
       update creation metadata: true
@@ -2021,9 +2146,24 @@ STAGE PLANS:
               output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.cmv_mat_view_n5
-          Write Type: UPDATE
+          Write Type: INSERT
 
-  Stage: Stage-5
+  Stage: Stage-6
+    Stats Work
+      Basic Stats Work:
+
+  Stage: Stage-2
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.cmv_mat_view_n5
+          Write Type: INSERT
+
+  Stage: Stage-7
     Stats Work
       Basic Stats Work:
       Column Stats Desc:
@@ -2046,7 +2186,10 @@ POSTHOOK: Input: default@cmv_mat_view_n5
 POSTHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: Output: default@cmv_mat_view_n5
 POSTHOOK: Lineage: cmv_mat_view_n5._c2 EXPRESSION [(cmv_mat_view_n5)default.cmv_mat_view_n5.FieldSchema(name:_c2, type:bigint, comment:null), (cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5._c2 EXPRESSION [(cmv_mat_view_n5)default.cmv_mat_view_n5.FieldSchema(name:_c2, type:bigint, comment:null), (cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:d, type:int, comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.a SIMPLE [(cmv_basetable_n5)cmv_basetable_n5.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5.a SIMPLE [(cmv_basetable_n5)cmv_basetable_n5.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view_n5.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 POSTHOOK: Lineage: cmv_mat_view_n5.c SIMPLE [(cmv_basetable_2_n2)cmv_basetable_2_n2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: DESCRIBE FORMATTED cmv_mat_view_n5
 PREHOOK: type: DESCTABLE
@@ -2071,7 +2214,7 @@ Table Parameters:
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	0                   
-	totalSize           	1801                
+	totalSize           	#Masked#
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2098,9 +2241,9 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.default.cmv_basetable_2_n2	0/0/0               	 
-hive.default.cmv_basetable_n5	0/0/0               	 
+Table name          	Snapshot            	 
+default.cmv_basetable_2_n2	:5:9223372036854775807::	 
+default.cmv_basetable_n5	:1:9223372036854775807::	 
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable_n5.a, sum(cmv_basetable_2_n2.d)
 FROM cmv_basetable_n5 join cmv_basetable_2_n2 ON (cmv_basetable_n5.a = cmv_basetable_2_n2.a)

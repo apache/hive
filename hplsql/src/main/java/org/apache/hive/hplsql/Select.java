@@ -67,11 +67,15 @@ public class Select {
     boolean oldBuildSql = exec.buildSql; 
     exec.buildSql = true;
     StringBuilder sql = new StringBuilder();
-    if (ctx.cte_select_stmt() != null) {
-      sql.append(evalPop(ctx.cte_select_stmt()).toString());
-      sql.append("\n");
+    if (exec.getOffline()) {
+      sql.append(exec.getText(ctx));
+    } else {
+      if (ctx.cte_select_stmt() != null) {
+        sql.append(evalPop(ctx.cte_select_stmt()).toString());
+        sql.append("\n");
+      }
+      sql.append(evalPop(ctx.fullselect_stmt()).toString());
     }
-    sql.append(evalPop(ctx.fullselect_stmt()).toString());
     exec.buildSql = oldBuildSql;
     if (!(ctx.parent instanceof HplsqlParser.StmtContext)) {           // No need to execute at this stage
       exec.stackPush(sql);

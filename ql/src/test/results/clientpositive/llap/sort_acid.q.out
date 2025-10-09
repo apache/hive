@@ -1,39 +1,41 @@
-PREHOOK: query: create table acidtlb(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: create table acidtlb(a int, b int, e string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@acidtlb
-POSTHOOK: query: create table acidtlb(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: create table acidtlb(a int, b int, e string) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acidtlb
-PREHOOK: query: create table othertlb(c int, d int) stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: query: create table othertlb(c int, d int, f string) stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@othertlb
-POSTHOOK: query: create table othertlb(c int, d int) stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: query: create table othertlb(c int, d int, f string) stored as orc TBLPROPERTIES ('transactional'='true')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@othertlb
-PREHOOK: query: insert into acidtlb values(10,200),(30,500)
+PREHOOK: query: insert into acidtlb values(10,200,'one'),(30,500,'two')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acidtlb
-POSTHOOK: query: insert into acidtlb values(10,200),(30,500)
+POSTHOOK: query: insert into acidtlb values(10,200,'one'),(30,500,'two')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Lineage: acidtlb.a SCRIPT []
 POSTHOOK: Lineage: acidtlb.b SCRIPT []
-PREHOOK: query: insert into othertlb values(10, 21),(30, 22),(60, 23),(70, 24),(80, 25)
+POSTHOOK: Lineage: acidtlb.e SCRIPT []
+PREHOOK: query: insert into othertlb values(10, 21,'one'),(30, 22,'three'),(60, 23,'one'),(70, 24,'three'),(80, 25,'three')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@othertlb
-POSTHOOK: query: insert into othertlb values(10, 21),(30, 22),(60, 23),(70, 24),(80, 25)
+POSTHOOK: query: insert into othertlb values(10, 21,'one'),(30, 22,'three'),(60, 23,'one'),(70, 24,'three'),(80, 25,'three')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@othertlb
 POSTHOOK: Lineage: othertlb.c SCRIPT []
 POSTHOOK: Lineage: othertlb.d SCRIPT []
+POSTHOOK: Lineage: othertlb.f SCRIPT []
 PREHOOK: query: explain cbo
 select a, 6 as c, b from acidtlb sort by a, c, b
 PREHOOK: type: QUERY
@@ -72,7 +74,7 @@ POSTHOOK: Input: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 CBO PLAN:
-HiveProject(row__id=[$4], a=[$0], b=[777])
+HiveProject(row__id=[$5], a=[$0], b=[777], e=[$2])
   HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
 
 PREHOOK: query: update acidtlb set b=777
@@ -87,6 +89,7 @@ POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Lineage: acidtlb.a SIMPLE [(acidtlb)acidtlb.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtlb.b SIMPLE []
+POSTHOOK: Lineage: acidtlb.e SIMPLE [(acidtlb)acidtlb.FieldSchema(name:e, type:string, comment:null), ]
 PREHOOK: query: select * from acidtlb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
@@ -95,8 +98,8 @@ POSTHOOK: query: select * from acidtlb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-10	777
-30	777
+10	777	one
+30	777	two
 Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 update acidtlb set b=350
@@ -113,9 +116,9 @@ POSTHOOK: Input: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 CBO PLAN:
-HiveProject(row__id=[$1], a=[CAST(30):INTEGER], b=[350])
+HiveProject(row__id=[$2], a=[CAST(30):INTEGER], b=[350], e=[$1])
   HiveSemiJoin(condition=[true], joinType=[semi])
-    HiveProject(a=[CAST(30):INTEGER], ROW__ID=[$4])
+    HiveProject(a=[CAST(30):INTEGER], e=[$2], ROW__ID=[$5])
       HiveFilter(condition=[=($0, 30)])
         HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
     HiveProject($f0=[$0])
@@ -139,6 +142,7 @@ POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Lineage: acidtlb.a SIMPLE []
 POSTHOOK: Lineage: acidtlb.b SIMPLE []
+POSTHOOK: Lineage: acidtlb.e SIMPLE [(acidtlb)acidtlb.FieldSchema(name:e, type:string, comment:null), ]
 PREHOOK: query: select * from acidtlb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
@@ -147,8 +151,8 @@ POSTHOOK: query: select * from acidtlb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-10	777
-30	350
+10	777	one
+30	350	two
 PREHOOK: query: explain cbo
 update acidtlb set b=450
 where a in (select c from othertlb where c < 65)
@@ -166,9 +170,9 @@ POSTHOOK: Input: default@othertlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 CBO PLAN:
-HiveProject(row__id=[$1], a=[$0], b=[450])
-  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
-    HiveProject(a=[$0], ROW__ID=[$4])
+HiveProject(row__id=[$2], a=[$0], b=[450], e=[$1])
+  HiveSemiJoin(condition=[=($0, $3)], joinType=[semi])
+    HiveProject(a=[$0], e=[$2], ROW__ID=[$5])
       HiveFilter(condition=[<($0, 65)])
         HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
     HiveProject(c=[$0])
@@ -191,6 +195,7 @@ POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Lineage: acidtlb.a SIMPLE [(acidtlb)acidtlb.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtlb.b SIMPLE []
+POSTHOOK: Lineage: acidtlb.e SIMPLE [(acidtlb)acidtlb.FieldSchema(name:e, type:string, comment:null), ]
 PREHOOK: query: select * from acidtlb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
@@ -199,8 +204,8 @@ POSTHOOK: query: select * from acidtlb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-10	450
-30	450
+10	450	one
+30	450	two
 PREHOOK: query: explain cbo
 delete from acidtlb
 where a in (
@@ -225,7 +230,7 @@ CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0]])
   HiveProject(row__id=[$1])
     HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
-      HiveProject(a=[$0], ROW__ID=[$4])
+      HiveProject(a=[$0], ROW__ID=[$5])
         HiveFilter(condition=[IS NOT NULL($0)])
           HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
       HiveProject(a=[$0])
@@ -263,12 +268,12 @@ POSTHOOK: query: select * from acidtlb order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-30	450
+30	450	two
 PREHOOK: query: explain cbo
 merge into acidtlb as t using othertlb as s on t.a = s.c
 when matched and s.c < 60 then delete
-when matched and s.c = 60 then update set b = 1000
-when not matched then insert values (s.c, 2000 + s.d)
+when matched and s.c = 60 then update set b = 1000, e=NULL
+when not matched then insert values (s.c, 2000 + s.d, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
 PREHOOK: Input: default@othertlb
@@ -278,8 +283,8 @@ PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: explain cbo
 merge into acidtlb as t using othertlb as s on t.a = s.c
 when matched and s.c < 60 then delete
-when matched and s.c = 60 then update set b = 1000
-when not matched then insert values (s.c, 2000 + s.d)
+when matched and s.c = 60 then update set b = 1000, e=NULL
+when not matched then insert values (s.c, 2000 + s.d, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 POSTHOOK: Input: default@othertlb
@@ -287,18 +292,18 @@ POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@merge_tmp_table
 CBO PLAN:
-HiveProject(col0=[$3], col1=[$0], col2=[$1], col3=[$2])
-  HiveJoin(condition=[=($2, $0)], joinType=[left], algorithm=[none], cost=[not available])
+HiveProject(col0=[$2], col1=[$0], col2=[$1], col3=[$3])
+  HiveJoin(condition=[=($3, $0)], joinType=[left], algorithm=[none], cost=[not available])
     HiveProject(c=[$0], d=[$1])
       HiveTableScan(table=[[default, othertlb]], table:alias=[s])
-    HiveProject(a=[$0], ROW__ID=[$4])
+    HiveProject(row__id=[$5], a=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, acidtlb]], table:alias=[t])
+        HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
 
 PREHOOK: query: merge into acidtlb as t using othertlb as s on t.a = s.c
 when matched and s.c < 30 then delete
-when matched and s.c = 30 then update set b = 1000
-when not matched then insert values (s.c, 2000 + s.d)
+when matched and s.c = 30 then update set b = 1000, e=NULL
+when not matched then insert values (s.c, 2000 + s.d, NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
 PREHOOK: Input: default@othertlb
@@ -307,8 +312,8 @@ PREHOOK: Output: default@acidtlb
 PREHOOK: Output: default@merge_tmp_table
 POSTHOOK: query: merge into acidtlb as t using othertlb as s on t.a = s.c
 when matched and s.c < 30 then delete
-when matched and s.c = 30 then update set b = 1000
-when not matched then insert values (s.c, 2000 + s.d)
+when matched and s.c = 30 then update set b = 1000, e=NULL
+when not matched then insert values (s.c, 2000 + s.d, NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 POSTHOOK: Input: default@othertlb
@@ -319,7 +324,9 @@ POSTHOOK: Lineage: acidtlb.a SIMPLE [(othertlb)s.FieldSchema(name:c, type:int, c
 POSTHOOK: Lineage: acidtlb.a SIMPLE [(othertlb)s.FieldSchema(name:c, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtlb.b EXPRESSION [(othertlb)s.FieldSchema(name:d, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtlb.b EXPRESSION [(othertlb)s.FieldSchema(name:d, type:int, comment:null), ]
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(acidtlb)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
+POSTHOOK: Lineage: acidtlb.e EXPRESSION []
+POSTHOOK: Lineage: acidtlb.e EXPRESSION []
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(acidtlb)acidtlb.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
 PREHOOK: query: select * from acidtlb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
@@ -328,8 +335,8 @@ POSTHOOK: query: select * from acidtlb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-10	2021
-30	1000
-60	2023
-70	2024
-80	2025
+10	2021	NULL
+30	1000	NULL
+60	2023	NULL
+70	2024	NULL
+80	2025	NULL

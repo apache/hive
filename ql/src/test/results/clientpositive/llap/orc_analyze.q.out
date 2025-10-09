@@ -102,7 +102,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	53000               
-	totalSize           	3231                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -150,7 +150,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	53000               
-	totalSize           	3231                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -166,10 +166,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -237,7 +239,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	100                 
 	rawDataSize         	52600               
-	totalSize           	3231                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -253,10 +255,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -346,7 +350,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22150               
-	totalSize           	2131                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -387,7 +391,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22250               
-	totalSize           	2143                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -440,7 +444,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22150               
-	totalSize           	2131                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -481,7 +485,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22250               
-	totalSize           	2143                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -497,10 +501,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -578,7 +584,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	21950               
-	totalSize           	2131                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -619,7 +625,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22050               
-	totalSize           	2143                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -635,10 +641,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -734,7 +742,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22155               
-	totalSize           	5396                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -775,7 +783,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22243               
-	totalSize           	5378                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -828,7 +836,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22155               
-	totalSize           	5396                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -869,7 +877,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22243               
-	totalSize           	5378                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -885,10 +893,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -972,7 +982,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	21955               
-	totalSize           	5396                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1013,7 +1023,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	50                  
 	rawDataSize         	22043               
-	totalSize           	5378                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1029,10 +1039,12 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0
 PREHOOK: query: CREATE TABLE orc_create_people_n0 (
   id int,
@@ -1122,7 +1134,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22150               
-	totalSize           	2131                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1175,7 +1187,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	50                  
 	rawDataSize         	22150               
-	totalSize           	2131                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -1191,8 +1203,10 @@ Storage Desc Params:
 PREHOOK: query: drop table orc_create_people_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_people_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_create_people_n0
 POSTHOOK: query: drop table orc_create_people_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_create_people_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_create_people_n0

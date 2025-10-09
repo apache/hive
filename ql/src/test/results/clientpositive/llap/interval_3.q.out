@@ -228,8 +228,10 @@ STAGE PLANS:
 PREHOOK: query: DROP table date_dim_d1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_dim_d1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@date_dim_d1
 POSTHOOK: query: DROP table date_dim_d1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@date_dim_d1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@date_dim_d1

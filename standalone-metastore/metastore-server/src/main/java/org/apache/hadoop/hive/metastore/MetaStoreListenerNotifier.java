@@ -37,10 +37,12 @@ import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterPartitionsEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.BatchAcidWriteEvent;
 import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
+import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDataConnectorEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -62,6 +64,7 @@ import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.ReloadEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEventBatch;
 import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
@@ -160,6 +163,12 @@ public class MetaStoreListenerNotifier {
             @Override
             public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
               listener.onAlterPartition((AlterPartitionEvent)event);
+            }
+          })
+          .put(EventType.ALTER_PARTITIONS, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAlterPartitions((AlterPartitionsEvent)event);
             }
           })
           .put(EventType.INSERT, new EventNotifier() {
@@ -280,6 +289,10 @@ public class MetaStoreListenerNotifier {
                   (listener, event) -> listener.onDeletePartitionColumnStat((DeletePartitionColumnStatEvent) event))
           .put(EventType.COMMIT_COMPACTION,
               ((listener, event) -> listener.onCommitCompaction((CommitCompactionEvent) event, null, null)))
+          .put(EventType.RELOAD,
+                  ((listener, event) -> listener.onReload((ReloadEvent) event)))
+          .put(EventType.CONFIG_CHANGE,
+              ((listener, event) -> listener.onConfigChange((ConfigChangeEvent) event)))
           .build()
   );
 

@@ -160,25 +160,31 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE header_footer_table_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@header_footer_table_1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@header_footer_table_1
 POSTHOOK: query: DROP TABLE header_footer_table_1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@header_footer_table_1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@header_footer_table_1
 PREHOOK: query: DROP TABLE header_footer_table_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@header_footer_table_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@header_footer_table_2
 POSTHOOK: query: DROP TABLE header_footer_table_2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@header_footer_table_2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@header_footer_table_2
 PREHOOK: query: DROP TABLE emptytable
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@emptytable
+PREHOOK: Output: database:default
 PREHOOK: Output: default@emptytable
 POSTHOOK: query: DROP TABLE emptytable
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@emptytable
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@emptytable
 #### A masked pattern was here ####

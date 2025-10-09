@@ -87,7 +87,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
 
   // Pre-allocated member for storing the (physical) batch index of matching row (single- or
   // multi-small-table-valued) indexes during a process call.
-  protected transient int[] allMatchs;
+  protected transient int[] allMatches;
 
   /*
    *  Pre-allocated members for storing information equal key series for small-table matches.
@@ -95,7 +95,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    *  ~HashMapResultIndices
    *                Index into the hashMapResults array for the match.
    *  ~AllMatchIndices
-   *                (Logical) indices into allMatchs to the first row of a match of a
+   *                (Logical) indices into allMatches to the first row of a match of a
    *                possible series of duplicate keys.
    *  ~IsSingleValue
    *                Whether there is 1 or multiple small table values.
@@ -150,7 +150,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
 
     inputSelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
-    allMatchs = new int[VectorizedRowBatch.DEFAULT_SIZE];
+    allMatches = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
     equalKeySeriesHashMapResultIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
     equalKeySeriesAllMatchIndices = new int[VectorizedRowBatch.DEFAULT_SIZE];
@@ -421,7 +421,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
    *          The big table batch with any matching and any non matching rows both as
    *          selected in use.
    * @param allMatchCount
-   *          Number of matches in allMatchs.
+   *          Number of matches in allMatches.
    * @param equalKeySeriesCount
    *          Number of single value matches.
    * @param atLeastOneNonMatch
@@ -466,7 +466,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
       }
   
       if (atLeastOneNonMatch) {
-        noMatchCount = subtract(nonSpills, nonSpillCount, allMatchs, allMatchCount,
+        noMatchCount = subtract(nonSpills, nonSpillCount, allMatches, allMatchCount,
                 noMatchs);
 
         if (LOG.isDebugEnabled()) {
@@ -482,7 +482,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
 
       if (atLeastOneNonMatch) {
         noMatchCount = subtractFromInputSelected(
-            inputSelectedInUse, inputLogicalSize, allMatchs, allMatchCount, noMatchs);
+            inputSelectedInUse, inputLogicalSize, allMatches, allMatchCount, noMatchs);
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("finishOuter spillCount == 0" +
@@ -507,10 +507,10 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
 
         if (isSingleValue) {
           numSel = generateHashMapResultSingleValue(
-                      batch, hashMapResult, allMatchs, allMatchesIndex, duplicateCount, numSel);
+                      batch, hashMapResult, allMatches, allMatchesIndex, duplicateCount, numSel);
         } else {
           generateHashMapResultMultiValue(
-              batch, hashMapResult, allMatchs, allMatchesIndex, duplicateCount);
+              batch, hashMapResult, allMatches, allMatchesIndex, duplicateCount);
         }
       }
 

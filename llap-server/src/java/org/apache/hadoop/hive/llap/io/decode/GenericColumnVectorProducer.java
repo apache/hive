@@ -220,6 +220,9 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
         case TIMESTAMP:
           type.setKind(OrcProto.Type.Kind.TIMESTAMP);
           break;
+        case TIMESTAMP_INSTANT:
+          type.setKind(OrcProto.Type.Kind.TIMESTAMP_INSTANT);
+          break;
         case DATE:
           type.setKind(OrcProto.Type.Kind.DATE);
           break;

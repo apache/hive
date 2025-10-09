@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.log.state;
 
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
-import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 
 public class DataCopyEnd extends ReplState {
 

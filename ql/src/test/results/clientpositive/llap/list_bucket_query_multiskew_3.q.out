@@ -45,7 +45,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -103,7 +103,7 @@ Partition Parameters:
 	numFiles            	3                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -166,7 +166,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	500                 
 	rawDataSize         	5312                
-	totalSize           	5812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -198,7 +198,7 @@ POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('145' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `ds`, CAST('1' AS STRING) AS `hr`
 FROM `default`.`fact_daily_n3`
-WHERE `key` = '145' AND (`ds` = '1' AND `hr` = '1')
+WHERE `key` = '145' AND `ds` = '1' AND `hr` = '1'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -312,7 +312,7 @@ POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=2
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`, CAST('val_484' AS STRING) AS `$f1`, CAST('1' AS STRING) AS `$f2`, CAST('2' AS STRING) AS `$f3`
 FROM `default`.`fact_daily_n3`
-WHERE `key` = '484' AND `value` = 'val_484' AND (`ds` = '1' AND `hr` = '2')
+WHERE `key` = '484' AND `value` = 'val_484' AND `ds` = '1' AND `hr` = '2'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -394,7 +394,7 @@ POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=3
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT CAST('327' AS STRING) AS `$f0`, CAST('val_327' AS STRING) AS `$f1`, CAST('1' AS STRING) AS `$f2`, CAST('3' AS STRING) AS `$f3`
 FROM `default`.`fact_daily_n3`
-WHERE `key` = '327' AND `value` = 'val_327' AND (`ds` = '1' AND `hr` = '3')
+WHERE `key` = '327' AND `value` = 'val_327' AND `ds` = '1' AND `hr` = '3'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 

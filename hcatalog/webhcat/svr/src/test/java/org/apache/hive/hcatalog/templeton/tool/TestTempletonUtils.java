@@ -20,13 +20,13 @@ package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.shims.HadoopShimsSecure;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -300,9 +300,11 @@ public class TestTempletonUtils {
   
   @Test
   public void testPropertiesParsing() throws Exception {
-    String[] props = {"hive.metastore.uris=thrift://localhost:9933\\,thrift://127.0.0.1:9933",
-      "hive.metastore.sasl.enabled=false",
-    "hive.some.fake.path=C:\\foo\\bar.txt\\"};
+    String[] props = {
+        String.format("hive.metastore.uris=thrift://localhost:9933\\,thrift://%s", IPStackUtils.concatLoopbackAddressPort(9933)),
+        "hive.metastore.sasl.enabled=false",
+        "hive.some.fake.path=C:\\foo\\bar.txt\\"
+    };
     StringBuilder input = new StringBuilder();
     for(String prop : props) {
       if(input.length() > 0) {

@@ -41,10 +41,12 @@ TBLPROPERTIES (
 PREHOOK: query: DROP TABLE tmp_showcrt1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_showcrt1_n0
 POSTHOOK: query: DROP TABLE tmp_showcrt1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1_n0
 PREHOOK: query: CREATE TABLE tmp_showcrt1_n0 (key int, value string, newvalue bigint)
 COMMENT 'temporary table'
@@ -87,10 +89,12 @@ TBLPROPERTIES (
 PREHOOK: query: DROP TABLE tmp_showcrt1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_showcrt1_n0
 POSTHOOK: query: DROP TABLE tmp_showcrt1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1_n0
 PREHOOK: query: CREATE TABLE tmp_showcrt1_n0 (key int, value string, newvalue bigint)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -135,10 +139,12 @@ TBLPROPERTIES (
 PREHOOK: query: DROP TABLE tmp_showcrt1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_showcrt1_n0
 POSTHOOK: query: DROP TABLE tmp_showcrt1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1_n0
 PREHOOK: query: CREATE EXTERNAL TABLE tmp_showcrt1_n0 (key string, value boolean)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe'
@@ -178,8 +184,10 @@ TBLPROPERTIES (
 PREHOOK: query: DROP TABLE tmp_showcrt1_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_showcrt1_n0
 POSTHOOK: query: DROP TABLE tmp_showcrt1_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_showcrt1_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_showcrt1_n0

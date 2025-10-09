@@ -12,7 +12,8 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
   "quoteChar"     = "\'",
-  "escapeChar"    = "\\"
+  "escapeChar"    = "\\",
+  "serialization.encoding" = "ISO8859_1"
 ) stored as textfile;
 
 CREATE TABLE serde_opencsv(
@@ -28,9 +29,12 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
 WITH SERDEPROPERTIES(
   "separatorChar" = ",",
   "quoteChar"     = "\'",
-  "escapeChar"    = "\\"
+  "escapeChar"    = "\\",
+  "serialization.encoding" = "ISO8859_1"
 ) stored as textfile;
 
 LOAD DATA LOCAL INPATH "../../data/files/opencsv-data.txt" INTO TABLE serde_opencsv;
 
 SELECT count(*) FROM serde_opencsv;
+
+SELECT * FROM serde_opencsv;

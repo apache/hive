@@ -88,7 +88,7 @@ public class HS2Peers extends HttpServlet {
     response.setHeader(HttpConstants.ACCESS_CONTROL_ALLOW_ORIGIN, HttpConstants.WILDCARD);
 
     ServletContext ctx = getServletContext();
-    HiveConf hiveConf = (HiveConf) ctx.getAttribute("hiveconf");
+    HiveConf hiveConf = (HiveConf) ctx.getAttribute(HttpServer.CONF_CONTEXT_ATTRIBUTE);
     HS2ActivePassiveHARegistry hs2Registry = HS2ActivePassiveHARegistryClient.getClient(hiveConf);
     HS2Instances instances = new HS2Instances(hs2Registry.getAll());
     response.getWriter().write(instances.toJson());

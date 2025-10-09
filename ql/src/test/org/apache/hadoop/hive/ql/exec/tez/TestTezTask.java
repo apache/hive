@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -170,7 +171,7 @@ public class TestTezTask {
     conf = new JobConf();
     appLr = createResource("foo.jar");
 
-    HiveConf hiveConf = new HiveConf();
+    HiveConf hiveConf = new HiveConfForTest(getClass());
     hiveConf
         .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
@@ -356,7 +357,7 @@ public class TestTezTask {
   }
 
   @Test
-  public void tezTask_updates_Metrics() throws IOException {
+  public void testTezTaskUpdatesMetrics() throws IOException {
 
     Metrics mockMetrics = Mockito.mock(Metrics.class);
 

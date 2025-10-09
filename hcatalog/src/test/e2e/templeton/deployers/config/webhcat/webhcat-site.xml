@@ -95,11 +95,10 @@
 
     <property>
         <name>templeton.controller.mr.child.opts</name>
-        <value> -Xmx64m -Djava.net.preferIPv4Stack=true</value>
+        <value> -Xmx64m</value>
     </property>
 
     <property>
-        <!--\,thrift://127.0.0.1:9933,,hive.execution.engine=tez-->
         <name>templeton.hive.properties</name>
         <value>hive.metastore.uris=thrift://localhost:9933,hive.metastore.sasl.enabled=false</value>
     </property>

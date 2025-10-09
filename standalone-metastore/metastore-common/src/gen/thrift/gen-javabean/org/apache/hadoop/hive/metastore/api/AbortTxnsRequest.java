@@ -12,15 +12,18 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AbortTxnsRequest");
 
   private static final org.apache.thrift.protocol.TField TXN_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("txn_ids", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField ERROR_CODE_FIELD_DESC = new org.apache.thrift.protocol.TField("errorCode", org.apache.thrift.protocol.TType.I64, (short)2);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AbortTxnsRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AbortTxnsRequestTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.Long> txn_ids; // required
+  private long errorCode; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    TXN_IDS((short)1, "txn_ids");
+    TXN_IDS((short)1, "txn_ids"),
+    ERROR_CODE((short)2, "errorCode");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -38,6 +41,8 @@ package org.apache.hadoop.hive.metastore.api;
       switch(fieldId) {
         case 1: // TXN_IDS
           return TXN_IDS;
+        case 2: // ERROR_CODE
+          return ERROR_CODE;
         default:
           return null;
       }
@@ -79,12 +84,17 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
+  private static final int __ERRORCODE_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.ERROR_CODE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TXN_IDS, new org.apache.thrift.meta_data.FieldMetaData("txn_ids", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
+    tmpMap.put(_Fields.ERROR_CODE, new org.apache.thrift.meta_data.FieldMetaData("errorCode", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AbortTxnsRequest.class, metaDataMap);
   }
@@ -103,10 +113,12 @@ package org.apache.hadoop.hive.metastore.api;
    * Performs a deep copy on <i>other</i>.
    */
   public AbortTxnsRequest(AbortTxnsRequest other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetTxn_ids()) {
       java.util.List<java.lang.Long> __this__txn_ids = new java.util.ArrayList<java.lang.Long>(other.txn_ids);
       this.txn_ids = __this__txn_ids;
     }
+    this.errorCode = other.errorCode;
   }
 
   public AbortTxnsRequest deepCopy() {
@@ -116,6 +128,8 @@ package org.apache.hadoop.hive.metastore.api;
   @Override
   public void clear() {
     this.txn_ids = null;
+    setErrorCodeIsSet(false);
+    this.errorCode = 0;
   }
 
   public int getTxn_idsSize() {
@@ -158,6 +172,28 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  public long getErrorCode() {
+    return this.errorCode;
+  }
+
+  public void setErrorCode(long errorCode) {
+    this.errorCode = errorCode;
+    setErrorCodeIsSet(true);
+  }
+
+  public void unsetErrorCode() {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.clearBit(__isset_bitfield, __ERRORCODE_ISSET_ID);
+  }
+
+  /** Returns true if field errorCode is set (has been assigned a value) and false otherwise */
+  public boolean isSetErrorCode() {
+    return org.apache.thrift.EncodingUtils.testBit(__isset_bitfield, __ERRORCODE_ISSET_ID);
+  }
+
+  public void setErrorCodeIsSet(boolean value) {
+    __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ERRORCODE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case TXN_IDS:
@@ -165,6 +201,14 @@ package org.apache.hadoop.hive.metastore.api;
         unsetTxn_ids();
       } else {
         setTxn_ids((java.util.List<java.lang.Long>)value);
+      }
+      break;
+
+    case ERROR_CODE:
+      if (value == null) {
+        unsetErrorCode();
+      } else {
+        setErrorCode((java.lang.Long)value);
       }
       break;
 
@@ -176,6 +220,9 @@ package org.apache.hadoop.hive.metastore.api;
     switch (field) {
     case TXN_IDS:
       return getTxn_ids();
+
+    case ERROR_CODE:
+      return getErrorCode();
 
     }
     throw new java.lang.IllegalStateException();
@@ -190,6 +237,8 @@ package org.apache.hadoop.hive.metastore.api;
     switch (field) {
     case TXN_IDS:
       return isSetTxn_ids();
+    case ERROR_CODE:
+      return isSetErrorCode();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -216,6 +265,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_errorCode = true && this.isSetErrorCode();
+    boolean that_present_errorCode = true && that.isSetErrorCode();
+    if (this_present_errorCode || that_present_errorCode) {
+      if (!(this_present_errorCode && that_present_errorCode))
+        return false;
+      if (this.errorCode != that.errorCode)
+        return false;
+    }
+
     return true;
   }
 
@@ -226,6 +284,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetTxn_ids()) ? 131071 : 524287);
     if (isSetTxn_ids())
       hashCode = hashCode * 8191 + txn_ids.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetErrorCode()) ? 131071 : 524287);
+    if (isSetErrorCode())
+      hashCode = hashCode * 8191 + org.apache.thrift.TBaseHelper.hashCode(errorCode);
 
     return hashCode;
   }
@@ -244,6 +306,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetTxn_ids()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txn_ids, other.txn_ids);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetErrorCode(), other.isSetErrorCode());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetErrorCode()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.errorCode, other.errorCode);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -276,6 +348,12 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.txn_ids);
     }
     first = false;
+    if (isSetErrorCode()) {
+      if (!first) sb.append(", ");
+      sb.append("errorCode:");
+      sb.append(this.errorCode);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -299,6 +377,8 @@ package org.apache.hadoop.hive.metastore.api;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, java.lang.ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -326,17 +406,25 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list742 = iprot.readListBegin();
-                struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list742.size);
-                long _elem743;
-                for (int _i744 = 0; _i744 < _list742.size; ++_i744)
+                org.apache.thrift.protocol.TList _list812 = iprot.readListBegin();
+                struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list812.size);
+                long _elem813;
+                for (int _i814 = 0; _i814 < _list812.size; ++_i814)
                 {
-                  _elem743 = iprot.readI64();
-                  struct.txn_ids.add(_elem743);
+                  _elem813 = iprot.readI64();
+                  struct.txn_ids.add(_elem813);
                 }
                 iprot.readListEnd();
               }
               struct.setTxn_idsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // ERROR_CODE
+            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
+              struct.errorCode = iprot.readI64();
+              struct.setErrorCodeIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -358,12 +446,17 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txn_ids.size()));
-          for (long _iter745 : struct.txn_ids)
+          for (long _iter815 : struct.txn_ids)
           {
-            oprot.writeI64(_iter745);
+            oprot.writeI64(_iter815);
           }
           oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetErrorCode()) {
+        oprot.writeFieldBegin(ERROR_CODE_FIELD_DESC);
+        oprot.writeI64(struct.errorCode);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -385,10 +478,18 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txn_ids.size());
-        for (long _iter746 : struct.txn_ids)
+        for (long _iter816 : struct.txn_ids)
         {
-          oprot.writeI64(_iter746);
+          oprot.writeI64(_iter816);
         }
+      }
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetErrorCode()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetErrorCode()) {
+        oprot.writeI64(struct.errorCode);
       }
     }
 
@@ -396,16 +497,21 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, AbortTxnsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list747 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
-        struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list747.size);
-        long _elem748;
-        for (int _i749 = 0; _i749 < _list747.size; ++_i749)
+        org.apache.thrift.protocol.TList _list817 = iprot.readListBegin(org.apache.thrift.protocol.TType.I64);
+        struct.txn_ids = new java.util.ArrayList<java.lang.Long>(_list817.size);
+        long _elem818;
+        for (int _i819 = 0; _i819 < _list817.size; ++_i819)
         {
-          _elem748 = iprot.readI64();
-          struct.txn_ids.add(_elem748);
+          _elem818 = iprot.readI64();
+          struct.txn_ids.add(_elem818);
         }
       }
       struct.setTxn_idsIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.errorCode = iprot.readI64();
+        struct.setErrorCodeIsSet(true);
+      }
     }
   }
 

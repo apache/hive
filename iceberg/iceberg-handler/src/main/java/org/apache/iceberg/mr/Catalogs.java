@@ -23,47 +23,43 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.HadoopTables;
-import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
+import org.apache.iceberg.hive.CatalogUtils;
+import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
-import org.apache.iceberg.relocated.com.google.common.collect.Streams;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
- * <p>
- * If the catalog name is provided, get the catalog type from iceberg.catalog.<code>catalogName</code>.type config.
- * <p>
- * In case the catalog name is {@link #ICEBERG_HADOOP_TABLE_NAME location_based_table},
- * type is ignored and tables will be loaded using {@link HadoopTables}.
- * <p>
- * In case the value of catalog type is null, iceberg.catalog.<code>catalogName</code>.catalog-impl config
- * is used to determine the catalog implementation class.
- * <p>
- * If catalog name is null, get the catalog type from {@link InputFormatConfig#CATALOG iceberg.mr.catalog} config:
+ *
+ * <p>If the catalog name is provided, get the catalog type from iceberg.catalog.<code>catalogName
+ * </code>.type config.
+ *
+ * <p>In case the catalog name is {@link #ICEBERG_HADOOP_TABLE_NAME location_based_table}, type is
+ * ignored and tables will be loaded using {@link HadoopTables}.
+ *
+ * <p>In case the value of catalog type is null, iceberg.catalog.<code>catalogName</code>
+ * .catalog-impl config is used to determine the catalog implementation class.
+ *
+ * <p>If catalog name is null, get the catalog type from {@link CatalogUtil#ICEBERG_CATALOG_TYPE
+ * catalog type} config:
+ *
  * <ul>
  *   <li>hive: HiveCatalog</li>
  *   <li>location: HadoopTables</li>
  *   <li>hadoop: HadoopCatalog</li>
  * </ul>
- * <p>
- * In case the value of catalog type is null,
- * {@link InputFormatConfig#CATALOG_LOADER_CLASS iceberg.mr.catalog.loader.class} is used to determine
- * the catalog implementation class.
- * <p>
- * Note: null catalog name mode is only supported for backwards compatibility. Using this mode is NOT RECOMMENDED.
  */
 public final class Catalogs {
 
@@ -72,8 +68,10 @@ public final class Catalogs {
 
   public static final String NAME = "name";
   public static final String LOCATION = "location";
+  public static final String SNAPSHOT_REF = "snapshot_ref";
 
   private static final String NO_CATALOG_TYPE = "no catalog";
+
   private static final Set<String> PROPERTIES_TO_REMOVE =
       ImmutableSet.of(InputFormatConfig.TABLE_SCHEMA, InputFormatConfig.PARTITION_SPEC, LOCATION, NAME,
               InputFormatConfig.CATALOG_NAME);
@@ -145,15 +143,16 @@ public final class Catalogs {
     Map<String, String> map = filterIcebergTableProperties(props);
 
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
-
+    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(props, schema);
     if (catalog.isPresent()) {
       String name = props.getProperty(NAME);
       Preconditions.checkNotNull(name, "Table identifier not set");
-      return catalog.get().createTable(TableIdentifier.parse(name), schema, spec, location, map);
+      return catalog.get().buildTable(TableIdentifier.parse(name), schema).withPartitionSpec(spec)
+          .withLocation(location).withProperties(map).withSortOrder(sortOrder).create();
     }
 
     Preconditions.checkNotNull(location, "Table location not set");
-    return new HadoopTables(conf).create(schema, spec, map, location);
+    return new HadoopTables(conf).create(schema, spec, sortOrder, map, location);
   }
 
   /**
@@ -188,16 +187,7 @@ public final class Catalogs {
    * @return true if the Catalog is HiveCatalog
    */
   public static boolean hiveCatalog(Configuration conf, Properties props) {
-    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
-    String catalogType = getCatalogType(conf, catalogName);
-    if (catalogType != null) {
-      return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
-    }
-    catalogType = getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME);
-    if (catalogType != null) {
-      return CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE.equalsIgnoreCase(catalogType);
-    }
-    return getCatalogProperties(conf, catalogName, catalogType).get(CatalogProperties.CATALOG_IMPL) == null;
+    return CatalogUtils.assertCatalogType(conf, props, CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE, null);
   }
 
   /**
@@ -220,90 +210,32 @@ public final class Catalogs {
       Preconditions.checkNotNull(name, "Table identifier not set");
       return catalog.get().registerTable(TableIdentifier.parse(name), metadataLocation);
     }
-
     Preconditions.checkNotNull(location, "Table location not set");
-    return new HadoopTables(conf).create(schema, spec, map, location);
+    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(props, schema);
+    return new HadoopTables(conf).create(schema, spec, sortOrder, map, location);
   }
 
-  @VisibleForTesting
+  public static void renameTable(Configuration conf, Properties props, TableIdentifier to) {
+    String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
+
+    Optional<Catalog> catalog = loadCatalog(conf, catalogName);
+    if (catalog.isPresent()) {
+      String name = props.getProperty(NAME);
+      Preconditions.checkNotNull(name, "Table identifier not set");
+      catalog.get().renameTable(TableIdentifier.parse(name), to);
+    } else {
+      throw new RuntimeException("Rename from " + props.getProperty(NAME) + " to " + to + " failed");
+    }
+  }
+
   static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
-    String catalogType = getCatalogType(conf, catalogName);
+    String catalogType = CatalogUtils.getCatalogType(conf, catalogName);
     if (NO_CATALOG_TYPE.equalsIgnoreCase(catalogType)) {
       return Optional.empty();
     } else {
       String name = catalogName == null ? ICEBERG_DEFAULT_CATALOG_NAME : catalogName;
       return Optional.of(CatalogUtil.buildIcebergCatalog(name,
-              getCatalogProperties(conf, name, catalogType), conf));
-    }
-  }
-
-  /**
-   * Collect all the catalog specific configuration from the global hive configuration.
-   * @param conf a Hadoop configuration
-   * @param catalogName name of the catalog
-   * @param catalogType type of the catalog
-   * @return complete map of catalog properties
-   */
-  private static Map<String, String> getCatalogProperties(Configuration conf, String catalogName, String catalogType) {
-    String keyPrefix = InputFormatConfig.CATALOG_CONFIG_PREFIX + catalogName;
-    Map<String, String> catalogProperties = Streams.stream(conf.iterator())
-            .filter(e -> e.getKey().startsWith(keyPrefix))
-            .collect(Collectors.toMap(e -> e.getKey().substring(keyPrefix.length() + 1), Map.Entry::getValue));
-    return addCatalogPropertiesIfMissing(conf, catalogType, catalogProperties);
-  }
-
-  /**
-   * This method is used for backward-compatible catalog configuration.
-   * Collect all the catalog specific configuration from the global hive configuration.
-   * Note: this should be removed when the old catalog configuration is depracated.
-   * @param conf global hive configuration
-   * @param catalogType type of the catalog
-   * @param catalogProperties pre-populated catalog properties
-   * @return complete map of catalog properties
-   */
-  private static Map<String, String> addCatalogPropertiesIfMissing(Configuration conf, String catalogType,
-                                                                   Map<String, String> catalogProperties) {
-    if (catalogType != null) {
-      catalogProperties.putIfAbsent(CatalogUtil.ICEBERG_CATALOG_TYPE, catalogType);
-    }
-
-    String legacyCatalogImpl = conf.get(InputFormatConfig.CATALOG_LOADER_CLASS);
-    if (legacyCatalogImpl != null) {
-      catalogProperties.putIfAbsent(CatalogProperties.CATALOG_IMPL, legacyCatalogImpl);
-    }
-
-    String legacyWarehouseLocation = conf.get(InputFormatConfig.HADOOP_CATALOG_WAREHOUSE_LOCATION);
-    if (legacyWarehouseLocation != null) {
-      catalogProperties.putIfAbsent(CatalogProperties.WAREHOUSE_LOCATION, legacyWarehouseLocation);
-    }
-    return catalogProperties;
-  }
-
-  /**
-   * Return the catalog type based on the catalog name.
-   * <p>
-   * See {@link Catalogs} documentation for catalog type resolution strategy.
-   *
-   * @param conf global hive configuration
-   * @param catalogName name of the catalog
-   * @return type of the catalog, can be null
-   */
-  private static String getCatalogType(Configuration conf, String catalogName) {
-    if (catalogName != null) {
-      String catalogType = conf.get(InputFormatConfig.catalogPropertyConfigKey(
-          catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE));
-      if (catalogName.equals(ICEBERG_HADOOP_TABLE_NAME)) {
-        return NO_CATALOG_TYPE;
-      } else {
-        return catalogType;
-      }
-    } else {
-      String catalogType = conf.get(InputFormatConfig.CATALOG);
-      if (catalogType != null && catalogType.equals(LOCATION)) {
-        return NO_CATALOG_TYPE;
-      } else {
-        return catalogType;
-      }
+          CatalogUtils.getCatalogProperties(conf, name), conf));
     }
   }
 
@@ -315,7 +247,7 @@ public final class Catalogs {
   private static Schema schema(Properties props) {
     String schemaString = props.getProperty(InputFormatConfig.TABLE_SCHEMA);
     Preconditions.checkNotNull(schemaString, "Table schema not set");
-    return SchemaParser.fromJson(props.getProperty(InputFormatConfig.TABLE_SCHEMA));
+    return SchemaParser.fromJson(schemaString);
   }
 
   /**

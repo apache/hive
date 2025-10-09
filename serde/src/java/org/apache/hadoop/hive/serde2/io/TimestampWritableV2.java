@@ -302,6 +302,22 @@ public class TimestampWritableV2 implements WritableComparable<TimestampWritable
     return seconds + nanos / 1000000000;
   }
 
+  /**
+   *
+   * @return double representation of the timestamp, accurate to microseconds
+   */
+  public double getMicros() {
+    double seconds, nanos;
+    if (bytesEmpty) {
+      seconds = timestamp.toEpochSecond();
+      nanos = timestamp.getNanos();
+    } else {
+      seconds = getSeconds();
+      nanos = getNanos();
+    }
+    return seconds * 1e6 + nanos / 1e3;
+  }
+
   public static long getLong(Timestamp timestamp) {
     return timestamp.toEpochSecond();
   }

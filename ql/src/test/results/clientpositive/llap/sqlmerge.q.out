@@ -14,7 +14,7 @@ POSTHOOK: query: create table nonAcidOrcTbl_n0(a int, b int) clustered by (a) in
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nonAcidOrcTbl_n0
-PREHOOK: query: explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a 
+PREHOOK: query: explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
@@ -24,7 +24,7 @@ PREHOOK: Input: default@nonacidorctbl_n0
 PREHOOK: Output: default@acidtbl_n0
 PREHOOK: Output: default@acidtbl_n0
 PREHOOK: Output: default@merge_tmp_table
-POSTHOOK: query: explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a 
+POSTHOOK: query: explain merge into acidTbl_n0 as t using nonAcidOrcTbl_n0 s ON t.a = s.a
 WHEN MATCHED AND s.a > 8 THEN DELETE
 WHEN MATCHED THEN UPDATE SET b = 7
 WHEN NOT MATCHED THEN INSERT VALUES(s.a, s.b)
@@ -82,23 +82,23 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: acidtbl_n0
                   filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: a is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: a (type: int), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), a (type: int)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col1 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        value expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -109,11 +109,11 @@ STAGE PLANS:
                      Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int)
-                  1 _col0 (type: int)
+                  1 _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), _col2 (type: int), _col0 (type: int)
+                  expressions: _col2 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), _col3 (type: int), _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -387,7 +387,7 @@ STAGE PLANS:
         Map 1 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: acidtbl_n0
                   filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
@@ -588,23 +588,23 @@ STAGE PLANS:
         Map 7 
             Map Operator Tree:
                 TableScan
-                  alias: t
+                  alias: acidtbl_n0
                   filterExpr: a is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: a is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: a (type: int), ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                      expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), a (type: int)
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: int)
+                        key expressions: _col1 (type: int)
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: int)
+                        Map-reduce partition columns: _col1 (type: int)
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
+                        value expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
@@ -615,11 +615,11 @@ STAGE PLANS:
                      Left Outer Join 0 to 1
                 keys:
                   0 _col0 (type: int)
-                  1 _col0 (type: int)
+                  1 _col1 (type: int)
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col3 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), _col2 (type: int), _col0 (type: int)
+                  expressions: _col2 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), _col1 (type: int), _col3 (type: int), _col0 (type: int)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator

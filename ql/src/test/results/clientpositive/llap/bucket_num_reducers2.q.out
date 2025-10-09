@@ -217,8 +217,10 @@ POSTHOOK: Lineage: test_table_n4.value SIMPLE [(src)src.FieldSchema(name:value, 
 PREHOOK: query: drop table test_table_n4
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@test_table_n4
+PREHOOK: Output: database:default
 PREHOOK: Output: default@test_table_n4
 POSTHOOK: query: drop table test_table_n4
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@test_table_n4
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@test_table_n4

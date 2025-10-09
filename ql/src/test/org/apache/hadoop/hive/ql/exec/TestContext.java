@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
@@ -31,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class TestContext {
-    private static HiveConf conf = new HiveConf();
+    private static HiveConf conf = new HiveConfForTest(TestContext.class);
 
     private Context context;
 

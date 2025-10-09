@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists testacid1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testacid1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testacid1(id int) clustered by (id) into 2 buckets stored as orc tblproperties("transactional"="true")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -32,10 +34,12 @@ POSTHOOK: Input: default@testacid1
 PREHOOK: query: drop table testacid1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@testacid1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@testacid1
 POSTHOOK: query: drop table testacid1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@testacid1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testacid1
 PREHOOK: query: create table testacid1(id int) clustered by (id) into 2 buckets stored as orc tblproperties("transactional"="true")
 PREHOOK: type: CREATETABLE

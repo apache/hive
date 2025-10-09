@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
@@ -42,6 +43,8 @@ import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 
 import com.google.common.collect.Lists;
+
+import static org.apache.hadoop.hive.metastore.TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY;
 
 /**
  * Operation process of setting properties of a table.
@@ -62,6 +65,7 @@ public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperatio
     } else {
       boolean isFromMmTable = AcidUtils.isInsertOnlyTable(table.getParameters());
       Boolean isToMmTable = AcidUtils.isToInsertOnlyTable(table, desc.getProps());
+      boolean isToFullAcid = AcidUtils.isToFullAcid(table, desc.getProps());
       if (!isFromMmTable && BooleanUtils.isTrue(isToMmTable)) {
         if (!HiveConf.getBoolVar(context.getConf(), ConfVars.HIVE_MM_ALLOW_ORIGINALS)) {
           List<Task<?>> mmTasks = generateAddMmTasks(table, desc.getWriteId());
@@ -79,8 +83,13 @@ public class AlterTableSetPropertiesOperation extends AbstractAlterTableOperatio
             checkMmLb(table);
           }
         }
-      } else if (isFromMmTable && BooleanUtils.isFalse(isToMmTable)) {
-        throw new HiveException("Cannot convert an ACID table to non-ACID");
+      } else if (isFromMmTable) {
+        if (isToFullAcid) {
+          table.getParameters().put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
+                  DEFAULT_TRANSACTIONAL_PROPERTY);
+        } else if (BooleanUtils.isFalse(isToMmTable)) {
+          throw new HiveException("Cannot convert an ACID table to non-ACID");
+        }
       }
 
       // Converting to/from external table

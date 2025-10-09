@@ -38,8 +38,10 @@ POSTHOOK: Input: default@part1_n1_temp@p=p1
 PREHOOK: query: DROP TABLE part1_n1_temp PURGE
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part1_n1_temp
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part1_n1_temp
 POSTHOOK: query: DROP TABLE part1_n1_temp PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part1_n1_temp
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part1_n1_temp

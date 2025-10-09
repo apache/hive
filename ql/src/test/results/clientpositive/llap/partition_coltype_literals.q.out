@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists partcoltypenum
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists partcoltypenum
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table partcoltypenum (key int, value string) partitioned by (tint tinyint, sint smallint, bint bigint)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -43,7 +45,7 @@ Partition Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -92,7 +94,7 @@ Partition Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -141,7 +143,7 @@ Partition Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -191,7 +193,7 @@ Partition Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -429,7 +431,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	30                  
 	rawDataSize         	316                 
-	totalSize           	346                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -476,7 +478,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	30                  
 	rawDataSize         	316                 
-	totalSize           	346                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -565,7 +567,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	104                 
-	totalSize           	114                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -615,7 +617,7 @@ Partition Parameters:
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	104                 
-	totalSize           	114                 
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -631,15 +633,19 @@ Storage Desc Params:
 PREHOOK: query: drop table partcoltypenum
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcoltypenum
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partcoltypenum
 POSTHOOK: query: drop table partcoltypenum
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partcoltypenum
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partcoltypenum
 PREHOOK: query: drop table if exists partcoltypeothers
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists partcoltypeothers
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table partcoltypeothers (key int, value string) partitioned by (decpart decimal(6,2), datepart date)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -685,8 +691,10 @@ decpart=1000.01/datepart=2015-04-13
 PREHOOK: query: drop table partcoltypeothers
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partcoltypeothers
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partcoltypeothers
 POSTHOOK: query: drop table partcoltypeothers
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partcoltypeothers
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partcoltypeothers

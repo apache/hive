@@ -306,6 +306,15 @@ public class TestParseDriver {
   }
 
   @Test
+  public void testSubQueryWithSetOpSupportsOrderBy() throws Exception {
+    String q = "SELECT a FROM ((SELECT a FROM t1 ORDER BY a) UNION ALL (SELECT a FROM t2 DISTRIBUTE BY a)) B";
+    System.out.println(q);
+
+    ASTNode root = parseDriver.parse(q).getTree();
+    System.out.println(root.dump());
+  }
+
+  @Test
   public void testParseCreateScheduledQuery() throws Exception {
     parseDriver.parse("create scheduled query asd cron '123' as select 1");
     parseDriver.parse("create scheduled query asd cron '123' executed as 'x' as select 1");
@@ -324,6 +333,7 @@ public class TestParseDriver {
   @Test
   public void testParseDropScheduledQuery() throws Exception {
     parseDriver.parse("drop scheduled query asd");
+    parseDriver.parse("drop scheduled query if exists asd");
   }
 
 }

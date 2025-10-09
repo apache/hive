@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.hooks.TestHs2Hooks.PostExecHook;
 import org.apache.hadoop.hive.hooks.TestHs2Hooks.PreExecHook;
 import org.apache.hadoop.hive.hooks.TestHs2Hooks.SemanticAnalysisHook;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -50,13 +51,15 @@ public class TestHs2HooksWithMiniKdc {
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
-    confOverlay.put(ConfVars.POSTEXECHOOKS.varname, PostExecHook.class.getName());
-    confOverlay.put(ConfVars.PREEXECHOOKS.varname, PreExecHook.class.getName());
+    confOverlay.put(ConfVars.POST_EXEC_HOOKS.varname, PostExecHook.class.getName());
+    confOverlay.put(ConfVars.PRE_EXEC_HOOKS.varname, PreExecHook.class.getName());
     confOverlay.put(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
         SemanticAnalysisHook.class.getName());
     confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "" + Boolean.FALSE);
-    confOverlay.put(ConfVars.HIVEFETCHTASKCACHING.varname, "" + false);
-
+    confOverlay.put(ConfVars.HIVE_FETCH_TASK_CACHING.varname, "" + false);
+    // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth
+    // this should be handled with HiveConfForTests when it's used here too
+    confOverlay.put(ConfVars.HIVE_QUERY_HISTORY_ENABLED.varname, "false");
     miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
@@ -120,14 +123,14 @@ public class TestHs2HooksWithMiniKdc {
     Assert.assertNotNull("userName is null", PostExecHook.userName);
     Assert.assertNotNull("operation is null", PostExecHook.operation);
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PostExecHook.userName);
-    Assert.assertTrue(PostExecHook.ipAddress, PostExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(IPStackUtils.isActiveStackLoopbackIP(PostExecHook.ipAddress));
     Assert.assertEquals("SHOWTABLES", PostExecHook.operation);
 
     Assert.assertNotNull("ipaddress is null", PreExecHook.ipAddress);
     Assert.assertNotNull("userName is null", PreExecHook.userName);
     Assert.assertNotNull("operation is null", PreExecHook.operation);
     Assert.assertEquals(MiniHiveKdc.HIVE_TEST_USER_1, PreExecHook.userName);
-    Assert.assertTrue(PreExecHook.ipAddress, PreExecHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(IPStackUtils.isActiveStackLoopbackIP(PreExecHook.ipAddress));
     Assert.assertEquals("SHOWTABLES", PreExecHook.operation);
 
     error = SemanticAnalysisHook.preAnalyzeError;
@@ -147,8 +150,7 @@ public class TestHs2HooksWithMiniKdc {
         SemanticAnalysisHook.command);
     Assert.assertNotNull("semantic hook context commandType is null",
         SemanticAnalysisHook.commandType);
-    Assert.assertTrue(SemanticAnalysisHook.ipAddress,
-        SemanticAnalysisHook.ipAddress.contains("127.0.0.1"));
+    Assert.assertTrue(IPStackUtils.isActiveStackLoopbackIP(SemanticAnalysisHook.ipAddress));
     Assert.assertEquals("show tables", SemanticAnalysisHook.command);
   }
 }

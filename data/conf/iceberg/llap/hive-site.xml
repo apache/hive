@@ -24,11 +24,6 @@
         <value>true</value>
         <description>Internal marker for test. Used for masking env-dependent values</description>
     </property>
-    <property>
-        <!-- set to true so that TxnManager#checkLock does not throw exception when using UNSET data type operation in the requested lock component -->
-        <name>hive.in.iceberg.test</name>
-        <value>true</value>
-    </property>
 
     <!-- Hive Configuration can either be stored in this file or in the hadoop configuration files  -->
     <!-- that are implied by Hadoop setup variables.                                                -->
@@ -43,10 +38,12 @@
         <description>A base for other temporary directories.</description>
     </property>
 
+    <!-- in LLAP mode hive.tez.container.size isn't used to actually determine container size, however while -->
+    <!-- calculating available slots (in split generation) in it's used through -->
+    <!-- the Vertex resource, so this has to be defined in order to get consistent test results -->
     <property>
-        <name>hive.tez.container.size</name>
-        <value>128</value>
-        <description></description>
+      <name>hive.tez.container.size</name>
+      <value>128</value>
     </property>
 
     <property>
@@ -116,14 +113,6 @@
     </property>
 
     <property>
-        <name>hive.metastore.metadb.dir</name>
-        <value>file://${test.tmp.dir}/metadb/</value>
-        <description>
-            Required by metastore server or if the uris argument below is not supplied
-        </description>
-    </property>
-
-    <property>
         <name>test.log.dir</name>
         <value>${test.tmp.dir}/log/</value>
         <description></description>
@@ -163,6 +152,12 @@
         <name>hive.exec.pre.hooks</name>
         <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables</value>
         <description>Pre Execute Hook for Tests</description>
+    </property>
+
+    <property>
+      <name>hive.lineage.statement.filter</name>
+      <value>ALL</value>
+      <description>Specify the types of statements for which column lineage information is generated</description>
     </property>
 
     <property>
@@ -234,12 +229,6 @@
     </property>
 
     <property>
-        <name>hive.execution.engine</name>
-        <value>tez</value>
-        <description>Whether to use MR or Tez</description>
-    </property>
-
-    <property>
         <name>tez.am.node-blacklisting.enabled</name>
         <value>false</value>
     </property>
@@ -287,6 +276,11 @@
     <property>
         <name>tez.am.launch.cmd-opts</name>
         <value> -Dlog4j.configurationFile=tez-container-log4j2.properties -Dtez.container.log.level=INFO -Dtez.container.root.logger=CLA </value>
+    </property>
+
+    <property>
+        <name>hive.tez.exec.print.summary</name>
+        <value>true</value>
     </property>
 
     <property>
@@ -387,11 +381,6 @@
     </property>
 
     <property>
-        <name>hive.cbo.fallback.strategy</name>
-        <value>TEST</value>
-    </property>
-
-    <property>
         <name>iceberg.hive.keep.stats</name>
         <value>true</value>
         <description>
@@ -399,4 +388,13 @@
         </description>
     </property>
 
+    <property>
+        <name>hive.txn.xlock.ctas</name>
+        <value>false</value>
+    </property>
+
+    <property>
+        <name>hive.lock.sleep.between.retries</name>
+        <value>2</value>
+    </property>
 </configuration>

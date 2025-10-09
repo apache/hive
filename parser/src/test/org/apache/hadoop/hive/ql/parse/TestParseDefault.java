@@ -105,4 +105,21 @@ public class TestParseDefault {
 
     assertFalse(tree.dump(), tree.toStringTree().contains("tok_default_value"));
   }
+
+  @Test
+  public void testCompact() throws Exception {
+    ASTNode tree = parseDriver.parse(
+            "alter table t1 compact 'minor' pool 'pool'", null).getTree();
+
+    assertTrue(tree.dump(), tree.toStringTree().contains("tok_compact_pool 'pool'"));
+    assertTrue(tree.dump(), tree.toStringTree().contains("tok_altertable_compact 'minor'"));
+  }
+
+  @Test
+  public void testShowCompactions() throws Exception {
+    ASTNode tree = parseDriver.parse(
+        "show compactions pool 'pool'", null).getTree();
+    assertTrue(tree.dump(), tree.toStringTree().contains("tok_compact_pool 'pool'"));
+  }
+
 }

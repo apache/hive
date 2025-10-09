@@ -48,6 +48,7 @@ public class GenericUDFSQCountCheck extends GenericUDF {
           "Invalid scalar subquery expression. Subquery count check expected two argument but received: " + arguments.length);
     }
 
+    checkArgPrimitive(arguments, 0);
     converters[0] = ObjectInspectorConverters.getConverter(arguments[0],
             PrimitiveObjectInspectorFactory.writableLongObjectInspector);
 

@@ -4,8 +4,10 @@ POSTHOOK: query: drop materialized view if exists mv_rebuild
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: query: drop table if exists basetable_rebuild
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists basetable_rebuild
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table basetable_rebuild (a int, b varchar(256), c decimal(10,2))
 stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
@@ -115,8 +117,10 @@ POSTHOOK: Output: default@mv_rebuild
 PREHOOK: query: drop table basetable_rebuild
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@basetable_rebuild
+PREHOOK: Output: database:default
 PREHOOK: Output: default@basetable_rebuild
 POSTHOOK: query: drop table basetable_rebuild
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@basetable_rebuild
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@basetable_rebuild

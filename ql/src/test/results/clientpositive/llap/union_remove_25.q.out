@@ -182,7 +182,7 @@ Table:              	outputtbl1_n19
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	4                   
-	totalSize           	40                  
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -372,7 +372,7 @@ Table:              	outputtbl2_n6
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	2                   
-	totalSize           	6812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -546,7 +546,7 @@ Table:              	outputtbl3_n3
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 	numFiles            	2                   
-	totalSize           	6812                
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

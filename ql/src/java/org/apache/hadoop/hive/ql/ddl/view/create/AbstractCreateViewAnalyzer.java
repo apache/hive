@@ -18,12 +18,16 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.create;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSpecBuilder;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -37,6 +41,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.thrift.TException;
 
 /**
  * Abstract ancestor of analyzers that can create a view.
@@ -54,14 +59,16 @@ public abstract class AbstractCreateViewAnalyzer extends BaseSemanticAnalyzer {
   }
 
   protected SemanticAnalyzer analyzeQuery(ASTNode select, String fqViewName) throws SemanticException {
-    QueryState innerQueryState = new QueryState.Builder().withHiveConf(conf).build();
+    QueryState innerQueryState = new QueryState.Builder().withHiveConf(conf)
+      .withValidTxnList(queryState::getValidTxnList)
+      .build();
     innerQueryState.getConf().setBoolVar(HiveConf.ConfVars.HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES, false);
 
     SemanticAnalyzer analyzer = (SemanticAnalyzer) SemanticAnalyzerFactory.get(innerQueryState, select);
     ctx.setEnableUnparse(true);
     analyzer.forViewCreation(fqViewName);
     analyzer.analyze(select, ctx);
-    analyzer.executeUnparseTranlations();
+    analyzer.executeUnParseTranslations();
 
     queryState.setLineageState(innerQueryState.getLineageState());
     queryState.getLineageState().mapDirToOp(new Path(fqViewName), analyzer.getSinkOp());
@@ -110,9 +117,15 @@ public abstract class AbstractCreateViewAnalyzer extends BaseSemanticAnalyzer {
 
     String partitionViewErrorMsg = "The following view has partition, it could not be replaced: " + viewName;
     List<Partition> partitions = null;
+    GetProjectionsSpec getProjectionsSpec = new GetPartitionProjectionsSpecBuilder()
+            .addProjectFieldList(Arrays.asList("values")).build();
+
+    GetPartitionsRequest request = new GetPartitionsRequest(oldView.getDbName(), oldView.getTableName(),
+            getProjectionsSpec, null);
+    request.setCatName(oldView.getCatName());
     try {
-      partitions = db.getPartitions(oldView);
-    } catch (HiveException e) {
+      partitions = db.getPartitionsWithSpecs(oldView, request);
+    } catch (HiveException | TException e) {
       throw new SemanticException(ErrorMsg.REPLACE_VIEW_WITH_PARTITION.getMsg(partitionViewErrorMsg));
     }
 

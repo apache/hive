@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.metric;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.util.concurrent.AtomicDouble;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
@@ -59,6 +59,8 @@ public abstract class ReplicationMetricCollector {
 
   private ObjectName metricsMBean;
 
+  private AtomicDouble sizeOfDataReplicatedInKB = new AtomicDouble(0);
+
   public ReplicationMetricCollector(String dbName, Metadata.ReplicationType replicationType,
                              String stagingDir, long dumpExecutionId, HiveConf conf) {
     this.conf = conf;
@@ -72,6 +74,28 @@ public abstract class ReplicationMetricCollector {
       Metadata metadata = new Metadata(dbName, replicationType, getStagingDir(stagingDir));
       replicationMetric = new ReplicationMetric(executionId, policy, dumpExecutionId, metadata);
     }
+  }
+
+  public ReplicationMetricCollector(String dbName, Metadata.ReplicationType replicationType,
+                                    String stagingDir, long dumpExecutionId, HiveConf conf,
+                                    String failoverEndpoint, String failoverType) {
+    this.conf = conf;
+    checkEnabledForTests(conf);
+    String policy = conf.get(Constants.SCHEDULED_QUERY_SCHEDULENAME);
+    long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+    if (!StringUtils.isEmpty(policy) && executionId > 0) {
+      isEnabled = true;
+      metricCollector = MetricCollector.getInstance().init(conf);
+      MetricSink.getInstance().init(conf);
+      Metadata metadata = new Metadata(dbName, replicationType, getStagingDir(stagingDir));
+      metadata.setFailoverEndPoint(failoverEndpoint);
+      metadata.setFailoverType(failoverType);
+      replicationMetric = new ReplicationMetric(executionId, policy, dumpExecutionId, metadata);
+    }
+  }
+
+  public void incrementSizeOfDataReplicated(long bytesCount) {
+    sizeOfDataReplicatedInKB.addAndGet((double)bytesCount/1024);
   }
 
   public void reportStageStart(String stageName, Map<String, Long> metricMap) throws SemanticException {
@@ -90,7 +114,8 @@ public abstract class ReplicationMetricCollector {
   }
 
   public void reportFailoverStart(String stageName, Map<String, Long> metricMap,
-                                  FailoverMetaData failoverMd) throws SemanticException {
+                                  FailoverMetaData failoverMd, String failoverEndpoint,
+                                  String failoverType) throws SemanticException {
     if (isEnabled) {
       LOG.info("Failover Stage Started {}, {}, {}", stageName, metricMap.size(), metricMap);
       Progress progress = replicationMetric.getProgress();
@@ -104,7 +129,25 @@ public abstract class ReplicationMetricCollector {
       Metadata metadata = replicationMetric.getMetadata();
       metadata.setFailoverMetadataLoc(failoverMd.getFilePath());
       metadata.setFailoverEventId(failoverMd.getFailoverEventId());
+      metadata.setFailoverEndPoint(failoverEndpoint);
+      metadata.setFailoverType(failoverType);
       replicationMetric.setMetadata(metadata);
+      metricCollector.addMetric(replicationMetric);
+    }
+  }
+
+  public void setSrcTimeInProgress(long endTimeOnSrc) throws SemanticException {
+    if (isEnabled) {
+      LOG.debug("Updating last commit time on src in progress as: {}", endTimeOnSrc);
+      Progress progress = replicationMetric.getProgress();
+      Stage stage = progress.getStageByName("REPL_LOAD");
+      if (stage == null) {
+        return;
+      }
+      stage.setEndTimeOnSrc(endTimeOnSrc);
+      stage.setEndTimeOnTgt(getCurrentTimeInMillis());
+      progress.addStage(stage);
+      replicationMetric.setProgress(progress);
       metricCollector.addMetric(replicationMetric);
     }
   }
@@ -131,6 +174,7 @@ public abstract class ReplicationMetricCollector {
       replicationMetric.setProgress(progress);
       Metadata metadata = replicationMetric.getMetadata();
       metadata.setLastReplId(lastReplId);
+      metadata.setReplicatedDBSizeInKB(sizeOfDataReplicatedInKB.get());
       replicationMetric.setMetadata(metadata);
       metricCollector.addMetric(replicationMetric);
       if (Status.FAILED == status || Status.FAILED_ADMIN == status) {
@@ -175,6 +219,8 @@ public abstract class ReplicationMetricCollector {
       stage.setEndTime(getCurrentTimeInMillis());
       progress.addStage(stage);
       replicationMetric.setProgress(progress);
+      Metadata metadata = replicationMetric.getMetadata();
+      metadata.setReplicatedDBSizeInKB(sizeOfDataReplicatedInKB.get());
       metricCollector.addMetric(replicationMetric);
       if (Status.FAILED == status || Status.FAILED_ADMIN == status) {
         reportEnd(status);

@@ -77,16 +77,20 @@ POSTHOOK: Input: default@hbase_ts
 PREHOOK: query: drop table hbase_str
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_str
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_str
 POSTHOOK: query: drop table hbase_str
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_str
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_str
 PREHOOK: query: drop table hbase_ts
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_ts
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_ts
 POSTHOOK: query: drop table hbase_ts
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_ts
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_ts

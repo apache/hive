@@ -434,12 +434,14 @@ PREHOOK: query: select percentile_cont(cast(key as bigint), 0.5),
        percentile_cont(0.5) within group (order by cast(key as bigint))
 from src where false
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: select percentile_cont(cast(key as bigint), 0.5),
        percentile_cont(0.5) within group (order by cast(key as bigint))
 from src where false
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL	NULL
@@ -588,8 +590,10 @@ POSTHOOK: Input: default@t_test
 PREHOOK: query: DROP TABLE t_test
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t_test
+PREHOOK: Output: database:default
 PREHOOK: Output: default@t_test
 POSTHOOK: query: DROP TABLE t_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@t_test
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_test

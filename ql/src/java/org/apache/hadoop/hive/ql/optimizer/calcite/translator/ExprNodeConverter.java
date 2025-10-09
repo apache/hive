@@ -37,6 +37,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexOver;
+import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.rex.RexWindow;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
+import org.apache.hadoop.hive.ql.optimizer.calcite.SearchTransformer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.RexVisitor;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.Schema;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -108,7 +110,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private final RelDataTypeFactory dTFactory;
   protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
   private static long uniqueCounter = 0;
-  private RexBuilder rexBuilder = null;
+  private final RexBuilder rexBuilder;
 
   public ExprNodeConverter(String tabAlias, RelDataType inputRowType,
       Set<Integer> vCols, RelDataTypeFactory dTFactory) {
@@ -126,12 +128,6 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   }
 
   public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
-                           RelDataType outputRowType, Set<Integer> inputVCols, RexBuilder rexBuilder) {
-    this(tabAlias, columnAlias, inputRowType, outputRowType, inputVCols, rexBuilder.getTypeFactory(), false);
-    this.rexBuilder = rexBuilder;
-  }
-
-  public ExprNodeConverter(String tabAlias, String columnAlias, RelDataType inputRowType,
           RelDataType outputRowType, Set<Integer> inputVCols, RelDataTypeFactory dTFactory,
           boolean foldExpr) {
     super(true);
@@ -140,6 +136,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     this.inputVCols = ImmutableSet.copyOf(inputVCols);
     this.dTFactory = dTFactory;
     this.foldExpr = foldExpr;
+    this.rexBuilder = new RexBuilder(dTFactory);
   }
 
   public List<WindowFunctionSpec> getWindowFunctionSpec() {
@@ -203,6 +200,8 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
       }
+    } else if (call.getKind() == SqlKind.SEARCH) {
+      return new SearchTransformer<>(rexBuilder, call, RexUnknownAs.UNKNOWN).transform().accept(this);
     } else {
       for (RexNode operand : call.operands) {
         args.add(operand.accept(this));
@@ -361,6 +360,9 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
             "char values must use NlsString for correctness");
         int precision = lType.getPrecision();
         HiveChar value = new HiveChar((String) literal.getValue3(), precision);
+        if (value.getCharacterLength() == 0) {
+          return new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, null);
+        }
         return new ExprNodeConstantDesc(new CharTypeInfo(precision), value);
       }
       case VARCHAR: {

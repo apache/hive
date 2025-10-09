@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.AddDependencyToLeaves;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -33,6 +34,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * CommitTxnHandler
@@ -53,6 +56,17 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     String dbName = context.dbName;
     String tableNamePrev = null;
     String tblName = null;
+
+    // Saving the timestamp of all write commit txn in metric 'progress' to calculate lag between src and tgt
+    List<Long> writeIds = msg.getWriteIds();
+    List<String> databases = Optional.ofNullable(msg.getDatabases())
+                              .orElse(Collections.emptyList())
+                              .stream()
+                              .map(StringUtils::normalizeIdentifier)
+                              .toList();
+    if (databases.contains(dbName) && writeIds != null && !writeIds.isEmpty()) {
+      context.getMetricCollector().setSrcTimeInProgress(msg.getTimestamp());
+    }
 
     ReplTxnWork work = new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName), context.dbName,
                                        null, msg.getTxnId(), ReplTxnWork.OperationType.REPL_COMMIT_TXN,

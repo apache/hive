@@ -1,1 +1,0 @@
-ALTER TABLE "COMPACTION_QUEUE" ADD "CQ_META_INFO" varchar(2048) for bit data;

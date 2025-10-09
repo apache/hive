@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore.metrics;
 
 import com.codahale.metrics.Timer;
-import com.google.common.collect.ImmutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,23 +37,10 @@ public class PerfLogger {
   static final private Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<>();
 
-  public static final String GET_AGGR_COL_STATS = "getAggrColStatsFor";
-  public static final String GET_AGGR_COL_STATS_2 = "getAggrColStatsFor_2";
-  public static final String LIST_PARTS_WITH_AUTH_INFO = "listPartitionsWithAuthInfo";
-  public static final String LIST_PARTS_WITH_AUTH_INFO_2 = "listPartitionsWithAuthInfo_2";
-  public static final String LIST_PARTS_BY_EXPR = "listPartitionsByExpr";
-  public static final String LIST_PARTS_SPECS_BY_EXPR = "listPartitionsSpecByExpr";
   public static final String GET_DATABASE = "getDatabase";
   public static final String GET_TABLE = "getTable";
-  public static final String GET_TABLE_2 = "getTable_2";
-  public static final String GET_PK = "getPrimaryKeys";
-  public static final String GET_FK = "getForeignKeys";
-  public static final String GET_UNIQ_CONSTRAINTS = "getUniqueConstraints";
-  public static final String GET_NOT_NULL_CONSTRAINTS = "getNotNullConstraints";
   public static final String GET_TABLE_COL_STATS = "getTableColumnStatistics";
   public static final String GET_TABLE_COL_STATS_2 = "getTableColumnStatistics_2";
-  public static final String GET_CONFIG_VAL = "getConfigValue";
-
 
   private PerfLogger() {
     // Use getPerfLogger to get an instance of PerfLogger
@@ -77,10 +63,6 @@ public class PerfLogger {
       perfLogger.set(result);
     }
     return result;
-  }
-
-  public static void setPerfLogger(PerfLogger resetPerfLogger) {
-    perfLogger.set(resetPerfLogger);
   }
 
   /**
@@ -136,49 +118,6 @@ public class PerfLogger {
     }
     endMetrics(method);
     return duration;
-  }
-
-  public Long getStartTime(String method) {
-    long startTime = 0L;
-
-    if (startTimes.containsKey(method)) {
-      startTime = startTimes.get(method);
-    }
-    return startTime;
-  }
-
-  public Long getEndTime(String method) {
-    long endTime = 0L;
-
-    if (endTimes.containsKey(method)) {
-      endTime = endTimes.get(method);
-    }
-    return endTime;
-  }
-
-  public boolean startTimeHasMethod(String method) {
-    return startTimes.containsKey(method);
-  }
-
-  public boolean endTimeHasMethod(String method) {
-    return endTimes.containsKey(method);
-  }
-
-  public Long getDuration(String method) {
-    long duration = 0;
-    if (startTimes.containsKey(method) && endTimes.containsKey(method)) {
-      duration = endTimes.get(method) - startTimes.get(method);
-    }
-    return duration;
-  }
-
-
-  public ImmutableMap<String, Long> getStartTimes() {
-    return ImmutableMap.copyOf(startTimes);
-  }
-
-  public ImmutableMap<String, Long> getEndTimes() {
-    return ImmutableMap.copyOf(endTimes);
   }
 
   // Methods for metrics integration.  Each thread-local PerfLogger will open/close scope during each perf-log method.

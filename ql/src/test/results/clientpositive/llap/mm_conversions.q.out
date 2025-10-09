@@ -1,7 +1,9 @@
 PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table intermediate
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table intermediate(key int) partitioned by (p int) stored as orc
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -39,8 +41,10 @@ POSTHOOK: Output: default@intermediate@p=457
 POSTHOOK: Lineage: intermediate PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: drop table simple_to_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table simple_to_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table simple_to_mm(key int) stored as orc tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -75,12 +79,26 @@ POSTHOOK: Input: default@simple_to_mm
 0
 98
 100
-PREHOOK: query: alter table simple_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
-PREHOOK: type: ALTERTABLE_PROPERTIES
+PREHOOK: query: explain alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
+PREHOOK: type: ALTERTABLE_CONVERT
 PREHOOK: Input: default@simple_to_mm
-PREHOOK: Output: default@simple_to_mm
-POSTHOOK: query: alter table simple_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only")
-POSTHOOK: type: ALTERTABLE_PROPERTIES
+POSTHOOK: query: explain alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
+POSTHOOK: type: ALTERTABLE_CONVERT
+POSTHOOK: Input: default@simple_to_mm
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Convert operation
+      table name: default.simple_to_mm
+      spec: AlterTableConvertSpec{ConvertTo=acid, TBLProperties={transactional_properties=insert_only}}
+
+PREHOOK: query: alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
+PREHOOK: type: ALTERTABLE_CONVERT
+PREHOOK: Input: default@simple_to_mm
+POSTHOOK: query: alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only")
+POSTHOOK: type: ALTERTABLE_CONVERT
 POSTHOOK: Input: default@simple_to_mm
 POSTHOOK: Output: default@simple_to_mm
 PREHOOK: query: export table simple_to_mm to 'ql/test/data/exports/export0'
@@ -132,10 +150,12 @@ POSTHOOK: Input: default@import_converted0_mm
 PREHOOK: query: drop table import_converted0_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import_converted0_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import_converted0_mm
 POSTHOOK: query: drop table import_converted0_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import_converted0_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import_converted0_mm
 PREHOOK: query: insert into table simple_to_mm select key from intermediate
 PREHOOK: type: QUERY
@@ -228,10 +248,12 @@ POSTHOOK: Input: default@import_converted1_mm
 PREHOOK: query: drop table import_converted1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import_converted1_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import_converted1_mm
 POSTHOOK: query: drop table import_converted1_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import_converted1_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import_converted1_mm
 PREHOOK: query: insert overwrite table simple_to_mm select key from intermediate
 PREHOOK: type: QUERY
@@ -297,23 +319,29 @@ POSTHOOK: Input: default@import_converted2_mm
 PREHOOK: query: drop table import_converted2_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@import_converted2_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@import_converted2_mm
 POSTHOOK: query: drop table import_converted2_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@import_converted2_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@import_converted2_mm
 PREHOOK: query: drop table simple_to_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@simple_to_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@simple_to_mm
 POSTHOOK: query: drop table simple_to_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@simple_to_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@simple_to_mm
 PREHOOK: query: drop table part_to_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table part_to_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table part_to_mm(key int) partitioned by (key_mm int) stored as orc tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -455,15 +483,19 @@ POSTHOOK: Input: default@part_to_mm@key_mm=457
 PREHOOK: query: drop table part_to_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@part_to_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@part_to_mm
 POSTHOOK: query: drop table part_to_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@part_to_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_to_mm
 PREHOOK: query: drop table load_to_mm
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table load_to_mm
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table load_to_mm (key string, value string) tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -517,15 +549,19 @@ POSTHOOK: Input: default@load_to_mm
 PREHOOK: query: drop table load_to_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@load_to_mm
+PREHOOK: Output: database:default
 PREHOOK: Output: default@load_to_mm
 POSTHOOK: query: drop table load_to_mm
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@load_to_mm
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@load_to_mm
 PREHOOK: query: drop table simple_to_mm_text
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table simple_to_mm_text
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table simple_to_mm_text(key int) stored as textfile tblproperties("transactional"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -655,16 +691,20 @@ POSTHOOK: Input: default@simple_to_mm_text
 PREHOOK: query: drop table simple_to_mm_text
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@simple_to_mm_text
+PREHOOK: Output: database:default
 PREHOOK: Output: default@simple_to_mm_text
 POSTHOOK: query: drop table simple_to_mm_text
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@simple_to_mm_text
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@simple_to_mm_text
 PREHOOK: query: drop table intermediate
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@intermediate
+PREHOOK: Output: database:default
 PREHOOK: Output: default@intermediate
 POSTHOOK: query: drop table intermediate
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@intermediate
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@intermediate

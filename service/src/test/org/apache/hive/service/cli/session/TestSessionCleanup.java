@@ -105,7 +105,7 @@ public class TestSessionCleanup {
 
   private String[] getPipeoutFiles(HiveConf hiveConf) {
     File localScratchDir = new File(
-        hiveConf.getVar(HiveConf.ConfVars.LOCALSCRATCHDIR));
+        hiveConf.getVar(HiveConf.ConfVars.LOCAL_SCRATCH_DIR));
     String[] pipeoutFiles = localScratchDir.list(new FilenameFilter() {
       @Override
       public boolean accept(File dir, String name) {

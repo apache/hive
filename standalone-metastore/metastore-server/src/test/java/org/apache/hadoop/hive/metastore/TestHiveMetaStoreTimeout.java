@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
@@ -27,55 +32,94 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.util.StringUtils;
-import org.junit.AfterClass;
+import org.apache.hadoop.hive.common.IPStackUtils;
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.TTransportException;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
- * Test long running request timeout functionality in MetaStore Server
- * HMSHandler.create_database() is used to simulate a long running method.
+ * Test long running request timeout functionality in MetaStore Server.
  */
 @Category(MetastoreCheckinTest.class)
 public class TestHiveMetaStoreTimeout {
   protected static HiveMetaStoreClient client;
   protected static Configuration conf;
   protected static Warehouse warehouse;
+  protected static int port;
+
+  private final String dbName = "db";
+  
+  /** Test handler proxy used to simulate a long-running create_database() method */
+  static class DelayedHMSHandler extends AbstractHMSHandlerProxy {
+    static long testTimeoutValue = -1;
+    public DelayedHMSHandler(Configuration conf, IHMSHandler baseHandler, boolean local)
+        throws MetaException {
+      super(conf, baseHandler, local);
+    }
+
+    @Override
+    protected Result invokeInternal(Object proxy, Method method, Object[] args)
+        throws Throwable {
+      try {
+        boolean isStarted = Deadline.startTimer(method.getName());
+        Object object;
+        try {
+          if (testTimeoutValue > 0 &&
+              (method.getName().equals("create_database") || method.getName().equals("create_database_req"))) {
+            try {
+              Thread.sleep(testTimeoutValue);
+            } catch (InterruptedException e) {
+              // do nothing.
+            }
+            Deadline.checkTimeout();
+          }
+          object = method.invoke(baseHandler, args);
+        } finally {
+          if (isStarted) {
+            Deadline.stopTimer();
+          }
+        }
+        return new Result(object, "error=false");
+      } catch (UndeclaredThrowableException | InvocationTargetException e) {
+        throw e.getCause();
+      }
+    }
+  }
 
   @BeforeClass
-  public static void setUp() throws Exception {
-    HMSHandler.testTimeoutEnabled = true;
+  public static void startMetaStoreServer() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
         MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
-    MetastoreConf.setTimeVar(conf, ConfVars.CLIENT_SOCKET_TIMEOUT, 1000,
+    MetastoreConf.setTimeVar(conf, ConfVars.CLIENT_SOCKET_TIMEOUT, 10000,
         TimeUnit.MILLISECONDS);
+    MetastoreConf.setVar(conf, ConfVars.HMS_HANDLER_PROXY_CLASS, DelayedHMSHandler.class.getName());
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     warehouse = new Warehouse(conf);
+    port = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetastoreConf.setBoolVar(conf, ConfVars.EXECUTE_SET_UGI, false);
+  }
+
+  @Before
+  public void setup() throws MetaException {
+    DelayedHMSHandler.testTimeoutValue = -1;
     client = new HiveMetaStoreClient(conf);
   }
 
-  @AfterClass
-  public static void tearDown() throws Exception {
-    HMSHandler.testTimeoutEnabled = false;
-    try {
-      client.close();
-    } catch (Throwable e) {
-      System.err.println("Unable to close metastore");
-      System.err.println(StringUtils.stringifyException(e));
-      throw e;
-    }
+  @After
+  public void cleanup() throws TException {
+    client.close();
+    client = null;    
   }
 
   @Test
   public void testNoTimeout() throws Exception {
-    HMSHandler.testTimeoutValue = 250;
-
-    String dbName = "db";
-    client.dropDatabase(dbName, true, true);
-
     new DatabaseBuilder()
         .setName(dbName)
         .create(client, conf);
@@ -85,10 +129,7 @@ public class TestHiveMetaStoreTimeout {
 
   @Test
   public void testTimeout() throws Exception {
-    HMSHandler.testTimeoutValue = 2 * 1000;
-
-    String dbName = "db";
-    client.dropDatabase(dbName, true, true);
+    DelayedHMSHandler.testTimeoutValue = 15000;
 
     Database db = new DatabaseBuilder()
         .setName(dbName)
@@ -96,47 +137,55 @@ public class TestHiveMetaStoreTimeout {
     try {
       client.createDatabase(db);
       Assert.fail("should throw timeout exception.");
-    } catch (MetaException e) {
-      Assert.assertTrue("unexpected MetaException", e.getMessage().contains("Timeout when " +
-          "executing method: create_database"));
+    } catch (TTransportException e) {
+      Assert.assertTrue("unexpected Exception", e.getMessage().contains("Read timed out"));
     }
 
     // restore
-    HMSHandler.testTimeoutValue = 1;
+    DelayedHMSHandler.testTimeoutValue = -1;
   }
 
   @Test
   public void testResetTimeout() throws Exception {
-    HMSHandler.testTimeoutValue = 250;
-    String dbName = "db";
-
-    // no timeout before reset
-    client.dropDatabase(dbName, true, true);
     Database db = new DatabaseBuilder()
         .setName(dbName)
         .build(conf);
     try {
       client.createDatabase(db);
-    } catch (MetaException e) {
+    } catch (Exception e) {
       Assert.fail("should not throw timeout exception: " + e.getMessage());
     }
     client.dropDatabase(dbName, true, true);
 
     // reset
-    HMSHandler.testTimeoutValue = 2000;
-    client.setMetaConf(ConfVars.CLIENT_SOCKET_TIMEOUT.getVarname(), "1s");
+    DelayedHMSHandler.testTimeoutValue = 15000;
 
     // timeout after reset
     try {
       client.createDatabase(db);
       Assert.fail("should throw timeout exception.");
-    } catch (MetaException e) {
-      Assert.assertTrue("unexpected MetaException", e.getMessage().contains("Timeout when " +
-          "executing method: create_database"));
+    } catch (TTransportException e) {
+      Assert.assertTrue("unexpected Exception", e.getMessage().contains("Read timed out"));
     }
+  }
 
-    // restore
-    client.dropDatabase(dbName, true, true);
-    client.setMetaConf(ConfVars.CLIENT_SOCKET_TIMEOUT.getVarname(), "10s");
+  @Test
+  public void testConnectionTimeout() throws Exception {
+    Configuration newConf = new Configuration(conf);
+    MetastoreConf.setTimeVar(newConf, ConfVars.CLIENT_CONNECTION_TIMEOUT, 1000,
+            TimeUnit.MILLISECONDS);
+    // fake host to mock connection time out
+    MetastoreConf.setVar(newConf, ConfVars.THRIFT_URIS, "thrift://" + IPStackUtils.transformToIPv6("1.1.1.1", port));
+    MetastoreConf.setLongVar(newConf, ConfVars.THRIFT_CONNECTION_RETRIES, 1);
+
+    Future<Void> future = Executors.newSingleThreadExecutor().submit(() -> {
+      try(HiveMetaStoreClient c = new HiveMetaStoreClient(newConf)) {
+        Assert.fail("should throw connection timeout exception.");
+      } catch (MetaException e) {
+        Assert.assertTrue("unexpected Exception", e.getMessage().contains("Connect timed out"));
+      }
+      return null;
+    });
+    future.get(5, TimeUnit.SECONDS);
   }
 }

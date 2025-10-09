@@ -12,7 +12,7 @@ If the argument is a string, returns two hex digits for each character in the st
 If the argument is a number or binary, returns the hexadecimal representation.
 Example:
   > SELECT hex(17) FROM src LIMIT 1;
-  'H1'
+  '11'
   > SELECT hex('Facebook') FROM src LIMIT 1;
   '46616365626F6F6B'
 Function class:org.apache.hadoop.hive.ql.udf.UDFHex

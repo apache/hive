@@ -1,0 +1,850 @@
+PREHOOK: query: CREATE TABLE emps
+(
+    empid  INTEGER,
+    deptno INTEGER,
+    name   VARCHAR(10),
+    salary DECIMAL(8, 2)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps
+POSTHOOK: query: CREATE TABLE emps
+(
+    empid  INTEGER,
+    deptno INTEGER,
+    name   VARCHAR(10),
+    salary DECIMAL(8, 2)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps
+PREHOOK: query: INSERT INTO emps VALUES (0, 0, 'Rob', 100000), (1, 0, 'Alice', 110000), (2, 0, 'Mark', 120000),
+                        (3, 1, 'Greg', 80000), (4, 1, 'Josh', 90000), (5, 1, 'Hector', 95000),
+                        (6, 2, 'Fred', 200000), (7, 2, 'Todd', 250000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emps
+POSTHOOK: query: INSERT INTO emps VALUES (0, 0, 'Rob', 100000), (1, 0, 'Alice', 110000), (2, 0, 'Mark', 120000),
+                        (3, 1, 'Greg', 80000), (4, 1, 'Josh', 90000), (5, 1, 'Hector', 95000),
+                        (6, 2, 'Fred', 200000), (7, 2, 'Todd', 250000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emps
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.salary SCRIPT []
+PREHOOK: query: CREATE TABLE depts
+(
+    deptno INTEGER,
+    name   VARCHAR(20)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@depts
+POSTHOOK: query: CREATE TABLE depts
+(
+    deptno INTEGER,
+    name   VARCHAR(20)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@depts
+PREHOOK: query: INSERT INTO depts VALUES (0, 'Engineering'), (1, 'Support'), (2, 'Sales')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@depts
+POSTHOOK: query: INSERT INTO depts VALUES (0, 'Engineering'), (1, 'Support'), (2, 'Sales')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@depts
+POSTHOOK: Lineage: depts.deptno SCRIPT []
+POSTHOOK: Lineage: depts.name SCRIPT []
+PREHOOK: query: SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+Sales	HIGH
+Support	LOW
+Engineering	HIGH
+PREHOOK: query: EXPLAIN
+SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 5 <- Union 4 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e
+                  filterExpr: deptno is not null (type: boolean)
+                  Statistics: Num rows: 8 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptno is not null (type: boolean)
+                    Statistics: Num rows: 8 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int), salary (type: decimal(8,2))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 8 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 8 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(8,2))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  filterExpr: deptno is not null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptno is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int), name (type: varchar(20))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: varchar(20))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col3
+                Statistics: Num rows: 8 Data size: 1632 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col1), count(_col1)
+                  keys: _col3 (type: varchar(20))
+                  minReductionHashAggr: 0.625
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: varchar(20))
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: varchar(20))
+                    Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: decimal(18,2)), _col2 (type: bigint)
+                  Reduce Output Operator
+                    key expressions: _col0 (type: varchar(20))
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: varchar(20))
+                    Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: decimal(18,2)), _col2 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: varchar(20))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: (CAST( (_col1 / _col2) AS decimal(12,6)) >= 100000) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: varchar(20)), 'HIGH' (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: varchar(20)), _col1 (type: string)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: varchar(20)), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: varchar(20)), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 5 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: varchar(20)), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: varchar(20))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: (CAST( (_col1 / _col2) AS decimal(12,6)) < 100000) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: varchar(20)), 'LOW' (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 179 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: varchar(20)), _col1 (type: string)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: varchar(20)), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: varchar(20)), _col1 (type: string)
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+        Union 4 
+            Vertex: Union 4
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN CBO
+SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0, 1}])
+  HiveProject(name=[$0], _o__c1=[$1])
+    HiveUnion(all=[true])
+      HiveProject(name=[$0], _o__c1=[_UTF-16LE'HIGH':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+        HiveFilter(condition=[>=(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+          HiveAggregate(group=[{3}], agg#0=[sum($1)], agg#1=[count($1)])
+            HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(deptno=[$1], salary=[$3])
+                HiveFilter(condition=[IS NOT NULL($1)])
+                  HiveTableScan(table=[[default, emps]], table:alias=[e])
+              HiveProject(deptno=[$0], name=[$1])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, depts]], table:alias=[d])
+      HiveProject(name=[$0], _o__c1=[_UTF-16LE'LOW':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+        HiveFilter(condition=[<(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+          HiveAggregate(group=[{3}], agg#0=[sum($1)], agg#1=[count($1)])
+            HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+              HiveProject(deptno=[$1], salary=[$3])
+                HiveFilter(condition=[IS NOT NULL($1)])
+                  HiveTableScan(table=[[default, emps]], table:alias=[e])
+              HiveProject(deptno=[$0], name=[$1])
+                HiveFilter(condition=[IS NOT NULL($0)])
+                  HiveTableScan(table=[[default, depts]], table:alias=[d])
+
+PREHOOK: query: SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cte_suggestion_0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cte_suggestion_0
+#### A masked pattern was here ####
+Sales	HIGH
+Support	LOW
+Engineering	HIGH
+PREHOOK: query: EXPLAIN
+SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-4 depends on stages: Stage-2, Stage-0
+  Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-4
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e
+                  filterExpr: deptno is not null (type: boolean)
+                  Statistics: Num rows: 8 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptno is not null (type: boolean)
+                    Statistics: Num rows: 8 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int), salary (type: decimal(8,2))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 8 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 8 Data size: 928 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(8,2))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: d
+                  filterExpr: deptno is not null (type: boolean)
+                  Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: deptno is not null (type: boolean)
+                    Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int), name (type: varchar(20))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 3 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: varchar(20))
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col3
+                Statistics: Num rows: 8 Data size: 1632 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col1), count(_col1)
+                  keys: _col3 (type: varchar(20))
+                  minReductionHashAggr: 0.625
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: varchar(20))
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: varchar(20))
+                    Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: decimal(18,2)), _col2 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
+                keys: KEY._col0 (type: varchar(20))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.cte_suggestion_0
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-4
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 5 <- Union 6 (CONTAINS)
+        Map 8 <- Union 6 (CONTAINS)
+        Reducer 7 <- Union 6 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
+                  filterExpr: (CAST( ($f1 / $f2) AS decimal(12,6)) >= 100000) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (CAST( ($f1 / $f2) AS decimal(12,6)) >= 100000) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: name (type: varchar(20)), 'HIGH' (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: varchar(20)), _col1 (type: string)
+                        minReductionHashAggr: 0.5
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: varchar(20)), _col1 (type: string)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: varchar(20)), _col1 (type: string)
+                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 8 
+            Map Operator Tree:
+                TableScan
+                  alias: cte_suggestion_0
+                  filterExpr: (CAST( ($f1 / $f2) AS decimal(12,6)) < 100000) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 636 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (CAST( ($f1 / $f2) AS decimal(12,6)) < 100000) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 212 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: name (type: varchar(20)), 'LOW' (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 179 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: _col0 (type: varchar(20)), _col1 (type: string)
+                        minReductionHashAggr: 0.5
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: varchar(20)), _col1 (type: string)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: _col0 (type: varchar(20)), _col1 (type: string)
+                          Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 7 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: varchar(20)), KEY._col1 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 6 
+            Vertex: Union 6
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-3
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN CBO
+SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT d.name, 'HIGH'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW'
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0, 1}])
+  HiveProject(name=[$0], _o__c1=[$1])
+    HiveUnion(all=[true])
+      HiveProject(name=[$0], _o__c1=[_UTF-16LE'HIGH':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+        HiveFilter(condition=[>=(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+          HiveTableSpool(table=[[cte, cte_suggestion_0]])
+            HiveProject(name=[$0], $f1=[$1], $f2=[$2])
+              HiveAggregate(group=[{3}], agg#0=[sum($1)], agg#1=[count($1)])
+                HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveProject(deptno=[$1], salary=[$3])
+                    HiveFilter(condition=[IS NOT NULL($1)])
+                      HiveTableScan(table=[[default, emps]], table:alias=[e])
+                  HiveProject(deptno=[$0], name=[$1])
+                    HiveFilter(condition=[IS NOT NULL($0)])
+                      HiveTableScan(table=[[default, depts]], table:alias=[d])
+      HiveProject(name=[$0], _o__c1=[_UTF-16LE'LOW':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+        HiveFilter(condition=[<(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+          HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+
+PREHOOK: query: EXPLAIN CBO
+SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'HIGH'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'HIGH'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0, 1}])
+  HiveProject(name=[$0], salary_range=[_UTF-16LE'HIGH':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+    HiveFilter(condition=[>=(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+      HiveAggregate(group=[{3}], agg#0=[sum($1)], agg#1=[count($1)])
+        HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(deptno=[$1], salary=[$3])
+            HiveFilter(condition=[IS NOT NULL($1)])
+              HiveTableScan(table=[[default, emps]], table:alias=[e])
+          HiveProject(deptno=[$0], name=[$1])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, depts]], table:alias=[d])
+
+PREHOOK: query: SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'HIGH'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'HIGH'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+Engineering	HIGH
+Sales	HIGH
+PREHOOK: query: EXPLAIN CBO
+SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'LOW'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'LOW'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0, 1}])
+  HiveProject(name=[$0], salary_range=[_UTF-16LE'LOW':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+    HiveFilter(condition=[<(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+      HiveAggregate(group=[{3}], agg#0=[sum($1)], agg#1=[count($1)])
+        HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveProject(deptno=[$1], salary=[$3])
+            HiveFilter(condition=[IS NOT NULL($1)])
+              HiveTableScan(table=[[default, emps]], table:alias=[e])
+          HiveProject(deptno=[$0], name=[$1])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, depts]], table:alias=[d])
+
+PREHOOK: query: SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'LOW'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+SELECT d.name, 'HIGH' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) >= 100000
+UNION
+SELECT d.name, 'LOW' as salary_range
+FROM emps e
+INNER JOIN depts d ON e.deptno = d.deptno
+GROUP BY d.name
+HAVING AVG(e.salary) < 100000) summary
+WHERE salary_range = 'LOW'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+Support	LOW

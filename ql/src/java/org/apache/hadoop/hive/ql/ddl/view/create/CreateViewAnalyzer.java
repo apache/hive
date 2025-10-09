@@ -64,7 +64,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     }
 
     List<FieldSchema> imposedSchema = children.containsKey(HiveParser.TOK_TABCOLNAME) ?
-        getColumns((ASTNode) children.remove(HiveParser.TOK_TABCOLNAME)) : null;
+        getColumns(children.remove(HiveParser.TOK_TABCOLNAME)) : null;
     boolean ifNotExists = children.remove(HiveParser.TOK_IFNOTEXISTS) != null;
     boolean orReplace = children.remove(HiveParser.TOK_ORREPLACE) != null;
     String comment = children.containsKey(HiveParser.TOK_TABLECOMMENT) ?
@@ -85,15 +85,14 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
 
     SemanticAnalyzer analyzer = analyzeQuery(select, fqViewName);
 
-    schema = new ArrayList<FieldSchema>(analyzer.getResultSchema());
+    schema = new ArrayList<>(analyzer.getResultSchema());
     ParseUtils.validateColumnNameUniqueness(
         analyzer.getOriginalResultSchema() == null ? schema : analyzer.getOriginalResultSchema());
 
     String expandedText = getExpandedText(imposedSchema, select, viewName);
 
-    List<FieldSchema> partitionColumns = getPartitionColumns(imposedSchema, select, viewName,
-        partitionColumnNames);
-
+    List<FieldSchema> partitionColumns = getPartitionColumns(partitionColumnNames);
+    setColumnAccessInfo(analyzer.getColumnAccessInfo());
     CreateViewDesc desc = new CreateViewDesc(fqViewName, schema, comment, properties, partitionColumnNames,
         ifNotExists, orReplace, originalText, expandedText, partitionColumns);
     validateCreateView(desc, analyzer);
@@ -112,6 +111,12 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     }
 
     String expandedText = ctx.getTokenRewriteStream().toString(select.getTokenStartIndex(), select.getTokenStopIndex());
+    String trimmedExpandedText = expandedText.trim();
+    while (trimmedExpandedText.startsWith("(") && trimmedExpandedText.endsWith(")")) {
+      trimmedExpandedText = trimmedExpandedText.substring(1, trimmedExpandedText.length() - 1);
+      expandedText = trimmedExpandedText;
+      trimmedExpandedText = trimmedExpandedText.trim();
+    }
 
     if (imposedSchema != null) {
       // Merge the names from the imposed schema into the types from the derived schema.
@@ -147,8 +152,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
     return expandedText;
   }
 
-  private List<FieldSchema> getPartitionColumns(List<FieldSchema> imposedSchema, ASTNode select, TableName viewName,
-      List<String> partitionColumnNames) throws SemanticException {
+  private List<FieldSchema> getPartitionColumns(List<String> partitionColumnNames) throws SemanticException {
     if (partitionColumnNames == null) {
       return null;
     }
@@ -182,7 +186,7 @@ public class CreateViewAnalyzer extends AbstractCreateViewAnalyzer {
 
     // Now make a copy, and remove the partition columns from the end of derivedSchema.
     // (Clearing the subList writes through to the underlying derivedSchema ArrayList.)
-    List<FieldSchema> partitionColumnsCopy = new ArrayList<FieldSchema>(partitionColumns);
+    List<FieldSchema> partitionColumnsCopy = new ArrayList<>(partitionColumns);
     partitionColumns.clear();
     return partitionColumnsCopy;
   }

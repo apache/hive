@@ -370,24 +370,30 @@ B78T0SnxlCe5AQ522GBUf6c6	NULL
 PREHOOK: query: drop table store
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store
 POSTHOOK: query: drop table store
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store
 PREHOOK: query: drop table store_sales
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@store_sales
+PREHOOK: Output: database:default
 PREHOOK: Output: default@store_sales
 POSTHOOK: query: drop table store_sales
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@store_sales
 PREHOOK: query: drop table household_demographics
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@household_demographics
+PREHOOK: Output: database:default
 PREHOOK: Output: default@household_demographics
 POSTHOOK: query: drop table household_demographics
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@household_demographics
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@household_demographics

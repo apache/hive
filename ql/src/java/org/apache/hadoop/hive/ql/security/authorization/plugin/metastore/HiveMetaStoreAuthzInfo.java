@@ -51,6 +51,15 @@ public class HiveMetaStoreAuthzInfo {
     this.hiveAuthzContext = createHiveAuthzContext();
   }
 
+  public HiveMetaStoreAuthzInfo(PreEventContext preEventContext, HiveOperationType operationType, List<HivePrivilegeObject> inputHObjs, List<HivePrivilegeObject> outputHObjs, String commandString, HiveAuthzContext hiveAuthzContext) {
+    this.preEventContext = preEventContext;
+    this.operationType = operationType;
+    this.inputHObjs = inputHObjs;
+    this.outputHObjs = outputHObjs;
+    this.commandString = commandString;
+    this.hiveAuthzContext = hiveAuthzContext;
+  }
+
   public HiveOperationType getOperationType() {
     return operationType;
   }

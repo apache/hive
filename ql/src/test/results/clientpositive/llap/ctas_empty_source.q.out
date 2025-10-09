@@ -1,11 +1,15 @@
 PREHOOK: query: drop table if exists testctas1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testctas1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table if exists testctas2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists testctas2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table testctas1 (id int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -16,12 +20,14 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testctas1
 PREHOOK: query: create table testctas2 as select * from testctas1 where 1=2
 PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@testctas1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@testctas2
 POSTHOOK: query: create table testctas2 as select * from testctas1 where 1=2
 POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@testctas1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@testctas2
-POSTHOOK: Lineage: testctas2.id SIMPLE [(testctas1)testctas1.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: testctas2.id SIMPLE []

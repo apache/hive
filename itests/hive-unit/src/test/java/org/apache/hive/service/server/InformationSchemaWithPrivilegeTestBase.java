@@ -31,6 +31,7 @@ import org.apache.hive.testutils.MiniZooKeeperCluster;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveResourceACLsI
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.DummyHiveAuthorizationValidator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAccessControllerWrapper;
 import org.apache.hive.beeline.BeeLine;
+import org.apache.hive.beeline.BeeLineDummyTerminal;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.cli.CLIServiceClient;
 import org.apache.hive.service.cli.OperationHandle;
@@ -180,6 +182,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
   private static final String LOCALHOST_KEY_STORE_NAME = "keystore.jks";
   private static final String TRUST_STORE_NAME = "truststore.jks";
   private static final String KEY_STORE_TRUST_STORE_PASSWORD = "HiveJdbc";
+  private static final String KEY_STORE_TRUST_STORE_TYPE = "JKS";
 
   private static MiniHS2 miniHS2 = null;
   private static MiniZooKeeperCluster zkCluster = null;
@@ -192,7 +195,7 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     zkCluster = new MiniZooKeeperCluster(zookeeperSSLEnabled);
     int zkPort = zkCluster.startup(zkDataDir);
 
-    miniHS2 = new MiniHS2(new HiveConf());
+    miniHS2 = new MiniHS2(new HiveConfForTest(InformationSchemaWithPrivilegeTestBase.class));
     confOverlay = new HashMap<String, String>();
     Path workDir = new Path(System.getProperty("test.tmp.dir",
         "target" + File.separator + "test" + File.separator + "tmp"));
@@ -218,15 +221,19 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
     if(zookeeperSSLEnabled) {
       String dataFileDir = !System.getProperty("test.data.files", "").isEmpty() ?
           System.getProperty("test.data.files") :
-          (new HiveConf()).get("test.data.files").replace('\\', '/').replace("c:", "");
+          (new HiveConfForTest(InformationSchemaWithPrivilegeTestBase.class)).get("test.data.files").replace('\\', '/').replace("c:", "");
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_LOCATION.varname,
           dataFileDir + File.separator + LOCALHOST_KEY_STORE_NAME);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_PASSWORD.varname,
           KEY_STORE_TRUST_STORE_PASSWORD);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_KEYSTORE_TYPE.varname,
+          KEY_STORE_TRUST_STORE_TYPE);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION.varname,
           dataFileDir + File.separator + TRUST_STORE_NAME);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD.varname,
           KEY_STORE_TRUST_STORE_PASSWORD);
+      confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_TRUSTSTORE_TYPE.varname,
+          KEY_STORE_TRUST_STORE_TYPE);
       confOverlay.put(ConfVars.HIVE_ZOOKEEPER_SSL_ENABLE.varname, "true");
     }
     miniHS2.start(confOverlay);
@@ -291,8 +298,8 @@ public abstract class InformationSchemaWithPrivilegeTestBase {
 
     List<String> args = new ArrayList<String>(baseArgs);
     args.add("-f");
-    args.add("../../metastore/scripts/upgrade/hive/hive-schema-" + hiveSchemaVer + ".hive.sql");
-    BeeLine beeLine = new BeeLine();
+    args.add("../../standalone-metastore/metastore-server/src/main/sql/hive/hive-schema-" + hiveSchemaVer + ".hive.sql");
+    BeeLine beeLine = new BeeLineDummyTerminal();
     int result = beeLine.begin(args.toArray(new String[] {}), null);
     beeLine.close();
     Assert.assertEquals(result, 0);

@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +99,7 @@ public class MetaStoreTestUtils {
   public static void close(final int port){
     Thread thread = map.get(port);
     if(thread != null){
-      thread.stop();
+      thread.interrupt();
     }
   }
 
@@ -272,7 +273,7 @@ public class MetaStoreTestUtils {
     } else {
       uri = InetAddress.getLocalHost().getHostName();
     }
-    uri = uri + ":" + port;
+    uri = IPStackUtils.concatHostPort(uri, port);
     int retries = 0;
     while (true) {
       try {
@@ -383,6 +384,42 @@ public class MetaStoreTestUtils {
         client.dropDatabase(catName, db, true, false, true);
       }
       client.dropCatalog(catName);
+    }
+  }
+
+  /**
+   * This method can run an assertion wrapped in to a runnable, and keep retrying it for a certain amount of time.
+   * It can be useful when the assertion doesn't necessarily pass immediately, and it would be hard
+   * to mock into production code in order to wait for some conditions properly. Instead, it just
+   * waits, but not like a constant time before a single attempt (which is easy, but errorprone).
+   * @param assertionContext
+   * @param runnable
+   * @param msBetweenAssertionAttempts
+   * @param msOverallTimeout
+   * @throws Exception
+   */
+  public static void waitForAssertion(String assertionContext, Runnable assertionRunnable,
+      int msBetweenAssertionAttempts, int msOverallTimeout) throws Exception {
+    if (msOverallTimeout <= 0) {
+      msOverallTimeout = Integer.MAX_VALUE;
+    }
+    long start = System.currentTimeMillis();
+    LOG.info("Waiting for assertion: " + assertionContext);
+    while (true) {
+      try {
+        assertionRunnable.run();
+        LOG.info("waitForAssertion passed in {} ms", System.currentTimeMillis() - start);
+        return;
+      } catch (AssertionError e) {
+        LOG.info("AssertionError: " + e.getMessage());
+        long elapsedMs = System.currentTimeMillis() - start;
+        if (elapsedMs > msOverallTimeout) {
+          LOG.info("waitForAssertion failed in {} ms", elapsedMs);
+          String message = e.getMessage();
+          throw new AssertionError(message + " (waitForAssertion timeout: " + elapsedMs + "ms)", e);
+        }
+        Thread.sleep(msBetweenAssertionAttempts);
+      }
     }
   }
 }

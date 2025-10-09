@@ -41,6 +41,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.yarn.api.records.Resource;
+import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.http.HttpServer;
 import org.slf4j.Logger;
@@ -80,7 +81,7 @@ public class LlapWebServices extends AbstractService {
 
     this.useSSL = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_WEB_SSL);
     this.useSPNEGO = HiveConf.getBoolVar(conf, ConfVars.LLAP_WEB_AUTO_AUTH);
-    String bindAddress = "0.0.0.0";
+    String bindAddress = IPStackUtils.resolveWildcardAddress();
     HttpServer.Builder builder =
         new HttpServer.Builder("llap").setPort(this.port).setHost(bindAddress);
     builder.setConf(new HiveConf(conf, HiveConf.class));

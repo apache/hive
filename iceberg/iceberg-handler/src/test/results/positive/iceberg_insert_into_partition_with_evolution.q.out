@@ -1,0 +1,227 @@
+PREHOOK: query: create table testice1000 (a int, b string) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testice1000
+POSTHOOK: query: create table testice1000 (a int, b string) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testice1000
+PREHOOK: query: insert into testice1000 values (11, 'ddd'), (22, 'ttt')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testice1000
+POSTHOOK: query: insert into testice1000 values (11, 'ddd'), (22, 'ttt')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testice1000
+PREHOOK: query: alter table testice1000 set partition spec(truncate(2, b))
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@testice1000
+POSTHOOK: query: alter table testice1000 set partition spec(truncate(2, b))
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@testice1000
+POSTHOOK: Output: default@testice1000
+PREHOOK: query: insert into testice1000 values (33, 'rrfdfdf')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testice1000
+POSTHOOK: query: insert into testice1000 values (33, 'rrfdfdf')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testice1000
+PREHOOK: query: insert into table testice1000 select * from testice1000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testice1000
+PREHOOK: Output: default@testice1000
+POSTHOOK: query: insert into table testice1000 select * from testice1000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testice1000
+POSTHOOK: Output: default@testice1000
+PREHOOK: query: explain insert into testice1000 partition(b = 'rtyuiy') values (33)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testice1000@b=rtyuiy
+POSTHOOK: query: explain insert into testice1000 partition(b = 'rtyuiy') values (33)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testice1000@b=rtyuiy
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(33)) (type: array<struct<col1:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: int), 'rtyuiy' (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                        File Output Operator
+                          compressed: false
+                          Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                          table:
+                              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                              name: default.testice1000
+                        Select Operator
+                          expressions: _col0 (type: int), _col1 (type: string)
+                          outputColumnNames: a, b
+                          Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(a), max(a), count(1), count(a), compute_bit_vector_hll(a), max(length(b)), avg(COALESCE(length(b),0)), count(b), compute_bit_vector_hll(b)
+                            keys: iceberg_truncate(b, 2) (type: string)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                            Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: string)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: string)
+                              Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: int), _col2 (type: int), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: struct<count:bigint,sum:double,input:int>), _col8 (type: bigint), _col9 (type: binary)
+        Reducer 2 
+            Execution mode: vectorized
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9
+                Statistics: Num rows: 1 Data size: 516 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'LONG' (type: string), UDFToLong(_col1) (type: bigint), UDFToLong(_col2) (type: bigint), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col6,0)) (type: bigint), COALESCE(_col7,0) (type: double), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), named_struct('b_trunc_2',_col0) (type: struct<b_trunc_2:string>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                  Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 754 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          partition:
+            b rtyuiy
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.testice1000
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: a, b
+          Column Types: int, string
+          Table: default.testice1000
+
+PREHOOK: query: insert into testice1000 partition(b = 'rtyuiy') values (33)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testice1000@b=rtyuiy
+POSTHOOK: query: insert into testice1000 partition(b = 'rtyuiy') values (33)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testice1000@b=rtyuiy
+PREHOOK: query: describe formatted testice1000
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@testice1000
+POSTHOOK: query: describe formatted testice1000
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@testice1000
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	TRUNCATE[2]         	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"1\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"7\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"#Masked#\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":1,\"fields\":[{\"name\":\"b_trunc_2\",\"transform\":\"truncate[2]\",\"source-id\":2,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	#Masked#                   
+	numPartitions       	4                   
+	numRows             	7                   
+	parquet.compression 	zstd                
+	previous_metadata_location	hdfs://### HDFS PATH ###
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	4                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: select * from testice1000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testice1000
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from testice1000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testice1000
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11	ddd
+11	ddd
+22	ttt
+22	ttt
+33	rrfdfdf
+33	rrfdfdf
+33	rtyuiy

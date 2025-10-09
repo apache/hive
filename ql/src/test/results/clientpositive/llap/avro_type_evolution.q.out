@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE IF EXISTS avro_type_evolution
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS avro_type_evolution
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE avro_type_evolution (val bigint) STORED AS AVRO
 TBLPROPERTIES (
     'avro.schema.literal'='{
@@ -50,8 +52,10 @@ POSTHOOK: Input: default@avro_type_evolution
 PREHOOK: query: DROP TABLE avro_type_evolution
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@avro_type_evolution
+PREHOOK: Output: database:default
 PREHOOK: Output: default@avro_type_evolution
 POSTHOOK: query: DROP TABLE avro_type_evolution
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@avro_type_evolution
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@avro_type_evolution

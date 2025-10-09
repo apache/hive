@@ -901,9 +901,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: cbo_t2
-          filterExpr: (c_int is not null or (c_int = 0)) (type: boolean)
+          filterExpr: c_int is not null (type: boolean)
           Filter Operator
-            predicate: (c_int is not null or (c_int = 0)) (type: boolean)
+            predicate: c_int is not null (type: boolean)
             Select Operator
               expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
               outputColumnNames: key, value, c_int, c_float, c_boolean, dt
@@ -953,14 +953,14 @@ POSTHOOK: Input: default@cbo_t2@dt=2014
 PREHOOK: query: -- c_int is not null
 select count(*) from cbo_t2 where (cbo_t2.c_int) IN (NULL)
 PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Input: default@cbo_t2
-PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: -- c_int is not null
 select count(*) from cbo_t2 where (cbo_t2.c_int) IN (NULL)
 POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@cbo_t2
-POSTHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 0
 PREHOOK: query: -- rewrite to NULL

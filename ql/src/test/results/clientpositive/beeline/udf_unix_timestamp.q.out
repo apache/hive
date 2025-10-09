@@ -95,10 +95,12 @@ POSTHOOK: Lineage: foo_n3.b SIMPLE []
 PREHOOK: query: drop table foo_n3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@foo_n3
+PREHOOK: Output: database:default
 PREHOOK: Output: default@foo_n3
 POSTHOOK: query: drop table foo_n3
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@foo_n3
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@foo_n3
 PREHOOK: query: SELECT
   'random_string',

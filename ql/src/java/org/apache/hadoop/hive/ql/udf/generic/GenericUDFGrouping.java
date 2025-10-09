@@ -71,6 +71,7 @@ public class GenericUDFGrouping extends GenericUDF {
 
     indices = new int[arguments.length - 1];
     for (int i = 1; i < arguments.length; i++) {
+      checkArgPrimitive(arguments, i);
       PrimitiveObjectInspector arg2OI = (PrimitiveObjectInspector) arguments[i];
       if (!(arg2OI instanceof ConstantObjectInspector)) {
         throw new UDFArgumentTypeException(i, "Must be a constant. Got: " + arg2OI.getClass().getSimpleName());

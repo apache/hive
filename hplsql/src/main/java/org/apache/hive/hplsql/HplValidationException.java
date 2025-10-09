@@ -28,6 +28,11 @@ public class HplValidationException extends RuntimeException {
     this.ctx = ctx;
   }
 
+  public HplValidationException(ParserRuleContext ctx, Throwable cause) {
+    super(cause);
+    this.ctx = ctx;
+  }
+
   public ParserRuleContext getCtx() {
     return ctx;
   }

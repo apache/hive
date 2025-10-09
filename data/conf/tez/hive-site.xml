@@ -40,7 +40,7 @@
 
 <property>
   <name>hive.tez.container.size</name>
-  <value>128</value>
+  <value>256</value>
   <description></description>
 </property>
 
@@ -111,14 +111,6 @@
 </property>
 
 <property>
-  <name>hive.metastore.metadb.dir</name>
-  <value>file://${test.tmp.dir}/metadb/</value>
-  <description>
-  Required by metastore server or if the uris argument below is not supplied
-  </description>
-</property>
-
-<property>
   <name>test.log.dir</name>
   <value>${test.tmp.dir}/log/</value>
   <description></description>
@@ -161,6 +153,12 @@
 </property>
 
 <property>
+  <name>hive.lineage.statement.filter</name>
+  <value>ALL</value>
+  <description>Specify the types of statements for which column lineage information is generated</description>
+</property>
+
+<property>
   <name>hive.exec.post.hooks</name>
   <value>org.apache.hadoop.hive.ql.hooks.PostExecutePrinter</value>
   <description>Post Execute Hook for Tests</description>
@@ -170,6 +168,11 @@
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>
+</property>
+
+<property>
+  <name>hive.lock.sleep.between.retries</name>
+  <value>2</value>
 </property>
 
 <property>
@@ -229,12 +232,6 @@
 </property>
 
 <property>
-  <name>hive.execution.engine</name>
-  <value>tez</value>
-  <description>Whether to use MR or Tez</description>
-</property>
-
-<property>
   <name>tez.am.node-blacklisting.enabled</name>
   <value>false</value>
 </property>
@@ -274,6 +271,11 @@
 </property>
 
 <property>
+  <name>hive.tez.exec.print.summary</name>
+  <value>true</value>
+</property>
+
+<property>
   <name>hive.orc.splits.ms.footer.cache.enabled</name>
   <value>true</value>
 </property>
@@ -309,8 +311,8 @@
 </property>
 
 <property>
-  <name>hive.cbo.fallback.strategy</name>
-  <value>TEST</value>
+  <name>hive.txn.xlock.ctas</name>
+  <value>false</value>
 </property>
-  
+
 </configuration>

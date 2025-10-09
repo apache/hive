@@ -29,7 +29,7 @@ public class SettableUncompressedStream extends InStream.UncompressedStream {
   }
 
   public void setBuffers(DiskRangeInfo diskRangeList) {
-    reset(diskRangeList.getDiskRanges());
+    reset(diskRangeList.getDiskRanges(), diskRangeList.getTotalLength());
     setOffset(diskRangeList.getDiskRanges());
   }
 

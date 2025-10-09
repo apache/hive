@@ -252,7 +252,7 @@ public class AppConfig extends Configuration {
   private void handleHiveProperties() {
     HiveConf hiveConf = new HiveConf();//load hive-site.xml from classpath
     List<String> interestingPropNames = Arrays.asList(
-        HiveConf.ConfVars.METASTOREURIS.varname,
+        HiveConf.ConfVars.METASTORE_URIS.varname,
         HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
         HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI.varname,
         HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname,

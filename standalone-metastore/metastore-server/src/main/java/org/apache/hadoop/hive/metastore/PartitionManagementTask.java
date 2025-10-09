@@ -18,12 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,17 +28,16 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.TimeValidator;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.TableFetcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -97,77 +92,38 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       IMetaStoreClient msc = null;
       try {
         msc = new HiveMetaStoreClient(conf);
-        List<Table> candidateTables = new ArrayList<>();
         String catalogName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_CATALOG_NAME);
         String dbPattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_DATABASE_PATTERN);
         String tablePattern = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TABLE_PATTERN);
         String tableTypes = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TABLE_TYPES);
-        Set<String> tableTypesSet = new HashSet<>();
-        List<String> tableTypesList;
-        // if tableTypes is empty, then a list with single empty string has to specified to scan no tables.
-        // specifying empty here is equivalent to disabling the partition discovery altogether as it scans no tables.
-        if (tableTypes.isEmpty()) {
-          tableTypesList = Lists.newArrayList("");
-        } else {
-          for (String type : tableTypes.split(",")) {
-            try {
-              tableTypesSet.add(TableType.valueOf(type.trim().toUpperCase()).name());
-            } catch (IllegalArgumentException e) {
-              // ignore
-              LOG.warn("Unknown table type: {}", type);
-            }
-          }
-          tableTypesList = Lists.newArrayList(tableTypesSet);
-        }
-        List<TableMeta> foundTableMetas = msc.getTableMeta(catalogName, dbPattern, tablePattern, tableTypesList);
-        LOG.info("Looking for tables using catalog: {} dbPattern: {} tablePattern: {} found: {}", catalogName,
-          dbPattern, tablePattern, foundTableMetas.size());
+        List<TableName> candidates =
+            new TableFetcher.Builder(msc, catalogName, dbPattern, tablePattern).tableTypes(tableTypes)
+                .tableCondition(
+                    hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "discover__partitions like \"true\" ")
+                .build()
+                .getTableNames();
 
-        Map<String, Boolean> databasesToSkip = new HashMap<>();
-
-        for (TableMeta tableMeta : foundTableMetas) {
-          try {
-            String dbName = MetaStoreUtils.prependCatalogToDbName(tableMeta.getCatName(), tableMeta.getDbName(), conf);
-            if (!databasesToSkip.containsKey(dbName)) {
-              databasesToSkip.put(dbName, MetaStoreUtils.checkIfDbNeedsToBeSkipped(
-                              msc.getDatabase(tableMeta.getCatName(), tableMeta.getDbName())));
-            }
-            if (databasesToSkip.get(dbName)) {
-              LOG.debug("Skipping table : {}", tableMeta.getTableName());
-              continue;
-            }
-            Table table = msc.getTable(tableMeta.getCatName(), tableMeta.getDbName(), tableMeta.getTableName());
-            if (partitionDiscoveryEnabled(table.getParameters())) {
-              candidateTables.add(table);
-            }
-          } catch (NoSuchObjectException e) {
-            // Ignore dropped tables after fetching TableMeta.
-            LOG.warn(e.getMessage());
-          }
-        }
-        if (candidateTables.isEmpty()) {
+        if (candidates.isEmpty()) {
+          LOG.info("Got empty table list in catalog: {}, dbPattern: {}", catalogName, dbPattern);
           return;
         }
+
         // TODO: Msck creates MetastoreClient (MSC) on its own. MSC creation is expensive. Sharing MSC also
         // will not be safe unless synchronized MSC is used. Using synchronized MSC in multi-threaded context also
         // defeats the purpose of thread pooled msck repair.
         int threadPoolSize = MetastoreConf.getIntVar(conf,
-          MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE);
+            MetastoreConf.ConfVars.PARTITION_MANAGEMENT_TASK_THREAD_POOL_SIZE);
         final ExecutorService executorService = Executors
-          .newFixedThreadPool(Math.min(candidateTables.size(), threadPoolSize),
-            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("PartitionDiscoveryTask-%d").build());
-        CountDownLatch countDownLatch = new CountDownLatch(candidateTables.size());
-        LOG.info("Found {} candidate tables for partition discovery", candidateTables.size());
+            .newFixedThreadPool(Math.min(candidates.size(), threadPoolSize),
+                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("PartitionDiscoveryTask-%d").build());
+        CountDownLatch countDownLatch = new CountDownLatch(candidates.size());
+        LOG.info("Found {} candidate tables for partition discovery", candidates.size());
         setupMsckPathInvalidation();
         Configuration msckConf = Msck.getMsckConf(conf);
-        for (Table table : candidateTables) {
-          qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
-          long retentionSeconds = getRetentionPeriodInSeconds(table);
-          LOG.info("Running partition discovery for table {} retentionPeriod: {}s", qualifiedTableName,
-            retentionSeconds);
+        for (TableName table : candidates) {
           // this always runs in 'sync' mode where partitions can be added and dropped
-          MsckInfo msckInfo = new MsckInfo(table.getCatName(), table.getDbName(), table.getTableName(),
-            null, null, true, true, true, retentionSeconds);
+          MsckInfo msckInfo = new MsckInfo(table.getCat(), table.getDb(), table.getTable(),
+              null, null, true, true, true, -1);
           executorService.submit(new MsckThread(msckInfo, msckConf, qualifiedTableName, countDownLatch));
         }
         countDownLatch.await();
@@ -231,13 +187,7 @@ public class PartitionManagementTask implements MetastoreTaskThread {
 
     @Override
     public void run() {
-      IMetaStoreClient msc = null;
       try {
-        msc = new HiveMetaStoreClient(conf);
-        if (MetaStoreUtils.isDbBeingFailedOver((msc.getDatabase(msckInfo.getCatalogName(), msckInfo.getDbName())))) {
-          LOG.info("Skipping table: {} as it belongs to database being failed over." + msckInfo.getTableName());
-          return;
-        }
         Msck msck = new Msck( true, true);
         msck.init(conf);
         msck.repair(msckInfo);
@@ -246,9 +196,6 @@ public class PartitionManagementTask implements MetastoreTaskThread {
       } finally {
         // there is no recovery from exception, so we always count down and retry in next attempt
         countDownLatch.countDown();
-        if (msc != null) {
-          msc.close();
-        }
       }
     }
   }

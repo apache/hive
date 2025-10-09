@@ -97,7 +97,7 @@ public class TestGenericUDFInitializeOnCompareUDF {
     return generateArguments().stream().filter(args -> {
       ObjectInspector.Category left = args.left.getCategory();
       ObjectInspector.Category right = args.right.getCategory();
-      return left.equals(right) && !(PRIMITIVE.equals(left) && PRIMITIVE.equals(right));
+      return left.equals(right) && !PRIMITIVE.equals(left);
     });
   }
 

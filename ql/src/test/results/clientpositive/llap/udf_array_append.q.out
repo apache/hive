@@ -1,0 +1,141 @@
+PREHOOK: query: DESCRIBE FUNCTION array_append
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION array_append
+POSTHOOK: type: DESCFUNCTION
+array_append(array, element) - Returns an array appended by element.
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED array_append
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED array_append
+POSTHOOK: type: DESCFUNCTION
+array_append(array, element) - Returns an array appended by element.
+Example:
+  > SELECT array_append(array(1,3,4), 2) FROM src;
+  [1,3,4,2]
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFArrayAppend
+Function type:BUILTIN
+PREHOOK: query: SELECT array_append(array(1, 2, 3, null,3,4), 3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_append(array(1, 2, 3, null,3,4), 3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3,null,3,4,3]
+PREHOOK: query: SELECT array_append(array(1.12, 2.23, 3.34, null,1.11,1.12,2.9),1.12)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_append(array(1.12, 2.23, 3.34, null,1.11,1.12,2.9),1.12)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1.12,2.23,3.34,null,1.11,1.12,2.9,1.12]
+PREHOOK: query: SELECT array(1,2,3),array_append(array(1, 2, 3),3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array(1,2,3),array_append(array(1, 2, 3),3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3]	[1,2,3,3]
+PREHOOK: query: SELECT array(1,2,3),array_append(array(1, 2, 3),5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array(1,2,3),array_append(array(1, 2, 3),5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3]	[1,2,3,5]
+PREHOOK: query: SELECT array_append(array(1, 2, 3), CAST(null AS int))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_append(array(1, 2, 3), CAST(null AS int))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1,2,3,null]
+PREHOOK: query: SELECT array_append(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),1.1234567890)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_append(array(1.1234567890, 2.234567890, 3.34567890, null, 3.3456789, 2.234567,1.1234567890),1.1234567890)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[1.123456789,2.23456789,3.3456789,null,3.3456789,2.234567,1.123456789,1.123456789]
+PREHOOK: query: SELECT array_append(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),11234567890)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_append(array(11234567890, 2234567890, 334567890, null, 11234567890, 2234567890, 334567890, null),11234567890)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[11234567890,2234567890,334567890,null,11234567890,2234567890,334567890,null,11234567890]
+PREHOOK: query: SELECT array_append(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d")),array("a","b","c","d"))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_append(array(array("a","b","c","d"),array("a","b","c","d"),array("a","b","c","d","e"),null,array("e","a","b","c","d")),array("a","b","c","d"))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+[["a","b","c","d"],["a","b","c","d"],["a","b","c","d","e"],null,["e","a","b","c","d"],["a","b","c","d"]]
+PREHOOK: query: SELECT array_append(array("aa","bb","cc"),"cc")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT array_append(array("aa","bb","cc"),"cc")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+["aa","bb","cc","cc"]
+PREHOOK: query: create external table test_null_array (id string, value Array<String>) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+PREHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_null_array
+POSTHOOK: query: create external table test_null_array (id string, value Array<String>) ROW FORMAT DELIMITED
+#### A masked pattern was here ####
+POSTHOOK: type: CREATETABLE
+#### A masked pattern was here ####
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_null_array
+PREHOOK: query: select id,value from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select id,value from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+1	[]
+2	["NULL"]
+3	["null","null"]
+PREHOOK: query: select id, array_append(value,id) from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select id, array_append(value,id) from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+1	[]
+2	["NULL","2"]
+3	["null","null","3"]
+PREHOOK: query: select value, array_append(value,id) from test_null_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+POSTHOOK: query: select value, array_append(value,id) from test_null_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_null_array
+#### A masked pattern was here ####
+["NULL"]	["NULL","2"]
+["null","null"]	["null","null","3"]
+[]	[]

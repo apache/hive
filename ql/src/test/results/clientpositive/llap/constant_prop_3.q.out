@@ -1,15 +1,21 @@
 PREHOOK: query: drop table part_hive
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table part_hive
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table partsupp_hive
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table partsupp_hive
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: drop table supplier_hive
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table supplier_hive
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table part_hive (P_PARTKEY INT, P_NAME STRING, P_MFGR STRING, P_BRAND STRING, P_TYPE STRING, 
 P_SIZE INT, P_CONTAINER STRING, P_RETAILPRICE DOUBLE, P_COMMENT STRING)
 PREHOOK: type: CREATETABLE
@@ -187,10 +193,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_hive
-                  filterExpr: ((p_size) IN (22, 14, 27, 49, 21, 33, 35, 28) and (p_brand <> 'Brand#34') and p_partkey is not null and (not (p_type like 'ECONOMY BRUSHED%'))) (type: boolean)
+                  filterExpr: ((not (p_type like 'ECONOMY BRUSHED%')) and (p_brand <> 'Brand#34') and (p_size) IN (14, 21, 22, 27, 28, 33, 35, 49) and p_partkey is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((p_size) IN (22, 14, 27, 49, 21, 33, 35, 28) and (p_brand <> 'Brand#34') and p_partkey is not null and (not (p_type like 'ECONOMY BRUSHED%'))) (type: boolean)
+                    predicate: ((not (p_type like 'ECONOMY BRUSHED%')) and (p_brand <> 'Brand#34') and (p_size) IN (14, 21, 22, 27, 28, 33, 35, 49) and p_partkey is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_partkey (type: int), p_brand (type: string), p_type (type: string), p_size (type: int)

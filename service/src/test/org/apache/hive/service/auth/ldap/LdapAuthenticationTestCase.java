@@ -42,7 +42,7 @@ public final class LdapAuthenticationTestCase {
 
   public void assertAuthenticatePasses(Credentials credentials) {
     try {
-      ldapProvider.Authenticate(credentials.getUser(), credentials.getPassword());
+      ldapProvider.authenticate(credentials.getUser(), credentials.getPassword());
     } catch (AuthenticationException e) {
       String message = String.format("Authentication failed for user '%s' with password '%s'",
           credentials.getUser(), credentials.getPassword());
@@ -60,7 +60,7 @@ public final class LdapAuthenticationTestCase {
 
   public void assertAuthenticateFails(String user, String password) {
     try {
-      ldapProvider.Authenticate(user, password);
+      ldapProvider.authenticate(user, password);
       Assert.fail(String.format("Expected authentication to fail for %s", user));
     } catch (AuthenticationException expected) {
       Assert.assertNotNull("Expected authentication exception", expected);
@@ -121,6 +121,21 @@ public final class LdapAuthenticationTestCase {
     public Builder userMembershipKey(String userMembershipKey) {
       return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERMEMBERSHIP_KEY,
           userMembershipKey);
+    }
+
+    public Builder userSearchFilter(String userSearchFilter) {
+      return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_USERSEARCHFILTER,
+          userSearchFilter);
+    }
+
+    public Builder groupSearchFilter(String groupSearchFilter) {
+      return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPSEARCHFILTER,
+          groupSearchFilter);
+    }
+
+    public Builder groupBaseDN(String groupBaseDN) {
+      return setVarOnce(HiveConf.ConfVars.HIVE_SERVER2_PLAIN_LDAP_GROUPBASEDN,
+          groupBaseDN);
     }
 
     private Builder setVarOnce(HiveConf.ConfVars confVar, String value) {

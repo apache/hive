@@ -22,10 +22,12 @@ package org.apache.iceberg.mr;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.lang.reflect.Method;
+import java.security.PrivilegedAction;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -39,6 +41,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
@@ -54,6 +57,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
+import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
@@ -65,8 +69,12 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ThreadPools;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -74,6 +82,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -110,8 +119,8 @@ public class TestIcebergInputFormats {
 
   @Before
   public void before() throws IOException {
-    conf = new Configuration();
-    conf.set(InputFormatConfig.CATALOG, Catalogs.LOCATION);
+    conf = new JobConf();
+    conf.set(CatalogUtil.ICEBERG_CATALOG_TYPE, Catalogs.LOCATION);
     HadoopTables tables = new HadoopTables(conf);
 
     File location = temp.newFolder(testInputFormat.name(), fileFormat.name());
@@ -138,7 +147,7 @@ public class TestIcebergInputFormats {
 
   public TestIcebergInputFormats(TestInputFormat.Factory<Record> testInputFormat, String fileFormat) {
     this.testInputFormat = testInputFormat;
-    this.fileFormat = FileFormat.valueOf(fileFormat.toUpperCase(Locale.ENGLISH));
+    this.fileFormat = FileFormat.fromString(fileFormat);
   }
 
   @Test
@@ -201,6 +210,40 @@ public class TestIcebergInputFormats {
     // skip residual filtering
     builder.skipResidualFiltering();
     testInputFormat.create(builder.conf()).validate(writeRecords);
+  }
+
+  @Test
+  @Ignore
+  // This test is ignored because for ARVO, the vectorized IcebergInputFormat.IcebergRecordReader doesn't support AVRO
+  // and for ORC and PARQUET, IcebergInputFormat class ignores residuals
+  // '... scan.filter(filter).ignoreResiduals()' and it is not compatible with this test
+  public void testFailedResidualFiltering() throws Exception {
+    Assume.assumeTrue("Vectorization is not yet supported for AVRO", this.fileFormat != FileFormat.AVRO);
+
+    helper.createTable();
+
+    List<Record> expectedRecords = helper.generateRandomRecords(2, 0L);
+    expectedRecords.get(0).set(2, "2020-03-20");
+    expectedRecords.get(1).set(2, "2020-03-20");
+
+    helper.appendToTable(Row.of("2020-03-20", 0), expectedRecords);
+
+    builder
+        .useHiveRows()
+        .filter(
+            Expressions.and(Expressions.equal("date", "2020-03-20"), Expressions.equal("id", 0)));
+
+    Assertions.assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage(
+            "Filter expression ref(name=\"id\") == 0 is not completely satisfied. Additional rows can be returned " +
+                    "not satisfied by the filter expression");
+
+    Assertions.assertThatThrownBy(() -> testInputFormat.create(builder.conf()))
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage(
+            "Filter expression ref(name=\"id\") == 0 is not completely satisfied. Additional rows can be returned " +
+                    "not satisfied by the filter expression");
   }
 
   @Test
@@ -330,9 +373,9 @@ public class TestIcebergInputFormats {
     String warehouseLocation = temp.newFolder("hadoop_catalog").getAbsolutePath();
     conf.set("warehouse.location", warehouseLocation);
     conf.set(InputFormatConfig.CATALOG_NAME, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(Catalogs.ICEBERG_DEFAULT_CATALOG_NAME,
+    conf.set(CatalogUtils.catalogPropertyConfigKey(Catalogs.ICEBERG_DEFAULT_CATALOG_NAME,
         CatalogUtil.ICEBERG_CATALOG_TYPE), CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP);
-    conf.set(InputFormatConfig.catalogPropertyConfigKey(Catalogs.ICEBERG_DEFAULT_CATALOG_NAME,
+    conf.set(CatalogUtils.catalogPropertyConfigKey(Catalogs.ICEBERG_DEFAULT_CATALOG_NAME,
         CatalogProperties.WAREHOUSE_LOCATION), warehouseLocation);
 
     Catalog catalog = new HadoopCatalog(conf, conf.get("warehouse.location"));
@@ -370,6 +413,45 @@ public class TestIcebergInputFormats {
 
     assertFalse("Cache affinity should be disabled for HiveIcebergInputFormat when LLAP is on, but vectorization not",
         mapWork.getCacheAffinity());
+  }
+
+  @Test
+  public void testWorkerPool() throws Exception {
+    Table table = helper.createUnpartitionedTable();
+    UserGroupInformation user1 =
+            UserGroupInformation.createUserForTesting("user1", new String[] {});
+    UserGroupInformation user2 =
+            UserGroupInformation.createUserForTesting("user2", new String[] {});
+    final ExecutorService workerPool1 = ThreadPools.newFixedThreadPool("iceberg-plan-worker-pool", 1);
+    final ExecutorService workerPool2 = ThreadPools.newFixedThreadPool("iceberg-plan-worker-pool", 1);
+    try {
+      assertThat(getUserFromWorkerPool(user1, table, workerPool1)).isEqualTo("user1");
+      assertThat(getUserFromWorkerPool(user2, table, workerPool1)).isEqualTo("user1");
+      assertThat(getUserFromWorkerPool(user2, table, workerPool2)).isEqualTo("user2");
+    } finally {
+      workerPool1.shutdown();
+      workerPool2.shutdown();
+    }
+  }
+
+  private String getUserFromWorkerPool(
+          UserGroupInformation user, Table table, ExecutorService workerpool) throws Exception {
+    Method method =
+            IcebergInputFormat.class.getDeclaredMethod(
+                    "planInputSplits", Table.class, Configuration.class, ExecutorService.class);
+    method.setAccessible(true);
+    return user.doAs(
+            (PrivilegedAction<String>)
+                    () -> {
+                      try {
+                        method.invoke(new IcebergInputFormat<>(), table, conf, workerpool);
+                        return workerpool
+                                .submit(() -> UserGroupInformation.getCurrentUser().getUserName())
+                                .get();
+                      } catch (Exception e) {
+                        throw new RuntimeException("Failed to get user from worker pool", e);
+                      }
+                    });
   }
 
   // TODO - Capture template type T in toString method: https://github.com/apache/iceberg/issues/1542

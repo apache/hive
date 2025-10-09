@@ -1,15 +1,21 @@
 PREHOOK: query: DROP TABLE cross_numbers
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE cross_numbers
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_llap
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_llap
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE orc_llap_small
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE orc_llap_small
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE orc_llap(
     ctinyint TINYINT,
     csmallint SMALLINT,
@@ -1194,24 +1200,30 @@ POSTHOOK: Input: default@orc_llap
 PREHOOK: query: DROP TABLE cross_numbers
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@cross_numbers
+PREHOOK: Output: database:default
 PREHOOK: Output: default@cross_numbers
 POSTHOOK: query: DROP TABLE cross_numbers
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@cross_numbers
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cross_numbers
 PREHOOK: query: DROP TABLE orc_llap
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_llap
 POSTHOOK: query: DROP TABLE orc_llap
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap
 PREHOOK: query: DROP TABLE orc_llap_small
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_llap_small
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_llap_small
 POSTHOOK: query: DROP TABLE orc_llap_small
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_llap_small
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap_small

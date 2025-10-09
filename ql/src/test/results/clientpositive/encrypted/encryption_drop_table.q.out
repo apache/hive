@@ -1,11 +1,15 @@
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_table_n2
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table_n2
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
@@ -49,10 +53,12 @@ encrypted_table_n2
 PREHOOK: query: DROP TABLE default.encrypted_ext_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_ext_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_ext_table
 POSTHOOK: query: DROP TABLE default.encrypted_ext_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_ext_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_ext_table
 PREHOOK: query: SHOW TABLES LIKE "encrypted_%"
 PREHOOK: type: SHOWTABLES
@@ -64,10 +70,12 @@ encrypted_table_n2
 PREHOOK: query: DROP TABLE default.encrypted_table_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table_n2
 POSTHOOK: query: DROP TABLE default.encrypted_table_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table_n2
 PREHOOK: query: SHOW TABLES LIKE "encrypted_%"
 PREHOOK: type: SHOWTABLES
@@ -77,8 +85,10 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_table1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
 PREHOOK: Input: hdfs://### HDFS PATH ###
@@ -137,10 +147,12 @@ POSTHOOK: Lineage: encrypted_table1.value SIMPLE [(src)src.FieldSchema(name:valu
 PREHOOK: query: DROP TABLE default.encrypted_table1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@encrypted_table1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table1
 POSTHOOK: query: DROP TABLE default.encrypted_table1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table1
 PREHOOK: query: SHOW TABLES LIKE "encrypted_%"
 PREHOOK: type: SHOWTABLES
@@ -151,11 +163,14 @@ POSTHOOK: Input: database:default
 FAILED: SemanticException [Error 10001]: Table not found encrypted_table1
 PREHOOK: query: DROP TABLE default.encrypted_table1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE default.encrypted_table1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: SHOW TABLES LIKE "encrypted_%"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES LIKE "encrypted_%"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
+Encryption key deleted: 'key_128'

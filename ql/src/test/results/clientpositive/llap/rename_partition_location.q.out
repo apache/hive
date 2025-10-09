@@ -68,8 +68,10 @@ PREHOOK: Input: default@rename_partition_table_2
 PREHOOK: query: DROP TABLE rename_partition_table_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@rename_partition_table_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@rename_partition_table_n0
 PREHOOK: query: DROP TABLE rename_partition_table_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@rename_partition_table_2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@rename_partition_table_2

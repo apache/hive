@@ -1,1 +1,1 @@
-FAILED: SemanticException HAVING specified without GROUP BY
+FAILED: CalciteSemanticException Having clause without any group-by.

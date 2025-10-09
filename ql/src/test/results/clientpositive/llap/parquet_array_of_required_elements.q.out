@@ -32,8 +32,10 @@ POSTHOOK: Input: default@parquet_array_of_required_elements
 PREHOOK: query: DROP TABLE parquet_array_of_required_elements
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@parquet_array_of_required_elements
+PREHOOK: Output: database:default
 PREHOOK: Output: default@parquet_array_of_required_elements
 POSTHOOK: query: DROP TABLE parquet_array_of_required_elements
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@parquet_array_of_required_elements
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@parquet_array_of_required_elements

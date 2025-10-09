@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField VALID_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validWriteIdList", org.apache.thrift.protocol.TType.STRING, (short)7);
   private static final org.apache.thrift.protocol.TField PROCESSOR_CAPABILITIES_FIELD_DESC = new org.apache.thrift.protocol.TField("processorCapabilities", org.apache.thrift.protocol.TType.LIST, (short)8);
   private static final org.apache.thrift.protocol.TField PROCESSOR_IDENTIFIER_FIELD_DESC = new org.apache.thrift.protocol.TField("processorIdentifier", org.apache.thrift.protocol.TType.STRING, (short)9);
+  private static final org.apache.thrift.protocol.TField EXPECTED_PARAMETER_KEY_FIELD_DESC = new org.apache.thrift.protocol.TField("expectedParameterKey", org.apache.thrift.protocol.TType.STRING, (short)10);
+  private static final org.apache.thrift.protocol.TField EXPECTED_PARAMETER_VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("expectedParameterValue", org.apache.thrift.protocol.TType.STRING, (short)11);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AlterTableRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AlterTableRequestTupleSchemeFactory();
@@ -33,6 +35,8 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String validWriteIdList; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> processorCapabilities; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String processorIdentifier; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String expectedParameterKey; // optional
+  private @org.apache.thrift.annotation.Nullable java.lang.String expectedParameterValue; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -44,7 +48,9 @@ package org.apache.hadoop.hive.metastore.api;
     WRITE_ID((short)6, "writeId"),
     VALID_WRITE_ID_LIST((short)7, "validWriteIdList"),
     PROCESSOR_CAPABILITIES((short)8, "processorCapabilities"),
-    PROCESSOR_IDENTIFIER((short)9, "processorIdentifier");
+    PROCESSOR_IDENTIFIER((short)9, "processorIdentifier"),
+    EXPECTED_PARAMETER_KEY((short)10, "expectedParameterKey"),
+    EXPECTED_PARAMETER_VALUE((short)11, "expectedParameterValue");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -78,6 +84,10 @@ package org.apache.hadoop.hive.metastore.api;
           return PROCESSOR_CAPABILITIES;
         case 9: // PROCESSOR_IDENTIFIER
           return PROCESSOR_IDENTIFIER;
+        case 10: // EXPECTED_PARAMETER_KEY
+          return EXPECTED_PARAMETER_KEY;
+        case 11: // EXPECTED_PARAMETER_VALUE
+          return EXPECTED_PARAMETER_VALUE;
         default:
           return null;
       }
@@ -121,7 +131,7 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __WRITEID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.ENVIRONMENT_CONTEXT,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER};
+  private static final _Fields optionals[] = {_Fields.CAT_NAME,_Fields.ENVIRONMENT_CONTEXT,_Fields.WRITE_ID,_Fields.VALID_WRITE_ID_LIST,_Fields.PROCESSOR_CAPABILITIES,_Fields.PROCESSOR_IDENTIFIER,_Fields.EXPECTED_PARAMETER_KEY,_Fields.EXPECTED_PARAMETER_VALUE};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -143,6 +153,10 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.PROCESSOR_IDENTIFIER, new org.apache.thrift.meta_data.FieldMetaData("processorIdentifier", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.EXPECTED_PARAMETER_KEY, new org.apache.thrift.meta_data.FieldMetaData("expectedParameterKey", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.EXPECTED_PARAMETER_VALUE, new org.apache.thrift.meta_data.FieldMetaData("expectedParameterValue", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AlterTableRequest.class, metaDataMap);
@@ -195,6 +209,12 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetProcessorIdentifier()) {
       this.processorIdentifier = other.processorIdentifier;
     }
+    if (other.isSetExpectedParameterKey()) {
+      this.expectedParameterKey = other.expectedParameterKey;
+    }
+    if (other.isSetExpectedParameterValue()) {
+      this.expectedParameterValue = other.expectedParameterValue;
+    }
   }
 
   public AlterTableRequest deepCopy() {
@@ -213,6 +233,8 @@ package org.apache.hadoop.hive.metastore.api;
     this.validWriteIdList = null;
     this.processorCapabilities = null;
     this.processorIdentifier = null;
+    this.expectedParameterKey = null;
+    this.expectedParameterValue = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -445,6 +467,54 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getExpectedParameterKey() {
+    return this.expectedParameterKey;
+  }
+
+  public void setExpectedParameterKey(@org.apache.thrift.annotation.Nullable java.lang.String expectedParameterKey) {
+    this.expectedParameterKey = expectedParameterKey;
+  }
+
+  public void unsetExpectedParameterKey() {
+    this.expectedParameterKey = null;
+  }
+
+  /** Returns true if field expectedParameterKey is set (has been assigned a value) and false otherwise */
+  public boolean isSetExpectedParameterKey() {
+    return this.expectedParameterKey != null;
+  }
+
+  public void setExpectedParameterKeyIsSet(boolean value) {
+    if (!value) {
+      this.expectedParameterKey = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getExpectedParameterValue() {
+    return this.expectedParameterValue;
+  }
+
+  public void setExpectedParameterValue(@org.apache.thrift.annotation.Nullable java.lang.String expectedParameterValue) {
+    this.expectedParameterValue = expectedParameterValue;
+  }
+
+  public void unsetExpectedParameterValue() {
+    this.expectedParameterValue = null;
+  }
+
+  /** Returns true if field expectedParameterValue is set (has been assigned a value) and false otherwise */
+  public boolean isSetExpectedParameterValue() {
+    return this.expectedParameterValue != null;
+  }
+
+  public void setExpectedParameterValueIsSet(boolean value) {
+    if (!value) {
+      this.expectedParameterValue = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case CAT_NAME:
@@ -519,6 +589,22 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case EXPECTED_PARAMETER_KEY:
+      if (value == null) {
+        unsetExpectedParameterKey();
+      } else {
+        setExpectedParameterKey((java.lang.String)value);
+      }
+      break;
+
+    case EXPECTED_PARAMETER_VALUE:
+      if (value == null) {
+        unsetExpectedParameterValue();
+      } else {
+        setExpectedParameterValue((java.lang.String)value);
+      }
+      break;
+
     }
   }
 
@@ -552,6 +638,12 @@ package org.apache.hadoop.hive.metastore.api;
     case PROCESSOR_IDENTIFIER:
       return getProcessorIdentifier();
 
+    case EXPECTED_PARAMETER_KEY:
+      return getExpectedParameterKey();
+
+    case EXPECTED_PARAMETER_VALUE:
+      return getExpectedParameterValue();
+
     }
     throw new java.lang.IllegalStateException();
   }
@@ -581,6 +673,10 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetProcessorCapabilities();
     case PROCESSOR_IDENTIFIER:
       return isSetProcessorIdentifier();
+    case EXPECTED_PARAMETER_KEY:
+      return isSetExpectedParameterKey();
+    case EXPECTED_PARAMETER_VALUE:
+      return isSetExpectedParameterValue();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -679,6 +775,24 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_expectedParameterKey = true && this.isSetExpectedParameterKey();
+    boolean that_present_expectedParameterKey = true && that.isSetExpectedParameterKey();
+    if (this_present_expectedParameterKey || that_present_expectedParameterKey) {
+      if (!(this_present_expectedParameterKey && that_present_expectedParameterKey))
+        return false;
+      if (!this.expectedParameterKey.equals(that.expectedParameterKey))
+        return false;
+    }
+
+    boolean this_present_expectedParameterValue = true && this.isSetExpectedParameterValue();
+    boolean that_present_expectedParameterValue = true && that.isSetExpectedParameterValue();
+    if (this_present_expectedParameterValue || that_present_expectedParameterValue) {
+      if (!(this_present_expectedParameterValue && that_present_expectedParameterValue))
+        return false;
+      if (!this.expectedParameterValue.equals(that.expectedParameterValue))
+        return false;
+    }
+
     return true;
   }
 
@@ -721,6 +835,14 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetProcessorIdentifier()) ? 131071 : 524287);
     if (isSetProcessorIdentifier())
       hashCode = hashCode * 8191 + processorIdentifier.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetExpectedParameterKey()) ? 131071 : 524287);
+    if (isSetExpectedParameterKey())
+      hashCode = hashCode * 8191 + expectedParameterKey.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetExpectedParameterValue()) ? 131071 : 524287);
+    if (isSetExpectedParameterValue())
+      hashCode = hashCode * 8191 + expectedParameterValue.hashCode();
 
     return hashCode;
   }
@@ -823,6 +945,26 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
+    lastComparison = java.lang.Boolean.compare(isSetExpectedParameterKey(), other.isSetExpectedParameterKey());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExpectedParameterKey()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.expectedParameterKey, other.expectedParameterKey);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetExpectedParameterValue(), other.isSetExpectedParameterValue());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExpectedParameterValue()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.expectedParameterValue, other.expectedParameterValue);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -920,6 +1062,26 @@ package org.apache.hadoop.hive.metastore.api;
         sb.append("null");
       } else {
         sb.append(this.processorIdentifier);
+      }
+      first = false;
+    }
+    if (isSetExpectedParameterKey()) {
+      if (!first) sb.append(", ");
+      sb.append("expectedParameterKey:");
+      if (this.expectedParameterKey == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.expectedParameterKey);
+      }
+      first = false;
+    }
+    if (isSetExpectedParameterValue()) {
+      if (!first) sb.append(", ");
+      sb.append("expectedParameterValue:");
+      if (this.expectedParameterValue == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.expectedParameterValue);
       }
       first = false;
     }
@@ -1047,13 +1209,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 8: // PROCESSOR_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list1294 = iprot.readListBegin();
-                struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1294.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1295;
-                for (int _i1296 = 0; _i1296 < _list1294.size; ++_i1296)
+                org.apache.thrift.protocol.TList _list1464 = iprot.readListBegin();
+                struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1464.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1465;
+                for (int _i1466 = 0; _i1466 < _list1464.size; ++_i1466)
                 {
-                  _elem1295 = iprot.readString();
-                  struct.processorCapabilities.add(_elem1295);
+                  _elem1465 = iprot.readString();
+                  struct.processorCapabilities.add(_elem1465);
                 }
                 iprot.readListEnd();
               }
@@ -1066,6 +1228,22 @@ package org.apache.hadoop.hive.metastore.api;
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.processorIdentifier = iprot.readString();
               struct.setProcessorIdentifierIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 10: // EXPECTED_PARAMETER_KEY
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.expectedParameterKey = iprot.readString();
+              struct.setExpectedParameterKeyIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 11: // EXPECTED_PARAMETER_VALUE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.expectedParameterValue = iprot.readString();
+              struct.setExpectedParameterValueIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1129,9 +1307,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(PROCESSOR_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.processorCapabilities.size()));
-            for (java.lang.String _iter1297 : struct.processorCapabilities)
+            for (java.lang.String _iter1467 : struct.processorCapabilities)
             {
-              oprot.writeString(_iter1297);
+              oprot.writeString(_iter1467);
             }
             oprot.writeListEnd();
           }
@@ -1142,6 +1320,20 @@ package org.apache.hadoop.hive.metastore.api;
         if (struct.isSetProcessorIdentifier()) {
           oprot.writeFieldBegin(PROCESSOR_IDENTIFIER_FIELD_DESC);
           oprot.writeString(struct.processorIdentifier);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.expectedParameterKey != null) {
+        if (struct.isSetExpectedParameterKey()) {
+          oprot.writeFieldBegin(EXPECTED_PARAMETER_KEY_FIELD_DESC);
+          oprot.writeString(struct.expectedParameterKey);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.expectedParameterValue != null) {
+        if (struct.isSetExpectedParameterValue()) {
+          oprot.writeFieldBegin(EXPECTED_PARAMETER_VALUE_FIELD_DESC);
+          oprot.writeString(struct.expectedParameterValue);
           oprot.writeFieldEnd();
         }
       }
@@ -1184,7 +1376,13 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetProcessorIdentifier()) {
         optionals.set(5);
       }
-      oprot.writeBitSet(optionals, 6);
+      if (struct.isSetExpectedParameterKey()) {
+        optionals.set(6);
+      }
+      if (struct.isSetExpectedParameterValue()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetCatName()) {
         oprot.writeString(struct.catName);
       }
@@ -1200,14 +1398,20 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetProcessorCapabilities()) {
         {
           oprot.writeI32(struct.processorCapabilities.size());
-          for (java.lang.String _iter1298 : struct.processorCapabilities)
+          for (java.lang.String _iter1468 : struct.processorCapabilities)
           {
-            oprot.writeString(_iter1298);
+            oprot.writeString(_iter1468);
           }
         }
       }
       if (struct.isSetProcessorIdentifier()) {
         oprot.writeString(struct.processorIdentifier);
+      }
+      if (struct.isSetExpectedParameterKey()) {
+        oprot.writeString(struct.expectedParameterKey);
+      }
+      if (struct.isSetExpectedParameterValue()) {
+        oprot.writeString(struct.expectedParameterValue);
       }
     }
 
@@ -1221,7 +1425,7 @@ package org.apache.hadoop.hive.metastore.api;
       struct.table = new Table();
       struct.table.read(iprot);
       struct.setTableIsSet(true);
-      java.util.BitSet incoming = iprot.readBitSet(6);
+      java.util.BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.catName = iprot.readString();
         struct.setCatNameIsSet(true);
@@ -1241,13 +1445,13 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(4)) {
         {
-          org.apache.thrift.protocol.TList _list1299 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
-          struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1299.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1300;
-          for (int _i1301 = 0; _i1301 < _list1299.size; ++_i1301)
+          org.apache.thrift.protocol.TList _list1469 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRING);
+          struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1469.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1470;
+          for (int _i1471 = 0; _i1471 < _list1469.size; ++_i1471)
           {
-            _elem1300 = iprot.readString();
-            struct.processorCapabilities.add(_elem1300);
+            _elem1470 = iprot.readString();
+            struct.processorCapabilities.add(_elem1470);
           }
         }
         struct.setProcessorCapabilitiesIsSet(true);
@@ -1255,6 +1459,14 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(5)) {
         struct.processorIdentifier = iprot.readString();
         struct.setProcessorIdentifierIsSet(true);
+      }
+      if (incoming.get(6)) {
+        struct.expectedParameterKey = iprot.readString();
+        struct.setExpectedParameterKeyIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.expectedParameterValue = iprot.readString();
+        struct.setExpectedParameterValueIsSet(true);
       }
     }
   }

@@ -97,6 +97,22 @@ public class HiveConfUtil {
   }
 
   /**
+   * Getting the set of locked configurations
+   * @param configuration The original configuration
+   * @return The list of the configuration values to be locked
+   */
+  public static Set<String> getLockedSet(Configuration configuration) {
+    Set<String> lockedSet = new HashSet<>();
+    String lockedListStr = HiveConf.getVar(configuration, ConfVars.HIVE_CONF_LOCKED_LIST);
+    if (lockedListStr != null) {
+      for (String entry : lockedListStr.split(",")) {
+        lockedSet.add(entry.trim());
+      }
+    }
+    return lockedSet;
+  }
+
+  /**
    * Strips hidden config entries from configuration
    * @param conf The configuration to strip from
    * @param hiddenSet The values to strip

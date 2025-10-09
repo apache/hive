@@ -2281,7 +2281,7 @@ Table Parameters:
 	numFiles            	1                   
 	numRows             	2000                
 	rawDataSize         	21248               
-	totalSize           	23248               
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -4600,10 +4600,12 @@ POSTHOOK: Input: default@merge_src_part2@ds=2008-04-09
 PREHOOK: query: drop table merge_src_part2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@merge_src_part2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@merge_src_part2
 POSTHOOK: query: drop table merge_src_part2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@merge_src_part2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@merge_src_part2
 PREHOOK: query: create table merge_src_part2 like merge_src_part
 PREHOOK: type: CREATETABLE

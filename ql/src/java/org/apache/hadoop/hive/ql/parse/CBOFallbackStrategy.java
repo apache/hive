@@ -69,24 +69,6 @@ public enum CBOFallbackStrategy {
     public boolean allowsRetry() {
       return true;
     }
-  },
-  /**
-   * Specific strategy only for tests.
-   */
-  TEST {
-    @Override
-    boolean isFatal(Exception e) {
-      if (e instanceof CalciteSubquerySemanticException || e instanceof CalciteViewSemanticException
-          || e instanceof CalciteSubqueryRuntimeException) {
-        return true;
-      }
-      return !(e instanceof CalciteSemanticException);
-    }
-
-    @Override
-    public boolean allowsRetry() {
-      return true;
-    }
   };
 
   /**

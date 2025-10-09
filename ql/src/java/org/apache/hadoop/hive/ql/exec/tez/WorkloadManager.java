@@ -21,7 +21,6 @@ import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.annotations.VisibleForTesting;
@@ -68,6 +67,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.tez.AmPluginNode.AmPluginInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
@@ -487,9 +487,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
             LOG.info("Invoking KillQuery for " + queryId + ": " + reason);
             try {
               UserGroupInformation ugi = UserGroupInformation.getCurrentUser();
-              SessionState ss = new SessionState(new HiveConf(), ugi.getShortUserName());
-              ss.setIsHiveServerQuery(true);
-              SessionState.start(ss);
+              DriverUtils.setUpAndStartSessionState(conf, ugi.getShortUserName());
               kq.killQuery(queryId, reason, toKill.getConf());
               addKillQueryResult(toKill, true);
               killCtx.killSessionFuture.set(true);
@@ -1568,7 +1566,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     WmEvent wmEvent = new WmEvent(WmEvent.EventType.GET);
     // Note: not actually used for pool sessions; verify some things like doAs are not set.
     validateConfig(conf);
-    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
     SettableFuture<WmTezSession> future = SettableFuture.create();
     WmTezSession wmSession = checkSessionForReuse(session);
     GetRequest req = new GetRequest(

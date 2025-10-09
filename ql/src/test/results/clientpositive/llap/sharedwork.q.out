@@ -100,10 +100,10 @@ POSTHOOK: Input: default@my_table_0001_00
 POSTHOOK: Input: default@my_table_0001_01
 POSTHOOK: Input: default@my_table_0003
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`col_7`, `t0`.`CAST` AS `col_3`, `t0`.`col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1`, `t4`.`col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23`
-FROM (SELECT `col_1`, `col_7`, `col_20`, CAST(`col_3` AS DATE) AS `CAST`
+OPTIMIZED SQL: SELECT `t0`.`col_7`, `t0`.`col_3`, `t0`.`col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1`, `t4`.`col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23`
+FROM (SELECT `col_1`, `col_7`, `col_20`, CAST(`col_3` AS DATE) AS `col_3`
 FROM `default`.`my_table_0001`
-WHERE (CAST(`col_7` AS DOUBLE) IS NOT NULL OR `col_7` IS NULL) AND (`col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23')) AS `t0`
+WHERE (`col_7` IS NULL OR CAST(`col_7` AS DOUBLE) IS NOT NULL) AND `col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
 LEFT JOIN (SELECT `col_24`, `col_21`
 FROM `default`.`my_table_0003`
 WHERE `col_24` IN ('part1', 'part2', 'part3')) AS `t2` ON `t0`.`col_20` = `t2`.`col_24`
@@ -135,12 +135,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: table__323
-                  filterExpr: ((UDFToDouble(col_7) is not null or col_7 is null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                  filterExpr: ((col_7 is null or UDFToDouble(col_7) is not null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
                   Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((UDFToDouble(col_7) is not null or col_7 is null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
+                    predicate: ((col_7 is null or UDFToDouble(col_7) is not null) and (col_20) IN ('part1', 'part2', 'part3') and CAST( col_3 AS DATE) BETWEEN DATE'2018-07-01' AND DATE'2019-01-23') (type: boolean)
                     Statistics: Num rows: 1 Data size: 592 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: col_1 (type: string), col_7 (type: string), col_20 (type: string), CAST( col_3 AS DATE) (type: date)
@@ -607,7 +607,7 @@ INNER JOIN (SELECT `p_size` + 1 AS `$f0`
 FROM `default`.`part`
 WHERE `p_size` IS NOT NULL
 GROUP BY `p_size` + 1) AS `t15` ON `t11`.`$f1` = `t15`.`$f0`) AS `t16` ON `t`.`p_type` = `t16`.`p_type` AND `t`.`size` = `t16`.`size`) AS `t17`
-WHERE (`t17`.`$f2` IS NULL OR (`t17`.`c` = 0 OR `t17`.`c` IS NULL)) AND ((`t17`.`ck` < `t17`.`c` IS NOT TRUE OR `t17`.`c` = 0 OR (`t17`.`c` IS NULL OR (`t17`.`$f2` IS NOT NULL OR `t17`.`p_type` IS NULL))) AND (`t17`.`p_type` IS NOT NULL OR `t17`.`c` = 0 OR (`t17`.`c` IS NULL OR `t17`.`$f2` IS NOT NULL)))
+WHERE (`t17`.`$f2` IS NULL OR `t17`.`c` IS NULL OR `t17`.`c` = 0) AND (`t17`.`p_type` IS NULL OR `t17`.`c` IS NULL OR `t17`.`c` = 0 OR `t17`.`ck` < `t17`.`c` IS NOT TRUE OR `t17`.`$f2` IS NOT NULL) AND (`t17`.`c` IS NULL OR `t17`.`c` = 0 OR `t17`.`p_type` IS NOT NULL OR `t17`.`$f2` IS NOT NULL)
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -881,7 +881,7 @@ STAGE PLANS:
                   Statistics: Num rows: 26 Data size: 6370 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((_col8 is null or (_col4 = 0L) or _col4 is null) and ((_col5 < _col4) is not true or (_col4 = 0L) or _col4 is null or _col8 is not null or _col1 is null) and (_col1 is not null or (_col4 = 0L) or _col4 is null or _col8 is not null)) (type: boolean)
+                    predicate: ((_col8 is null or _col4 is null or (_col4 = 0L)) and (_col1 is null or _col4 is null or (_col4 = 0L) or (_col5 < _col4) is not true or _col8 is not null) and (_col4 is null or (_col4 = 0L) or _col1 is not null or _col8 is not null)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 245 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string)

@@ -273,7 +273,7 @@ public class SyslogInputFormat extends TextInputFormat {
       jobConf = projectionPusher.pushProjectionsAndFilters(job, finalPath.getParent());
     }
     // textIF considers '\r' or '\n' as line ending but syslog uses '\r' for escaping new lines. So to read multi-line
-    // exceptions correctly we explictly use only '\n'
+    // exceptions correctly we explicitly use only '\n'
     jobConf.set("textinputformat.record.delimiter", "\n");
     return super.getRecordReader(genericSplit, jobConf, reporter);
   }

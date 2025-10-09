@@ -25,9 +25,12 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataI
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.stringInspectorFromStats;
 
-public class StringColumnStatsMerger extends ColumnStatsMerger {
+public class StringColumnStatsMerger extends ColumnStatsMerger<String> {
 
   private static final Logger LOG = LoggerFactory.getLogger(StringColumnStatsMerger.class);
 
@@ -37,26 +40,17 @@ public class StringColumnStatsMerger extends ColumnStatsMerger {
 
     StringColumnStatsDataInspector aggregateData = stringInspectorFromStats(aggregateColStats);
     StringColumnStatsDataInspector newData = stringInspectorFromStats(newColStats);
-    aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(), newData.getMaxColLen()));
-    aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(), newData.getAvgColLen()));
-    aggregateData.setNumNulls(aggregateData.getNumNulls() + newData.getNumNulls());
-    if (aggregateData.getNdvEstimator() == null || newData.getNdvEstimator() == null) {
-      aggregateData.setNumDVs(Math.max(aggregateData.getNumDVs(), newData.getNumDVs()));
-    } else {
-      NumDistinctValueEstimator oldEst = aggregateData.getNdvEstimator();
-      NumDistinctValueEstimator newEst = newData.getNdvEstimator();
-      final long ndv;
-      if (oldEst.canMerge(newEst)) {
-        oldEst.mergeEstimators(newEst);
-        ndv = oldEst.estimateNumDistinctValues();
-        aggregateData.setNdvEstimator(oldEst);
-      } else {
-        ndv = Math.max(aggregateData.getNumDVs(), newData.getNumDVs());
-      }
-      LOG.debug("Use bitvector to merge column {}'s ndvs of {} and {} to be {}", aggregateColStats.getColName(),
-          aggregateData.getNumDVs(), newData.getNumDVs(), ndv);
-      aggregateData.setNumDVs(ndv);
-    }
+
+    aggregateData.setMaxColLen(mergeMaxColLen(aggregateData.getMaxColLen(), newData.getMaxColLen()));
+    aggregateData.setAvgColLen(mergeAvgColLen(aggregateData.getAvgColLen(), newData.getAvgColLen()));
+    aggregateData.setNumNulls(mergeNumNulls(aggregateData.getNumNulls(), newData.getNumNulls()));
+
+    NumDistinctValueEstimator oldNDVEst = aggregateData.getNdvEstimator();
+    NumDistinctValueEstimator newNDVEst = newData.getNdvEstimator();
+    List<NumDistinctValueEstimator> ndvEstimatorsList = Arrays.asList(oldNDVEst, newNDVEst);
+    aggregateData.setNumDVs(mergeNumDistinctValueEstimator(aggregateColStats.getColName(),
+        ndvEstimatorsList, aggregateData.getNumDVs(), newData.getNumDVs()));
+    aggregateData.setNdvEstimator(ndvEstimatorsList.get(0));
 
     aggregateColStats.getStatsData().setStringStats(aggregateData);
   }

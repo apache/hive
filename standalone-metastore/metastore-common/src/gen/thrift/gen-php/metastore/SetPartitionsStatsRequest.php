@@ -48,7 +48,7 @@ class SetPartitionsStatsRequest
         ),
         5 => array(
             'var' => 'engine',
-            'isRequired' => true,
+            'isRequired' => false,
             'type' => TType::STRING,
         ),
     );
@@ -72,7 +72,7 @@ class SetPartitionsStatsRequest
     /**
      * @var string
      */
-    public $engine = null;
+    public $engine = "hive";
 
     public function __construct($vals = null)
     {
@@ -117,14 +117,14 @@ class SetPartitionsStatsRequest
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->colStats = array();
-                        $_size361 = 0;
-                        $_etype364 = 0;
-                        $xfer += $input->readListBegin($_etype364, $_size361);
-                        for ($_i365 = 0; $_i365 < $_size361; ++$_i365) {
-                            $elem366 = null;
-                            $elem366 = new \metastore\ColumnStatistics();
-                            $xfer += $elem366->read($input);
-                            $this->colStats []= $elem366;
+                        $_size402 = 0;
+                        $_etype405 = 0;
+                        $xfer += $input->readListBegin($_etype405, $_size402);
+                        for ($_i406 = 0; $_i406 < $_size402; ++$_i406) {
+                            $elem407 = null;
+                            $elem407 = new \metastore\ColumnStatistics();
+                            $xfer += $elem407->read($input);
+                            $this->colStats []= $elem407;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -179,8 +179,8 @@ class SetPartitionsStatsRequest
             }
             $xfer += $output->writeFieldBegin('colStats', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->colStats));
-            foreach ($this->colStats as $iter367) {
-                $xfer += $iter367->write($output);
+            foreach ($this->colStats as $iter408) {
+                $xfer += $iter408->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

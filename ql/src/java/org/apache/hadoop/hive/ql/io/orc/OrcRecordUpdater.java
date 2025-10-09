@@ -336,20 +336,11 @@ public class OrcRecordUpdater implements RecordUpdater {
         // The actual initialization of a writer only happens if any delete events are written
         //to avoid empty files.
         this.deleteEventPath = AcidUtils.createFilename(partitionRoot, deleteOptions);
-        /**
-         * HIVE-14514 is not done so we can't clone writerOptions().  So here we create a new
-         * options object to make sure insert and delete writers don't share them (like the
-         * callback object, for example)
-         * In any case insert writer and delete writer would most likely have very different
-         * characteristics - delete writer only writes a tiny amount of data.  Once we do early
-         * update split, each {@link OrcRecordUpdater} will have only 1 writer. (except for Mutate API)
-         * Then it would perhaps make sense to take writerOptions as input - how?.
-         */
-        this.deleteWriterOptions = OrcFile.writerOptions(optionsCloneForDelta.getTableProperties(),
-          optionsCloneForDelta.getConfiguration());
-        this.deleteWriterOptions.inspector(createEventObjectInspector(findRecId(options.getInspector(),
-          options.getRecordIdColumn())));
-        this.deleteWriterOptions.setSchema(createEventSchemaFromTableProperties(options.getTableProperties()));
+        this.deleteWriterOptions = writerOptions
+                .clone()
+                .inspector(createEventObjectInspector(findRecId(options.getInspector(),
+                        options.getRecordIdColumn())))
+                .setSchema(createEventSchemaFromTableProperties(options.getTableProperties()));
       }
 
       // get buffer size and stripe size for base writer
@@ -368,7 +359,7 @@ public class OrcRecordUpdater implements RecordUpdater {
         writerOptions.getConfiguration().set(OrcConf.DICTIONARY_KEY_SIZE_THRESHOLD.getAttribute(), "-1.0");
       }
     }
-    if(!HiveConf.getBoolVar(options.getConfiguration(), HiveConf.ConfVars.HIVETESTMODEACIDKEYIDXSKIP)) {
+    if(!HiveConf.getBoolVar(options.getConfiguration(), HiveConf.ConfVars.HIVE_TEST_MODE_ACID_KEY_IDX_SKIP)) {
       writerOptions.fileSystem(fs).callback(indexBuilder);
     }
     rowInspector = (StructObjectInspector)options.getInspector();

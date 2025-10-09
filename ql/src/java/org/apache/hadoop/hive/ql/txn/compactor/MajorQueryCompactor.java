@@ -21,13 +21,11 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,36 +36,38 @@ import java.util.List;
 final class MajorQueryCompactor extends QueryCompactor {
 
   @Override
-  void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-      ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
+  public boolean run(CompactorContext context) throws IOException {
+    HiveConf hiveConf = context.getConf();
+    Table table = context.getTable();
     AcidUtils
         .setAcidOperationalProperties(hiveConf, true, AcidUtils.getAcidOperationalProperties(table.getParameters()));
+    StorageDescriptor storageDescriptor = context.getSd();
+    ValidWriteIdList writeIds = context.getValidWriteIdList();
 
-    HiveConf conf = new HiveConf(hiveConf);
     // Set up the session for driver.
-    conf.set(HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT.varname, "column");
+    HiveConf conf = setUpDriverSession(hiveConf);
+
+    String tmpTableName = getTempTableName(table);
+    Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
+        conf, true, false, false, null);
+
+    List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
+    List<String> compactionQueries = getCompactionQueries(table, context.getPartition(), tmpTableName);
+    List<String> dropQueries = getDropQueries(tmpTableName);
+    runCompactionQueries(conf, tmpTableName, context.getCompactionInfo(), Lists.newArrayList(tmpTablePath), 
+        createQueries, compactionQueries, dropQueries, table.getParameters());
+    return true;
+  }
+
+  @Override
+  protected HiveConf setUpDriverSession(HiveConf hiveConf) {
+    HiveConf conf = super.setUpDriverSession(hiveConf);
     /*
      * For now, we will group splits on tez so that we end up with all bucket files,
      * with same bucket number in one map task.
      */
     conf.set(HiveConf.ConfVars.SPLIT_GROUPING_MODE.varname, CompactorUtil.COMPACTOR);
-
-    String tmpPrefix = table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_";
-    String tmpTableName = tmpPrefix + System.currentTimeMillis();
-    Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
-        conf, true, false, false, null);
-
-    List<String> createQueries = getCreateQueries(tmpTableName, table, tmpTablePath.toString());
-    List<String> compactionQueries = getCompactionQueries(table, partition, tmpTableName);
-    List<String> dropQueries = getDropQueries(tmpTableName);
-    runCompactionQueries(conf, tmpTableName, storageDescriptor, writeIds, compactionInfo,
-        Lists.newArrayList(tmpTablePath), createQueries, compactionQueries, dropQueries);
-  }
-
-  @Override
-  protected void commitCompaction(String dest, String tmpTableName, HiveConf conf,
-      ValidWriteIdList actualWriteIds, long compactorTxnId) throws IOException, HiveException {
-    // We don't need to delete the empty directory, as empty base is a valid scenario.
+    return conf;
   }
 
   /**
@@ -78,21 +78,22 @@ final class MajorQueryCompactor extends QueryCompactor {
    * See {@link org.apache.hadoop.hive.conf.HiveConf.ConfVars#SPLIT_GROUPING_MODE} for the config description.
    */
   private List<String> getCreateQueries(String fullName, Table t, String tmpTableLocation) {
-    return Lists.newArrayList(new CompactionQueryBuilder(
-        CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
-        CompactionQueryBuilder.Operation.CREATE,
-        fullName)
+    return Lists.newArrayList(new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+        CompactionType.MAJOR, false)
+        .setOperation(CompactionQueryBuilder.Operation.CREATE)
+        .setResultTableName(fullName)
         .setSourceTab(t)
         .setLocation(tmpTableLocation)
         .build());
   }
 
   private List<String> getCompactionQueries(Table t, Partition p, String tmpName) {
+
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
-            CompactionQueryBuilder.Operation.INSERT,
-            tmpName)
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.MAJOR, false)
+            .setOperation(CompactionQueryBuilder.Operation.INSERT)
+            .setResultTableName(tmpName)
             .setSourceTab(t)
             .setSourcePartition(p)
         .build());
@@ -100,9 +101,10 @@ final class MajorQueryCompactor extends QueryCompactor {
 
   private List<String> getDropQueries(String tmpTableName) {
     return Lists.newArrayList(
-        new CompactionQueryBuilder(
-            CompactionQueryBuilder.CompactionType.MAJOR_CRUD,
-            CompactionQueryBuilder.Operation.DROP,
-            tmpTableName).build());
+        new CompactionQueryBuilderFactory().getCompactionQueryBuilder(
+            CompactionType.MAJOR, false)
+            .setOperation(CompactionQueryBuilder.Operation.DROP)
+            .setResultTableName(tmpTableName)
+            .build());
   }
 }

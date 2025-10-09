@@ -96,7 +96,7 @@ public final class LocalMapJoinProcFactory {
       context.setFollowedByGroupBy(true);
       GroupByOperator groupByOp = (GroupByOperator) nd;
       float groupByMemoryUsage = context.getParseCtx().getConf().getFloatVar(
-          HiveConf.ConfVars.HIVEMAPJOINFOLLOWEDBYMAPAGGRHASHMEMORY);
+          HiveConf.ConfVars.HIVE_MAPJOIN_FOLLOWEDBY_MAP_AGGR_HASH_MEMORY);
       groupByOp.getConf().setGroupByMemoryUsage(groupByMemoryUsage);
       return null;
     }
@@ -130,10 +130,10 @@ public final class LocalMapJoinProcFactory {
       float hashtableMemoryUsage;
       if (context.isFollowedByGroupBy()) {
         hashtableMemoryUsage = conf.getFloatVar(
-            HiveConf.ConfVars.HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE);
+            HiveConf.ConfVars.HIVE_HASHTABLE_FOLLOWBY_GBY_MAX_MEMORY_USAGE);
       } else {
         hashtableMemoryUsage = conf.getFloatVar(
-            HiveConf.ConfVars.HIVEHASHTABLEMAXMEMORYUSAGE);
+            HiveConf.ConfVars.HIVE_HASHTABLE_MAX_MEMORY_USAGE);
       }
       mapJoinDesc.setHashTableMemoryUsage(hashtableMemoryUsage);
       LOG.info("Setting max memory usage to " + hashtableMemoryUsage + " for table sink "
@@ -148,7 +148,7 @@ public final class LocalMapJoinProcFactory {
 
       // todo: support tez/vectorization
       boolean useNontaged = conf.getBoolVar(
-          HiveConf.ConfVars.HIVECONVERTJOINUSENONSTAGED) &&
+          HiveConf.ConfVars.HIVE_CONVERT_JOIN_USE_NONSTAGED) &&
           conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
           !conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
 

@@ -18,6 +18,10 @@
 
 package org.apache.hive.service.auth;
 
+import com.google.common.collect.ImmutableSet;
+
+import org.apache.commons.lang3.EnumUtils;
+import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,7 +41,7 @@ public class TestAuthType {
   }
 
   private void testSingleAuth(HiveAuthConstants.AuthTypes type) throws Exception {
-    AuthType authType = new AuthType(type.getAuthName());
+    AuthType authType = new AuthType(type.getAuthName(), HiveServer2TransportMode.http);
     Assert.assertTrue(authType.isEnabled(type));
     if (type == HiveAuthConstants.AuthTypes.NOSASL || type == HiveAuthConstants.AuthTypes.NONE ||
         AuthType.PASSWORD_BASED_TYPES.contains(type)) {
@@ -55,8 +59,15 @@ public class TestAuthType {
     testOnePasswordAuthWithSAML(HiveAuthConstants.AuthTypes.CUSTOM);
   }
 
+  @Test
+  public void testOnePasswordAuthWithJWT() throws Exception {
+    testOnePasswordAuthWithJWT(HiveAuthConstants.AuthTypes.LDAP);
+    testOnePasswordAuthWithJWT(HiveAuthConstants.AuthTypes.PAM);
+    testOnePasswordAuthWithJWT(HiveAuthConstants.AuthTypes.CUSTOM);
+  }
+
   private void testOnePasswordAuthWithSAML(HiveAuthConstants.AuthTypes type) throws Exception {
-    AuthType authType = new AuthType("SAML," + type.getAuthName());
+    AuthType authType = new AuthType("SAML," + type.getAuthName(), HiveServer2TransportMode.http);
     Assert.assertTrue(authType.isEnabled(HiveAuthConstants.AuthTypes.SAML));
     Assert.assertTrue(authType.isEnabled(type));
 
@@ -68,45 +79,91 @@ public class TestAuthType {
       Assert.assertFalse(authType.isEnabled(disabledType));
     }
     Assert.assertEquals(type.getAuthName(), authType.getPasswordBasedAuthStr());
+
+    verify("SAML," + type.getAuthName(), HiveServer2TransportMode.binary, true);
+    verify("SAML," + type.getAuthName(), HiveServer2TransportMode.all, true);
   }
 
-  @Test(expected = Exception.class)
-  public void testKerberosWithSAML() throws Exception {
-    AuthType authType = new AuthType("KERBEROS,SAML");
+  private void verify(String authTypes, HiveServer2TransportMode mode, boolean shouldThrowException) {
+    try {
+      AuthType authType = new AuthType(authTypes, mode);
+      if (shouldThrowException) {
+        Assert.fail("HiveServer2 " + mode.name() + " mode cann't support " + authTypes + " by design");
+      } else {
+        String[] authMethods = authTypes.split(",");
+        for (int i = 0; i < authMethods.length; i++) {
+          HiveAuthConstants.AuthTypes authMech = EnumUtils.getEnumIgnoreCase(HiveAuthConstants.AuthTypes.class,
+              authMethods[i]);
+          Assert.assertTrue(authType.isEnabled(authMech));
+        }
+      }
+    } catch (Exception e) {
+      if (!shouldThrowException) {
+        Assert.fail("HiveServer2 " + mode.name() + " mode should be able to support " + authTypes);
+      } else {
+        Assert.assertTrue(e instanceof RuntimeException);
+      }
+    }
   }
 
-  @Test(expected = Exception.class)
-  public void testKerberosWithSAMLAndLdap() throws Exception {
-    AuthType authType = new AuthType("KERBEROS,SAML,LDAP");
+  private void testOnePasswordAuthWithJWT(HiveAuthConstants.AuthTypes type) throws Exception {
+    AuthType authType = new AuthType("JWT," + type.getAuthName(), HiveServer2TransportMode.http);
+    Assert.assertTrue(authType.isEnabled(HiveAuthConstants.AuthTypes.JWT));
+    Assert.assertTrue(authType.isEnabled(type));
+
+    Set<HiveAuthConstants.AuthTypes> disabledAuthTypes = Arrays.stream(HiveAuthConstants.AuthTypes.values())
+        .collect(Collectors.toSet());
+    disabledAuthTypes.remove(HiveAuthConstants.AuthTypes.JWT);
+    disabledAuthTypes.remove(type);
+    for (HiveAuthConstants.AuthTypes disabledType : disabledAuthTypes) {
+      Assert.assertFalse(authType.isEnabled(disabledType));
+    }
+    Assert.assertEquals(type.getAuthName(), authType.getPasswordBasedAuthStr());
+    verify("JWT," + type.getAuthName(), HiveServer2TransportMode.binary, true);
+    verify("JWT," + type.getAuthName(), HiveServer2TransportMode.all, true);
   }
 
-  @Test(expected = Exception.class)
-  public void testKerberosWithLdap() throws Exception {
-    AuthType authType = new AuthType("KERBEROS,LDAP");
+  @Test
+  public void testMultipleAuthMethods() {
+    Set<EntryForTest> entries = ImmutableSet.of(
+        new EntryForTest("KERBEROS,SAML", HiveServer2TransportMode.binary, true),
+        new EntryForTest("KERBEROS,SAML", HiveServer2TransportMode.http, false),
+        new EntryForTest("KERBEROS,SAML,LDAP", HiveServer2TransportMode.all, true),
+        new EntryForTest("KERBEROS,SAML,LDAP", HiveServer2TransportMode.http, false),
+        new EntryForTest("KERBEROS,LDAP", HiveServer2TransportMode.all, false),
+        new EntryForTest("NONE,SAML", HiveServer2TransportMode.all, true),
+        new EntryForTest("NONE,SAML", HiveServer2TransportMode.http, true),
+        new EntryForTest("NOSASL,SAML", HiveServer2TransportMode.all, true),
+        new EntryForTest("SAML,LDAP,PAM,CUSTOM", HiveServer2TransportMode.http, true),
+        new EntryForTest("SAML,OTHER", HiveServer2TransportMode.all, true),
+        new EntryForTest("LDAP,PAM,CUSTOM", HiveServer2TransportMode.binary, true),
+        new EntryForTest("KERBEROS,JWT", HiveServer2TransportMode.binary, true),
+        new EntryForTest("KERBEROS,JWT", HiveServer2TransportMode.http, false),
+        new EntryForTest("KERBEROS,JWT,LDAP", HiveServer2TransportMode.http, false),
+        new EntryForTest("KERBEROS,JWT,LDAP", HiveServer2TransportMode.all, true),
+        new EntryForTest("NONE,JWT", HiveServer2TransportMode.all, true),
+        new EntryForTest("NOSASL,JWT", HiveServer2TransportMode.http, true),
+        new EntryForTest("JWT,LDAP,PAM,CUSTOM", HiveServer2TransportMode.http, true),
+        new EntryForTest("JWT,SAML,LDAP", HiveServer2TransportMode.http, false),
+        new EntryForTest("JWT,SAML,LDAP", HiveServer2TransportMode.all, true),
+        new EntryForTest("JWT,SAML", HiveServer2TransportMode.http, false),
+        new EntryForTest("JWT,SAML", HiveServer2TransportMode.binary, true)
+    );
+
+    for (EntryForTest entry : entries) {
+      verify(entry.authTypes, entry.mode, entry.shouldThrowException);
+    }
   }
 
-  @Test(expected = Exception.class)
-  public void testNoneWithSAML() throws Exception {
-    AuthType authType = new AuthType("NONE,SAML");
+  private class EntryForTest {
+    String authTypes;
+    HiveServer2TransportMode mode;
+    boolean shouldThrowException;
+    EntryForTest(String authTypes, HiveServer2TransportMode mode, boolean shouldThrowException) {
+      this.authTypes = authTypes;
+      this.mode = mode;
+      this.shouldThrowException = shouldThrowException;
+    }
   }
 
-  @Test(expected = Exception.class)
-  public void testNoSaslWithSAML() throws Exception {
-    AuthType authType = new AuthType("NOSASL,SAML");
-  }
-
-  @Test(expected = Exception.class)
-  public void testMultiPasswordAuthWithSAML() throws Exception {
-    AuthType authType = new AuthType("SAML,LDAP,PAM,CUSTOM");
-  }
-
-  @Test(expected = Exception.class)
-  public void testMultiPasswordAuth() throws Exception {
-    AuthType authType = new AuthType("LDAP,PAM,CUSTOM");
-  }
-
-  @Test(expected = Exception.class)
-  public void testNotExistAuth() throws Exception {
-    AuthType authType = new AuthType("SAML,OTHER");
-  }
 }

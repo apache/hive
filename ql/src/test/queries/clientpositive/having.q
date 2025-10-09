@@ -19,3 +19,6 @@ SELECT key, max(value) FROM src GROUP BY key HAVING max(value) > "val_255";
 
 EXPLAIN SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4;
 SELECT key, COUNT(value) FROM src GROUP BY key HAVING count(value) >= 4;
+
+EXPLAIN CBO SELECT count(value) as c, max(key) as m from src GROUP BY key HAVING c > 3 and m > 400;
+SELECT count(value) as c, max(key) as m from src GROUP BY key HAVING c > 3 and m > 400;

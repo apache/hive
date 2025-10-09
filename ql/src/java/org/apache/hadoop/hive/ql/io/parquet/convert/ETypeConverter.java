@@ -36,12 +36,18 @@ import org.apache.hadoop.hive.ql.io.parquet.write.DataWritableWriteSupport;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -443,6 +449,21 @@ public enum ETypeConverter {
               }
             }
           };
+        case serdeConstants.TIMESTAMP_TYPE_NAME:
+        case serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME:
+          if (type.getLogicalTypeAnnotation() instanceof TimestampLogicalTypeAnnotation) {
+            TimestampLogicalTypeAnnotation logicalType =
+                (TimestampLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(final long value) {
+                Timestamp timestamp =
+                    ParquetTimestampUtils.getTimestamp(value, logicalType.getUnit(), logicalType.isAdjustedToUTC());
+                parent.set(index, new TimestampWritableV2(timestamp));
+              }
+            };
+          }
+          throw new IllegalStateException("Cannot reliably convert INT64 value to timestamp without type annotation");
         default:
           return new PrimitiveConverter() {
             @Override
@@ -481,7 +502,32 @@ public enum ETypeConverter {
   },
   ESTRING_CONVERTER(String.class) {
     @Override
-    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
+    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent,
+                                    TypeInfo hiveTypeInfo) {
+      // If we have type information, we should return properly typed strings. However, there are a variety
+      // of code paths that do not provide the typeInfo in those cases we default to Text. This idiom is also
+      // followed by for example the BigDecimal converter in which if there is no type information,
+      // it defaults to the widest representation
+      if (hiveTypeInfo instanceof PrimitiveTypeInfo) {
+        PrimitiveTypeInfo t = (PrimitiveTypeInfo) hiveTypeInfo;
+        switch (t.getPrimitiveCategory()) {
+          case CHAR:
+            return new BinaryConverter<HiveCharWritable>(type, parent, index) {
+              @Override
+              protected HiveCharWritable convert(Binary binary) {
+                return new HiveCharWritable(binary.getBytes(), ((CharTypeInfo) hiveTypeInfo).getLength());
+              }
+            };
+          case VARCHAR:
+            return new BinaryConverter<HiveVarcharWritable>(type, parent, index) {
+              @Override
+              protected HiveVarcharWritable convert(Binary binary) {
+                return new HiveVarcharWritable(binary.getBytes(), ((VarcharTypeInfo) hiveTypeInfo).getLength());
+              }
+            };
+        }
+      }
+      // STRING type
       return new BinaryConverter<Text>(type, parent, index) {
         @Override
         protected Text convert(Binary binary) {
@@ -630,6 +676,27 @@ public enum ETypeConverter {
               return logicalType.getScale();
             }
           };
+        case serdeConstants.CHAR_TYPE_NAME:
+          return new BinaryConverterForDecimalType<HiveCharWritable>(type, parent, index, hiveTypeInfo) {
+            @Override
+            protected HiveCharWritable convert(Binary binary) {
+              return new HiveCharWritable(convertToBytes(binary), ((CharTypeInfo) hiveTypeInfo).getLength());
+            }
+          };
+        case serdeConstants.VARCHAR_TYPE_NAME:
+          return new BinaryConverterForDecimalType<HiveVarcharWritable>(type, parent, index, hiveTypeInfo) {
+            @Override
+            protected HiveVarcharWritable convert(Binary binary) {
+              return new HiveVarcharWritable(convertToBytes(binary), ((VarcharTypeInfo) hiveTypeInfo).getLength());
+            }
+          };
+        case serdeConstants.STRING_TYPE_NAME:
+          return new BinaryConverterForDecimalType<BytesWritable>(type, parent, index, hiveTypeInfo) {
+            @Override
+            protected BytesWritable convert(Binary binary) {
+              return new BytesWritable(convertToBytes(binary));
+            }
+          };
         default:
           return new BinaryConverter<HiveDecimalWritable>(type, parent, index, hiveTypeInfo) {
             @Override
@@ -640,6 +707,11 @@ public enum ETypeConverter {
                   (DecimalTypeInfo) hiveTypeInfo);
             }
 
+            // TODO HIVE-27529 Add dictionary encoding support for parquet decimal types
+            @Override
+            public boolean hasDictionarySupport() {
+              return false;
+            }
             @Override
             public void addInt(final int value) {
               addDecimal(value);
@@ -713,37 +785,6 @@ public enum ETypeConverter {
       };
     }
   },
-  EINT64_TIMESTAMP_CONVERTER(TimestampWritableV2.class) {
-    @Override
-    PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent,
-        TypeInfo hiveTypeInfo) {
-      if (hiveTypeInfo != null) {
-        String typeName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
-        switch (typeName) {
-          case serdeConstants.BIGINT_TYPE_NAME:
-            return new BinaryConverter<LongWritable>(type, parent, index) {
-              @Override
-              protected LongWritable convert(Binary binary) {
-                Preconditions.checkArgument(binary.length() == 8, "Must be 8 bytes");
-                ByteBuffer buf = binary.toByteBuffer();
-                buf.order(ByteOrder.LITTLE_ENDIAN);
-                long longVal = buf.getLong();
-                return new LongWritable(longVal);
-              }
-            };
-        }
-      }
-      return new PrimitiveConverter() {
-        @Override
-        public void addLong(final long value) {
-          TimestampLogicalTypeAnnotation logicalType = (TimestampLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
-          Timestamp timestamp =
-              ParquetTimestampUtils.getTimestamp(value, logicalType.getUnit(), logicalType.isAdjustedToUTC());
-          parent.set(index, new TimestampWritableV2(timestamp));
-        }
-      };
-    }
-  },
   EDATE_CONVERTER(DateWritableV2.class) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
@@ -800,7 +841,8 @@ public enum ETypeConverter {
 
             @Override
             public Optional<PrimitiveConverter> visit(TimestampLogicalTypeAnnotation logicalTypeAnnotation) {
-              return Optional.of(EINT64_TIMESTAMP_CONVERTER.getConverter(type, index, parent, hiveTypeInfo));
+              TypeInfo info = hiveTypeInfo == null ? TypeInfoFactory.timestampTypeInfo : hiveTypeInfo;
+              return Optional.of(EINT64_CONVERTER.getConverter(type, index, parent, info));
             }
           });
 
@@ -945,4 +987,16 @@ public enum ETypeConverter {
     }
   }
 
+  public abstract static class BinaryConverterForDecimalType<T extends Writable> extends BinaryConverter<T> {
+
+    public BinaryConverterForDecimalType(PrimitiveType type, ConverterParent parent, int index, TypeInfo hiveTypeInfo) {
+      super(type, parent, index, hiveTypeInfo);
+    }
+
+    protected byte[] convertToBytes(Binary binary) {
+      DecimalLogicalTypeAnnotation logicalType = (DecimalLogicalTypeAnnotation) type.getLogicalTypeAnnotation();
+      return HiveDecimalUtils.enforcePrecisionScale(new HiveDecimalWritable(binary.getBytes(), logicalType.getScale()),
+                      new DecimalTypeInfo(logicalType.getPrecision(), logicalType.getScale())).toString().getBytes();
+    }
+  }
 }

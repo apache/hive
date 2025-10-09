@@ -21,38 +21,43 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
-import org.apache.iceberg.FileFormat;
-import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.Schema;
+import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.io.ClusteredDataWriter;
+import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.DataWriteResult;
-import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.io.FileWriterFactory;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.hive.FilesForCommit;
+import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
+import org.apache.iceberg.types.Types;
 
 class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
 
   private final int currentSpecId;
+  private final Set<String> missingColumns;
+  private final List<Types.NestedField> missingOrStructFields;
 
-  HiveIcebergRecordWriter(Schema schema, Map<Integer, PartitionSpec> specs, int currentSpecId,
-      FileWriterFactory<Record> fileWriterFactory, OutputFileFactory fileFactory, FileFormat format, FileIO io,
-      long targetFileSize) {
-    super(schema, specs, io,
-        new ClusteredDataWriter<>(fileWriterFactory, fileFactory, io, format, targetFileSize));
-    this.currentSpecId = currentSpecId;
+  HiveIcebergRecordWriter(Table table, HiveFileWriterFactory fileWriterFactory,
+      OutputFileFactory dataFileFactory, Context context) {
+    super(table, newDataWriter(table, fileWriterFactory, dataFileFactory, context));
+
+    this.currentSpecId = table.spec().specId();
+    this.missingColumns = context.missingColumns();
+    this.missingOrStructFields = specs.get(currentSpecId).schema().asStruct().fields().stream()
+        .filter(field -> missingColumns.contains(field.name()) || field.type().isStructType()).toList();
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
+    HiveSchemaUtil.setDefaultValues(record, missingOrStructFields, missingColumns);
+
     writer.write(record, specs.get(currentSpecId), partition(record, currentSpecId));
   }
+
 
   @Override
   public FilesForCommit files() {

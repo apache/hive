@@ -1,8 +1,0 @@
-SELECT '< HIVE-1823 Upgrade the database thrift interface to allow parameters key-value pairs >' AS ' ';
-CREATE TABLE IF NOT EXISTS `DATABASE_PARAMS` (
-  `DB_ID` bigint(20) NOT NULL,
-  `PARAM_KEY` varchar(180) CHARACTER SET latin1 COLLATE latin1_bin NOT NULL,
-  `PARAM_VALUE` varchar(4000) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL,
-  PRIMARY KEY (`DB_ID`,`PARAM_KEY`),
-  CONSTRAINT `DATABASE_PARAMS_FK1` FOREIGN KEY (`DB_ID`) REFERENCES `DBS` (`DB_ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;

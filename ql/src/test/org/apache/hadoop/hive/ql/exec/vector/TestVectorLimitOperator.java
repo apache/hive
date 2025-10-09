@@ -87,7 +87,7 @@ public class TestVectorLimitOperator {
     }
 
     HiveConf conf = new HiveConf();
-    HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYID, "query-" + random.nextInt(10000));
+    HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID, "query-" + random.nextInt(10000));
     HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "tez");
     conf.set(TezProcessor.HIVE_TEZ_VERTEX_NAME, "Map 1");
 

@@ -80,22 +80,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 0
       Processor Tree:
-        TableScan
-          alias: src
-          filterExpr: (UDFToDouble(key) = 100.0D) (type: boolean)
-          Filter Operator
-            predicate: (UDFToDouble(key) = 100.0D) (type: boolean)
-            Limit
-              Number of rows: 0
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: string), rand() (type: double), '4' (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  ListSink
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT key,randum123, v10
@@ -211,22 +198,9 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: -1
+      limit: 0
       Processor Tree:
-        TableScan
-          alias: src
-          filterExpr: (UDFToDouble(key) = 100.0D) (type: boolean)
-          Filter Operator
-            predicate: (UDFToDouble(key) = 100.0D) (type: boolean)
-            Limit
-              Number of rows: 0
-              Select Operator
-                expressions: key (type: string)
-                outputColumnNames: _col0
-                Select Operator
-                  expressions: _col0 (type: string), rand() (type: double), '4' (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  ListSink
+        ListSink
 
 PREHOOK: query: EXPLAIN
 SELECT key,randum123, v10

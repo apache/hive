@@ -10,3 +10,6 @@ SELECT x, y FROM src LATERAL VIEW STACK(2, 'x', array(1), 'z', array(4)) a AS x,
 EXPLAIN
 SELECT stack(1, "en", "dbpedia", NULL );
 SELECT stack(1, "en", "dbpedia", NULL );
+
+EXPLAIN SELECT STACK(2, 'a', 'b', 'c', 'd', 'e');
+SELECT STACK(2, 'a', 'b', 'c', 'd', 'e');

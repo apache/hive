@@ -121,8 +121,12 @@ POSTHOOK: Lineage: partitioned_acid_table PARTITION(p=abc).a SCRIPT []
 POSTHOOK: Lineage: partitioned_acid_table PARTITION(p=abc).b SCRIPT []
 PREHOOK: query: alter table partitioned_acid_table partition(p='abc') compact 'minor'
 PREHOOK: type: ALTERTABLE_COMPACT
+PREHOOK: Input: default@partitioned_acid_table
+PREHOOK: Output: default@partitioned_acid_table@p=abc
 POSTHOOK: query: alter table partitioned_acid_table partition(p='abc') compact 'minor'
 POSTHOOK: type: ALTERTABLE_COMPACT
+POSTHOOK: Input: default@partitioned_acid_table
+POSTHOOK: Output: default@partitioned_acid_table@p=abc
 PREHOOK: query: explain show compactions
 PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: explain show compactions
@@ -134,6 +138,8 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Show Compactions
+      compactionId: 0
+      limit:
 
   Stage: Stage-1
     Fetch Operator
@@ -145,13 +151,15 @@ PREHOOK: query: show compactions
 PREHOOK: type: SHOW COMPACTIONS
 POSTHOOK: query: show compactions
 POSTHOOK: type: SHOW COMPACTIONS
-CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator
-1	default	partitioned_acid_table	p=abc	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- #Masked#	manual	 
+CompactionId	Database	Table	Partition	Type	State	Worker host	Worker	Enqueue Time	Start Time	Duration(ms)	HadoopJobId	Error message	Initiator host	Initiator	Pool name	TxnId	Next TxnId	Commit Time	Highest WriteId
+1	default	partitioned_acid_table	p=abc	MINOR	initiated	 --- 	 --- 	#Masked#	 --- 	 --- 	 --- 	 --- 	#Masked#	manual	default	0	0	0	 --- 
 PREHOOK: query: drop table partitioned_acid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@partitioned_acid_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@partitioned_acid_table
 POSTHOOK: query: drop table partitioned_acid_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@partitioned_acid_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partitioned_acid_table

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table decimal_2_n1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table decimal_2_n1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table decimal_2_n1 (t decimal(18,9))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -286,8 +288,10 @@ POSTHOOK: Input: default@decimal_2_n1
 PREHOOK: query: drop table decimal_2_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_2_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_2_n1
 POSTHOOK: query: drop table decimal_2_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@decimal_2_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@decimal_2_n1

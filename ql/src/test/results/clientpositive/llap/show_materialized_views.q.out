@@ -104,6 +104,21 @@ POSTHOOK: Output: test1@shtb_aggr_view2
 POSTHOOK: Lineage: shtb_aggr_view2._c1 EXPRESSION [(shtb_test1)a.null, (shtb_test1)b.null, ]
 POSTHOOK: Lineage: shtb_aggr_view2._c2 EXPRESSION [(shtb_test1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: shtb_aggr_view2.value SIMPLE [(shtb_test1)a.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: CREATE MATERIALIZED VIEW aggr_view_min AS
+SELECT a.value, count(*), min(a.key) FROM shtb_test1 a join shtb_test1 b on (a.key = b.key) group by a.value
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: test1@shtb_test1
+PREHOOK: Output: database:test1
+PREHOOK: Output: test1@aggr_view_min
+POSTHOOK: query: CREATE MATERIALIZED VIEW aggr_view_min AS
+SELECT a.value, count(*), min(a.key) FROM shtb_test1 a join shtb_test1 b on (a.key = b.key) group by a.value
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@shtb_test1
+POSTHOOK: Output: database:test1
+POSTHOOK: Output: test1@aggr_view_min
+POSTHOOK: Lineage: aggr_view_min._c1 EXPRESSION [(shtb_test1)a.null, (shtb_test1)b.null, ]
+POSTHOOK: Lineage: aggr_view_min._c2 EXPRESSION [(shtb_test1)a.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: aggr_view_min.value SIMPLE [(shtb_test1)a.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: USE test2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:test2
@@ -190,11 +205,12 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_aggr_view1     	Yes                 	Manual refresh      	Available in presence of insert operations only
+aggr_view_min       	Yes                 	Manual refresh      	Available for insert operations only
+shtb_aggr_view1     	Yes                 	Manual refresh      	Available for insert operations only
 shtb_aggr_view2     	Yes                 	Manual refresh      	Available           
-shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available           
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available           
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS '%test%'
@@ -220,16 +236,16 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS '%test%'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available           
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: SHOW MATERIALIZED VIEWS '%view2'
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS '%view2'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
 shtb_aggr_view2     	Yes                 	Manual refresh      	Available           
-shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available           
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available           
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: USE test2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:test2
@@ -241,8 +257,8 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS 'shtb_%'
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test2_view2    	No                  	Manual refresh      	Unknown             
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test2_view2    	No                  	Manual refresh      	Not available       
 PREHOOK: query: USE default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -273,18 +289,19 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test1
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_aggr_view1     	Yes                 	Manual refresh      	Available in presence of insert operations only
+aggr_view_min       	Yes                 	Manual refresh      	Available for insert operations only
+shtb_aggr_view1     	Yes                 	Manual refresh      	Available for insert operations only
 shtb_aggr_view2     	Yes                 	Manual refresh      	Available           
-shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available           
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available           
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM test2
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test2_view2    	No                  	Manual refresh      	Unknown             
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test2_view2    	No                  	Manual refresh      	Not available       
 PREHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: EXPLAIN SHOW MATERIALIZED VIEWS IN test1
@@ -309,11 +326,12 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_aggr_view1     	Yes                 	Manual refresh      	Available in presence of insert operations only
+aggr_view_min       	Yes                 	Manual refresh      	Available for insert operations only
+shtb_aggr_view1     	Yes                 	Manual refresh      	Available for insert operations only
 shtb_aggr_view2     	Yes                 	Manual refresh      	Available           
-shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available           
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available           
+shtb_full_view2     	Yes                 	Manual refresh (Valid for 5min)	Available for insert operations only
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN default
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN default
@@ -343,8 +361,8 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test1 "shtb_test%"
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-shtb_test1_view1    	No                  	Manual refresh      	Unknown             
-shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available           
+shtb_test1_view1    	No                  	Manual refresh      	Not available       
+shtb_test1_view2    	Yes                 	Manual refresh (Valid always)	Available for insert operations only
 PREHOOK: query: DESCRIBE FORMATTED test1.shtb_full_view2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test1@shtb_full_view2
@@ -369,7 +387,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	rewriting.time.window	5min                
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -388,8 +406,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.test1.shtb_test1	0/0/0               	 
+Table name          	Snapshot            	 
+test1.shtb_test1    	:0:9223372036854775807::	 
 PREHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test1@shtb_test1_view1
@@ -413,7 +431,7 @@ Table Parameters:
 	numFiles            	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -432,8 +450,8 @@ Rewrite Enabled:    	No
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.test1.shtb_test1	0/0/0               	 
+Table name          	Snapshot            	 
+test1.shtb_test1    	:0:9223372036854775807::	 
 PREHOOK: query: DESCRIBE FORMATTED test1.shtb_test1_view2
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: test1@shtb_test1_view2
@@ -458,7 +476,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	rewriting.time.window	-1min               
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -477,8 +495,8 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.test1.shtb_test1	0/0/0               	 
+Table name          	Snapshot            	 
+test1.shtb_test1    	:0:9223372036854775807::	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS IN test2 LIKE "nomatch"
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS IN test2 LIKE "nomatch"
@@ -531,7 +549,7 @@ PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS FROM `database` LIKE "fooview"
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
-fooview             	Yes                 	Manual refresh (Valid until source tables modified)	Available           
+fooview             	Yes                 	Manual refresh (Valid until source tables modified)	Available for insert operations only
 PREHOOK: query: DESCRIBE FORMATTED `database`.`fooview`
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: database@fooview
@@ -554,7 +572,7 @@ Table Parameters:
 	numRows             	0                   
 	rawDataSize         	0                   
 	rewriting.time.window	0min                
-	totalSize           	0                   
+	totalSize           	#Masked#
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -573,16 +591,18 @@ Rewrite Enabled:    	Yes
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
-Table name          	I/U/D since last rebuild	 
-hive.database.foo_n0	0/0/0               	 
+Table name          	Snapshot            	 
+database.foo_n0     	:0:9223372036854775807::	 
 PREHOOK: query: DROP MATERIALIZED VIEW fooview
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: query: DROP MATERIALIZED VIEW fooview
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: query: DROP TABLE foo_n0
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE foo_n0
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: USE test1
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:test1
@@ -597,6 +617,14 @@ POSTHOOK: query: DROP MATERIALIZED VIEW shtb_test1_view1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: test1@shtb_test1_view1
 POSTHOOK: Output: test1@shtb_test1_view1
+PREHOOK: query: DROP MATERIALIZED VIEW aggr_view_min
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: test1@aggr_view_min
+PREHOOK: Output: test1@aggr_view_min
+POSTHOOK: query: DROP MATERIALIZED VIEW aggr_view_min
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: test1@aggr_view_min
+POSTHOOK: Output: test1@aggr_view_min
 PREHOOK: query: DROP MATERIALIZED VIEW shtb_test1_view2
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: test1@shtb_test1_view2
@@ -632,10 +660,12 @@ POSTHOOK: Output: test1@shtb_aggr_view2
 PREHOOK: query: DROP TABLE shtb_test1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test1@shtb_test1
+PREHOOK: Output: database:test1
 PREHOOK: Output: test1@shtb_test1
 POSTHOOK: query: DROP TABLE shtb_test1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test1@shtb_test1
+POSTHOOK: Output: database:test1
 POSTHOOK: Output: test1@shtb_test1
 PREHOOK: query: DROP DATABASE test1
 PREHOOK: type: DROPDATABASE
@@ -670,18 +700,22 @@ POSTHOOK: Output: test2@shtb_test2_view2
 PREHOOK: query: DROP TABLE shtb_test1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test2@shtb_test1
+PREHOOK: Output: database:test2
 PREHOOK: Output: test2@shtb_test1
 POSTHOOK: query: DROP TABLE shtb_test1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test2@shtb_test1
+POSTHOOK: Output: database:test2
 POSTHOOK: Output: test2@shtb_test1
 PREHOOK: query: DROP TABLE shtb_test2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: test2@shtb_test2
+PREHOOK: Output: database:test2
 PREHOOK: Output: test2@shtb_test2
 POSTHOOK: query: DROP TABLE shtb_test2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: test2@shtb_test2
+POSTHOOK: Output: database:test2
 POSTHOOK: Output: test2@shtb_test2
 PREHOOK: query: DROP DATABASE test2
 PREHOOK: type: DROPDATABASE

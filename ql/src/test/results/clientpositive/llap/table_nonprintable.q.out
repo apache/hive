@@ -1,7 +1,7 @@
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###         16 ### HDFS DATE ### hdfs://### HDFS PATH ###¢Bar/in1.txt
+-rw-r--r--   3 ### USER ### ### GROUP ###         ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###¢Bar/in1.txt
 Found 1 items
--rw-r--r--   3 ### USER ### ### GROUP ###         16 ### HDFS DATE ### hdfs://### HDFS PATH ###Foo/in1.txt
+-rw-r--r--   3 ### USER ### ### GROUP ###         ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###Foo/in1.txt
 Found 2 items
 drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###Foo
 drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###¢Bar
@@ -68,9 +68,11 @@ POSTHOOK: Input: default@table_external
 PREHOOK: query: drop table table_external
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_external
+PREHOOK: Output: database:default
 PREHOOK: Output: default@table_external
 POSTHOOK: query: drop table table_external
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_external
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_external
 #### A masked pattern was here ####

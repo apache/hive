@@ -819,7 +819,7 @@ import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
   private String getUniqueId() {
     if (uniqueId == null) {
       uniqueId =
-          Preconditions.checkNotNull(Strings.emptyToNull(HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVEQUERYID)),
+          Preconditions.checkNotNull(Strings.emptyToNull(HiveConf.getVar(getConf(), HiveConf.ConfVars.HIVE_QUERY_ID)),
               "Hive query id is null");
     }
     return uniqueId;

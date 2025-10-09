@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -106,7 +105,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
   }
 
   protected void writeFileEntry(Table table, Partition ptn, String file, Context withinContext)
-          throws IOException, LoginException, MetaException, HiveFatalException {
+          throws IOException, HiveFatalException {
     HiveConf hiveConf = withinContext.hiveConf;
     String distCpDoAsUser = hiveConf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
     if (!Utils.shouldDumpMetaDataOnly(withinContext.hiveConf)) {

@@ -1,4 +1,4 @@
---! qt:replace:/((rawData|total)Size\s+)[0-9]{2,}/$1__SOME_NUMBER__/
+--! qt:replace:/((rawData)Size\s+)[0-9]{2,}/$1__SOME_NUMBER__/
 
 set hive.vectorized.execution.enabled=false;
 

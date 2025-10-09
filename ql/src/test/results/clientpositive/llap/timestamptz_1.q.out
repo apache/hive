@@ -1,7 +1,9 @@
 PREHOOK: query: drop table tstz1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table tstz1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table tstz1(t timestamp with local time zone)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

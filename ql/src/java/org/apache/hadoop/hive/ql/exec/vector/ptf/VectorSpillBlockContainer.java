@@ -180,7 +180,7 @@ class VectorSpillBlockContainer {
         spillRowBytesContainer = new VectorRowBytesContainer(spillLocalDirs);
 
         if (bufferedBatchVectorSerializeRow == null) {
-          initSerizalization();
+          initSerialization();
         }
       }
       return spillRowBytesContainer;
@@ -188,12 +188,12 @@ class VectorSpillBlockContainer {
 
     VectorSerializeRow getVectorSerializeRow() throws HiveException {
       if (bufferedBatchVectorSerializeRow == null) {
-        initSerizalization();
+        initSerialization();
       }
       return bufferedBatchVectorSerializeRow;
     }
 
-    private void initSerizalization() throws HiveException {
+    private void initSerialization() throws HiveException {
       initVectorSerializeRow();
       initVectorDeserializeRow();
     }
@@ -264,7 +264,7 @@ class VectorSpillBlockContainer {
         for (int logicalIndex = 0; logicalIndex < size; logicalIndex++) {
           final int batchIndex = (selectedInUse ? selected[logicalIndex] : logicalIndex);
 
-          Output output = rowBytesContainer.getOuputForRowBytes();
+          Output output = rowBytesContainer.getOutputForRowBytes();
           vectorSerializeRow.setOutputAppend(output);
           vectorSerializeRow.serializeWrite(batch, batchIndex);
           rowBytesContainer.finishRow();
@@ -277,7 +277,7 @@ class VectorSpillBlockContainer {
     /**
      * Reads a single row from a VectorRowBytesContainer. Caller is responsible for calling and
      * checking readNext in advance.
-     * 
+     *
      * @param batch
      * @param vectorDeserializeRow
      * @param rowBytesContainer

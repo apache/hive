@@ -18,13 +18,11 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.parse.PartitionTransformSpec.TransformType;
+import org.apache.hadoop.hive.ql.parse.TransformSpec.TransformType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,10 +43,10 @@ public class PartitionTransform {
    * @param fields The partition column fields
    * @return list of partition transforms
    */
-  public static List<PartitionTransformSpec> getPartitionTransformSpec(List<FieldSchema> fields) {
+  public static List<TransformSpec> getPartitionTransformSpec(List<FieldSchema> fields) {
     return fields.stream()
-               .map(field -> new PartitionTransformSpec(field.getName(), TransformType.IDENTITY, Optional.empty()))
-               .collect(Collectors.toList());
+        .map(field -> new TransformSpec(field.getName(), TransformType.IDENTITY, null))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -56,10 +54,10 @@ public class PartitionTransform {
    * @param node AST Tree node, must be not null
    * @return list of partition transforms
    */
-  public static List<PartitionTransformSpec> getPartitionTransformSpec(ASTNode node) {
-    List<PartitionTransformSpec> partSpecList = new ArrayList<>();
+  public static List<TransformSpec> getPartitionTransformSpec(ASTNode node) {
+    List<TransformSpec> partSpecList = new ArrayList<>();
     for (int i = 0; i < node.getChildCount(); i++) {
-      PartitionTransformSpec spec = new PartitionTransformSpec();
+      TransformSpec spec = new TransformSpec();
       ASTNode child = (ASTNode) node.getChild(i);
       for (int j = 0; j < child.getChildCount(); j++) {
         ASTNode grandChild = (ASTNode) child.getChild(j);
@@ -75,7 +73,7 @@ public class PartitionTransform {
           case HiveParser.TOK_TRUNCATE:
           case HiveParser.TOK_BUCKET:
             spec.setTransformType(TRANSFORMS.get(grandChild.getToken().getType()));
-            spec.setTransformParam(Optional.ofNullable(Integer.valueOf(grandChild.getChild(0).getText())));
+            spec.setTransformParam(Integer.valueOf(grandChild.getChild(0).getText()));
             spec.setColumnName(grandChild.getChild(1).getText().toLowerCase());
             break;
         }

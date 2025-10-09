@@ -83,7 +83,7 @@ public final class ParquetDataColumnReaderFactory {
     protected Dictionary dict;
 
     // After the data is read in the parquet type, isValid will be set to true if the data can be
-    // returned in the type defined in HMS.  Otherwise isValid is set to false.
+    // returned in the type defined in HMS. Otherwise, isValid is set to false.
     boolean isValid = true;
 
     protected int hivePrecision = 0;
@@ -272,7 +272,7 @@ public final class ParquetDataColumnReaderFactory {
     }
 
     /**
-     * Enforce the max legnth of varchar or char.
+     * Enforce the max length of varchar or char.
      */
     protected String enforceMaxLength(String value) {
       return HiveBaseChar.enforceMaxLength(value, length);
@@ -1909,8 +1909,8 @@ public final class ParquetDataColumnReaderFactory {
     case INT96:
       ZoneId targetZone =
           skipTimestampConversion ? ZoneOffset.UTC : firstNonNull(writerTimezone, TimeZone.getDefault().toZoneId());
-      return isDictionary ? 
-          new TypesFromInt96PageReader(dictionary, length, targetZone, legacyConversionEnabled) : 
+      return isDictionary ?
+          new TypesFromInt96PageReader(dictionary, length, targetZone, legacyConversionEnabled) :
           new TypesFromInt96PageReader(valuesReader, length, targetZone, legacyConversionEnabled);
     case BOOLEAN:
       return isDictionary ? new TypesFromBooleanPageReader(dictionary, length) : new

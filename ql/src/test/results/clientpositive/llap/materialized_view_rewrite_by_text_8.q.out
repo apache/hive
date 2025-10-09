@@ -8,7 +8,7 @@ POSTHOOK: query: create table t1(col0 int) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
-Only query text based automatic rewriting is available for materialized view. LEFT join type is not supported by rewriting algorithm.
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported join type: LEFT.
 Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: create materialized view mat1 as
 select l.col0 from t1 l left outer join t1 r on (l.col0 = r.col0) where l.col0 = 20
@@ -23,7 +23,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1
 POSTHOOK: Lineage: mat1.col0 SIMPLE []
-Only query text based automatic rewriting is available for materialized view. LEFT join type is not supported by rewriting algorithm.
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported join type: LEFT.
 Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: create materialized view mat2 as
 select col0 from

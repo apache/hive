@@ -76,6 +76,8 @@ public class TestCommands {
 
     TestHCatClient.startMetaStoreServer();
     hconf = TestHCatClient.getConf();
+    //TODO: HIVE-27998: hcatalog tests on Tez
+    hconf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
     hconf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,"");
     hconf.set(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
     hconf

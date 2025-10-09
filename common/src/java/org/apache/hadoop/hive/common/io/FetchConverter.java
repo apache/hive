@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.common.io;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
-public abstract class FetchConverter extends SessionStream {
+public abstract class FetchConverter extends SessionStream implements FetchCallback {
 
   protected volatile boolean queryfound;
   protected volatile boolean fetchStarted;
@@ -39,6 +39,7 @@ public abstract class FetchConverter extends SessionStream {
     fetchStarted = true;
   }
 
+  @Override
   public void println(String out) {
     if (byPass()) {
       printDirect(out);

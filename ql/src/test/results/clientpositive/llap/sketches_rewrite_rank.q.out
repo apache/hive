@@ -43,27 +43,27 @@ order by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	1	1
-1	1	1
-2	3	3
-3	4	4
-4	5	5
-5	6	6
-6	7	7
-6	7	7
-6	7	7
-7	10	10
-7	10	10
-8	12	12
-8	12	12
-9	14	14
-9	14	14
-10	16	16
-10	16	16
-11	18	18
-12	19	19
-13	20	20
-14	21	21
+1	1	3
+1	1	3
+2	3	4
+3	4	5
+4	5	6
+5	6	7
+6	7	10
+6	7	10
+6	7	10
+7	10	12
+7	10	12
+8	12	14
+8	12	14
+9	14	16
+9	14	16
+10	16	18
+10	16	18
+11	18	19
+12	19	20
+13	20	21
+14	21	22
 15	22	22
 WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
@@ -123,7 +123,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -161,7 +161,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -195,27 +195,27 @@ POSTHOOK: query: select id,'rewrite',rank() over (order by id) from sketch_input
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	rewrite	1
-1	rewrite	1
-2	rewrite	3
-3	rewrite	4
-4	rewrite	5
-5	rewrite	6
-6	rewrite	7
-6	rewrite	7
-6	rewrite	7
-7	rewrite	10
-7	rewrite	10
-8	rewrite	12
-8	rewrite	12
-9	rewrite	14
-9	rewrite	14
-10	rewrite	16
-10	rewrite	16
-11	rewrite	18
-12	rewrite	19
-13	rewrite	20
-14	rewrite	21
+1	rewrite	3
+1	rewrite	3
+2	rewrite	4
+3	rewrite	5
+4	rewrite	6
+5	rewrite	7
+6	rewrite	10
+6	rewrite	10
+6	rewrite	10
+7	rewrite	12
+7	rewrite	12
+8	rewrite	14
+8	rewrite	14
+9	rewrite	16
+9	rewrite	16
+10	rewrite	18
+10	rewrite	18
+11	rewrite	19
+12	rewrite	20
+13	rewrite	21
+14	rewrite	22
 15	rewrite	22
 WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
@@ -276,7 +276,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -348,7 +348,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 5 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -382,27 +382,27 @@ POSTHOOK: query: select id,'rewrite',count(id) over ()*rank() over (order by id)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	rewrite	22
-1	rewrite	22
-2	rewrite	66
-3	rewrite	88
-4	rewrite	110
-5	rewrite	132
-6	rewrite	154
-6	rewrite	154
-6	rewrite	154
-7	rewrite	220
-7	rewrite	220
-8	rewrite	264
-8	rewrite	264
-9	rewrite	308
-9	rewrite	308
-10	rewrite	352
-10	rewrite	352
-11	rewrite	396
-12	rewrite	418
-13	rewrite	440
-14	rewrite	462
+1	rewrite	66
+1	rewrite	66
+2	rewrite	88
+3	rewrite	110
+4	rewrite	132
+5	rewrite	154
+6	rewrite	220
+6	rewrite	220
+6	rewrite	220
+7	rewrite	264
+7	rewrite	264
+8	rewrite	308
+8	rewrite	308
+9	rewrite	352
+9	rewrite	352
+10	rewrite	396
+10	rewrite	396
+11	rewrite	418
+12	rewrite	440
+13	rewrite	462
+14	rewrite	484
 15	rewrite	484
 PREHOOK: query: insert into sketch_input values (null,'a'),(null,'b')
 PREHOOK: type: QUERY
@@ -472,7 +472,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -510,7 +510,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -546,27 +546,27 @@ POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
 NULL	rewrite	1
 NULL	rewrite	1
-1	rewrite	1
-1	rewrite	1
-2	rewrite	3
-3	rewrite	4
-4	rewrite	5
-5	rewrite	6
-6	rewrite	7
-6	rewrite	7
-6	rewrite	7
-7	rewrite	10
-7	rewrite	10
-8	rewrite	12
-8	rewrite	12
-9	rewrite	14
-9	rewrite	14
-10	rewrite	16
-10	rewrite	16
-11	rewrite	18
-12	rewrite	19
-13	rewrite	20
-14	rewrite	21
+1	rewrite	3
+1	rewrite	3
+2	rewrite	4
+3	rewrite	5
+4	rewrite	6
+5	rewrite	7
+6	rewrite	10
+6	rewrite	10
+6	rewrite	10
+7	rewrite	12
+7	rewrite	12
+8	rewrite	14
+8	rewrite	14
+9	rewrite	16
+9	rewrite	16
+10	rewrite	18
+10	rewrite	18
+11	rewrite	19
+12	rewrite	20
+13	rewrite	21
+14	rewrite	22
 15	rewrite	22
 WARNING: Comparing bigint and double may result in loss of information.
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
@@ -626,7 +626,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: boolean)
                         Statistics: Num rows: 1 Data size: 148 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: llap
@@ -664,7 +664,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: ds_kll_sketch(VALUE._col0)
@@ -698,27 +698,27 @@ POSTHOOK: query: select id,'rewrite',rank() over (order by id nulls last) from s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	rewrite	1
-1	rewrite	1
-2	rewrite	3
-3	rewrite	4
-4	rewrite	5
-5	rewrite	6
-6	rewrite	7
-6	rewrite	7
-6	rewrite	7
-7	rewrite	10
-7	rewrite	10
-8	rewrite	12
-8	rewrite	12
-9	rewrite	14
-9	rewrite	14
-10	rewrite	16
-10	rewrite	16
-11	rewrite	18
-12	rewrite	19
-13	rewrite	20
-14	rewrite	21
+1	rewrite	3
+1	rewrite	3
+2	rewrite	4
+3	rewrite	5
+4	rewrite	6
+5	rewrite	7
+6	rewrite	10
+6	rewrite	10
+6	rewrite	10
+7	rewrite	12
+7	rewrite	12
+8	rewrite	14
+8	rewrite	14
+9	rewrite	16
+9	rewrite	16
+10	rewrite	18
+10	rewrite	18
+11	rewrite	19
+12	rewrite	20
+13	rewrite	21
+14	rewrite	22
 15	rewrite	22
 NULL	rewrite	22
 NULL	rewrite	22
@@ -732,27 +732,27 @@ POSTHOOK: query: select id,rank() over (order by id) from sketch_input order by 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sketch_input
 #### A masked pattern was here ####
-1	1
-1	1
-2	3
-3	4
-4	5
-5	6
-6	7
-6	7
-6	7
-7	10
-7	10
-8	12
-8	12
-9	14
-9	14
-10	16
-10	16
-11	18
-12	19
-13	20
-14	21
+1	3
+1	3
+2	4
+3	5
+4	6
+5	7
+6	10
+6	10
+6	10
+7	12
+7	12
+8	14
+8	14
+9	16
+9	16
+10	18
+10	18
+11	19
+12	20
+13	21
+14	22
 15	22
 NULL	22
 NULL	22

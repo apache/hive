@@ -13,17 +13,20 @@ package org.apache.hadoop.hive.metastore.api;
 
   private static final org.apache.thrift.protocol.TField PARTITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("partitions", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField IS_STATS_COMPLIANT_FIELD_DESC = new org.apache.thrift.protocol.TField("isStatsCompliant", org.apache.thrift.protocol.TType.BOOL, (short)2);
+  private static final org.apache.thrift.protocol.TField PARTITION_COL_SCHEMA_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionColSchema", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new AddPartitionsResultStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new AddPartitionsResultTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.util.List<Partition> partitions; // optional
   private boolean isStatsCompliant; // optional
+  private @org.apache.thrift.annotation.Nullable java.util.List<FieldSchema> partitionColSchema; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     PARTITIONS((short)1, "partitions"),
-    IS_STATS_COMPLIANT((short)2, "isStatsCompliant");
+    IS_STATS_COMPLIANT((short)2, "isStatsCompliant"),
+    PARTITION_COL_SCHEMA((short)3, "partitionColSchema");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -43,6 +46,8 @@ package org.apache.hadoop.hive.metastore.api;
           return PARTITIONS;
         case 2: // IS_STATS_COMPLIANT
           return IS_STATS_COMPLIANT;
+        case 3: // PARTITION_COL_SCHEMA
+          return PARTITION_COL_SCHEMA;
         default:
           return null;
       }
@@ -86,7 +91,7 @@ package org.apache.hadoop.hive.metastore.api;
   // isset id assignments
   private static final int __ISSTATSCOMPLIANT_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PARTITIONS,_Fields.IS_STATS_COMPLIANT};
+  private static final _Fields optionals[] = {_Fields.PARTITIONS,_Fields.IS_STATS_COMPLIANT,_Fields.PARTITION_COL_SCHEMA};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -95,6 +100,9 @@ package org.apache.hadoop.hive.metastore.api;
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
     tmpMap.put(_Fields.IS_STATS_COMPLIANT, new org.apache.thrift.meta_data.FieldMetaData("isStatsCompliant", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.PARTITION_COL_SCHEMA, new org.apache.thrift.meta_data.FieldMetaData("partitionColSchema", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FieldSchema.class))));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AddPartitionsResult.class, metaDataMap);
   }
@@ -115,6 +123,13 @@ package org.apache.hadoop.hive.metastore.api;
       this.partitions = __this__partitions;
     }
     this.isStatsCompliant = other.isStatsCompliant;
+    if (other.isSetPartitionColSchema()) {
+      java.util.List<FieldSchema> __this__partitionColSchema = new java.util.ArrayList<FieldSchema>(other.partitionColSchema.size());
+      for (FieldSchema other_element : other.partitionColSchema) {
+        __this__partitionColSchema.add(new FieldSchema(other_element));
+      }
+      this.partitionColSchema = __this__partitionColSchema;
+    }
   }
 
   public AddPartitionsResult deepCopy() {
@@ -126,6 +141,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.partitions = null;
     setIsStatsCompliantIsSet(false);
     this.isStatsCompliant = false;
+    this.partitionColSchema = null;
   }
 
   public int getPartitionsSize() {
@@ -190,6 +206,46 @@ package org.apache.hadoop.hive.metastore.api;
     __isset_bitfield = org.apache.thrift.EncodingUtils.setBit(__isset_bitfield, __ISSTATSCOMPLIANT_ISSET_ID, value);
   }
 
+  public int getPartitionColSchemaSize() {
+    return (this.partitionColSchema == null) ? 0 : this.partitionColSchema.size();
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.Iterator<FieldSchema> getPartitionColSchemaIterator() {
+    return (this.partitionColSchema == null) ? null : this.partitionColSchema.iterator();
+  }
+
+  public void addToPartitionColSchema(FieldSchema elem) {
+    if (this.partitionColSchema == null) {
+      this.partitionColSchema = new java.util.ArrayList<FieldSchema>();
+    }
+    this.partitionColSchema.add(elem);
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.util.List<FieldSchema> getPartitionColSchema() {
+    return this.partitionColSchema;
+  }
+
+  public void setPartitionColSchema(@org.apache.thrift.annotation.Nullable java.util.List<FieldSchema> partitionColSchema) {
+    this.partitionColSchema = partitionColSchema;
+  }
+
+  public void unsetPartitionColSchema() {
+    this.partitionColSchema = null;
+  }
+
+  /** Returns true if field partitionColSchema is set (has been assigned a value) and false otherwise */
+  public boolean isSetPartitionColSchema() {
+    return this.partitionColSchema != null;
+  }
+
+  public void setPartitionColSchemaIsSet(boolean value) {
+    if (!value) {
+      this.partitionColSchema = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case PARTITIONS:
@@ -208,6 +264,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case PARTITION_COL_SCHEMA:
+      if (value == null) {
+        unsetPartitionColSchema();
+      } else {
+        setPartitionColSchema((java.util.List<FieldSchema>)value);
+      }
+      break;
+
     }
   }
 
@@ -219,6 +283,9 @@ package org.apache.hadoop.hive.metastore.api;
 
     case IS_STATS_COMPLIANT:
       return isIsStatsCompliant();
+
+    case PARTITION_COL_SCHEMA:
+      return getPartitionColSchema();
 
     }
     throw new java.lang.IllegalStateException();
@@ -235,6 +302,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetPartitions();
     case IS_STATS_COMPLIANT:
       return isSetIsStatsCompliant();
+    case PARTITION_COL_SCHEMA:
+      return isSetPartitionColSchema();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -270,6 +339,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_partitionColSchema = true && this.isSetPartitionColSchema();
+    boolean that_present_partitionColSchema = true && that.isSetPartitionColSchema();
+    if (this_present_partitionColSchema || that_present_partitionColSchema) {
+      if (!(this_present_partitionColSchema && that_present_partitionColSchema))
+        return false;
+      if (!this.partitionColSchema.equals(that.partitionColSchema))
+        return false;
+    }
+
     return true;
   }
 
@@ -284,6 +362,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetIsStatsCompliant()) ? 131071 : 524287);
     if (isSetIsStatsCompliant())
       hashCode = hashCode * 8191 + ((isStatsCompliant) ? 131071 : 524287);
+
+    hashCode = hashCode * 8191 + ((isSetPartitionColSchema()) ? 131071 : 524287);
+    if (isSetPartitionColSchema())
+      hashCode = hashCode * 8191 + partitionColSchema.hashCode();
 
     return hashCode;
   }
@@ -312,6 +394,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetIsStatsCompliant()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isStatsCompliant, other.isStatsCompliant);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.compare(isSetPartitionColSchema(), other.isSetPartitionColSchema());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetPartitionColSchema()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partitionColSchema, other.partitionColSchema);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -350,6 +442,16 @@ package org.apache.hadoop.hive.metastore.api;
       if (!first) sb.append(", ");
       sb.append("isStatsCompliant:");
       sb.append(this.isStatsCompliant);
+      first = false;
+    }
+    if (isSetPartitionColSchema()) {
+      if (!first) sb.append(", ");
+      sb.append("partitionColSchema:");
+      if (this.partitionColSchema == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.partitionColSchema);
+      }
       first = false;
     }
     sb.append(")");
@@ -400,14 +502,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // PARTITIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list596 = iprot.readListBegin();
-                struct.partitions = new java.util.ArrayList<Partition>(_list596.size);
-                @org.apache.thrift.annotation.Nullable Partition _elem597;
-                for (int _i598 = 0; _i598 < _list596.size; ++_i598)
+                org.apache.thrift.protocol.TList _list642 = iprot.readListBegin();
+                struct.partitions = new java.util.ArrayList<Partition>(_list642.size);
+                @org.apache.thrift.annotation.Nullable Partition _elem643;
+                for (int _i644 = 0; _i644 < _list642.size; ++_i644)
                 {
-                  _elem597 = new Partition();
-                  _elem597.read(iprot);
-                  struct.partitions.add(_elem597);
+                  _elem643 = new Partition();
+                  _elem643.read(iprot);
+                  struct.partitions.add(_elem643);
                 }
                 iprot.readListEnd();
               }
@@ -420,6 +522,25 @@ package org.apache.hadoop.hive.metastore.api;
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.isStatsCompliant = iprot.readBool();
               struct.setIsStatsCompliantIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // PARTITION_COL_SCHEMA
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list645 = iprot.readListBegin();
+                struct.partitionColSchema = new java.util.ArrayList<FieldSchema>(_list645.size);
+                @org.apache.thrift.annotation.Nullable FieldSchema _elem646;
+                for (int _i647 = 0; _i647 < _list645.size; ++_i647)
+                {
+                  _elem646 = new FieldSchema();
+                  _elem646.read(iprot);
+                  struct.partitionColSchema.add(_elem646);
+                }
+                iprot.readListEnd();
+              }
+              struct.setPartitionColSchemaIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -442,9 +563,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(PARTITIONS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitions.size()));
-            for (Partition _iter599 : struct.partitions)
+            for (Partition _iter648 : struct.partitions)
             {
-              _iter599.write(oprot);
+              _iter648.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -455,6 +576,20 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(IS_STATS_COMPLIANT_FIELD_DESC);
         oprot.writeBool(struct.isStatsCompliant);
         oprot.writeFieldEnd();
+      }
+      if (struct.partitionColSchema != null) {
+        if (struct.isSetPartitionColSchema()) {
+          oprot.writeFieldBegin(PARTITION_COL_SCHEMA_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionColSchema.size()));
+            for (FieldSchema _iter649 : struct.partitionColSchema)
+            {
+              _iter649.write(oprot);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -480,35 +615,47 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetIsStatsCompliant()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetPartitionColSchema()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetPartitions()) {
         {
           oprot.writeI32(struct.partitions.size());
-          for (Partition _iter600 : struct.partitions)
+          for (Partition _iter650 : struct.partitions)
           {
-            _iter600.write(oprot);
+            _iter650.write(oprot);
           }
         }
       }
       if (struct.isSetIsStatsCompliant()) {
         oprot.writeBool(struct.isStatsCompliant);
       }
+      if (struct.isSetPartitionColSchema()) {
+        {
+          oprot.writeI32(struct.partitionColSchema.size());
+          for (FieldSchema _iter651 : struct.partitionColSchema)
+          {
+            _iter651.write(oprot);
+          }
+        }
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, AddPartitionsResult struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(2);
+      java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list601 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
-          struct.partitions = new java.util.ArrayList<Partition>(_list601.size);
-          @org.apache.thrift.annotation.Nullable Partition _elem602;
-          for (int _i603 = 0; _i603 < _list601.size; ++_i603)
+          org.apache.thrift.protocol.TList _list652 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.partitions = new java.util.ArrayList<Partition>(_list652.size);
+          @org.apache.thrift.annotation.Nullable Partition _elem653;
+          for (int _i654 = 0; _i654 < _list652.size; ++_i654)
           {
-            _elem602 = new Partition();
-            _elem602.read(iprot);
-            struct.partitions.add(_elem602);
+            _elem653 = new Partition();
+            _elem653.read(iprot);
+            struct.partitions.add(_elem653);
           }
         }
         struct.setPartitionsIsSet(true);
@@ -516,6 +663,20 @@ package org.apache.hadoop.hive.metastore.api;
       if (incoming.get(1)) {
         struct.isStatsCompliant = iprot.readBool();
         struct.setIsStatsCompliantIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TList _list655 = iprot.readListBegin(org.apache.thrift.protocol.TType.STRUCT);
+          struct.partitionColSchema = new java.util.ArrayList<FieldSchema>(_list655.size);
+          @org.apache.thrift.annotation.Nullable FieldSchema _elem656;
+          for (int _i657 = 0; _i657 < _list655.size; ++_i657)
+          {
+            _elem656 = new FieldSchema();
+            _elem656.read(iprot);
+            struct.partitionColSchema.add(_elem656);
+          }
+        }
+        struct.setPartitionColSchemaIsSet(true);
       }
     }
   }

@@ -237,10 +237,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true
 PREHOOK: query: drop table i_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@i_n1
 POSTHOOK: query: drop table i_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@i_n1
 PREHOOK: query: create table i_n1(key double)
 PREHOOK: type: CREATETABLE
@@ -291,10 +293,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true
 PREHOOK: query: drop table i_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@i_n1
 POSTHOOK: query: drop table i_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@i_n1
 PREHOOK: query: create table i_n1(key decimal)
 PREHOOK: type: CREATETABLE
@@ -345,10 +349,12 @@ COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true
 PREHOOK: query: drop table i_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@i_n1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@i_n1
 POSTHOOK: query: drop table i_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@i_n1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@i_n1
 PREHOOK: query: create table i_n1(key date)
 PREHOOK: type: CREATETABLE

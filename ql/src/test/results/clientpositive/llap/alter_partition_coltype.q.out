@@ -402,10 +402,12 @@ ts                  	double
 PREHOOK: query: drop table alter_coltype
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_coltype
+PREHOOK: Output: database:default
 PREHOOK: Output: default@alter_coltype
 POSTHOOK: query: drop table alter_coltype
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter_coltype
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@alter_coltype
 PREHOOK: query: create database pt
 PREHOOK: type: CREATEDATABASE
@@ -451,6 +453,16 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: pt@alterdynamic_part_table
 POSTHOOK: Output: pt@alterdynamic_part_table@partcol1=1/partcol2=1
 POSTHOOK: Lineage: alterdynamic_part_table PARTITION(partcol1=1,partcol2=1).intcol EXPRESSION []
+PREHOOK: query: insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '2', '2', NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: pt@alterdynamic_part_table
+POSTHOOK: query: insert into table pt.alterdynamic_part_table partition(partcol1, partcol2) select '2', '2', NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: pt@alterdynamic_part_table
+POSTHOOK: Output: pt@alterdynamic_part_table@partcol1=2/partcol2=__HIVE_DEFAULT_PARTITION__
+POSTHOOK: Lineage: alterdynamic_part_table PARTITION(partcol1=2,partcol2=__HIVE_DEFAULT_PARTITION__).intcol SIMPLE []
 PREHOOK: query: alter table pt.alterdynamic_part_table partition column (partcol1 int)
 PREHOOK: type: ALTERTABLE_PARTCOLTYPE
 PREHOOK: Input: pt@alterdynamic_part_table
@@ -536,7 +548,7 @@ POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `intcol`
 FROM `pt`.`alterdynamic_part_table`
-WHERE  (`partcol1`, `partcol2`) IN ( (2, '1'),  (1, '__HIVE_DEFAULT_PARTITION__'))
+WHERE (`partcol1`, `partcol2`) IN ((2, '1'), (1, '__HIVE_DEFAULT_PARTITION__'))
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -601,13 +613,36 @@ POSTHOOK: Input: pt@alterdynamic_part_table
 POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
 #### A masked pattern was here ####
 1
+PREHOOK: query: alter table pt.alterdynamic_part_table partition column (partcol2 int)
+PREHOOK: type: ALTERTABLE_PARTCOLTYPE
+PREHOOK: Input: pt@alterdynamic_part_table
+POSTHOOK: query: alter table pt.alterdynamic_part_table partition column (partcol2 int)
+POSTHOOK: type: ALTERTABLE_PARTCOLTYPE
+POSTHOOK: Input: pt@alterdynamic_part_table
+POSTHOOK: Output: pt@alterdynamic_part_table
+PREHOOK: query: select intcol from pt.alterdynamic_part_table where (partcol1=2 and partcol2=1) or (partcol1=2 and isnull(partcol2))
+PREHOOK: type: QUERY
+PREHOOK: Input: pt@alterdynamic_part_table
+PREHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
+PREHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+POSTHOOK: query: select intcol from pt.alterdynamic_part_table where (partcol1=2 and partcol2=1) or (partcol1=2 and isnull(partcol2))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: pt@alterdynamic_part_table
+POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=1
+POSTHOOK: Input: pt@alterdynamic_part_table@partcol1=2/partcol2=__HIVE_DEFAULT_PARTITION__
+#### A masked pattern was here ####
+1
+2
 PREHOOK: query: drop table pt.alterdynamic_part_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: pt@alterdynamic_part_table
+PREHOOK: Output: database:pt
 PREHOOK: Output: pt@alterdynamic_part_table
 POSTHOOK: query: drop table pt.alterdynamic_part_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: pt@alterdynamic_part_table
+POSTHOOK: Output: database:pt
 POSTHOOK: Output: pt@alterdynamic_part_table
 PREHOOK: query: drop database pt
 PREHOOK: type: DROPDATABASE

@@ -4235,7 +4235,7 @@ STAGE PLANS:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 6 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
         Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 6 (CONTAINS)
-        Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE), Union 6 (CONTAINS)
+        Reducer 7 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 6 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4275,7 +4275,7 @@ STAGE PLANS:
                     outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: max(ds)
+                      aggregations: min(ds)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -4285,28 +4285,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: ds
-                    Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: min(ds)
+                      aggregations: max(ds)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -4382,7 +4362,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0)
+                aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4417,7 +4397,7 @@ STAGE PLANS:
                           Partition key expr: ds
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                           Target Vertex: Map 1
-        Reducer 8 
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -4427,7 +4407,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0)
+                aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4520,7 +4500,7 @@ STAGE PLANS:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 6 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
         Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 6 (CONTAINS)
-        Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE), Union 6 (CONTAINS)
+        Reducer 7 <- Map 4 (CUSTOM_SIMPLE_EDGE), Union 6 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4560,7 +4540,7 @@ STAGE PLANS:
                     outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: max(ds)
+                      aggregations: min(ds)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -4570,28 +4550,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: ds
-                    Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: min(ds)
+                      aggregations: max(ds)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -4669,7 +4629,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0)
+                aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4704,7 +4664,7 @@ STAGE PLANS:
                           Partition key expr: ds
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                           Target Vertex: Map 1
-        Reducer 8 
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -4714,7 +4674,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0)
+                aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4805,11 +4765,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 11 <- Map 10 (CUSTOM_SIMPLE_EDGE), Union 9 (CONTAINS)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 4 <- Union 3 (SIMPLE_EDGE), Union 9 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE), Union 9 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE), Union 8 (SIMPLE_EDGE)
+        Reducer 5 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE), Union 8 (CONTAINS)
+        Reducer 9 <- Map 6 (CUSTOM_SIMPLE_EDGE), Union 8 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4830,6 +4790,12 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -4841,7 +4807,7 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-        Map 10 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -4850,6 +4816,17 @@ STAGE PLANS:
                     expressions: ds (type: string)
                     outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: max(ds)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string)
                     Group By Operator
                       aggregations: min(ds)
                       minReductionHashAggr: 0.99
@@ -4872,127 +4849,6 @@ STAGE PLANS:
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: ds (type: string)
-                    minReductionHashAggr: 0.99
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-        Map 7 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: ds
-                    Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      aggregations: max(ds)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-        Reducer 11 
-            Execution mode: vectorized, llap
-            Reduce Vectorization:
-                enabled: true
-                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                Filter Operator
-                  predicate: _col0 is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: _col0 (type: string)
-                    minReductionHashAggr: 0.5
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        minReductionHashAggr: 0.4
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                        Dynamic Partitioning Event Operator
-                          Target column: ds (string)
-                          Target Input: srcpart
-                          Partition key expr: ds
-                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                          Target Vertex: Map 1
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        minReductionHashAggr: 0.4
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                        Dynamic Partitioning Event Operator
-                          Target column: ds (string)
-                          Target Input: srcpart
-                          Partition key expr: ds
-                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                          Target Vertex: Map 5
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -5034,7 +4890,7 @@ STAGE PLANS:
             MergeJoin Vectorization:
                 enabled: false
                 enableConditionsNotMet: Vectorizing MergeJoin Supported IS false
-        Reducer 6 
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -5054,7 +4910,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 8 
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -5099,6 +4955,35 @@ STAGE PLANS:
                           Partition key expr: ds
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                           Target Vertex: Map 1
+        Reducer 9 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                Filter Operator
+                  predicate: _col0 is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    keys: _col0 (type: string)
+                    minReductionHashAggr: 0.5
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: _col0 (type: string)
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string)
                       outputColumnNames: _col0
@@ -5114,11 +4999,11 @@ STAGE PLANS:
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                          Target Vertex: Map 5
+                          Target Vertex: Map 1
         Union 3 
             Vertex: Union 3
-        Union 9 
-            Vertex: Union 9
+        Union 8 
+            Vertex: Union 8
 
   Stage: Stage-0
     Fetch Operator
@@ -7318,7 +7203,7 @@ STAGE PLANS:
         Map 1 <- Union 5 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
         Reducer 4 <- Map 3 (CUSTOM_SIMPLE_EDGE), Union 5 (CONTAINS)
-        Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE), Union 5 (CONTAINS)
+        Reducer 6 <- Map 3 (CUSTOM_SIMPLE_EDGE), Union 5 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -7374,7 +7259,7 @@ STAGE PLANS:
                     outputColumnNames: ds
                     Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: max(ds)
+                      aggregations: min(ds)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -7384,28 +7269,8 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-            Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
-                inputFormatFeatureSupport: [DECIMAL_64]
-                featureSupportInUse: [DECIMAL_64]
-                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: ds
-                    Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: min(ds)
+                      aggregations: max(ds)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
@@ -7457,7 +7322,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0)
+                aggregations: min(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7492,7 +7357,7 @@ STAGE PLANS:
                           Partition key expr: ds
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                           Target Vertex: Map 1
-        Reducer 7 
+        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
@@ -7502,7 +7367,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: min(VALUE._col0)
+                aggregations: max(VALUE._col0)
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7780,40 +7645,50 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: query: drop table srcpart_orc_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_orc_n0
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_orc_n0
 POSTHOOK: query: drop table srcpart_orc_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_orc_n0
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_orc_n0
 PREHOOK: query: drop table srcpart_date_n8
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_date_n8
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_n8
 POSTHOOK: query: drop table srcpart_date_n8
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_date_n8
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_n8
 PREHOOK: query: drop table srcpart_hour_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_hour_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_hour_n2
 POSTHOOK: query: drop table srcpart_hour_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_hour_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_hour_n2
 PREHOOK: query: drop table srcpart_date_hour_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_date_hour_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_date_hour_n2
 POSTHOOK: query: drop table srcpart_date_hour_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_date_hour_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_date_hour_n2
 PREHOOK: query: drop table srcpart_double_hour_n2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@srcpart_double_hour_n2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@srcpart_double_hour_n2
 POSTHOOK: query: drop table srcpart_double_hour_n2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@srcpart_double_hour_n2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@srcpart_double_hour_n2

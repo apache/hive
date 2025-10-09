@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE insert_into1
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE insert_into1
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE insert_into1 (key int, value string)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -593,7 +595,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -701,7 +703,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 
             Execution mode: vectorized, llap
@@ -911,8 +913,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DROP TABLE insert_into1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@insert_into1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@insert_into1
 POSTHOOK: query: DROP TABLE insert_into1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@insert_into1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@insert_into1

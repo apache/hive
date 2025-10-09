@@ -21,13 +21,13 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -66,17 +66,16 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser("hive"));
-    conf = new HiveConf();
+    conf = new HiveConfForTest(TestHivePrivilegeObjectOwnerNameAndType.class);
 
     // Turn on mocked authorization
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, MockedHiveAuthorizerFactory.class.getName());
-    //conf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER, SessionStateUserAuthenticator.class.getName());
     conf.setBoolVar(ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
-    conf.setVar(ConfVars.HIVEMAPREDMODE, "nonstrict");
+    conf.setVar(ConfVars.HIVE_MAPRED_MODE, "nonstrict");
+    conf.setVar(ConfVars.DYNAMIC_PARTITIONING_MODE, "nonstrict");
 
     TestTxnDbUtil.prepDb(conf);
     SessionState.start(conf);
@@ -143,6 +142,37 @@ public class TestHivePrivilegeObjectOwnerNameAndType {
       }
     }
     Assert.assertTrue(containsOwnerType);
+  }
+
+  @Test
+  public void testActionTypeForPartitionedTable() throws Exception {
+    runCmd("CREATE EXTERNAL TABLE Part (eid int, name int) PARTITIONED BY (position int, dept int, sal int)");
+    reset(mockedAuthorizer);
+    runCmd("insert overwrite table part partition(position=2,DEPT,SAL) select 2,2,2,2");
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> hpoList = io.getValue();
+    Assert.assertFalse(hpoList.isEmpty());
+    for (HivePrivilegeObject hpo : hpoList) {
+      Assert.assertEquals(hpo.getActionType(), HivePrivilegeObject.HivePrivObjectActionType.INSERT_OVERWRITE);
+    }
+  }
+
+  /**
+   * Test to check, if only single instance of Hive Privilege object is created,
+   * during bulk insert into a partitioned table.
+   */
+  @Test
+  public void testSingleInstanceOfHPOForPartitionedTable() throws Exception {
+    reset(mockedAuthorizer);
+    runCmd("insert overwrite table part partition(position=2,DEPT,SAL)" +
+            " select 2,2,2,2" +
+            " union all" +
+            " select 1,2,3,4" +
+            " union all" +
+            " select 3,4,5,6");
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> hpoList = io.getValue();
+    Assert.assertEquals(1, hpoList.size());
   }
 
   /**

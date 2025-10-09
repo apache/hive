@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -49,7 +50,7 @@ public class TestParseUtils {
   public TestParseUtils(String query, TxnType txnType) {
     this.query = query;
     this.txnType = txnType;
-    this.conf = new HiveConf();
+    this.conf = new HiveConfForTest(getClass());
   }
 
   @Before
@@ -120,26 +121,26 @@ public class TestParseUtils {
   @Test
   public void testTxnTypeWithEnabledReadOnlyFeature() throws Exception {
     enableReadOnlyTxnFeature(true);
-    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))), txnType);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query, new Context(conf))), txnType);
   }
 
   @Test
   public void testTxnTypeWithDisabledReadOnlyFeature() throws Exception {
     enableReadOnlyTxnFeature(false);
-    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))),
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query, new Context(conf))),
         txnType == TxnType.READ_ONLY ? TxnType.DEFAULT : txnType);
   }
 
   @Test
   public void testTxnTypeWithLocklessReadsEnabled() throws Exception {
     enableLocklessReadsFeature(true);
-    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))), txnType);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query, new Context(conf))), txnType);
   }
 
   @Test
   public void testTxnTypeWithLocklessReadsDisabled() throws Exception {
     enableLocklessReadsFeature(false);
-    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))), TxnType.DEFAULT);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query, new Context(conf))), TxnType.DEFAULT);
   }
   
   private void enableReadOnlyTxnFeature(boolean featureFlag) {

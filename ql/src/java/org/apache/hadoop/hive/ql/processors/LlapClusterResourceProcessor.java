@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,12 +114,12 @@ public class LlapClusterResourceProcessor implements CommandProcessor {
 
   private Schema getSchema() {
     Schema sch = new Schema();
-    sch.addToFieldSchemas(new FieldSchema("applicationId", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("workerIdentity", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("hostname", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("rpcPort", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("memory", "string", ""));
-    sch.addToFieldSchemas(new FieldSchema("vcores", "string", ""));
+    sch.addToFieldSchemas(new FieldSchema("applicationId", serdeConstants.STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("workerIdentity", serdeConstants.STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("hostname", serdeConstants.STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("rpcPort", serdeConstants.STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("memory", serdeConstants.STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("vcores", serdeConstants.STRING_TYPE_NAME, ""));
     sch.putToProperties(SERIALIZATION_NULL_FORMAT, defaultNullString);
     return sch;
   }

@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists store_sales
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists store_sales
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table store_sales
 (
     ss_sold_date_sk           int,
@@ -74,8 +76,10 @@ POSTHOOK: Input: default@store_sales
 POSTHOOK: Output: default@store_sales
 PREHOOK: query: drop table if exists store_returns
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists store_returns
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table store_returns
 (
     sr_returned_date_sk      int,
@@ -142,8 +146,10 @@ POSTHOOK: Input: default@store_returns
 POSTHOOK: Output: default@store_returns
 PREHOOK: query: drop table if exists reason
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists reason
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create external table reason
 (
     r_reason_sk         int,

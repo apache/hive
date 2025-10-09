@@ -21,7 +21,9 @@ drop table simple_to_mm;
 create table simple_to_mm(key int) stored as orc tblproperties("transactional"="false");
 insert into table simple_to_mm select key from intermediate;
 select * from simple_to_mm s1 order by key;
-alter table simple_to_mm set tblproperties("transactional"="true", "transactional_properties"="insert_only");
+
+explain alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only");
+alter table simple_to_mm convert to acid tblproperties ("transactional_properties"="insert_only");
 export table simple_to_mm to 'ql/test/data/exports/export0';
 select * from simple_to_mm s2 order by key;
 create table import_converted0_mm(key int) stored as orc tblproperties("transactional"="false");

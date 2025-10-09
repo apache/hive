@@ -27,6 +27,7 @@ import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,9 @@ public final class JDBCRexCallValidator {
         return false;
       }
       final SqlOperator operator = call.getOperator();
+      if (HiveIn.INSTANCE.equals(operator)) {
+        return true;
+      }
       List <RexNode> operands = call.getOperands();
       RelDataType resType = call.getType();
       ArrayList<RelDataType> paramsListType = new ArrayList<RelDataType>();

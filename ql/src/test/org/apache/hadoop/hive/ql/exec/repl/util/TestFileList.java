@@ -30,8 +30,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +42,6 @@ import java.util.concurrent.TimeUnit;
  */
 
 @RunWith(MockitoJUnitRunner.class)
-@PrepareForTest({LoggerFactory.class})
 public class TestFileList {
 
   HiveConf conf = new HiveConf();

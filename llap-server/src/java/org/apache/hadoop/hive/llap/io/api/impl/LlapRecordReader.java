@@ -153,7 +153,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
     this.sarg = ConvertAstToSearchArg.createFromConf(job);
     final String fragmentId = LlapTezUtils.getFragmentId(job);
     final String dagId = LlapTezUtils.getDagId(job);
-    final String queryId = HiveConf.getVar(job, HiveConf.ConfVars.HIVEQUERYID);
+    final String queryId = HiveConf.getVar(job, HiveConf.ConfVars.HIVE_QUERY_ID);
     MDC.put("dagId", dagId);
     MDC.put("queryId", queryId);
     TezCounters taskCounters = null;
@@ -853,7 +853,7 @@ class LlapRecordReader implements RecordReader<NullWritable, VectorizedRowBatch>
 
     @Override
     public String getQueryId() {
-      return HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVEQUERYID);
+      return HiveConf.getVar(jobConf, HiveConf.ConfVars.HIVE_QUERY_ID);
     }
 
     @Override

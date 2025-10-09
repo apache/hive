@@ -18,42 +18,39 @@
 
 package org.apache.hive.hplsql.udf;
 
-import org.apache.hadoop.hive.metastore.api.StoredProcedure;
-import org.apache.hadoop.hive.metastore.api.StoredProcedureRequest;
+import org.apache.hadoop.hive.common.type.*;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.*;
 import org.apache.hive.hplsql.Arguments;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.Scope;
 import org.apache.hive.hplsql.Var;
 import org.apache.hive.hplsql.executor.QueryExecutor;
-import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Description(name = "hplsql", value = "_FUNC_('query' [, :1, :2, ...n]) - Execute HPL/SQL query", extended = "Example:\n" + " > SELECT _FUNC_('CURRENT_DATE') FROM src LIMIT 1;\n")
+@Description(name = "hplsql", value = "_FUNC_('query' [, :1, :2, ...n], 'storedProcedure') - Execute HPL/SQL query",
+        extended = "Example:\n" + " > SELECT _FUNC_('CURRENT_DATE') FROM src LIMIT 1;\n")
 @UDFType(deterministic = false)
 public class Udf extends GenericUDF {
+  private static final Logger LOG = LoggerFactory.getLogger(Udf.class.getName());
   public static String NAME = "hplsql";
-  transient Exec exec;
-  StringObjectInspector queryOI;
-  ObjectInspector[] argumentsOI;
-  private String functionDefinition;
+  private final transient Exec exec = new Exec();
+  private StringObjectInspector queryOI;
+  private ObjectInspector[] argumentsOI;
+  private StringObjectInspector funcDefOI;
+  private String functionDefinition = null;
 
   public Udf() {
-  }
-
-  public Udf(Exec exec) {
-    this.exec = exec;
+    exec.setQueryExecutor(QueryExecutor.DISABLED);
+    exec.init();
   }
 
   /**
@@ -61,40 +58,19 @@ public class Udf extends GenericUDF {
    */
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    if (arguments.length == 0) {
-      throw new UDFArgumentLengthException("At least one argument must be specified");
+    if (arguments.length < 2) {
+      throw new UDFArgumentLengthException("At least two arguments must be specified");
     }
     if (!(arguments[0] instanceof StringObjectInspector)) {
       throw new UDFArgumentException("First argument must be a string");
     }
-    SessionState sessionState = SessionState.get();
-    if (sessionState != null) {
-      // we are still in HiveServer, get the source of the HplSQL function and store it.
-      functionDefinition = loadSource(sessionState, functionName(arguments[0]));
+    if (!(arguments[arguments.length-1] instanceof StringObjectInspector)) {
+      throw new UDFArgumentException("Last argument (stored procedure) must be a string");
     }
     queryOI = (StringObjectInspector)arguments[0];
+    funcDefOI = (StringObjectInspector)arguments[arguments.length-1];
     argumentsOI = arguments;
     return PrimitiveObjectInspectorFactory.javaStringObjectInspector;
-  }
-
-  protected String loadSource(SessionState sessionState, String functionName) throws UDFArgumentException {
-    Exec exec = sessionState.getDynamicVar(Exec.class);
-    try {
-      StoredProcedure storedProcedure = exec.getMsc().getStoredProcedure(
-              new StoredProcedureRequest(
-                      SessionState.get().getCurrentCatalog(),
-                      SessionState.get().getCurrentDatabase(),
-                      functionName));
-      return storedProcedure != null ? storedProcedure.getSource() : null;
-    } catch (TException e) {
-      throw new UDFArgumentException(e);
-    }
-  }
-
-  protected String functionName(ObjectInspector argument) {
-    ConstantObjectInspector inspector = (ConstantObjectInspector) (argument);
-    String functionCall = inspector.getWritableConstantValue().toString();
-    return functionCall.split("\\(")[0].toUpperCase();
   }
 
   /**
@@ -102,13 +78,12 @@ public class Udf extends GenericUDF {
    */
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    if (exec == null) {
-      exec = new Exec();
-      exec.setQueryExecutor(QueryExecutor.DISABLED);
-      exec.init();
-      if (functionDefinition != null) { // if it's null, it can be a built-in function
-        exec.parseAndEval(Arguments.script(functionDefinition));
-      }
+    if (functionDefinition == null) { // if it's null, it can be a built-in function
+      int idx = arguments.length-1;
+      setParameterForPrimitiveTypeArgument(":" + idx, arguments[idx].get(), funcDefOI);
+      functionDefinition = funcDefOI.getPrimitiveJavaObject(arguments[idx].get());
+      LOG.debug("functionDefinition: {}", functionDefinition);
+      exec.parseAndEval(Arguments.script(functionDefinition));
     }
     exec.enterScope(Scope.Type.ROUTINE);
     setParameters(arguments);
@@ -123,32 +98,110 @@ public class Udf extends GenericUDF {
   }
 
   /**
+   * Getter for Exec object
+   *
+   * @return Exec
+   */
+  public Exec getExec() {
+    return this.exec;
+  }
+
+  /**
    * Set parameters for the current call
    */
   void setParameters(DeferredObject[] arguments) throws HiveException {
-    for (int i = 1; i < arguments.length; i++) {
+    for (int i = 1; i < arguments.length - 1; i++) {
       String name = ":" + i;
-      if (argumentsOI[i] instanceof StringObjectInspector) {
-        String value = ((StringObjectInspector)argumentsOI[i]).getPrimitiveJavaObject(arguments[i].get());
-        if (value != null) {
-          exec.setVariable(name, value);
-        }
-      }
-      else if (argumentsOI[i] instanceof IntObjectInspector) {
-        Integer value = (Integer)((IntObjectInspector)argumentsOI[i]).getPrimitiveJavaObject(arguments[i].get());
-        if (value != null) {
-          exec.setVariable(name, new Var(new Long(value)));
-        }
-      }
-      else if (argumentsOI[i] instanceof LongObjectInspector) {
-        Long value = (Long)((LongObjectInspector)argumentsOI[i]).getPrimitiveJavaObject(arguments[i].get());
-        if (value != null) {
-          exec.setVariable(name, new Var(value));
-        }
-      }
-      else {
+      Object inputObject = arguments[i].get();
+      ObjectInspector objectInspector = argumentsOI[i];
+      if (objectInspector.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+        setParameterForPrimitiveTypeArgument(name, inputObject, objectInspector);
+      } else {
         exec.setVariableToNull(name);
       }
+    }
+  }
+
+  private void setParameterForPrimitiveTypeArgument(String name, Object inputObject, ObjectInspector objectInspector) {
+    PrimitiveObjectInspector.PrimitiveCategory primitiveCategory =
+        ((PrimitiveObjectInspector) objectInspector).getPrimitiveCategory();
+    switch (primitiveCategory) {
+    case BOOLEAN:
+      Boolean booleanValue = (Boolean) ((BooleanObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (booleanValue != null) {
+        exec.setVariable(name, new Var(booleanValue));
+      }
+      break;
+    case SHORT:
+      Short shortValue = (Short) ((ShortObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (shortValue != null) {
+        exec.setVariable(name, new Var(shortValue.longValue()));
+      }
+      break;
+    case INT:
+      Integer intValue = (Integer) ((IntObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (intValue != null) {
+        exec.setVariable(name, new Var(intValue.longValue()));
+      }
+      break;
+    case LONG:
+      Long longValue = (Long) ((LongObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (longValue != null) {
+        exec.setVariable(name, new Var(longValue));
+      }
+      break;
+    case FLOAT:
+      Float floatValue = (Float) ((FloatObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (floatValue != null) {
+        exec.setVariable(name, new Var(floatValue.doubleValue()));
+      }
+      break;
+    case DOUBLE:
+      Double doubleValue = (Double) ((DoubleObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (doubleValue != null) {
+        exec.setVariable(name, new Var(doubleValue));
+      }
+      break;
+    case STRING:
+      String strValue = ((StringObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (strValue != null) {
+        exec.setVariable(name, new Var(strValue));
+      }
+      break;
+    case DATE:
+      Date dateValue = ((DateObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (dateValue != null) {
+        exec.setVariable(name, new Var(java.sql.Date.valueOf(dateValue.toString())));
+      }
+      break;
+    case TIMESTAMP:
+      Timestamp timestampValue = ((TimestampObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (timestampValue != null) {
+        java.sql.Timestamp timestamp = java.sql.Timestamp.valueOf(timestampValue.toString());
+        timestamp.setNanos(timestampValue.getNanos());
+        exec.setVariable(name, new Var(timestamp, 0));
+      }
+      break;
+    case DECIMAL:
+      HiveDecimal decimalValue = ((HiveDecimalObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (decimalValue != null) {
+        exec.setVariable(name, new Var(decimalValue.bigDecimalValue()));
+      }
+      break;
+    case VARCHAR:
+      HiveVarchar varcharValue = ((HiveVarcharObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (varcharValue != null) {
+        exec.setVariable(name, new Var(varcharValue.getValue()));
+      }
+      break;
+    case CHAR:
+      HiveChar charValue = ((HiveCharObjectInspector) objectInspector).getPrimitiveJavaObject(inputObject);
+      if (charValue != null) {
+        exec.setVariable(name, new Var(charValue.getStrippedValue()));
+      }
+      break;
+    default:
+      exec.setVariableToNull(name);
     }
   }
 

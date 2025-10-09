@@ -35,6 +35,6 @@ StringLiteral
 fragment
 QuotedIdentifier
     :
-    ('"'  ( '""' | ~('"') )* '"') { setText(StringUtils.replace(getText().substring(1, getText().length() -1 ), "\"\"", "\"")); }
-    | ('`'  ( '``' | ~('`') )* '`') { setText(StringUtils.replace(getText().substring(1, getText().length() -1 ), "``", "`")); }
+    ('"'  ( '""' | ~('"') )+ '"') { setText(StringUtils.replace(getText().substring(1, getText().length() -1 ), "\"\"", "\"")); }
+    | ('`'  ( '``' | ~('`') )+ '`') { setText(StringUtils.replace(getText().substring(1, getText().length() -1 ), "``", "`")); }
     ;

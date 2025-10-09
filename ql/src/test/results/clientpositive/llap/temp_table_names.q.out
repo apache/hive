@@ -46,10 +46,12 @@ POSTHOOK: Input: default@temp_table_names
 PREHOOK: query: drop table Default.TEMP_TABLE_names
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@temp_table_names
+PREHOOK: Output: database:default
 PREHOOK: Output: default@temp_table_names
 POSTHOOK: query: drop table Default.TEMP_TABLE_names
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@temp_table_names
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@temp_table_names
 PREHOOK: query: show tables 'temp_table_names'
 PREHOOK: type: SHOWTABLES

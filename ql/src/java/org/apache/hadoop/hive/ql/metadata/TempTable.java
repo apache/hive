@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -42,42 +44,42 @@ public final class TempTable {
 
   private static final String EXTERNAL_PARAM = "EXTERNAL";
 
-  TempTable(org.apache.hadoop.hive.metastore.api.Table t) {
+  public TempTable(org.apache.hadoop.hive.metastore.api.Table t) {
     assert t != null;
     this.tTable = t;
     pTree = t.getPartitionKeysSize() > 0 ? new PartitionTree(tTable) : null;
   }
 
-  Partition addPartition(Partition p) throws AlreadyExistsException, MetaException {
+  public Partition addPartition(Partition p) throws AlreadyExistsException, MetaException {
     String partName = makePartName(tTable.getPartitionKeys(), p.getValues());
     Partition partition = pTree.addPartition(p, partName, false);
     return partition == null ? pTree.getPartition(partName) : partition;
   }
 
-  boolean isExternal() {
+  public boolean isExternal() {
     return tTable.getParameters() != null && "true".equals(tTable.getParameters().get(EXTERNAL_PARAM));
   }
 
-  Partition getPartition(String partName) throws MetaException {
+  public Partition getPartition(String partName) throws MetaException {
     if (partName == null || partName.isEmpty()) {
       throw new MetaException("Partition name cannot be null or empty");
     }
     return pTree.getPartition(partName);
   }
 
-  Partition getPartition(List<String> partVals) throws MetaException {
+  public Partition getPartition(List<String> partVals) throws MetaException {
     if (partVals == null) {
       throw new MetaException("Partition values cannot be null");
     }
     return pTree.getPartition(partVals);
   }
 
-  List<Partition> addPartitions(List<Partition> partitions, boolean ifNotExists)
+  public List<Partition> addPartitions(List<Partition> partitions, boolean ifNotExists)
       throws MetaException, AlreadyExistsException {
     return pTree.addPartitions(partitions, ifNotExists);
   }
 
-  List<Partition> getPartitionsByNames(List<String> partNames) throws MetaException {
+  public List<Partition> getPartitionsByNames(List<String> partNames) throws MetaException {
     if (partNames == null) {
       throw new MetaException("Partition names cannot be null");
     }
@@ -91,11 +93,11 @@ public final class TempTable {
     return partitions;
   }
 
-  List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
+  public List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
     return pTree.getPartitionsByPartitionVals(partialPartVals);
   }
 
-  Partition getPartitionWithAuthInfo(List<String> partionVals, String userName, List<String> groupNames)
+  public Partition getPartitionWithAuthInfo(List<String> partionVals, String userName, List<String> groupNames)
       throws MetaException {
     Partition partition = getPartition(partionVals);
     if (partition == null) {
@@ -104,11 +106,11 @@ public final class TempTable {
     return checkPrivilegesForPartition(partition, userName, groupNames) ? partition : null;
   }
 
-  List<Partition> listPartitions() {
+  public List<Partition> listPartitions() {
     return pTree.listPartitions();
   }
 
-  List<Partition> listPartitionsWithAuthInfo(String userName, List<String> groupNames) {
+  public List<Partition> listPartitionsWithAuthInfo(String userName, List<String> groupNames) {
     List<Partition> partitions = listPartitions();
     List<Partition> result = new ArrayList<>();
     partitions.forEach(p -> {
@@ -119,7 +121,7 @@ public final class TempTable {
     return result;
   }
 
-  List<Partition> listPartitionsByPartitionValsWithAuthInfo(List<String> partialVals, String userName,
+  public List<Partition> listPartitionsByPartitionValsWithAuthInfo(List<String> partialVals, String userName,
       List<String> groupNames) throws MetaException {
     List<Partition> partitions = pTree.getPartitionsByPartitionVals(partialVals);
     List<Partition> result = new ArrayList<>();
@@ -157,11 +159,11 @@ public final class TempTable {
     return true;
   }
 
-  Partition dropPartition(List<String> partVals) throws MetaException, NoSuchObjectException {
+  public Partition dropPartition(List<String> partVals) throws MetaException, NoSuchObjectException {
     return pTree.dropPartition(partVals);
   }
 
-  Partition dropPartition(String partitionName) throws MetaException, NoSuchObjectException {
+  public Partition dropPartition(String partitionName) throws MetaException, NoSuchObjectException {
     Map<String, String> specFromName = makeSpecFromName(partitionName);
     if (specFromName.isEmpty()) {
       throw new NoSuchObjectException("Invalid partition name " + partitionName);
@@ -178,26 +180,30 @@ public final class TempTable {
     return pTree.dropPartition(pVals);
   }
 
-  void alterPartition(Partition partition) throws MetaException, InvalidOperationException, NoSuchObjectException {
+  public void alterPartition(Partition partition) throws MetaException, InvalidOperationException, NoSuchObjectException {
     pTree.alterPartition(partition.getValues(), partition, false);
   }
 
-  void alterPartitions(List<Partition> newParts)
+  public void alterPartitions(List<Partition> newParts)
       throws MetaException, InvalidOperationException, NoSuchObjectException {
     pTree.alterPartitions(newParts);
   }
 
-  void renamePartition(List<String> partitionVals, Partition newPart)
+  public void renamePartition(List<String> partitionVals, Partition newPart)
       throws MetaException, InvalidOperationException, NoSuchObjectException {
     pTree.renamePartition(partitionVals, newPart);
   }
 
-  int getNumPartitionsByFilter(String filter) throws MetaException {
+  public int getNumPartitionsByFilter(String filter) throws MetaException {
     return pTree.getPartitionsByFilter(filter).size();
   }
 
-  List<Partition> listPartitionsByFilter(String filter) throws MetaException {
+  public List<Partition> listPartitionsByFilter(String filter) throws MetaException {
     return pTree.getPartitionsByFilter(filter);
+  }
+
+  public GetPartitionsResponse getPartitionsWithSpecs(GetPartitionsRequest getPartitionsRequest) throws MetaException {
+    return pTree.getPartitionsWithSpecs(getPartitionsRequest);
   }
 
 }

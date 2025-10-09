@@ -87,7 +87,7 @@ public class TestHiveMetaToolCommandLine {
   @Test
   public void testNoTask() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs must be set");
+    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs, -metadataSummary must be set");
 
     new HiveMetaToolCommandLine(new String[] {});
   }
@@ -95,7 +95,7 @@ public class TestHiveMetaToolCommandLine {
   @Test
   public void testMultipleTask() throws ParseException {
     exception.expect(IllegalArgumentException.class);
-    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs must be set");
+    exception.expectMessage("exactly one of -listFSRoot, -executeJDOQL, -updateLocation, -listExtTblLocs, -diffExtTblLocs, -metadataSummary must be set");
 
     new HiveMetaToolCommandLine(new String[] {"-listFSRoot", "-executeJDOQL", "select a from b"});
   }

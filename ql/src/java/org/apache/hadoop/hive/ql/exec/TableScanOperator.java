@@ -320,7 +320,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       jc = new JobConf(hconf);
     }
 
-    defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    defaultPartitionName = HiveConf.getVar(hconf, HiveConf.ConfVars.DEFAULT_PARTITION_NAME);
     currentStat = null;
     stats = new HashMap<String, Stat>();
 

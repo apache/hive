@@ -36,6 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
+import org.apache.hadoop.hive.common.JavaVersionUtils;
 import org.apache.hadoop.hive.ql.log.LogDivertAppenderForTest;
 import org.apache.hadoop.mapreduce.MRJobConfig;
 import org.slf4j.Logger;
@@ -96,6 +97,7 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -123,7 +125,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   private transient boolean isShutdown = false;
   private transient boolean jobKilled = false;
 
-  protected static transient final Logger LOG = LoggerFactory.getLogger(ExecDriver.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(ExecDriver.class);
 
   private RunningJob rj;
 
@@ -208,7 +210,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   @Override
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
      Counters.Counter cntr = ctrs.findCounter(
-        HiveConf.getVar(job, HiveConf.ConfVars.HIVECOUNTERGROUP),
+        HiveConf.getVar(job, HiveConf.ConfVars.HIVE_COUNTER_GROUP),
         Operator.HIVE_COUNTER_FATAL);
     return cntr != null && cntr.getValue() > 0;
   }
@@ -264,7 +266,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     job.setMapOutputValueClass(BytesWritable.class);
 
     try {
-      String partitioner = HiveConf.getVar(job, ConfVars.HIVEPARTITIONER);
+      String partitioner = HiveConf.getVar(job, ConfVars.HIVE_PARTITIONER);
       job.setPartitionerClass(JavaUtils.loadClass(partitioner));
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e.getMessage(), e);
@@ -282,7 +284,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     job.setBoolean(MRJobConfig.REDUCE_SPECULATIVE, false);
     job.setBoolean(MRJobConfig.MAP_SPECULATIVE, false);
 
-    String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT);
+    String inpFormat = HiveConf.getVar(job, HiveConf.ConfVars.HIVE_INPUT_FORMAT);
 
     if (mWork.isUseBucketizedHiveInputFormat()) {
       inpFormat = BucketizedHiveInputFormat.class.getName();
@@ -371,6 +373,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
 
+      addOpensFlagsIfNeeded(job);
       jc = new JobClient(job);
       // make this client wait if job tracker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
@@ -489,25 +492,38 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return (returnVal);
   }
 
+  private static void addOpensFlagsIfNeeded(JobConf job) {
+    String addOpens = JavaVersionUtils.getAddOpensFlagsIfNeeded();
+    if(!addOpens.isEmpty()) {
+      addJavaOpts(job, "mapreduce.map.java.opts", addOpens);
+      addJavaOpts(job, "mapreduce.reduce.java.opts", addOpens);
+      addJavaOpts(job, "yarn.app.mapreduce.am.command-opts", addOpens);
+    }
+  }
+  private static void addJavaOpts(JobConf job, String conf, String extraOpts) {
+    String javaOpts = StringUtils.defaultString(job.get(conf));
+    job.set(conf, javaOpts + extraOpts);
+  }
+
   public static void propagateSplitSettings(JobConf job, MapWork work) {
     if (work.getNumMapTasks() != null) {
       job.setNumMapTasks(work.getNumMapTasks().intValue());
     }
 
     if (work.getMaxSplitSize() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMAXSPLITSIZE, work.getMaxSplitSize());
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPRED_MAX_SPLIT_SIZE, work.getMaxSplitSize());
     }
 
     if (work.getMinSplitSize() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZE, work.getMinSplitSize());
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, work.getMinSplitSize());
     }
 
     if (work.getMinSplitSizePerNode() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERNODE, work.getMinSplitSizePerNode());
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE_PER_NODE, work.getMinSplitSizePerNode());
     }
 
     if (work.getMinSplitSizePerRack() != null) {
-      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPREDMINSPLITSIZEPERRACK, work.getMinSplitSizePerRack());
+      HiveConf.setLongVar(job, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE_PER_RACK, work.getMinSplitSizePerRack());
     }
   }
 
@@ -572,7 +588,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   protected void setInputAttributes(Configuration conf) {
     MapWork mWork = work.getMapWork();
     if (mWork.getInputformat() != null) {
-      HiveConf.setVar(conf, ConfVars.HIVEINPUTFORMAT, mWork.getInputformat());
+      HiveConf.setVar(conf, ConfVars.HIVE_INPUT_FORMAT, mWork.getInputformat());
     }
     // Intentionally overwrites anything the user may have put here
     conf.setBoolean("hive.input.format.sorted", mWork.isInputFormatSorted());
@@ -609,7 +625,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   private static void printUsage() {
     System.err.println("ExecDriver -plan <plan-file> [-jobconffile <job conf file>]"
         + "[-files <file1>[,<file2>] ...]");
-    System.exit(1);
+    ExitUtil.terminate(1);
   }
 
   /**
@@ -692,14 +708,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       }
     }
 
-    boolean isSilent = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESESSIONSILENT);
+    boolean isSilent = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_SESSION_SILENT);
 
-    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID, "").trim();
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID, "").trim();
     if(queryId.isEmpty()) {
       queryId = "unknown-" + System.currentTimeMillis();
-      HiveConf.setVar(conf, HiveConf.ConfVars.HIVEQUERYID, queryId);
+      HiveConf.setVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID, queryId);
     }
-    System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
+    System.setProperty(HiveConf.ConfVars.HIVE_QUERY_ID.toString(), queryId);
 
     LogUtils.registerLoggingContext(conf);
 
@@ -774,7 +790,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     if (ret != 0) {
-      System.exit(ret);
+      ExitUtil.terminate(ret);
     }
   }
 

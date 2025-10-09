@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.view.materialized.update;
 
-import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -26,6 +25,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.MaterializedViewMetadata;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.getSnapshotOf;
 
 /**
  * Operation process of updating a materialized view.
@@ -53,7 +54,7 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
         // We need to update the status of the creation signature
         Table mvTable = context.getDb().getTable(desc.getName());
         MaterializedViewMetadata newMetadata = mvTable.getMVMetadata().reset(
-                context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+                getSnapshotOf(context, mvTable.getMVMetadata().getSourceTableNames()));
         context.getDb().updateCreationMetadata(mvTable.getDbName(), mvTable.getTableName(), newMetadata);
         mvTable.setMaterializedViewMetadata(newMetadata);
         HiveMaterializedViewsRegistry.get().refreshMaterializedView(context.getDb().getConf(), mvTable);

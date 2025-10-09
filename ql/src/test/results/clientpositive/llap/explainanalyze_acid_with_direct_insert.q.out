@@ -1,7 +1,9 @@
 PREHOOK: query: drop table if exists analyze_acid_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists analyze_acid_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table analyze_acid_table (id int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -10,11 +12,11 @@ POSTHOOK: query: create table analyze_acid_table (id int) stored as orc tblprope
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_acid_table
-PREHOOK: query: insert into analyze_acid_table values (1),(2),(3),(4)
+PREHOOK: query: insert into `analyze_acid_table` values (1),(2),(3),(4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@analyze_acid_table
-POSTHOOK: query: insert into analyze_acid_table values (1),(2),(3),(4)
+POSTHOOK: query: insert into `analyze_acid_table` values (1),(2),(3),(4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@analyze_acid_table
@@ -154,12 +156,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
 3
 4
-PREHOOK: query: update analyze_acid_table set id=11 where id=1
+PREHOOK: query: update `analyze_acid_table` set `id`=11 where `id`=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
-POSTHOOK: query: update analyze_acid_table set id=11 where id=1
+POSTHOOK: query: update `analyze_acid_table` set `id`=11 where `id`=1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
@@ -309,11 +311,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 22
 3
 4
-PREHOOK: query: delete from analyze_acid_table where id=3
+PREHOOK: query: delete from `analyze_acid_table` where `id`=3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
-POSTHOOK: query: delete from analyze_acid_table where id=3
+POSTHOOK: query: delete from `analyze_acid_table` where `id`=3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
@@ -429,10 +431,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists analyze_acid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_acid_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: drop table if exists analyze_acid_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_acid_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: create table tmp_table (a int, b int)
 PREHOOK: type: CREATETABLE
@@ -454,8 +458,10 @@ POSTHOOK: Lineage: tmp_table.a SCRIPT []
 POSTHOOK: Lineage: tmp_table.b SCRIPT []
 PREHOOK: query: drop table if exists analyze_part_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists analyze_part_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table analyze_part_table (a int) partitioned by (b int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -464,11 +470,11 @@ POSTHOOK: query: create table analyze_part_table (a int) partitioned by (b int) 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_part_table
-PREHOOK: query: insert into analyze_part_table select * from tmp_table
+PREHOOK: query: insert into `analyze_part_table` select * from `tmp_table`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_table
 PREHOOK: Output: default@analyze_part_table
-POSTHOOK: query: insert into analyze_part_table select * from tmp_table
+POSTHOOK: query: insert into `analyze_part_table` select * from `tmp_table`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_table
 POSTHOOK: Output: default@analyze_part_table
@@ -634,13 +640,13 @@ POSTHOOK: Input: default@analyze_part_table
 b=1
 b=2
 b=3
-PREHOOK: query: update analyze_part_table set a=11 where b=3
+PREHOOK: query: update `analyze_part_table` set `a`=11 where `b`=3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=3
 PREHOOK: Output: default@analyze_part_table
 PREHOOK: Output: default@analyze_part_table@b=3
-POSTHOOK: query: update analyze_part_table set a=11 where b=3
+POSTHOOK: query: update `analyze_part_table` set `a`=11 where `b`=3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=3
@@ -679,24 +685,25 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_part_table
                   filterExpr: (b = 3) (type: boolean)
-                  Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 3 (type: int)
                     Select Operator
                       expressions: 11 (type: int), 3 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -709,12 +716,12 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 3 (type: int)
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -779,12 +786,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	3
 5	3
 6	3
-PREHOOK: query: delete from analyze_part_table where b=1
+PREHOOK: query: delete from `analyze_part_table` where `b`=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Output: default@analyze_part_table@b=1
-POSTHOOK: query: delete from analyze_part_table where b=1
+POSTHOOK: query: delete from `analyze_part_table` where `b`=1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
@@ -818,29 +825,30 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_part_table
                   filterExpr: (b = 1) (type: boolean)
-                  Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -971,15 +979,19 @@ b=3
 PREHOOK: query: drop table if exists analyze_part_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_part_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_part_table
 POSTHOOK: query: drop table if exists analyze_part_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_part_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_part_table
 PREHOOK: query: drop table if exists analyze_acid_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists analyze_acid_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table analyze_acid_table (id int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -988,11 +1000,11 @@ POSTHOOK: query: create table analyze_acid_table (id int) stored as orc tblprope
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_acid_table
-PREHOOK: query: insert into analyze_acid_table values (1),(2),(3),(4)
+PREHOOK: query: insert into `analyze_acid_table` values (1),(2),(3),(4)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@analyze_acid_table
-POSTHOOK: query: insert into analyze_acid_table values (1),(2),(3),(4)
+POSTHOOK: query: insert into `analyze_acid_table` values (1),(2),(3),(4)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@analyze_acid_table
@@ -1132,12 +1144,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
 3
 4
-PREHOOK: query: update analyze_acid_table set id=11 where id=1
+PREHOOK: query: update `analyze_acid_table` set `id`=11 where `id`=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
-POSTHOOK: query: update analyze_acid_table set id=11 where id=1
+POSTHOOK: query: update `analyze_acid_table` set `id`=11 where `id`=1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
@@ -1287,11 +1299,11 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 22
 3
 4
-PREHOOK: query: delete from analyze_acid_table where id=3
+PREHOOK: query: delete from `analyze_acid_table` where `id`=3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_acid_table
 PREHOOK: Output: default@analyze_acid_table
-POSTHOOK: query: delete from analyze_acid_table where id=3
+POSTHOOK: query: delete from `analyze_acid_table` where `id`=3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_acid_table
 POSTHOOK: Output: default@analyze_acid_table
@@ -1407,15 +1419,19 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: drop table if exists analyze_acid_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_acid_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_acid_table
 POSTHOOK: query: drop table if exists analyze_acid_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_acid_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_acid_table
 PREHOOK: query: drop table if exists analyze_part_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: drop table if exists analyze_part_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table analyze_part_table (a int) partitioned by (b int) stored as orc tblproperties('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -1424,11 +1440,11 @@ POSTHOOK: query: create table analyze_part_table (a int) partitioned by (b int) 
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_part_table
-PREHOOK: query: insert into analyze_part_table select * from tmp_table
+PREHOOK: query: insert into `analyze_part_table` select * from `tmp_table`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_table
 PREHOOK: Output: default@analyze_part_table
-POSTHOOK: query: insert into analyze_part_table select * from tmp_table
+POSTHOOK: query: insert into `analyze_part_table` select * from `tmp_table`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_table
 POSTHOOK: Output: default@analyze_part_table
@@ -1594,13 +1610,13 @@ POSTHOOK: Input: default@analyze_part_table
 b=1
 b=2
 b=3
-PREHOOK: query: update analyze_part_table set a=11 where b=3
+PREHOOK: query: update `analyze_part_table` set `a`=11 where `b`=3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=3
 PREHOOK: Output: default@analyze_part_table
 PREHOOK: Output: default@analyze_part_table@b=3
-POSTHOOK: query: update analyze_part_table set a=11 where b=3
+POSTHOOK: query: update `analyze_part_table` set `a`=11 where `b`=3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=3
@@ -1639,24 +1655,25 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_part_table
                   filterExpr: (b = 3) (type: boolean)
-                  Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 3 (type: int)
                     Select Operator
                       expressions: 11 (type: int), 3 (type: int)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
-                        Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                         table:
                             input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                             output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1669,12 +1686,12 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 3 (type: int)
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 3/3 Data size: 6374 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 3/3 Data size: 6424 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1739,12 +1756,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 4	3
 5	3
 6	3
-PREHOOK: query: delete from analyze_part_table where b=1
+PREHOOK: query: delete from `analyze_part_table` where `b`=1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_part_table
 PREHOOK: Input: default@analyze_part_table@b=1
 PREHOOK: Output: default@analyze_part_table@b=1
-POSTHOOK: query: delete from analyze_part_table where b=1
+POSTHOOK: query: delete from `analyze_part_table` where `b`=1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@analyze_part_table
 POSTHOOK: Input: default@analyze_part_table@b=1
@@ -1778,29 +1795,30 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_part_table
                   filterExpr: (b = 1) (type: boolean)
-                  Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                     outputColumnNames: _col0
-                    Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: _col0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                       null sort order: z
                       sort order: +
                       Map-reduce partition columns: UDFToInteger(_col0) (type: int)
-                      Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
+                      value expressions: 1 (type: int)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), 1 (type: int)
+                expressions: KEY.reducesinkkey0 (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: int)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 2/2 Data size: 6316 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 2/2 Data size: 6376 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                       output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
@@ -1931,16 +1949,20 @@ b=3
 PREHOOK: query: drop table if exists analyze_part_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@analyze_part_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@analyze_part_table
 POSTHOOK: query: drop table if exists analyze_part_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@analyze_part_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@analyze_part_table
 PREHOOK: query: drop table tmp_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@tmp_table
 POSTHOOK: query: drop table tmp_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tmp_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tmp_table

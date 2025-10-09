@@ -420,7 +420,7 @@ POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
 -20	-20	-20.0	-20.0	-20	8	9.0	11.0
 20	20	20.0	20.0	20	20	20.0	20.0
-Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
 PREHOOK: type: QUERY
@@ -470,14 +470,14 @@ FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
                 TableScan
                   alias: db1_ext_auth1
                   properties:
-                    hive.sql.query SELECT "IKEY" * 2 AS "*"
+                    hive.sql.query SELECT "IKEY" * 2 AS "_o__c1"
 FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
-                    hive.sql.query.fieldNames *
+                    hive.sql.query.fieldNames _o__c1
                     hive.sql.query.fieldTypes int
                     hive.sql.query.split true
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: * (type: int)
+                    expressions: _o__c1 (type: int)
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -512,7 +512,7 @@ FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@db1_ext_auth1
@@ -558,11 +558,11 @@ STAGE PLANS:
         TableScan
           alias: db1_ext_auth1
           properties:
-            hive.sql.query SELECT "ikey"
-FROM (SELECT "IKEY" AS "ikey"
+            hive.sql.query SELECT "IKEY"
+FROM (SELECT "IKEY"
 FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
 FETCH NEXT 10 ROWS ONLY) AS "t0"
-            hive.sql.query.fieldNames ikey
+            hive.sql.query.fieldNames IKEY
             hive.sql.query.fieldTypes int
             hive.sql.query.split false
           Select Operator
@@ -638,7 +638,7 @@ STAGE PLANS:
           alias: db1_ext_auth1
           properties:
             hive.sql.query SELECT "IKEY", "bkey", "fkey", "dkey"
-FROM (SELECT *
+FROM (SELECT "IKEY", "bkey", "fkey", "dkey"
 FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
 FETCH NEXT 10 ROWS ONLY) AS "t"
             hive.sql.query.fieldNames IKEY,bkey,fkey,dkey
@@ -664,26 +664,32 @@ POSTHOOK: Input: default@db1_ext_auth1
 PREHOOK: query: DROP TABLE db1_ext_auth1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db1_ext_auth1
+PREHOOK: Output: database:default
 PREHOOK: Output: default@db1_ext_auth1
 POSTHOOK: query: DROP TABLE db1_ext_auth1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@db1_ext_auth1
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@db1_ext_auth1
 PREHOOK: query: DROP TABLE db2_ext_auth2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db2_ext_auth2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@db2_ext_auth2
 POSTHOOK: query: DROP TABLE db2_ext_auth2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@db2_ext_auth2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@db2_ext_auth2
 PREHOOK: query: DROP TABLE db1_ext_auth2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@db1_ext_auth2
+PREHOOK: Output: database:default
 PREHOOK: Output: default@db1_ext_auth2
 POSTHOOK: query: DROP TABLE db1_ext_auth2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@db1_ext_auth2
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@db1_ext_auth2
 PREHOOK: query: FROM src
 SELECT

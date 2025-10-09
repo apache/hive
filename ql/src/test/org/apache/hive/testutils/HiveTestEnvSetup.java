@@ -131,7 +131,6 @@ public class HiveTestEnvSetup extends ExternalResource {
       System.setProperty("test.tmp.dir.uri", "file://" + tmpFolderPath);
       System.setProperty("test.dfs.mkdir", "-mkdir -p");
       System.setProperty("test.warehouse.dir", tmpFolderPath + "/warehouse"); // this is changed to be *under* tmp dir
-      System.setProperty("java.net.preferIPv4Stack", "true"); // not sure if this will have any effect..
       System.setProperty("test.src.tables", "src");
       System.setProperty("hive.jar.directory", tmpFolderPath);
     }
@@ -151,7 +150,7 @@ public class HiveTestEnvSetup extends ExternalResource {
       FileUtils.copyDirectory(new File(DATA_DIR + "/conf/tez"), confFolder);
 
       HiveConf.setHiveSiteLocation(new File(confFolder, "hive-site.xml").toURI().toURL());
-      HiveConf.setHivemetastoreSiteUrl(new File(confFolder, "hivemetastore-site.xml").toURI().toURL());
+      HiveConf.setMetastoreSiteLocation(new File(confFolder, "metastore-site.xml").toURI().toURL());
       // FIXME: hiveServer2SiteUrl is not settable?
 
       ctx.hiveConf = new HiveConf(IDriver.class);
@@ -247,6 +246,7 @@ public class HiveTestEnvSetup extends ExternalResource {
       conf.set("tez.am.resource.memory.mb", "128");
       conf.set("tez.am.dag.scheduler.class", "org.apache.tez.dag.app.dag.impl.DAGSchedulerNaturalOrderControlled");
       conf.setBoolean("tez.local.mode", true);
+      conf.setBoolean("tez.local.mode.without.network", true);
       conf.set("fs.defaultFS", "file:///");
       conf.setBoolean("tez.runtime.optimize.local.fetch", true);
       conf.set("tez.staging-dir", TEST_DATA_DIR);

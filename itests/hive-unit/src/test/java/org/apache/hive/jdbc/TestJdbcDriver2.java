@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -87,8 +88,10 @@ import static org.apache.hadoop.hive.conf.SystemVariables.SET_COLUMN_NAME;
 import static org.apache.hadoop.hive.ql.exec.ExplainTask.EXPL_COLUMN_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -99,6 +102,7 @@ import static org.junit.Assert.fail;
  *
  */
 public class TestJdbcDriver2 {
+
   private static final Logger LOG = LoggerFactory.getLogger(TestJdbcDriver2.class);
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String testDbName = "testjdbcdriver";
@@ -116,7 +120,7 @@ public class TestJdbcDriver2 {
   private static final String dataTypeTableComment = "Table with many column data types";
   private static final String externalTableName = "testjdbcdriverexttbl";
   private static final String externalTableComment = "An external table";
-  private static HiveConf conf;
+  private static HiveConfForTest conf;
   private static String dataFileDir;
   private static Path dataFilePath;
   private static int dataFileRowCount;
@@ -128,9 +132,13 @@ public class TestJdbcDriver2 {
   @Rule public ExpectedException thrown = ExpectedException.none();
   @Rule public final TestName testName = new TestName();
 
-  private static Connection getConnection(String postfix) throws SQLException {
+  private static Connection getConnection(String prefix, String postfix) throws SQLException {
     Connection con1;
-    con1 = DriverManager.getConnection("jdbc:hive2:///" + postfix, "", "");
+    String connString = "jdbc:hive2:///" + prefix + "?" + conf.getOverlayOptionsAsQueryString()
+        + ";hive.lock.manager=org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager;" + postfix;
+    LOG.info("Connection string: {}", connString);
+    con1 = DriverManager
+        .getConnection(connString, "", "");
     assertNotNull("Connection is null", con1);
     assertFalse("Connection should not be closed", con1.isClosed());
     return con1;
@@ -191,10 +199,9 @@ public class TestJdbcDriver2 {
   @SuppressWarnings("deprecation")
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    conf = new HiveConf(TestJdbcDriver2.class);
-    HiveConf initConf = new HiveConf(conf);
-    TestTxnDbUtil.setConfValues(initConf);
-    TestTxnDbUtil.prepDb(initConf);
+    conf = new HiveConfForTest(TestJdbcDriver2.class);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.prepDb(conf);
     dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
     dataFilePath = new Path(dataFileDir, "kv1.txt");
@@ -203,13 +210,14 @@ public class TestJdbcDriver2 {
     // Create test database and base tables once for all the test
     Class.forName(driverName);
     System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
-    System.setProperty(ConfVars.HIVEMAPREDMODE.varname, "nonstrict");
+    System.setProperty(ConfVars.HIVE_MAPRED_MODE.varname, "nonstrict");
     System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,
         "org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider");
     System.setProperty(ConfVars.HIVE_SERVER2_PARALLEL_OPS_IN_SESSION.varname, "false");
-    System.setProperty(ConfVars.REPLCMENABLED.varname, "true");
-    System.setProperty(ConfVars.REPLCMDIR.varname, "cmroot");
-    con = getConnection(defaultDbName + ";create=true");
+    System.setProperty(ConfVars.REPL_CM_ENABLED.varname, "true");
+    System.setProperty(ConfVars.REPL_CM_DIR.varname, "cmroot");
+
+    con = getConnection(defaultDbName + ";create=true", "");
     Statement stmt = con.createStatement();
     assertNotNull("Statement is null", stmt);
     stmt.execute("set hive.support.concurrency = false");
@@ -222,7 +230,7 @@ public class TestJdbcDriver2 {
 
 
   @Test
-  public void testExceucteUpdateCounts() throws Exception {
+  public void testExecuteUpdateCounts() throws Exception {
     Statement stmt =  con.createStatement();
     stmt.execute("set " + ConfVars.HIVE_SUPPORT_CONCURRENCY.varname + "=true");
     stmt.execute("set " + ConfVars.HIVE_TXN_MANAGER.varname +
@@ -253,16 +261,16 @@ public class TestJdbcDriver2 {
   }
 
   @Test
-  public void testExceucteMergeCounts() throws Exception {
-    testExceucteMergeCounts(true);
+  public void testExecuteMergeCounts() throws Exception {
+    testExecuteMergeCounts(true);
   }
 
   @Test
-  public void testExceucteMergeCountsNoSplitUpdate() throws Exception {
-    testExceucteMergeCounts(false);
+  public void testExecuteMergeCountsNoSplitUpdate() throws Exception {
+    testExecuteMergeCounts(false);
   }
 
-  private void testExceucteMergeCounts(boolean splitUpdateEarly) throws Exception {
+  private void testExecuteMergeCounts(boolean splitUpdateEarly) throws Exception {
 
     Statement stmt =  con.createStatement();
     stmt.execute("set " + ConfVars.SPLIT_UPDATE.varname + "=" + splitUpdateEarly);
@@ -330,7 +338,7 @@ public class TestJdbcDriver2 {
    * @throws SQLException
    */
   public void testURLWithFetchSize() throws SQLException {
-    Connection con = getConnection(testDbName + ";fetchSize=1234");
+    Connection con = getConnection(testDbName + ";fetchSize=1234", "");
     Statement stmt = con.createStatement();
     assertEquals(stmt.getFetchSize(), 1234);
     stmt.close();
@@ -343,7 +351,7 @@ public class TestJdbcDriver2 {
    * @throws SQLException
    */
   public void testCreateTableAsExternal() throws SQLException {
-    Connection con = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true");
+    Connection con = getConnection(testDbName + ";hiveCreateAsExternalLegacy=true", "");
     Statement stmt = con.createStatement();
     ResultSet res = stmt.executeQuery("set hive.create.as.external.legacy");
     assertTrue("ResultSet is empty", res.next());
@@ -699,7 +707,7 @@ public class TestJdbcDriver2 {
 
   @Test
   public void testSetOnConnection() throws Exception {
-    Connection connection = getConnection(testDbName + "?conf1=conf2;conf3=conf4#var1=var2;var3=var4");
+    Connection connection = getConnection(testDbName, "conf1=conf2;conf3=conf4#var1=var2;var3=var4");
     try {
       verifyConfValue(connection, "conf1", "conf2");
       verifyConfValue(connection, "conf3", "conf4");
@@ -1630,7 +1638,7 @@ public class TestJdbcDriver2 {
       fail(msg);
     }
 
-    Connection conn = getConnection("");
+    Connection conn = getConnection("", "");
     try {
       conn.setClientInfo("ApplicationName", "test");
       assertEquals("test", conn.getClientInfo("ApplicationName"));
@@ -2098,7 +2106,7 @@ public class TestJdbcDriver2 {
       String rline = res.getString(1);
       assertFalse(
           "set output must not contain hidden variables such as the metastore password:" + rline,
-          rline.contains(HiveConf.ConfVars.METASTOREPWD.varname)
+          rline.contains(HiveConf.ConfVars.METASTORE_PWD.varname)
               && !(rline.contains(HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname)));
       // the only conf allowed to have the metastore pwd keyname is the hidden list configuration
       // value
@@ -2345,7 +2353,7 @@ public class TestJdbcDriver2 {
    */
   @Test
   public void testFetchFirstDfsCmds() throws Exception {
-    String wareHouseDir = conf.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname);
+    String wareHouseDir = conf.get(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname);
     execFetchFirst("dfs -ls " + wareHouseDir, DfsProcessor.DFS_RESULT_HEADER, false);
   }
 
@@ -2814,11 +2822,12 @@ public class TestJdbcDriver2 {
     String sql = "select count(*) from " + tableName;
 
     // Verify the fetched log (from the beginning of log file)
-    HiveStatement stmt = (HiveStatement)con.createStatement();
-    assertNotNull("Statement is null", stmt);
-    stmt.executeQuery(sql);
-    List<String> logs = stmt.getQueryLog(false, 10000);
-    stmt.close();
+    List<String> logs;
+    try (HiveStatement stmt = (HiveStatement) con.createStatement()) {
+      assertNotNull("Statement is null", stmt);
+      stmt.executeQuery(sql);
+      logs = stmt.getQueryLog(false, 200000);
+    }
     verifyFetchedLog(logs, expectedLogs);
 
     // Verify the fetched log (incrementally)
@@ -3009,8 +3018,7 @@ public class TestJdbcDriver2 {
     }
     String accumulatedLogs = stringBuilder.toString();
     for (String expectedLog : expectedLogs) {
-      LOG.info("Checking match for " + expectedLog);
-      assertTrue(accumulatedLogs.contains(expectedLog));
+      assertTrue("Failed to find match for " + expectedLog, accumulatedLogs.contains(expectedLog));
     }
   }
 
@@ -3061,7 +3069,7 @@ public class TestJdbcDriver2 {
 
   @Test
   public void setAutoCommitOnClosedConnection() throws Exception {
-    Connection mycon = getConnection("");
+    Connection mycon = getConnection("", "");
     try {
       mycon.setAutoCommit(true);
       mycon.close();
@@ -3237,16 +3245,16 @@ public class TestJdbcDriver2 {
 
     stmt1.executeAsync("repl status query_id_test with ('hive.query.id' = 'hiveCustomTag')");
     String queryId1 = stmt1.getQueryId();
-    assertFalse("hiveCustomTag".equals(queryId1));
-    assertFalse(queryId.equals(queryId1));
+    assertNotEquals("hiveCustomTag", queryId1);
+    assertNotEquals(queryId, queryId1);
     assertFalse(queryId1.isEmpty());
     stmt1.getUpdateCount();
 
     stmt.executeAsync("select count(*) from " + dataTypeTableName);
     queryId = stmt.getQueryId();
-    assertFalse("hiveCustomTag".equals(queryId));
+    assertNotEquals("hiveCustomTag", queryId);
     assertFalse(queryId.isEmpty());
-    assertFalse(queryId.equals(queryId1));
+    assertNotEquals(queryId, queryId1);
     stmt.getUpdateCount();
 
     stmt.execute("drop database query_id_test");
@@ -3288,9 +3296,11 @@ public class TestJdbcDriver2 {
   }
 
   // Test that opening a JDBC connection to a non-existent database throws a HiveSQLException
-  @Test(expected = HiveSQLException.class)
+  @Test
   public void testConnectInvalidDatabase() throws SQLException {
-    DriverManager.getConnection("jdbc:hive2:///databasedoesnotexist", "", "");
+    assertThrows(HiveSQLException.class, () -> {
+      DriverManager.getConnection("jdbc:hive2:///databasedoesnotexist", "", "");
+    });
   }
 
   @Test
@@ -3414,6 +3424,28 @@ public class TestJdbcDriver2 {
       result = stmt.executeQuery("select count(*) from parquetf_emp");
       assertTrue(result.next());
       assertEquals(4, result.getInt("_c0"));
+    } finally {
+      stmt.close();
+    }
+  }
+  /**
+   * These test methods validate the error handling when attempting to load data from a non-existent file into different types of Hive tables.
+   * Each test creates a specific type of table ( dynamically partitioned, or bucketed), and then attempts to load data from a non-existent file.
+   * The tests pass if an exception is thrown with a message containing the string "Invalid path".
+   */
+  @Test
+  public void testLoadDataNegativeForDynamicPartition() throws Exception {
+    HiveStatement stmt = (HiveStatement) con.createStatement();
+    try {
+      stmt.execute("drop table if exists T");
+      stmt.execute("create table T (a int, b int) partitioned by (p int) stored as orc");
+      try {
+        stmt.execute("load data local inpath '/path/to/nonexistent/file.txt' into table T");
+        fail("Expected an exception to be thrown");
+      } catch (Exception e) {
+        assertTrue("load data inpath",
+                e.getMessage() != null && e.getMessage().contains("Invalid path"));
+      }
     } finally {
       stmt.close();
     }

@@ -1,7 +1,9 @@
 PREHOOK: query: DROP TABLE hbase_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` timestamp)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
   WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string,:timestamp")
@@ -66,10 +68,12 @@ POSTHOOK: Input: default@hbase_table
 PREHOOK: query: DROP TABLE hbase_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
 POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
@@ -124,10 +128,12 @@ POSTHOOK: Input: default@hbase_table
 PREHOOK: query: DROP TABLE hbase_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
 POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table (key string, value string, `time` bigint)
   STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
@@ -380,10 +386,12 @@ POSTHOOK: Input: default@hbase_table
 PREHOOK: query: DROP TABLE hbase_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@hbase_table
 POSTHOOK: query: DROP TABLE hbase_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@hbase_table
 PREHOOK: query: CREATE EXTERNAL TABLE hbase_table(key string, value map<string, string>, `time` timestamp)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'

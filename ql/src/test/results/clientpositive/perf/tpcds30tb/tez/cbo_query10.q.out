@@ -15,7 +15,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$4], sort4=[$6], sort5=
                       HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($4))])
                         HiveTableScan(table=[[default, customer]], table:alias=[c])
                     HiveProject(ca_address_sk=[$0], ca_county=[$7])
-                      HiveFilter(condition=[IN($7, _UTF-16LE'Walker County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Richland County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Gaines County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Douglas County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Dona Ana County':VARCHAR(30) CHARACTER SET "UTF-16LE")])
+                      HiveFilter(condition=[IN($7, _UTF-16LE'Dona Ana County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Douglas County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Gaines County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Richland County':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'Walker County':VARCHAR(30) CHARACTER SET "UTF-16LE")])
                         HiveTableScan(table=[[default, customer_address]], table:alias=[ca])
                   HiveProject(ss_customer_sk=[$0])
                     HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])

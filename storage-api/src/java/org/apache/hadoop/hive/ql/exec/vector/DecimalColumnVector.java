@@ -24,7 +24,7 @@ import java.util.Arrays;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 
-public class DecimalColumnVector extends ColumnVector {
+public class DecimalColumnVector extends ColumnVector implements IDecimalColumnVector {
 
   /**
    * A vector of HiveDecimalWritable objects.

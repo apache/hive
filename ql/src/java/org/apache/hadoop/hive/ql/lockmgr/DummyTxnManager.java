@@ -47,7 +47,7 @@ import java.util.*;
  * An implementation of {@link HiveTxnManager} that does not support
  * transactions.  This provides default Hive behavior.
  */
-class DummyTxnManager extends HiveTxnManagerImpl {
+public class DummyTxnManager extends HiveTxnManagerImpl {
   static final private Logger LOG =
       LoggerFactory.getLogger(DummyTxnManager.class.getName());
 
@@ -273,6 +273,12 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public Map<String, String> getReplayedTxnsForPolicy(String replPolicy) throws LockException {
+//    No-op
+    return new HashMap<>();
+  }
+
+  @Override
   public void heartbeat() throws LockException {
     // No-op
   }
@@ -415,26 +421,23 @@ class DummyTxnManager extends HiveTxnManagerImpl {
         name = p.getName().split("@")[2];
       }
 
-      String partialName = "";
+      StringBuilder partialName = new StringBuilder();
       String[] partns = name.split("/");
       int len = p instanceof DummyPartition ? partns.length : partns.length - 1;
       Map<String, String> partialSpec = new LinkedHashMap<String, String>();
       for (int idx = 0; idx < len; idx++) {
         String partn = partns[idx];
-        partialName += partn;
+        partialName.append(partn);
         String[] nameValue = partn.split("=");
         assert(nameValue.length == 2);
         partialSpec.put(nameValue[0], nameValue[1]);
-        try {
-          locks.add(new HiveLockObj(
-                      new HiveLockObject(new DummyPartition(p.getTable(), p.getTable().getDbName()
-                          + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase()
-                          + "/" + partialName,
-                          partialSpec), lockData), mode));
-          partialName += "/";
-        } catch (HiveException e) {
-          throw new LockException(e.getMessage());
-        }
+        DummyPartition par = new DummyPartition(p.getTable(), 
+          p.getTable().getDbName() 
+            + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase() 
+            + "/" + partialName,
+          partialSpec);
+        locks.add(new HiveLockObj(new HiveLockObject(par, lockData), mode));
+        partialName.append("/");
       }
 
       locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData), mode));
@@ -446,5 +449,10 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   @Override
   public String getQueryid() {
     return null;
+  }
+
+  @Override
+  public void addWriteIdsToMinHistory(QueryPlan plan, ValidTxnWriteIdList txnWriteIds) {
+    
   }
 }

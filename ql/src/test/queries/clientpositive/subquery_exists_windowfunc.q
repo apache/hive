@@ -1,3 +1,4 @@
+set hive.auto.convert.anti.join=true;
 create table alltypestiny(
 id int,
 int_col int,

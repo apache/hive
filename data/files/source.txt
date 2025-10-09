@@ -1,4 +1,2 @@
-EXPLAIN
-SELECT x.* FROM SRC x;
-
-SELECT x.* FROM SRC x;
+SELECT 'Executed SQL query 1 using SOURCE command';
+SELECT 'Executed SQL query 2 using SOURCE command';

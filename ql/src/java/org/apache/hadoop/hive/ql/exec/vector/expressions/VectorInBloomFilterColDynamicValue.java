@@ -102,7 +102,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
       throw new IllegalStateException("Unsupported type " + colVectorType);
     }
 
-    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUERY_ID);
     runtimeCache = ObjectCacheFactory.getCache(conf, queryId, false, true);
   }
 
@@ -127,7 +127,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
                   BloomKFilter bloomKFilter = BloomKFilter.deserialize(in);
                   return bloomKFilter;
                 } else {
-                  return new BloomKFilter(1);
+                  return BloomKFilter.build(1);
                 }
               } finally {
                 IOUtils.closeStream(in);

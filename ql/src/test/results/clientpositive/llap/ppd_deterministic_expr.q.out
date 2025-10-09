@@ -221,11 +221,11 @@ POSTHOOK: Input: default@testa@part1=US/part2=ABC/part3=123
 POSTHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@viewDeterministicUDFA
-POSTHOOK: Lineage: viewDeterministicUDFA.vcol1 EXPRESSION [(testa)testa.FieldSchema(name:col1, type:string, comment:), ]
-POSTHOOK: Lineage: viewDeterministicUDFA.vcol2 EXPRESSION [(testa)testa.FieldSchema(name:col2, type:string, comment:), ]
-POSTHOOK: Lineage: viewDeterministicUDFA.vcol3 EXPRESSION [(testa)testa.FieldSchema(name:col3, type:string, comment:), ]
-POSTHOOK: Lineage: viewDeterministicUDFA.vcol4 EXPRESSION [(testa)testa.FieldSchema(name:col4, type:string, comment:), ]
-POSTHOOK: Lineage: viewDeterministicUDFA.vcol5 EXPRESSION [(testa)testa.FieldSchema(name:col5, type:string, comment:), ]
+POSTHOOK: Lineage: viewdeterministicudfa.vcol1 EXPRESSION [(testa)testa.FieldSchema(name:col1, type:string, comment:), ]
+POSTHOOK: Lineage: viewdeterministicudfa.vcol2 EXPRESSION [(testa)testa.FieldSchema(name:col2, type:string, comment:), ]
+POSTHOOK: Lineage: viewdeterministicudfa.vcol3 EXPRESSION [(testa)testa.FieldSchema(name:col3, type:string, comment:), ]
+POSTHOOK: Lineage: viewdeterministicudfa.vcol4 EXPRESSION [(testa)testa.FieldSchema(name:col4, type:string, comment:), ]
+POSTHOOK: Lineage: viewdeterministicudfa.vcol5 EXPRESSION [(testa)testa.FieldSchema(name:col5, type:string, comment:), ]
 PREHOOK: query: create view viewDeterministicUDFB partitioned on (vpart1, vpart2, vpart3) as select
  cast(cola as decimal(38,18)) as vcolA,
  cast(colb as decimal(38,18)) as vcolB,
@@ -260,9 +260,9 @@ POSTHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
 POSTHOOK: Input: default@testb@part1=US/part2=PQR/part3=123
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@viewDeterministicUDFB
-POSTHOOK: Lineage: viewDeterministicUDFB.vcola EXPRESSION [(testb)testb.FieldSchema(name:cola, type:string, comment:), ]
-POSTHOOK: Lineage: viewDeterministicUDFB.vcolb EXPRESSION [(testb)testb.FieldSchema(name:colb, type:string, comment:), ]
-POSTHOOK: Lineage: viewDeterministicUDFB.vcolc EXPRESSION [(testb)testb.FieldSchema(name:colc, type:string, comment:), ]
+POSTHOOK: Lineage: viewdeterministicudfb.vcola EXPRESSION [(testb)testb.FieldSchema(name:cola, type:string, comment:), ]
+POSTHOOK: Lineage: viewdeterministicudfb.vcolb EXPRESSION [(testb)testb.FieldSchema(name:colb, type:string, comment:), ]
+POSTHOOK: Lineage: viewdeterministicudfb.vcolc EXPRESSION [(testb)testb.FieldSchema(name:colc, type:string, comment:), ]
 PREHOOK: query: create view viewNoUDFA partitioned on (part1, part2, part3) as select
  cast(col1 as decimal(38,18)) as vcol1,
  cast(col2 as decimal(38,18)) as vcol2,
@@ -299,11 +299,11 @@ POSTHOOK: Input: default@testa@part1=US/part2=ABC/part3=123
 POSTHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@viewNoUDFA
-POSTHOOK: Lineage: viewNoUDFA.vcol1 EXPRESSION [(testa)testa.FieldSchema(name:col1, type:string, comment:), ]
-POSTHOOK: Lineage: viewNoUDFA.vcol2 EXPRESSION [(testa)testa.FieldSchema(name:col2, type:string, comment:), ]
-POSTHOOK: Lineage: viewNoUDFA.vcol3 EXPRESSION [(testa)testa.FieldSchema(name:col3, type:string, comment:), ]
-POSTHOOK: Lineage: viewNoUDFA.vcol4 EXPRESSION [(testa)testa.FieldSchema(name:col4, type:string, comment:), ]
-POSTHOOK: Lineage: viewNoUDFA.vcol5 EXPRESSION [(testa)testa.FieldSchema(name:col5, type:string, comment:), ]
+POSTHOOK: Lineage: viewnoudfa.vcol1 EXPRESSION [(testa)testa.FieldSchema(name:col1, type:string, comment:), ]
+POSTHOOK: Lineage: viewnoudfa.vcol2 EXPRESSION [(testa)testa.FieldSchema(name:col2, type:string, comment:), ]
+POSTHOOK: Lineage: viewnoudfa.vcol3 EXPRESSION [(testa)testa.FieldSchema(name:col3, type:string, comment:), ]
+POSTHOOK: Lineage: viewnoudfa.vcol4 EXPRESSION [(testa)testa.FieldSchema(name:col4, type:string, comment:), ]
+POSTHOOK: Lineage: viewnoudfa.vcol5 EXPRESSION [(testa)testa.FieldSchema(name:col5, type:string, comment:), ]
 PREHOOK: query: create view viewNoUDFB partitioned on (part1, part2, part3) as select
  cast(cola as decimal(38,18)) as vcolA,
  cast(colb as decimal(38,18)) as vcolB,
@@ -338,9 +338,9 @@ POSTHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
 POSTHOOK: Input: default@testb@part1=US/part2=PQR/part3=123
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@viewNoUDFB
-POSTHOOK: Lineage: viewNoUDFB.vcola EXPRESSION [(testb)testb.FieldSchema(name:cola, type:string, comment:), ]
-POSTHOOK: Lineage: viewNoUDFB.vcolb EXPRESSION [(testb)testb.FieldSchema(name:colb, type:string, comment:), ]
-POSTHOOK: Lineage: viewNoUDFB.vcolc EXPRESSION [(testb)testb.FieldSchema(name:colc, type:string, comment:), ]
+POSTHOOK: Lineage: viewnoudfb.vcola EXPRESSION [(testb)testb.FieldSchema(name:cola, type:string, comment:), ]
+POSTHOOK: Lineage: viewnoudfb.vcolb EXPRESSION [(testb)testb.FieldSchema(name:colb, type:string, comment:), ]
+POSTHOOK: Lineage: viewnoudfb.vcolc EXPRESSION [(testb)testb.FieldSchema(name:colc, type:string, comment:), ]
 PREHOOK: query: explain
 select vcol1, vcol2, vcol3, vcola, vcolb
 from viewDeterministicUDFA a inner join viewDeterministicUDFB b

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.misc.rename;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableOperation;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -49,5 +50,10 @@ public class AlterTableRenameOperation extends AbstractAlterTableOperation<Alter
   @Override
   protected void doAlteration(Table table, Partition partition) throws HiveException {
     HiveTableName.setFrom(desc.getNewName(), table);
+  }
+
+  @Override
+  protected void checkValidity(Table table, DDLOperationContext context) throws HiveException {
+    table.validateName(context.getConf());
   }
 }

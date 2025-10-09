@@ -1,6 +1,6 @@
 PREHOOK: query: create function lookup as 'org.apache.hadoop.hive.ql.udf.UDFFileLookup' using file 'nonexistent_file.txt'
 PREHOOK: type: CREATEFUNCTION
-PREHOOK: Output: database:default
+PREHOOK: Input: database:default
 PREHOOK: Output: default.lookup
 #### A masked pattern was here ####
 nonexistent_file.txt does not exist
