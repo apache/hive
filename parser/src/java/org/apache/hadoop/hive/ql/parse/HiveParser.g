@@ -159,6 +159,7 @@ TOK_UNIONTYPE;
 TOK_VARIANT;
 TOK_COLTYPELIST;
 TOK_CREATECATALOG;
+TOK_CATALOGPROPERTIES;
 TOK_CREATEDATABASE;
 TOK_CREATEDATACONNECTOR;
 TOK_CREATETABLE;
@@ -378,6 +379,7 @@ TOK_DESCCATALOG;
 TOK_CATALOGLOCATION;
 TOK_CATALOGCOMMENT;
 TOK_ALTERCATALOG_LOCATION;
+TOK_ALTERCATALOG_PROPERTIES;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
@@ -1127,7 +1129,8 @@ createCatalogStatement
         name=identifier
         catLocation
         catalogComment?
-    -> ^(TOK_CREATECATALOG $name catLocation ifNotExists? catalogComment?)
+        (KW_CATPROPERTIES catprops=catProperties)?
+    -> ^(TOK_CREATECATALOG $name catLocation ifNotExists? catalogComment? $catprops?)
     ;
 
 catLocation
@@ -1142,6 +1145,13 @@ catalogComment
 @after { popMsg(state); }
     : KW_COMMENT comment=StringLiteral
     -> ^(TOK_CATALOGCOMMENT $comment)
+    ;
+
+catProperties
+@init { pushMsg("catproperties", state); }
+@after { popMsg(state); }
+    :
+      LPAREN dbPropertiesList RPAREN -> ^(TOK_CATALOGPROPERTIES dbPropertiesList)
     ;
 
 dropCatalogStatement

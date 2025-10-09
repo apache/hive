@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
+import java.util.Optional;
+
 /**
  * Operation process of creating a catalog.
  */
@@ -37,7 +39,8 @@ public class CreateCatalogOperation extends DDLOperation<CreateCatalogDesc> {
   public int execute() throws Exception {
     Catalog catalog = new Catalog(desc.getName(), desc.getLocationUri());
     catalog.setDescription(desc.getComment());
-
+    Optional.ofNullable(desc.getCatlogProperties())
+            .ifPresent(catalog::setParameters);
     try {
       context.getDb().createCatalog(catalog, desc.isIfNotExists());
     } catch (AlreadyExistsException e) {
