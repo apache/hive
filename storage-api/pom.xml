@@ -228,6 +228,10 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <excludes>
+            <exclude>checkstyle/**</exclude>
+          </excludes>
       </plugin>
     </plugins>
   </build>
