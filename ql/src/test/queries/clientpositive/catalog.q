@@ -19,7 +19,7 @@ DROP CATALOG test_cat;
 SHOW CATALOGS;
 
 -- CREATE INE doesn't exist
-CREATE CATALOG IF NOT EXISTS test_cat LOCATION '/tmp/test_cat' COMMENT 'Hive test catalog';
+CREATE CATALOG IF NOT EXISTS test_cat LOCATION '/tmp/test_cat' COMMENT 'Hive test catalog' PROPERTIES('key1'='value1');;
 SHOW CATALOGS;
 
 -- DROP IE exists
@@ -45,3 +45,7 @@ SHOW CATALOGS LIKE 'test__';
 -- ALTER LOCATION
 ALTER CATALOG test_cat SET LOCATION '/tmp/test_cat_new';
 DESC CATALOG EXTENDED test_cat;
+
+-- ALTER PROPERTIES.
+-- TODO catalog. Check the catalog's properties after we implement 'desc formatted' or 'show create catalog'.
+ALTER CATALOG test_cat SET PROPERTIES ('key2'='value2');
