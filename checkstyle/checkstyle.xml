@@ -65,12 +65,10 @@
     <property name="headerFile" value="${config_loc}/asf.header"/>
   </module>
   <!-- HIVE-29245: An incremental process to normalize headers. We will finally remove the following one -->
-  <module name="Checker">
-    <module name="RegexpHeader">
-      <property name="headerFile" value="${config_loc}/asf.header.incremental"/>
-      <property name="fileExtensions" value="java"/>
-      <property name="multiLines" value="2"/>
-    </module>
+  <module name="RegexpHeader">
+    <property name="headerFile" value="${config_loc}/asf.header.incremental"/>
+    <property name="fileExtensions" value="java"/>
+    <property name="multiLines" value="2"/>
   </module>
 
   <!-- Maximum file line length -->
