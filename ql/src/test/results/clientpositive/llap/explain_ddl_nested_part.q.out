@@ -116,7 +116,7 @@ EXPLAIN CBO select * from test;
 
 
 EXPLAIN VECTORIZED select * from test;
-CBO PLAN:HiveProject(foo=[$0], i=[$1], j=[$2])
+CBO PLAN:HiveProject(test.foo=[$0], test.i=[$1], test.j=[$2])
   HiveTableScan(table=[[default, test]], table:alias=[test])
 
 PLAN VECTORIZATION:
@@ -540,7 +540,7 @@ EXPLAIN CBO select * from test2;
 
 
 EXPLAIN VECTORIZED select * from test2;
-CBO PLAN:HiveProject(foo=[$0], i=[$1], j=[$2], s=[$3], t=[$4])
+CBO PLAN:HiveProject(test2.foo=[$0], test2.i=[$1], test2.j=[$2], test2.s=[$3], test2.t=[$4])
   HiveTableScan(table=[[default, test2]], table:alias=[test2])
 
 PLAN VECTORIZATION:

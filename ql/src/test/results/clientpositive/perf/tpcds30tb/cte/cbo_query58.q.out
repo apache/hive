@@ -21,7 +21,7 @@ HiveProject(d_date_sk=[$0], d_date=[$2])
 Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 7' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  HiveProject(item_id=[$4], ss_item_rev=[$7], ss_dev=[*(/(/($7, +(+($7, $5), $1)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], cs_item_rev=[$5], cs_dev=[*(/(/($5, +(+($7, $5), $1)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], ws_item_rev=[$1], ws_dev=[*(/(/($1, +(+($7, $5), $1)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], average=[/(+(+($7, $5), $1), 3:DECIMAL(10, 0))])
+  HiveProject(ss_items.item_id=[$4], ss_item_rev=[$7], ss_dev=[*(/(/($7, +(+($7, $5), $1)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], cs_item_rev=[$5], cs_dev=[*(/(/($5, +(+($7, $5), $1)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], ws_item_rev=[$1], ws_dev=[*(/(/($1, +(+($7, $5), $1)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], average=[/(+(+($7, $5), $1), 3:DECIMAL(10, 0))])
     HiveJoin(condition=[AND(=($4, $0), BETWEEN(false, $7, $2, $3), BETWEEN(false, $5, $2, $3), BETWEEN(false, $1, *(0.9:DECIMAL(1, 1), $7), *(1.1:DECIMAL(2, 1), $7)), BETWEEN(false, $1, *(0.9:DECIMAL(1, 1), $5), *(1.1:DECIMAL(2, 1), $5)))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(item_id=[$0], ws_item_rev=[$1], EXPR$0=[*(0.9:DECIMAL(1, 1), $1)], EXPR$1=[*(1.1:DECIMAL(2, 1), $1)])
         HiveAggregate(group=[{6}], agg#0=[sum($1)])

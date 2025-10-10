@@ -158,7 +158,7 @@ POSTHOOK: Input: default@t3
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
 CBO PLAN:
-HiveProject(a0=[$4], c0=[$5], $f2=[CASE(IS NULL($2), $6, +($6, $2))])
+HiveProject(cmv_basetable_n6.a=[$4], cmv_basetable_2_n3.c=[$5], _c2=[CASE(IS NULL($2), $6, +($6, $2))])
   HiveFilter(condition=[OR(AND($3, OR(AND(IS NULL($2), =($6, 0)), AND(=(+($6, $2), 0), IS NOT NULL($2)))), AND(IS NULL($3), OR(AND(IS NULL($2), >($6, 0)), AND(>(+($6, $2), 0), IS NOT NULL($2)))), AND($3, OR(AND(IS NULL($2), >($6, 0)), AND(>(+($6, $2), 0), IS NOT NULL($2)))))])
     HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $4), IS NOT DISTINCT FROM($1, $5))], joinType=[right], algorithm=[none], cost=[not available])
       HiveProject(a=[$0], c=[$1], _c2=[$2], $f3=[true])
@@ -680,7 +680,7 @@ POSTHOOK: Input: default@t3
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
 CBO PLAN:
-HiveProject(a0=[$4], c0=[$5], $f2=[CASE(IS NULL($2), $6, +($6, $2))])
+HiveProject(cmv_basetable_n6.a=[$4], cmv_basetable_2_n3.c=[$5], _c2=[CASE(IS NULL($2), $6, +($6, $2))])
   HiveFilter(condition=[OR(AND($3, OR(AND(IS NULL($2), =($6, 0)), AND(=(+($6, $2), 0), IS NOT NULL($2)))), AND(IS NULL($3), OR(AND(IS NULL($2), >($6, 0)), AND(>(+($6, $2), 0), IS NOT NULL($2)))), AND($3, OR(AND(IS NULL($2), >($6, 0)), AND(>(+($6, $2), 0), IS NOT NULL($2)))))])
     HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $4), IS NOT DISTINCT FROM($1, $5))], joinType=[right], algorithm=[none], cost=[not available])
       HiveProject(a=[$0], c=[$1], _c2=[$2], $f3=[true])

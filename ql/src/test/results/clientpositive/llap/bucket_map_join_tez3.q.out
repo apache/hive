@@ -106,7 +106,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t2`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t2`.`decimal_col` AS `decimal_col1`
+OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t2`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t2`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
 WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
@@ -333,7 +333,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t3`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t3`.`decimal_col` AS `decimal_col1`
+OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t3`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t3`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
 WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
@@ -583,7 +583,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t2`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t2`.`decimal_col` AS `decimal_col1`
+OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t2`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t2`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
 WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
@@ -809,7 +809,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t3`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t3`.`decimal_col` AS `decimal_col1`
+OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t3`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t3`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
 WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
@@ -1058,7 +1058,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t2`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t2`.`decimal_col` AS `decimal_col1`
+OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t2`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t2`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
 WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
@@ -1285,7 +1285,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t3`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t3`.`decimal_col` AS `decimal_col1`
+OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t3`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t3`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
 WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
@@ -1535,7 +1535,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t2`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t2`.`decimal_col` AS `decimal_col1`
+OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t2`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t2`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
 WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`
@@ -1761,7 +1761,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source_table
 POSTHOOK: Input: default@target_table
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`date_col`, CAST('pipeline' AS STRING) AS `string_col`, `t0`.`decimal_col`, `t3`.`date_col` AS `date_col1`, 'pipeline' AS `string_col1`, `t3`.`decimal_col` AS `decimal_col1`
+OPTIMIZED SQL: SELECT `t0`.`date_col` AS `target_table.date_col`, CAST('pipeline' AS STRING) AS `target_table.string_col`, `t0`.`decimal_col` AS `target_table.decimal_col`, `t3`.`date_col` AS `s.date_col`, 'pipeline' AS `s.string_col`, `t3`.`decimal_col` AS `s.decimal_col`
 FROM (SELECT `date_col`, `decimal_col`
 FROM `default`.`target_table`
 WHERE 'pipeline' = `string_col` AND CASE WHEN `decimal_col` IS NOT NULL THEN CAST(`decimal_col` AS STRING) = '50000000000000000005905545593' ELSE FALSE END AND `date_col` IS NOT NULL AND `decimal_col` IS NOT NULL) AS `t0`

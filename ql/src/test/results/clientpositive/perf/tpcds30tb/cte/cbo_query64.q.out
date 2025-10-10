@@ -38,10 +38,10 @@ HiveProject(s_store_sk=[$0], s_store_name=[$5], s_zip=[$25])
     HiveTableScan(table=[[default, store]], table:alias=[store])
 
 CBO PLAN:
-HiveProject(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=[$3], b_streen_name=[$4], b_city=[$5], b_zip=[$6], c_street_number=[$7], c_street_name=[$8], c_city=[$9], c_zip=[$10], syear=[CAST(2000):INTEGER], cnt=[$11], s1=[$12], s2=[$13], s3=[$14], s11=[$15], s21=[$16], s31=[$17], syear1=[CAST(2001):INTEGER], cnt1=[$18])
+HiveProject(cs1.product_name=[$0], cs1.store_name=[$1], cs1.store_zip=[$2], cs1.b_street_number=[$3], cs1.b_streen_name=[$4], cs1.b_city=[$5], cs1.b_zip=[$6], cs1.c_street_number=[$7], cs1.c_street_name=[$8], cs1.c_city=[$9], cs1.c_zip=[$10], cs1.syear=[CAST(2000):INTEGER], cs1.cnt=[$11], cs1.s1=[$12], cs1.s2=[$13], cs1.s3=[$14], cs2.s1=[$15], cs2.s2=[$16], cs2.s3=[$17], cs2.syear=[CAST(2001):INTEGER], cs2.cnt=[$18])
   HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$18], dir0=[ASC], dir1=[ASC], dir2=[ASC])
     HiveProject(product_name=[$7], store_name=[$9], store_zip=[$10], b_street_number=[$11], b_streen_name=[$12], b_city=[$13], b_zip=[$14], c_street_number=[$15], c_street_name=[$16], c_city=[$17], c_zip=[$18], cnt=[$19], s1=[$20], s2=[$21], s3=[$22], s11=[$4], s21=[$5], s31=[$6], cnt1=[$3])
-      HiveJoin(condition=[AND(=($8, $0), <=($3, $19), =($9, $1), =($10, $2))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[AND(=($9, $1), =($8, $0), =($10, $2), <=($3, $19))], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject($f1=[$0], $f2=[$1], $f3=[$2], $f15=[$13], $f16=[$14], $f17=[$15], $f18=[$16])
           HiveFilter(condition=[IS NOT NULL($13)])
             HiveProject(i_item_sk=[$4], s_store_name=[$5], s_zip=[$6], ca_street_number=[$0], ca_street_name=[$1], ca_city=[$2], ca_zip=[$3], ca_street_number0=[$9], ca_street_name0=[$10], ca_city0=[$11], ca_zip0=[$12], d_year=[$7], d_year0=[$8], $f13=[$13], $f14=[$14], $f15=[$15], $f16=[$16])

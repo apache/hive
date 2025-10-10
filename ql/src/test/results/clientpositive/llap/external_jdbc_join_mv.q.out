@@ -157,7 +157,7 @@ POSTHOOK: Input: default@mv1
 POSTHOOK: Input: default@person
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(id=[$0], name=[$1], jid=[$2], cid=[$3], id1=[$4], title=[CAST(_UTF-16LE'Software Engineer':VARCHAR(20) CHARACTER SET "UTF-16LE"):VARCHAR(20) CHARACTER SET "UTF-16LE"], id2=[$5], name1=[$6])
+HiveProject(person.id=[$0], person.name=[$1], person.jid=[$2], person.cid=[$3], job.id=[$4], job.title=[CAST(_UTF-16LE'Software Engineer':VARCHAR(20) CHARACTER SET "UTF-16LE"):VARCHAR(20) CHARACTER SET "UTF-16LE"], country.id=[$5], country.name=[$6])
   HiveJoin(condition=[=($3, $5)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[=($2, $4)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(id=[$0], name=[$1], jid=[$2], cid=[$3])

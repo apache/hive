@@ -46,7 +46,7 @@ SELECT key, count(1) FROM T1_n56 GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl1_n13
-OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `_c1`
 FROM `default`.`t1_n56`
 GROUP BY `key`
 STAGE DEPENDENCIES:
@@ -289,7 +289,7 @@ SELECT key, val, count(1) FROM T1_n56 GROUP BY key, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl2_n3
-OPTIMIZED SQL: SELECT `key`, `val`, COUNT(*) AS `$f2`
+OPTIMIZED SQL: SELECT `key`, `val`, COUNT(*) AS `_c2`
 FROM `default`.`t1_n56`
 GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
@@ -571,7 +571,7 @@ SELECT key, count(1) FROM (SELECT key, val FROM T1_n56) subq1 GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl1_n13
-OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `_c1`
 FROM `default`.`t1_n56`
 GROUP BY `key`
 STAGE DEPENDENCIES:
@@ -806,7 +806,7 @@ SELECT k, count(1) FROM (SELECT key as k, val as v FROM T1_n56) subq1 GROUP BY k
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl1_n13
-OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `key` AS `k`, COUNT(*) AS `_c1`
 FROM `default`.`t1_n56`
 GROUP BY `key`
 STAGE DEPENDENCIES:
@@ -1049,7 +1049,7 @@ SELECT 1, key, count(1) FROM T1_n56 GROUP BY 1, key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl3_n1
-OPTIMIZED SQL: SELECT 1 AS `_o__c0`, `key`, COUNT(*) AS `_o__c2`
+OPTIMIZED SQL: SELECT 1 AS `_c0`, `key`, COUNT(*) AS `_c2`
 FROM `default`.`t1_n56`
 GROUP BY `key`
 STAGE DEPENDENCIES:
@@ -1293,7 +1293,7 @@ SELECT key, 1, val, count(1) FROM T1_n56 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl4_n1
-OPTIMIZED SQL: SELECT `key`, 1 AS `_o__c1`, `val`, COUNT(*) AS `_o__c3`
+OPTIMIZED SQL: SELECT `key`, 1 AS `_c1`, `val`, COUNT(*) AS `_c3`
 FROM `default`.`t1_n56`
 GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
@@ -1576,7 +1576,7 @@ SELECT key, key + 1, count(1) FROM T1_n56 GROUP BY key, key + 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl3_n1
-OPTIMIZED SQL: SELECT `key` AS `$f0`, CAST(`key` AS DOUBLE) + 1 AS `$f1`, COUNT(*) AS `$f2`
+OPTIMIZED SQL: SELECT `key`, CAST(`key` AS DOUBLE) + 1 AS `_c1`, COUNT(*) AS `_c2`
 FROM `default`.`t1_n56`
 GROUP BY `key`, CAST(`key` AS DOUBLE) + 1
 STAGE DEPENDENCIES:
@@ -1861,7 +1861,7 @@ group by key + key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl1_n13
-OPTIMIZED SQL: SELECT CAST(`$f0` AS STRING) AS `_o__c0`, SUM(`$f1`) AS `_o__c1`
+OPTIMIZED SQL: SELECT CAST(`$f0` AS STRING) AS `_c0`, SUM(`$f1`) AS `_c1`
 FROM (SELECT CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE) AS `$f0`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n56`
 GROUP BY `key`) AS `t0`
@@ -2165,13 +2165,14 @@ SELECT key, count(1) FROM T1_n56 GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl1_n13
-OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `key` AS `subq1.key`, `$f1` AS `subq1._c1`
+FROM (SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n56`
 GROUP BY `key`
 UNION ALL
 SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n56`
-GROUP BY `key`
+GROUP BY `key`) AS `t3`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2538,13 +2539,14 @@ SELECT cast(key + key as string) as key, count(1) FROM T1_n56 GROUP BY key + key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl1_n13
-OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `key` AS `subq1.key`, `$f1` AS `subq1._c1`
+FROM (SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n56`
 GROUP BY `key`
 UNION ALL
 SELECT CAST(CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE) AS STRING) AS `key`, COUNT(*) AS `_o__c1`
 FROM `default`.`t1_n56`
-GROUP BY CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE)
+GROUP BY CAST(`key` AS DOUBLE) + CAST(`key` AS DOUBLE)) AS `t4`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2959,7 +2961,7 @@ ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 POSTHOOK: Output: default@outputtbl1_n13
-OPTIMIZED SQL: SELECT `t1`.`key`, `t1`.`$f1` + `t4`.`$f1` AS `_o__c1`
+OPTIMIZED SQL: SELECT `t1`.`key` AS `subq1.key`, `t1`.`$f1` + `t4`.`$f1` AS `_c1`
 FROM (SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n56`
 WHERE `key` IS NOT NULL
@@ -3280,7 +3282,7 @@ ON subq1.key = subq2.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n56
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `t1`.`key` AS `subq1.key`, `t1`.`$f1` AS `subq1._c1`, `t4`.`key` AS `subq2.key`, `t4`.`val` AS `subq2.val`, `t4`.`$f2` AS `subq2._c2`
 FROM (SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`t1_n56`
 WHERE `key` IS NOT NULL
@@ -3511,7 +3513,7 @@ SELECT key, count(1) FROM T2_n34 GROUP BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2_n34
 POSTHOOK: Output: default@outputtbl1_n13
-OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `key`, COUNT(*) AS `_c1`
 FROM `default`.`t2_n34`
 GROUP BY `key`
 STAGE DEPENDENCIES:
@@ -3792,7 +3794,7 @@ SELECT key, 1, val, count(1) FROM T2_n34 GROUP BY key, 1, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2_n34
 POSTHOOK: Output: default@outputtbl4_n1
-OPTIMIZED SQL: SELECT `key`, 1 AS `_o__c1`, `val`, COUNT(*) AS `_o__c3`
+OPTIMIZED SQL: SELECT `key`, 1 AS `_c1`, `val`, COUNT(*) AS `_c3`
 FROM `default`.`t2_n34`
 GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
@@ -4038,7 +4040,7 @@ SELECT key, 1, val, 2, count(1) FROM T2_n34 GROUP BY key, 1, val, 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2_n34
 POSTHOOK: Output: default@outputtbl5_n1
-OPTIMIZED SQL: SELECT `key`, 1 AS `_o__c1`, `val`, 2 AS `_o__c3`, COUNT(*) AS `_o__c4`
+OPTIMIZED SQL: SELECT `key`, 1 AS `_c1`, `val`, 2 AS `_c3`, COUNT(*) AS `_c4`
 FROM `default`.`t2_n34`
 GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
@@ -4283,7 +4285,7 @@ group by key, constant, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2_n34
 POSTHOOK: Output: default@outputtbl4_n1
-OPTIMIZED SQL: SELECT `key`, 1 AS `constant`, `val`, COUNT(*) AS `_o__c3`
+OPTIMIZED SQL: SELECT `key`, 1 AS `constant`, `val`, COUNT(*) AS `_c3`
 FROM `default`.`t2_n34`
 GROUP BY `key`, `val`
 STAGE DEPENDENCIES:
@@ -4535,7 +4537,7 @@ group by key, constant3, val
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2_n34
 POSTHOOK: Output: default@outputtbl4_n1
-OPTIMIZED SQL: SELECT `key`, 2 AS `constant3`, `val`, COUNT(*) AS `_o__c3`
+OPTIMIZED SQL: SELECT `key`, 2 AS `constant3`, `val`, COUNT(*) AS `_c3`
 FROM `default`.`t2_n34`
 GROUP BY `key`, `val`
 STAGE DEPENDENCIES:

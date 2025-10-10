@@ -196,7 +196,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n3
 POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('145' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `ds`, CAST('1' AS STRING) AS `hr`
+OPTIMIZED SQL: SELECT CAST('145' AS STRING) AS `fact_daily_n3.key`, `value` AS `fact_daily_n3.value`, CAST('1' AS STRING) AS `fact_daily_n3.ds`, CAST('1' AS STRING) AS `fact_daily_n3.hr`
 FROM `default`.`fact_daily_n3`
 WHERE `key` = '145' AND `ds` = '1' AND `hr` = '1'
 STAGE DEPENDENCIES:
@@ -276,7 +276,7 @@ select count(*) from fact_daily_n3 where ds = '1' and  hr='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n3
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`fact_daily_n3`
 WHERE `ds` = '1' AND `hr` = '1'
 STAGE DEPENDENCIES:
@@ -310,7 +310,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n3
 POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=2
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `$f0`, CAST('val_484' AS STRING) AS `$f1`, CAST('1' AS STRING) AS `$f2`, CAST('2' AS STRING) AS `$f3`
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `fact_daily_n3.key`, CAST('val_484' AS STRING) AS `fact_daily_n3.value`, CAST('1' AS STRING) AS `fact_daily_n3.ds`, CAST('2' AS STRING) AS `fact_daily_n3.hr`
 FROM `default`.`fact_daily_n3`
 WHERE `key` = '484' AND `value` = 'val_484' AND `ds` = '1' AND `hr` = '2'
 STAGE DEPENDENCIES:
@@ -392,7 +392,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n3
 POSTHOOK: Input: default@fact_daily_n3@ds=1/hr=3
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('327' AS STRING) AS `$f0`, CAST('val_327' AS STRING) AS `$f1`, CAST('1' AS STRING) AS `$f2`, CAST('3' AS STRING) AS `$f3`
+OPTIMIZED SQL: SELECT CAST('327' AS STRING) AS `fact_daily_n3.key`, CAST('val_327' AS STRING) AS `fact_daily_n3.value`, CAST('1' AS STRING) AS `fact_daily_n3.ds`, CAST('3' AS STRING) AS `fact_daily_n3.hr`
 FROM `default`.`fact_daily_n3`
 WHERE `key` = '327' AND `value` = 'val_327' AND `ds` = '1' AND `hr` = '3'
 STAGE DEPENDENCIES:

@@ -28,13 +28,14 @@ where m >2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, COUNT(`key`) AS `c`, 3 AS `m`
+OPTIMIZED SQL: SELECT *
+FROM (SELECT `key`, COUNT(`key`) AS `c`, 3 AS `m`
 FROM `default`.`src`
 GROUP BY `key`
 UNION ALL
 SELECT `key`, COUNT(`key`) AS `c`, 4 AS `m`
 FROM `default`.`src`
-GROUP BY `key`
+GROUP BY `key`) AS `t3`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

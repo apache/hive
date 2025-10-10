@@ -2291,21 +2291,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveFilter(condition=[OR(IS NULL($2), =($2, 0), IS NOT TRUE(OR(IS NULL($1), IS NOT NULL($6), <($3, $2))))])
-    HiveProject(p_name=[$0], p_size=[$1], c=[$4], ck=[$5], $f15=[$2], p_partkey=[$6], literalTrue=[$7], p_name0=[$8])
-      HiveJoin(condition=[AND(=($8, $0), =($2, $6))], joinType=[left], algorithm=[none], cost=[not available])
-        HiveJoin(condition=[=($3, $0)], joinType=[left], algorithm=[none], cost=[not available])
-          HiveProject(p_name=[$1], p_size=[$5], $f15=[+($5, 100)])
-            HiveTableScan(table=[[default, part]], table:alias=[e])
-          HiveProject(p_name=[$0], c=[$1], ck=[$2])
-            HiveAggregate(group=[{1}], c=[COUNT()], ck=[COUNT($0)])
-              HiveFilter(condition=[IS NOT NULL($1)])
+HiveProject(c=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveFilter(condition=[OR(IS NULL($2), =($2, 0), IS NOT TRUE(OR(IS NULL($1), IS NOT NULL($6), <($3, $2))))])
+      HiveProject(p_name=[$0], p_size=[$1], c=[$4], ck=[$5], $f15=[$2], p_partkey=[$6], literalTrue=[$7], p_name0=[$8])
+        HiveJoin(condition=[AND(=($8, $0), =($2, $6))], joinType=[left], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[=($3, $0)], joinType=[left], algorithm=[none], cost=[not available])
+            HiveProject(p_name=[$1], p_size=[$5], $f15=[+($5, 100)])
+              HiveTableScan(table=[[default, part]], table:alias=[e])
+            HiveProject(p_name=[$0], c=[$1], ck=[$2])
+              HiveAggregate(group=[{1}], c=[COUNT()], ck=[COUNT($0)])
+                HiveFilter(condition=[IS NOT NULL($1)])
+                  HiveTableScan(table=[[default, part]], table:alias=[part])
+          HiveProject(p_partkey=[$0], literalTrue=[true], p_name=[$1])
+            HiveAggregate(group=[{0, 1}])
+              HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
                 HiveTableScan(table=[[default, part]], table:alias=[part])
-        HiveProject(p_partkey=[$0], literalTrue=[true], p_name=[$1])
-          HiveAggregate(group=[{0, 1}])
-            HiveFilter(condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
-              HiveTableScan(table=[[default, part]], table:alias=[part])
 
 PREHOOK: query: explain select count(*) as c from part as e where p_size + 100 NOT IN (select p_partkey from part where p_name = e.p_name)
 PREHOOK: type: QUERY
@@ -2707,7 +2708,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8])
+HiveProject(part.p_partkey=[$0], part.p_name=[$1], part.p_mfgr=[$2], part.p_brand=[$3], part.p_type=[$4], part.p_size=[$5], part.p_container=[$6], part.p_retailprice=[$7], part.p_comment=[$8])
   HiveFilter(condition=[OR(IS NULL($9), =($9, 0), IS NOT TRUE(OR(IS NULL($1), IS NOT NULL($13), <($10, $9))))])
     HiveProject(p_partkey=[$0], p_name=[$1], p_mfgr=[$2], p_brand=[$3], p_type=[$4], p_size=[$5], p_container=[$6], p_retailprice=[$7], p_comment=[$8], c=[$13], ck=[$14], $f17=[$10], p_name0=[$15], literalTrue=[$16], p_size0=[$17], p_partkey0=[$18])
       HiveJoin(condition=[AND(=($1, $15), =($17, $5), =($10, $18))], joinType=[left], algorithm=[none], cost=[not available])

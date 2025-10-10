@@ -9,7 +9,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+HiveProject(alltypesorc.ctinyint=[$0], alltypesorc.csmallint=[$1], alltypesorc.cint=[$2], alltypesorc.cbigint=[$3], alltypesorc.cfloat=[$4], alltypesorc.cdouble=[$5], alltypesorc.cstring1=[$6], alltypesorc.cstring2=[$7], alltypesorc.ctimestamp1=[$8], alltypesorc.ctimestamp2=[$9], alltypesorc.cboolean1=[$10], alltypesorc.cboolean2=[$11])
   HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
 
 PREHOOK: query: explain cbo
@@ -23,7 +23,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+HiveProject(alltypesorc.ctinyint=[$0], alltypesorc.csmallint=[$1], alltypesorc.cint=[$2], alltypesorc.cbigint=[$3], alltypesorc.cfloat=[$4], alltypesorc.cdouble=[$5], alltypesorc.cstring1=[$6], alltypesorc.cstring2=[$7], alltypesorc.ctimestamp1=[$8], alltypesorc.ctimestamp2=[$9], alltypesorc.cboolean1=[$10], alltypesorc.cboolean2=[$11])
   HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
 
 PREHOOK: query: explain cbo
@@ -37,7 +37,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+HiveProject(alltypesorc.ctinyint=[$0], alltypesorc.csmallint=[$1], alltypesorc.cint=[$2], alltypesorc.cbigint=[$3], alltypesorc.cfloat=[$4], alltypesorc.cdouble=[$5], alltypesorc.cstring1=[$6], alltypesorc.cstring2=[$7], alltypesorc.ctimestamp1=[$8], alltypesorc.ctimestamp2=[$9], alltypesorc.cboolean1=[$10], alltypesorc.cboolean2=[$11])
   HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
 
 PREHOOK: query: explain cbo
@@ -51,7 +51,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+HiveProject(alltypesorc.ctinyint=[$0], alltypesorc.csmallint=[$1], alltypesorc.cint=[$2], alltypesorc.cbigint=[$3], alltypesorc.cfloat=[$4], alltypesorc.cdouble=[$5], alltypesorc.cstring1=[$6], alltypesorc.cstring2=[$7], alltypesorc.ctimestamp1=[$8], alltypesorc.ctimestamp2=[$9], alltypesorc.cboolean1=[$10], alltypesorc.cboolean2=[$11])
   HiveFilter(condition=[IN($2, 2, 3)])
     HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
 
@@ -79,7 +79,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+HiveProject(alltypesorc.ctinyint=[$0], alltypesorc.csmallint=[$1], alltypesorc.cint=[$2], alltypesorc.cbigint=[$3], alltypesorc.cfloat=[$4], alltypesorc.cdouble=[$5], alltypesorc.cstring1=[$6], alltypesorc.cstring2=[$7], alltypesorc.ctimestamp1=[$8], alltypesorc.ctimestamp2=[$9], alltypesorc.cboolean1=[$10], alltypesorc.cboolean2=[$11])
   HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
 
 PREHOOK: query: explain cbo
@@ -93,7 +93,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ctinyint=[$0], csmallint=[$1], cint=[$2], cbigint=[$3], cfloat=[$4], cdouble=[$5], cstring1=[$6], cstring2=[$7], ctimestamp1=[$8], ctimestamp2=[$9], cboolean1=[$10], cboolean2=[$11])
+HiveProject(alltypesorc.ctinyint=[$0], alltypesorc.csmallint=[$1], alltypesorc.cint=[$2], alltypesorc.cbigint=[$3], alltypesorc.cfloat=[$4], alltypesorc.cdouble=[$5], alltypesorc.cstring1=[$6], alltypesorc.cstring2=[$7], alltypesorc.ctimestamp1=[$8], alltypesorc.ctimestamp2=[$9], alltypesorc.cboolean1=[$10], alltypesorc.cboolean2=[$11])
   HiveTableScan(table=[[default, alltypesorc]], table:alias=[alltypesorc])
 
 PREHOOK: query: explain cbo

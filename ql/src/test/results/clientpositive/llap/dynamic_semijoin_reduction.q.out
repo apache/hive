@@ -1724,7 +1724,7 @@ POSTHOOK: Input: default@srcpart_small_n3
 POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-08
 POSTHOOK: Input: default@srcpart_small_n3@ds=2008-04-09
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM (SELECT `key`
 FROM `default`.`srcpart_date_n7`
 WHERE `key` IS NOT NULL) AS `t0`

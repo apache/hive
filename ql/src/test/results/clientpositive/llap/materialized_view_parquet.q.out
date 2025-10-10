@@ -242,7 +242,7 @@ POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(deptno=[$1], empid=[$0], name=[$2], salary=[$3], commission=[$4], name1=[$6], locationid=[$7])
+HiveProject(t.deptno=[$1], t.empid=[$0], t.name=[$2], t.salary=[$3], t.commission=[$4], depts_parquet_n2.name=[$6], depts_parquet_n2.locationid=[$7])
   HiveJoin(condition=[=($1, $5)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(empid=[CAST($0):INTEGER NOT NULL], deptno=[$1], name=[$2], salary=[$3], commission=[$4])
       HiveFilter(condition=[AND(>(120, CAST($0):INTEGER NOT NULL), IS NOT NULL($1))])
@@ -315,7 +315,7 @@ POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(name=[$1], salary=[$2], commission=[$3])
+HiveProject(emps_parquet_n3.name=[$1], emps_parquet_n3.salary=[$2], emps_parquet_n3.commission=[$3])
   HiveFilter(condition=[IS NOT NULL($0)])
     HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
@@ -444,13 +444,14 @@ POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveUnion(all=[true])
-  HiveProject(empid=[$0], deptno=[$1], name=[$2], salary=[$3], commission=[$4])
-    HiveFilter(condition=[>($0, 120)])
-      HiveTableScan(table=[[default, emps_parquet_n3]], table:alias=[emps_parquet_n3])
-  HiveProject(empid=[CAST($0):INTEGER NOT NULL], deptno=[$1], name=[$2], salary=[$3], commission=[$4])
-    HiveFilter(condition=[>(150, CAST($0):INTEGER NOT NULL)])
-      HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+HiveProject(empid=[$0], deptno=[$1], name=[$2], salary=[$3], commission=[$4])
+  HiveUnion(all=[true])
+    HiveProject(empid=[$0], deptno=[$1], name=[$2], salary=[$3], commission=[$4])
+      HiveFilter(condition=[>($0, 120)])
+        HiveTableScan(table=[[default, emps_parquet_n3]], table:alias=[emps_parquet_n3])
+    HiveProject(empid=[CAST($0):INTEGER NOT NULL], deptno=[$1], name=[$2], salary=[$3], commission=[$4])
+      HiveFilter(condition=[>(150, CAST($0):INTEGER NOT NULL)])
+        HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
 PREHOOK: query: select * from emps_parquet_n3 where empid > 120
 union all select * from emps_parquet_n3 where empid < 150
@@ -616,7 +617,8 @@ POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+HiveProject(name=[$0], salary=[$1])
+  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
 PREHOOK: query: select name, salary from emps_parquet_n3 group by name, salary
 PREHOOK: type: QUERY
@@ -669,8 +671,9 @@ POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}])
-  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+HiveProject(name=[$0])
+  HiveAggregate(group=[{0}])
+    HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
 PREHOOK: query: select name from emps_parquet_n3 group by name
 PREHOOK: type: QUERY
@@ -723,8 +726,9 @@ POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}])
-  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+HiveProject(name=[$0])
+  HiveAggregate(group=[{0}])
+    HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
 PREHOOK: query: select name from emps_parquet_n3 where deptno = 10 group by name
 PREHOOK: type: QUERY
@@ -780,8 +784,9 @@ POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}])
-  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+HiveProject(name=[$0])
+  HiveAggregate(group=[{0}])
+    HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
 PREHOOK: query: select name from emps_parquet_n3 group by name
 PREHOOK: type: QUERY
@@ -1033,8 +1038,9 @@ POSTHOOK: Input: default@emps_parquet_n3
 POSTHOOK: Input: default@mv1_parquet_n2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}], agg#0=[sum($3)])
-  HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
+HiveProject(name=[$0], _c1=[$1])
+  HiveAggregate(group=[{0}], agg#0=[sum($3)])
+    HiveTableScan(table=[[default, mv1_parquet_n2]], table:alias=[default.mv1_parquet_n2])
 
 PREHOOK: query: select name, sum(empid) from emps_parquet_n3 group by name
 PREHOOK: type: QUERY

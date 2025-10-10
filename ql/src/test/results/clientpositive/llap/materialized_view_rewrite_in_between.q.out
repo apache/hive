@@ -157,7 +157,8 @@ POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
+HiveProject(state=[$0], year=[$1], _c2=[$2])
+  HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
 
 PREHOOK: query: explain cbo
 select state, year, sum(population) from census_pop where year = 2010 group by state, year
@@ -172,7 +173,7 @@ POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(state=[$0], year=[CAST(2010):INTEGER], _o__c2=[$1])
+HiveProject(state=[$0], year=[CAST(2010):INTEGER], _c2=[$1])
   HiveAggregate(group=[{0}], agg#0=[sum($2)])
     HiveFilter(condition=[=(2010, $1)])
       HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
@@ -190,7 +191,7 @@ POSTHOOK: Input: in_pred@census_pop
 POSTHOOK: Input: in_pred@mv2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(state=[$0], year=[CAST(2010):INTEGER], _o__c2=[$1])
+HiveProject(state=[$0], year=[CAST(2010):INTEGER], _c2=[$1])
   HiveAggregate(group=[{0}], agg#0=[sum($2)])
     HiveFilter(condition=[=(2010, $1)])
       HiveTableScan(table=[[in_pred, mv2]], table:alias=[in_pred.mv2])
@@ -274,7 +275,8 @@ POSTHOOK: Input: expr9@mv3
 POSTHOOK: Input: expr9@sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[expr9, mv3]], table:alias=[expr9.mv3])
+HiveProject(sales.prod_id=[$0], sales.cust_id=[$1], sales.store_id=[$2], sales.sale_date=[$3], sales.qty=[$4], sales.amt=[$5], sales.descr=[$6])
+  HiveTableScan(table=[[expr9, mv3]], table:alias=[expr9.mv3])
 
 PREHOOK: query: explain cbo
 select  * from sales where cust_id between 1 and 20 and prod_id < 31
@@ -289,8 +291,9 @@ POSTHOOK: Input: expr9@mv3
 POSTHOOK: Input: expr9@sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveFilter(condition=[>=(20, $1)])
-  HiveTableScan(table=[[expr9, mv3]], table:alias=[expr9.mv3])
+HiveProject(sales.prod_id=[$0], sales.cust_id=[$1], sales.store_id=[$2], sales.sale_date=[$3], sales.qty=[$4], sales.amt=[$5], sales.descr=[$6])
+  HiveFilter(condition=[>=(20, $1)])
+    HiveTableScan(table=[[expr9, mv3]], table:alias=[expr9.mv3])
 
 PREHOOK: query: drop materialized view mv3
 PREHOOK: type: DROP_MATERIALIZED_VIEW

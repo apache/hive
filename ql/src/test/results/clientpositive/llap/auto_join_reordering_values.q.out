@@ -90,7 +90,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orderpayment_small
 POSTHOOK: Input: default@user_small
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`date`, `t6`.`dealid`
+OPTIMIZED SQL: SELECT `t4`.`date` AS `dim_pay_date.date`, `t6`.`dealid` AS `deal.dealid`
 FROM (SELECT `userid`
 FROM `default`.`user_small`
 WHERE `userid` IS NOT NULL) AS `t0`

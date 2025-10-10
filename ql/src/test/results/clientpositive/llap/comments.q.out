@@ -79,7 +79,7 @@ POSTHOOK: query: explain extended select /*+ MAPJOIN(a) */ count(*) from src a j
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c1`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` > 0) AS `t0`

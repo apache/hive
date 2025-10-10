@@ -1,8 +1,8 @@
 CBO PLAN:
-HiveProject(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(4):INTEGER], mean=[$2], cov=[$3], w_warehouse_sk1=[$4], i_item_sk1=[$5], d_moy1=[CAST(5):INTEGER], mean1=[$6], cov1=[$7])
+HiveProject(inv1.w_warehouse_sk=[$0], inv1.i_item_sk=[$1], inv1.d_moy=[CAST(4):INTEGER], inv1.mean=[$2], inv1.cov=[$3], inv2.w_warehouse_sk=[$4], inv2.i_item_sk=[$5], inv2.d_moy=[CAST(5):INTEGER], inv2.mean=[$6], inv2.cov=[$7])
   HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$6], sort5=[$7], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC])
     HiveProject(w_warehouse_sk=[$0], i_item_sk=[$1], mean=[$6], cov=[$7], w_warehouse_sk0=[$0], i_item_sk0=[$1], mean0=[$2], cov0=[$3])
-      HiveJoin(condition=[AND(=($5, $1), =($4, $0))], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[AND(=($4, $0), =($5, $1))], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(w_warehouse_sk=[$0], i_item_sk=[$1], mean=[/(CAST($5):DOUBLE, $6)], cov=[CASE(=(/(CAST($5):DOUBLE, $6), 0E0), null:DOUBLE, /(POWER(/(-($2, /(*($3, $3), $4)), CASE(=($4, 1), null:BIGINT, -($4, 1))), 0.5:DECIMAL(2, 1)), /(CAST($5):DOUBLE, $6)))])
           HiveFilter(condition=[CASE(=(/(CAST($5):DOUBLE, $6), 0E0), false, >(/(POWER(/(-($2, /(*($3, $3), $4)), CASE(=($4, 1), null:BIGINT, -($4, 1))), 0.5:DECIMAL(2, 1)), /(CAST($5):DOUBLE, $6)), 1))])
             HiveAggregate(group=[{1, 2}], agg#0=[sum($5)], agg#1=[sum($4)], agg#2=[count($4)], agg#3=[sum($3)], agg#4=[count($3)])

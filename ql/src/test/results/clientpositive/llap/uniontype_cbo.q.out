@@ -28,8 +28,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@utable
 CBO PLAN:
-HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(create_union(0, 10, _UTF-16LE'ten':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), ROW(create_union(1, 10, _UTF-16LE'ten':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))))], rowType=[RecordType(RecordType(INTEGER $tag_0, VARCHAR(2147483647) $tag_1) col1)])
-  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+HiveProject(col1=[$0])
+  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(create_union(0, 10, _UTF-16LE'ten':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), ROW(create_union(1, 10, _UTF-16LE'ten':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))))], rowType=[RecordType(RecordType(INTEGER $tag_0, VARCHAR(2147483647) $tag_1) col1)])
+    HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: INSERT INTO utable values
 (create_union(0, 10, 'ten')),
@@ -79,7 +80,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@utable
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[extract_union($0)])
+HiveProject(_c0=[extract_union($0)])
   HiveTableScan(table=[[default, utable]], table:alias=[utable])
 
 PREHOOK: query: SELECT extract_union(cu) FROM utable

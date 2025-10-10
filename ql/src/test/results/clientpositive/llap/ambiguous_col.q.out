@@ -9,7 +9,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0], _o__col1=[$0], value=[$1])
+HiveProject(t.key=[$0], t._col1=[$0], t.value=[$1])
   HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0], value=[$1])
       HiveFilter(condition=[IS NOT NULL($0)])
@@ -170,7 +170,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0], _o__col1=[$0])
+HiveProject(t.key=[$0], t._col1=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
@@ -330,7 +330,7 @@ POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0], _o__col1=[$0])
+HiveProject(t.key=[$0], t._col1=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
@@ -488,8 +488,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveTableScan(table=[[default, src]], table:alias=[src])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveTableScan(table=[[default, src]], table:alias=[src])
 
 PREHOOK: query: explain select count(*) from (select key, key from src) subq
 PREHOOK: type: QUERY

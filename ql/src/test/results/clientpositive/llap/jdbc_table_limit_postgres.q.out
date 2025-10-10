@@ -31,9 +31,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcSort(sort0=[$0], dir0=[ASC], fetch=[2])
-    JdbcHiveTableScan(table=[[default, country]], table:alias=[country])
+HiveProject(country.id=[$0], country.name=[$1])
+  HiveProject(id=[$0], name=[$1])
+    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcSort(sort0=[$0], dir0=[ASC], fetch=[2])
+        JdbcHiveTableScan(table=[[default, country]], table:alias=[country])
 
 PREHOOK: query: EXPLAIN SELECT * FROM country ORDER BY id LIMIT 2
 PREHOOK: type: QUERY

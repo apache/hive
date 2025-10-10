@@ -79,11 +79,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcProject(id=[$0])
-    JdbcFilter(condition=[=(SUBSTRING($1, 0, 4), _UTF-16LE'Les')])
-      JdbcProject(id=[$0], title=[$1])
-        JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
+HiveProject(id=[$0])
+  HiveProject(id=[$0])
+    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcProject(id=[$0])
+        JdbcFilter(condition=[=(SUBSTRING($1, 0, 4), _UTF-16LE'Les')])
+          JdbcProject(id=[$0], title=[$1])
+            JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
 
 PREHOOK: query: explain select id from book where substring(title, 0, 4) = 'Les'
 PREHOOK: type: QUERY
@@ -195,17 +197,19 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcProject(title=[$0], fname=[$3])
-    JdbcJoin(condition=[=($1, $2)], joinType=[inner])
-      JdbcProject(title=[$0], author=[$1])
-        JdbcFilter(condition=[IS NOT NULL($1)])
-          JdbcProject(title=[$1], author=[$2])
-            JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
-      JdbcProject(id=[$0], fname=[$1])
-        JdbcFilter(condition=[IS NOT NULL($0)])
+HiveProject(book.title=[$0], author.fname=[$1])
+  HiveProject(title=[$0], fname=[$1])
+    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcProject(title=[$0], fname=[$3])
+        JdbcJoin(condition=[=($1, $2)], joinType=[inner])
+          JdbcProject(title=[$0], author=[$1])
+            JdbcFilter(condition=[IS NOT NULL($1)])
+              JdbcProject(title=[$1], author=[$2])
+                JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
           JdbcProject(id=[$0], fname=[$1])
-            JdbcHiveTableScan(table=[[default, author]], table:alias=[author])
+            JdbcFilter(condition=[IS NOT NULL($0)])
+              JdbcProject(id=[$0], fname=[$1])
+                JdbcHiveTableScan(table=[[default, author]], table:alias=[author])
 
 PREHOOK: query: explain select book.title, author.fname from book join author on book.author = author.id
 PREHOOK: type: QUERY
@@ -274,7 +278,7 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(title=[$0], fname=[$3])
+HiveProject(book.title=[$0], author.fname=[$3])
   HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(title=[$0], author=[$1])
       HiveFilter(condition=[=(CAST(ucase($0)):VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'LES MISERABLES')])
@@ -436,17 +440,19 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.POSTGRES])
-  JdbcAggregate(group=[{3}], agg#0=[count($0)])
-    JdbcJoin(condition=[=($1, $2)], joinType=[inner])
-      JdbcProject(title=[$0], author=[$1])
-        JdbcFilter(condition=[IS NOT NULL($1)])
-          JdbcProject(title=[$1], author=[$2])
-            JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
-      JdbcProject(id=[$0], fname=[$1])
-        JdbcFilter(condition=[IS NOT NULL($0)])
+HiveProject(author.fname=[$0], books=[$1])
+  HiveProject(fname=[$0], $f1=[$1])
+    HiveJdbcConverter(convention=[JDBC.POSTGRES])
+      JdbcAggregate(group=[{3}], agg#0=[count($0)])
+        JdbcJoin(condition=[=($1, $2)], joinType=[inner])
+          JdbcProject(title=[$0], author=[$1])
+            JdbcFilter(condition=[IS NOT NULL($1)])
+              JdbcProject(title=[$1], author=[$2])
+                JdbcHiveTableScan(table=[[default, book]], table:alias=[book])
           JdbcProject(id=[$0], fname=[$1])
-            JdbcHiveTableScan(table=[[default, author]], table:alias=[author])
+            JdbcFilter(condition=[IS NOT NULL($0)])
+              JdbcProject(id=[$0], fname=[$1])
+                JdbcHiveTableScan(table=[[default, author]], table:alias=[author])
 
 PREHOOK: query: explain 
 select author.fname, count(book.title) as books
@@ -536,7 +542,7 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[$0], books=[$1])
+HiveProject(_c0=[$0], books=[$1])
   HiveSortLimit(sort0=[$2], dir0=[ASC], fetch=[5])
     HiveProject(_o__c0=[ucase($0)], books=[$1], _o__col4=[ucase($0)])
       HiveProject(fname=[$0], $f1=[$1])

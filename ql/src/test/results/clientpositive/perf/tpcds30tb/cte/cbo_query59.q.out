@@ -10,8 +10,8 @@ HiveProject($f0=[$4], $f1=[$0], $f2=[CASE($5, $1, null:DECIMAL(7, 2))], $f3=[CAS
 
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
-  HiveProject(s_store_name1=[$2], s_store_id1=[$1], d_week_seq1=[$5], _o__c3=[/($7, $17)], _o__c4=[/($8, $18)], _o__c5=[/($9, $9)], _o__c6=[/($10, $19)], _o__c7=[/($11, $20)], _o__c8=[/($12, $21)], _o__c9=[/($13, $22)])
-    HiveJoin(condition=[AND(=($5, -($15, 52)), =($16, $3))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveProject(s_store_name1=[$2], s_store_id1=[$1], d_week_seq1=[$5], _c3=[/($7, $17)], _c4=[/($8, $18)], _c5=[/($9, $9)], _c6=[/($10, $19)], _c7=[/($11, $20)], _c8=[/($12, $21)], _c9=[/($13, $22)])
+    HiveJoin(condition=[AND(=($16, $3), =($5, -($15, 52)))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($6, $0)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($1, $4)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(s_store_sk=[$0], s_store_id=[$1], s_store_name=[$5])

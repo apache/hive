@@ -360,7 +360,7 @@ POSTHOOK: Input: default@tab1
 POSTHOOK: Input: default@tab2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(col1=[$0], col2=[$1])
+HiveProject(t1.col1=[$0], t1.col2=[$1])
   HiveFilter(condition=[IS NULL($4)])
     HiveJoin(condition=[AND(=($4, $0), =($3, $1))], joinType=[left], algorithm=[none], cost=[not available])
       HiveJoin(condition=[AND(=($2, $0), =($3, $1))], joinType=[left], algorithm=[none], cost=[not available])

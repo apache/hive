@@ -18,7 +18,7 @@ INSERT OVERWRITE TABLE dest1_n121 SELECT src1.*, src2.*
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1_n121
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `t0`.`key` AS `src1.key`, `t0`.`value` AS `src1.value`, `t2`.`key` AS `src2.key`, `t2`.`value` AS `src2.value`
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`

@@ -125,7 +125,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0], _c1=[$1])
+HiveProject(t1.a=[$0], _c1=[$1])
   HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: delete from t1 where b = 1
@@ -218,14 +218,15 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}], agg#0=[sum($1)])
-  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(a=[$0], b=[$1])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, t1]], table:alias=[t1])
-    HiveProject(a=[$0])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, t2]], table:alias=[t2])
+HiveProject(t1.a=[$0], _c1=[$1])
+  HiveAggregate(group=[{0}], agg#0=[sum($1)])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(a=[$0], b=[$1])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+      HiveProject(a=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, t2]], table:alias=[t2])
 
 PREHOOK: query: explain cbo
 alter materialized view mat1 rebuild
@@ -244,7 +245,7 @@ POSTHOOK: Input: default@t2
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
 CBO PLAN:
-HiveProject(a0=[$4], $f1=[CASE(IS NULL($1), $5, IS NULL($5), $1, +($5, $1))], $f2=[CASE(IS NULL($2), $6, +($6, $2))])
+HiveProject(t1.a=[$4], _c1=[CASE(IS NULL($1), $5, IS NULL($5), $1, +($5, $1))], _c2=[CASE(IS NULL($2), $6, +($6, $2))])
   HiveFilter(condition=[OR(AND($3, OR(AND(IS NULL($2), =($6, 0)), AND(=(+($6, $2), 0), IS NOT NULL($2)))), AND(IS NULL($3), OR(AND(IS NULL($2), >($6, 0)), AND(>(+($6, $2), 0), IS NOT NULL($2)))), AND($3, OR(AND(IS NULL($2), >($6, 0)), AND(>(+($6, $2), 0), IS NOT NULL($2)))))])
     HiveJoin(condition=[IS NOT DISTINCT FROM($0, $4)], joinType=[right], algorithm=[none], cost=[not available])
       HiveProject(a=[$0], _c1=[$1], _c2=[$2], $f3=[true])
@@ -697,7 +698,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0], _c1=[$1])
+HiveProject(t1.a=[$0], _c1=[$1])
   HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: select t1.a, sum(t1.b) from t1
