@@ -697,7 +697,7 @@ public class MetastoreConf {
             "hive.compactor.connectionPool.maxPoolSize", 5,
             "Specify the maximum number of connections in the connection pool used by the compactor."),
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
-        "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
+        "javax.jdo.option.ConnectionDriverName", "org.apache.derby.iapi.jdbc.AutoloadedDriver",
         "Driver class name for a JDBC metastore"),
     CONNECTION_POOLING_MAX_CONNECTIONS("datanucleus.connectionPool.maxPoolSize",
         "datanucleus.connectionPool.maxPoolSize", 10,

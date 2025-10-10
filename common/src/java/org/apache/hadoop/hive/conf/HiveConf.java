@@ -1552,7 +1552,7 @@ public class HiveConf extends Configuration {
      * @deprecated Use MetastoreConf.CONNECTION_DRIVER
      */
     @Deprecated
-    METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
+    METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName", "org.apache.derby.iapi.jdbc.AutoloadedDriver",
         "Driver class name for a JDBC metastore"),
     /**
      * @deprecated Use MetastoreConf.MANAGER_FACTORY_CLASS

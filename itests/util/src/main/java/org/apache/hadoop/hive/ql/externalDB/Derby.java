@@ -43,7 +43,7 @@ public class Derby extends AbstractExternalDB {
 
   @Override
   protected String getJdbcDriver() {
-    return "org.apache.derby.jdbc.EmbeddedDriver";
+    return "org.apache.derby.iapi.jdbc.AutoloadedDriver";
   }
 
   @Override

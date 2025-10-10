@@ -21,17 +21,12 @@ package org.apache.hadoop.hive.metastore.dataconnector.jdbc;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
-  private static Logger LOG = LoggerFactory.getLogger(DerbySQLConnectorProvider.class);
 
-  // private static final String DRIVER_CLASS = "org.apache.derby.jdbc.EmbeddedDriver".intern();
-  private static final String DRIVER_CLASS = "org.apache.derby.iapi.jdbc.AutoloadedDriver".intern();
+  private static final String DRIVER_CLASS = "org.apache.derby.iapi.jdbc.AutoloadedDriver";
 
   public DerbySQLConnectorProvider(String dbName, DataConnector connector) {
     super(dbName, connector, DRIVER_CLASS);

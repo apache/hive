@@ -247,7 +247,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE catalog_sales
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -297,7 +297,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE catalog_sales
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -340,7 +340,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE catalog_returns
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -383,7 +383,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE catalog_returns
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -422,7 +422,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE store_sales
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -461,7 +461,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE store_sales
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -497,7 +497,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE store_returns
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -533,7 +533,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE store_returns
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -583,7 +583,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE web_sales
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -633,7 +633,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE web_sales
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -673,7 +673,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE web_returns
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -713,7 +713,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE web_returns
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -747,7 +747,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE customer
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -781,7 +781,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE customer
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -810,7 +810,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE customer_address
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -839,7 +839,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE customer_address
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -864,7 +864,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE customer_demographics
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -889,7 +889,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE customer_demographics
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -909,7 +909,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE inventory
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -929,7 +929,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE inventory
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -967,7 +967,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE item
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1005,7 +1005,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE item
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1035,7 +1035,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE warehouse
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1065,7 +1065,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE warehouse
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1109,7 +1109,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE date_dim
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1153,7 +1153,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE date_dim
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1198,7 +1198,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE store
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1243,7 +1243,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE store
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1264,7 +1264,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE household_demographics
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1285,7 +1285,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE household_demographics
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1311,7 +1311,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE time_dim
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1337,7 +1337,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE time_dim
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1356,7 +1356,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE reason
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -1375,7 +1375,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE reason
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",

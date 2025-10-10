@@ -81,7 +81,7 @@ MetaStore Upgrade Steps
 5) You are now ready to run the schema upgrade script,
 
    bin/schematool -initOrUpgradeSchema -dbType derby \
-   -driver org.apache.derby.jdbc.EmbeddedDriver \
+   -driver org.apache.derby.iapi.jdbc.AutoloadedDriver \
    -url 'jdbc:derby:;databaseName=hive;create=true'
 
    The command should run to completion without any errors. If you
