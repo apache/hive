@@ -166,7 +166,7 @@ public class TestTablePermissionFilterAlgos {
     }
 
     @Override protected String getCatName(TestTable o) {
-      return null;
+      return "hive";
     }
 
     @Override protected String getDbName(TestTable o) {
