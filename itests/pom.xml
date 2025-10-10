@@ -520,20 +520,6 @@
               </target>
             </configuration>
           </execution>
-          <execution>
-            <id>copy-database</id>
-            <phase>install</phase>
-            <configuration>
-              <tasks>
-                <copy todir="${hive.path.to.root}/itests/qtest/target/db_for_connectortest.db">
-                  <fileset dir="${hive.path.to.root}/data/files/dataconnector_derbydb/db_for_connectortest.db"/>
-                </copy>
-              </tasks>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
         </executions>
       </plugin>
     </plugins>

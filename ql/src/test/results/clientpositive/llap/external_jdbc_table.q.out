@@ -319,7 +319,8 @@ STAGE PLANS:
           alias: ext_simple_derby_table1
           properties:
             hive.sql.query SELECT "bkey"
-FROM "SIMPLE_DERBY_TABLE1"
+FROM (SELECT "ikey", "bkey"
+FROM "SIMPLE_DERBY_TABLE1") AS "t"
 WHERE 100 < "ikey"
             hive.sql.query.fieldNames bkey
             hive.sql.query.fieldTypes bigint
@@ -395,13 +396,15 @@ STAGE PLANS:
         TableScan
           alias: ext_simple_derby_table1
           properties:
-            hive.sql.query SELECT "t0"."fkey", "t2"."dkey"
+            hive.sql.query SELECT "t1"."fkey", "t4"."dkey"
 FROM (SELECT "ikey", "fkey"
-FROM "SIMPLE_DERBY_TABLE1"
-WHERE "ikey" IS NOT NULL) AS "t0"
+FROM (SELECT "ikey", "fkey"
+FROM "SIMPLE_DERBY_TABLE1") AS "t"
+WHERE "ikey" IS NOT NULL) AS "t1"
 INNER JOIN (SELECT "ikey", "dkey"
-FROM "SIMPLE_DERBY_TABLE2"
-WHERE "ikey" IS NOT NULL) AS "t2" ON "t0"."ikey" = "t2"."ikey"
+FROM (SELECT "ikey", "dkey"
+FROM "SIMPLE_DERBY_TABLE2") AS "t2"
+WHERE "ikey" IS NOT NULL) AS "t4" ON "t1"."ikey" = "t4"."ikey"
             hive.sql.query.fieldNames fkey,dkey
             hive.sql.query.fieldTypes float,double
             hive.sql.query.split false
@@ -476,7 +479,8 @@ STAGE PLANS:
                   alias: ext_simple_derby_table2
                   properties:
                     hive.sql.query SELECT "ikey", "dkey"
-FROM "SIMPLE_DERBY_TABLE2"
+FROM (SELECT "ikey", "dkey"
+FROM "SIMPLE_DERBY_TABLE2") AS "t"
 WHERE "ikey" IS NOT NULL
                     hive.sql.query.fieldNames ikey,dkey
                     hive.sql.query.fieldTypes int,double
@@ -572,10 +576,12 @@ CBO PLAN:
 HiveJdbcConverter(convention=[JDBC.DERBY])
   JdbcProject(fkey=[$1], dkey=[$3])
     JdbcJoin(condition=[=($0, $2)], joinType=[inner])
-      JdbcProject(ikey=[$0], fkey=[$2])
+      JdbcProject(ikey=[$0], fkey=[$1])
         JdbcFilter(condition=[IS NOT NULL($0)])
-          JdbcHiveTableScan(table=[[default, ext_simple_derby_table1]], table:alias=[ext_simple_derby_table1])
-      JdbcProject(ikey=[$0], dkey=[$3])
+          JdbcProject(ikey=[$0], fkey=[$2])
+            JdbcHiveTableScan(table=[[default, ext_simple_derby_table1]], table:alias=[ext_simple_derby_table1])
+      JdbcProject(ikey=[$0], dkey=[$1])
         JdbcFilter(condition=[IS NOT NULL($0)])
-          JdbcHiveTableScan(table=[[default, ext_simple_derby_table2]], table:alias=[ext_simple_derby_table2])
+          JdbcProject(ikey=[$0], dkey=[$3])
+            JdbcHiveTableScan(table=[[default, ext_simple_derby_table2]], table:alias=[ext_simple_derby_table2])
 

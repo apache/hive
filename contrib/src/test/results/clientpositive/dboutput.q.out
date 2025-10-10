@@ -24,13 +24,13 @@ Function class:org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOut
 Function type:TEMPORARY
 PREHOOK: query: EXPLAIN FROM src
 
-SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',
+#### A masked pattern was here ####
 'CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','a'),
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','b')
 
 limit 1
@@ -39,13 +39,13 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN FROM src
 
-SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',
+#### A masked pattern was here ####
 'CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','a'),
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','b')
 
 limit 1
@@ -64,7 +64,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: dboutput('jdbc:derby:../build/test_dboutput_db;create=true','','','CREATE TABLE app_info ( kkey VARCHAR(255) NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))') (type: int), dboutput('jdbc:derby:../build/test_dboutput_db','','','INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','a') (type: int), dboutput('jdbc:derby:../build/test_dboutput_db','','','INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','b') (type: int)
+#### A masked pattern was here ####
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 500 Data size: 6000 Basic stats: COMPLETE Column stats: COMPLETE
               Limit
@@ -87,13 +87,13 @@ STAGE PLANS:
 
 PREHOOK: query: FROM src 
 
-SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',
+#### A masked pattern was here ####
 'CREATE TABLE app_info ( kkey INTEGER NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','a'),
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','b')
 
 limit 1
@@ -102,13 +102,13 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: FROM src 
 
-SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db\;create=true','','',
+#### A masked pattern was here ####
 'CREATE TABLE app_info ( kkey INTEGER NOT NULL, vvalue VARCHAR(255) NOT NULL, UNIQUE(kkey))' ),
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','a'),
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)','20','b')
 
 limit 1
@@ -118,7 +118,7 @@ POSTHOOK: Input: default@src
 0	0	1
 PREHOOK: query: EXPLAIN SELECT
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value)
 
 FROM src WHERE key < 10
@@ -127,7 +127,7 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN SELECT
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value)
 
 FROM src WHERE key < 10
@@ -150,7 +150,7 @@ STAGE PLANS:
               predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                expressions: dboutput('jdbc:derby:../build/test_dboutput_db','','','INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value) (type: int)
+#### A masked pattern was here ####
                 outputColumnNames: _col0
                 Statistics: Num rows: 166 Data size: 664 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -170,7 +170,7 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value)
 
 FROM src WHERE key < 10
@@ -179,7 +179,7 @@ PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
 
-dboutput('jdbc:derby:../build/test_dboutput_db','','',
+#### A masked pattern was here ####
 'INSERT INTO app_info (kkey,vvalue) VALUES (?,?)',key,value)
 
 FROM src WHERE key < 10
