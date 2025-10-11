@@ -74,10 +74,13 @@ jobs:
         run: |
           mvn clean package -DskipTests -Pdist
           ls ./packaging/target/
-          cp ./packaging/target/apache-hive-*-bin.tar.gz ./packaging/src/docker/
+          mv ./packaging/target/apache-hive-*-bin.tar.gz ./packaging/src/docker/
+          rm -rf ./packaging/target
           ls ./packaging/src/docker/
+
           ls ./standalone-metastore/packaging/target/
-          cp ./standalone-metastore/packaging/target/hive-standalone-metastore-*-bin.tar.gz ./standalone-metastore/packaging/src/docker/
+          mv ./standalone-metastore/packaging/target/hive-standalone-metastore-*-bin.tar.gz ./standalone-metastore/packaging/src/docker/
+          rm -rf ./standalone-metastore/packaging/target
           ls ./standalone-metastore/packaging/src/docker/
 
       - name: Login to Docker Hub
