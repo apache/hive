@@ -1,5 +1,5 @@
+--!qt:database:derby:qdb
 --! qt:dataset:src
---! qt:disabled:flaky HIVE-23709
 
 set hive.strict.checks.cartesian.product= false;
 
@@ -9,13 +9,13 @@ CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf
 
 FROM src
 
-SELECT dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+SELECT dboutput ( '${system:hive.test.database.qdb.jdbc.url}','','',
 'CREATE TABLE SIMPLE_DERBY_TABLE ("kkey" INTEGER NOT NULL )' ),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE ("kkey") VALUES (?)','20'),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE ("kkey") VALUES (?)','200')
 
 limit 1;
@@ -28,7 +28,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
                 "hive.sql.table" = "SIMPLE_DERBY_TABLE",
@@ -97,7 +97,7 @@ describe tables;
 
 FROM src
 
-SELECT dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_insert_derby_as_external_table_db;create=true','','',
+SELECT dboutput ( '${system:hive.test.database.qdb.jdbc.url}','','',
 'CREATE TABLE INSERT_TO_DERBY_TABLE (a BOOLEAN, b  INTEGER, c BIGINT, d FLOAT, e DOUBLE, f DATE, g VARCHAR(27),
                                   h VARCHAR(27), i CHAR(2), j TIMESTAMP, k DECIMAL(5,4), l SMALLINT, m SMALLINT, b1 CHAR(10))' )
 
@@ -124,7 +124,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_insert_derby_as_external_table_db;create=true;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
                 "hive.sql.table" = "INSERT_TO_DERBY_TABLE",

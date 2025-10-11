@@ -1,13 +1,13 @@
---! qt:disabled:test is unstable HIVE-23690
+--!qt:database:derby:qdb
 --! qt:dataset:src
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
 
 FROM src
 SELECT
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_negative;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE EXTERNAL_JDBC_NEGATIVE_TABLE1 ("ikey" INTEGER)' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_negative','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'INSERT INTO EXTERNAL_JDBC_NEGATIVE_TABLE1 ("ikey") VALUES (?,?,?,?)','20')
 limit 1;
 
@@ -20,7 +20,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_negative;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "EXTERNAL_JDBC_NEGATIVE_TABLE1",

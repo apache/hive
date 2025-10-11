@@ -21,25 +21,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sqlline.SqlLine;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
- * The class is in charge of connecting and populating dockerized databases for qtest.
+ * The class is in charge of managing the lifecycle of databases for qtest.
  *
  * The database should have at least one root user (admin/superuser) able to modify every aspect of the system. The user
  * either exists by default when the database starts or must created right after startup.
@@ -86,111 +81,6 @@ public abstract class AbstractExternalDB {
     protected String dbName = "qtestDB";
     private Path initScript;
 
-    private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
-
-    protected static class ProcessResults {
-        final String stdout;
-        final String stderr;
-        final int rc;
-
-        public ProcessResults(String stdout, String stderr, int rc) {
-            this.stdout = stdout;
-            this.stderr = stderr;
-            this.rc = rc;
-        }
-    }
-
-    private final String getDockerContainerName() {
-        return String.format("qtestExternalDB-%s", getClass().getSimpleName());
-    }
-
-    private String[] buildRunCmd() {
-        List<String> cmd = new ArrayList<>(4 + getDockerAdditionalArgs().length);
-        cmd.add("docker");
-        cmd.add("run");
-        cmd.add("--rm");
-        cmd.add("--name");
-        cmd.add(getDockerContainerName());
-        cmd.addAll(Arrays.asList(getDockerAdditionalArgs()));
-        cmd.add(getDockerImageName());
-        return cmd.toArray(new String[cmd.size()]);
-    }
-
-    private String[] buildRmCmd() {
-        return new String[] { "docker", "rm", "-f", "-v", getDockerContainerName() };
-    }
-
-    private String[] buildLogCmd() {
-        return new String[] { "docker", "logs", getDockerContainerName() };
-    }
-
-    private ProcessResults runCmd(String[] cmd, long secondsToWait)
-            throws IOException, InterruptedException {
-        LOG.info("Going to run: " + String.join(" ", cmd));
-        Process proc = Runtime.getRuntime().exec(cmd);
-        if (!proc.waitFor(Math.abs(secondsToWait), TimeUnit.SECONDS)) {
-          throw new RuntimeException("Process " + cmd[0] + " failed to run in " + secondsToWait + " seconds");
-        }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-        final StringBuilder lines = new StringBuilder();
-        reader.lines().forEach(s -> lines.append(s).append('\n'));
-
-        reader = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-        final StringBuilder errLines = new StringBuilder();
-        reader.lines().forEach(s -> errLines.append(s).append('\n'));
-        LOG.info("Result lines#: {}(stdout);{}(stderr)",lines.length(), errLines.length());
-        return new ProcessResults(lines.toString(), errLines.toString(), proc.exitValue());
-    }
-
-    private ProcessResults runCmdAndPrintStreams(String[] cmd, long secondsToWait)
-            throws InterruptedException, IOException {
-        ProcessResults results = runCmd(cmd, secondsToWait);
-        LOG.info("Stdout from proc: " + results.stdout);
-        LOG.info("Stderr from proc: " + results.stderr);
-        return results;
-    }
-
-
-    public void launchDockerContainer() throws Exception {
-        runCmdAndPrintStreams(buildRmCmd(), 600);
-        if (runCmdAndPrintStreams(buildRunCmd(), 600).rc != 0) {
-          printDockerEvents();
-          throw new RuntimeException("Unable to start docker container");
-        }
-        long startTime = System.currentTimeMillis();
-        ProcessResults pr;
-        do {
-            Thread.sleep(1000);
-            pr = runCmdAndPrintStreams(buildLogCmd(), 30);
-            if (pr.rc != 0) {
-              printDockerEvents();
-              throw new RuntimeException("Failed to get docker logs");
-            }
-        } while (startTime + MAX_STARTUP_WAIT >= System.currentTimeMillis() && !isContainerReady(pr));
-        if (startTime + MAX_STARTUP_WAIT < System.currentTimeMillis()) {
-          printDockerEvents();
-          throw new RuntimeException(
-              String.format("Container initialization failed within %d seconds. Please check the hive logs.",
-                  MAX_STARTUP_WAIT / 1000));
-        }
-      }
-
-    protected void printDockerEvents() {
-      try {
-        runCmdAndPrintStreams(new String[] { "docker", "events", "--since", "24h", "--until", "0s" }, 3);
-      } catch (Exception e) {
-        LOG.warn("A problem was encountered while attempting to retrieve Docker events (the system made an analytical"
-            + " best effort to list the events to reveal the root cause). No further actions are necessary.", e);
-      }
-    }
-
-    public void cleanupDockerContainer() throws IOException, InterruptedException {
-        if (runCmdAndPrintStreams(buildRmCmd(), 600).rc != 0) {
-            throw new RuntimeException("Unable to remove docker container");
-        }
-    }
-
-
     protected final String getContainerHostAddress() {
         String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
         if (hostAddress != null) {
@@ -223,12 +113,6 @@ public abstract class AbstractExternalDB {
     protected abstract String getJdbcDriver();
 
     protected abstract int getPort();
-
-    protected abstract String getDockerImageName();
-
-    protected abstract String[] getDockerAdditionalArgs();
-
-    protected abstract boolean isContainerReady(ProcessResults pr);
 
     private String[] SQLLineCmdBuild(String sqlScriptFile) {
         return new String[] {"-u", getJdbcUrl(),
@@ -265,7 +149,6 @@ public abstract class AbstractExternalDB {
      * Starts the database and performs any initialization required.
      */
     public void start() throws Exception {
-        launchDockerContainer();
         if (initScript != null) {
             execute(initScript.toString());
         }
@@ -280,7 +163,6 @@ public abstract class AbstractExternalDB {
      */
     public void stop() throws IOException, InterruptedException {
         Arrays.stream(ConnectionProperty.values()).forEach(p -> p.clear(this));
-        cleanupDockerContainer();
     }
 
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {

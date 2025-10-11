@@ -1,3 +1,4 @@
+--!qt:database:derby:qdb:q_test_author_book_tables.sql
 -- SORT_QUERY_RESULTS
 SHOW CONNECTORS;
 
@@ -24,7 +25,7 @@ SHOW CONNECTORS;
 -- CREATE IF NOT EXISTS already
 CREATE CONNECTOR IF NOT EXISTS derby_test
 TYPE 'derby'
-URL 'jdbc:derby:./target/db_for_connectortest.db;create=true'
+URL '${system:hive.test.database.qdb.jdbc.url}'
 COMMENT 'test derby connector'
 WITH DCPROPERTIES (
 "hive.sql.dbcp.username"="APP",

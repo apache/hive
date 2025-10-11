@@ -1,15 +1,16 @@
+--!qt:database:derby:qdb
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
 
 SELECT
-dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_jdbc_view;create=true','','',
+dboutput ( '${system:hive.test.database.qdb.jdbc.url}','','',
 'CREATE TABLE person ("id" INTEGER, "name" VARCHAR(25), "jid" INTEGER, "cid" INTEGER)' );
 
 SELECT
-dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_jdbc_view;create=true','','',
+dboutput ( '${system:hive.test.database.qdb.jdbc.url}','','',
 'CREATE TABLE country ("id" INTEGER, "name" VARCHAR(25))' );
 
 SELECT
-dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_jdbc_view;create=true','','',
+dboutput ( '${system:hive.test.database.qdb.jdbc.url}','','',
 'CREATE TABLE job ("id" INTEGER, "title" VARCHAR(20))' );
 
 
@@ -24,7 +25,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "DERBY",
     "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-    "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_jdbc_view;create=true;collation=TERRITORY_BASED:PRIMARY",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
     "hive.sql.dbcp.username" = "APP",
     "hive.sql.dbcp.password" = "mine",
     "hive.sql.table" = "PERSON",
@@ -41,7 +42,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "DERBY",
     "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-    "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_jdbc_view;create=true;collation=TERRITORY_BASED:PRIMARY",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
     "hive.sql.dbcp.username" = "APP",
     "hive.sql.dbcp.password" = "mine",
     "hive.sql.table" = "COUNTRY",
@@ -62,7 +63,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
     "hive.sql.database.type" = "DERBY",
     "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-    "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_jdbc_view;create=true;collation=TERRITORY_BASED:PRIMARY",
+    "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
     "hive.sql.dbcp.username" = "APP",
     "hive.sql.dbcp.password" = "mine",
     "hive.sql.schema" = "APP",

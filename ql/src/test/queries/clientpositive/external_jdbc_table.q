@@ -1,4 +1,4 @@
---! qt:disabled:HIVE-25379
+--!qt:database:derby:qdb
 --! qt:dataset:src
 
 set hive.strict.checks.cartesian.product= false;
@@ -13,19 +13,19 @@ FROM src
 
 SELECT
 
-dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput ( '${system:hive.test.database.qdb.jdbc.url}','','',
 'CREATE TABLE SIMPLE_DERBY_TABLE1 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE)' ),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','20','20','20.0','20.0'),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','-20','-20','-20.0','-20.0'),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','100','-15','65.0','-74.0'),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE1 ("ikey","bkey","fkey","dkey") VALUES (?,?,?,?)','44','53','-455.454','330.76')
 
 limit 1;
@@ -34,19 +34,19 @@ FROM src
 
 SELECT
 
-dboutput ( 'jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput ( '${system:hive.test.database.qdb.jdbc.url}','','',
 'CREATE TABLE SIMPLE_DERBY_TABLE2 ("ikey" INTEGER, "bkey" BIGINT, "fkey" REAL, "dkey" DOUBLE, "datekey" DATE)' ),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','20','20','20.0','20.0','1999-02-22'),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','-20','8','9.0','11.0','2000-03-15'),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','101','-16','66.0','-75.0','2010-04-01'),
 
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true','','',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','','',
 'INSERT INTO SIMPLE_DERBY_TABLE2 ("ikey","bkey","fkey","dkey","datekey") VALUES (?,?,?,?,?)','40','50','-455.4543','330.767','2010-04-02')
 
 limit 1;
@@ -63,7 +63,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
                 "hive.sql.table" = "SIMPLE_DERBY_TABLE1",
@@ -83,7 +83,7 @@ STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
                 "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_as_external_table_db;create=true;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "APP",
                 "hive.sql.dbcp.password" = "mine",
                 "hive.sql.table" = "SIMPLE_DERBY_TABLE2",
