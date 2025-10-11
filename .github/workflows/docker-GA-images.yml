@@ -35,12 +35,9 @@ on:
         required: true
         default: '0.10.2'
 
-env:
-  DEVELOCITY_ACCESS_KEY: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
-
 jobs:
-  buildFromArchive:
-    if: github.event_name == 'workflow_dispatch'
+  buildAndPush:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -51,91 +48,37 @@ jobs:
         with:
           java-version: 21
 
-      - name: Hive version
-        run:  echo "HIVE_VERSION=${{ github.event.inputs.hiveVersion }}"  >> $GITHUB_ENV
+      - name: Prepare environment variables for Workflow Dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "HIVE_VERSION=${{ github.event.inputs.hiveVersion }}"  >> $GITHUB_ENV
+          echo "HADOOP_VERSION=${{ github.event.inputs.hadoopVersion }}" >> $GITHUB_ENV
+          echo "TEZ_VERSION=${{ github.event.inputs.tezVersion }}" >> $GITHUB_ENV
+          echo "BUILD_ENV=archive" >> $GITHUB_ENV
 
-      - name: Tag
-        run: echo "tag=${{ env.HIVE_VERSION }}" | awk '{print tolower($0)}' >> $GITHUB_ENV
+      - name: Prepare environment variables for Release
+        if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
+        run: |
+          echo "HIVE_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)" >> $GITHUB_ENV
+          echo "HADOOP_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=hadoop.version -DforceStdout)" >> $GITHUB_ENV
+          echo "TEZ_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=tez.version -DforceStdout)" >> $GITHUB_ENV
+          echo "BUILD_ENV=buildarchive" >> $GITHUB_ENV
 
-      - name: Hadoop version
-        run: echo "HADOOP_VERSION=${{ github.event.inputs.hadoopVersion }}" >> $GITHUB_ENV
-
-      - name: Tez version
-        run: echo "TEZ_VERSION=${{ github.event.inputs.tezVersion }}" >> $GITHUB_ENV
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build and push Hive Image to docker hub
-        uses: docker/build-push-action@v4
-        with:
-          context: ./packaging/src/docker/
-          file: ./packaging/src/docker/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: apache/hive:${{ env.tag }}
-          build-args:
-            |
-            HIVE_VERSION=${{ env.HIVE_VERSION }}
-            HADOOP_VERSION=${{ env.HADOOP_VERSION }}
-            TEZ_VERSION=${{ env.TEZ_VERSION }}
-            BUILD_ENV=archive
-
-      - name: Build and push Standalone Metastore Image to docker hub
-        uses: docker/build-push-action@v4
-        with:
-          context: ./standalone-metastore/packaging/src/docker/
-          file: ./standalone-metastore/packaging/src/docker/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: apache/hive:standalone-metastore-${{ env.tag }}
-          build-args:
-            |
-            HIVE_VERSION=${{ env.HIVE_VERSION }}
-            HADOOP_VERSION=${{ env.HADOOP_VERSION }}
-            BUILD_ENV=archive      
-
-  buildFromSource:
-    if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: 'Set up JDK 21'
-        uses: actions/setup-java@v1
-        with:
-          java-version: 21
-
-      - name: Hive version
-        run: echo "HIVE_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=project.version -DforceStdout)" >> $GITHUB_ENV
-
-      - name: Tag
-        run: echo "tag=${{ env.HIVE_VERSION }}" | awk '{print tolower($0)}' >> $GITHUB_ENV
-
-      - name: Hadoop version
-        run: echo "HADOOP_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=hadoop.version -DforceStdout)" >> $GITHUB_ENV
-
-      - name: Tez version
-        run: echo "TEZ_VERSION=$(mvn -f "pom.xml" -q help:evaluate -Dexpression=tez.version -DforceStdout)" >> $GITHUB_ENV
+      - name: Prepare common environment variables
+        run: |
+          echo "namespace=${{ vars.DOCKER_NAMESPACE || 'apache' }}" >> $GITHUB_ENV
+          echo "tag=$HIVE_VERSION" | awk '{print tolower($0)}' >> $GITHUB_ENV
 
       - name: Build Hive project
-        run: mvn clean package -DskipTests -Pdist
-
-      - name: Check for hive tar.gz
-        run: ls ./packaging/target/
-
-      - name: Copy to docker directory
-        run: cp ./packaging/target/apache-hive-*-bin.tar.gz ./packaging/src/docker/
-
-      - name: Confirm the copy of hive tar.gz
-        run: ls ./packaging/src/docker/
+        if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
+        run: |
+          mvn clean package -DskipTests -Pdist
+          ls ./packaging/target/
+          cp ./packaging/target/apache-hive-*-bin.tar.gz ./packaging/src/docker/
+          ls ./packaging/src/docker/
+          ls ./standalone-metastore/packaging/target/
+          cp ./standalone-metastore/packaging/target/hive-standalone-metastore-*-bin.tar.gz ./standalone-metastore/packaging/src/docker/
+          ls ./standalone-metastore/packaging/src/docker/
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -153,23 +96,13 @@ jobs:
           file: ./packaging/src/docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: apache/hive:${{ env.tag }}
+          tags: ${{ env.namespace }}/hive:${{ env.tag }}
           build-args:
             |
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
             TEZ_VERSION=${{ env.TEZ_VERSION }}
-            BUILD_ENV=buildarchive
-
-      - name: Check for hive-standalone-metastore tar.gz
-        run: ls ./standalone-metastore/packaging/target/
-
-      - name: Copy to docker directory
-        run: cp ./target/hive-standalone-metastore-*-bin.tar.gz ./src/docker/
-        working-directory: ./standalone-metastore/packaging
-
-      - name: Confirm the copy of hive-standalone-metastore tar.gz
-        run: ls ./standalone-metastore/packaging/src/docker/
+            BUILD_ENV=${{ env.BUILD_ENV }}
 
       - name: Build and push Standalone Metastore Image to docker hub
         uses: docker/build-push-action@v4
@@ -178,9 +111,9 @@ jobs:
           file: ./standalone-metastore/packaging/src/docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: apache/hive:standalone-metastore-${{ env.tag }}
+          tags: ${{ env.namespace }}/hive:standalone-metastore-${{ env.tag }}
           build-args:
             |
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
-            BUILD_ENV=buildarchive
+            BUILD_ENV=${{ env.BUILD_ENV }}
