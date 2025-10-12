@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
@@ -179,13 +180,13 @@ public class DagUtils {
   public static final String TEZ_TMP_DIR_KEY = "_hive_tez_tmp_dir";
   private static final Logger LOG = LoggerFactory.getLogger(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
-  private static final DagUtils instance = new DagUtils(defaultCredentialSuppliers());
+  private static final DagUtils instance = new DagUtils(DagUtils::defaultCredentialSuppliers);
   // The merge file being currently processed.
   public static final String TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX =
       "hive.tez.current.merge.file.prefix";
   // A comma separated list of work names used as prefix.
   public static final String TEZ_MERGE_WORK_FILE_PREFIXES = "hive.tez.merge.file.prefixes";
-  private final List<DagCredentialSupplier> credentialSuppliers;
+  private final Supplier<List<DagCredentialSupplier>> credentialSuppliers;
   /**
    * Notifiers to synchronize resource localization across threads. If one thread is localizing
    * a file, other threads can wait on the corresponding notifier object instead of just sleeping
@@ -286,7 +287,7 @@ public class DagUtils {
     if (!UserGroupInformation.isSecurityEnabled()){
       return;
     }
-    for (DagCredentialSupplier supplier : credentialSuppliers) {
+    for (DagCredentialSupplier supplier : credentialSuppliers.get()) {
       Text alias = supplier.getTokenAlias();
       Token<?> t = dag.getCredentials().getToken(alias);
       if (t != null) {
@@ -1697,7 +1698,7 @@ public class DagUtils {
   }
 
   @VisibleForTesting
-  DagUtils(List<DagCredentialSupplier> suppliers) {
+  DagUtils(Supplier<List<DagCredentialSupplier>> suppliers) {
     this.credentialSuppliers = suppliers;
   }
 
