@@ -63,7 +63,7 @@ public class Derby extends DatabaseRule {
 
   @Override
   public String getJdbcDriver() {
-    return "org.apache.derby.jdbc.EmbeddedDriver";
+    return "org.apache.derby.iapi.jdbc.AutoloadedDriver";
   }
 
   @Override
