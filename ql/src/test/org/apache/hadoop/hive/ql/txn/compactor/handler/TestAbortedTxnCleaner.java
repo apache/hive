@@ -78,7 +78,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
 
     List<Path> directories = getDirectories(conf, t, null);
     // All aborted directories removed, hence 1 committed delta directory must be present
@@ -109,7 +109,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
 
     List<Path> directories = getDirectories(conf, t, p);
     // All aborted directories removed, hence 1 committed delta directory must be present
@@ -147,7 +147,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(2)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
 
     List<Path> directories = getDirectories(conf, t, p1);
     // All aborted directories removed, hence 1 committed delta directory must be present
@@ -190,7 +190,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
 
     List<Path> directories = getDirectories(conf, t, null);
     // All aborted directories below min open write ID are removed,
@@ -241,7 +241,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
 
     directories = getDirectories(conf, t, null);
     Assert.assertEquals(1, directories.size());
@@ -283,7 +283,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
 
     directories = getDirectories(conf, t, null);
     // The table is already compacted, so we must see 1 base delta
@@ -367,7 +367,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
-    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks();
+    Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
 
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPLETED_COMPACTIONS\" " +
