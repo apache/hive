@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.derby.iapi.jdbc.AutoloadedDriver;
+
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -43,7 +45,7 @@ import java.util.logging.Logger;
  * Fake derby driver - companion class to enable testing by TestObjectStoreStatementVerify.
  * This derby driver will call a verifying function during prepareStatement.
  */
-public class StatementVerifyingDerby extends org.apache.derby.jdbc.EmbeddedDriver {
+public class StatementVerifyingDerby extends AutoloadedDriver {
 
   @Override
   public boolean acceptsURL(String url) throws SQLException {
