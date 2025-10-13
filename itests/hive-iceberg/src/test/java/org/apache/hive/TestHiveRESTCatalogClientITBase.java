@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -58,8 +59,8 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /* 
-  * This test is an integration test for the hive-iceberg REST Catalog client and HMS REST Catalog Server.
-  * It uses the HiveMetaStoreClient backed by hive-iceberg REST catalog adapter to connect to the HMS RESTCatalog Server.
+  * This is an integration test for the HiveMetaStoreClient and HMS REST Catalog Server. It creates and uses the 
+  * HMS IMetaStoreClient backed by HiveMetaStoreClient adapter to connect to the HMS RESTCatalog Server.
   * The flow is as follows:
   * Hive ql wrapper --> HiveMetaStoreClient --> HiveRESTCatalogClient --> HMS RESTCatalog Server --> HMS
  */
@@ -69,7 +70,7 @@ public abstract class TestHiveRESTCatalogClientITBase {
   static final String TABLE_NAME = "ice_tbl";
   static final String CATALOG_NAME = "ice01";
   static final String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
-  static final String restCatalogPrefix = String.format("%s%s.", CatalogUtils.CATALOG_CONFIG_PREFIX, CATALOG_NAME);
+  static final String REST_CATALOG_PREFIX = String.format("%s%s.", CatalogUtils.CATALOG_CONFIG_PREFIX, CATALOG_NAME);
 
   HiveConf hiveConf;
   Configuration conf;
@@ -86,8 +87,8 @@ public abstract class TestHiveRESTCatalogClientITBase {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,
         "org.apache.iceberg.hive.client.HiveRESTCatalogClient");
     conf.set(MetastoreConf.ConfVars.CATALOG_DEFAULT.getVarname(), CATALOG_NAME);
-    conf.set(restCatalogPrefix + "uri", restCatalogExtension.getRestEndpoint());
-    conf.set(restCatalogPrefix + "type", CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
+    conf.set(REST_CATALOG_PREFIX + "uri", restCatalogExtension.getRestEndpoint());
+    conf.set(REST_CATALOG_PREFIX + "type", CatalogUtil.ICEBERG_CATALOG_TYPE_REST);
   }
 
   @BeforeEach
@@ -161,7 +162,12 @@ public abstract class TestHiveRESTCatalogClientITBase {
     Assertions.assertTrue(msClient.tableExists(CATALOG_NAME, DB_NAME, TABLE_NAME));
 
     // --- Get Table ---
-    Table table = msClient.getTable(CATALOG_NAME, DB_NAME, TABLE_NAME);
+    GetTableRequest getTableRequest = new GetTableRequest();
+    getTableRequest.setCatName(CATALOG_NAME);
+    getTableRequest.setDbName(DB_NAME);
+    getTableRequest.setTblName(TABLE_NAME);
+        
+    Table table = msClient.getTable(getTableRequest);
     Assertions.assertEquals(DB_NAME, table.getDbName());
     Assertions.assertEquals(TABLE_NAME, table.getTableName());
     Assertions.assertEquals(HIVE_ICEBERG_STORAGE_HANDLER, table.getParameters().get("storage_handler"));
@@ -188,8 +194,8 @@ public abstract class TestHiveRESTCatalogClientITBase {
     Assertions.assertFalse(msClient.getAllDatabases(CATALOG_NAME).contains(DB_NAME));
   }
 
-  private static Table createPartitionedTable(IMetaStoreClient db, String catName, String dbName, String tableName,
-    Map<String, String> tableParameters) throws Exception {
+  private static Table createPartitionedTable(IMetaStoreClient db, String catName, String dbName, String tableName, 
+      Map<String, String> tableParameters) throws Exception {
     db.dropTable(catName, dbName, tableName);
     Table table = new Table();
     table.setCatName(catName);
@@ -217,6 +223,12 @@ public abstract class TestHiveRESTCatalogClientITBase {
     table.getParameters().put(TableProperties.DEFAULT_PARTITION_SPEC, specString);
     
     db.createTable(table);
-    return db.getTable(catName, dbName, tableName);
+
+    GetTableRequest getTableRequest = new GetTableRequest();
+    getTableRequest.setCatName(CATALOG_NAME);
+    getTableRequest.setDbName(DB_NAME);
+    getTableRequest.setTblName(TABLE_NAME);
+    
+    return db.getTable(getTableRequest);
   }
 }

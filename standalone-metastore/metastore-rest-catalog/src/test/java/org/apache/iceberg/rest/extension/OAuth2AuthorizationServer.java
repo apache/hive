@@ -57,7 +57,7 @@ public class OAuth2AuthorizationServer {
 
   public OAuth2AuthorizationServer() {
     dockerNetwork = Network.newNetwork();
-    this.accessTokenHeaderTypeRfc9068 = true;
+    accessTokenHeaderTypeRfc9068 = true;
   }
 
   private static RealmResource createRealm(Keycloak keycloak) {

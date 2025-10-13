@@ -31,13 +31,14 @@ public class TestHiveRESTCatalogClientITOauth2 extends TestHiveRESTCatalogClient
           .addMetaStoreSchemaClassName(ITestsSchemaInfo.class)
           .build();
 
+  @Override
   public void setupConf() {
     super.setupConf();
     
     // Oauth2 properties
-    conf.set(restCatalogPrefix + "rest.auth.type", "oauth2");
-    conf.set(restCatalogPrefix + "oauth2-server-uri", REST_CATALOG_EXTENSION.getOAuth2TokenEndpoint());
-    conf.set(restCatalogPrefix + "credential", REST_CATALOG_EXTENSION.getOAuth2ClientCredential());
+    conf.set(REST_CATALOG_PREFIX + "rest.auth.type", "oauth2");
+    conf.set(REST_CATALOG_PREFIX + "oauth2-server-uri", REST_CATALOG_EXTENSION.getOAuth2TokenEndpoint());
+    conf.set(REST_CATALOG_PREFIX + "credential", REST_CATALOG_EXTENSION.getOAuth2ClientCredential());
   }
 
   @Override

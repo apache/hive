@@ -193,6 +193,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
             ),
             GRAVITINO_H2_LIB
         )
+        // Use the same Docker network as the OAuth2 server so they can communicate
         .withNetwork(dockerNetwork)
         // Wait for the server to be fully started
         .waitingFor(
@@ -304,7 +305,6 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
         .replace("OAUTH2_JWKS_URI", getJwksUri())
         .replace("OAUTH2_CLIENT_ID", OAUTH2_SERVER_ICEBERG_CLIENT_ID)
         .replace("OAUTH2_CLIENT_SECRET", OAUTH2_SERVER_ICEBERG_CLIENT_SECRET)
-//        .replace("localhost", "host.docker.internal")
         .replace("HTTP_PORT", String.valueOf(GRAVITINO_HTTP_PORT));
 
     Path configFile = warehouseDir.resolve(GRAVITINO_CONF_FILE_TEMPLATE);
