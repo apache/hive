@@ -166,7 +166,7 @@ public class PrivilegeSynchronizer implements Runnable {
 
     case DATABASE:
       objectAcls = policyProvider
-          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, catName, dbName, null));
+          .getResourceACLs(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, catName, dbName, (String) null));
       break;
 
     case TABLE:

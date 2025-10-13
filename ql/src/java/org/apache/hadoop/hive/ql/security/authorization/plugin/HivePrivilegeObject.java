@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.HMSHandlerContext;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -162,6 +163,25 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   // is applied to the table.
   private String rowFilterExpression;
 
+  @Deprecated
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName) {
+    this(type, dbname, objectName, HivePrivObjectActionType.OTHER);
+  }
+
+  @Deprecated
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName
+      , HivePrivObjectActionType actionType) {
+    this(type, dbname, objectName, null, null, actionType, null, null);
+  }
+
+  @Deprecated
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
+      List<String> partKeys, String column) {
+    this(type, dbname, objectName, partKeys,
+        column == null ? null : Arrays.asList(column),
+        HivePrivObjectActionType.OTHER, null, null);
+    }
+
   public HivePrivilegeObject(HivePrivilegeObjectType type, String objectName) {
     this(type, null, null, objectName);
   }
@@ -188,6 +208,38 @@ public class HivePrivilegeObject implements Comparable<HivePrivilegeObject> {
   public static HivePrivilegeObject createHivePrivilegeObject(List<String> cmdParams) {
     return new HivePrivilegeObject(HivePrivilegeObjectType.COMMAND_PARAMS, null, null,
         null, null, null,null, cmdParams);
+  }
+
+  @Deprecated
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName,
+    List<String> partKeys, List<String> columns, List<String> commandParams) {
+    this(type, dbname, objectName, partKeys, columns, HivePrivObjectActionType.OTHER, commandParams, null);
+  }
+
+  @Deprecated
+  public HivePrivilegeObject(String dbname, String objectName, List<String> columns) {
+    this(HivePrivilegeObjectType.TABLE_OR_VIEW, null, dbname, objectName, null, columns);
+  }
+
+  @Deprecated
+  public HivePrivilegeObject(String dbname, String objectName, List<String> columns,
+      String ownerName, PrincipalType ownerType) {
+    this(HivePrivilegeObjectType.TABLE_OR_VIEW, dbname, objectName, null, columns,
+        HivePrivObjectActionType.OTHER, null, null, ownerName, ownerType);
+  }
+
+  @Deprecated
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
+      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className) {
+    this(type, dbname, objectName, partKeys, columns, actionType, commandParams, className, null, null);
+  }
+
+  @Deprecated
+  public HivePrivilegeObject(HivePrivilegeObjectType type, String dbname, String objectName, List<String> partKeys,
+      List<String> columns, HivePrivObjectActionType actionType, List<String> commandParams, String className,
+      String ownerName, PrincipalType ownerType) {
+    this(type, null, dbname, objectName, partKeys, columns, actionType, commandParams, className, ownerName,
+        ownerType);
   }
 
   public HivePrivilegeObject(HivePrivilegeObjectType type, String catName, String dbname, String objectName,

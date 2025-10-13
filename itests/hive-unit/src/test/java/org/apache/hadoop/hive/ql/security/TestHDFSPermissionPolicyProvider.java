@@ -175,7 +175,7 @@ public class TestHDFSPermissionPolicyProvider {
     fs.setPermission(new Path(db1Loc), new FsPermission("400")); // ------r--
     fs.delete(new Path(db1Tbl1Loc), true);
     acls = policyProvider.getResourceACLs(
-        new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, "hive", "db1", null));
+        new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, "hive", "db1", (String) null));
     assertEquals(acls.getUserPermissions().size(), 1);
     assertTrue(acls.getUserPermissions().keySet().contains("user1"));
     assertEquals(acls.getGroupPermissions().size(), 0);
