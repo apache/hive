@@ -24,33 +24,63 @@ import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.iceberg.rest.extension.OAuth2AuthorizationServer;
 import org.apache.iceberg.rest.extension.RESTCatalogServer;
 import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class HiveRESTCatalogServerExtension extends ExternalResource {
   private final Configuration conf;
+  private final OAuth2AuthorizationServer authorizationServer;
   private final RESTCatalogServer restCatalogServer;
 
-  private HiveRESTCatalogServerExtension(AuthType authType, Class<? extends MetaStoreSchemaInfo> schemaInfoClass) {
+  static final String HMS_ID = "hive-metastore";
+  static final String HMS_SECRET = "hive-metastore-secret";
+  
+  private static final Logger LOG = LoggerFactory.getLogger(HiveRESTCatalogServerExtension.class);
+
+  private HiveRESTCatalogServerExtension(AuthType authType, Class<? extends MetaStoreSchemaInfo> schemaInfoClass,
+      Map<String, String> configurations) {
     this.conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, authType.name());
+    if (authType == AuthType.OAUTH2) {
+      authorizationServer = new OAuth2AuthorizationServer();
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH, "oauth2");
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_ID, HMS_ID);
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET, HMS_SECRET);
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_AUDIENCE, HMS_ID);
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_PRINCIPAL_MAPPER_REGEX_FIELD, "email");
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_PRINCIPAL_MAPPER_REGEX_PATTERN,
+          "(.*)@example.com");
+    } else {
+      authorizationServer = null;
+    }
+    configurations.forEach(conf::set);
     restCatalogServer = new RESTCatalogServer();
     if (schemaInfoClass != null) {
       restCatalogServer.setSchemaInfoClass(schemaInfoClass);
     }
   }
 
-  public Configuration getConf() {
-    return conf;
-  }
-
   @Override
   protected void before() throws Throwable {
+    if (authorizationServer != null) {
+      authorizationServer.start();
+      LOG.info("An authorization server {} started", authorizationServer.getIssuer());
+      MetastoreConf.setVar(conf, ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_ISSUER, authorizationServer.getIssuer());
+    }
     restCatalogServer.start(conf);
   }
 
   @Override
   protected void after() {
+    if (authorizationServer != null) {
+      authorizationServer.stop();
+    }
     restCatalogServer.stop();
   }
 
@@ -58,9 +88,18 @@ public class HiveRESTCatalogServerExtension extends ExternalResource {
     return restCatalogServer.getRestEndpoint();
   }
 
+  public String getOAuth2TokenEndpoint() {
+    return authorizationServer.getTokenEndpoint();
+  }
+
+  public String getOAuth2ClientCredential() {
+    return authorizationServer.getClientCredential();
+  }
+
   public static class Builder {
     private final AuthType authType;
     private Class<? extends MetaStoreSchemaInfo> metaStoreSchemaClass;
+    private final Map<String, String> configurations = new HashMap<>();
 
     private Builder(AuthType authType) {
       this.authType = authType;
@@ -72,7 +111,7 @@ public class HiveRESTCatalogServerExtension extends ExternalResource {
     }
 
     public HiveRESTCatalogServerExtension build() {
-      return new HiveRESTCatalogServerExtension(authType, metaStoreSchemaClass);
+      return new HiveRESTCatalogServerExtension(authType, metaStoreSchemaClass, configurations);
     }
   }
 
