@@ -1,0 +1,54 @@
+PREHOOK: query: set role ADMIN
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role ADMIN
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create database db1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db1
+POSTHOOK: query: create database db1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db1
+PREHOOK: query: create table db1.tab1(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@tab1
+POSTHOOK: query: create table db1.tab1(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@tab1
+PREHOOK: query: create view db1.view1 as select * from db1.tab1
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: db1@tab1
+PREHOOK: Output: database:db1
+PREHOOK: Output: db1@view1
+POSTHOOK: query: create view db1.view1 as select * from db1.tab1
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: db1@tab1
+POSTHOOK: Output: database:db1
+POSTHOOK: Output: db1@view1
+POSTHOOK: Lineage: view1.i SIMPLE [(tab1)tab1.FieldSchema(name:i, type:int, comment:null), ]
+PREHOOK: query: GRANT select ON DATABASE db1 TO USER user2
+PREHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: query: GRANT select ON DATABASE db1 TO USER user2
+POSTHOOK: type: GRANT_PRIVILEGE
+PREHOOK: query: GRANT select ON TABLE db1.view1 to USER user2
+PREHOOK: type: GRANT_PRIVILEGE
+PREHOOK: Output: db1@view1
+POSTHOOK: query: GRANT select ON TABLE db1.view1 to USER user2
+POSTHOOK: type: GRANT_PRIVILEGE
+POSTHOOK: Output: db1@view1
+PREHOOK: query: create database db2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:db2
+POSTHOOK: query: create database db2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:db2
+PREHOOK: query: create table db2.tab2(i int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:db2
+PREHOOK: Output: db2@tab2
+POSTHOOK: query: create table db2.tab2(i int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:db2
+POSTHOOK: Output: db2@tab2
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation ALTERVIEW_AS [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=db1], [OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=db1.view1]]
