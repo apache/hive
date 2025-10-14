@@ -1,6 +1,22 @@
 -- SORT_QUERY_RESULTS
 
 create table grp_set_test (key string, value string, col0 int, col1 int, col2 int, col3 int);
+
+-- UNION case, can't be optimized
+set hive.optimize.grouping.set.threshold=1;
+with sub_qr as (select col2 from grp_set_test)
+select grpBy_col, sum(col2)
+from
+( select 'abc' as grpBy_col, col2 from sub_qr union all select 'def' as grpBy_col, col2 from sub_qr) x
+group by grpBy_col with rollup;
+
+explain
+with sub_qr as (select col2 from grp_set_test)
+select grpBy_col, sum(col2)
+from
+( select 'abc' as grpBy_col, col2 from sub_qr union all select 'def' as grpBy_col, col2 from sub_qr) x
+group by grpBy_col with rollup;
+
 insert into grp_set_test values (1, 1, 1, 1, 1, 1), (1, 1, 1, 2, 2, 10), (1, 1, 1, 2, 3, 100);
 
 -- Should not be optimized
