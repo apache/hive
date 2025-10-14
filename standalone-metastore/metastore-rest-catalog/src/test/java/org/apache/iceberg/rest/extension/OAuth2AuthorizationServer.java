@@ -32,6 +32,7 @@ import org.keycloak.representations.idm.ClientScopeRepresentation;
 import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
 public class OAuth2AuthorizationServer {
@@ -46,6 +47,18 @@ public class OAuth2AuthorizationServer {
   private String issuer;
   private String tokenEndpoint;
   private String accessToken;
+  private final boolean accessTokenHeaderTypeRfc9068;
+  private final Network dockerNetwork;
+  
+  public OAuth2AuthorizationServer(Network dockerNetwork, boolean accessTokenHeaderTypeRfc9068) {
+    this.dockerNetwork = dockerNetwork;
+    this.accessTokenHeaderTypeRfc9068 = accessTokenHeaderTypeRfc9068;
+  }
+
+  public OAuth2AuthorizationServer() {
+    dockerNetwork = Network.newNetwork();
+    accessTokenHeaderTypeRfc9068 = true;
+  }
 
   private static RealmResource createRealm(Keycloak keycloak) {
     var realm = new RealmRepresentation();
@@ -100,7 +113,7 @@ public class OAuth2AuthorizationServer {
     return mapper;
   }
 
-  private static void createClient(RealmResource realm, List<String> scopes,
+  private void createClient(RealmResource realm, List<String> scopes,
       List<ProtocolMapperRepresentation> protocolMappers) {
     var client = new ClientRepresentation();
     client.setClientId(ICEBERG_CLIENT_ID);
@@ -110,7 +123,8 @@ public class OAuth2AuthorizationServer {
     client.setPublicClient(false);
     client.setServiceAccountsEnabled(true);
     client.setOptionalClientScopes(scopes);
-    client.setAttributes(Collections.singletonMap("access.token.header.type.rfc9068", "true"));
+    client.setAttributes(Collections.singletonMap("access.token.header.type.rfc9068",
+        Boolean.valueOf(accessTokenHeaderTypeRfc9068).toString()));
     client.setProtocolMappers(protocolMappers);
     realm.clients().create(client).close();
   }
@@ -128,12 +142,13 @@ public class OAuth2AuthorizationServer {
     }
   }
 
-  void start() {
+  public void start() {
     container = new GenericContainer<>(DockerImageName.parse("quay.io/keycloak/keycloak:26.3.4"))
         .withEnv("KEYCLOAK_ADMIN", "admin")
         .withEnv("KEYCLOAK_ADMIN_PASSWORD", "admin")
         .withCommand("start-dev")
         .withExposedPorts(8080)
+        .withNetwork(dockerNetwork)
         .withStartupTimeout(Duration.ofMinutes(5));
     container.start();
 
@@ -152,26 +167,30 @@ public class OAuth2AuthorizationServer {
     accessToken = getAccessToken(base, List.of("catalog"));
   }
 
-  void stop() {
+  public void stop() {
     if (container != null) {
       container.stop();
       keycloak.close();
     }
   }
 
-  String getIssuer() {
+  public String getIssuer() {
     return issuer;
   }
 
-  String getTokenEndpoint() {
+  public String getTokenEndpoint() {
     return tokenEndpoint;
   }
 
-  String getClientCredential() {
+  public String getClientCredential() {
     return "%s:%s".formatted(ICEBERG_CLIENT_ID, ICEBERG_CLIENT_SECRET);
   }
 
-  String getAccessToken() {
+  public String getAccessToken() {
     return accessToken;
+  }
+  
+  public String getKeycloackContainerDockerInternalHostName() {
+    return container.getNetworkAliases().get(0);
   }
 }
