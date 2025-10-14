@@ -228,4 +228,14 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     validateCurrentCatalog(req.getCatalogName());
     restCatalog.dropNamespace(Namespace.of(req.getName()));
   }
+
+  @Override
+  public List<Table> getAllMaterializedViewObjectsForRewriting() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<String> getMaterializedViewsForRewriting(String catName, String dbName) {
+    return Collections.emptyList();
+  }
 }
