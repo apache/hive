@@ -83,7 +83,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.getPartValsFromName;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.columnsIncludedByNameType;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.findStaleColumns;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -247,9 +247,7 @@ public class CachedStore implements RawStore, Configurable {
     if (rename) {
       deletedCols = tblBefore.getSd().getCols().stream().map(FieldSchema::getName).toList();
     } else {
-      deletedCols = tblBefore.getSd().getCols().stream().filter(c -> tblAfter.getSd().getCols().stream()
-              .noneMatch(n -> columnsIncludedByNameType(Arrays.asList(c), Arrays.asList(n)))).map(FieldSchema::getName)
-              .toList();
+      deletedCols = findStaleColumns(tblBefore.getSd().getCols(), tblAfter.getSd().getCols());
     }
     for (String column : deletedCols) {
       sharedCache.removeTableColStatsFromCache(catalogName, dbName, tableName, column);

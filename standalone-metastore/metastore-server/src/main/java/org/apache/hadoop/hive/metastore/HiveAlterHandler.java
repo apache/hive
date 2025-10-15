@@ -59,7 +59,6 @@ import org.apache.thrift.TException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -73,7 +72,7 @@ import static org.apache.hadoop.hive.metastore.HMSHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.columnsIncludedByNameType;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.findStaleColumns;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -1038,19 +1037,14 @@ public class HiveAlterHandler implements AlterHandler {
           : getDefaultCatalog(msdb.getConf()));
       String dbName = oldTable.getDbName().toLowerCase();
       String tableName = normalizeIdentifier(oldTable.getTableName());
-      List<FieldSchema> oldTableCols = oldTable.getSd().getCols();
-      List<FieldSchema> newTableCols = newTable.getSd().getCols();
-      if (!columnsIncludedByNameType(oldTableCols, newTableCols) ||
-          !MetaStoreServerUtils.arePrefixColumns(oldTableCols, newTableCols) &&
+      List<String> staleColumns = findStaleColumns(oldTable.getSd().getCols(), newTable.getSd().getCols());
+      if (!staleColumns.isEmpty() &&
           // Don't bother in the case of ACID conversion.
           TxnUtils.isAcidTable(oldTable) == TxnUtils.isAcidTable(newTable)) {
-        List<String> deletedCols = oldTableCols.stream().filter(
-                c -> newTableCols.stream().noneMatch(n -> columnsIncludedByNameType(Arrays.asList(c), Arrays.asList(n))))
-            .map(FieldSchema::getName).toList();
-        msdb.deleteTableColumnStatistics(catName, dbName, tableName, deletedCols, null);
+        msdb.deleteTableColumnStatistics(catName, dbName, tableName, staleColumns, null);
         Map<String, String> parameters = newTable.getParameters();
         if (parameters != null && parameters.containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE)) {
-          StatsSetupConst.removeColumnStatsState(parameters, deletedCols);
+          StatsSetupConst.removeColumnStatsState(parameters, staleColumns);
         }
       }
     } catch (NoSuchObjectException nsoe) {
@@ -1069,22 +1063,18 @@ public class HiveAlterHandler implements AlterHandler {
       List<FieldSchema> newCols  = part.getSd().getCols();
       String oldPartName = Warehouse.makePartName(table.getPartitionKeys(), partVals);
       // do not need to update column stats if existing columns haven't been changed
-      if (columnsIncludedByNameType(oldCols, newCols) ||
-          MetaStoreServerUtils.arePrefixColumns(oldCols, newCols)) {
+      List<String> staleColumns = findStaleColumns(oldCols, newCols);
+      if (staleColumns.isEmpty()) {
         return;
       }
-      List<String> cols = oldCols.stream().filter(oldCol -> newCols.stream()
-          .noneMatch(newCol -> columnsIncludedByNameType(Arrays.asList(oldCol), Arrays.asList(newCol))))
-          .map(FieldSchema::getName)
-          .toList();
       if (deletedCols == null) {
-        msdb.deletePartitionColumnStatistics(catName, dbname, tblname, Lists.newArrayList(oldPartName), cols, null);
+        msdb.deletePartitionColumnStatistics(catName, dbname, tblname, Lists.newArrayList(oldPartName), staleColumns, null);
       } else {
-        deletedCols.addAll(cols);
+        deletedCols.addAll(staleColumns);
       }
       Map<String, String> parameters = part.getParameters();
       if (parameters != null && parameters.containsKey(StatsSetupConst.COLUMN_STATS_ACCURATE)) {
-        StatsSetupConst.removeColumnStatsState(parameters, cols);
+        StatsSetupConst.removeColumnStatsState(parameters, staleColumns);
       }
     } catch (NoSuchObjectException nsoe) {
       // ignore this exception, actually this exception won't be thrown from getPartitionColumnStatistics
