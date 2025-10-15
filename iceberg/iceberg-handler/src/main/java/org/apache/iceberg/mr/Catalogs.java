@@ -19,10 +19,12 @@
 
 package org.apache.iceberg.mr;
 
+import java.io.Closeable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
@@ -111,16 +113,12 @@ public final class Catalogs {
 
     if (catalog.isPresent()) {
       Preconditions.checkArgument(tableIdentifier != null, "Table identifier not set");
-
-      if (catalog.get() instanceof AutoCloseable) {
-        try (AutoCloseable ignored = (AutoCloseable) catalog.get()) {
-          return catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
-        } catch (Exception e) {
-          throw new RuntimeException("Failed to close catalog", e);
-        }
-      } else {
-        // fallback if not AutoCloseable
+      try {
         return catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
+      } finally {
+        if (catalog.get() instanceof Closeable closeable) {
+          IOUtils.closeQuietly(closeable);
+        }
       }
     }
 
