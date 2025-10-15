@@ -111,7 +111,17 @@ public final class Catalogs {
 
     if (catalog.isPresent()) {
       Preconditions.checkArgument(tableIdentifier != null, "Table identifier not set");
-      return catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
+
+      if (catalog.get() instanceof AutoCloseable) {
+        try (AutoCloseable ignored = (AutoCloseable) catalog.get()) {
+          return catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
+        } catch (Exception e) {
+          throw new RuntimeException("Failed to close catalog", e);
+        }
+      } else {
+        // fallback if not AutoCloseable
+        return catalog.get().loadTable(TableIdentifier.parse(tableIdentifier));
+      }
     }
 
     Preconditions.checkArgument(tableLocation != null, "Table location not set");
