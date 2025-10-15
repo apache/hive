@@ -558,11 +558,9 @@ public class HiveServer2 extends CompositeService {
 
   private void logCompactionParameters(HiveConf hiveConf) {
     LOG.info("Compaction HS2 parameters:");
-    String runWorkerIn = MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN);
-    LOG.info("hive.metastore.runworker.in = {}", runWorkerIn);
     int numWorkers = MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
     LOG.info("metastore.compactor.worker.threads = {}", numWorkers);
-    if ("hs2".equals(runWorkerIn) && numWorkers < 1) {
+    if (numWorkers < 1) {
       LOG.warn("Invalid number of Compactor Worker threads({}) on HS2", numWorkers);
     }
   }
@@ -1262,59 +1260,57 @@ public class HiveServer2 extends CompositeService {
 
   public Map<String, Integer> maybeStartCompactorThreads(HiveConf hiveConf) {
     Map<String, Integer> startedWorkers = new HashMap<>();
-    if (MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("hs2")) {
-      Ref<Integer> numWorkers = new Ref<>(MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
-      Map<String, Integer> customPools = CompactorUtil.getPoolConf(hiveConf);
+    Ref<Integer> numWorkers = new Ref<>(MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
+    Map<String, Integer> customPools = CompactorUtil.getPoolConf(hiveConf);
 
-      StringBuilder sb = new StringBuilder(2048);
-      sb.append("This HS2 instance will act as Compactor with the following worker pool configuration:\n");
-      sb.append("Global pool size: ").append(numWorkers.value).append("\n");
+    StringBuilder sb = new StringBuilder(2048);
+    sb.append("This HS2 instance will act as Compactor with the following worker pool configuration:\n");
+    sb.append("Global pool size: ").append(numWorkers.value).append("\n");
 
-      LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers.value);
-      customPools.forEach((poolName, poolWorkers) -> {
-        if (poolWorkers == 0) {
-          LOG.warn("Pool not initialized, configured with zero workers: {}", poolName);
-        }
-        else if (numWorkers.value == 0) {
-          LOG.warn("Pool not initialized, no available workers remained: {}", poolName);
-        }
-        else {
-          if (poolWorkers > numWorkers.value) {
-            LOG.warn("Global worker pool exhausted, compaction pool ({}) will be configured with less workers than the " +
-                "required number. ({} -> {})", poolName, poolWorkers, numWorkers.value);
-            poolWorkers = numWorkers.value;
-          }
-
-          LOG.info("Initializing compaction pool ({}) with {} workers.", poolName, poolWorkers);
-          IntStream.range(0, poolWorkers).forEach(i -> {
-            Worker w = new Worker();
-            w.setPoolName(poolName);
-            CompactorThread.initializeAndStartThread(w, hiveConf);
-            startedWorkers.compute(poolName, (k, v) -> (v == null) ? 1 : v + 1);
-            sb.append(
-                String.format("Worker - Name: %s, Pool: %s, Priority: %d", w.getName(), poolName, w.getPriority())
-            );
-          });
-          numWorkers.value -= poolWorkers;
-        }
-      });
-
-      if (numWorkers.value == 0) {
-        LOG.warn("No default compaction pool configured, all non-labeled compaction requests will remain unprocessed!");
-        if (customPools.size() > 0) {
-          sb.append("Pool not initialized, no remaining free workers: default\n");
-        }
-      } else {
-        LOG.info("Initializing default compaction pool with {} workers.", numWorkers.value);
-        IntStream.range(0, numWorkers.value).forEach(i -> {
-          Worker w = new Worker();
-          CompactorThread.initializeAndStartThread(w, hiveConf);
-          startedWorkers.compute(Constants.COMPACTION_DEFAULT_POOL, (k, v) -> (v == null) ? 1 : v + 1);
-          sb.append("Worker - Name: ").append(w.getName()).append(", Pool: default, Priority: ").append(w.getPriority()).append("\n");
-        });
+    LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers.value);
+    customPools.forEach((poolName, poolWorkers) -> {
+      if (poolWorkers == 0) {
+        LOG.warn("Pool not initialized, configured with zero workers: {}", poolName);
       }
-      LOG.info(sb.toString());
+      else if (numWorkers.value == 0) {
+        LOG.warn("Pool not initialized, no available workers remained: {}", poolName);
+      }
+      else {
+        if (poolWorkers > numWorkers.value) {
+          LOG.warn("Global worker pool exhausted, compaction pool ({}) will be configured with less workers than the " +
+              "required number. ({} -> {})", poolName, poolWorkers, numWorkers.value);
+          poolWorkers = numWorkers.value;
+        }
+
+        LOG.info("Initializing compaction pool ({}) with {} workers.", poolName, poolWorkers);
+        IntStream.range(0, poolWorkers).forEach(i -> {
+          Worker w = new Worker();
+          w.setPoolName(poolName);
+          CompactorThread.initializeAndStartThread(w, hiveConf);
+          startedWorkers.compute(poolName, (k, v) -> (v == null) ? 1 : v + 1);
+          sb.append(
+            String.format("Worker - Name: %s, Pool: %s, Priority: %d", w.getName(), poolName, w.getPriority())
+          );
+        });
+        numWorkers.value -= poolWorkers;
+      }
+    });
+
+    if (numWorkers.value == 0) {
+      LOG.warn("No default compaction pool configured, all non-labeled compaction requests will remain unprocessed!");
+      if (customPools.size() > 0) {
+        sb.append("Pool not initialized, no remaining free workers: default\n");
+      }
+    } else {
+      LOG.info("Initializing default compaction pool with {} workers.", numWorkers.value);
+      IntStream.range(0, numWorkers.value).forEach(i -> {
+        Worker w = new Worker();
+        CompactorThread.initializeAndStartThread(w, hiveConf);
+        startedWorkers.compute(Constants.COMPACTION_DEFAULT_POOL, (k, v) -> (v == null) ? 1 : v + 1);
+        sb.append("Worker - Name: ").append(w.getName()).append(", Pool: default, Priority: ").append(w.getPriority()).append("\n");
+      });
     }
+    LOG.info(sb.toString());
     return startedWorkers;
   }
 
