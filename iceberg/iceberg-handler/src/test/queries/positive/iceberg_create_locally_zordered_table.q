@@ -25,7 +25,7 @@ set hive.optimize.shared.work.merge.ts.schema=true;
 CREATE TABLE default.zorder_it_nulls (
     id int,
     text string)
-WRITE LOCALLY ZORDER by (id, text)
+WRITE LOCALLY ORDERED BY zorder(id, text)
 STORED BY iceberg
 STORED As orc;
 
@@ -51,7 +51,7 @@ CREATE TABLE default.zorder_dit (
     text string,
     bool_val boolean,
     date_val date)
-WRITE LOCALLY ZORDER by (date_val, id, text)
+WRITE LOCALLY ORDERED BY zorder(date_val, id, text)
 STORED BY iceberg
 STORED As orc;
 
@@ -71,11 +71,12 @@ INSERT INTO default.zorder_dit VALUES
 SELECT * FROM default.zorder_dit;
 DROP TABLE default.zorder_dit;
 
+-- Validates syntax without LOCALLY keyword
 CREATE TABLE default.zorder_tsdl (
     ts timestamp,
     dd double,
     ll bigint)
-WRITE LOCALLY ZORDER by (ts, dd, ll)
+WRITE ORDERED BY zorder (ts, dd, ll)
 STORED BY iceberg
 STORED As orc;
 
@@ -95,7 +96,7 @@ INSERT INTO default.zorder_tsdl VALUES
 SELECT * FROM default.zorder_tsdl;
 DROP TABLE default.zorder_tsdl;
 
--- Validates z-order on CREATE via clause and via TBLPROPERTIES.
+-- Validates z-order on CREATE via TBLPROPERTIES.
 CREATE TABLE default.zorder_props(id int, text string)
 STORED BY iceberg
 STORED As orc

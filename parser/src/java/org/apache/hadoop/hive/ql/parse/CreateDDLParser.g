@@ -50,8 +50,7 @@ likeTableOrFile
     ;
 
 tableOrderOption
-    : tableWriteLocallyOrdered
-    | tableWriteLocallyZorder
+    : tableWriteLocallyOrderedBy
     ;
 
 //----------------------- Rules for parsing createtable -----------------------------

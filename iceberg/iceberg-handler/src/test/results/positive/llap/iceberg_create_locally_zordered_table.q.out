@@ -1,7 +1,7 @@
 PREHOOK: query: CREATE TABLE default.zorder_it_nulls (
     id int,
     text string)
-WRITE LOCALLY ZORDER by (id, text)
+WRITE LOCALLY ORDERED BY zorder(id, text)
 STORED BY iceberg
 STORED As orc
 PREHOOK: type: CREATETABLE
@@ -10,7 +10,7 @@ PREHOOK: Output: default@zorder_it_nulls
 POSTHOOK: query: CREATE TABLE default.zorder_it_nulls (
     id int,
     text string)
-WRITE LOCALLY ZORDER by (id, text)
+WRITE LOCALLY ORDERED BY zorder(id, text)
 STORED BY iceberg
 STORED As orc
 POSTHOOK: type: CREATETABLE
@@ -242,7 +242,7 @@ PREHOOK: query: CREATE TABLE default.zorder_dit (
     text string,
     bool_val boolean,
     date_val date)
-WRITE LOCALLY ZORDER by (date_val, id, text)
+WRITE LOCALLY ORDERED BY zorder(date_val, id, text)
 STORED BY iceberg
 STORED As orc
 PREHOOK: type: CREATETABLE
@@ -253,7 +253,7 @@ POSTHOOK: query: CREATE TABLE default.zorder_dit (
     text string,
     bool_val boolean,
     date_val date)
-WRITE LOCALLY ZORDER by (date_val, id, text)
+WRITE LOCALLY ORDERED BY zorder(date_val, id, text)
 STORED BY iceberg
 STORED As orc
 POSTHOOK: type: CREATETABLE
@@ -369,7 +369,7 @@ PREHOOK: query: CREATE TABLE default.zorder_tsdl (
     ts timestamp,
     dd double,
     ll bigint)
-WRITE LOCALLY ZORDER by (ts, dd, ll)
+WRITE ORDERED BY zorder (ts, dd, ll)
 STORED BY iceberg
 STORED As orc
 PREHOOK: type: CREATETABLE
@@ -379,7 +379,7 @@ POSTHOOK: query: CREATE TABLE default.zorder_tsdl (
     ts timestamp,
     dd double,
     ll bigint)
-WRITE LOCALLY ZORDER by (ts, dd, ll)
+WRITE ORDERED BY zorder (ts, dd, ll)
 STORED BY iceberg
 STORED As orc
 POSTHOOK: type: CREATETABLE

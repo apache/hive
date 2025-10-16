@@ -520,7 +520,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         case HiveParser.TOK_WRITE_LOCALLY_ORDERED:
           sortOrder = getSortOrderJson((ASTNode) child.getChild(0));
           break;
-        case HiveParser.TOK_WRITE_LOCALLY_ZORDER:
+        case HiveParser.TOK_WRITE_LOCALLY_ORDERED_BY_ZORDER:
           sortOrder = getZOrderJson((ASTNode) child.getChild(0));
           break;
         case HiveParser.TOK_TABLEROWFORMAT:
