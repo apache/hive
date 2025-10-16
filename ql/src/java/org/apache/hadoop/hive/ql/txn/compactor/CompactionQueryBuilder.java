@@ -320,10 +320,9 @@ abstract class CompactionQueryBuilder {
       query.setLength(0);
       return;  // avoid NPEs, don't throw an exception but return an empty query
     }
-    long minWriteID = validWriteIdList.getMinOpenWriteId() == null ? 1 : validWriteIdList.getMinOpenWriteId();
     long highWatermark = validWriteIdList.getHighWatermark();
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories().stream().filter(
-            delta -> delta.isDeleteDelta() == isDeleteDelta && delta.getMaxWriteId() <= highWatermark && delta.getMinWriteId() >= minWriteID)
+            delta -> delta.isDeleteDelta() == isDeleteDelta && delta.getMaxWriteId() <= highWatermark)
         .collect(Collectors.toList());
     if (deltas.isEmpty()) {
       query.setLength(0); // no alter query needed; clear StringBuilder
