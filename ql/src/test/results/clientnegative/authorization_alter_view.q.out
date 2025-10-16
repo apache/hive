@@ -51,4 +51,4 @@ POSTHOOK: query: create table db2.tab2(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:db2
 POSTHOOK: Output: db2@tab2
-FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation ALTERVIEW_AS [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=db1], [OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=db1.view1]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation ALTERVIEW_AS [[OBJECT OWNERSHIP] on Object [type=DATABASE, name=db1], [OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=hive.db1.view1]]

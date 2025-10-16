@@ -23,4 +23,4 @@ PREHOOK: Output: default@amvcng_gtable
 POSTHOOK: query: grant select on table amvcng_gtable to user user2
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@amvcng_gtable
-FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation CREATE_MATERIALIZED_VIEW [[SELECT with grant] on Object [type=TABLE_OR_VIEW, name=default.amvcng_gtable]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation CREATE_MATERIALIZED_VIEW [[SELECT with grant] on Object [type=TABLE_OR_VIEW, name=hive.default.amvcng_gtable]]

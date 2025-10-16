@@ -68,5 +68,5 @@ CURRENT_USER:
 OPERATION: 
   ALTERTABLE_EXCHANGEPARTITION
 AUTHORIZATION_FAILURES: 
-  Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation ALTERTABLE_EXCHANGEPARTITION [[INSERT] on Object [type=TABLE_OR_VIEW, name=default.exchange_partition_test_2]]
-FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation ALTERTABLE_EXCHANGEPARTITION [[INSERT] on Object [type=TABLE_OR_VIEW, name=default.exchange_partition_test_2]]
+  Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation ALTERTABLE_EXCHANGEPARTITION [[INSERT] on Object [type=TABLE_OR_VIEW, name=hive.default.exchange_partition_test_2]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation ALTERTABLE_EXCHANGEPARTITION [[INSERT] on Object [type=TABLE_OR_VIEW, name=hive.default.exchange_partition_test_2]]

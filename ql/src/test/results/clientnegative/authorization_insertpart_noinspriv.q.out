@@ -37,7 +37,7 @@ CURRENT_USER:
 OPERATION: 
   QUERY
 AUTHORIZATION_FAILURES: 
-  Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT] on Object [type=TABLE_OR_VIEW, name=default.testp, action=INSERT]]
+  Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT] on Object [type=TABLE_OR_VIEW, name=hive.default.testp, action=INSERT]]
 PREHOOK: query: explain authorization insert overwrite table testp partition (dt = '2012')  values (1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -55,5 +55,5 @@ CURRENT_USER:
 OPERATION: 
   QUERY
 AUTHORIZATION_FAILURES: 
-  Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT, DELETE] on Object [type=TABLE_OR_VIEW, name=default.testp, action=INSERT_OVERWRITE]]
-FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT] on Object [type=TABLE_OR_VIEW, name=default.testp, action=INSERT]]
+  Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT, DELETE] on Object [type=TABLE_OR_VIEW, name=hive.default.testp, action=INSERT_OVERWRITE]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT] on Object [type=TABLE_OR_VIEW, name=hive.default.testp, action=INSERT]]

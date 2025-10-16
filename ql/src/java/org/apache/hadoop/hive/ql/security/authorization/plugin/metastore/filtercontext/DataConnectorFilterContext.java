@@ -55,10 +55,7 @@ public class DataConnectorFilterContext extends HiveMetaStoreAuthorizableEvent {
         List<HivePrivilegeObject> ret = new ArrayList<>();
         for (String connector : connectors) {
             HivePrivilegeObject.HivePrivilegeObjectType type = HivePrivilegeObject.HivePrivilegeObjectType.DATACONNECTOR;
-            HivePrivilegeObject.HivePrivObjectActionType objectActionType =
-                    HivePrivilegeObject.HivePrivObjectActionType.OTHER;
-            HivePrivilegeObject hivePrivilegeObject =
-                    new HivePrivilegeObject(type, null, connector, null, null, objectActionType, null, null);
+            HivePrivilegeObject hivePrivilegeObject = new HivePrivilegeObject(type, connector);
             ret.add(hivePrivilegeObject);
         }
         LOG.debug("<== DataConnectorFilterContext.getInputHObjs(): ret=" + ret);

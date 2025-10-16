@@ -51,6 +51,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -67,12 +68,14 @@ import org.junit.experimental.categories.Category;
 public class TestFilterHooks {
   public static class DummyMetaStoreFilterHookImpl implements MetaStoreFilterHook {
     private static boolean blockResults = false;
+    private final Configuration conf;
 
     public DummyMetaStoreFilterHookImpl(Configuration conf) {
+      this.conf = conf;
     }
 
     @Override
-    public List<String> filterDatabases(List<String> dbList) throws MetaException  {
+    public List<String> filterDatabases(String catName, List<String> dbList) throws MetaException  {
       if (blockResults) {
         return new ArrayList<>();
       }

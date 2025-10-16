@@ -142,4 +142,4 @@ POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@masking_test_view_n_mv
 POSTHOOK: Lineage: masking_test_view_n_mv.key SIMPLE [(masking_test_n_mv)masking_test_n_mv.FieldSchema(name:key, type:int, comment:null), ]
-FAILED: SemanticException [Error 10288]: Querying directly materialized view contents is not supported since we detected default.masking_test_n_mv used by materialized view has row masking/column filtering enabled
+FAILED: SemanticException [Error 10288]: Querying directly materialized view contents is not supported since we detected hive.default.masking_test_n_mv used by materialized view has row masking/column filtering enabled

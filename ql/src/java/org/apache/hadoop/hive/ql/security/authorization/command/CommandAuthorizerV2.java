@@ -188,14 +188,14 @@ final class CommandAuthorizerV2 {
     switch(privObject.getType()){
     case DATABASE:
       Database database = privObject.getDatabase();
-      hivePrivObject = new HivePrivilegeObject(privObjType, database.getName(), null, null, null, actionType, null,
-          null, database.getOwnerName(), database.getOwnerType());
+      hivePrivObject = new HivePrivilegeObject(privObjType, database.getCatalogName(), database.getName(),
+          null, null, null, actionType, null, null, database.getOwnerName(), database.getOwnerType());
       break;
     case TABLE:
       Table table = privObject.getTable();
       List<String> columns = tableName2Cols == null ? null :
           tableName2Cols.get(Table.getCompleteName(table.getDbName(), table.getTableName()));
-      hivePrivObject = new HivePrivilegeObject(privObjType, table.getDbName(), table.getTableName(),
+      hivePrivObject = new HivePrivilegeObject(privObjType, table.getCatalogName(), table.getDbName(), table.getTableName(),
           null, columns, actionType, null, null, table.getOwner(), table.getOwnerType());
       if (table.getStorageHandler() != null && HiveConf.getBoolVar(SessionState.getSessionConf(),
           HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLES_ON_STORAGEHANDLERS)) {
@@ -206,7 +206,7 @@ final class CommandAuthorizerV2 {
                 hiveOpType == HiveOperationType.CREATETABLE_AS_SELECT)) {
           try {
             String storageUri = table.getStorageHandler().getURIForAuth(table.getTTable()).toString();
-            hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, storageUri, null, null,
+            hivePrivObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.STORAGEHANDLER_URI, null, null, storageUri, null, null,
                 actionType, null, table.getStorageHandler().getClass().getName(), table.getOwner(), table.getOwnerType()));
           } catch (Exception ex) {
             LOG.error("Exception occurred while getting the URI from storage handler: " + ex.getMessage(), ex);
@@ -217,18 +217,23 @@ final class CommandAuthorizerV2 {
       break;
     case DFS_DIR:
     case LOCAL_DIR:
-      hivePrivObject = new HivePrivilegeObject(privObjType, null, privObject.getD().toString(), null, null,
-          actionType, null, null, null, null);
+      hivePrivObject = new HivePrivilegeObject(privObjType, null, null, privObject.getD().toString(),
+          null, null, actionType, null);
       break;
     case FUNCTION:
       if (privObject.getFunction() != null) {
         Function function = privObject.getFunction();
-        hivePrivObject = new HivePrivilegeObject(privObjType, function.getDbName(), function.getFunctionName(),
+        hivePrivObject = new HivePrivilegeObject(privObjType, function.getCatName(), function.getDbName(), function.getFunctionName(),
                 null, null, actionType, null, function.getClassName(), function.getOwnerName(), function.getOwnerType());
       } else {
-        String dbName = privObject.getDatabase() != null ? privObject.getDatabase().getName() : null;
-        hivePrivObject = new HivePrivilegeObject(privObjType, dbName, privObject.getFunctionName(),
-                null, null, actionType, null, privObject.getClassName(), null, null);
+        String catName = null;
+        String dbName = null;
+        if (privObject.getDatabase() != null) {
+          catName = privObject.getDatabase().getCatalogName();
+          dbName = privObject.getDatabase().getName();
+        }
+        hivePrivObject = new HivePrivilegeObject(privObjType, catName, dbName, privObject.getFunctionName(),
+            null, null, actionType, null, privObject.getClassName(), null, null);
       }
       break;
     case DUMMYPARTITION:
@@ -236,17 +241,17 @@ final class CommandAuthorizerV2 {
       Table tbl = privObject.getTable();
       List<String> col = tableName2Cols == null ? null :
               tableName2Cols.get(Table.getCompleteName(tbl.getDbName(), tbl.getTableName()));
-      hivePrivObject = new HivePrivilegeObject(privObjType, tbl.getDbName(), tbl.getTableName(),
+      hivePrivObject = new HivePrivilegeObject(privObjType, tbl.getCatName(), tbl.getDbName(), tbl.getTableName(),
               null, col, actionType, null, null, tbl.getOwner(), tbl.getOwnerType());
       break;
     case SERVICE_NAME:
-      hivePrivObject = new HivePrivilegeObject(privObjType, null, privObject.getServiceName(), null,
-          null, actionType, null, null, null, null);
+      hivePrivObject = new HivePrivilegeObject(privObjType, null, null, privObject.getServiceName(), null,
+          null, actionType, null);
       break;
     case DATACONNECTOR:
       DataConnector connector = privObject.getDataConnector();
-      hivePrivObject = new HivePrivilegeObject(privObjType, null, connector.getName(), null, null, actionType, null,
-              null, connector.getOwnerName(), connector.getOwnerType());
+      hivePrivObject = new HivePrivilegeObject(privObjType, null, null, connector.getName(), null, null,
+          actionType, null, null, connector.getOwnerName(), connector.getOwnerType());
       break;
     default:
       throw new AssertionError("Unexpected object type");

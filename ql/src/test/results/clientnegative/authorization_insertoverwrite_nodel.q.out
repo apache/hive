@@ -33,4 +33,4 @@ POSTHOOK: query: create table user1tab(i int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@user1tab
-FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[DELETE] on Object [type=TABLE_OR_VIEW, name=default.t1, action=INSERT_OVERWRITE]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[DELETE] on Object [type=TABLE_OR_VIEW, name=hive.default.t1, action=INSERT_OVERWRITE]]

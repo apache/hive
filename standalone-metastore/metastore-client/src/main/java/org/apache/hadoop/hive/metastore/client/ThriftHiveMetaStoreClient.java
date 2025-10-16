@@ -1727,13 +1727,13 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   @Override
   public List<String> getDatabases(String catName, String databasePattern) throws TException {
-    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook,
+    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, catName,
         client.get_databases(prependCatalogToDbName(catName, databasePattern, conf)));
   }
 
   @Override
   public List<String> getAllDatabases(String catName) throws TException {
-    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook,
+    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, catName,
         client.get_databases(prependCatalogToDbName(catName, null, conf)));
   }
 

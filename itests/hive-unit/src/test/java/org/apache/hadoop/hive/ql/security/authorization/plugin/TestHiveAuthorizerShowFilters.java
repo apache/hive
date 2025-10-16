@@ -254,7 +254,7 @@ public class TestHiveAuthorizerShowFilters {
         dbname = "default";
         tabname = obj;
       }
-      filteredResults.add(new HivePrivilegeObject(type, dbname, tabname));
+      filteredResults.add(new HivePrivilegeObject(type, "hive", dbname, tabname));
     }
   }
 
