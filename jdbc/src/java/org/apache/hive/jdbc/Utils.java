@@ -50,11 +50,6 @@ public class Utils {
     */
   public static final String URL_PREFIX = "jdbc:hive2://";
 
-  /**
-    * If host is provided, without a port.
-    */
-  static final String DEFAULT_PORT = "10000";
-
   // To parse the intermediate URI as a Java URI, we'll give a dummy authority(dummyhost:00000).
   // Later, we'll substitute the dummy authority for a resolved authority.
   static final String dummyAuthorityString = "dummyhost:00000";
@@ -641,7 +636,7 @@ public class Utils {
           // Set the port to default value; we do support jdbc url like:
           // jdbc:hive2://localhost/db
           if (port <= 0) {
-            port = Integer.parseInt(Utils.DEFAULT_PORT);
+            port = Integer.parseInt(Utils.getDefaultPort(connParams));
           }
           connParams.setHost(host);
           connParams.setPort(port);
@@ -889,5 +884,19 @@ public class Utils {
       password = getPasswordFromCredentialProvider(confMap.get(JdbcConnectionParams.SSL_STORE_PASSWORD_PATH), key);
     }
     return password;
+  }
+
+  /**
+   * Method to get the default port based on the transport mode
+   * @param connectionParams JDBC connection parameters
+   * @return defaultPort
+   */
+  public static String getDefaultPort(JdbcConnectionParams connectionParams) {
+    String port = "10000";
+    String transportMode = connectionParams.getSessionVars().get(JdbcConnectionParams.TRANSPORT_MODE);
+    if (transportMode != null && transportMode.equalsIgnoreCase("http")) {
+      port = "10001";
+    }
+    return port;
   }
 }

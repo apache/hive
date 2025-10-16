@@ -75,7 +75,7 @@ public class TestHiveConnection {
     Assert.assertEquals("true", params.getSessionVars().get(JdbcConnectionParams.JDBC_PARAM_REQUEST_TRACK));
 
     JdbcConnectionParams nonPortParams = Utils.parseURL("jdbc:hive2://hello.host/default");
-    Assert.assertEquals(Integer.parseInt(Utils.DEFAULT_PORT), nonPortParams.getPort());
+    Assert.assertEquals(Integer.parseInt(Utils.getDefaultPort(nonPortParams)), nonPortParams.getPort());
   }
 
   @Test
