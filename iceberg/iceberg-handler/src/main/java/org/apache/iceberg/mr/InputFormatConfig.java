@@ -78,6 +78,9 @@ public class InputFormatConfig {
 
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
 
+  public static final String SORT_ORDER = "sort.order";
+  public static final String SORT_COLUMNS = "sort.columns";
+
   public enum InMemoryDataModel {
     HIVE,
     GENERIC // Default data model is of Iceberg Generics
