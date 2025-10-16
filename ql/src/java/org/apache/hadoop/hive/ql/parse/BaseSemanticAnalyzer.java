@@ -95,7 +95,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -918,8 +917,6 @@ public abstract class BaseSemanticAnalyzer {
           ASTNode typeChild = (ASTNode) (child.getChild(1));
           col.setType(getTypeStringFromAST(typeChild));
 
-          // child 2 is the optional comment of the column
-          // child 3 is the optional constraint
           ASTNode constraintChild = null;
           if (child.getChildCount() == 4) {
             col.setComment(unescapeSQLString(child.getChild(2).getText()));
@@ -931,8 +928,9 @@ public abstract class BaseSemanticAnalyzer {
             constraintChild = (ASTNode) child.getChild(2);
           }
           if (constraintChild != null) {
-            final TableName tName =
-                getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
+            final TableName tName = constraintChild.getToken().getType() != HiveParser.TOK_DEFAULT_VALUE ?
+                getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf)) :
+                null;
             // TODO CAT - for now always use the default catalog.  Eventually will want to see if
             // the user specified a catalog
             // Process column constraint
