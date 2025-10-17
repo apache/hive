@@ -887,14 +887,14 @@ public class Utils {
   }
 
   /**
-   * Method to get the default port based on the transport mode
+   * Method to get the default port based on the transport mode.
    * @param connectionParams JDBC connection parameters
    * @return defaultPort
    */
   public static String getDefaultPort(JdbcConnectionParams connectionParams) {
     String port = HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT.getDefaultValue();
     String transportMode = connectionParams.getSessionVars().get(JdbcConnectionParams.TRANSPORT_MODE);
-    if (transportMode != null && transportMode.equalsIgnoreCase("http")) {
+    if (transportMode != null && "http".equalsIgnoreCase(transportMode)) {
       port = HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.getDefaultValue();
     }
     return port;
