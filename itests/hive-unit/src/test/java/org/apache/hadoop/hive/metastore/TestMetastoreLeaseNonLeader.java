@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 public class TestMetastoreLeaseNonLeader {
 
-  LeaderElection election;
+  LeaderElection<TableName> election;
 
   TestMetastoreHousekeepingLeader hms;
 
@@ -44,6 +44,7 @@ public class TestMetastoreLeaseNonLeader {
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.prepDb(conf);
     election = new LeaseLeaderElection();
+    election.setName("TestMetastoreLeaseNonLeader");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION, "lock");
     TableName tableName = (TableName) LeaderElectionContext.getLeaderMutex(conf,
         LeaderElectionContext.TTYPE.HOUSEKEEPING, null);
@@ -51,9 +52,10 @@ public class TestMetastoreLeaseNonLeader {
     assertTrue("The elector should hold the lease now", election.isLeader());
     // start the non-leader hms now
     hms = new TestMetastoreHousekeepingLeader();
-    MetastoreConf.setTimeVar(hms.conf, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
+    Configuration configuration = new Configuration(conf);
+    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
     hms.conf.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
-    hms.internalSetup("", false);
+    hms.internalSetup(null, configuration);
   }
 
   @Test

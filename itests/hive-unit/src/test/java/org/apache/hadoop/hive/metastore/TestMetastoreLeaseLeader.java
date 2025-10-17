@@ -34,25 +34,25 @@ import static org.junit.Assert.assertTrue;
 
 public class TestMetastoreLeaseLeader {
 
-  LeaderElection election;
+  LeaderElection<TableName> election;
 
   TestMetastoreHousekeepingLeader hms;
 
   @Before
   public void setUp() throws Exception {
+    Configuration configuration = MetastoreConf.newMetastoreConf();
     hms = new TestMetastoreHousekeepingLeader();
-    MetastoreConf.setTimeVar(hms.conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 3, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hms.conf, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
-    hms.conf.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, false);
-    hms.conf.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
-    hms.conf.set("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-    hms.internalSetup("", false);
+    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.TXN_TIMEOUT, 1, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 200, TimeUnit.MILLISECONDS);
+    configuration.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, false);
+    configuration.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
+    configuration.set("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    hms.internalSetup(null, configuration);
 
-    Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 3, TimeUnit.SECONDS);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION, "lock");
+    Configuration conf = new Configuration(configuration);
+    conf.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, true);
     election = new LeaseLeaderElection();
+    election.setName("TestMetastoreLeaseLeader");
     TableName tableName = (TableName) LeaderElectionContext.getLeaderMutex(conf,
         LeaderElectionContext.TTYPE.HOUSEKEEPING, null);
     election.tryBeLeader(conf, tableName);
@@ -75,7 +75,7 @@ public class TestMetastoreLeaseLeader {
     }
 
     election.close();
-    Thread.sleep(10000);
+    Thread.sleep(15 * 1000);
     // hms becomes leader again
     hms.testHouseKeepingThreadExistence();
   }
