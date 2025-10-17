@@ -32,10 +32,11 @@ public class ProcessListInfo {
   private final String runtime;  // tracks only running portion of the query.
   private final long elapsedTime;
   private final String state;
+  private final long txnId;
 
   private ProcessListInfo(String userName, String ipAddr, String sessionId, long sessionActiveTime,
       long sessionIdleTime, String queryId, String executionEngine, String beginTime,
-      String runtime, long elapsedTime, String state) {
+      String runtime, long elapsedTime, String state, long txnId) {
     this.userName = userName;
     this.ipAddr = ipAddr;
     this.sessionId = sessionId;
@@ -47,6 +48,7 @@ public class ProcessListInfo {
     this.runtime = runtime;
     this.elapsedTime = elapsedTime;
     this.state = state;
+    this.txnId = txnId;
   }
 
   public String getSessionId() {
@@ -105,6 +107,7 @@ public class ProcessListInfo {
     private String runtime;
     private long elapsedTime;
     private String state;
+    private long txnId;
 
     public Builder setSessionId(String sessionId) {
       this.sessionId = sessionId;
@@ -161,10 +164,15 @@ public class ProcessListInfo {
       return this;
     }
 
+    public Builder setTxnId(long txnId) {
+      this.txnId = txnId;
+      return this;
+    }
+
     public ProcessListInfo build() {
       ProcessListInfo processListInfo = new ProcessListInfo(userName, ipAddr, sessionId, sessionActiveTime,
           sessionIdleTime, queryId, executionEngine, beginTime, runtime,
-          elapsedTime, state);
+          elapsedTime, state, txnId);
       return processListInfo;
     }
   }
