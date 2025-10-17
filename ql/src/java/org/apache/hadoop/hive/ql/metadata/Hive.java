@@ -6640,8 +6640,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public SQLAllTableConstraints getTableConstraints(String dbName, String tblName, long tableId)
       throws HiveException, NoSuchObjectException {
     try {
+      ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
       AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
       request.setTableId(tableId);
+      request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
       return getMSC().getAllTableConstraints(request);
     } catch (NoSuchObjectException e) {
       throw e;
@@ -6656,7 +6658,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_CONSTRAINTS);
 
     try {
+
+      ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName,tblName);
       AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
+      request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
       request.setTableId(tableId);
 
       SQLAllTableConstraints tableConstraints = getMSC().getAllTableConstraints(request);

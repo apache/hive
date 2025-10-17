@@ -2770,12 +2770,14 @@ class PrimaryKeysRequest
   DB_NAME = 1
   TBL_NAME = 2
   CATNAME = 3
-  TABLEID = 4
+  VALIDWRITEIDLIST = 4
+  TABLEID = 5
 
   FIELDS = {
     DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
     TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdList', :optional => true},
     TABLEID => {:type => ::Thrift::Types::I64, :name => 'tableId', :default => -1, :optional => true}
   }
 

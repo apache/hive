@@ -8357,15 +8357,17 @@ class PrimaryKeysRequest(object):
      - db_name
      - tbl_name
      - catName
+     - validWriteIdList
      - tableId
 
     """
 
 
-    def __init__(self, db_name=None, tbl_name=None, catName=None, tableId=-1,):
+    def __init__(self, db_name=None, tbl_name=None, catName=None, validWriteIdList=None, tableId=-1,):
         self.db_name = db_name
         self.tbl_name = tbl_name
         self.catName = catName
+        self.validWriteIdList = validWriteIdList
         self.tableId = tableId
 
     def read(self, iprot):
@@ -8393,6 +8395,11 @@ class PrimaryKeysRequest(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 4:
+                if ftype == TType.STRING:
+                    self.validWriteIdList = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
                 if ftype == TType.I64:
                     self.tableId = iprot.readI64()
                 else:
@@ -8419,8 +8426,12 @@ class PrimaryKeysRequest(object):
             oprot.writeFieldBegin('catName', TType.STRING, 3)
             oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
+        if self.validWriteIdList is not None:
+            oprot.writeFieldBegin('validWriteIdList', TType.STRING, 4)
+            oprot.writeString(self.validWriteIdList.encode('utf-8') if sys.version_info[0] == 2 else self.validWriteIdList)
+            oprot.writeFieldEnd()
         if self.tableId is not None:
-            oprot.writeFieldBegin('tableId', TType.I64, 4)
+            oprot.writeFieldBegin('tableId', TType.I64, 5)
             oprot.writeI64(self.tableId)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -33072,7 +33083,8 @@ PrimaryKeysRequest.thrift_spec = (
     (1, TType.STRING, 'db_name', 'UTF8', None, ),  # 1
     (2, TType.STRING, 'tbl_name', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'catName', 'UTF8', None, ),  # 3
-    (4, TType.I64, 'tableId', None, -1, ),  # 4
+    (4, TType.STRING, 'validWriteIdList', 'UTF8', None, ),  # 4
+    (5, TType.I64, 'tableId', None, -1, ),  # 5
 )
 all_structs.append(PrimaryKeysResponse)
 PrimaryKeysResponse.thrift_spec = (

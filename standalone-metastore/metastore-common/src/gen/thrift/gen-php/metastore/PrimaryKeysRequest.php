@@ -37,6 +37,11 @@ class PrimaryKeysRequest
             'type' => TType::STRING,
         ),
         4 => array(
+            'var' => 'validWriteIdList',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        5 => array(
             'var' => 'tableId',
             'isRequired' => false,
             'type' => TType::I64,
@@ -56,6 +61,10 @@ class PrimaryKeysRequest
      */
     public $catName = null;
     /**
+     * @var string
+     */
+    public $validWriteIdList = null;
+    /**
      * @var int
      */
     public $tableId = -1;
@@ -71,6 +80,9 @@ class PrimaryKeysRequest
             }
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
+            }
+            if (isset($vals['validWriteIdList'])) {
+                $this->validWriteIdList = $vals['validWriteIdList'];
             }
             if (isset($vals['tableId'])) {
                 $this->tableId = $vals['tableId'];
@@ -119,6 +131,13 @@ class PrimaryKeysRequest
                     }
                     break;
                 case 4:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->validWriteIdList);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 5:
                     if ($ftype == TType::I64) {
                         $xfer += $input->readI64($this->tableId);
                     } else {
@@ -154,8 +173,13 @@ class PrimaryKeysRequest
             $xfer += $output->writeString($this->catName);
             $xfer += $output->writeFieldEnd();
         }
+        if ($this->validWriteIdList !== null) {
+            $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 4);
+            $xfer += $output->writeString($this->validWriteIdList);
+            $xfer += $output->writeFieldEnd();
+        }
         if ($this->tableId !== null) {
-            $xfer += $output->writeFieldBegin('tableId', TType::I64, 4);
+            $xfer += $output->writeFieldBegin('tableId', TType::I64, 5);
             $xfer += $output->writeI64($this->tableId);
             $xfer += $output->writeFieldEnd();
         }
