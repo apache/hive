@@ -892,10 +892,10 @@ public class Utils {
    * @return defaultPort
    */
   public static String getDefaultPort(JdbcConnectionParams connectionParams) {
-    String port = "10000";
+    String port = HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT.getDefaultValue();
     String transportMode = connectionParams.getSessionVars().get(JdbcConnectionParams.TRANSPORT_MODE);
     if (transportMode != null && transportMode.equalsIgnoreCase("http")) {
-      port = "10001";
+      port = HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.getDefaultValue();
     }
     return port;
   }
