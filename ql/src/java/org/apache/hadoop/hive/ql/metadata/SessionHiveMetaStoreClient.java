@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.utils.HiveMetaStoreClientUtils;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -2560,9 +2561,11 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       final String validWriteIds = Hive.get().getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
       final String fullTableName = TableName.getDbTable(dbName, tblName);
 
-      ValidTxnWriteIdList validTxnWriteIdList = (validWriteIds != null) ?
+      final ValidTxnWriteIdList validTxnWriteIdList = (validWriteIds != null) ?
           ValidTxnWriteIdList.fromValue(validWriteIds) :
-          SessionState.get().getTxnMgr().getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList);
+          TxnCommonUtils.createValidTxnWriteIdList(
+              SessionState.get().getTxnMgr().getCurrentTxnId(),
+              getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList));
 
       ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
       return (writeIdList != null) ? writeIdList.toString() : null;
