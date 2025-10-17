@@ -81,6 +81,7 @@ public class Initiator extends MetaStoreCompactorThread {
           prevStart = handle.getLastUpdateTime();
 
           recoverFailedCompactions();
+
           if (metricsEnabled) {
             perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
             stopCycleUpdater();
