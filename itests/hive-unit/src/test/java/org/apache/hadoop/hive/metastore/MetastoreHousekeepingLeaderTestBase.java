@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 class MetastoreHousekeepingLeaderTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreHousekeepingLeaderTestBase.class);
   private static HiveMetaStoreClient client;
-  protected static Configuration conf = MetastoreConf.newMetastoreConf();
+  protected Configuration conf;
   private static Warehouse warehouse;
   private static boolean isServerStarted = false;
   private static int port;
@@ -54,12 +54,15 @@ class MetastoreHousekeepingLeaderTestBase {
   static Map<String, Boolean> threadNames = new HashMap<>();
   static Map<Class<? extends Thread>, Boolean> threadClasses = new HashMap<>();
 
-  void internalSetup(final String leaderHostName, boolean configuredLeader) throws Exception {
+  void internalSetup(final String leaderHostName, Configuration configuration) throws Exception {
+    this.conf = configuration;
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
-    MetastoreConf.setVar(conf, ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME, leaderHostName);
     MetastoreConf.setVar(conf, ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION,
-        configuredLeader ? "host" : "lock");
+        leaderHostName != null ? "host" : "lock");
+    if (leaderHostName != null) {
+      MetastoreConf.setVar(conf, ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME, leaderHostName);
+    }
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
 
