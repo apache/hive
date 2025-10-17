@@ -64,7 +64,6 @@ public class Initiator extends MetaStoreCompactorThread {
     try (ExecutorService compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
         conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
         COMPACTOR_INTIATOR_THREAD_NAME_FORMAT)) {
-      recoverFailedCompactions();
       TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
 
       // Make sure we run through the loop once before checking to stop as this makes testing
@@ -81,6 +80,7 @@ public class Initiator extends MetaStoreCompactorThread {
           startedAt = System.currentTimeMillis();
           prevStart = handle.getLastUpdateTime();
 
+          recoverFailedCompactions();
           if (metricsEnabled) {
             perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
             stopCycleUpdater();
@@ -159,8 +159,6 @@ public class Initiator extends MetaStoreCompactorThread {
           //Use get instead of join, so we can receive InterruptedException and shutdown gracefully
           CompletableFuture.allOf(compactionList.toArray(new CompletableFuture[0])).get();
 
-          // Check for timed out remote workers.
-          recoverFailedCompactions();
           handle.releaseLocks(startedAt);
         } catch (InterruptedException e) {
           // do not ignore interruption requests
