@@ -14628,11 +14628,6 @@ void PrimaryKeysRequest::__set_catName(const std::string& val) {
 __isset.catName = true;
 }
 
-void PrimaryKeysRequest::__set_validWriteIdList(const std::string& val) {
-  this->validWriteIdList = val;
-__isset.validWriteIdList = true;
-}
-
 void PrimaryKeysRequest::__set_tableId(const int64_t val) {
   this->tableId = val;
 __isset.tableId = true;
@@ -14692,14 +14687,6 @@ uint32_t PrimaryKeysRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         }
         break;
       case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->validWriteIdList);
-          this->__isset.validWriteIdList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
         if (ftype == ::apache::thrift::protocol::T_I64) {
           xfer += iprot->readI64(this->tableId);
           this->__isset.tableId = true;
@@ -14741,13 +14728,8 @@ uint32_t PrimaryKeysRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeString(this->catName);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 4);
-    xfer += oprot->writeString(this->validWriteIdList);
-    xfer += oprot->writeFieldEnd();
-  }
   if (this->__isset.tableId) {
-    xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 5);
+    xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 4);
     xfer += oprot->writeI64(this->tableId);
     xfer += oprot->writeFieldEnd();
   }
@@ -14761,7 +14743,6 @@ void swap(PrimaryKeysRequest &a, PrimaryKeysRequest &b) {
   swap(a.db_name, b.db_name);
   swap(a.tbl_name, b.tbl_name);
   swap(a.catName, b.catName);
-  swap(a.validWriteIdList, b.validWriteIdList);
   swap(a.tableId, b.tableId);
   swap(a.__isset, b.__isset);
 }
@@ -14770,7 +14751,6 @@ PrimaryKeysRequest::PrimaryKeysRequest(const PrimaryKeysRequest& other531) {
   db_name = other531.db_name;
   tbl_name = other531.tbl_name;
   catName = other531.catName;
-  validWriteIdList = other531.validWriteIdList;
   tableId = other531.tableId;
   __isset = other531.__isset;
 }
@@ -14778,7 +14758,6 @@ PrimaryKeysRequest& PrimaryKeysRequest::operator=(const PrimaryKeysRequest& othe
   db_name = other532.db_name;
   tbl_name = other532.tbl_name;
   catName = other532.catName;
-  validWriteIdList = other532.validWriteIdList;
   tableId = other532.tableId;
   __isset = other532.__isset;
   return *this;
@@ -14789,7 +14768,6 @@ void PrimaryKeysRequest::printTo(std::ostream& out) const {
   out << "db_name=" << to_string(db_name);
   out << ", " << "tbl_name=" << to_string(tbl_name);
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
-  out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
   out << ", " << "tableId="; (__isset.tableId ? (out << to_string(tableId)) : (out << "<null>"));
   out << ")";
 }

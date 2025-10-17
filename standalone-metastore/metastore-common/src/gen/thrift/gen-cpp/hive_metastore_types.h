@@ -6222,9 +6222,8 @@ void swap(Schema &a, Schema &b);
 std::ostream& operator<<(std::ostream& out, const Schema& obj);
 
 typedef struct _PrimaryKeysRequest__isset {
-  _PrimaryKeysRequest__isset() : catName(false), validWriteIdList(false), tableId(true) {}
+  _PrimaryKeysRequest__isset() : catName(false), tableId(true) {}
   bool catName :1;
-  bool validWriteIdList :1;
   bool tableId :1;
 } _PrimaryKeysRequest__isset;
 
@@ -6237,7 +6236,6 @@ class PrimaryKeysRequest : public virtual ::apache::thrift::TBase {
                      : db_name(),
                        tbl_name(),
                        catName(),
-                       validWriteIdList(),
                        tableId(-1LL) {
   }
 
@@ -6245,7 +6243,6 @@ class PrimaryKeysRequest : public virtual ::apache::thrift::TBase {
   std::string db_name;
   std::string tbl_name;
   std::string catName;
-  std::string validWriteIdList;
   int64_t tableId;
 
   _PrimaryKeysRequest__isset __isset;
@@ -6255,8 +6252,6 @@ class PrimaryKeysRequest : public virtual ::apache::thrift::TBase {
   void __set_tbl_name(const std::string& val);
 
   void __set_catName(const std::string& val);
-
-  void __set_validWriteIdList(const std::string& val);
 
   void __set_tableId(const int64_t val);
 
@@ -6269,10 +6264,6 @@ class PrimaryKeysRequest : public virtual ::apache::thrift::TBase {
     if (__isset.catName != rhs.__isset.catName)
       return false;
     else if (__isset.catName && !(catName == rhs.catName))
-      return false;
-    if (__isset.validWriteIdList != rhs.__isset.validWriteIdList)
-      return false;
-    else if (__isset.validWriteIdList && !(validWriteIdList == rhs.validWriteIdList))
       return false;
     if (__isset.tableId != rhs.__isset.tableId)
       return false;

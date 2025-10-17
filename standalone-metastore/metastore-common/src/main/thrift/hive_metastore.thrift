@@ -754,8 +754,7 @@ struct PrimaryKeysRequest {
   1: required string db_name,
   2: required string tbl_name,
   3: optional string catName,
-  4: optional string validWriteIdList,
-  5: optional i64 tableId=-1
+  4: optional i64 tableId=-1
 }
 
 struct PrimaryKeysResponse {
