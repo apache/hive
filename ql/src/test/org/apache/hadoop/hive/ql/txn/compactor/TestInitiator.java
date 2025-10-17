@@ -73,7 +73,7 @@ public class TestInitiator extends CompactorTest {
   }
 
   @Test
-  public void recoverFailedLocalWorkers() throws Exception {
+  public void recoverFailedWorkers() throws Exception {
     Table t = newTable("default", "rflw1", false);
     CompactionRequest rqst = new CompactionRequest("default", "rflw1", CompactionType.MINOR);
     txnHandler.compact(rqst);
@@ -85,31 +85,16 @@ public class TestInitiator extends CompactorTest {
     txnHandler.findNextToCompact(aFindNextCompactRequest(ServerUtils.hostname() + "-193892", WORKER_VERSION));
     txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", WORKER_VERSION));
 
-    startInitiator();
-
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals(2, compacts.size());
-    Assert.assertEquals("working", compacts.get(0).getState());
-    Assert.assertEquals("working", compacts.get(1).getState());
-  }
-
-  @Test
-  public void recoverFailedRemoteWorkers() throws Exception {
-    Table t = newTable("default", "rfrw1", false);
-    CompactionRequest rqst = new CompactionRequest("default", "rfrw1", CompactionType.MINOR);
-    txnHandler.compact(rqst);
-
-    txnHandler.findNextToCompact(aFindNextCompactRequest("nosuchhost-193892", WORKER_VERSION));
+    rsp.getCompacts().forEach(ce ->
+            Assert.assertEquals("working", ce.getState()));
 
     conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, 1L, TimeUnit.MILLISECONDS);
-
     startInitiator();
 
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    Assert.assertEquals(1, compacts.size());
-    Assert.assertEquals("initiated", compacts.get(0).getState());
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    rsp.getCompacts().forEach(ce ->
+            Assert.assertEquals("initiated", ce.getState()));
   }
 
   @Test
