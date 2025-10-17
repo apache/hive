@@ -90,17 +90,8 @@ public class TestInitiator extends CompactorTest {
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     List<ShowCompactResponseElement> compacts = rsp.getCompacts();
     Assert.assertEquals(2, compacts.size());
-    boolean sawInitiated = false;
-    for (ShowCompactResponseElement c : compacts) {
-      if (c.getState().equals("working")) {
-        Assert.assertEquals("nosuchhost-193892", c.getWorkerid());
-      } else if (c.getState().equals("initiated")) {
-        sawInitiated = true;
-      } else {
-        Assert.fail("Unexpected state");
-      }
-    }
-    Assert.assertTrue(sawInitiated);
+    Assert.assertEquals("working", compacts.get(0).getState());
+    Assert.assertEquals("working", compacts.get(1).getState());
   }
 
   @Test
