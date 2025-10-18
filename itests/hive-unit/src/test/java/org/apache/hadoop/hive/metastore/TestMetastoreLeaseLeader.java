@@ -24,9 +24,11 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
 import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
@@ -34,25 +36,25 @@ import static org.junit.Assert.assertTrue;
 
 public class TestMetastoreLeaseLeader {
 
-  LeaderElection election;
+  LeaderElection<TableName> election;
 
   TestMetastoreHousekeepingLeader hms;
 
   @Before
   public void setUp() throws Exception {
+    Configuration configuration = MetastoreConf.newMetastoreConf();
     hms = new TestMetastoreHousekeepingLeader();
-    MetastoreConf.setTimeVar(hms.conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 3, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hms.conf, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
-    hms.conf.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, false);
-    hms.conf.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
-    hms.conf.set("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-    hms.internalSetup("", false);
+    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.TXN_TIMEOUT, 1, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 200, TimeUnit.MILLISECONDS);
+    configuration.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, false);
+    configuration.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
+    configuration.set("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    hms.internalSetup(null, configuration);
 
-    Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 3, TimeUnit.SECONDS);
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION, "lock");
+    Configuration conf = new Configuration(configuration);
+    conf.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, true);
     election = new LeaseLeaderElection();
+    election.setName("TestMetastoreLeaseLeader");
     TableName tableName = (TableName) LeaderElectionContext.getLeaderMutex(conf,
         LeaderElectionContext.TTYPE.HOUSEKEEPING, null);
     election.tryBeLeader(conf, tableName);
@@ -60,10 +62,12 @@ public class TestMetastoreLeaseLeader {
 
   @Test
   public void testHouseKeepingThreads() throws Exception {
+    CountDownLatch latch = new CountDownLatch(1);
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.setMonitor(latch);
     // hms is the leader now
     hms.testHouseKeepingThreadExistence();
     assertFalse(election.isLeader());
-    Thread.sleep(15 * 1000);
+    latch.await();
     // the lease of hms is timeout, election becomes leader now
     assertTrue(election.isLeader());
     try {
@@ -73,11 +77,16 @@ public class TestMetastoreLeaseLeader {
     } catch (AssertionError e) {
       // expected
     }
-
+    latch = new CountDownLatch(1);
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.setMonitor(latch);
     election.close();
-    Thread.sleep(10000);
+    latch.await();
     // hms becomes leader again
     hms.testHouseKeepingThreadExistence();
   }
 
+  @After
+  public void afterTest() {
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.reset();
+  }
 }

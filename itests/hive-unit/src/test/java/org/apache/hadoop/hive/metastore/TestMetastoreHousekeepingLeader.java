@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class TestMetastoreHousekeepingLeader extends MetastoreHousekeepingLeader
 
   @Before
   public void setUp() throws Exception {
-    internalSetup("localhost", true);
+    internalSetup("localhost", MetastoreConf.newMetastoreConf());
   }
 
   @Test

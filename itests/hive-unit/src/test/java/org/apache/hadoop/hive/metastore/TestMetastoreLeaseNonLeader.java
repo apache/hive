@@ -25,16 +25,18 @@ import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
 import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
 
 public class TestMetastoreLeaseNonLeader {
 
-  LeaderElection election;
+  LeaderElection<TableName> election;
 
   TestMetastoreHousekeepingLeader hms;
 
@@ -44,6 +46,7 @@ public class TestMetastoreLeaseNonLeader {
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.prepDb(conf);
     election = new LeaseLeaderElection();
+    election.setName("TestMetastoreLeaseNonLeader");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION, "lock");
     TableName tableName = (TableName) LeaderElectionContext.getLeaderMutex(conf,
         LeaderElectionContext.TTYPE.HOUSEKEEPING, null);
@@ -51,9 +54,10 @@ public class TestMetastoreLeaseNonLeader {
     assertTrue("The elector should hold the lease now", election.isLeader());
     // start the non-leader hms now
     hms = new TestMetastoreHousekeepingLeader();
-    MetastoreConf.setTimeVar(hms.conf, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
-    hms.conf.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
-    hms.internalSetup("", false);
+    Configuration configuration = new Configuration(conf);
+    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
+    configuration.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
+    hms.internalSetup(null, configuration);
   }
 
   @Test
@@ -65,10 +69,16 @@ public class TestMetastoreLeaseNonLeader {
       // expected
     }
     // elector releases the lease
+    CountDownLatch latch = new CountDownLatch(1);
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.setMonitor(latch);
     election.close();
-    Thread.sleep(10 * 1000);
+    latch.await();
     // housing threads are here now as the hms wins the election
     hms.testHouseKeepingThreadExistence();
   }
 
+  @After
+  public void afterTest() {
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.reset();
+  }
 }

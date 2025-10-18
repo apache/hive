@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,7 +38,7 @@ public class TestMetastoreHousekeepingNonLeader extends MetastoreHousekeepingLea
   @Before
   public void setUp() throws Exception {
     // Empty string for leader indicates that the HMS is leader.
-    internalSetup("some_non_leader_host.domain1.domain", true);
+    internalSetup("some_non_leader_host.domain1.domain", MetastoreConf.newMetastoreConf());
   }
 
   @Test
