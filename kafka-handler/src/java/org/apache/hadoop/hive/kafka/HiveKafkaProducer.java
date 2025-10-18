@@ -33,6 +33,7 @@ import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.ProducerFencedException;
+import org.apache.kafka.common.Uuid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,11 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
   HiveKafkaProducer(Properties properties) {
     transactionalId = properties.getProperty(ProducerConfig.TRANSACTIONAL_ID_CONFIG);
     kafkaProducer = new KafkaProducer<>(properties);
+  }
+
+  @Override
+  public Uuid clientInstanceId(Duration timeout) {
+    throw new UnsupportedOperationException();
   }
 
   @Override public void initTransactions() {
