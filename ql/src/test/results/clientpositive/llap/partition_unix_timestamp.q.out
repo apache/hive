@@ -24,6 +24,6 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(a=[$0], p_year=[$1])
-  HiveFilter(condition=[=(CAST($1):DOUBLE, 2.0250E3)])
+  HiveFilter(condition=[=(CAST($1):DOUBLE, 2025.0)])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
