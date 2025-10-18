@@ -20,6 +20,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -55,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -128,6 +130,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     private Map<String, String> providedBasicStats;
     private boolean skipStatsUpdate = false;
 
+    private HiveConf conf;
+
     public BasicStatsProcessor(Partish partish, BasicStatsWork work, boolean followedColStats2) {
       this.partish = partish;
       this.work = work;
@@ -182,6 +186,59 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         parameters.putAll(providedBasicStats);
       }
 
+      try {
+        long totalSize = 0L, numFiles = 0L;
+        // Read stats from partition parameters only
+        // Parameters were already populated via populateQuickStats or providedBasicStats.putAll
+        String ts = parameters.get(StatsSetupConst.TOTAL_SIZE);
+        String nf = parameters.get(StatsSetupConst.NUM_FILES);
+
+        if (ts != null && nf != null) {
+          try {
+            totalSize = Long.parseLong(ts);
+            numFiles  = Long.parseLong(nf);
+          } catch (NumberFormatException ignore) {
+            // If parsing fails, skip the warning without affecting the main flow
+            totalSize = 0L;
+            numFiles  = 0L;
+          }
+        }
+
+        // Only warn when there are multiple files and total size > 0
+        if (numFiles > 100 && totalSize > 0) {
+          long threshold = (conf != null)
+                  ? conf.getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE)
+                  : HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE.defaultLongVal;
+
+          long avg = totalSize / numFiles;
+
+          if (avg <= threshold) {
+            // Identify table or partition for the message
+            String partOrTableName = (p.getPartition() == null)
+                    ? ("table " + p.getTable().getFullyQualifiedName())
+                    : ("partition " + p.getPartition().getName());
+
+            String msg = String.format(
+                    "[ANALYZE] Small files detected: %s (avgBytes=%d, files=%d, totalBytes=%d)",
+                    partOrTableName, avg, numFiles, totalSize);
+
+            SessionState ss = org.apache.hadoop.hive.ql.session.SessionState.get();
+            PrintStream out = (ss != null) ? ss.out : null;
+
+            if (out != null) {
+              // Console only; typically not duplicated into server logs
+              out.println(msg);
+            } else {
+              // No console, fall back to server logs
+              LOG.warn(msg);
+            }
+          }
+        }
+      } catch (Throwable t) {
+        // Do not fail ANALYZE due to warning logic
+        LOG.warn("[ANALYZE] Small files check failed: {}", t.toString());
+      }
+
       if (statsAggregator != null && !skipStatsUpdate) {
         // Update stats for transactional tables (MM, or full ACID with overwrite), even
         // though we are marking stats as not being accurate.
@@ -195,6 +252,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     }
 
     public void collectFileStatus(Warehouse wh, HiveConf conf) throws MetaException, IOException {
+      this.conf = conf;
       if (providedBasicStats == null) {
         if (!partish.isTransactionalTable()) {
           partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());

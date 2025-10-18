@@ -34,6 +34,7 @@ PREHOOK: query: INSERT INTO integer_sequence SELECT int_field FROM integer_seque
 PREHOOK: type: QUERY
 PREHOOK: Input: default@integer_sequence_ext
 PREHOOK: Output: default@integer_sequence
+[ANALYZE] Small files detected: table default.integer_sequence (avgBytes=668, files=892, totalBytes=596650)
 POSTHOOK: query: INSERT INTO integer_sequence SELECT int_field FROM integer_sequence_ext where int_field > 4000
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@integer_sequence_ext

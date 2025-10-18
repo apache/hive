@@ -26,24 +26,29 @@ import java.text.MessageFormat;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -52,6 +57,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
+import org.apache.hadoop.hive.metastore.utils.SmallFilesWarningUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -239,6 +245,76 @@ public class Msck {
             throw new MetastoreException(e);
           }
         }
+
+        // Generate small files warnings only for partsNotInMs
+        try {
+          // Threshold in bytes for average file size considered "small"
+          final long threshold =
+                  MetastoreConf.getLongVar(getConf(), MetastoreConf.ConfVars.MSCK_SMALLFILES_AVG_SIZE);
+
+          // Collect partition names
+          final List<String> names = new ArrayList<>(partsNotInMs.size());
+          for (CheckResult.PartitionResult pr : partsNotInMs) {
+            final String name = pr.getPartitionName();
+            if (name != null && !name.isEmpty()) {
+              names.add(name);
+            }
+          }
+
+          // Batch over the names to limit single-RPC payload.
+          final int BATCH = 1000;
+          final Map<String, Partition> byName = new HashMap<>(names.size() * 2);
+
+          for (int i = 0; i < names.size(); i += BATCH) {
+            final List<String> batch = names.subList(i, Math.min(i + BATCH, names.size()));
+            final GetPartitionsByNamesRequest req = new GetPartitionsByNamesRequest(table.getDbName(), table.getTableName());
+            req.setNames(batch);
+
+            // In this branch, getPartitionsByNames returns List<Partition>
+            List<Partition> plist;
+            try {
+              @SuppressWarnings("unchecked")
+              List<Partition> tmp = (List<Partition>) getMsc().getPartitionsByNames(req);
+              plist = (tmp != null) ? tmp : Collections.emptyList();
+            } catch (NoSuchObjectException e) {
+              plist = Collections.emptyList();
+            }
+
+            for (Partition p : plist) {
+              final String pName = Warehouse.makePartName(table.getPartitionKeys(), p.getValues());
+              byName.put(pName, p);
+            }
+          }
+
+          // Build small-files stats for partitions that have quick HMS stats.
+          final Map<String, String> smallFilesStats = new TreeMap<>();
+
+          for (String pName : names) {
+            final Partition p = byName.get(pName);
+            if (p == null) {
+              // not found / not visible yet
+              continue;
+            }
+
+            final Map<String, String> params = p.getParameters();
+            // Use util to decide if this partition should trigger the warning
+            if (SmallFilesWarningUtil.smallAverageFilesDetected(SmallFilesWarningUtil.DEFAULT_MIN_FILES, threshold, params)) {
+              // We know stats exist and are well-formed; compute numbers for the value string
+              final long totalSize = Long.parseLong(params.get(StatsSetupConst.TOTAL_SIZE));
+              final long numFiles  = Long.parseLong(params.get(StatsSetupConst.NUM_FILES));
+              final long avg       = Math.floorDiv(totalSize, numFiles);
+              smallFilesStats.put(pName, "avgBytes=" + avg + ", partition total files=" + numFiles + ", totalBytes=" + totalSize);
+            }
+          }
+
+          msckInfo.setSmallFilesStats(smallFilesStats.isEmpty() ? Collections.emptyMap() : smallFilesStats);
+
+        } catch (Exception e) {
+          // MSCK repair should continue regardless of small-files warnings outcome
+          LOG.warn("MSCK small-files post-add check failed: {}", e.toString());
+          msckInfo.setSmallFilesStats(Collections.emptyMap());
+        }
+
 
         if (msckInfo.isDropPartitions() && (!partsNotInFs.isEmpty() || !expiredPartitions.isEmpty())) {
           // MSCK called to drop stale paritions from metastore and there are

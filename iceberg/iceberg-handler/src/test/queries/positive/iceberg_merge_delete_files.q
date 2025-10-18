@@ -1,3 +1,5 @@
+--! qt:replace:/(\[ANALYZE\] Small files detected: table .*?\(avgBytes=)\d+/$1<N>/
+--! qt:replace:/(\[ANALYZE\] Small files detected: table .*?totalBytes=)\d+/$1<N>/
 --! qt:dataset:src
 set hive.merge.mapredfiles=true;
 set hive.merge.mapfiles=true;

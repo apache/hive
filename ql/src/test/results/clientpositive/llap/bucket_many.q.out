@@ -229,6 +229,7 @@ select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@bucket_many
+[ANALYZE] Small files detected: table default.bucket_many (avgBytes=22, files=256, totalBytes=5812)
 POSTHOOK: query: insert overwrite table bucket_many
 select * from src
 POSTHOOK: type: QUERY

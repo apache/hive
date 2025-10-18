@@ -276,6 +276,7 @@ PREHOOK: query: insert into table orc_part_source select key from src order by k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@orc_part_source
+[ANALYZE] Small files detected: table default.orc_part_source (avgBytes=<N>, files=122, totalBytes=<N>)
 POSTHOOK: query: insert into table orc_part_source select key from src order by key limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -284,6 +285,7 @@ PREHOOK: query: insert into table orc_part_source select key from src order by k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@orc_part_source
+[ANALYZE] Small files detected: table default.orc_part_source (avgBytes=<N>, files=183, totalBytes=<N>)
 POSTHOOK: query: insert into table orc_part_source select key from src order by key limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -292,6 +294,7 @@ PREHOOK: query: insert into table orc_part_source select key from src order by k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@orc_part_source
+[ANALYZE] Small files detected: table default.orc_part_source (avgBytes=<N>, files=244, totalBytes=<N>)
 POSTHOOK: query: insert into table orc_part_source select key from src order by key limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -319,6 +322,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_part_source
 PREHOOK: Input: default@src
 PREHOOK: Output: default@orc_part_source
+[ANALYZE] Small files detected: table default.orc_part_source (avgBytes=<N>, files=244, totalBytes=<N>)
 POSTHOOK: query: delete from orc_part_source where key in (select key from src)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_part_source
