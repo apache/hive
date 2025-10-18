@@ -24,9 +24,11 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
 import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
@@ -60,10 +62,12 @@ public class TestMetastoreLeaseLeader {
 
   @Test
   public void testHouseKeepingThreads() throws Exception {
+    CountDownLatch latch = new CountDownLatch(1);
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.setMonitor(latch);
     // hms is the leader now
     hms.testHouseKeepingThreadExistence();
     assertFalse(election.isLeader());
-    Thread.sleep(15 * 1000);
+    latch.await();
     // the lease of hms is timeout, election becomes leader now
     assertTrue(election.isLeader());
     try {
@@ -73,11 +77,16 @@ public class TestMetastoreLeaseLeader {
     } catch (AssertionError e) {
       // expected
     }
-
+    latch = new CountDownLatch(1);
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.setMonitor(latch);
     election.close();
-    Thread.sleep(15 * 1000);
+    latch.await();
     // hms becomes leader again
     hms.testHouseKeepingThreadExistence();
   }
 
+  @After
+  public void afterTest() {
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.reset();
+  }
 }

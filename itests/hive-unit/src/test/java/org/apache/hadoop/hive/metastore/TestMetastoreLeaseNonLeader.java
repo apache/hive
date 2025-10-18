@@ -25,9 +25,11 @@ import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
 import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
@@ -54,7 +56,7 @@ public class TestMetastoreLeaseNonLeader {
     hms = new TestMetastoreHousekeepingLeader();
     Configuration configuration = new Configuration(conf);
     MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
-    hms.conf.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
+    configuration.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
     hms.internalSetup(null, configuration);
   }
 
@@ -67,10 +69,16 @@ public class TestMetastoreLeaseNonLeader {
       // expected
     }
     // elector releases the lease
+    CountDownLatch latch = new CountDownLatch(1);
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.setMonitor(latch);
     election.close();
-    Thread.sleep(10 * 1000);
+    latch.await();
     // housing threads are here now as the hms wins the election
     hms.testHouseKeepingThreadExistence();
   }
 
+  @After
+  public void afterTest() {
+    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.reset();
+  }
 }

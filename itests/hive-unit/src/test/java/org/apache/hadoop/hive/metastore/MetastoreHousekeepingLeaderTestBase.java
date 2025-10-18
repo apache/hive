@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.stats.StatsUpdaterThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
@@ -34,12 +35,13 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for HMS leader config testing.
  */
-class MetastoreHousekeepingLeaderTestBase {
+public class MetastoreHousekeepingLeaderTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreHousekeepingLeaderTestBase.class);
   private static HiveMetaStoreClient client;
   protected Configuration conf;
@@ -69,6 +71,8 @@ class MetastoreHousekeepingLeaderTestBase {
     addHouseKeepingThreadConfigs();
 
     warehouse = new Warehouse(conf);
+
+    conf.set("metastore.leader.test.listener", TestLeaderNotification.class.getName());
 
     if (isServerStarted) {
       Assert.assertNotNull("Unable to connect to the MetaStore server", client);
@@ -195,6 +199,31 @@ class MetastoreHousekeepingLeaderTestBase {
   private void resetThreadStatus() {
     threadNames.forEach((name, status) -> threadNames.put(name, false));
     threadClasses.forEach((thread, status) -> threadClasses.put(thread, false));
+  }
+
+  public static class TestLeaderNotification implements LeaderElection.LeadershipStateListener {
+    private static CountDownLatch latch;
+
+    public static void setMonitor(CountDownLatch latch) {
+      TestLeaderNotification.latch = latch;
+    }
+    public static void reset() {
+      TestLeaderNotification.latch = null;
+    }
+
+    @Override
+    public void takeLeadership(LeaderElection election) throws Exception {
+      if (latch != null) {
+        latch.countDown();
+      }
+    }
+
+    @Override
+    public void lossLeadership(LeaderElection election) throws Exception {
+      if (latch != null) {
+        latch.countDown();
+      }
+    }
   }
 }
 
