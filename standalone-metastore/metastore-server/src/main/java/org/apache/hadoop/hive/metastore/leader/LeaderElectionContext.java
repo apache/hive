@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection.LeadershipStateListener;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 import java.util.ArrayList;
@@ -100,8 +101,14 @@ public class LeaderElectionContext {
     Map<TTYPE, List<LeadershipStateListener>> listenerMap = this.listeners;
     if (conf.getBoolean(LEADER_IN_TEST, false)) {
       Map<TTYPE, List<LeadershipStateListener>> newListeners = new HashMap<>();
-      newListeners.put(TTYPE.HOUSEKEEPING, new ArrayList<>());
-      listenerMap.forEach((k, v) -> newListeners.get(TTYPE.HOUSEKEEPING).addAll(v));
+      List<LeadershipStateListener> listeners = new ArrayList<>();
+      listenerMap.forEach((k, v) -> listeners.addAll(v));
+      String testListenerCls = conf.get("metastore.leader.test.listener");
+      if (StringUtils.isNotEmpty(testListenerCls)) {
+        // Add the test listener to the last
+        listeners.add((LeadershipStateListener) JavaUtils.newInstance(Class.forName(testListenerCls)));
+      }
+      newListeners.put(TTYPE.HOUSEKEEPING, listeners);
       listenerMap = newListeners;
     }
     for (Map.Entry<TTYPE, List<LeadershipStateListener>> entry :
