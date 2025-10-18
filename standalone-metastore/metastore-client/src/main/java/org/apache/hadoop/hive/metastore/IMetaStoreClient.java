@@ -4327,6 +4327,21 @@ public interface IMetaStoreClient extends AutoCloseable {
     throw new UnsupportedOperationException("MetaStore client does not support dropping constraints with catalog name");
   }
 
+  /**
+   * Drop a constraint.  This can be used for primary keys, foreign keys, unique constraints, or
+   * not null constraints.
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tableName table name
+   * @param constraintName name of the constraint
+   * @param ifExists Do not throw an exception if the constraint does not exist.
+   * @throws MetaException RDBMS access error
+   * @throws NoSuchObjectException no such constraint exists
+   * @throws TException thrift transport error
+   */
+  void dropConstraint(String catName, String dbName, String tableName, String constraintName, boolean ifExists)
+          throws MetaException, NoSuchObjectException, TException;
+
 
   /**
    * Add a primary key.

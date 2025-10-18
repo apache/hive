@@ -2708,7 +2708,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     RawStore ms = getMS();
     try {
       ms.openTransaction();
-      ms.dropConstraint(catName, dbName, tableName, constraintName);
+      ms.dropConstraint(catName, dbName, tableName, constraintName, req.isIfExists());
       if (transactionalListeners.size() > 0) {
         DropConstraintEvent dropConstraintEvent = new DropConstraintEvent(catName, dbName,
             tableName, constraintName, true, this);
