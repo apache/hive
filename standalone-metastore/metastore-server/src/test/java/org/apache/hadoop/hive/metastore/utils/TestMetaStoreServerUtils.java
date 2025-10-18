@@ -167,13 +167,13 @@ public class TestMetaStoreServerUtils {
     FieldSchema col1a = new FieldSchema("col1", "string", "col1 but with a different comment");
     FieldSchema col2 = new FieldSchema("col2", "string", "col2 comment");
     FieldSchema col3 = new FieldSchema("col3", "string", "col3 comment");
-    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1)));
-    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1), Arrays.asList(col1a)));
-    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2)));
-    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col2, col1)));
-    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)));
-    Assert.assertTrue(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)));
-    Assert.assertFalse(MetaStoreServerUtils.columnsIncludedByNameType(Arrays.asList(col1, col2), Arrays.asList(col1)));
+    Assert.assertTrue(MetaStoreServerUtils.findStaleColumns(Arrays.asList(col1), Arrays.asList(col1)).isEmpty());
+    Assert.assertTrue(MetaStoreServerUtils.findStaleColumns(Arrays.asList(col1), Arrays.asList(col1a)).isEmpty());
+    Assert.assertTrue(MetaStoreServerUtils.findStaleColumns(Arrays.asList(col1, col2), Arrays.asList(col1, col2)).isEmpty());
+    Assert.assertTrue(MetaStoreServerUtils.findStaleColumns(Arrays.asList(col1, col2), Arrays.asList(col2, col1)).isEmpty());
+    Assert.assertTrue(MetaStoreServerUtils.findStaleColumns(Arrays.asList(col1, col2), Arrays.asList(col1, col2, col3)).isEmpty());
+    Assert.assertTrue(MetaStoreServerUtils.findStaleColumns(Arrays.asList(col1, col2), Arrays.asList(col3, col2, col1)).isEmpty());
+    Assert.assertFalse(MetaStoreServerUtils.findStaleColumns(Arrays.asList(col1, col2), Arrays.asList(col1)).isEmpty());
   }
 
   /**
