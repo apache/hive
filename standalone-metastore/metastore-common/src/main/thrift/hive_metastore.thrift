@@ -393,7 +393,8 @@ struct Catalog {
   3: string locationUri,              // default storage location.  When databases are created in
                                       // this catalog, if they do not specify a location, they will
                                       // be placed in this location.
-  4: optional i32 createTime          // creation time of catalog in seconds since epoch
+  4: optional i32 createTime,          // creation time of catalog in seconds since epoch
+  5: optional map<string, string> parameters
 }
 
 struct CreateCatalogRequest {

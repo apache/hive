@@ -705,6 +705,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (org.apache.commons.lang3.StringUtils.isNotBlank(cat.getDescription())) {
         mCat.setDescription(cat.getDescription());
       }
+      mCat.setParameters(cat.getParameters());
       openTransaction();
       pm.makePersistent(mCat);
       committed = commitTransaction();
@@ -787,6 +788,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (cat.isSetDescription()) {
       mCat.setDescription(cat.getDescription());
     }
+    mCat.setParameters(cat.getParameters());
     mCat.setLocationUri(cat.getLocationUri());
     mCat.setCreateTime(cat.getCreateTime());
     return mCat;
@@ -796,6 +798,9 @@ public class ObjectStore implements RawStore, Configurable {
     Catalog cat = new Catalog(mCat.getName(), mCat.getLocationUri());
     if (mCat.getDescription() != null) {
       cat.setDescription(mCat.getDescription());
+    }
+    if (mCat.getParameters() != null) {
+      cat.setParameters(mCat.getParameters());
     }
     cat.setCreateTime(mCat.getCreateTime());
     return cat;

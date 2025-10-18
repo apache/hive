@@ -159,6 +159,7 @@ TOK_UNIONTYPE;
 TOK_VARIANT;
 TOK_COLTYPELIST;
 TOK_CREATECATALOG;
+TOK_CATALOGPROPERTIES;
 TOK_CREATEDATABASE;
 TOK_CREATEDATACONNECTOR;
 TOK_CREATETABLE;
@@ -378,6 +379,7 @@ TOK_DESCCATALOG;
 TOK_CATALOGLOCATION;
 TOK_CATALOGCOMMENT;
 TOK_ALTERCATALOG_LOCATION;
+TOK_ALTERCATALOG_PROPERTIES;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
@@ -682,7 +684,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_LIMIT", "LIMIT");
     xlateMap.put("KW_OFFSET", "OFFSET");
     xlateMap.put("KW_SET", "SET");
-    xlateMap.put("KW_PROPERTIES", "TBLPROPERTIES");
+    xlateMap.put("KW_PROPERTIES", "PROPERTIES");
     xlateMap.put("KW_VALUE_TYPE", "\$VALUE\$");
     xlateMap.put("KW_ELEM_TYPE", "\$ELEM\$");
     xlateMap.put("KW_DEFINED", "DEFINED");
@@ -1127,7 +1129,8 @@ createCatalogStatement
         name=identifier
         catLocation
         catalogComment?
-    -> ^(TOK_CREATECATALOG $name catLocation ifNotExists? catalogComment?)
+        (KW_PROPERTIES catprops=catProperties)?
+    -> ^(TOK_CREATECATALOG $name catLocation ifNotExists? catalogComment? $catprops?)
     ;
 
 catLocation
@@ -1142,6 +1145,13 @@ catalogComment
 @after { popMsg(state); }
     : KW_COMMENT comment=StringLiteral
     -> ^(TOK_CATALOGCOMMENT $comment)
+    ;
+
+catProperties
+@init { pushMsg("catproperties", state); }
+@after { popMsg(state); }
+    :
+      LPAREN dbPropertiesList RPAREN -> ^(TOK_CATALOGPROPERTIES dbPropertiesList)
     ;
 
 dropCatalogStatement

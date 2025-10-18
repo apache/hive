@@ -161,6 +161,14 @@ alterCatalogStatementSuffix
 @init { gParent.pushMsg("alter catalog statement", state); }
 @after { gParent.popMsg(state); }
     : alterCatalogSuffixSetLocation
+    | alterCatalogSuffixProperties
+    ;
+
+alterCatalogSuffixProperties
+@init { gParent.pushMsg("alter catalog properties statement", state); }
+@after { gParent.popMsg(state); }
+    : name=identifier KW_SET KW_PROPERTIES catProperties
+    -> ^(TOK_ALTERCATALOG_PROPERTIES $name catProperties)
     ;
 
 alterCatalogSuffixSetLocation
