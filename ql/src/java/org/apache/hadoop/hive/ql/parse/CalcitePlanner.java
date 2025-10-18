@@ -79,6 +79,7 @@ import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
+import org.apache.calcite.rel.SingleRel;
 import org.apache.calcite.rel.convert.ConverterImpl;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -4918,15 +4919,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         aliasToRel.put(subqAlias, relNode);
         if (qb.getViewToTabSchema().containsKey(subqAlias)) {
-          if (relNode instanceof HiveProject) {
-            if (this.viewProjectToTableSchema == null) {
-              this.viewProjectToTableSchema = new LinkedHashMap<>();
-            }
-            viewProjectToTableSchema.put((HiveProject) relNode, qb.getViewToTabSchema().get(subqAlias));
-          } else {
-            throw new SemanticException("View " + subqAlias + " is corresponding to "
-                + relNode.toString() + ", rather than a HiveProject.");
+          HiveProject project = extractFirstProject(relNode)
+              .orElseThrow(() -> new SemanticException("Could not obtain a HiveProject from " + relNode));
+          if (this.viewProjectToTableSchema == null) {
+            this.viewProjectToTableSchema = new LinkedHashMap<>();
           }
+          viewProjectToTableSchema.put(project, qb.getViewToTabSchema().get(subqAlias));
         }
       }
 
@@ -5046,6 +5044,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       setQB(qb);
       return srcRel;
+    }
+
+    /**
+     * Extract the first HiveProject from a RelNode tree of SingleRel nodes.
+     * This doesn't search through inputs of multi-input nodes (like Joins).
+     * 
+     * @param rel RelNode
+     * @return Optional HiveProject
+     */
+    private Optional<HiveProject> extractFirstProject(RelNode rel) {
+      return switch (rel) {
+      case HiveProject hiveProject -> Optional.of(hiveProject);
+      case SingleRel sr -> extractFirstProject(sr.getInput());
+      case null, default -> Optional.empty();
+      };
     }
 
     private RelNode genGBHavingLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
