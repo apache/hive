@@ -39,6 +39,16 @@ describe extended ice_orc_sorted;
 set hive.fetch.task.conversion=more;
 select * from ice_orc_sorted;
 
+-- Validates syntax without LOCALLY keyword
+create table ice_orc_sorted_no_locally (id int, text string) write ordered by id desc nulls first, text asc nulls last stored by iceberg stored as orc;
+
+insert into ice_orc_sorted_no_locally values (3, "3"),(2, "2"),(5, "5"),(1, "1"),(2, "3"),(2,null),(null,"a");
+
+describe formatted ice_orc_sorted_no_locally;
+describe extended ice_orc_sorted_no_locally;
+select * from ice_orc_sorted_no_locally;
+
 drop table ice_orc;
 drop table ice_orc_sorted;
+drop table ice_orc_sorted_no_locally;
 
