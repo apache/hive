@@ -1,0 +1,585 @@
+PREHOOK: query: drop table if exists test_vector
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists test_vector
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table test_vector(id string, pid bigint) PARTITIONED BY (full_date int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_vector
+POSTHOOK: query: create external table test_vector(id string, pid bigint) PARTITIONED BY (full_date int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_vector
+PREHOOK: query: insert into test_vector (pid, full_date, id) values (1, '20240305', '6150')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_vector
+POSTHOOK: query: insert into test_vector (pid, full_date, id) values (1, '20240305', '6150')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_vector
+POSTHOOK: Output: default@test_vector@full_date=20240305
+POSTHOOK: Lineage: test_vector PARTITION(full_date=20240305).id SCRIPT []
+POSTHOOK: Lineage: test_vector PARTITION(full_date=20240305).pid SCRIPT []
+PREHOOK: query: SELECT COUNT(pid) AS cnt_col, COUNT(*) AS cnt_star, COUNT(20240305) AS cnt_const, COUNT(DISTINCT pid) as cnt_distinct, COUNT(1) AS CNT
+FROM test_vector WHERE full_date=20240305
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_vector
+PREHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(pid) AS cnt_col, COUNT(*) AS cnt_star, COUNT(20240305) AS cnt_const, COUNT(DISTINCT pid) as cnt_distinct, COUNT(1) AS CNT
+FROM test_vector WHERE full_date=20240305
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_vector
+POSTHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+1	1	1	1	1
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT COUNT(pid) AS cnt_col, COUNT(*) AS cnt_star, COUNT(20240305) AS cnt_const,COUNT(DISTINCT pid) as cnt_distinct, COUNT(1) AS CNT
+FROM test_vector WHERE full_date=20240305
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_vector
+PREHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT COUNT(pid) AS cnt_col, COUNT(*) AS cnt_star, COUNT(20240305) AS cnt_const,COUNT(DISTINCT pid) as cnt_distinct, COUNT(1) AS CNT
+FROM test_vector WHERE full_date=20240305
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_vector
+POSTHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_vector
+                  filterExpr: (full_date = 20240305) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Select Operator
+                    expressions: pid (type: bigint)
+                    outputColumnNames: pid
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [1]
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(pid), count()
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCount(col 1:bigint) -> bigint, VectorUDAFCountStar(*) -> bigint
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 1:bigint
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0, 1]
+                      keys: pid (type: bigint)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint), _col2 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFCountMerge(col 2:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: PARTIAL2
+                    keyExpressions: col 0:bigint
+                    native: false
+                    vectorProcessingMode: STREAMING
+                    projectedOutputColumnNums: [0, 1]
+                keys: KEY._col0 (type: bigint)
+                mode: partial2
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(_col1), count(_col2), count(_col0)
+                  Group By Vectorization:
+                      aggregators: VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFCount(col 0:bigint) -> bigint
+                      className: VectorGroupByOperator
+                      groupByMode: PARTIAL2
+                      native: false
+                      vectorProcessingMode: STREAMING
+                      projectedOutputColumnNums: [0, 1, 2]
+                  mode: partial2
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkEmptyKeyOperator
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0), count(VALUE._col1), count(VALUE._col2)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint, VectorUDAFCountMerge(col 1:bigint) -> bigint, VectorUDAFCountMerge(col 2:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: bigint), _col1 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col1 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [0, 1, 1, 2, 1]
+                  Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COUNT(DISTINCT pid, 20240305) AS CNT FROM test_vector WHERE full_date=20240305
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_vector
+PREHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(DISTINCT pid, 20240305) AS CNT FROM test_vector WHERE full_date=20240305
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_vector
+POSTHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+1
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT COUNT(DISTINCT pid, 20240305) AS CNT FROM test_vector WHERE full_date=20240305
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_vector
+PREHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT COUNT(DISTINCT pid, 20240305) AS CNT FROM test_vector WHERE full_date=20240305
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_vector
+POSTHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_vector
+                  filterExpr: (full_date = 20240305) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Select Operator
+                    expressions: pid (type: bigint)
+                    outputColumnNames: pid
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [1]
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 1:bigint
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
+                      keys: pid (type: bigint)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkLongOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                featureSupportInUse: [DECIMAL_64]
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:bigint
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
+                keys: KEY._col0 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(_col0)
+                  Group By Vectorization:
+                      aggregators: VectorUDAFCount(col 0:bigint) -> bigint
+                      className: VectorGroupByOperator
+                      groupByMode: HASH
+                      native: false
+                      vectorProcessingMode: HASH
+                      projectedOutputColumnNums: [0]
+                  minReductionHashAggr: 0.4
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkEmptyKeyOperator
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFCountMerge(col 0:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COUNT(DISTINCT pid, full_date) AS CNT FROM test_vector WHERE full_date=20240305
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_vector
+PREHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(DISTINCT pid, full_date) AS CNT FROM test_vector WHERE full_date=20240305
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_vector
+POSTHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+1
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT COUNT(DISTINCT pid, full_date) AS CNT FROM test_vector WHERE full_date=20240305
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_vector
+PREHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT COUNT(DISTINCT pid, full_date) AS CNT FROM test_vector WHERE full_date=20240305
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_vector
+POSTHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_vector
+                  filterExpr: (full_date = 20240305) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: pid (type: bigint)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(DISTINCT _col0, 20240305)
+                      keys: _col0 (type: bigint), 20240305 (type: int)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint), _col1 (type: int)
+                        null sort order: zz
+                        sort order: ++
+                        Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                notVectorizedReason: GROUPBY operator: Unsupported COUNT DISTINCT with multiple columns: count([Column[_col0], Const int 20240305]). Hive only supports COUNT(DISTINCT col) in vectorized execution. 
+                vectorized: false
+        Reducer 2 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                notVectorizedReason: GROUPBY operator: DISTINCT not supported
+                vectorized: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col0:0._col0, KEY._col0:0._col1)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT COUNT(DISTINCT pid, full_date, id) AS CNT FROM test_vector WHERE full_date=20240305
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_vector
+PREHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT COUNT(DISTINCT pid, full_date, id) AS CNT FROM test_vector WHERE full_date=20240305
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_vector
+POSTHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+1
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT COUNT(DISTINCT pid, full_date, id) AS CNT FROM test_vector WHERE full_date=20240305
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_vector
+PREHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT COUNT(DISTINCT pid, full_date, id) AS CNT FROM test_vector WHERE full_date=20240305
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_vector
+POSTHOOK: Input: default@test_vector@full_date=20240305
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_vector
+                  filterExpr: (full_date = 20240305) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: pid (type: bigint), id (type: string)
+                    outputColumnNames: _col0, _col2
+                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count(DISTINCT _col0, 20240305, _col2)
+                      keys: _col0 (type: bigint), 20240305 (type: int), _col2 (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint), _col1 (type: int), _col2 (type: string)
+                        null sort order: zzz
+                        sort order: +++
+                        Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                notVectorizedReason: GROUPBY operator: Unsupported COUNT DISTINCT with multiple columns: count([Column[_col0], Const int 20240305, Column[_col2]]). Hive only supports COUNT(DISTINCT col) in vectorized execution. 
+                vectorized: false
+        Reducer 2 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez] IS true
+                notVectorizedReason: GROUPBY operator: DISTINCT not supported
+                vectorized: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(DISTINCT KEY._col0:0._col0, KEY._col0:0._col1, KEY._col0:0._col2)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DROP TABLE test_vector
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_vector
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_vector
+POSTHOOK: query: DROP TABLE test_vector
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_vector
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_vector
