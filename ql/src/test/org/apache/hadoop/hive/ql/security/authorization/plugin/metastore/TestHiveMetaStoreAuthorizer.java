@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -68,7 +69,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -846,16 +849,20 @@ public class TestHiveMetaStoreAuthorizer {
         .build(conf);
     hmsHandler.create_table(table);
 
-    Path tablePath = new Path(table.getSd().getLocation());
-    when(wh.isWritable(Mockito.eq(tablePath.getParent()))).thenReturn(true);
-    when(wh.isWritable(Mockito.eq(tablePath))).thenReturn(false);
+    FileStatus fileStatus = Mockito.mock(FileStatus.class);
+    when(fileStatus.isDirectory()).thenReturn(true);
+    when(fileStatus.getPath()).thenReturn(new Path(tblName));
+    when(wh.getFs(new Path(tblName)).listStatus(new Path(tblName))).thenReturn(new FileStatus[] { fileStatus });
+
+    doThrow(new MetaException("Failed to delete director:"))
+       .when(wh.getFs(new Path(tblName))).delete(any(Path.class), anyBoolean());
 
     try {
-      hmsHandler.drop_table("default", tblName, true);
+      hmsHandler.drop_table(default_db, tblName, true);
+      fail("Expected exception to be thrown due to lack of write permission");
     } catch (MetaException e) {
-      String expected = "%s metadata not deleted since %s is not writable by %s"
-          .formatted("Table", tablePath.toString(), authorizedUser);
-      assertEquals(expected, e.getMessage());
+      String expected = "Failed to delete director:";
+      assertTrue(e.getMessage().contains(expected));
     }
   }
 }
