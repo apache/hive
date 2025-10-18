@@ -525,7 +525,8 @@ public final class ConstraintsUtils {
   }
 
   public static boolean hasEnabledOrValidatedConstraints(List<SQLNotNullConstraint> notNullConstraints,
-      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints) {
+      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
+      boolean isNativeColumnDefaultSupported) {
     if (notNullConstraints != null) {
       for (SQLNotNullConstraint nnC : notNullConstraints) {
         if (nnC.isEnable_cstr() || nnC.isValidate_cstr()) {
@@ -534,7 +535,7 @@ public final class ConstraintsUtils {
       }
     }
 
-    if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
+    if (defaultConstraints != null && !defaultConstraints.isEmpty() && !isNativeColumnDefaultSupported) {
       return true;
     }
 

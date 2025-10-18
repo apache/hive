@@ -655,7 +655,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         SessionStateUtil.addResourceOrThrow(conf, META_TABLE_LOCATION, tblLocation);
 
         if (isExt && ConstraintsUtils.hasEnabledOrValidatedConstraints(notNullConstraints, crtTblDesc.getDefaultConstraints(),
-            checkConstraints)) {
+            checkConstraints, isNativeColumnDefaultSupported)) {
           throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg(
               "Constraints are disallowed with External tables. " + "Only RELY is allowed."));
         }
