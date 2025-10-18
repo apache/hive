@@ -894,7 +894,7 @@ public class Utils {
   public static String getDefaultPort(JdbcConnectionParams connectionParams) {
     String port = HiveConf.ConfVars.HIVE_SERVER2_THRIFT_PORT.getDefaultValue();
     String transportMode = connectionParams.getSessionVars().get(JdbcConnectionParams.TRANSPORT_MODE);
-    if (transportMode != null && "http".equalsIgnoreCase(transportMode)) {
+    if ("http".equalsIgnoreCase(transportMode)) {
       port = HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT.getDefaultValue();
     }
     return port;
