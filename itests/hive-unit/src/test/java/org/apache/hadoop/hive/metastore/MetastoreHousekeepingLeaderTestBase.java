@@ -117,10 +117,8 @@ class MetastoreHousekeepingLeaderTestBase {
   private void addCompactorConfigs() {
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEANER_ON, true);
-    MetastoreConf.setVar(conf, ConfVars.HIVE_METASTORE_RUNWORKER_IN, "metastore");
     MetastoreConf.setLongVar(conf, ConfVars.COMPACTOR_WORKER_THREADS, 1);
     threadClasses.put(Initiator.class, false);
-    threadClasses.put(Worker.class, false);
     threadClasses.put(Cleaner.class, false);
   }
 

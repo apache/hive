@@ -837,12 +837,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
              .setTType(LeaderElectionContext.TTYPE.HOUSEKEEPING) // housekeeping tasks
              .addListener(new CMClearer(conf))
              .addListener(new StatsUpdaterTask(conf))
-             .addListener(new CompactorTasks(conf, false))
+             .addListener(new CompactorTasks(conf))
              .addListener(new CompactorPMF())
              .addListener(new HouseKeepingTasks(conf, true))
-             .setTType(LeaderElectionContext.TTYPE.WORKER) // compactor worker
-             .addListener(new CompactorTasks(conf, true),
-                 MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore"))
              .build();
           if (shutdownHookMgr != null) {
             shutdownHookMgr.addShutdownHook(() -> context.close(), 0);
