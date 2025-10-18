@@ -823,6 +823,13 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     handlePartitionRename(schemaDifference);
   }
 
+  /**
+   * Updates the default values of the fields.
+   * @param defaultValues the map containing the default values.
+   * @param renameMapping the rename mapping of the columns
+   * @param columns the columns of the table
+   * @param prefix the prefix of the columns, empty unless a filed of struct.
+   */
   private void handleDefaultValues(Map<String, String> defaultValues, Map<String, String> renameMapping,
       List<Types.NestedField> columns, String prefix) {
     if (!defaultValues.isEmpty()) {

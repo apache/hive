@@ -212,6 +212,12 @@ public final class HiveSchemaUtil {
     return false;
   }
 
+  /**
+   * Computes whether the default value has changed for the given field.
+   * @param field         the field to check for default value change
+   * @param defaultValues the default values for the table schema, if available. Used to compare default values
+   * @param difference    the SchemaDifference object to update with the default value change if any
+   */
   private static void getDefaultValDiff(Types.NestedField field, Map<String, String> defaultValues,
       SchemaDifference difference) {
 
