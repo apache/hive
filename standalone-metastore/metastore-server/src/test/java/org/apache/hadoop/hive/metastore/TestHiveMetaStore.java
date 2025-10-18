@@ -1225,10 +1225,11 @@ public abstract class TestHiveMetaStore {
       assertEquals("location of the returned db is different from that of inserted db",
           warehouse.getDatabasePath(db2).toString(), db2.getLocationUri());
 
-      List<String> dbs = client.getDatabases(".*");
-
-      assertTrue("first database is not " + TEST_DB1_NAME, dbs.contains(TEST_DB1_NAME));
-      assertTrue("second database is not " + TEST_DB2_NAME, dbs.contains(TEST_DB2_NAME));
+      Database verifyDb1 = client.getDatabase(TEST_DB1_NAME);
+      assertNotNull("first database is not " + TEST_DB1_NAME, verifyDb1);
+      
+      Database verifyDb2 = client.getDatabase(TEST_DB2_NAME);
+      assertNotNull("second database is not " + TEST_DB2_NAME, verifyDb2);
 
       client.dropDatabase(TEST_DB1_NAME);
       client.dropDatabase(TEST_DB2_NAME);
