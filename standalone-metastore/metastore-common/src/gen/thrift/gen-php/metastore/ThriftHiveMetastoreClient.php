@@ -400,15 +400,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_catalog failed: unknown result");
     }
 
-    public function get_catalogs()
+    public function get_catalogs(\metastore\GetCatalogRequest $pattern)
     {
-        $this->send_get_catalogs();
+        $this->send_get_catalogs($pattern);
         return $this->recv_get_catalogs();
     }
 
-    public function send_get_catalogs()
+    public function send_get_catalogs(\metastore\GetCatalogRequest $pattern)
     {
         $args = new \metastore\ThriftHiveMetastore_get_catalogs_args();
+        $args->pattern = $pattern;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
