@@ -116,3 +116,11 @@ POSTHOOK: Input: catalog:test_cat
 Catalog Name	test_cat	 	 
 Comment	Hive test catalog	 	 
 #### A masked pattern was here ####
+PREHOOK: query: DROP CATALOG  test_cat
+PREHOOK: type: DROPCATALOG
+PREHOOK: Input: catalog:test_cat
+PREHOOK: Output: catalog:test_cat
+POSTHOOK: query: DROP CATALOG  test_cat
+POSTHOOK: type: DROPCATALOG
+POSTHOOK: Input: catalog:test_cat
+POSTHOOK: Output: catalog:test_cat

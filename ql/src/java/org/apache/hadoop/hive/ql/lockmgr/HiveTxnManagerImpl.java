@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -38,8 +39,10 @@ import org.apache.hadoop.hive.ql.DriverState;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject.HiveLockObjectData;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.stringtemplate.v4.ST;
 
 /**
  * An implementation HiveTxnManager that includes internal methods that all
@@ -150,9 +153,11 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
     HiveLockManager lockMgr = getAndCheckLockManager();
 
     HiveLockMode mode = HiveLockMode.valueOf(lockDb.getMode());
+    String catName = Objects.requireNonNullElse(lockDb.getCatalogName(),
+            HiveUtils.getCurrentCatalogOrDefault(conf));
     String dbName = lockDb.getDatabaseName();
 
-    Database dbObj = hiveDB.getDatabase(dbName);
+    Database dbObj = hiveDB.getDatabase(catName, dbName);
     if (dbObj == null) {
       throw new HiveException("Database " + dbName + " does not exist ");
     }
@@ -162,7 +167,8 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
             String.valueOf(System.currentTimeMillis()),
             "EXPLICIT", lockDb.getQueryStr(), conf);
 
-    HiveLock lck = lockMgr.lock(new HiveLockObject(dbObj.getName(), lockData), mode, true);
+    // Using the catalogName@databaseName format to uniquely identify a database.
+    HiveLock lck = lockMgr.lock(new HiveLockObject(catName + "@" +dbObj.getName(), lockData), mode, true);
     if (lck == null) {
       return 1;
     }
@@ -173,13 +179,15 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
   public int unlockDatabase(Hive hiveDB, UnlockDatabaseDesc unlockDb) throws HiveException {
     HiveLockManager lockMgr = getAndCheckLockManager();
 
+    String catName = Objects.requireNonNullElse(unlockDb.getCatalogName(),
+            HiveUtils.getCurrentCatalogOrDefault(conf));
     String dbName = unlockDb.getDatabaseName();
 
-    Database dbObj = hiveDB.getDatabase(dbName);
+    Database dbObj = hiveDB.getDatabase(catName, dbName);
     if (dbObj == null) {
       throw new HiveException("Database " + dbName + " does not exist ");
     }
-    HiveLockObject obj = new HiveLockObject(dbObj.getName(), null);
+    HiveLockObject obj = new HiveLockObject(catName + "@" +dbObj.getName(), null);
 
     List<HiveLock> locks = lockMgr.getLocks(obj, false, false);
     if ((locks == null) || (locks.isEmpty())) {

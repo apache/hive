@@ -324,7 +324,7 @@ public class TestHive {
       hm.getAllDatabases();
       hm.dumpAndClearMetaCallTiming("test");
       String logStr = appender.getOutput();
-      String expectedString = "getAllDatabases_()=";
+      String expectedString = "getAllDatabases_(String)=";
       Assert.assertTrue(logStr + " should contain <" + expectedString,
           logStr.contains(expectedString));
 
