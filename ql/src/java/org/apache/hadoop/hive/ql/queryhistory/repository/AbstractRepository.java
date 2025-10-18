@@ -99,8 +99,8 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
 
   protected Table initTable(Hive hive, Database db) {
     Table table;
-    try {
-      table = hive.getTable(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_TABLE_NAME, null, false);
+    try {// TODO get the correct catalog
+      table = hive.getTable(SessionState.get().getCurrentCatalog(), QUERY_HISTORY_DB_NAME, QUERY_HISTORY_TABLE_NAME, null, false);
       if (table == null) {
         LOG.info("Query history table ({}) isn't created yet", QUERY_HISTORY_TABLE_NAME);
         table = createTable(hive, db);
