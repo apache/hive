@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc.commands;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -51,7 +52,7 @@ public class AddWriteIdsToMinHistoryCommand implements ParameterizedBatchCommand
   }
 
   @Override
-  public List<Object[]> getQueryParameters() {
+  public List<Object[]> getQueryParameters(Configuration conf) {
     return params;
   }
 

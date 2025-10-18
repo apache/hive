@@ -499,6 +499,7 @@ public enum ErrorMsg {
   CATALOG_ALREADY_EXISTS(10444, "Catalog {0} already exists", true),
   CATALOG_NOT_EXISTS(10445, "Catalog {0} does not exists:", true),
   INVALID_SCHEDULED_QUERY(10446, "Scheduled query {0} does not exist", true),
+  NON_PARTITIONED_TABLE(10447, "Table {0} is not a partitioned table."),
 
   //========================== 20000 range starts here ========================//
 

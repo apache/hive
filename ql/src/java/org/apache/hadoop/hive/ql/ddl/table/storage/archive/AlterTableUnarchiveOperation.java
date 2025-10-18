@@ -149,13 +149,13 @@ public class AlterTableUnarchiveOperation extends DDLOperation<AlterTableUnarchi
     } else if (partitionSpecInfo.values.size() != table.getPartCols().size()) {
       // for partial specifications we need partitions to follow the scheme
       for (Partition partition : partitions) {
-        if (AlterTableArchiveUtils.partitionInCustomLocation(table, partition)) {
+        if (AlterTableArchiveUtils.partitionInCustomLocation(table, partition, context.getConf())) {
           String message = String.format("UNARCHIVE cannot run for partition groups with custom locations like %s",
               partition.getLocation());
           throw new HiveException(message);
         }
       }
-      originalDir = partitionSpecInfo.createPath(table);
+      originalDir = partitionSpecInfo.createPath(table, context.getConf());
     } else {
       Partition partition = partitions.get(0);
       if (ArchiveUtils.isArchived(partition)) {

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 
@@ -176,9 +177,9 @@ public class CheckResult {
       this.path = path;
     }
 
-    public Path getLocation(Path tablePath, Map<String, String> partSpec) throws MetaException {
+    public Path getLocation(Path tablePath, Map<String, String> partSpec, String defaultPartitionName) throws MetaException {
       if (this.path == null) {
-        return new Path(tablePath, Warehouse.makePartPath(partSpec));
+        return new Path(tablePath, Warehouse.makePartPath(partSpec, defaultPartitionName));
       }
 
       return this.path;

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn.jdbc.commands;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.ParameterizedCommand;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.springframework.jdbc.core.ParameterizedPreparedStatementSetter;
 
 import java.sql.Types;
@@ -67,8 +69,8 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
   }
 
   @Override
-  public List<Object[]> getQueryParameters() {
-    return dynamicPartitions == null ? getQueryParametersByLockRequest() : getQueryParametersByDynamicPartitions();
+  public List<Object[]> getQueryParameters(Configuration conf) {
+    return dynamicPartitions == null ? getQueryParametersByLockRequest(conf) : getQueryParametersByDynamicPartitions();
   }
 
   @Override
@@ -88,7 +90,7 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
     return ParameterizedCommand.EXACTLY_ONE_ROW;
   }
   
-  private List<Object[]> getQueryParametersByLockRequest() {
+  private List<Object[]> getQueryParametersByLockRequest(Configuration conf) {
     assert lockRequest != null;
     List<Object[]> params = new ArrayList<>(lockRequest.getComponentSize());
     Set<Pair<String, String>> alreadyAddedTables = new HashSet<>();
@@ -107,7 +109,8 @@ public class InsertTxnComponentsCommand implements ParameterizedBatchCommand<Obj
 
       String dbName = StringUtils.lowerCase(lc.getDbname());
       String tblName = StringUtils.lowerCase(lc.getTablename());
-      String partName = TxnUtils.normalizePartitionCase(lc.getPartitionname());
+      String partName = TxnUtils.normalizePartitionCase(lc.getPartitionname(),
+          lc.isSetDefaultPartitionName() ? lc.getDefaultPartitionName() : MetaStoreUtils.getDefaultPartitionName(null, conf));
       OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
       Pair<String, String> writeIdKey = getWriteIdKey.apply(lc);
 

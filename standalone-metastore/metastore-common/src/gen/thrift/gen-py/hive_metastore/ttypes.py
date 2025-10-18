@@ -14893,11 +14893,12 @@ class LockComponent(object):
      - operationType
      - isTransactional
      - isDynamicPartitionWrite
+     - defaultPartitionName
 
     """
 
 
-    def __init__(self, type=None, level=None, dbname=None, tablename=None, partitionname=None, operationType=5, isTransactional=False, isDynamicPartitionWrite=False,):
+    def __init__(self, type=None, level=None, dbname=None, tablename=None, partitionname=None, operationType=5, isTransactional=False, isDynamicPartitionWrite=False, defaultPartitionName=None,):
         self.type = type
         self.level = level
         self.dbname = dbname
@@ -14906,6 +14907,7 @@ class LockComponent(object):
         self.operationType = operationType
         self.isTransactional = isTransactional
         self.isDynamicPartitionWrite = isDynamicPartitionWrite
+        self.defaultPartitionName = defaultPartitionName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -14956,6 +14958,11 @@ class LockComponent(object):
                     self.isDynamicPartitionWrite = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.defaultPartitionName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -14997,6 +15004,10 @@ class LockComponent(object):
         if self.isDynamicPartitionWrite is not None:
             oprot.writeFieldBegin('isDynamicPartitionWrite', TType.BOOL, 8)
             oprot.writeBool(self.isDynamicPartitionWrite)
+            oprot.writeFieldEnd()
+        if self.defaultPartitionName is not None:
+            oprot.writeFieldBegin('defaultPartitionName', TType.STRING, 9)
+            oprot.writeString(self.defaultPartitionName.encode('utf-8') if sys.version_info[0] == 2 else self.defaultPartitionName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -33607,6 +33618,7 @@ LockComponent.thrift_spec = (
     (6, TType.I32, 'operationType', None, 5, ),  # 6
     (7, TType.BOOL, 'isTransactional', None, False, ),  # 7
     (8, TType.BOOL, 'isDynamicPartitionWrite', None, False, ),  # 8
+    (9, TType.STRING, 'defaultPartitionName', 'UTF8', None, ),  # 9
 )
 all_structs.append(LockRequest)
 LockRequest.thrift_spec = (

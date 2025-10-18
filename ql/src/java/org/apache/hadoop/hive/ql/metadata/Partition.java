@@ -173,7 +173,9 @@ public class Partition implements Serializable {
           // set default if location is not set and this is a physical
           // table partition (not a view partition)
           if (table.getDataLocation() != null) {
-            Path partPath = new Path(table.getDataLocation(), Warehouse.makePartName(table.getPartCols(), tPartition.getValues()));
+            Path partPath = new Path(table.getDataLocation(), Warehouse.makePartName(table.getPartCols(),
+                tPartition.getValues(), MetaStoreUtils.getDefaultPartitionName(table.getParameters(),
+                SessionState.getSessionConf())));
             tPartition.getSd().setLocation(partPath.toString());
           }
         }
@@ -200,7 +202,8 @@ public class Partition implements Serializable {
 
   public String getName() {
     try {
-      return Warehouse.makePartName(table.getPartCols(), tPartition.getValues());
+      return Warehouse.makePartName(table.getPartCols(), tPartition.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(table.getParameters(), SessionState.getSessionConf()));
     } catch (MetaException e) {
       throw new RuntimeException(e);
     }
@@ -452,7 +455,8 @@ public class Partition implements Serializable {
   public String toString() {
     String pn = "Invalid Partition";
     try {
-      pn = Warehouse.makePartName(getSpec(), false);
+      pn = Warehouse.makePartName(getSpec(), false,
+          MetaStoreUtils.getDefaultPartitionName(table.getParameters(), SessionState.getSessionConf()));
     } catch (MetaException e) {
       // ignore as we most probably in an exception path already otherwise this
       // error wouldn't occur

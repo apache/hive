@@ -22,9 +22,11 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -198,13 +200,15 @@ public class HiveLockObject {
     this.data = lockData;
   }
 
-  public HiveLockObject(Table tbl, HiveLockObjectData lockData) {
-    this(new String[] {tbl.getDbName(), FileUtils.escapePathName(tbl.getTableName()).toLowerCase()}, lockData);
+  public HiveLockObject(Table tbl, HiveLockObjectData lockData, String defaultPartitionName) {
+    this(new String[] {tbl.getDbName(), FileUtils.escapePathName(tbl.getTableName(),
+        defaultPartitionName).toLowerCase()}, lockData);
   }
 
-  public HiveLockObject(Partition par, HiveLockObjectData lockData) {
+  public HiveLockObject(Partition par, HiveLockObjectData lockData, String defaultPartitionName) {
     this(new String[] {par.getTable().getDbName(),
-        FileUtils.escapePathName(par.getTable().getTableName()).toLowerCase(), par.getName()}, lockData);
+        FileUtils.escapePathName(par.getTable().getTableName(), defaultPartitionName).toLowerCase(),
+        par.getName()}, lockData);
   }
 
   public HiveLockObject(DummyPartition par, HiveLockObjectData lockData) {
@@ -230,7 +234,8 @@ public class HiveLockObject {
     HiveLockObject obj = null;
 
     if  (partSpec == null) {
-      obj = new HiveLockObject(tbl, null);
+      obj = new HiveLockObject(tbl, null, MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(),
+          hiveDB.getConf()));
     }
     else {
       Partition par = hiveDB.getPartition(tbl, partSpec, false);
@@ -238,7 +243,8 @@ public class HiveLockObject {
         throw new HiveException("Partition " + partSpec + " for table " +
             tableName + " does not exist");
       }
-      obj = new HiveLockObject(par, null);
+      obj = new HiveLockObject(par, null,
+          MetaStoreUtils.getDefaultPartitionName(par.getTable().getParameters(), hiveDB.getConf()));
     }
     return obj;
   }

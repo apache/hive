@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -173,13 +174,13 @@ public class MapredLocalWork implements Serializable {
     return tmpPath;
   }
 
-  public String getBucketFileName(String bigFileName) {
+  public String getBucketFileName(String bigFileName, Configuration conf) {
     if (!inputFileChangeSensitive || bigFileName == null || bigFileName.isEmpty()) {
       return "-";
     }
     String fileName = getFileName(bigFileName);
     if (bucketMapjoinContext != null) {
-      fileName = bucketMapjoinContext.createFileName(bigFileName, fileName);
+      fileName = bucketMapjoinContext.createFileName(bigFileName, fileName, conf);
     }
     return fileName;
   }

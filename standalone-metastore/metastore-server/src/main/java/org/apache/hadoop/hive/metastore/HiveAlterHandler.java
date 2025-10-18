@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -85,6 +86,7 @@ public class HiveAlterHandler implements AlterHandler {
   protected Configuration conf;
   private static final Logger LOG = LoggerFactory.getLogger(HiveAlterHandler.class
       .getName());
+  private static final String SET_DEFAULT_PARTITION = "SETDEFAULTPARTITION";
 
   // hiveConf, getConf and setConf are in this class because AlterHandler extends Configurable.
   // Always use the configuration from HMS Handler.  Making AlterHandler not extend Configurable
@@ -453,6 +455,10 @@ public class HiveAlterHandler implements AlterHandler {
                   new TableName(catalogName, databaseName, tableName), writeIdList);
             }
           } else {
+            if (isSetDefaultPartition(environmentContext)) {
+              setDefaultPartitionName(msdb, wh, catName, dbname, name, newt, oldt, environmentContext,
+                      handler, writeIdList);
+            }
             LOG.warn("Alter table not cascaded to partitions.");
             msdb.alterTable(catalogName, databaseName, tableName, newt, writeIdList);
           }
@@ -525,6 +531,97 @@ public class HiveAlterHandler implements AlterHandler {
       MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_TABLE,
           new AlterTableEvent(oldt, newt, false, success, newt.getWriteId(), handler, isReplicated),
           environmentContext, txnAlterTableEventResponses, msdb);
+    }
+  }
+
+  private static boolean isSetDefaultPartition(EnvironmentContext environmentContext) {
+    if (environmentContext.isSetProperties()) {
+      String operation = environmentContext.getProperties().get(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE);
+      return SET_DEFAULT_PARTITION.equals(operation);
+    }
+    return false;
+  }
+
+  private static void setDefaultPartitionName(RawStore msdb, Warehouse wh, String catName, String dbname,
+      String name, Table newt, Table oldt, EnvironmentContext environmentContext, IHMSHandler handler,
+      String writeIdList) throws MetaException, InvalidObjectException, InvalidOperationException,
+      NoSuchObjectException, TException {
+    String clusterLevelDefaultPartitionName = environmentContext.getProperties()
+            .get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getHiveName());
+    String oldDefaultPartitionValue = oldt.getParameters().get(MetaStoreUtils.DEFAULT_PARTITION_NAME);
+    String newDefaultPartitionValue = newt.getParameters().get(MetaStoreUtils.DEFAULT_PARTITION_NAME);
+
+    PartitionsRequest partitionReq = new PartitionsRequest(dbname, name);
+    partitionReq.setCatName(catName);
+    partitionReq.setMaxParts((short) -1);
+    List<String> partNames = handler.fetch_partition_names_req(partitionReq);
+    List<String> partNamesToProcess = new ArrayList<>();
+
+    Table finalOldt = oldt;
+    FileSystem fs  = wh.getFs(new Path(oldt.getSd().getLocation()));
+    partNames.forEach(partName -> {
+      for (FieldSchema partKey : finalOldt.getPartitionKeys()) {
+        if (partName.contains(partKey.getName() + "=" + clusterLevelDefaultPartitionName) ||
+                (oldDefaultPartitionValue != null && partName.contains(partKey.
+                        getName() + "=" + oldDefaultPartitionValue))) {
+          partNamesToProcess.add(partName);
+          break;
+        }
+      }
+    });
+
+    GetPartitionsByNamesRequest partsToProcess = MetaStoreUtils.convertToGetPartitionsByNamesRequest(dbname,
+            name, partNamesToProcess);
+
+    List<Partition> oldParts = handler.get_partitions_by_names_req(partsToProcess).getPartitions();
+
+    for (Partition part : oldParts) {
+      List<String> oldPartValue = new ArrayList<>(part.getValues());
+      for (int i = 0; i< part.getValues().size() ; i++) {
+        if (part.getValues().get(i).equals(oldDefaultPartitionValue) ||
+                part.getValues().get(i).equals(clusterLevelDefaultPartitionName)) {
+          part.getValues().set(i, newDefaultPartitionValue);
+        }
+      }
+
+      String oldPartLocation = part.getSd().getLocation();
+      String searchPattern = "=";
+      if (oldDefaultPartitionValue == null) {
+        searchPattern += clusterLevelDefaultPartitionName;
+      } else {
+        searchPattern += oldDefaultPartitionValue;
+      }
+      String replacePattern = "=" + newDefaultPartitionValue;
+      String newPartLocation = oldPartLocation.replace(searchPattern, replacePattern);
+
+      Path oldPath = new Path(oldPartLocation);
+      Path newPath = new Path(newPartLocation);
+      try {
+        if (fs.exists(oldPath) && !fs.exists(newPath)) {
+          //rename to new path
+          wh.renameDir(oldPath, newPath, false);
+          part.getSd().setLocation(newPartLocation);
+          msdb.alterPartition(catName, dbname, name, oldPartValue, part, writeIdList);
+        } else if (fs.exists(oldPath) && fs.exists(newPath)) {
+          // if the new path already exists, we will not rename the partition directory
+          LOG.error("Partition directory {} already exists, not renaming from {} to {}",
+                  newPath, oldPath, newPath);
+        } else if (!fs.exists(oldPath) && fs.exists(newPath)) {
+          // No need to do rename operation here, just silently update the location and the partition
+          part.getSd().setLocation(newPartLocation);
+          msdb.alterPartition(catName, dbname, name, oldPartValue, part, writeIdList);
+        }
+        else if (!fs.exists(oldPath)) {
+          LOG.error("Partition directory {} does not exist, cannot rename to {}",
+                  oldPath, newPath);
+        }
+      } catch (IOException e) {
+        LOG.error("Cannot rename partition directory from " + oldPath + " to " + newPath, e);
+        throw new InvalidOperationException("Unable to access src or dest location for");
+      } catch (MetaException me) {
+        LOG.error("Cannot rename partition directory from " + oldPath + " to " + newPath, me);
+        throw me;
+      }
     }
   }
 
@@ -678,7 +775,8 @@ public class HiveAlterHandler implements AlterHandler {
 
           // if tbl location is available use it
           // else derive the tbl location from database location
-          destPath = wh.getPartitionPath(db, tbl, new_part.getValues());
+          destPath = wh.getPartitionPath(db, tbl, new_part.getValues(),
+              MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
           destPath = constructRenamedPath(destPath, new Path(new_part.getSd().getLocation()));
         } catch (NoSuchObjectException e) {
           LOG.debug("Didn't find object in metastore ", e);
@@ -754,7 +852,8 @@ public class HiveAlterHandler implements AlterHandler {
             new_part, tbl, wh, false, true, environmentContext, false);
       }
 
-      String newPartName = Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues());
+      String newPartName = Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf));
       List<ColumnStatistics> multiColumnStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name, oldPart.getValues(),
           oldPart.getSd().getCols(), tbl, new_part, null, null);
       msdb.alterPartition(catName, dbname, name, part_vals, new_part, validWriteIds);
@@ -819,7 +918,8 @@ public class HiveAlterHandler implements AlterHandler {
     // Get list of partition values
     List<String> partValues = new LinkedList<>();
     for (Partition tmpPart : new_parts) {
-      partValues.add(Warehouse.makePartName(tbl.getPartitionKeys(), tmpPart.getValues()));
+      partValues.add(Warehouse.makePartName(tbl.getPartitionKeys(), tmpPart.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), conf)));
     }
 
     // Get existing partitions from store
@@ -1134,8 +1234,10 @@ public class HiveAlterHandler implements AlterHandler {
       if (newCols == null) {
         newCols = part.getSd() == null ? new ArrayList<>() : part.getSd().getCols();
       }
-      String oldPartName = Warehouse.makePartName(table.getPartitionKeys(), partVals);
-      String newPartName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+      String oldPartName = Warehouse.makePartName(table.getPartitionKeys(), partVals,
+          MetaStoreUtils.getDefaultPartitionName(table.getParameters(), msdb.getConf()));
+      String newPartName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(table.getParameters(), msdb.getConf()));
       boolean rename = !part.getDbName().equals(dbname) || !part.getTableName().equals(tblname)
           || !oldPartName.equals(newPartName);
 

@@ -22,7 +22,6 @@ import static org.apache.hadoop.hive.common.AcidConstants.DELETE_DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.DELTA_PREFIX;
 import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PREFIX;
 import static org.apache.hadoop.hive.metastore.PartFilterExprUtil.createExpressionProxy;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getAllPartitionsOf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDataLocation;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartColNames;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartCols;
@@ -73,6 +72,7 @@ import org.apache.hadoop.hive.metastore.client.builder.GetPartitionProjectionsSp
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.functional.RemoteIterators;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -267,7 +267,7 @@ public class HiveMetaStoreChecker {
       if (filterExp != null) {
         List<Partition> results = new ArrayList<>();
         getPartitionListByFilterExp(getMsc(), table, filterExp,
-            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME), results);
+            MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf), results);
         parts = new PartitionIterable(results);
       } else {
         GetProjectionsSpec projectionsSpec = new GetPartitionProjectionsSpecBuilder()
@@ -288,7 +288,6 @@ public class HiveMetaStoreChecker {
 
     checkTable(table, parts, filterExp, result);
   }
-
   /**
    * Check the metastore for inconsistencies, data missing in either the
    * metastore or on the dfs.
@@ -327,6 +326,7 @@ public class HiveMetaStoreChecker {
     checkPartitionDirs(tablePath, allPartDirs, Collections.unmodifiableList(getPartColNames(table)));
     String tablePathStr = tablePath.toString();
     int tablePathLength = tablePathStr.length();
+    String defaultPartitionName =  MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf);
 
     if (filterExp != null) {
       PartitionExpressionProxy expressionProxy = createExpressionProxy(conf);
@@ -337,8 +337,7 @@ public class HiveMetaStoreChecker {
       allPartDirs.stream().forEach(path -> partitions.add(path.toString().substring(tablePathStrLen)));
 
       // Remove all partition paths which does not matches the filter expression.
-      expressionProxy.filterPartitionsByExpr(partColumns, filterExp,
-              conf.get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), partitions);
+      expressionProxy.filterPartitionsByExpr(partColumns, filterExp, defaultPartitionName, partitions);
 
       // now the partition list will contain all the paths that matches the filter expression.
       // add them back to partDirs.
@@ -361,7 +360,7 @@ public class HiveMetaStoreChecker {
       fs = partPath.getFileSystem(conf);
 
       CheckResult.PartitionResult prFromMetastore = new CheckResult.PartitionResult();
-      prFromMetastore.setPartitionName(getPartitionName(table, partition));
+      prFromMetastore.setPartitionName(getPartitionName(table, partition, defaultPartitionName));
       prFromMetastore.setTableName(partition.getTableName());
       if (allPartDirs.remove(partPath)) {
         result.getCorrectPartitions().add(prFromMetastore);
@@ -389,7 +388,7 @@ public class HiveMetaStoreChecker {
         long partitionAgeSeconds = currentEpochSecs - createdTime;
         if (partitionAgeSeconds > partitionExpirySeconds) {
           CheckResult.PartitionResult pr = new CheckResult.PartitionResult();
-          pr.setPartitionName(getPartitionName(table, partition));
+          pr.setPartitionName(getPartitionName(table, partition, defaultPartitionName));
           pr.setTableName(partition.getTableName());
           result.getExpiredPartitions().add(pr);
           if (LOG.isDebugEnabled()) {
@@ -444,7 +443,7 @@ public class HiveMetaStoreChecker {
     for (Path partPath : missingPartDirs) {
       FileSystem fs = partPath.getFileSystem(conf);
       String partitionName = getPartitionName(fs.makeQualified(tablePath),
-          partPath, partColNames, partitionColToTypeMap, conf);
+          partPath, partColNames, partitionColToTypeMap, conf, table.getParameters());
       if (partitionName == null) {
         // Skip this partition if there is some issue in the partition validation
         LOG.warn("Skipping partition : " + partPath.getName());

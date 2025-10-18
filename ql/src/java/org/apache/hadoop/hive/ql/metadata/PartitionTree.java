@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
@@ -29,6 +30,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.graalvm.polyglot.Context;
 
 import javax.script.ScriptException;
@@ -80,7 +83,8 @@ final class PartitionTree {
    * @throws MetaException partition values are incorrect.
    */
   Partition getPartition(List<String> partVals) throws MetaException {
-    String partName = makePartName(tTable.getPartitionKeys(), partVals);
+    String partName = makePartName(tTable.getPartitionKeys(), partVals,
+        MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
     return getPartition(partName);
   }
 
@@ -99,7 +103,8 @@ final class PartitionTree {
     Map<String, Partition> partNameToPartition = new HashMap<>();
     // validate that the new partition values is not already added to the table
     for (Partition partition : partitions) {
-      String partName = makePartName(tTable.getPartitionKeys(), partition.getValues());
+      String partName = makePartName(tTable.getPartitionKeys(), partition.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
       if (!ifNotExists && parts.containsKey(partName)) {
         throw new AlreadyExistsException("Partition " + partName + " already exists");
       }
@@ -122,11 +127,11 @@ final class PartitionTree {
    * So if part cols are a,b,c, {"",2} is a valid list
    * {@link MetaStoreUtils#getPvals(List, Map)}
    */
-  List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
+  List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals, Configuration conf) throws MetaException {
     if (partialPartVals == null || partialPartVals.isEmpty()) {
       throw new MetaException("Partition partial vals cannot be null or empty");
     }
-    String partNameMatcher = makePartNameMatcher(tTable, partialPartVals, ".*");
+    String partNameMatcher = makePartNameMatcher(tTable, partialPartVals, ".*", conf);
     List<Partition> matchedPartitions = new ArrayList<>();
     for (Map.Entry<String, Partition> entry : parts.entrySet()) {
       if (entry.getKey().matches(partNameMatcher)) {
@@ -152,7 +157,8 @@ final class PartitionTree {
    * @throws MetaException partition with the provided partition values cannot be found.
    */
   Partition dropPartition(List<String> partVals) throws MetaException, NoSuchObjectException {
-    String partName = makePartName(tTable.getPartitionKeys(), partVals);
+    String partName = makePartName(tTable.getPartitionKeys(), partVals,
+        MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
     if (!parts.containsKey(partName)) {
       throw new NoSuchObjectException(
           "Partition with partition values " + Arrays.toString(partVals.toArray()) + " is not found.");
@@ -197,7 +203,8 @@ final class PartitionTree {
       newPartition.getSd().setLocation(oldPartition.getSd().getLocation());
     }
     dropPartition(oldPartitionVals);
-    String partName = makePartName(tTable.getPartitionKeys(), newPartition.getValues());
+    String partName = makePartName(tTable.getPartitionKeys(), newPartition.getValues(),
+        MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
     if (parts.containsKey(partName)) {
       throw new InvalidOperationException("Partition " + partName + " already exists");
     }

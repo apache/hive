@@ -87,7 +87,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       if (baseDir == null) {
         return;
       }
-      String fileName = localWork.getBucketFileName(currentInputPath);
+      String fileName = localWork.getBucketFileName(currentInputPath, hconf);
       for (int pos = 0; pos < mapJoinTables.length; pos++) {
         if (pos == desc.getPosBigTable() || mapJoinTables[pos] != null) {
           continue;
