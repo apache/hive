@@ -9499,6 +9499,9 @@ public class ObjectStore implements RawStore, Configurable {
       // So let's not use them anywhere unless absolutely necessary.
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
       MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+      lockForUpdate("TBLS", "TBL_ID", "\"TBL_ID\" = " + mTable.getId());
+      // Get the newest version of MTable that might have been updated
+      pm.refresh(mTable);
       Table table = convertToTable(mTable);
       List<String> colNames = new ArrayList<>();
       for (ColumnStatisticsObj statsObj : statsObjs) {
@@ -9603,6 +9606,9 @@ public class ObjectStore implements RawStore, Configurable {
       if (partition == null) {
         throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
       }
+      lockForUpdate("PARTITIONS", "PART_ID", "\"TBL_ID\" = " + mTable.getId()
+          + " and \"PART_NAME\" = '" + statsDesc.getPartName() + "'");
+      pm.refresh(mPartition);
 
       for (ColumnStatisticsObj statsObj : statsObjs) {
         MPartitionColumnStatistics mStatsObj =
@@ -11430,36 +11436,34 @@ public class ObjectStore implements RawStore, Configurable {
     return writeEventInfoList;
   }
 
-  private void prepareQuotes() throws SQLException {
-    String s = dbType.getPrepareTxnStmt();
-    if (s != null) {
-      assert pm.currentTransaction().isActive();
-      JDOConnection jdoConn = pm.getDataStoreConnection();
-      try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
-        statement.execute(s);
-      } finally {
-        jdoConn.close();
-      }
-    }
-  }
-
-  private void lockNotificationSequenceForUpdate() throws MetaException {
+  private void lockForUpdate(String tableName, String column, String rowFilter)
+      throws MetaException {
     if (sqlGenerator.getDbProduct().isDERBY() && directSql != null) {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.
       new RetryingExecutor(conf, () -> {
-        directSql.lockDbTable("NOTIFICATION_SEQUENCE");
+        directSql.lockDbTable(tableName);
       }).run();
     } else {
-      String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
+      String selectQuery = "select " + (column == null ? "*" : "\"" + column + "\"") + " from \"" + tableName + "\"" +
+          (rowFilter == null ? "" : " where " + rowFilter);
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
       new RetryingExecutor(conf, () -> {
-        prepareQuotes();
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", lockingQuery))) {
-          query.setUnique(true);
-          // only need to execute it to get db Lock
-          query.execute();
+        String txnStmt = dbType.getPrepareTxnStmt();
+        List<String> statements = new ArrayList<>();
+        if (txnStmt != null) {
+          statements.add(txnStmt);
+        }
+        statements.add(lockingQuery);
+        assert pm.currentTransaction().isActive();
+        JDOConnection jdoConn = pm.getDataStoreConnection();
+        try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
+          for (String s : statements) {
+            statement.execute(s);
+          }
+        } finally {
+          jdoConn.close();
         }
       }).run();
     }
@@ -11527,7 +11531,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       pm.flush();
       openTransaction();
-      lockNotificationSequenceForUpdate();
+      lockForUpdate("NOTIFICATION_SEQUENCE", "NEXT_EVENT_ID", null);
       query = pm.newQuery(MNotificationNextId.class);
       Collection<MNotificationNextId> ids = (Collection) query.execute();
       MNotificationNextId mNotificationNextId = null;
