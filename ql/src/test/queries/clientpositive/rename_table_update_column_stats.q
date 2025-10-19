@@ -1,6 +1,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
-set hive.metastore.try.direct.sql=true;
+set metaconf:metastore.try.direct.sql=true;
 
 drop database if exists statsdb1;
 create database statsdb1;
@@ -28,7 +28,7 @@ drop database statsdb1 cascade;
 drop database statsdb2 cascade;
 
 
-set hive.metastore.try.direct.sql=false;
+set metaconf:metastore.try.direct.sql=false;
 
 drop database if exists statsdb1;
 create database statsdb1;
