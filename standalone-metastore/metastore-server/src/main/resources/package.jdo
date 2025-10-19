@@ -110,7 +110,7 @@
            <column name="PARAM_KEY" length="180" jdbc-type="VARCHAR"/>
          </key>
          <value>
-          <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
+          <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
          </value>
       </field>
     </class>
@@ -1620,7 +1620,7 @@
             <column name="PARAM_KEY" length="180" jdbc-type="VARCHAR"/>
           </key>
           <value>
-           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
+           <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
           </value>
        </field>
     </class>

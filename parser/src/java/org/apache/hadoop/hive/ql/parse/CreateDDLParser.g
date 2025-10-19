@@ -152,7 +152,7 @@ dcProperties
 @init { gParent.pushMsg("dcproperties", state); }
 @after { gParent.popMsg(state); }
     :
-      LPAREN dbPropertiesList RPAREN -> ^(TOK_DATACONNECTORPROPERTIES dbPropertiesList)
+      LPAREN propertiesList RPAREN -> ^(TOK_DATACONNECTORPROPERTIES propertiesList)
     ;
 
 dropDataConnectorStatement

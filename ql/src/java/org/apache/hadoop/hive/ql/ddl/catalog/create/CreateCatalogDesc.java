@@ -37,12 +37,12 @@ public class CreateCatalogDesc implements DDLDesc, Serializable {
   private final boolean ifNotExists;
   private final Map<String, String> catProperties;
 
-  public CreateCatalogDesc(String catalogName, String comment, String locationUri, boolean ifNotExists, Map<String, String> dcProperties) {
+  public CreateCatalogDesc(String catalogName, String comment, String locationUri, boolean ifNotExists, Map<String, String> catProperties) {
     this.catalogName = catalogName;
     this.comment = comment;
     this.locationUri = locationUri;
     this.ifNotExists = ifNotExists;
-    this.catProperties = dcProperties;
+    this.catProperties = catProperties;
   }
 
   @Explain(displayName="name", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })

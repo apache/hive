@@ -384,7 +384,7 @@ TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
 TOK_DATABASE_MANAGEDLOCATION;
-TOK_DBPROPLIST;
+TOK_PROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERDATABASE_OWNER;
 TOK_ALTERDATABASE_LOCATION;
@@ -1151,7 +1151,7 @@ catProperties
 @init { pushMsg("catproperties", state); }
 @after { popMsg(state); }
     :
-      LPAREN dbPropertiesList RPAREN -> ^(TOK_CATALOGPROPERTIES dbPropertiesList)
+      LPAREN propertiesList RPAREN -> ^(TOK_CATALOGPROPERTIES propertiesList)
     ;
 
 dropCatalogStatement
@@ -1200,14 +1200,14 @@ dbProperties
 @init { pushMsg("dbproperties", state); }
 @after { popMsg(state); }
     :
-      LPAREN dbPropertiesList RPAREN -> ^(TOK_DATABASEPROPERTIES dbPropertiesList)
+      LPAREN propertiesList RPAREN -> ^(TOK_DATABASEPROPERTIES propertiesList)
     ;
 
-dbPropertiesList
-@init { pushMsg("database properties list", state); }
+propertiesList
+@init { pushMsg("properties list", state); }
 @after { popMsg(state); }
     :
-      keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_DBPROPLIST keyValueProperty+)
+      keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_PROPLIST keyValueProperty+)
     ;
 
 dbConnectorName
