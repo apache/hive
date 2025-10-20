@@ -32,7 +32,6 @@ public class TestHiveServer2 {
     HiveServer2 hs2 = new HiveServer2();
 
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN, "hs2");
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS, 1);
     conf.setInt("hive.compactor.worker.pool1.threads", 1);
 
@@ -46,7 +45,6 @@ public class TestHiveServer2 {
     HiveServer2 hs2 = new HiveServer2();
 
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN, "hs2");
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS, 0);
     conf.setInt("hive.compactor.worker.pool1.threads", 5);
 
@@ -59,7 +57,6 @@ public class TestHiveServer2 {
     HiveServer2 hs2 = new HiveServer2();
 
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN, "hs2");
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS, 5);
 
     Map<String, Integer> startedWorkers = hs2.maybeStartCompactorThreads(conf);
@@ -72,7 +69,6 @@ public class TestHiveServer2 {
     HiveServer2 hs2 = new HiveServer2();
 
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN, "hs2");
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS, 12);
     conf.setInt("hive.compactor.worker.pool1.threads", 3);
     conf.setInt("hive.compactor.worker.pool2.threads", 4);
@@ -90,7 +86,6 @@ public class TestHiveServer2 {
     HiveServer2 hs2 = new HiveServer2();
 
     HiveConf conf = new HiveConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN, "hs2");
     MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS, 15);
     conf.setInt("hive.compactor.worker.pool1.threads", 3);
     conf.setInt("hive.compactor.worker.pool2.threads", 4);
