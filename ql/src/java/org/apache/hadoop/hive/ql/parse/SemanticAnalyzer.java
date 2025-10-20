@@ -119,6 +119,7 @@ import org.apache.hadoop.hive.ql.ddl.misc.hooks.InsertCommitHookDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.preinsert.PreInsertTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableUnsetPropertiesDesc;
+import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.update.MaterializedViewUpdateDesc;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
@@ -7811,7 +7812,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // but the underlying storage format knows about it.
         DummyPartition dummyPartition;
         try {
-          String partName = Warehouse.makePartName(partSpec, false);
+          String partName = Warehouse.makePartName(partSpec, false,
+              MetaStoreUtils.getDefaultPartitionName(destinationTable.getParameters(), conf));
           dummyPartition = new DummyPartition(destinationTable, partName, partSpec);
         } catch (MetaException e) {
           throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
@@ -7919,7 +7921,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         cols = ct.cols;
         colTypes = ct.colTypes;
         dpCtx = new DynamicPartitionCtx(partitionColumnNames,
-            conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME),
+            PartitionUtils.getDefaultPartitionName(tblProps, conf),
             conf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE));
         qbm.setDPCtx(dest, dpCtx);
         isPartitioned = true;
@@ -8590,7 +8592,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     /* Set List Bucketing context. */
     if (lbCtx != null) {
       lbCtx.processRowSkewedIndex(fsRS);
-      lbCtx.calculateSkewedValueSubDirList();
+      lbCtx.calculateSkewedValueSubDirList(dest_tab.getParameters(), conf);
     }
     fileSinkDesc.setLbCtx(lbCtx);
 
@@ -8613,7 +8615,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (dest_part != null) {
       try {
-        String staticSpec = Warehouse.makePartPath(dest_part.getSpec());
+        String staticSpec = Warehouse.makePartPath(dest_part.getSpec(),
+            MetaStoreUtils.getDefaultPartitionName(dest_tab.getParameters(), conf));
         fileSinkDesc.setStaticSpec(staticSpec);
       } catch (MetaException e) {
         throw new SemanticException(e);
@@ -8792,9 +8795,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     DynamicPartitionCtx dpCtx = qbm.getDPCtx(dest);
     if (dpCtx == null) {
       dest_tab.validatePartColumnNames(partSpec, false);
-      dpCtx = new DynamicPartitionCtx(partSpec,
-          conf.getVar(HiveConf.ConfVars.DEFAULT_PARTITION_NAME),
-          conf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE));
+      dpCtx = new DynamicPartitionCtx(partSpec, conf.getIntVar(HiveConf.ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE),
+          MetaStoreUtils.getDefaultPartitionName(dest_tab.getParameters(), conf));
       qbm.setDPCtx(dest, dpCtx);
     }
 
@@ -12280,8 +12282,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // db_name.table_name + partitionSec
     // as the prefix for easy of read during explain and debugging.
     // Currently, partition spec can only be static partition.
-    String k = FileUtils.escapePathName(tblName).toLowerCase() + Path.SEPARATOR;
-    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName()).toLowerCase() + "." + k);
+    String k = FileUtils.escapePathName(tblName, MetaStoreUtils.getDefaultPartitionName(tab.getParameters(),
+        conf)).toLowerCase() + Path.SEPARATOR;
+    tsDesc.setStatsAggPrefix(FileUtils.escapePathName(tab.getDbName(),
+        MetaStoreUtils.getDefaultPartitionName(tab.getParameters(), conf)).toLowerCase() + "." + k);
 
     // set up WriteEntity for replication and txn stats
     WriteEntity we = new WriteEntity(tab, WriteEntity.WriteType.DDL_SHARED);

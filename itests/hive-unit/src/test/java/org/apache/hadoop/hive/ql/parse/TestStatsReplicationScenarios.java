@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.fs.Path;
@@ -191,14 +192,16 @@ public class TestStatsReplicationScenarios {
       return;
     }
 
-    List<FieldSchema> partKeys = primary.getTable(primaryDbName, tableName).getPartitionKeys();
+    Table table = primary.getTable(primaryDbName, tableName);
+    List<FieldSchema> partKeys = table.getPartitionKeys();
     for (Partition pPart : pParts) {
       Partition rPart = replica.getPartition(replicatedDbName, tableName,
               pPart.getValues());
 
       Map<String, String> rParams = collectStatsParams(rPart.getParameters());
       Map<String, String> pParams = collectStatsParams(pPart.getParameters());
-      String partName = Warehouse.makePartName(partKeys, pPart.getValues());
+      String partName = Warehouse.makePartName(partKeys, pPart.getValues(),
+          MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
       Assert.assertEquals("Mismatch in stats parameters for partition " + partName + " of table " + tableName,
                           pParams, rParams);
 

@@ -475,7 +475,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     PerfLogger perfLogger = PerfLogger.getPerfLogger(conf, false);
     perfLogger.perfLogBegin(ExplainTask.class.getName(), PerfLogger.HIVE_GET_TABLE_COLUMN_STATS);
     if (table.isPartitioned()) {
-      alterTableStmt.addAll(ddlPlanUtils.getDDLPlanForPartitionWithStats(table, tablePartitionsMap));
+      alterTableStmt.addAll(ddlPlanUtils.getDDLPlanForPartitionWithStats(table, tablePartitionsMap, conf));
     } else {
       alterTableStmt.addAll(ddlPlanUtils.getAlterTableStmtTableStatsColsAll(table));
     }

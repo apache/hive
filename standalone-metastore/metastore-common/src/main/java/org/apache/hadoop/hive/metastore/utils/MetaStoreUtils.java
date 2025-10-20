@@ -84,6 +84,8 @@ public class MetaStoreUtils {
 
   private static final DateTimeFormatter TIMESTAMP_FORMATTER = createDateTimeFormatter("uuuu-MM-dd HH:mm:ss");
 
+  public static final String DEFAULT_PARTITION_NAME = "DEFAULT_PARTITION_NAME";
+
   private static DateTimeFormatter createDateTimeFormatter(String format) {
     return DateTimeFormatter.ofPattern(format).withZone(TimeZone.getTimeZone("UTC").toZoneId())
         .withResolverStyle(ResolverStyle.STRICT);
@@ -481,7 +483,8 @@ public class MetaStoreUtils {
     return true;
   }
 
-  public static String makePartNameMatcher(Table table, List<String> partVals, String defaultStr) throws MetaException {
+  public static String makePartNameMatcher(Table table, List<String> partVals, String defaultStr,
+      Configuration conf) throws MetaException {
     List<FieldSchema> partCols = table.getPartitionKeys();
     int numPartKeys = partCols.size();
     if (partVals.size() > numPartKeys) {
@@ -494,7 +497,8 @@ public class MetaStoreUtils {
     // or a regex of the form ".*"
     // This works because the "=" and "/" separating key names and partition key/values
     // are not escaped.
-    String partNameMatcher = Warehouse.makePartName(partCols, partVals, defaultStr);
+    String partNameMatcher = Warehouse.makePartName(partCols, partVals, defaultStr,
+        MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
     // add ".*" to the regex to match anything else afterwards the partial spec.
     if (partVals.size() < numPartKeys) {
       partNameMatcher += defaultStr;
@@ -1339,5 +1343,13 @@ public class MetaStoreUtils {
 
   public static boolean isDatabaseRemote(Database db) {
     return db != null && db.getType() == DatabaseType.REMOTE;
+  }
+
+  public static String getDefaultPartitionName(Map<String, String> tableParams, Configuration conf) {
+    if (tableParams != null && tableParams.containsKey(DEFAULT_PARTITION_NAME)) {
+      return tableParams.get(DEFAULT_PARTITION_NAME);
+    } else {
+      return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME);
+    }
   }
 }

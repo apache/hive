@@ -64,6 +64,11 @@ class LockComponent
             'isRequired' => false,
             'type' => TType::BOOL,
         ),
+        9 => array(
+            'var' => 'defaultPartitionName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
@@ -98,6 +103,10 @@ class LockComponent
      * @var bool
      */
     public $isDynamicPartitionWrite = false;
+    /**
+     * @var string
+     */
+    public $defaultPartitionName = null;
 
     public function __construct($vals = null)
     {
@@ -125,6 +134,9 @@ class LockComponent
             }
             if (isset($vals['isDynamicPartitionWrite'])) {
                 $this->isDynamicPartitionWrite = $vals['isDynamicPartitionWrite'];
+            }
+            if (isset($vals['defaultPartitionName'])) {
+                $this->defaultPartitionName = $vals['defaultPartitionName'];
             }
         }
     }
@@ -204,6 +216,13 @@ class LockComponent
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 9:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->defaultPartitionName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -256,6 +275,11 @@ class LockComponent
         if ($this->isDynamicPartitionWrite !== null) {
             $xfer += $output->writeFieldBegin('isDynamicPartitionWrite', TType::BOOL, 8);
             $xfer += $output->writeBool($this->isDynamicPartitionWrite);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->defaultPartitionName !== null) {
+            $xfer += $output->writeFieldBegin('defaultPartitionName', TType::STRING, 9);
+            $xfer += $output->writeString($this->defaultPartitionName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

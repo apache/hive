@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
@@ -26,6 +27,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +54,8 @@ public final class TempTable {
   }
 
   public Partition addPartition(Partition p) throws AlreadyExistsException, MetaException {
-    String partName = makePartName(tTable.getPartitionKeys(), p.getValues());
+    String partName = makePartName(tTable.getPartitionKeys(), p.getValues(),
+        MetaStoreUtils.getDefaultPartitionName(tTable.getParameters(), SessionState.getSessionConf()));
     Partition partition = pTree.addPartition(p, partName, false);
     return partition == null ? pTree.getPartition(partName) : partition;
   }
@@ -93,8 +97,8 @@ public final class TempTable {
     return partitions;
   }
 
-  public List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals) throws MetaException {
-    return pTree.getPartitionsByPartitionVals(partialPartVals);
+  public List<Partition> getPartitionsByPartitionVals(List<String> partialPartVals, Configuration conf) throws MetaException {
+    return pTree.getPartitionsByPartitionVals(partialPartVals, conf);
   }
 
   public Partition getPartitionWithAuthInfo(List<String> partionVals, String userName, List<String> groupNames)
@@ -122,8 +126,8 @@ public final class TempTable {
   }
 
   public List<Partition> listPartitionsByPartitionValsWithAuthInfo(List<String> partialVals, String userName,
-      List<String> groupNames) throws MetaException {
-    List<Partition> partitions = pTree.getPartitionsByPartitionVals(partialVals);
+      List<String> groupNames, Configuration conf) throws MetaException {
+    List<Partition> partitions = pTree.getPartitionsByPartitionVals(partialVals, conf);
     List<Partition> result = new ArrayList<>();
     partitions.forEach(p -> {
       if (checkPrivilegesForPartition(p, userName, groupNames)) {

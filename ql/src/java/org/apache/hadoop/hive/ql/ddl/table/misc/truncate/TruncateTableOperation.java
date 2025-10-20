@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.TaskQueue;
@@ -70,7 +71,9 @@ public class TruncateTableOperation extends DDLOperation<TruncateTableDesc> {
       // or the existing table is newer than our update.
       LOG.debug("DDLTask: Truncate Table/Partition is skipped as table {} / partition {} is newer than update",
           tableName, (partSpec == null) ?
-              "null" : FileUtils.makePartName(new ArrayList<>(partSpec.keySet()), new ArrayList<>(partSpec.values())));
+              "null" : FileUtils.makePartName(new ArrayList<>(partSpec.keySet()), new ArrayList<>(partSpec.values()),
+                  MetaStoreUtils.getDefaultPartitionName(context.getDb().getTable(desc.getTableNameObject().getDb(),
+                  desc.getTableNameObject().getTable()).getParameters(), context.getConf())));
       return 0;
     }
 

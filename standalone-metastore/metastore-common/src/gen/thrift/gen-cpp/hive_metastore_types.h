@@ -10333,12 +10333,13 @@ void swap(SeedTxnIdRequest &a, SeedTxnIdRequest &b);
 std::ostream& operator<<(std::ostream& out, const SeedTxnIdRequest& obj);
 
 typedef struct _LockComponent__isset {
-  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isTransactional(true), isDynamicPartitionWrite(true) {}
+  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isTransactional(true), isDynamicPartitionWrite(true), defaultPartitionName(false) {}
   bool tablename :1;
   bool partitionname :1;
   bool operationType :1;
   bool isTransactional :1;
   bool isDynamicPartitionWrite :1;
+  bool defaultPartitionName :1;
 } _LockComponent__isset;
 
 class LockComponent : public virtual ::apache::thrift::TBase {
@@ -10354,7 +10355,8 @@ class LockComponent : public virtual ::apache::thrift::TBase {
                   partitionname(),
                   operationType((DataOperationType::type)5),
                   isTransactional(false),
-                  isDynamicPartitionWrite(false) {
+                  isDynamicPartitionWrite(false),
+                  defaultPartitionName() {
     operationType = (DataOperationType::type)5;
 
   }
@@ -10380,6 +10382,7 @@ class LockComponent : public virtual ::apache::thrift::TBase {
   DataOperationType::type operationType;
   bool isTransactional;
   bool isDynamicPartitionWrite;
+  std::string defaultPartitionName;
 
   _LockComponent__isset __isset;
 
@@ -10398,6 +10401,8 @@ class LockComponent : public virtual ::apache::thrift::TBase {
   void __set_isTransactional(const bool val);
 
   void __set_isDynamicPartitionWrite(const bool val);
+
+  void __set_defaultPartitionName(const std::string& val);
 
   bool operator == (const LockComponent & rhs) const
   {
@@ -10426,6 +10431,10 @@ class LockComponent : public virtual ::apache::thrift::TBase {
     if (__isset.isDynamicPartitionWrite != rhs.__isset.isDynamicPartitionWrite)
       return false;
     else if (__isset.isDynamicPartitionWrite && !(isDynamicPartitionWrite == rhs.isDynamicPartitionWrite))
+      return false;
+    if (__isset.defaultPartitionName != rhs.__isset.defaultPartitionName)
+      return false;
+    else if (__isset.defaultPartitionName && !(defaultPartitionName == rhs.defaultPartitionName))
       return false;
     return true;
   }

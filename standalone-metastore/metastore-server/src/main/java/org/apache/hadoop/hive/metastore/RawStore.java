@@ -455,7 +455,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException this is never thrown.
    */
   boolean doesPartitionExist(String catName, String dbName, String tableName,
-      List<FieldSchema> partKeys, List<String> part_vals)
+      List<FieldSchema> partKeys, List<String> part_vals, Map<String, String> tableParams)
       throws MetaException, NoSuchObjectException;
 
   /**

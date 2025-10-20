@@ -515,8 +515,8 @@ public class Warehouse {
     }
   }
 
-  public static String escapePathName(String path) {
-    return FileUtils.escapePathName(path);
+  public static String escapePathName(String path, String defaultPartitionName) {
+    return FileUtils.escapePathName(path, defaultPartitionName);
   }
 
   private static String unescapePathName(String path) {
@@ -530,9 +530,9 @@ public class Warehouse {
    * @return string representation of the partition specification.
    * @throws MetaException
    */
-  public static String makePartPath(Map<String, String> spec)
-      throws MetaException {
-    return makePartName(spec, true);
+  public static String makePartPath(Map<String, String> spec, String defaultPartitionName)
+          throws MetaException {
+    return makePartName(spec, true, defaultPartitionName);
   }
 
   /**
@@ -543,8 +543,8 @@ public class Warehouse {
    * @return partition name
    * @throws MetaException
    */
-  public static String makePartNameUtil(Map<String, String> spec, boolean addTrailingSeperator, boolean dynamic)
-          throws MetaException {
+  public static String makePartNameUtil(Map<String, String> spec, boolean addTrailingSeperator, boolean dynamic,
+      String defaultPartitionName) throws MetaException {
     StringBuilder suffixBuf = new StringBuilder();
     int i = 0;
     for (Entry<String, String> e : spec.entrySet()) {
@@ -561,9 +561,9 @@ public class Warehouse {
       if (i > 0) {
         suffixBuf.append(Path.SEPARATOR);
       }
-      suffixBuf.append(escapePathName(e.getKey()));
+      suffixBuf.append(escapePathName(e.getKey(), defaultPartitionName));
       suffixBuf.append('=');
-      suffixBuf.append(escapePathName(e.getValue()));
+      suffixBuf.append(escapePathName(e.getValue(), defaultPartitionName));
       i++;
     }
 
@@ -581,10 +581,9 @@ public class Warehouse {
    * @return partition name
    * @throws MetaException
    */
-  public static String makePartName(Map<String, String> spec,
-      boolean addTrailingSeperator)
+  public static String makePartName(Map<String, String> spec, boolean addTrailingSeperator, String defaultPartitionName)
       throws MetaException {
-    return makePartNameUtil(spec, addTrailingSeperator, false);
+    return makePartNameUtil(spec, addTrailingSeperator, false, defaultPartitionName);
   }
 
   /**
@@ -594,10 +593,10 @@ public class Warehouse {
    * @param spec
    * @return string representation of the static part of the partition specification.
    */
-  public static String makeDynamicPartName(Map<String, String> spec) {
+  public static String makeDynamicPartName(Map<String, String> spec, String defaultPartitionName) {
     String partName = null;
     try {
-       partName = makePartNameUtil(spec, true, true);
+       partName = makePartNameUtil(spec, true, true, defaultPartitionName);
     }
     catch (MetaException e) {
       // This exception is not thrown when dynamic=true. This is a Noop and
@@ -615,10 +614,10 @@ public class Warehouse {
    * @param spec
    * @return string representation of the static part of the partition specification.
    */
-  public static String makeDynamicPartNameNoTrailingSeperator(Map<String, String> spec) {
+  public static String makeDynamicPartNameNoTrailingSeperator(Map<String, String> spec, String defaultPartitionName) {
     String partName = null;
     try {
-      partName = makePartNameUtil(spec, false, true);
+      partName = makePartNameUtil(spec, false, true, defaultPartitionName);
     }
     catch (MetaException e) {
       // This exception is not thrown when dynamic=true. This is a Noop and
@@ -744,8 +743,8 @@ public class Warehouse {
    * @throws MetaException
    */
   public Path getDefaultPartitionPath(Database db, Table table,
-      Map<String, String> pm) throws MetaException {
-    return getPartitionPath(getDefaultTablePath(db, table), pm);
+      Map<String, String> pm, String defaultPartitionName) throws MetaException {
+    return getPartitionPath(getDefaultTablePath(db, table), pm, defaultPartitionName);
   }
 
   /**
@@ -756,9 +755,8 @@ public class Warehouse {
    * @return
    * @throws MetaException
    */
-  public Path getPartitionPath(Path tblPath, Map<String, String> pm)
-      throws MetaException {
-    return new Path(tblPath, makePartPath(pm));
+  public Path getPartitionPath(Path tblPath, Map<String, String> pm, String defaultPartitionName) throws MetaException {
+    return new Path(tblPath, makePartPath(pm, defaultPartitionName));
   }
 
   /**
@@ -773,7 +771,7 @@ public class Warehouse {
    * @return Path corresponding to the partition key-value pairs
    * @throws MetaException
    */
-  public Path getPartitionPath(Database db, Table table, List<String> vals)
+  public Path getPartitionPath(Database db, Table table, List<String> vals, String defaultPartitionName)
       throws MetaException {
     List<FieldSchema> partKeys = table.getPartitionKeys();
     if (partKeys == null || (partKeys.size() != vals.size())) {
@@ -787,9 +785,9 @@ public class Warehouse {
     }
 
     if (table.getSd().getLocation() != null) {
-      return getPartitionPath(getDnsPath(new Path(table.getSd().getLocation())), pm);
+      return getPartitionPath(getDnsPath(new Path(table.getSd().getLocation())), pm, defaultPartitionName);
     } else {
-      return getDefaultPartitionPath(db, table, pm);
+      return getDefaultPartitionPath(db, table, pm, defaultPartitionName);
     }
   }
 
@@ -810,8 +808,8 @@ public class Warehouse {
   }
 
   public static String makePartName(List<FieldSchema> partCols,
-      List<String> vals) throws MetaException {
-    return makePartName(partCols, vals, null);
+      List<String> vals, String defaultPartitionName) throws MetaException {
+    return makePartName(partCols, vals, null, defaultPartitionName);
   }
 
   /**
@@ -869,7 +867,7 @@ public class Warehouse {
    * @throws MetaException
    */
   public static String makePartName(List<FieldSchema> partCols,
-      List<String> vals, String defaultStr) throws MetaException {
+      List<String> vals, String defaultStr, String defaultPartitionName) throws MetaException {
     if ((partCols.size() != vals.size()) || (partCols.size() == 0)) {
       StringBuilder errorStrBuilder = new StringBuilder("Invalid partition key & values; keys [");
       for (FieldSchema fs : partCols) {
@@ -885,7 +883,7 @@ public class Warehouse {
     for (FieldSchema col: partCols) {
       colNames.add(col.getName());
     }
-    return FileUtils.makePartName(colNames, vals, defaultStr);
+    return FileUtils.makePartName(colNames, vals, defaultStr, defaultPartitionName);
   }
 
   public static List<String> getPartValuesFromPartName(String partName)

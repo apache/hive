@@ -629,12 +629,12 @@ public class TxnUtils {
     return input != null ? " = ? " : " IS NULL ";
   }
 
-  public static String normalizePartitionCase(String s) {
+  public static String normalizePartitionCase(String s, String defaultPartitionName) {
     if (s == null) {
       return null;
     }
     Map<String, String> map = Splitter.on(Path.SEPARATOR).withKeyValueSeparator('=').split(s);
-    return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
+    return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()), defaultPartitionName);
   }
 
   @SuppressWarnings("squid:S2245")

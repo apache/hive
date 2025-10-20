@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.iceberg.AppendFiles;
@@ -123,7 +124,8 @@ public class HiveTableUtil {
           Partition partition = partitionIterator.next();
           Callable<Void> task = () -> {
             Path partitionPath = new Path(partition.getSd().getLocation());
-            String partitionName = Warehouse.makePartName(partitionKeys, partition.getValues());
+            String partitionName = Warehouse.makePartName(partitionKeys, partition.getValues(),
+                MetaStoreUtils.getDefaultPartitionName(icebergTable.properties(), conf));
             Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partitionName);
             RemoteIterator<LocatedFileStatus> iterator = getFilesIterator(partitionPath, conf);
             List<DataFile> dataFiles =

@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.MessageEncoder;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONMessageEncoder;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -156,7 +157,12 @@ public class TestHCatClient {
   }
 
   public static String makePartLocation(HCatTable table, Map<String, String> partitionSpec) throws MetaException {
-    return (new Path(table.getSd().getLocation(), Warehouse.makePartPath(partitionSpec))).toUri().toString();
+      try {
+          return (new Path(table.getSd().getLocation(), Warehouse.makePartPath(partitionSpec,
+              MetaStoreUtils.getDefaultPartitionName(table.toHiveTable().getParameters(), getConf())))).toUri().toString();
+      } catch (HCatException e) {
+          throw new RuntimeException(e);
+      }
   }
 
   @Test

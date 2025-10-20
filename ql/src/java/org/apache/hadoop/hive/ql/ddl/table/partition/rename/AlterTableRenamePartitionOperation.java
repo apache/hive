@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -49,11 +50,13 @@ public class AlterTableRenamePartitionOperation extends DDLOperation<AlterTableR
     Map<String, String> oldPartSpec = desc.getOldPartSpec();
     ReplicationSpec replicationSpec = desc.getReplicationSpec();
 
+    Table tbl = context.getDb().getTable(tableName);
     if (!AlterTableUtils.allowOperationInReplicationScope(context.getDb(), tableName, oldPartSpec, replicationSpec)) {
       // no rename, the table is missing either due to drop/rename which follows the current rename.
       // or the existing table is newer than our update.
       LOG.debug("DDLTask: Rename Partition is skipped as table {} / partition {} is newer than update", tableName,
-              FileUtils.makePartName(new ArrayList<>(oldPartSpec.keySet()), new ArrayList<>(oldPartSpec.values())));
+              FileUtils.makePartName(new ArrayList<>(oldPartSpec.keySet()), new ArrayList<>(oldPartSpec.values()),
+                  MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(), context.getConf())));
       return 0;
     }
 
@@ -62,11 +65,11 @@ public class AlterTableRenamePartitionOperation extends DDLOperation<AlterTableR
       throw new HiveException("Rename Partition: Not allowed as bootstrap dump in progress");
     }
 
-    Table tbl = context.getDb().getTable(tableName);
     Partition oldPart = context.getDb().getPartition(tbl, oldPartSpec, false);
     if (oldPart == null) {
       String partName = FileUtils.makePartName(new ArrayList<String>(oldPartSpec.keySet()),
-          new ArrayList<String>(oldPartSpec.values()));
+          new ArrayList<String>(oldPartSpec.values()), MetaStoreUtils.getDefaultPartitionName(tbl.getParameters(),
+              context.getConf()));
       throw new HiveException("Rename partition: source partition [" + partName + "] does not exist.");
     }
 

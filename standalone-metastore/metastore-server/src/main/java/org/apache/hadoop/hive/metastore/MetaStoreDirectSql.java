@@ -151,7 +151,6 @@ class MetaStoreDirectSql {
   private final DatabaseProduct dbType;
   private final int batchSize;
   private final boolean convertMapNullsToEmptyStrings;
-  private final String defaultPartName;
   private final boolean isTxnStatsEnabled;
 
   /**
@@ -220,7 +219,6 @@ class MetaStoreDirectSql {
 
     convertMapNullsToEmptyStrings =
         MetastoreConf.getBoolVar(conf, ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS);
-    defaultPartName = MetastoreConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
 
     String jdoIdFactory = MetastoreConf.getVar(conf, ConfVars.IDENTIFIER_FACTORY);
     if (! ("datanucleus1".equalsIgnoreCase(jdoIdFactory))){
@@ -748,7 +746,7 @@ class MetaStoreDirectSql {
     String tblName = table.getTableName();
 
     String sqlFilter = "" + PARTITIONS + ".\"PART_NAME\" like ? ";
-    String partialName = MetaStoreUtils.makePartNameMatcher(table, args.getPart_vals(), "_%");
+    String partialName = MetaStoreUtils.makePartNameMatcher(table, args.getPart_vals(), "_%", conf);
     List<Long> partitionIds = getPartitionFieldsViaSqlFilter(
         catName, dbName, tblName, Arrays.asList("\"PART_ID\""), sqlFilter,
         Arrays.asList(partialName), Collections.emptyList(), args.getMax());
@@ -820,7 +818,7 @@ class MetaStoreDirectSql {
       case BY_VALUES:
         // we are going to use the SQL regex pattern in the LIKE clause below. So the default string
         // is _% and not .*
-        String partNameMatcher = MetaStoreUtils.makePartNameMatcher(tbl, filters, "_%");
+        String partNameMatcher = MetaStoreUtils.makePartNameMatcher(tbl, filters, "_%", conf);
         String partNamesLikeFilter =
             "" + PARTITIONS + ".\"PART_NAME\" LIKE (?)";
         partitionIds =
@@ -879,7 +877,7 @@ class MetaStoreDirectSql {
 
   public boolean generateSqlFilterForPushdown(String catName, String dbName, String tableName,
       List<FieldSchema> partitionKeys, ExpressionTree tree, String defaultPartitionName,
-      SqlFilterForPushdown result) throws MetaException {
+      SqlFilterForPushdown result, Map<String, String> tableParams) throws MetaException {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
     assert partitionKeys != null;
     boolean dbHasJoinCastBug = dbType.hasJoinOperationOrderBug();
@@ -887,9 +885,9 @@ class MetaStoreDirectSql {
     result.dbName = dbName;
     result.catName = catName;
     result.filter = PartitionFilterGenerator.generateSqlFilter(catName, dbName, tableName,
-        partitionKeys, tree, result.params, result.joins, dbHasJoinCastBug,
-        ((defaultPartitionName == null) ? defaultPartName : defaultPartitionName),
-        dbType, schema, result.compactJoins);
+        partitionKeys, tree, result.params, result.joins, dbHasJoinCastBug, ((defaultPartitionName == null) ?
+        MetaStoreUtils.getDefaultPartitionName(tableParams, conf) : defaultPartitionName),
+        dbType, schema, result.compactJoins, conf);
     return result.filter != null;
   }
 
@@ -1281,7 +1279,7 @@ class MetaStoreDirectSql {
   }
 
   public int getNumPartitionsViaSqlPs(Table table, List<String> partVals) throws MetaException {
-    String partialName = MetaStoreUtils.makePartNameMatcher(table, partVals, "_%");
+    String partialName = MetaStoreUtils.makePartNameMatcher(table, partVals, "_%", conf);
 
     // Get number of partitions by doing count on PART_ID.
     String queryText = "select count(" + PARTITIONS + ".\"PART_ID\") from " + PARTITIONS + ""
@@ -1322,10 +1320,11 @@ class MetaStoreDirectSql {
     private final String defaultPartName;
     private final DatabaseProduct dbType;
     private final String PARTITION_KEY_VALS, PARTITIONS, DBS, TBLS;
+    private final Configuration conf;
 
     private PartitionFilterGenerator(String catName, String dbName, String tableName,
-        List<FieldSchema> partitionKeys, List<Object> params, List<String> joins,
-        boolean dbHasJoinCastBug, String defaultPartName, DatabaseProduct dbType, String schema) {
+                                     List<FieldSchema> partitionKeys, List<Object> params, List<String> joins,
+                                     boolean dbHasJoinCastBug, String defaultPartName, DatabaseProduct dbType, String schema, Configuration conf) {
       this.catName = catName;
       this.dbName = dbName;
       this.tableName = tableName;
@@ -1333,6 +1332,7 @@ class MetaStoreDirectSql {
       this.params = params;
       this.joins = joins;
       this.dbHasJoinCastBug = dbHasJoinCastBug;
+      this.conf = conf;
       this.filterBuffer = new FilterBuilder(false);
       this.defaultPartName = defaultPartName;
       this.dbType = dbType;
@@ -1355,7 +1355,7 @@ class MetaStoreDirectSql {
     private static String generateSqlFilter(String catName, String dbName, String tableName,
         List<FieldSchema> partitionKeys, ExpressionTree tree, List<Object> params,
         List<String> joins, boolean dbHasJoinCastBug, String defaultPartName,
-        DatabaseProduct dbType, String schema, boolean compactJoins) throws MetaException {
+        DatabaseProduct dbType, String schema, boolean compactJoins, Configuration conf) throws MetaException {
       if (tree == null) {
         // consistent with other APIs like makeExpressionTree, null is returned to indicate that
         // the filter could not pushed down due to parsing issue etc
@@ -1366,7 +1366,7 @@ class MetaStoreDirectSql {
       }
       PartitionFilterGenerator visitor = new PartitionFilterGenerator(
           catName, dbName, tableName, partitionKeys,
-          params, joins, dbHasJoinCastBug, defaultPartName, dbType, schema);
+          params, joins, dbHasJoinCastBug, defaultPartName, dbType, schema, conf);
       tree.accept(visitor);
       if (visitor.filterBuffer.hasError()) {
         LOG.info("Unable to push down SQL filter: " + visitor.filterBuffer.getErrorMessage());
@@ -1576,7 +1576,8 @@ class MetaStoreDirectSql {
       if (StringUtils.isNotEmpty(nodeValueStr) && (isOpEquals || isOpNotEqual)) {
         Map<String, String> partKeyToVal = new HashMap<>();
         partKeyToVal.put(partCol.getName(), nodeValueStr);
-        String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
+        String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false,
+            MetaStoreUtils.getDefaultPartitionName(null, conf));
         if (colType == FilterType.Date) {
           // Some engines like Pig will record both date and time values, in which case we need
           // match PART_NAME by like clause.

@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.RetryUtilities;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
@@ -162,7 +163,8 @@ public class Msck {
         if (acquireLock && lockRequired && table.getParameters() != null && transactionalTable) {
           // Running MSCK from beeline/cli will make DDL task acquire X lock when repair is enabled, since we are directly
           // invoking msck.repair() without SQL statement, we need to do the same and acquire X lock (repair is default)
-          LockRequest lockRequest = createLockRequest(msckInfo.getDbName(), msckInfo.getTableName());
+          LockRequest lockRequest = createLockRequest(msckInfo.getDbName(), msckInfo.getTableName(),
+              table.getParameters());
           txnId = lockRequest.getTxnid();
           try {
             LockResponse res = getMsc().lock(lockRequest);
@@ -208,7 +210,8 @@ public class Msck {
                 throw new MetastoreException(ex);
               }
               for (String val : vals) {
-                String escapedPath = FileUtils.escapePathName(val);
+                String escapedPath = FileUtils.escapePathName(val,
+                    MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
                 assert escapedPath != null;
                 if (escapedPath.equals(val)) {
                   continue;
@@ -412,7 +415,8 @@ public class Msck {
     }
   }
 
-  private LockRequest createLockRequest(final String dbName, final String tableName) throws TException {
+  private LockRequest createLockRequest(final String dbName, final String tableName, Map<String, String> tableParams)
+      throws TException {
     String username = getUserName();
     long txnId = getMsc().openTxn(username);
     String agentInfo = Thread.currentThread().getName();
@@ -423,6 +427,7 @@ public class Msck {
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
       .setDbName(dbName)
       .setTableName(tableName)
+      .setDefaultPartitionName(MetaStoreUtils.getDefaultPartitionName(tableParams, conf))
       .setIsTransactional(true)
       .setExclusive()
       // WriteType is DDL_EXCLUSIVE for MSCK REPAIR so we need NO_TXN. Refer AcidUtils.makeLockComponents
@@ -482,7 +487,8 @@ public class Msck {
                 continue;
               }
               Map<String, String> partSpec = Warehouse.makeSpecFromName(part.getPartitionName());
-              Path location = part.getLocation(tablePath, partSpec);
+              Path location = part.getLocation(tablePath, partSpec,
+                  MetaStoreUtils.getDefaultPartitionName(table.getParameters(), conf));
               Partition partition = MetaStoreServerUtils.createMetaPartitionObject(table, partSpec, location);
               partition.setWriteId(table.getWriteId());
               partsToAdd.add(partition);
@@ -505,7 +511,7 @@ public class Msck {
     }.run();
   }
 
-  private static String makePartExpr(Map<String, String> spec)
+  private static String makePartExpr(Map<String, String> spec, Map<String, String> tableParams, Configuration conf)
     throws MetaException {
     StringBuilder suffixBuf = new StringBuilder("(");
     int i = 0;
@@ -516,9 +522,10 @@ public class Msck {
       if (i > 0) {
         suffixBuf.append(" AND ");
       }
-      suffixBuf.append(Warehouse.escapePathName(e.getKey()));
+      suffixBuf.append(Warehouse.escapePathName(e.getKey(), MetaStoreUtils.getDefaultPartitionName(tableParams, conf)));
       suffixBuf.append('=');
-      suffixBuf.append("'").append(Warehouse.escapePathName(e.getValue())).append("'");
+      suffixBuf.append("'").append(Warehouse.escapePathName(e.getValue(),
+          MetaStoreUtils.getDefaultPartitionName(tableParams, conf))).append("'");
       i++;
     }
     suffixBuf.append(")");
@@ -580,7 +587,7 @@ public class Msck {
             // so 3rd parameter (deleteData) is set to false
             // msck is doing a clean up of hms.  if for some reason the partition is already
             // deleted, then it is good.  So, the last parameter ifexists is set to true
-            List<Pair<Integer, byte[]>> partExprs = getPartitionExpr(dropParts);
+            List<Pair<Integer, byte[]>> partExprs = getPartitionExpr(dropParts, table.getParameters(), conf);
             metastoreClient.dropPartitions(table.getCatName(), table.getDbName(), table.getTableName(), partExprs, dropOptions);
 
             // if last batch is successful remove it from partsNotInFs
@@ -593,12 +600,13 @@ public class Msck {
         }
       }
 
-      private List<Pair<Integer, byte[]>> getPartitionExpr(final List<String> parts) throws MetaException {
+      private List<Pair<Integer, byte[]>> getPartitionExpr(final List<String> parts, Map<String, String> tableParams,
+          Configuration conf) throws MetaException {
         StringBuilder exprBuilder = new StringBuilder();
         for (int i = 0; i < parts.size(); i++) {
           String partName = parts.get(i);
           Map<String, String> partSpec = Warehouse.makeSpecFromName(partName);
-          String partExpr = makePartExpr(partSpec);
+          String partExpr = makePartExpr(partSpec, tableParams, conf);
           if (LOG.isDebugEnabled()) {
             LOG.debug("Generated partExpr: {} for partName: {}", partExpr, partName);
           }
