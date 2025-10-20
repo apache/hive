@@ -22,7 +22,6 @@ package org.apache.iceberg.hive;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -31,11 +30,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.expressions.Expressions;
-import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
-import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
-import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.slf4j.Logger;
@@ -63,9 +59,9 @@ class HiveSchemaConverter {
     return new Schema(converter.convertInternal(names, typeInfos, defaultValues, comments));
   }
 
-  static Type convert(TypeInfo typeInfo, boolean autoConvert) {
+  public static Type convert(TypeInfo typeInfo, boolean autoConvert, String defaultValue) {
     HiveSchemaConverter converter = new HiveSchemaConverter(autoConvert);
-    return converter.convertType(typeInfo, null);
+    return converter.convertType(typeInfo, defaultValue);
   }
 
   List<Types.NestedField> convertInternal(List<String> names, List<TypeInfo> typeInfos,
@@ -86,7 +82,7 @@ class HiveSchemaConverter {
 
       if (defaultValues.containsKey(columnName)) {
         if (type.isPrimitiveType()) {
-          Object icebergDefaultValue = getDefaultValue(defaultValues.get(columnName), type);
+          Object icebergDefaultValue = HiveSchemaUtil.getDefaultValue(defaultValues.get(columnName), type);
           fieldBuilder.withWriteDefault(Expressions.lit(icebergDefaultValue));
         } else if (!type.isStructType()) {
           throw new UnsupportedOperationException(
@@ -97,13 +93,6 @@ class HiveSchemaConverter {
       result.add(fieldBuilder.build());
     }
     return result;
-  }
-
-  private static Object getDefaultValue(String defaultValue, Type type) {
-    return switch (type.typeId()) {
-      case DATE, TIME, TIMESTAMP, TIMESTAMP_NANO -> Literal.of(stripQuotes(defaultValue)).to(type).value();
-      default -> Conversions.fromPartitionString(type, stripQuotes(defaultValue));
-    };
   }
 
   Type convertType(TypeInfo typeInfo, String defaultValue) {
@@ -162,7 +151,7 @@ class HiveSchemaConverter {
         StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
         List<Types.NestedField> fields =
             convertInternal(structTypeInfo.getAllStructFieldNames(), structTypeInfo.getAllStructFieldTypeInfos(),
-                getDefaultValuesMap(defaultValue), Collections.emptyList());
+                HiveSchemaUtil.getDefaultValuesMap(defaultValue), Collections.emptyList());
         return Types.StructType.of(fields);
       case MAP:
         MapTypeInfo mapTypeInfo = (MapTypeInfo) typeInfo;
@@ -181,21 +170,5 @@ class HiveSchemaConverter {
       default:
         throw new IllegalArgumentException("Unknown type " + typeInfo.getCategory());
     }
-  }
-
-  private static Map<String, String> getDefaultValuesMap(String defaultValue) {
-    if (StringUtils.isEmpty(defaultValue)) {
-      return Collections.emptyMap();
-    }
-    // For Struct, the default value is expected to be in key:value format
-    return Splitter.on(',').trimResults().withKeyValueSeparator(':').split(stripQuotes(defaultValue));
-  }
-
-  public static String stripQuotes(String val) {
-    if (val.charAt(0) == '\'' && val.charAt(val.length() - 1) == '\'' ||
-        val.charAt(0) == '"' && val.charAt(val.length() - 1) == '"') {
-      return val.substring(1, val.length() - 1);
-    }
-    return val;
   }
 }

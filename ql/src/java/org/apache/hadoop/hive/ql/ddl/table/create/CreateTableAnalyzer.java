@@ -55,8 +55,6 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
-import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
-import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.ddl.table.convert.AlterTableConvertOperation;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
@@ -187,29 +185,6 @@ public class CreateTableAnalyzer extends CalcitePlanner {
       return JSON_OBJECT_MAPPER.writer().writeValueAsString(sortFields);
     } catch (JsonProcessingException e) {
       LOG.warn("Can not create write order json. ", e);
-      return null;
-    }
-  }
-
-  /**
-   * Converts AST child nodes to a JSON string of Z-order fields.
-   * Returns null if JSON serialization fails.
-   *
-   * @param ast AST node containing Z-order field names
-   * @return JSON string of Z-order fields or null on error
-   */
-  private String getZOrderJson(ASTNode ast) {
-    List<ZOrderFieldDesc> zOrderFieldDescs = new ArrayList<>();
-    ZOrderFields zOrderFields = new ZOrderFields(zOrderFieldDescs);
-    for (int i = 0; i < ast.getChildCount(); i++) {
-      ASTNode child = (ASTNode) ast.getChild(i);
-      String name = unescapeIdentifier(child.getText()).toLowerCase();
-      zOrderFieldDescs.add(new ZOrderFieldDesc(name));
-    }
-    try {
-      return JSON_OBJECT_MAPPER.writer().writeValueAsString(zOrderFields);
-    } catch (JsonProcessingException e) {
-      LOG.warn("Can not create z-order json. ", e);
       return null;
     }
   }
@@ -520,9 +495,6 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         case HiveParser.TOK_WRITE_LOCALLY_ORDERED:
           sortOrder = getSortOrderJson((ASTNode) child.getChild(0));
           break;
-        case HiveParser.TOK_WRITE_LOCALLY_ZORDER:
-          sortOrder = getZOrderJson((ASTNode) child.getChild(0));
-          break;
         case HiveParser.TOK_TABLEROWFORMAT:
           rowFormatParams.analyzeRowFormat(child);
           break;
@@ -683,7 +655,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         SessionStateUtil.addResourceOrThrow(conf, META_TABLE_LOCATION, tblLocation);
 
         if (isExt && ConstraintsUtils.hasEnabledOrValidatedConstraints(notNullConstraints, crtTblDesc.getDefaultConstraints(),
-            checkConstraints)) {
+            checkConstraints, isNativeColumnDefaultSupported)) {
           throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg(
               "Constraints are disallowed with External tables. " + "Only RELY is allowed."));
         }

@@ -687,38 +687,6 @@ public class TestCompactionTxnHandler {
   }
 
   @Test
-  public void testRevokeFromLocalWorkers() throws Exception {
-    CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
-    txnHandler.compact(rqst);
-    rqst = new CompactionRequest("foo", "baz", CompactionType.MINOR);
-    txnHandler.compact(rqst);
-    rqst = new CompactionRequest("foo", "bazzoo", CompactionType.MINOR);
-    txnHandler.compact(rqst);
-    assertNotNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred-193892", WORKER_VERSION)));
-    assertNotNull(txnHandler.findNextToCompact(aFindNextCompactRequest("bob-193892", WORKER_VERSION)));
-    assertNotNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred-193893", WORKER_VERSION)));
-    txnHandler.revokeFromLocalWorkers("fred");
-
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
-    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
-    assertEquals(3, compacts.size());
-    boolean sawWorkingBob = false;
-    int initiatedCount = 0;
-    for (ShowCompactResponseElement c : compacts) {
-      if (c.getState().equals("working")) {
-        assertEquals("bob-193892", c.getWorkerid());
-        sawWorkingBob = true;
-      } else if (c.getState().equals("initiated")) {
-        initiatedCount++;
-      } else {
-        fail("Unexpected state");
-      }
-    }
-    assertTrue(sawWorkingBob);
-    assertEquals(2, initiatedCount);
-  }
-
-  @Test
   public void testRevokeTimedOutWorkers() throws Exception {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
     txnHandler.compact(rqst);

@@ -82,7 +82,6 @@ import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
 import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableSetPropertiesDesc;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.IOConstants;
@@ -120,7 +119,6 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandler
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.stats.Partish;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -186,7 +184,6 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.actions.HiveIcebergDeleteOrphanFiles;
 import org.apache.iceberg.mr.hive.plan.IcebergBucketFunction;
-import org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder;
 import org.apache.iceberg.puffin.Blob;
 import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.puffin.Puffin;
@@ -221,8 +218,6 @@ import static org.apache.iceberg.SnapshotSummary.TOTAL_EQ_DELETES_PROP;
 import static org.apache.iceberg.SnapshotSummary.TOTAL_FILE_SIZE_PROP;
 import static org.apache.iceberg.SnapshotSummary.TOTAL_POS_DELETES_PROP;
 import static org.apache.iceberg.SnapshotSummary.TOTAL_RECORDS_PROP;
-import static org.apache.iceberg.mr.InputFormatConfig.SORT_COLUMNS;
-import static org.apache.iceberg.mr.InputFormatConfig.SORT_ORDER;
 
 public class HiveIcebergStorageHandler extends DefaultStorageHandler implements HiveStoragePredicateHandler {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandler.class);
@@ -934,62 +929,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       addCustomSortExpr(table, hmsTable, writeOperation, dpCtx, getSortTransformSpec(table));
     }
 
-    // Even if table has no explicit sort order, honor z-order if configured
-    Map<String, String> props = table.properties();
-    if ("ZORDER".equalsIgnoreCase(props.getOrDefault(SORT_ORDER, ""))) {
-      createZOrderCustomSort(props, dpCtx, table, hmsTable, writeOperation);
-    }
-
     return dpCtx;
-  }
-
-  /**
-   * Adds a custom sort expression to the DynamicPartitionCtx that performs local Z-ordering on write.
-   *
-   * Behavior:
-   * - Reads Z-order properties from 'sort.order' and 'sort.columns' (comma-separated).
-   * - Resolves the referenced columns to their positions in the physical row (taking into account
-   *   ACID virtual columns offset for overwrite/update operations).
-   * - Configures a single ASC sort key with NULLS FIRST and injects a custom key expression for
-   *   Z-order
-   */
-  private void createZOrderCustomSort(Map<String, String> props, DynamicPartitionCtx dpCtx, Table table,
-          org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation) {
-    String colsProp = props.get(SORT_COLUMNS);
-    if (StringUtils.isNotBlank(colsProp)) {
-      List<String> zCols = Arrays.stream(colsProp.split(",")).map(String::trim)
-              .filter(s -> !s.isEmpty()).collect(Collectors.toList());
-
-      Map<String, Integer> fieldOrderMap = Maps.newHashMap();
-      List<Types.NestedField> fields = table.schema().columns();
-      for (int i = 0; i < fields.size(); ++i) {
-        fieldOrderMap.put(fields.get(i).name(), i);
-      }
-      int offset = (shouldOverwrite(hmsTable, writeOperation) ?
-              ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA : acidSelectColumns(hmsTable, writeOperation)).size();
-
-      List<Integer> zIndices = zCols.stream().map(col -> {
-        Integer base = fieldOrderMap.get(col);
-        Preconditions.checkArgument(base != null, "Z-order column not found in schema: %s", col);
-        return base + offset;
-      }).collect(Collectors.toList());
-
-      dpCtx.setCustomSortOrder(Lists.newArrayList(Collections.singletonList(1)));
-      dpCtx.setCustomSortNullOrder(Lists.newArrayList(Collections.singletonList(NullOrdering.NULLS_FIRST.getCode())));
-
-      dpCtx.addCustomSortExpressions(Collections.singletonList(allCols -> {
-        List<ExprNodeDesc> args = Lists.newArrayListWithExpectedSize(zIndices.size());
-        for (Integer idx : zIndices) {
-          args.add(allCols.get(idx));
-        }
-        try {
-          GenericUDF udf = new GenericUDFIcebergZorder();
-          return ExprNodeGenericFuncDesc.newInstance(udf, "iceberg_zorder", args);
-        } catch (UDFArgumentException e) {
-          throw new RuntimeException(e);
-        }
-      }));
-    }
   }
 
   private void addCustomSortExpr(Table table,  org.apache.hadoop.hive.ql.metadata.Table hmsTable,

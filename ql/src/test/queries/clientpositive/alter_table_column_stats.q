@@ -2,7 +2,7 @@
 --! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 
-set hive.metastore.try.direct.sql=true;
+set metaconf:metastore.try.direct.sql=true;
 
 drop database if exists statsdb1;
 create database statsdb1;
@@ -134,7 +134,7 @@ use default;
 drop database statsdb1;
 drop database statsdb2;
 
-set hive.metastore.try.direct.sql=false;
+set metaconf:metastore.try.direct.sql=false;
 
 drop database if exists statsdb1;
 create database statsdb1;
@@ -266,8 +266,8 @@ use default;
 drop database statsdb1;
 drop database statsdb2;
 
--- Test for external tables with hive.metastore.try.direct.sql.ddl as false
-set hive.metastore.try.direct.sql.ddl=false;
+-- Test for external tables with metastore.try.direct.sql.ddl as false
+set metaconf:metastore.try.direct.sql.ddl=false;
 
 drop database if exists statsdb1;
 create database statsdb1;

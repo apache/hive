@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -31,7 +32,9 @@ import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -247,5 +250,15 @@ public final class DDLUtils {
     return isIcebergTable(table) && 
       table.getStorageHandler().getPartitionTransformSpec(table).stream()
           .anyMatch(spec -> spec.getTransformType() != TransformSpec.TransformType.IDENTITY);
+  }
+
+  public static void setDefaultColumnValues(Table table, TableName tableName,
+      List<ConstraintsUtils.ConstraintInfo> defaultConstraintsInfo, Configuration conf) throws SemanticException {
+    boolean isNativeColumnDefaultSupported = table.getStorageHandler() != null && table.getStorageHandler()
+        .supportsDefaultColumnValues(table.getParameters());
+    List<SQLDefaultConstraint> defaultConstraints = new ArrayList<>();
+    ConstraintsUtils.constraintInfosToDefaultConstraints(tableName, defaultConstraintsInfo, defaultConstraints,
+        isNativeColumnDefaultSupported);
+    SessionStateUtil.addResourceOrThrow(conf, SessionStateUtil.COLUMN_DEFAULTS, defaultConstraints);
   }
 }

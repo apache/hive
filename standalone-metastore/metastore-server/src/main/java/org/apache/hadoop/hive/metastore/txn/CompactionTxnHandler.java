@@ -259,33 +259,10 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   /**
-   * This will take all entries assigned to workers
-   * on a host return them to INITIATED state.  The initiator should use this at start up to
-   * clean entries from any workers that were in the middle of compacting when the metastore
-   * shutdown.  It does not reset entries from worker threads on other hosts as those may still
-   * be working.
-   * @param hostname Name of this host.  It is assumed this prefixes the thread's worker id,
-   *                 so that like hostname% will match the worker id.
-   */
-  @Override
-  @RetrySemantics.Idempotent
-  public void revokeFromLocalWorkers(String hostname) throws MetaException {
-    jdbcResource.execute(
-        "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL," +
-            " \"CQ_STATE\" = :initiatedState WHERE \"CQ_STATE\" = :workingState AND \"CQ_WORKER_ID\" LIKE :hostname",
-        new MapSqlParameterSource()
-            .addValue("initiatedState", Character.toString(INITIATED_STATE), Types.CHAR)
-            .addValue("workingState", Character.toString(WORKING_STATE), Types.CHAR)
-            .addValue("hostname", hostname + "%"),
-        null);
-  }
-
-  /**
    * This call will return all compaction queue
    * entries assigned to a worker but over the timeout back to the initiated state.
    * This should be called by the initiator on start up and occasionally when running to clean up
-   * after dead threads.  At start up {@link #revokeFromLocalWorkers(String)} should be called
-   * first.
+   * after dead threads.
    * @param timeout number of milliseconds since start time that should elapse before a worker is
    *                declared dead.
    */

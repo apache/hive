@@ -182,6 +182,12 @@ public class GroupingSetOptimizer extends Transform {
     }
 
     private String selectPartitionColumn(GroupByOperator gby, Operator<?> parentOp) {
+      if (parentOp.getColumnExprMap() == null) {
+        LOG.debug("Skip grouping-set optimization as the parent operator {} does not define a column " +
+                        "expression mapping", parentOp);
+        return null;
+      }
+
       if (parentOp.getSchema() == null || parentOp.getSchema().getSignature() == null) {
         LOG.debug("Skip grouping-set optimization as the parent operator {} does not provide signature",
             parentOp);

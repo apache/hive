@@ -524,7 +524,6 @@ TOK_AS_OF_VERSION;
 TOK_FROM_VERSION;
 TOK_AS_OF_TAG;
 TOK_WRITE_LOCALLY_ORDERED;
-TOK_WRITE_LOCALLY_ZORDER;
 }
 
 
@@ -569,7 +568,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_NULLS", "NULLS");
     xlateMap.put("KW_LAST", "LAST");
     xlateMap.put("KW_ORDER", "ORDER");
-    xlateMap.put("KW_ZORDER", "ZORDER");
     xlateMap.put("KW_ORDERED", "ORDERED");
     xlateMap.put("KW_LOCALLY", "LOCALLY");
     xlateMap.put("KW_BY", "BY");
@@ -1883,14 +1881,6 @@ tableWriteLocallyOrdered
       KW_WRITE KW_LOCALLY KW_ORDERED KW_BY sortCols=columnNameOrderList
     -> ^(TOK_WRITE_LOCALLY_ORDERED $sortCols?)
     ;
-
-tableWriteLocallyZorder
-@init { pushMsg("table zorder sort specification", state); }
-@after { popMsg(state); }
-    :
-      KW_WRITE KW_LOCALLY KW_ZORDER KW_BY LPAREN sortCols=columnNameList RPAREN
-    -> ^(TOK_WRITE_LOCALLY_ZORDER $sortCols?)
-    ;
     
 tableSkewed
 @init { pushMsg("table skewed specification", state); }
@@ -2296,11 +2286,16 @@ columnRefOrder
 columnNameType
 @init { pushMsg("column specification", state); }
 @after { popMsg(state); }
-    : colName=identifier colType (KW_COMMENT comment=StringLiteral)?
-    -> {containExcludedCharForCreateTableColumnName($colName.text)}? {throwColumnNameException()}
-    -> {$comment == null}? ^(TOK_TABCOL $colName colType)
-    ->                     ^(TOK_TABCOL $colName colType $comment)
+    : colName=identifier colType
+      (KW_COMMENT comment=StringLiteral)?
+      defaultClause
+    -> ^(TOK_TABCOL $colName colType $comment? defaultClause?)
     ;
+
+defaultClause
+    : (KW_DEFAULT v=expression -> ^(TOK_DEFAULT_VALUE $v))?
+    ;
+
 
 columnNameTypeOrConstraint
 @init { pushMsg("column name or constraint", state); }

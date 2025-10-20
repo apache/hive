@@ -39,6 +39,7 @@ public class SessionStateUtil {
   private static final String CONFLICT_DETECTION_FILTER = "conflictDetectionFilter.";
   public static final String DEFAULT_TABLE_LOCATION = "defaultLocation";
   public static final String MISSING_COLUMNS = "missingColumns";
+  public static final String COLUMN_DEFAULTS = "columnDefaults";
 
   private SessionStateUtil() {
   }
