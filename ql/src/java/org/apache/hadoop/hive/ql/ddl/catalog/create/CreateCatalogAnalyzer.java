@@ -59,7 +59,7 @@ public class CreateCatalogAnalyzer extends BaseSemanticAnalyzer {
         case HiveParser.TOK_CATALOGCOMMENT:
           comment = unescapeSQLString(childNode.getChild(0).getText());
           break;
-        case HiveParser.TOK_CATALOGPROPERTIES:
+        case HiveParser.TOK_PROPERTIES:
           props = getProps((ASTNode) childNode.getChild(0));
           break;
         default:

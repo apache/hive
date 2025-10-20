@@ -159,7 +159,7 @@ TOK_UNIONTYPE;
 TOK_VARIANT;
 TOK_COLTYPELIST;
 TOK_CREATECATALOG;
-TOK_CATALOGPROPERTIES;
+TOK_PROPERTIES;
 TOK_CREATEDATABASE;
 TOK_CREATEDATACONNECTOR;
 TOK_CREATETABLE;
@@ -171,7 +171,6 @@ TOK_DATACONNECTORCOMMENT;
 TOK_DATACONNECTORTYPE;
 TOK_DATACONNECTORURL;
 TOK_DATACONNECTOROWNER;
-TOK_DATACONNECTORPROPERTIES;
 TOK_DROPDATACONNECTOR;
 TOK_DESCTABLE;
 TOK_DESCFUNCTION;
@@ -381,7 +380,6 @@ TOK_CATALOGCOMMENT;
 TOK_ALTERCATALOG_LOCATION;
 TOK_ALTERCATALOG_PROPERTIES;
 TOK_DESCDATABASE;
-TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
 TOK_DATABASE_MANAGEDLOCATION;
 TOK_PROPLIST;
@@ -1129,7 +1127,7 @@ createCatalogStatement
         name=identifier
         catLocation
         catalogComment?
-        (KW_PROPERTIES catprops=catProperties)?
+        (KW_PROPERTIES catprops=properties)?
     -> ^(TOK_CREATECATALOG $name catLocation ifNotExists? catalogComment? $catprops?)
     ;
 
@@ -1147,11 +1145,11 @@ catalogComment
     -> ^(TOK_CATALOGCOMMENT $comment)
     ;
 
-catProperties
-@init { pushMsg("catproperties", state); }
+properties
+@init { pushMsg("properties", state); }
 @after { popMsg(state); }
     :
-      LPAREN propertiesList RPAREN -> ^(TOK_CATALOGPROPERTIES propertiesList)
+      LPAREN propertiesList RPAREN -> ^(TOK_PROPERTIES propertiesList)
     ;
 
 dropCatalogStatement
@@ -1170,7 +1168,7 @@ createDatabaseStatement
         databaseComment?
         dbLocation?
         dbManagedLocation?
-        (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
+        (KW_WITH KW_DBPROPERTIES dbprops=properties)?
     -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
 
     | KW_CREATE KW_REMOTE (KW_DATABASE|KW_SCHEMA)
@@ -1178,7 +1176,7 @@ createDatabaseStatement
         name=identifier
         databaseComment?
         dbConnectorName
-        (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
+        (KW_WITH KW_DBPROPERTIES dbprops=properties)?
     -> ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName)
     ;
 
@@ -1194,13 +1192,6 @@ dbManagedLocation
 @after { popMsg(state); }
     :
       KW_MANAGEDLOCATION locn=StringLiteral -> ^(TOK_DATABASE_MANAGEDLOCATION $locn)
-    ;
-
-dbProperties
-@init { pushMsg("dbproperties", state); }
-@after { popMsg(state); }
-    :
-      LPAREN propertiesList RPAREN -> ^(TOK_DATABASEPROPERTIES propertiesList)
     ;
 
 propertiesList

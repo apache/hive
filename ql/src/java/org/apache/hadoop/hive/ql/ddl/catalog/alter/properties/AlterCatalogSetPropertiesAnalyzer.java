@@ -44,7 +44,7 @@ public class AlterCatalogSetPropertiesAnalyzer extends AbstractAlterCatalogAnaly
         Map<String, String> catProps = null;
         for (int i = 1; i < root.getChildCount(); i++) {
             ASTNode childNode = (ASTNode) root.getChild(i);
-            if (childNode.getToken().getType() == HiveParser.TOK_CATALOGPROPERTIES) {
+            if (childNode.getToken().getType() == HiveParser.TOK_PROPERTIES) {
                 catProps = getProps((ASTNode) childNode.getChild(0));
                 break;
             } else {
