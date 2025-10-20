@@ -87,14 +87,14 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   private volatile long lockId = -1;
 
   // Leadership change listeners
-  private List<LeadershipStateListener> listeners = new ArrayList<>();
+  private final List<LeadershipStateListener> listeners = new ArrayList<>();
 
   // Property for testing only
   public static final String METASTORE_RENEW_LEASE = "metastore.renew.leader.lease";
 
   private String name;
-  private String userName;
-  private String hostName;
+  private final String userName;
+  private final String hostName;
   private boolean enforceMutex;
 
   public LeaseLeaderElection() throws IOException {
@@ -151,8 +151,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
           listener.lossLeadership(this);
         }
       } catch (Exception e) {
-        LOG.error("Error notifying the listener: " + listener +
-            ", leader: " + isLeader, e);
+        LOG.error("Error notifying the listener: {}, leader: {}", listener, isLeader, e);
       }
     });
   }
@@ -213,7 +212,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       nextSleep = maxSleep;
     try {
       Thread.sleep(nextSleep);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException ignored) {
     }
   }
 
@@ -301,9 +300,9 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   }
 
   private class NonLeaderWatcher extends LeaseWatcher {
-    private long sleep;
+    private final long sleep;
     private int count;
-    private CheckLockRequest request;
+    private final CheckLockRequest request;
 
     NonLeaderWatcher(Configuration conf, TableName table) {
       super(conf, table);
@@ -355,8 +354,8 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   }
 
   private class Heartbeater extends LeaseWatcher {
-    private HeartbeatRequest req;
-    private long heartbeatInterval;
+    private final HeartbeatRequest req;
+    private final long heartbeatInterval;
 
     Heartbeater(Configuration conf, TableName table) {
       super(conf, table);
@@ -396,7 +395,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
         reclaim();
       } catch (Exception e) {
         // Wait for next cycle.
-        LOG.warn("Heartbeat failed with exception: " + e.getMessage(), e);
+        LOG.warn("Heartbeat failed with exception: {}", e.getMessage(), e);
       }
     }
 
@@ -461,7 +460,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       } catch (NoSuchLockException | TxnOpenException e) {
         // ignore
       } catch (Exception e) {
-        LOG.error("Error while unlocking: " + lockId, e);
+        LOG.error("Error while unlocking: {}", lockId, e);
       }
     }
   }
