@@ -64,4 +64,6 @@ get_json_object('[{"k1":[{"k11":[1,2,3]}]}]', '$[0].k1[0].k11[1]');
 SELECT
 get_json_object('[1,2,3]', '[2]'),
 get_json_object('[1,2,3]', '$0'),
+get_json_object('[1,2,3]', '$[0 ]'),
+get_json_object('[1,2,3]', '$[ 0]'),
 get_json_object('[1,2,3]', '$[3]');

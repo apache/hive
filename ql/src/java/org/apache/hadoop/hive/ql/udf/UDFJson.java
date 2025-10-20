@@ -239,11 +239,12 @@ public class UDFJson extends UDF {
       indexListCache.put(path, indexList);
     }
 
-    if (indexList.size() > 0) {
-      json = extract_json_withindex(json, indexList);
+    if (indexList.isEmpty()) {
+      // Return null if index is invalid.
+      return path.contains("[") ? null : json;
     }
 
-    return json;
+    return extract_json_withindex(json, indexList);
   }
 
   private transient AddingList jsonList = new AddingList();
