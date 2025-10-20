@@ -139,7 +139,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     default:
       throw new IllegalStateException("Unexpected lock state: " + resp.getState());
     }
-    LOG.info("Spent {}ms to notify the listeners, isLeader: {}", System.currentTimeMillis() - start, isLeader);
+    LOG.debug("Spent {}ms to notify the listeners, isLeader: {}", System.currentTimeMillis() - start, isLeader);
   }
 
   private void notifyListener() {
@@ -185,7 +185,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
         LockResponse res = store.lock(req);
         if (res.getState() == LockState.WAITING || res.getState() == LockState.ACQUIRED) {
           lockable = true;
-          LOG.info("{} Spent {}ms to take part in election, retries: {}", getName(), System.currentTimeMillis() - start, i);
+          LOG.debug("{} Spent {}ms to take part in election, retries: {}", getName(), System.currentTimeMillis() - start, i);
           doWork(res, conf, table);
           break;
         }

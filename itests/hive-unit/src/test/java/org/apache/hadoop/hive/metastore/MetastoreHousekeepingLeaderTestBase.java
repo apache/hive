@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Base class for HMS leader config testing.
  */
-public class MetastoreHousekeepingLeaderTestBase {
+public abstract class MetastoreHousekeepingLeaderTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreHousekeepingLeaderTestBase.class);
   private static HiveMetaStoreClient client;
   protected Configuration conf;

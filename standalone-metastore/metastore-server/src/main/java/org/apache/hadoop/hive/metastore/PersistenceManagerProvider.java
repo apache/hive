@@ -173,7 +173,7 @@ public class PersistenceManagerProvider {
       return;
     }
     LOG.info("Updating the pmf due to property change");
-    if (LOG.isDebugEnabled() && !newProps.equals(prop)) {
+    if (!newProps.equals(prop)) {
       for (String key : prop.stringPropertyNames()) {
         if (!key.equals(newProps.get(key))) {
           if (MetastoreConf.isPrintable(key)) {
@@ -185,10 +185,10 @@ public class PersistenceManagerProvider {
               oldVal = MetaStoreServerUtils.anonymizeConnectionURL(oldVal);
               newVal = MetaStoreServerUtils.anonymizeConnectionURL(newVal);
             }
-            LOG.info("Found {} to be different. Old val : {} : New Val : {}", key,
+            LOG.warn("Found {} to be different. Old val : {} : New Val : {}", key,
                 oldVal, newVal);
           } else {
-            LOG.info("Found masked property {} to be different", key);
+            LOG.warn("Found masked property {} to be different", key);
           }
         }
       }
