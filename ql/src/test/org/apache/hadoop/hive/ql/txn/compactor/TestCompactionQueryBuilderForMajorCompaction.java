@@ -172,7 +172,7 @@ public class TestCompactionQueryBuilderForMajorCompaction extends CompactionQuer
     queryBuilder.setIsDeleteDelta(true);
     String query = queryBuilder.build();
     String expectedQuery =
-        "ALTER table comp_test_result_table add partition (file_name='test_delta_1') location '/compaction/test/table/test_delta_1' partition (file_name='test_delta_3') location '/compaction/test/table/test_delta_3' ";
+        "ALTER table comp_test_result_table add partition (file_name='test_delta_1') location '/compaction/test/table/test_delta_1' partition (file_name='test_delta_2') location '/compaction/test/table/test_delta_2' partition (file_name='test_delta_3') location '/compaction/test/table/test_delta_3' ";
     Assert.assertEquals(expectedQuery, query);
   }
 
