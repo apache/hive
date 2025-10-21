@@ -59,11 +59,11 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
         for (Map.Entry<String, String> entry : dbProps.entrySet()) {
           newDbProps.put(entry.getKey(), entry.getValue());
         }
-        //TODO catalog. Need to double check the acutual catalog here.
+        // TODO catalog. Need to double check the actual catalog here. Depend on HIVE-29278
         alterDbDesc = new AlterDatabaseSetPropertiesDesc(HiveUtils.getCurrentCatalogOrDefault(context.hiveConf),
                 actualDbName, newDbProps, context.eventOnlyReplicationSpec());
       } else {
-        // TODO catalog. Need to double the actual catalog here.
+        // TODO catalog. Need to double the actual catalog here. Depend on HIVE-29278
         alterDbDesc = new AlterDatabaseSetOwnerDesc(HiveUtils.getCurrentCatalogOrDefault(context.hiveConf), actualDbName,
                 new PrincipalDesc(newDb.getOwnerName(), newDb.getOwnerType()), context.eventOnlyReplicationSpec());
       }

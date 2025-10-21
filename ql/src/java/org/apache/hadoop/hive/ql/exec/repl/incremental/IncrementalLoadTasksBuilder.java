@@ -265,7 +265,7 @@ public class IncrementalLoadTasksBuilder {
     HashMap<String, String> mapProp = new HashMap<>();
     mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(), replState);
 
-    // TODO catalog. Need to double check the actual catalog here.
+    // TODO catalog. Need to double check the actual catalog here. Depend on HIVE-29278
     AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(HiveUtils.getCurrentCatalogOrDefault(conf),
             dbName, mapProp, new ReplicationSpec(replState, replState));
     Task<?> updateReplIdTask = TaskFactory.get(new DDLWork(inputs, outputs, alterDbDesc,

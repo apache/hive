@@ -449,7 +449,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     Map<String, String> props = new HashMap<>();
     props.put(READONLY, Boolean.TRUE.toString());
 
-    // TODO catalog. Need to double check the actual catalog here.
+    // TODO catalog. Need to double check the actual catalog here. Depend on HIVE-29278
     AlterDatabaseSetPropertiesDesc setTargetReadOnly =
       new AlterDatabaseSetPropertiesDesc(HiveUtils.getCurrentCatalogOrDefault(conf), work.dbNameToLoadIn, props, null);
     DDLWork alterDbPropWork = new DDLWork(new HashSet<>(), new HashSet<>(), setTargetReadOnly, true,
@@ -883,7 +883,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       props.put(ReplConst.REPL_FAILOVER_ENDPOINT, "");
     }
     if (!props.isEmpty()) {
-      // TODO catalog. Need to double check the actual catalog here.
+      // TODO catalog. Need to double check the actual catalog here. Depend on HIVE-29278
       AlterDatabaseSetPropertiesDesc setTargetDesc = new AlterDatabaseSetPropertiesDesc(targetDb.getCatalogName(),
               work.dbNameToLoadIn, props, null);
       Task<?> addReplTargetPropTask =
@@ -931,7 +931,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         String lastEventid = builder.eventTo().toString();
         Map<String, String> mapProp = new HashMap<>();
         mapProp.put(ReplicationSpec.KEY.CURR_STATE_ID_SOURCE.toString(), lastEventid);
-        // TODO catalog. Need to double check the actual catalog here.
+        // TODO catalog. Need to double check the actual catalog here. Depend on HIVE-29278
         AlterDatabaseSetPropertiesDesc alterDbDesc =
             new AlterDatabaseSetPropertiesDesc(targetDb.getCatalogName(), dbName, mapProp,
                 new ReplicationSpec(lastEventid, lastEventid));
