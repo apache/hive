@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -162,19 +163,19 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertTrue(db2Tables.contains(db2Ptbl1.getTableName()));
     // cs_db1_ptntbl1
     List<Partition> db1Ptbl1Partitions =
-        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName(), -1);
+        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertEquals(25, db1Ptbl1Partitions.size());
     Deadline.startTimer("");
     List<Partition> db1Ptbl1PartitionsOS =
-        objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db1Ptbl1.getTableName(), -1);
+        objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db1Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertTrue(db1Ptbl1Partitions.containsAll(db1Ptbl1PartitionsOS));
     // cs_db2_ptntbl1
     List<Partition> db2Ptbl1Partitions =
-        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), -1);
+        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertEquals(25, db2Ptbl1Partitions.size());
     Deadline.startTimer("");
     List<Partition> db2Ptbl1PartitionsOS =
-        objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), -1);
+        objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertTrue(db2Ptbl1Partitions.containsAll(db2Ptbl1PartitionsOS));
     cachedStore.shutdown();
   }
@@ -276,7 +277,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(1, db1Tbls.size());
     Assert.assertTrue(db1Tbls.contains(db1Ptbl1.getTableName()));
     List<Partition> db1Ptns =
-        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName(), -1);
+        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertEquals(0, db1Ptns.size());
     // cs_db2_ptntbl1
     List<String> db2Tbls = cachedStore.getAllTables(DEFAULT_CATALOG_NAME, db2.getName());
@@ -284,11 +285,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertTrue(db2Tbls.contains(db2Utbl1.getTableName()));
     Assert.assertTrue(db2Tbls.contains(db2Ptbl1.getTableName()));
     List<Partition> db2Ptns =
-        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), -1);
+        cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertEquals(25, db2Ptns.size());
     Deadline.startTimer("");
     List<Partition> db2PtnsOS =
-        objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), -1);
+        objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertTrue(db2Ptns.containsAll(db2PtnsOS));
     // Create a new unpartitioned table under basedb1
     Table db1Utbl2 = createUnpartitionedTableObject(db1);
@@ -317,13 +318,13 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertTrue(db2Tbls.contains(db2Utbl1.getTableName()));
     Assert.assertTrue(db2Tbls.contains(db2Ptbl1.getTableName()));
     // cs_db1_ptntbl1
-    db1Ptns = cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName(), -1);
+    db1Ptns = cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db1.getName(), db1Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertEquals(5, db1Ptns.size());
     // cs_db2_ptntbl1
-    db2Ptns = cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), -1);
+    db2Ptns = cachedStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertEquals(25, db2Ptns.size());
     Deadline.startTimer("");
-    db2PtnsOS = objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), -1);
+    db2PtnsOS = objectStore.getPartitions(DEFAULT_CATALOG_NAME, db2.getName(), db2Ptbl1.getTableName(), GetPartitionsArgs.getAllPartitions());
     Assert.assertTrue(db2Ptns.containsAll(db2PtnsOS));
     // Clean up
     objectStore.dropTable(DEFAULT_CATALOG_NAME, db1Utbl2.getDbName(), db1Utbl2.getTableName());
@@ -1029,11 +1030,11 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     Assert.assertEquals(100, aggrStats.getColStats().get(0).getStatsData().getLongStats().getNumNulls());
 
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals1), partVals1, colName, CacheUtils.HIVE_ENGINE);
+        Arrays.asList(Warehouse.makePartName(tbl.getPartitionKeys(), partVals1)), Arrays.asList(colName), CacheUtils.HIVE_ENGINE);
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(),
-        Warehouse.makePartName(tbl.getPartitionKeys(), partVals2), partVals2, colName, CacheUtils.HIVE_ENGINE);
-    objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals1);
-    objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), partVals2);
+        Arrays.asList(Warehouse.makePartName(tbl.getPartitionKeys(), partVals2)), Arrays.asList(colName), CacheUtils.HIVE_ENGINE);
+    objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), Warehouse.makePartName(tbl.getPartitionKeys(), partVals1));
+    objectStore.dropPartition(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName(), Warehouse.makePartName(tbl.getPartitionKeys(), partVals2));
     objectStore.dropTable(DEFAULT_CATALOG_NAME, db.getName(), tbl.getTableName());
     objectStore.dropDatabase(DEFAULT_CATALOG_NAME, db.getName());
     cachedStore.shutdown();
