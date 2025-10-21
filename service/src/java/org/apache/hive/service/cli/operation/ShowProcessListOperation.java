@@ -72,9 +72,9 @@ public class ShowProcessListOperation extends HiveCommandOperation {
               Instant.ofEpochMilli(query.getBeginTime()), ZoneId.systemDefault()
           );
           long txnId = 0;
-          if(op.queryState != null && op.queryState.getTxnManager() != null ){
-              txnId = op.queryState.getTxnManager().getCurrentTxnId();
-          }
+        if (op.queryState != null && op.queryState.getTxnManager() != null) {
+            txnId = op.queryState.getTxnManager().getCurrentTxnId();
+        }
           return new ProcessListInfo.Builder()
               .setUserName(session.getUserName())
               .setIpAddr(session.getIpAddress())

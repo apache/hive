@@ -95,6 +95,8 @@ public class ProcessListInfo {
     return state;
   }
 
+  public Long getTxnId() { return txnId; }
+
   public static class Builder {
     private String userName;
     private String ipAddr;
