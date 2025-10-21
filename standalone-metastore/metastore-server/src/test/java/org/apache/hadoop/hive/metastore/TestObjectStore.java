@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
@@ -127,6 +129,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.apache.hadoop.hive.metastore.StatisticsTestUtils.assertEqualStatistics;
 import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.createSourceTable;
+import static org.apache.hadoop.hive.metastore.TestHiveMetaStore.warehouse;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -388,7 +391,7 @@ public class TestObjectStore {
     tables = objectStore.getAllTables(DEFAULT_CATALOG_NAME, DB1);
     Assert.assertEquals(2, tables.size());
 
-    List<SQLForeignKey> foreignKeys = objectStore.getForeignKeys(DEFAULT_CATALOG_NAME, DB1, TABLE1, null, null);
+    List<SQLForeignKey> foreignKeys = objectStore.getForeignKeys(newForeignKeysRequest(DB1, TABLE1, null, null));
     Assert.assertEquals(0, foreignKeys.size());
 
     SQLPrimaryKey pk = new SQLPrimaryKey(DB1, TABLE1, "pk_col", 1,
@@ -401,10 +404,10 @@ public class TestObjectStore {
     objectStore.addForeignKeys(ImmutableList.of(fk));
 
     // Retrieve from PK side
-    foreignKeys = objectStore.getForeignKeys(DEFAULT_CATALOG_NAME, null, null, DB1, "new" + TABLE1);
+    foreignKeys = objectStore.getForeignKeys(newForeignKeysRequest(null, null, DB1, "new" + TABLE1));
     Assert.assertEquals(1, foreignKeys.size());
 
-    List<SQLForeignKey> fks = objectStore.getForeignKeys(DEFAULT_CATALOG_NAME, null, null, DB1, "new" + TABLE1);
+    List<SQLForeignKey> fks = objectStore.getForeignKeys(newForeignKeysRequest(null, null, DB1, "new" + TABLE1));
     if (fks != null) {
       for (SQLForeignKey fkcol : fks) {
         objectStore.dropConstraint(fkcol.getCatName(), fkcol.getFktable_db(), fkcol.getFktable_name(),
@@ -412,10 +415,10 @@ public class TestObjectStore {
       }
     }
     // Retrieve from FK side
-    foreignKeys = objectStore.getForeignKeys(DEFAULT_CATALOG_NAME, DB1, TABLE1, null, null);
+    foreignKeys = objectStore.getForeignKeys(newForeignKeysRequest(DB1, TABLE1, null, null));
     Assert.assertEquals(0, foreignKeys.size());
     // Retrieve from PK side
-    foreignKeys = objectStore.getForeignKeys(DEFAULT_CATALOG_NAME, null, null, DB1, "new" + TABLE1);
+    foreignKeys = objectStore.getForeignKeys(newForeignKeysRequest(null, null, DB1, "new" + TABLE1));
     Assert.assertEquals(0, foreignKeys.size());
 
     objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
@@ -427,6 +430,16 @@ public class TestObjectStore {
     Assert.assertEquals(0, tables.size());
 
     objectStore.dropDatabase(db1.getCatalogName(), DB1);
+  }
+
+  static ForeignKeysRequest newForeignKeysRequest(String parent_db, String parent_tbl, String child_db, String child_tbl) {
+    ForeignKeysRequest request = new ForeignKeysRequest(parent_db, parent_tbl, child_db, child_tbl);
+    request.setCatName(DEFAULT_CATALOG_NAME);
+    return request;
+  }
+
+  static GetPartitionsArgs limitGetPartitions(int max) {
+    return new GetPartitionsArgs.GetPartitionsArgsBuilder().max(max).build();
   }
 
   @Test (expected = NoSuchObjectException.class)
@@ -482,7 +495,7 @@ public class TestObjectStore {
 
     List<Partition> partitions;
     try (AutoCloseable c = deadline()) {
-      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, limitGetPartitions(10));
     }
     Assert.assertEquals(2, partitions.size());
     Assert.assertEquals(111, partitions.get(0).getCreateTime());
@@ -512,14 +525,14 @@ public class TestObjectStore {
     Assert.assertEquals(2, numPartitions);
 
     try (AutoCloseable c = deadline()) {
-      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value1);
-      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, Warehouse.makePartName(tbl1.getPartitionKeys(),value1));
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, limitGetPartitions(10));
     }
     Assert.assertEquals(1, partitions.size());
     Assert.assertEquals(222, partitions.get(0).getCreateTime());
 
     try (AutoCloseable c = deadline()) {
-      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, value2);
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, Warehouse.makePartName(tbl1.getPartitionKeys(), value2));
       objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
       objectStore.dropDatabase(db1.getCatalogName(), DB1);
     }
@@ -549,15 +562,6 @@ public class TestObjectStore {
     List<Partition> parts = Arrays.asList(part1, part2);
     try {
       objectStore.addPartitions(DEFAULT_CATALOG_NAME, DB1, "not_existed_table", parts);
-    } catch (InvalidObjectException e) {
-      // expected
-    }
-
-    PartitionSpec partitionSpec1 = new PartitionSpec(DB1, "not_existed_table", "location1");
-    partitionSpec1.setPartitionList(new PartitionListComposingSpec(parts));
-    PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(Arrays.asList(partitionSpec1));
-    try {
-      objectStore.addPartitions(DEFAULT_CATALOG_NAME, DB1, "not_existed_table", partitionSpecProxy, true);
     } catch (InvalidObjectException e) {
       // expected
     }
@@ -678,13 +682,13 @@ public class TestObjectStore {
     List<Partition> partitions;
     try (AutoCloseable c = deadline()) {
       objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=CA");
-      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, limitGetPartitions(10));
     }
     Assert.assertEquals(1, partitions.size());
     Assert.assertEquals(222, partitions.get(0).getCreateTime());
     try (AutoCloseable c = deadline()) {
       objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, "country=US/state=MA");
-      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, 10);
+      partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, limitGetPartitions(10));
     }
     Assert.assertEquals(0, partitions.size());
 
@@ -750,7 +754,7 @@ public class TestObjectStore {
           threadObjectStore.setConf(conf);
           for (List<String> p : partNames) {
             try {
-              threadObjectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, p);
+              threadObjectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, Warehouse.makePartName(tbl1.getPartitionKeys(),p));
               System.out.println("Dropping partition: " + p.get(0));
             } catch (Exception e) {
               throw new RuntimeException(e);
@@ -939,7 +943,7 @@ public class TestObjectStore {
     Assert.assertEquals(1, tabColStats.size());
     Assert.assertEquals(2, tabColStats.get(0).getStatsObjSize());
 
-    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col1", ENGINE);
+    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, Arrays.asList("test_col1"), ENGINE);
     try (AutoCloseable c = deadline()) {
       tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
           Arrays.asList("test_col1", "test_col2"));
@@ -947,7 +951,7 @@ public class TestObjectStore {
     Assert.assertEquals(1, tabColStats.size());
     Assert.assertEquals(1, tabColStats.get(0).getStatsObjSize());
 
-    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col2", ENGINE);
+    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, Arrays.asList("test_col2"), ENGINE);
     try (AutoCloseable c = deadline()) {
       tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
           Arrays.asList("test_col1", "test_col2"));
@@ -977,7 +981,7 @@ public class TestObjectStore {
     assertEqualStatistics(expectedStats, computedStats);
 
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        "test_part_col=a0", Arrays.asList("a0"), null, ENGINE);
+        Arrays.asList("test_part_col=a0"), null, ENGINE);
     try (AutoCloseable c = deadline()) {
       stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
           Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
@@ -987,7 +991,7 @@ public class TestObjectStore {
     Assert.assertEquals(2, stat.get(0).size());
 
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        "test_part_col=a1", Arrays.asList("a1"), "test_part_col", null);
+        Arrays.asList("test_part_col=a1"), Arrays.asList("test_part_col"), null);
     try (AutoCloseable c = deadline()) {
       stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
           Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
@@ -997,7 +1001,7 @@ public class TestObjectStore {
     Assert.assertEquals(1, stat.get(0).size());
 
     objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-        "test_part_col=a2", Arrays.asList("a2"), null, null);
+        Arrays.asList("test_part_col=a2"), null, null);
     try (AutoCloseable c = deadline()) {
       stat = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
           Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
@@ -1237,54 +1241,6 @@ public class TestObjectStore {
     }.run(false);
 
     Assert.assertEquals(1, directSqlErrors.getCount());
-  }
-
-  @Deprecated
-  private static void dropAllStoreObjects(RawStore store)
-      throws MetaException, InvalidObjectException, InvalidInputException {
-    try {
-      List<Function> functions = store.getAllFunctions(DEFAULT_CATALOG_NAME);
-      for (Function func : functions) {
-        store.dropFunction(DEFAULT_CATALOG_NAME, func.getDbName(), func.getFunctionName());
-      }
-      for (String catName : store.getCatalogs()) {
-        List<String> dbs = store.getAllDatabases(catName);
-        for (String db : dbs) {
-          List<String> tbls = store.getAllTables(DEFAULT_CATALOG_NAME, db);
-          for (String tbl : tbls) {
-            List<Partition> parts = store.getPartitions(DEFAULT_CATALOG_NAME, db, tbl, 100);
-            for (Partition part : parts) {
-              store.dropPartition(DEFAULT_CATALOG_NAME, db, tbl, part.getValues());
-            }
-            // Find any constraints and drop them
-            Set<String> constraints = new HashSet<>();
-            List<SQLPrimaryKey> pk = store.getPrimaryKeys(DEFAULT_CATALOG_NAME, db, tbl);
-            if (pk != null) {
-              for (SQLPrimaryKey pkcol : pk) {
-                constraints.add(pkcol.getPk_name());
-              }
-            }
-            List<SQLForeignKey> fks = store.getForeignKeys(DEFAULT_CATALOG_NAME, null, null, db, tbl);
-            if (fks != null) {
-              for (SQLForeignKey fkcol : fks) {
-                constraints.add(fkcol.getFk_name());
-              }
-            }
-            for (String constraint : constraints) {
-              store.dropConstraint(DEFAULT_CATALOG_NAME, db, tbl, constraint);
-            }
-            store.dropTable(DEFAULT_CATALOG_NAME, db, tbl);
-          }
-          store.dropDatabase(catName, db);
-        }
-        store.dropCatalog(catName);
-      }
-      List<String> roles = store.listRoleNames();
-      for (String role : roles) {
-        store.removeRole(role);
-      }
-    } catch (NoSuchObjectException e) {
-    }
   }
 
   @Test
@@ -1592,8 +1548,10 @@ public class TestObjectStore {
     objectStore.addPrimaryKeys(ImmutableList.of(pk));
 
     // Primary key retrieval should be success, even if db_name isn't specified.
+    PrimaryKeysRequest request = new PrimaryKeysRequest(null, TABLE1);
+    request.setCatName(DEFAULT_CATALOG_NAME);
     assertEquals("pk_col",
-        objectStore.getPrimaryKeys(DEFAULT_CATALOG_NAME, null, TABLE1).get(0)
+        objectStore.getPrimaryKeys(request).get(0)
             .getColumn_name());
     objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
     objectStore.dropDatabase(db1.getCatalogName(), DB1);

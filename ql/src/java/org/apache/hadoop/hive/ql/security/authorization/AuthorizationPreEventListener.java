@@ -23,6 +23,9 @@ import java.util.List;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
+
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -467,7 +470,7 @@ public class AuthorizationPreEventListener extends MetaStorePreEventListener {
       String catName = mapiPart.isSetCatName() ? mapiPart.getCatName() :
           MetaStoreUtils.getDefaultCatalog(context.getHandler().getConf());
       org.apache.hadoop.hive.metastore.api.Table t = context.getHandler().get_table_core(
-          catName, mapiPart.getDbName(), mapiPart.getTableName());
+          MetaStoreServerUtils.newGetTableReq(new TableName(catName, mapiPart.getDbName(), mapiPart.getTableName()), null));
       if (wrapperApiPart.getSd() == null){
         // In the cases of create partition, by the time this event fires, the partition
         // object has not yet come into existence, and thus will not yet have a
