@@ -56,12 +56,12 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
         if (desc.getManagedLocationUri() != null) {
           database.setManagedLocationUri(desc.getManagedLocationUri());
         }
-        makeLocationQualified(database); // TODO catalog. Add catalog prefix for location
+        makeLocationQualified(database); // TODO catalog. Add catalog prefix for db location. Depend on HIVE-29241.
         if (database.getLocationUri().equalsIgnoreCase(database.getManagedLocationUri())) {
           throw new HiveException("Managed and external locations for database cannot be the same");
         }
       } else if (desc.getDatabaseType() == DatabaseType.REMOTE) {
-        makeLocationQualified(database); // TODO catalog. Add catalog prefix for location
+        makeLocationQualified(database); // TODO catalog. Add catalog prefix for db location. Depend on HIVE-29241.
         database.setConnector_name(desc.getConnectorName());
         database.setRemote_dbname(desc.getRemoteDbName());
       } else { // should never be here

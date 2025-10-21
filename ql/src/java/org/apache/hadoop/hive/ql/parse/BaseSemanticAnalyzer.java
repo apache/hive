@@ -1941,7 +1941,8 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-   * TODO catalog. Once we confirm that no compatibility has been broken, we can remove these non-catalog APIs
+   * TODO catalog. this method still use by some method of table ddl.
+   *  Remove this method once we implement catalog change about table ddl, such as create cat.db.tbl. Depend on HIVE-29279
    * @deprecated Replaced by
    *     {@link BaseSemanticAnalyzer#getDatabase(String catalogName, String dbName, boolean throwException)}
    * @return the database if existed.
