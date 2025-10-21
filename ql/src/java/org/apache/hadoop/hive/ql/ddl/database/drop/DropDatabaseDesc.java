@@ -40,10 +40,6 @@ public class DropDatabaseDesc implements DDLDesc, Serializable {
   
   private boolean deleteData = true;
 
-  public DropDatabaseDesc(String databaseName, boolean ifExists, ReplicationSpec replicationSpec) {
-    this(null, databaseName, ifExists, false, replicationSpec); //TODO check the actual catalog
-  }
-
   public DropDatabaseDesc(String catalogName, String databaseName, boolean ifExists, boolean cascade, ReplicationSpec replicationSpec) {
     this.catalogName = catalogName;
     this.databaseName = databaseName;

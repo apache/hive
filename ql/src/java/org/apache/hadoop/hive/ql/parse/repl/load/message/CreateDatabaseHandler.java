@@ -55,7 +55,7 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
     Database db = metaData.getDatabase();
     String destinationDBName =
         context.dbName == null ? db.getName() : context.dbName;
-    String destinationCatalogName = db.getCatalogName(); // TODO catalog. Need to double check the catalog here.
+    String destinationCatalogName = db.getCatalogName(); // TODO catalog. Need to double check the catalog here. Depend on HIVE-29278
 
     CreateDatabaseDesc createDatabaseDesc =
         new CreateDatabaseDesc(destinationCatalogName, destinationDBName, db.getDescription(), null, null, true, db.getParameters());

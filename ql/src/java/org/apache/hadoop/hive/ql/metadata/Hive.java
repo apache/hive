@@ -715,7 +715,9 @@ public class Hive implements AutoCloseable {
   }
 
   /**
-   * Drop a database
+   * Drop a database. This method does not have the catalog field and will default to using the current session attributes.
+   * Its use should be prohibited in Hive. The method is retained solely to avoid compatibility issues with other components
+   * such as Apache Spark, as Spark extensively utilizes public methods in Hive.java to operate on Hive databases and tables.
    * @param name
    * @param deleteData
    * @param ignoreUnknownDb if true, will ignore NoSuchObjectException
@@ -724,9 +726,10 @@ public class Hive implements AutoCloseable {
    * @throws HiveException
    * @throws NoSuchObjectException
    */
+  @Deprecated
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws HiveException, NoSuchObjectException {
-    dropDatabase(new DropDatabaseDesc(getDefaultCatalog(conf) ,name, ignoreUnknownDb, cascade, deleteData)); // TODO catalog. check the actual catalog
+    dropDatabase(new DropDatabaseDesc(HiveUtils.getCurrentCatalogOrDefault(conf) ,name, ignoreUnknownDb, cascade, deleteData));
   }
 
   public void dropDatabase(DropDatabaseDesc desc) 
