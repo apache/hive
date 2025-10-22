@@ -73,7 +73,7 @@ public class ShowProcessListOperation extends HiveCommandOperation {
           );
           long txnId = 0;
           if (op.queryState != null && op.queryState.getTxnManager() != null) {
-              txnId = op.queryState.getTxnManager().getCurrentTxnId();
+            txnId = op.queryState.getTxnManager().getCurrentTxnId();
           }
           return new ProcessListInfo.Builder()
               .setUserName(session.getUserName())

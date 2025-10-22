@@ -67,8 +67,8 @@ public class TestShowProcessList {
     conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, user);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    String dir = new File(System.getProperty(
-        "java.io.tmpdir") + File.separator + TestShowProcessList.class.getCanonicalName() + "-" + System.currentTimeMillis()).getPath()
+    String suffix = TestShowProcessList.class.getCanonicalName() + "-" + System.currentTimeMillis();
+    String dir = new File(System.getProperty("java.io.tmpdir") + File.separator + suffix).getPath()
         .replaceAll("\\\\", "/") + "/warehouse";
     conf.set(MetastoreConf.ConfVars.WAREHOUSE.name(), dir);
     TestTxnDbUtil.setConfValues(conf);
@@ -109,7 +109,8 @@ public class TestShowProcessList {
       while (executor.getActiveCount() > 0) {
         long txnId = executeShowProcessList(s);
         System.out.println("txnId is " + txnId);
-        if (txnId > -1) { // -1 implies that there are no queries running at that moment
+        // -1 implies that there are no queries running at that moment or txn is not yet opened
+        if (txnId > -1) {
           Assert.assertTrue(txnId >= 1);
           break;
         }
