@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -79,7 +80,6 @@ import org.apache.calcite.rel.RelDistributions;
 import org.apache.calcite.rel.RelFieldCollation;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelVisitor;
-import org.apache.calcite.rel.SingleRel;
 import org.apache.calcite.rel.convert.ConverterImpl;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -1578,7 +1578,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final Map<String, PrunedPartitionList>        partitionCache;
     private final Map<String, ColumnStatsList>            colStatsCache;
     private final ColumnAccessInfo columnAccessInfo;
-    private Map<HiveProject, Table> viewProjectToTableSchema;
+    private Map<RelNode, Pair<Table, List<RexNode>>> relNodeToTableAndProjects;
     private final QB rootQB;
 
     // correlated vars across subqueries within same query needs to have different ID
@@ -1663,8 +1663,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_SCANCOLS) || !skipAuthorization()) {
         HiveRelFieldTrimmer.get()
-            .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null), calcitePlan, this.columnAccessInfo,
-                this.viewProjectToTableSchema);
+            .trim(
+                HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
+                calcitePlan,
+                this.columnAccessInfo,
+                this.relNodeToTableAndProjects
+            );
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITE_FIELD_TRIMMER);
 
@@ -4918,12 +4922,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         aliasToRel.put(subqAlias, relNode);
         if (qb.getViewToTabSchema().containsKey(subqAlias)) {
-          HiveProject project = extractFirstProject(relNode)
-              .orElseThrow(() -> new SemanticException("Could not obtain a HiveProject from " + relNode));
-          if (this.viewProjectToTableSchema == null) {
-            this.viewProjectToTableSchema = new LinkedHashMap<>();
+          List<RexNode> projects = relNode instanceof HiveProject project ?
+              project.getProjects() :
+              HiveCalciteUtil.getProjsFromBelowAsInputRef(Objects.requireNonNull(relNode));
+          if (this.relNodeToTableAndProjects == null) {
+            this.relNodeToTableAndProjects = new HashMap<>();
           }
-          viewProjectToTableSchema.put(project, qb.getViewToTabSchema().get(subqAlias));
+          relNodeToTableAndProjects.put(relNode, Pair.of(qb.getViewToTabSchema().get(subqAlias), projects));
         }
       }
 
@@ -5045,20 +5050,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return srcRel;
     }
 
-    /**
-     * Extract the first HiveProject from a RelNode tree of SingleRel nodes.
-     * This doesn't search through inputs of multi-input nodes (like Joins).
-     * 
-     * @param rel RelNode
-     * @return Optional HiveProject
-     */
-    private Optional<HiveProject> extractFirstProject(RelNode rel) {
-      return switch (rel) {
-      case HiveProject hiveProject -> Optional.of(hiveProject);
-      case SingleRel sr -> extractFirstProject(sr.getInput());
-      case null, default -> Optional.empty();
-      };
-    }
 
     private RelNode genGBHavingLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
       RelNode gbFilter = null;
