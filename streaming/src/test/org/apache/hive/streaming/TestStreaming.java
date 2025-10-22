@@ -306,15 +306,15 @@ public class TestStreaming {
    */
   @Test
   public void testBucketingWhereBucketColIsNotFirstCol() throws Exception {
-    List<String> partitionVals = new ArrayList<>();
-    partitionVals.add("2015");
+    List<String> newPartVals = new ArrayList<>();
+    newPartVals.add("2015");
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
     HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
       .withDatabase("testing5")
       .withTable("store_sales")
-      .withStaticPartitionValues(partitionVals)
+      .withStaticPartitionValues(newPartVals)
       .withAgentInfo("UT_" + Thread.currentThread().getName())
       .withRecordWriter(writer)
       .withHiveConf(conf)
@@ -397,11 +397,11 @@ public class TestStreaming {
     runQuery(driver, "update default.streamingnobuckets set a=0, b=0 where a='a7'");
     runQuery(driver, "delete from default.streamingnobuckets where a='a1'");
     rs = queryTable(driver, "select a, b from default.streamingnobuckets order by a, b");
-    int row = 0;
-    Assert.assertEquals("at row=" + row, "0\t0", rs.get(row++));
-    Assert.assertEquals("at row=" + row, "a3\tb4", rs.get(row++));
-    Assert.assertEquals("at row=" + row, "a5\tb6", rs.get(row++));
-    Assert.assertEquals("at row=" + row, "foo\tbar", rs.get(row));
+
+    Assert.assertEquals("at row=" + 0, "0\t0", rs.get(0));
+    Assert.assertEquals("at row=" + 1, "a3\tb4", rs.get(1));
+    Assert.assertEquals("at row=" + 2, "a5\tb6", rs.get(2));
+    Assert.assertEquals("at row=" + 3, "foo\tbar", rs.get(3));
 
     runQuery(driver, "alter table default.streamingnobuckets compact 'major'");
     runWorker(conf);
@@ -544,7 +544,7 @@ public class TestStreaming {
       connectionOne.beginTransaction();
       Assert.fail("second beginTransaction should have thrown a "
           + "StreamingException");
-    } catch (StreamingException e) {
+    } catch (StreamingException ignored) {
     }
 
     connectionOne.close();
@@ -743,14 +743,14 @@ public class TestStreaming {
     runQuery(driver, "update default.streamingnobuckets set a=0, b=0 where a='a15'");
     runQuery(driver, "delete from default.streamingnobuckets where a='a9'");
     rs = queryTable(driver, "select a, b from default.streamingnobuckets order by a, b");
-    int row = 0;
-    Assert.assertEquals("at row=" + row, "0\t0", rs.get(row++));
-    Assert.assertEquals("at row=" + row, "0\t0", rs.get(row++));
-    Assert.assertEquals("at row=" + row, "a11\tb12", rs.get(row++));
-    Assert.assertEquals("at row=" + row, "a13\tb14", rs.get(row++));
-    Assert.assertEquals("at row=" + row, "a3\tb4", rs.get(row++));
-    Assert.assertEquals("at row=" + row, "a5\tb6", rs.get(row++));
-    Assert.assertEquals("at row=" + row, "foo\tbar", rs.get(row));
+
+    Assert.assertEquals("at row=" + 0, "0\t0", rs.get(0));
+    Assert.assertEquals("at row=" + 1, "0\t0", rs.get(1));
+    Assert.assertEquals("at row=" + 2, "a11\tb12", rs.get(2));
+    Assert.assertEquals("at row=" + 3, "a13\tb14", rs.get(3));
+    Assert.assertEquals("at row=" + 4, "a3\tb4", rs.get(4));
+    Assert.assertEquals("at row=" + 5, "a5\tb6", rs.get(5));
+    Assert.assertEquals("at row=" + 6, "foo\tbar", rs.get(6));
 
     runQuery(driver, "alter table default.streamingnobuckets compact 'major'");
     runWorker(conf);
@@ -795,13 +795,16 @@ public class TestStreaming {
     try (IDriver driver = DriverFactory.newDriver(conf)) {
       runQuery(driver, "create database testBucketing3");
       runQuery(driver, "use testBucketing3");
-      runQuery(driver, "create table streamedtable ( key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
-        + bucketCount + " buckets  stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='true')");
-      //  In 'nobucket' table we capture bucketid from streamedtable to workaround a hive bug that prevents joins two identically bucketed tables
-      runQuery(driver, "create table nobucket ( bucketid int, key1 string,key2 int,data string ) location " + tableLoc3);
-      runQuery(driver,
-        "create table finaltable ( bucketid int, key1 string,key2 int,data string ) clustered by ( key1,key2 ) into "
-          + bucketCount + " buckets  stored as orc location " + tableLoc2 + " TBLPROPERTIES ('transactional'='true')");
+      runQuery(driver, "create table streamedtable (key1 string, key2 int, data string)"
+        + " clustered by (key1, key2) into " + bucketCount + " buckets"
+        + " stored as orc  location " + tableLoc + " TBLPROPERTIES ('transactional'='true')");
+      //  In 'nobucket' table we capture bucketid from streamedtable to workaround a hive bug
+      //  that prevents joins two identically bucketed tables
+      runQuery(driver, "create table nobucket (bucketid int, key1 string, key2 int, data string)"
+        + " location " + tableLoc3);
+      runQuery(driver, "create table finaltable (bucketid int, key1 string, key2 int, data string)"
+        + " clustered by (key1, key2) into " + bucketCount + " buckets  "
+        + " stored as orc location " + tableLoc2 + " TBLPROPERTIES ('transactional'='true')");
 
       String[] records = new String[]{
         "PSFAHYLZVC,29,EPNMA",
@@ -1110,7 +1113,7 @@ public class TestStreaming {
     try {
       msClient.getPartition(dbName, tblName, newPartVals);
       Assert.fail("Partition shouldn't exist so a NoSuchObjectException should have been raised");
-    } catch (NoSuchObjectException e) {
+    } catch (NoSuchObjectException ignored) {
     }
 
     transactionConnection.commitTransaction(partitions);
@@ -1186,7 +1189,7 @@ public class TestStreaming {
       msClient.getPartition("default", "writeiddynamic", partitionName);
       Assert.fail(
           "Partition shouldn't exist so a NoSuchObjectException should have been raised");
-    } catch (NoSuchObjectException e) {
+    } catch (NoSuchObjectException ignored) {
     }
 
     Set<String> allPartitions = new HashSet<>(partitionsOne);
@@ -1453,7 +1456,8 @@ public class TestStreaming {
     connection.commitTransaction();
 
     checkDataWritten(partLoc, 1, 10, 1, validationQuery,
-        "1\tHello streaming", "2\tWelcome to streaming");
+        "1\tHello streaming",
+        "2\tWelcome to streaming");
 
     connection.close();
 
@@ -1527,7 +1531,8 @@ public class TestStreaming {
     connection.commitTransaction();
 
     checkDataWritten(partLoc, 1, 10, 1, validationQuery,
-        "1\tHello streaming", "2\tWelcome to streaming");
+        "1\tHello streaming",
+        "2\tWelcome to streaming");
 
     connection.close();
     Assert.assertEquals(HiveStreamingConnection.TxnState.INACTIVE,
@@ -1816,7 +1821,8 @@ public class TestStreaming {
 
     String validationQuery = "select id, msg from " + dbName + "." + tblName + " order by id, msg";
     checkDataWritten(partLoc, 1, 10, 1, validationQuery,
-        "1\tHello streaming", "2\tWelcome to streaming");
+        "1\tHello streaming",
+        "2\tWelcome to streaming");
 
     connection.close();
   }
@@ -1849,7 +1855,8 @@ public class TestStreaming {
     connection.commitTransaction();
 
     checkDataWritten(partLoc, 1, 10, 1, validationQuery,
-        "1\tHello streaming", "2\tWelcome to streaming");
+        "1\tHello streaming",
+        "2\tWelcome to streaming");
 
     connection.close();
 
@@ -1868,7 +1875,8 @@ public class TestStreaming {
     connection.commitTransaction();
 
     checkDataWritten(partLoc, 1, 20, 2, validationQuery,
-        "1\tHello streaming", "2\tWelcome to streaming",
+        "1\tHello streaming",
+        "2\tWelcome to streaming",
         "3\tHello streaming - once again");
 
     connection.beginTransaction();
@@ -1876,7 +1884,8 @@ public class TestStreaming {
     connection.commitTransaction();
 
     checkDataWritten(partLoc, 1, 20, 2, validationQuery,
-        "1\tHello streaming", "2\tWelcome to streaming",
+        "1\tHello streaming",
+        "2\tWelcome to streaming",
         "3\tHello streaming - once again",
         "4\tWelcome to streaming - once again");
 
@@ -1950,7 +1959,8 @@ public class TestStreaming {
       }
     }
     checkDataWritten(partLoc, 1, 20, 2, validationQuery,
-        "1\tHello streaming", "3\tHello streaming - once again");
+        "1\tHello streaming",
+        "3\tHello streaming - once again");
 
     connection.beginTransaction();
     connection.write("2,Welcome to streaming".getBytes());
@@ -1975,18 +1985,21 @@ public class TestStreaming {
       }
     }
     checkDataWritten(partLoc, 1, 20, 2, validationQuery,
-        "1\tHello streaming", "3\tHello streaming - once again");
+        "1\tHello streaming",
+        "3\tHello streaming - once again");
 
     connection.commitTransaction();
 
     checkDataWritten(partLoc, 1, 20, 2, validationQuery,
-        "1\tHello streaming", "2\tWelcome to streaming",
+        "1\tHello streaming",
+        "2\tWelcome to streaming",
         "3\tHello streaming - once again");
 
     connection2.commitTransaction();
 
     checkDataWritten(partLoc, 1, 20, 2, validationQuery,
-        "1\tHello streaming", "2\tWelcome to streaming",
+        "1\tHello streaming",
+        "2\tWelcome to streaming",
         "3\tHello streaming - once again",
         "4\tWelcome to streaming - once again");
 
@@ -2193,8 +2206,8 @@ public class TestStreaming {
     connection2.close();
     // 3 Check data distribution in  buckets
 
-    HashMap<Integer, ArrayList<SampleRec>> actual1 = dumpAllBuckets(dbLocation, tblName3);
-    HashMap<Integer, ArrayList<SampleRec>> actual2 = dumpAllBuckets(dbLocation2, tblName4);
+    Map<Integer, ArrayList<SampleRec>> actual1 = dumpAllBuckets(dbLocation, tblName3);
+    Map<Integer, ArrayList<SampleRec>> actual2 = dumpAllBuckets(dbLocation2, tblName4);
     System.err.println("\n  Table 1");
     System.err.println(actual1);
     System.err.println("\n  Table 2");
@@ -2807,7 +2820,7 @@ public class TestStreaming {
     connection.close();
     Exception expectedEx = null;
     GetOpenTxnsInfoResponse r = msClient.showTxns();
-    Assert.assertEquals("HWM didn'table match", 9, r.getTxn_high_water_mark());
+    Assert.assertEquals("HWM didn't match", 9, r.getTxn_high_water_mark());
     List<TxnInfo> ti = r.getOpen_txns();
     Assert.assertEquals("wrong status ti(0)",
         org.apache.hadoop.hive.metastore.api.TxnState.ABORTED,
@@ -2942,9 +2955,9 @@ public class TestStreaming {
 
   // assumes un partitioned table
   // returns a map<bucketNum, list<record> >
-  private HashMap<Integer, ArrayList<SampleRec>> dumpAllBuckets(String dbLocation, String tableName)
-    throws IOException {
-    HashMap<Integer, ArrayList<SampleRec>> result = new HashMap<>();
+  private Map<Integer, ArrayList<SampleRec>> dumpAllBuckets(String dbLocation, String tableName)
+      throws IOException {
+    Map<Integer, ArrayList<SampleRec>> result = new HashMap<>();
 
     for (File deltaDir : new File(dbLocation + "/" + tableName).listFiles()) {
       if (!deltaDir.getName().startsWith("delta")) {
@@ -2981,7 +2994,7 @@ public class TestStreaming {
         client.dropTable(databaseName, table, true, true);
       }
       client.dropDatabase(databaseName);
-    } catch (TException e) {
+    } catch (TException ignored) {
     }
   }
 
@@ -3121,7 +3134,7 @@ public class TestStreaming {
     } catch (CommandProcessorException e) {
       throw new RuntimeException(query + " failed: " + e);
     }
-   List<String> res = new ArrayList<>();
+    List<String> res = new ArrayList<>();
     driver.getResults(res);
     return res;
   }
