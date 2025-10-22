@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -304,7 +305,7 @@ import java.util.stream.IntStream;
   @After public void tearDown() {
     this.kafkaRecordIterator = null;
     if (this.consumer != null) {
-      this.consumer.close();
+      this.consumer.close(Duration.ZERO);
     }
   }
 

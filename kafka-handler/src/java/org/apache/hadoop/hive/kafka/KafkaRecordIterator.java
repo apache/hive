@@ -140,7 +140,7 @@ class KafkaRecordIterator implements Iterator<ConsumerRecord<byte[], byte[]>> {
       }
     } else {
       // case seek to beginning of stream
-      consumer.seekToBeginning(Collections.singleton(topicPartition));
+      consumer.seekToBeginning(topicPartitionList);
       // seekToBeginning is lazy thus need to call position() or poll(0)
       this.startOffset = consumer.position(topicPartition);
       LOG.info("Consumer at beginning of topic partition [{}], current start offset [{}]",
