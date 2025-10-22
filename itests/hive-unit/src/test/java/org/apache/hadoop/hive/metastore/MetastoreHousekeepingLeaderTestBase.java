@@ -56,7 +56,7 @@ public abstract class MetastoreHousekeepingLeaderTestBase {
   static Map<String, Boolean> threadNames = new HashMap<>();
   static Map<Class<? extends Thread>, Boolean> threadClasses = new HashMap<>();
 
-  void internalSetup(final String leaderHostName, Configuration configuration) throws Exception {
+  void setup(final String leaderHostName, Configuration configuration) throws Exception {
     this.conf = configuration;
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
@@ -221,7 +221,50 @@ public abstract class MetastoreHousekeepingLeaderTestBase {
     @Override
     public void lossLeadership(LeaderElection election) throws Exception {
       if (latch != null) {
+        // This is the last one get notified, sleep some time to make sure all other
+        // services have been stopped before return
+        Thread.sleep(12000);
         latch.countDown();
+      }
+    }
+  }
+
+  public void checkHouseKeepingThreadExistence(boolean isLeader) throws Exception {
+    searchHousekeepingThreads();
+
+    // Verify existence of threads
+    for (Map.Entry<String, Boolean> entry : threadNames.entrySet()) {
+      if (entry.getValue()) {
+        LOG.info("Found thread with name {}", entry.getKey());
+      } else {
+        LOG.info("No thread found with name {}", entry.getKey());
+      }
+      if (isLeader) {
+        Assert.assertTrue("No thread with name " + entry.getKey() + " found.", entry.getValue());
+      } else {
+        Assert.assertFalse("Thread with name " + entry.getKey() + " found.", entry.getValue());
+      }
+    }
+
+    for (Map.Entry<Class<? extends Thread>, Boolean> entry : threadClasses.entrySet()) {
+      if (isLeader) {
+        if (entry.getValue()) {
+          LOG.info("Found thread for {}", entry.getKey().getSimpleName());
+        }
+        Assert.assertTrue("No thread found for class " + entry.getKey().getSimpleName(), entry.getValue());
+      } else {
+        // A non-leader HMS will still run the configured number of Compaction worker threads.
+        if (entry.getKey() == Worker.class) {
+          if (entry.getValue()) {
+            LOG.info("Thread found for " + entry.getKey().getSimpleName());
+          }
+        } else {
+          if (!entry.getValue()) {
+            LOG.info("No thread found for " + entry.getKey().getSimpleName());
+          }
+          Assert.assertFalse("Thread found for class " + entry.getKey().getSimpleName(),
+              entry.getValue());
+        }
       }
     }
   }

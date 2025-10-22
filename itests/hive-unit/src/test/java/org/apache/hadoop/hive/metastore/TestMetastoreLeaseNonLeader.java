@@ -34,11 +34,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
 
-public class TestMetastoreLeaseNonLeader {
+public class TestMetastoreLeaseNonLeader extends MetastoreHousekeepingLeaderTestBase {
 
   LeaderElection<TableName> election;
-
-  TestMetastoreHousekeepingLeader hms;
 
   @Before
   public void setUp() throws Exception {
@@ -53,32 +51,27 @@ public class TestMetastoreLeaseNonLeader {
     election.tryBeLeader(conf, tableName);
     assertTrue("The elector should hold the lease now", election.isLeader());
     // start the non-leader hms now
-    hms = new TestMetastoreHousekeepingLeader();
     Configuration configuration = new Configuration(conf);
     MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
     configuration.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
-    hms.internalSetup(null, configuration);
+    setup(null, configuration);
   }
 
   @Test
   public void testHouseKeepingThreads() throws Exception {
-    try {
-      hms.testHouseKeepingThreadExistence();
-      throw new IllegalStateException("HMS shouldn't start any housekeeping tasks");
-    } catch (AssertionError e) {
-      // expected
-    }
+    checkHouseKeepingThreadExistence(false);
     // elector releases the lease
     CountDownLatch latch = new CountDownLatch(1);
     MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.setMonitor(latch);
     election.close();
     latch.await();
     // housing threads are here now as the hms wins the election
-    hms.testHouseKeepingThreadExistence();
+    checkHouseKeepingThreadExistence(true);
   }
 
   @After
   public void afterTest() {
     MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.reset();
   }
+
 }
