@@ -30,8 +30,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.net.URL;
-import java.sql.*;
+import java.net.URI;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -48,10 +53,10 @@ public class TestShowProcessList {
 
   static HiveConf defaultConf() throws Exception {
     String confDir = "../../data/conf/llap/";
-    HiveConf.setHiveSiteLocation(new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
+    HiveConf.setHiveSiteLocation(new URI("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml").toURL());
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());
     HiveConf defaultConf = new HiveConf();
-    defaultConf.addResource(new URL("file://" + new File(confDir).toURI().getPath() + "/tez-site.xml"));
+    defaultConf.addResource(new URI("file://" + new File(confDir).toURI().getPath() + "/tez-site.xml").toURL());
     return defaultConf;
   }
 
@@ -62,9 +67,10 @@ public class TestShowProcessList {
     conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, user);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    conf.set(MetastoreConf.ConfVars.WAREHOUSE.name(), new File(System.getProperty(
+    String dir = new File(System.getProperty(
         "java.io.tmpdir") + File.separator + TestShowProcessList.class.getCanonicalName() + "-" + System.currentTimeMillis()).getPath()
-        .replaceAll("\\\\", "/") + "/warehouse");
+        .replaceAll("\\\\", "/") + "/warehouse";
+    conf.set(MetastoreConf.ConfVars.WAREHOUSE.name(), dir);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.prepDb(conf);
     MiniHS2.cleanupLocalDir();
@@ -92,7 +98,9 @@ public class TestShowProcessList {
         try (Connection con = DriverManager.getConnection(miniHS2.getJdbcURL(), user, "bar");
             Statement stmt = con.createStatement()) {
           stmt.execute("drop database if exists DB_" + Thread.currentThread().threadId() + " cascade");
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+          LOG.error(exception.getMessage());
+          LOG.error(Arrays.toString(exception.getStackTrace()));
         }
       });
     }
@@ -118,8 +126,10 @@ public class TestShowProcessList {
           return txnId;
         }
       }
-    } catch (Exception e) {
-      LOG.warn("Exception when checking hive state", e);
+    } catch (Exception exception) {
+      LOG.error("Exception when checking hive state", exception);
+      LOG.error(Arrays.toString(exception.getStackTrace()));
+
     }
     return -1;
   }
