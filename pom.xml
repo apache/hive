@@ -173,7 +173,7 @@
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.13.3</junit.jupiter.version>
     <junit.vintage.version>5.13.3</junit.vintage.version>
-    <kafka.version>2.5.0</kafka.version>
+    <kafka.version>3.9.1</kafka.version>
     <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.17.0</kudu.version>

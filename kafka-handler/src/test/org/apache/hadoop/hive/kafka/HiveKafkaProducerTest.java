@@ -25,6 +25,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -158,7 +159,9 @@ import java.util.stream.IntStream;
   @Test(expected = org.apache.kafka.common.KafkaException.class) public void testWrongEpochAndId() {
     HiveKafkaProducer secondProducer = new HiveKafkaProducer(producerProperties);
     secondProducer.resumeTransaction(3434L, (short) 12);
-    secondProducer.sendOffsetsToTransaction(ImmutableMap.of(), "__dummy_consumer_group");
+    secondProducer.sendOffsetsToTransaction(Collections.singletonMap(
+            new TopicPartition("dummy_topic", 0),
+            new OffsetAndMetadata(0L)), "__dummy_consumer_group");
     secondProducer.close(Duration.ZERO);
   }
 
@@ -169,7 +172,9 @@ import java.util.stream.IntStream;
     producer.close(Duration.ZERO);
     HiveKafkaProducer secondProducer = new HiveKafkaProducer(producerProperties);
     secondProducer.resumeTransaction(pid, (short) 12);
-    secondProducer.sendOffsetsToTransaction(ImmutableMap.of(), "__dummy_consumer_group");
+    secondProducer.sendOffsetsToTransaction(Collections.singletonMap(
+            new TopicPartition("dummy_topic", 0),
+            new OffsetAndMetadata(0L)), "__dummy_consumer_group");
     secondProducer.close(Duration.ZERO);
   }
 
@@ -180,7 +185,9 @@ import java.util.stream.IntStream;
     producer.close(Duration.ZERO);
     HiveKafkaProducer secondProducer = new HiveKafkaProducer(producerProperties);
     secondProducer.resumeTransaction(45L, epoch);
-    secondProducer.sendOffsetsToTransaction(ImmutableMap.of(), "__dummy_consumer_group");
+    secondProducer.sendOffsetsToTransaction(Collections.singletonMap(
+            new TopicPartition("dummy_topic", 0),
+            new OffsetAndMetadata(0L)), "__dummy_consumer_group");
     secondProducer.close(Duration.ZERO);
   }
 }

@@ -33,6 +33,7 @@ import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.ProducerFencedException;
+import org.apache.kafka.common.Uuid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
@@ -65,6 +67,11 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
   HiveKafkaProducer(Properties properties) {
     transactionalId = properties.getProperty(ProducerConfig.TRANSACTIONAL_ID_CONFIG);
     kafkaProducer = new KafkaProducer<>(properties);
+  }
+
+  @Override
+  public Uuid clientInstanceId(Duration timeout) {
+    throw new UnsupportedOperationException();
   }
 
   @Override public void initTransactions() {
@@ -138,11 +145,11 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
 
     Object transactionManager = getValue(kafkaProducer, "transactionManager");
 
-    Object topicPartitionBookkeeper = getValue(transactionManager, "topicPartitionBookkeeper");
+    Object txnPartitionMap = getValue(transactionManager, "txnPartitionMap");
     invoke(transactionManager,
         "transitionTo",
         getEnum("org.apache.kafka.clients.producer.internals.TransactionManager$State.INITIALIZING"));
-    invoke(topicPartitionBookkeeper, "reset");
+    invoke(txnPartitionMap, "reset");
     Object producerIdAndEpoch = getValue(transactionManager, "producerIdAndEpoch");
     setValue(producerIdAndEpoch, "producerId", producerId);
     setValue(producerIdAndEpoch, "epoch", epoch);
@@ -181,10 +188,15 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
    */
   private void flushNewPartitions() {
     LOG.info("Flushing new partitions");
-    TransactionalRequestResult result = enqueueNewPartitions();
-    Object sender = getValue(kafkaProducer, "sender");
-    invoke(sender, "wakeup");
-    result.await();
+    Object transactionManager = getValue(kafkaProducer, "transactionManager");
+    Set<TopicPartition> newPartitionsInTransaction =
+            (Set<TopicPartition>) getValue(transactionManager, "newPartitionsInTransaction");
+    if (!newPartitionsInTransaction.isEmpty()) {
+      TransactionalRequestResult result = enqueueNewPartitions();
+      Object sender = getValue(kafkaProducer, "sender");
+      invoke(sender, "wakeup");
+      result.await();
+    }
   }
 
   private synchronized TransactionalRequestResult enqueueNewPartitions() {
