@@ -32,6 +32,7 @@ import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -363,6 +364,32 @@ class MetaStoreDirectSql {
           statement.close();
       }
       jdoConn.close(); // We must release the connection before we call other pm methods.
+    }
+  }
+
+  @FunctionalInterface
+  private interface PreparedStatementSetter {
+    void setParameters(PreparedStatement ps) throws SQLException;
+  }
+
+  private int executePreparedUpdate(final String baseSql, PreparedStatementSetter setter) throws SQLException {
+    JDOConnection jdoConn = pm.getDataStoreConnection();
+    PreparedStatement ps = null;
+    boolean doTrace = LOG.isDebugEnabled();
+    try {
+      Connection conn = (Connection) jdoConn.getNativeConnection();
+
+      long start = doTrace ? System.nanoTime() : 0;
+      ps = conn.prepareStatement(baseSql);
+      setter.setParameters(ps);
+      int rowsAffected = ps.executeUpdate();
+      MetastoreDirectSqlUtils.timingTrace(doTrace, baseSql, start, doTrace ? System.nanoTime() : 0);
+      return rowsAffected;
+    } finally {
+      if (ps != null) {
+        ps.close();
+      }
+      jdoConn.close();
     }
   }
 
@@ -3243,20 +3270,36 @@ class MetaStoreDirectSql {
   }
 
   public boolean deleteTableColumnStatistics(long tableId, List<String> colNames, String engine) {
-    String deleteSql = "delete from " + TAB_COL_STATS + " where \"TBL_ID\" = " + tableId;
+    StringBuilder deleteSql = new StringBuilder("DELETE FROM " + TAB_COL_STATS + " WHERE \"TBL_ID\" = ?");
+    List<String> inClauseValues = null;
     if (colNames != null && !colNames.isEmpty()) {
-      deleteSql += " and \"COLUMN_NAME\" in (" + colNames.stream().map(col -> "'" + col + "'").collect(Collectors.joining(",")) + ")";
+      // Append a placeholder '?' for each column name
+      String placeholders = colNames.stream().map(col -> "?").collect(Collectors.joining(","));
+      deleteSql.append(" AND \"COLUMN_NAME\" IN (").append(placeholders).append(")");
+      inClauseValues = colNames; // Store the values to be bound later
     }
     if (engine != null) {
-      deleteSql += " and \"ENGINE\" = '" + engine + "'";
+      deleteSql.append(" AND \"ENGINE\" = ?");
     }
+    final List<String> finalInClauseValues = inClauseValues;
     try {
-      executeNoResult(deleteSql);
+      int rowsAffected = executePreparedUpdate(deleteSql.toString(), ps -> {
+        int paramIndex = 1;
+        ps.setLong(paramIndex++, tableId);
+        if (finalInClauseValues != null) {
+          for (String colName : finalInClauseValues) {
+            ps.setString(paramIndex++, colName);
+          }
+        }
+        if (engine != null) {
+          ps.setString(paramIndex++, engine);
+        }
+      });
+      return rowsAffected > 0;
     } catch (SQLException e) {
       LOG.warn("Error removing table column stats. ", e);
       return false;
     }
-    return true;
   }
 
   public boolean deletePartitionColumnStats(String catName, String dbName, String tblName,
@@ -3268,15 +3311,29 @@ class MetaStoreDirectSql {
         List<Long> partitionIds = getPartitionIdsViaSqlFilter(catName, dbName, tblName, sqlFilter,
             input, Collections.emptyList(), -1);
         if (!partitionIds.isEmpty()) {
-          String deleteSql = "delete from " + PART_COL_STATS + " where \"PART_ID\" in ( " + getIdListForIn(partitionIds) + ")";
+          StringBuilder deleteSql = new StringBuilder("DELETE FROM " + PART_COL_STATS + " WHERE \"PART_ID\" IN (");
+          deleteSql.append(makeParams(partitionIds.size())).append(")");
           if (colNames != null && !colNames.isEmpty()) {
-            deleteSql += " and \"COLUMN_NAME\" in (" + colNames.stream().map(col -> "'" + col + "'").collect(Collectors.joining(",")) + ")";
+            deleteSql.append(" AND \"COLUMN_NAME\" IN (").append(makeParams(colNames.size())).append(")");
           }
           if (engine != null) {
-            deleteSql += " and \"ENGINE\" = '" + engine + "'";
+            deleteSql.append(" AND \"ENGINE\" = ?");
           }
           try {
-            executeNoResult(deleteSql);
+            executePreparedUpdate(deleteSql.toString(), ps -> {
+              int paramIndex = 1;
+              for (Long id : partitionIds) {
+                ps.setLong(paramIndex++, id);
+              }
+              if (colNames != null && !colNames.isEmpty()) {
+                for (String colName : colNames) {
+                  ps.setString(paramIndex++, colName);
+                }
+              }
+              if (engine != null) {
+                ps.setString(paramIndex++, engine);
+              }
+            });
           } catch (SQLException e) {
             LOG.warn("Error removing partition column stats. ", e);
             throw new MetaException("Error removing partition column stats: " + e.getMessage());
