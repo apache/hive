@@ -45,3 +45,6 @@ SHOW CATALOGS LIKE 'test__';
 -- ALTER LOCATION
 ALTER CATALOG test_cat SET LOCATION '/tmp/test_cat_new';
 DESC CATALOG EXTENDED test_cat;
+
+-- DROP catalog at the end
+DROP CATALOG  test_cat;

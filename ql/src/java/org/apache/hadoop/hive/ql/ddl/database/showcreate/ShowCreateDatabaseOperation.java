@@ -52,7 +52,7 @@ public class ShowCreateDatabaseOperation extends DDLOperation<ShowCreateDatabase
   }
 
   private int showCreateDatabase(DataOutputStream outStream) throws Exception {
-    Database database = context.getDb().getDatabase(desc.getDatabaseName());
+    Database database = context.getDb().getDatabase(desc.getCatalogName(), desc.getDatabaseName());
 
     StringBuilder createDbCommand = new StringBuilder();
     createDbCommand.append("CREATE DATABASE `").append(database.getName()).append("`\n");

@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -394,7 +395,9 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
                              conf);
 
     if (db != null) {
-      locks.add(new HiveLockObj(new HiveLockObject(db.getName(), lockData),
+      String catName = Objects.requireNonNullElse(db.getCatalogName(),
+              HiveUtils.getCurrentCatalogOrDefault(conf));
+      locks.add(new HiveLockObj(new HiveLockObject(catName + "@" + db.getName(), lockData),
           mode));
       return locks;
     }

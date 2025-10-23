@@ -422,6 +422,33 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
+   *
+   * @param dbNameNode A root node that contains database fields
+   * @return Return a Pair object which includes catalogName and dbName
+   * @throws SemanticException
+   */
+  public static Pair<String, String> getCatDbNamePair(ASTNode dbNameNode) throws SemanticException {
+    String catName = null;
+    String dbName;
+
+    if (dbNameNode.getChildCount() == 2) {
+      catName = unescapeIdentifier(dbNameNode.getChild(0).getText());
+      dbName = unescapeIdentifier(dbNameNode.getChild(1).getText());
+    } else if (dbNameNode.getChildCount() == 1) {
+      dbName = unescapeIdentifier(dbNameNode.getChild(0).getText());
+    } else {
+      dbName = unescapeIdentifier(dbNameNode.getText());
+    }
+
+    if ((catName != null && catName.contains(".")) || dbName.contains(".")) {
+      throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), dbNameNode));
+    }
+
+    return Pair.of(catName, dbName);
+  }
+
+  /**
    * Get dequoted name from a table/column node.
    * @param tableOrColumnNode the table or column node
    * @return for table node, db.tab or tab. for column node column.
@@ -1913,10 +1940,30 @@ public abstract class BaseSemanticAnalyzer {
     return getDatabase(dbName, true);
   }
 
+  /**
+   * TODO catalog. this method still use by some method of table ddl.
+   *  Remove this method once we implement catalog change about table ddl, such as create cat.db.tbl. Depend on HIVE-29279
+   * @deprecated Replaced by
+   *     {@link BaseSemanticAnalyzer#getDatabase(String catalogName, String dbName, boolean throwException)}
+   * @return the database if existed.
+   */
   protected Database getDatabase(String dbName, boolean throwException) throws SemanticException {
     Database database;
     try {
       database = db.getDatabase(dbName);
+    } catch (Exception e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
+    if (database == null && throwException) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
+    }
+    return database;
+  }
+
+  protected Database getDatabase(String catalogName, String dbName, boolean throwException) throws SemanticException {
+    Database database;
+    try {
+      database = db.getDatabase(catalogName, dbName);
     } catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }

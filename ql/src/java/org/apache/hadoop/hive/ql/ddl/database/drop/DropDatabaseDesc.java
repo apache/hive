@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class DropDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  private final String catalogName;
   private final String databaseName;
   private final boolean ifExists;
   private final boolean cascade;
@@ -39,20 +40,22 @@ public class DropDatabaseDesc implements DDLDesc, Serializable {
   
   private boolean deleteData = true;
 
-  public DropDatabaseDesc(String databaseName, boolean ifExists, ReplicationSpec replicationSpec) {
-    this(databaseName, ifExists, false, replicationSpec);
-  }
-
-  public DropDatabaseDesc(String databaseName, boolean ifExists, boolean cascade, ReplicationSpec replicationSpec) {
+  public DropDatabaseDesc(String catalogName, String databaseName, boolean ifExists, boolean cascade, ReplicationSpec replicationSpec) {
+    this.catalogName = catalogName;
     this.databaseName = databaseName;
     this.ifExists = ifExists;
     this.cascade = cascade;
     this.replicationSpec = replicationSpec;
   }
 
-  public DropDatabaseDesc(String databaseName, boolean ifExists, boolean cascade, boolean deleteData) {
-    this(databaseName, ifExists, cascade, null);
+  public DropDatabaseDesc(String catalogName, String databaseName, boolean ifExists, boolean cascade, boolean deleteData) {
+    this(catalogName, databaseName, ifExists, cascade, null);
     this.deleteData = deleteData;
+  }
+
+  @Explain(displayName = "catalog", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatalogName() {
+    return catalogName;
   }
 
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

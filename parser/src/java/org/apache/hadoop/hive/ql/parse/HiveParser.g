@@ -378,11 +378,13 @@ TOK_DESCCATALOG;
 TOK_CATALOGLOCATION;
 TOK_CATALOGCOMMENT;
 TOK_ALTERCATALOG_LOCATION;
+TOK_SWITCHCATALOG;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
 TOK_DATABASE_MANAGEDLOCATION;
 TOK_DBPROPLIST;
+TOK_ALTERDATABASE;
 TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERDATABASE_OWNER;
 TOK_ALTERDATABASE_LOCATION;
@@ -1011,6 +1013,7 @@ ddlStatement
 @after { popMsg(state); }
     : createCatalogStatement
     | dropCatalogStatement
+    | switchCatalogStatement
     | createDatabaseStatement
     | switchDatabaseStatement
     | dropDatabaseStatement
@@ -1151,12 +1154,19 @@ dropCatalogStatement
     -> ^(TOK_DROPCATALOG identifier ifExists?)
     ;
 
+switchCatalogStatement
+@init { pushMsg("switch catalog statement", state); }
+@after { popMsg(state); }
+    : KW_SET KW_CATALOG identifier
+    -> ^(TOK_SWITCHCATALOG identifier)
+    ;
+
 createDatabaseStatement
 @init { pushMsg("create database statement", state); }
 @after { popMsg(state); }
     : KW_CREATE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
-        name=identifier
+        name=databaseName
         databaseComment?
         dbLocation?
         dbManagedLocation?
@@ -1165,7 +1175,7 @@ createDatabaseStatement
 
     | KW_CREATE KW_REMOTE (KW_DATABASE|KW_SCHEMA)
         ifNotExists?
-        name=identifier
+        name=databaseName
         databaseComment?
         dbConnectorName
         (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
@@ -1210,15 +1220,15 @@ dbConnectorName
 switchDatabaseStatement
 @init { pushMsg("switch database statement", state); }
 @after { popMsg(state); }
-    : KW_USE identifier
-    -> ^(TOK_SWITCHDATABASE identifier)
+    : KW_USE databaseName
+    -> ^(TOK_SWITCHDATABASE databaseName)
     ;
 
 dropDatabaseStatement
 @init { pushMsg("drop database statement", state); }
 @after { popMsg(state); }
-    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? identifier restrictOrCascade?
-    -> ^(TOK_DROPDATABASE identifier ifExists? restrictOrCascade?)
+    : KW_DROP (KW_DATABASE|KW_SCHEMA) ifExists? databaseName restrictOrCascade?
+    -> ^(TOK_DROPDATABASE databaseName ifExists? restrictOrCascade?)
     ;
 
 databaseComment
@@ -1284,7 +1294,7 @@ descStatement
     (
     (KW_CATALOG) => (KW_CATALOG) KW_EXTENDED? (catName=identifier) -> ^(TOK_DESCCATALOG $catName KW_EXTENDED?)
     |
-    (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=identifier) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
+    (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) KW_EXTENDED? (dbName=databaseName) -> ^(TOK_DESCDATABASE $dbName KW_EXTENDED?)
     |
     (KW_DATACONNECTOR) => (KW_DATACONNECTOR) KW_EXTENDED? (dcName=identifier) -> ^(TOK_DESCDATACONNECTOR $dcName KW_EXTENDED?)
     |
@@ -1323,7 +1333,7 @@ showStatement
     | KW_SHOW KW_FUNCTIONS (KW_LIKE showFunctionIdentifier)?  -> ^(TOK_SHOWFUNCTIONS KW_LIKE? showFunctionIdentifier?)
     | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? whereClause? orderByClause? limitClause? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec? whereClause? orderByClause? limitClause?)
     | KW_SHOW KW_CREATE (
-        (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) db_name=identifier -> ^(TOK_SHOW_CREATEDATABASE $db_name)
+        (KW_DATABASE|KW_SCHEMA) => (KW_DATABASE|KW_SCHEMA) db_name=databaseName -> ^(TOK_SHOW_CREATEDATABASE $db_name)
         |
         KW_TABLE tabName=tableName -> ^(TOK_SHOW_CREATETABLE $tabName)
       )
