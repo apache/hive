@@ -34,9 +34,9 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -55,8 +55,6 @@ import org.apache.hive.hcatalog.messaging.MessageFactory;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.newGetTableReq;
 
 /**
  * Implementation of
@@ -211,8 +209,9 @@ public class NotificationListener extends MetaStoreEventListener {
       Configuration conf = handler.getConf();
       Table newTbl;
       try {
-        newTbl = handler.get_table_core(newGetTableReq(new TableName(tbl.getCatName(), tbl.getDbName(), tbl.getTableName()), null))
-          .deepCopy();
+        GetTableRequest getTableRequest = new GetTableRequest(tbl.getDbName(), tbl.getTableName());
+        getTableRequest.setCatName(tbl.getCatName());
+        newTbl = handler.get_table_core(getTableRequest).deepCopy();
         newTbl.getParameters().put(
           HCatConstants.HCAT_MSGBUS_TOPIC_NAME,
           getTopicPrefix(conf) + "." + newTbl.getDbName().toLowerCase() + "."

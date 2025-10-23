@@ -425,8 +425,9 @@ public class TestObjectStore {
     objectStore.dropDatabase(db1.getCatalogName(), DB1);
   }
 
-  static ForeignKeysRequest newForeignKeysRequest(String parent_db, String parent_tbl, String child_db, String child_tbl) {
-    ForeignKeysRequest request = new ForeignKeysRequest(parent_db, parent_tbl, child_db, child_tbl);
+  static ForeignKeysRequest newForeignKeysRequest(String parentDb, String parentTbl,
+      String childDb, String childTbl) {
+    ForeignKeysRequest request = new ForeignKeysRequest(parentDb, parentTbl, childDb, childTbl);
     request.setCatName(DEFAULT_CATALOG_NAME);
     return request;
   }
@@ -518,14 +519,16 @@ public class TestObjectStore {
     Assert.assertEquals(2, numPartitions);
 
     try (AutoCloseable c = deadline()) {
-      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, Warehouse.makePartName(tbl1.getPartitionKeys(),value1));
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Warehouse.makePartName(tbl1.getPartitionKeys(), value1));
       partitions = objectStore.getPartitions(DEFAULT_CATALOG_NAME, DB1, TABLE1, limitGetPartitions(10));
     }
     Assert.assertEquals(1, partitions.size());
     Assert.assertEquals(222, partitions.get(0).getCreateTime());
 
     try (AutoCloseable c = deadline()) {
-      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, Warehouse.makePartName(tbl1.getPartitionKeys(), value2));
+      objectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Warehouse.makePartName(tbl1.getPartitionKeys(), value2));
       objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
       objectStore.dropDatabase(db1.getCatalogName(), DB1);
     }
@@ -747,7 +750,8 @@ public class TestObjectStore {
           threadObjectStore.setConf(conf);
           for (List<String> p : partNames) {
             try {
-              threadObjectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1, Warehouse.makePartName(tbl1.getPartitionKeys(),p));
+              threadObjectStore.dropPartition(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+                  Warehouse.makePartName(tbl1.getPartitionKeys(), p));
               System.out.println("Dropping partition: " + p.get(0));
             } catch (Exception e) {
               throw new RuntimeException(e);

@@ -5699,7 +5699,8 @@ public class ObjectStore implements RawStore, Configurable {
           PrimaryKeysRequest primaryKeysRequest = new PrimaryKeysRequest(pkTableDB, pkTableName);
           primaryKeysRequest.setCatName(catName);
           existingTablePrimaryKeys = getPrimaryKeys(primaryKeysRequest);
-          existingTableUniqueConstraints = getUniqueConstraints(new UniqueConstraintsRequest(catName, pkTableDB, pkTableName));
+          existingTableUniqueConstraints =
+              getUniqueConstraints(new UniqueConstraintsRequest(catName, pkTableDB, pkTableName));
         }
 
         // Here we build an aux structure that is used to verify that the foreign key that is declared
@@ -8285,18 +8286,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private <T> List<T> queryByPartitionNames(String catName, String dbName, String tableName,
-      List<String> partNames, Class<T> clazz, String tbCol, String dbCol, String partCol,
-      String catCol) {
-    Pair<Query, Object[]> queryAndParams = makeQueryByPartitionNames(catName,
-        dbName, tableName, partNames, clazz, tbCol, dbCol, partCol, catCol);
-    try (QueryWrapper wrapper = new QueryWrapper(queryAndParams.getLeft())) {
-      List<T> results = new ArrayList<T>(
-          (List) wrapper.executeWithArray(queryAndParams.getRight()));
-      return results;
-    }
-  }
-
   private Pair<Query, Object[]> makeQueryByPartitionNames(
       String catName, String dbName, String tableName, List<String> partNames, Class<?> clazz,
       String tbCol, String dbCol, String partCol, String catCol) {
@@ -10753,7 +10742,7 @@ public class ObjectStore implements RawStore, Configurable {
         List<MFunction> functionList =
             (List<MFunction>) query.executeWithArray(parameterVals.toArray(new String[0]));
         pm.retrieveAll(functionList);
-        result = (List<T>)convertToFunctions(functionList);
+        result = (List<T>) convertToFunctions(functionList);
       } else {
         List<String> functionList = (List<String>) query.executeWithArray(parameterVals.toArray(new String[0]));
         result = (List<T>) new ArrayList<>(functionList);
@@ -11962,10 +11951,14 @@ public class ObjectStore implements RawStore, Configurable {
         new ForeignKeysRequest(null, null, dbName, tblName);
     foreignKeysRequest.setCatName(catName);
     sqlAllTableConstraints.setForeignKeys(getForeignKeys(foreignKeysRequest));
-    sqlAllTableConstraints.setUniqueConstraints(getUniqueConstraints(new UniqueConstraintsRequest(catName, dbName, tblName)));
-    sqlAllTableConstraints.setDefaultConstraints(getDefaultConstraints(new DefaultConstraintsRequest(catName, dbName, tblName)));
-    sqlAllTableConstraints.setCheckConstraints(getCheckConstraints(new CheckConstraintsRequest(catName, dbName, tblName)));
-    sqlAllTableConstraints.setNotNullConstraints(getNotNullConstraints(new NotNullConstraintsRequest(catName, dbName, tblName)));
+    sqlAllTableConstraints.
+        setUniqueConstraints(getUniqueConstraints(new UniqueConstraintsRequest(catName, dbName, tblName)));
+    sqlAllTableConstraints.
+        setDefaultConstraints(getDefaultConstraints(new DefaultConstraintsRequest(catName, dbName, tblName)));
+    sqlAllTableConstraints.
+        setCheckConstraints(getCheckConstraints(new CheckConstraintsRequest(catName, dbName, tblName)));
+    sqlAllTableConstraints.
+        setNotNullConstraints(getNotNullConstraints(new NotNullConstraintsRequest(catName, dbName, tblName)));
     return sqlAllTableConstraints;
   }
 

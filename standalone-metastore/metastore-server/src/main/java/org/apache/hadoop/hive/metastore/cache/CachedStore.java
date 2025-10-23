@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.cache;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,7 +46,6 @@ import org.apache.hadoop.hive.common.DatabaseName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.Deadline;
-import org.apache.hadoop.hive.metastore.FileMetadataHandler;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
@@ -935,7 +933,8 @@ public class CachedStore implements RawStore, Configurable {
           dbName, tblName);
       try {
         Deadline.startTimer("getPartitions");
-        List<Partition> partitions = rawStore.getPartitions(catName, dbName, tblName, GetPartitionsArgs.getAllPartitions());
+        List<Partition> partitions =
+            rawStore.getPartitions(catName, dbName, tblName, GetPartitionsArgs.getAllPartitions());
         Deadline.stopTimer();
         sharedCache
             .refreshPartitionsInCache(StringUtils.normalizeIdentifier(catName), StringUtils.normalizeIdentifier(dbName),
