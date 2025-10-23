@@ -64,10 +64,10 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LeaseLeaderElection.class);
 
-  private static final AtomicLong ID = new AtomicLong();
+  protected static final AtomicLong ID = new AtomicLong();
 
   // Result of election
-  private volatile boolean isLeader;
+  protected volatile boolean isLeader;
 
   private TxnStore store;
 
@@ -76,7 +76,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
   // A daemon used for renewing the lock before timeout,
   // this happens when the current instance wins the election.
-  private LeaseWatcher heartbeater;
+  protected LeaseWatcher heartbeater;
 
   // For non-leader instances to check the lock periodically to
   // see if there is a chance to take over the leadership.
@@ -86,13 +86,12 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   // Current lock id
   private volatile long lockId = -1;
 
+  private volatile boolean stopped = false;
+
   // Leadership change listeners
   private final List<LeadershipStateListener> listeners = new ArrayList<>();
 
-  // Property for testing only
-  public static final String METASTORE_RENEW_LEASE = "metastore.renew.leader.lease";
-
-  private String name;
+  protected String name;
   private final String userName;
   private final String hostName;
   private boolean enforceMutex;
@@ -112,25 +111,15 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     switch (resp.getState()) {
     case ACQUIRED:
       heartbeater = new Heartbeater(conf, tableName);
-      heartbeater.perform();
+      heartbeater.startWatch();
       if (!isLeader) {
         isLeader = true;
         notifyListener();
       }
-      if (!conf.getBoolean(METASTORE_RENEW_LEASE, true)) {
-        // For test only.
-        // In our tests, the time spent on notifying the listener might be greater than the lease timeout,
-        // which makes the leader loss the leadership quickly after wake up, and kill all housekeeping services.
-        // Make sure the leader is still valid while notifying the listener, and switch to ReleaseAndRequireWatcher
-        // after all listeners finish their work.
-        heartbeater.shutDown();
-        heartbeater = new ReleaseAndRequireWatcher(conf, tableName);
-        heartbeater.perform();
-      }
       break;
     case WAITING:
       nonLeaderWatcher = new NonLeaderWatcher(conf, tableName);
-      nonLeaderWatcher.perform();
+      nonLeaderWatcher.startWatch();
       if (isLeader) {
         isLeader = false;
         notifyListener();
@@ -142,7 +131,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     LOG.debug("Spent {}ms to notify the listeners, isLeader: {}", System.currentTimeMillis() - start, isLeader);
   }
 
-  private void notifyListener() {
+  protected void notifyListener() {
     listeners.forEach(listener -> {
       try {
         if (isLeader) {
@@ -164,14 +153,15 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     if (store == null) {
       store = TxnUtils.getTxnStore(conf);
     }
-    LockComponent component = new LockComponentBuilder()
-        .setDbName(table.getDb())
-        .setTableName(table.getTable())
-        .setLock(LockType.EXCL_WRITE)
-        .setOperationType(DataOperationType.NO_TXN)
-        .build();
-    List<LockComponent> components = new ArrayList<LockComponent>(1);
-    components.add(component);
+    
+    List<LockComponent> components = new ArrayList<>();
+    components.add(
+        new LockComponentBuilder()
+            .setDbName(table.getDb())
+            .setTableName(table.getTable())
+            .setLock(LockType.EXCL_WRITE)
+            .setOperationType(DataOperationType.NO_TXN)
+            .build());
 
     boolean lockable = false;
     Exception recentException = null;
@@ -180,7 +170,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     int numRetries = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LOCK_NUMRETRIES);
     long maxSleep = MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, TimeUnit.MILLISECONDS);
-    for (int i = 0; i < numRetries; i++) {
+    for (int i = 0; i < numRetries && !stopped; i++) {
       try {
         LockResponse res = store.lock(req);
         if (res.getState() == LockState.WAITING || res.getState() == LockState.ACQUIRED) {
@@ -216,7 +206,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     }
   }
 
-  private void shutdownWatcher() {
+  protected void shutdownWatcher() {
     if (heartbeater != null) {
       heartbeater.shutDown();
       heartbeater = null;
@@ -238,7 +228,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     return isLeader;
   }
 
-  private abstract class LeaseWatcher extends Thread {
+  protected abstract class LeaseWatcher extends Thread {
 
     protected Configuration conf;
 
@@ -246,7 +236,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
     private volatile boolean stopped = false;
 
-    LeaseWatcher(Configuration conf, TableName tableName) {
+    protected LeaseWatcher(Configuration conf, TableName tableName) {
       this.conf = conf;
       this.tableName = tableName;
       setDaemon(true);
@@ -256,7 +246,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       setName(builder.toString());
     }
 
-    public void perform() {
+    public void startWatch() {
       LOG.info("Starting a watcher: {} for {}", getClass().getName(), name);
       start();
     }
@@ -281,11 +271,9 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     }
 
     public void beforeRun() {
-      // do nothing
     }
 
     public void afterRun() {
-      // do nothing
     }
 
     public abstract void runInternal();
@@ -294,7 +282,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       try {
         tryBeLeader(conf, tableName);
       } catch (Exception e) {
-        LOG.error("Error reclaiming the leader, will retry in next cycle", e);
+        LOG.error("Error reclaiming the lease, will retry in next cycle", e);
       }
     }
   }
@@ -409,45 +397,9 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     }
   }
 
-  // For testing purpose only, lock would become timeout and then acquire it again
-  private class ReleaseAndRequireWatcher extends LeaseWatcher {
-    long timeout;
-    public ReleaseAndRequireWatcher(Configuration conf,
-        TableName tableName) {
-      super(conf, tableName);
-      timeout = MetastoreConf.getTimeVar(conf,
-          MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS) + 3000;
-      setName("ReleaseAndRequireWatcher-" + ((name != null) ? name + "-" : "") + ID.incrementAndGet());
-    }
-
-    @Override
-    public void beforeRun() {
-      try {
-        Thread.sleep(timeout);
-      } catch (InterruptedException e) {
-        // ignore this
-      }
-    }
-
-    @Override
-    public void runInternal() {
-      shutDown();
-      // The timeout lock should be cleaned,
-      // sleep some time to let others take the chance to become the leader
-      try {
-        Thread.sleep(5000);
-      } catch (InterruptedException e) {
-        // ignore
-      }
-      // Acquire the lock again
-      conf = new Configuration(conf);
-      conf.setBoolean(METASTORE_RENEW_LEASE, true);
-      reclaim();
-    }
-  }
-
   @Override
   public void close() {
+    stopped = true;
     shutdownWatcher();
     if (isLeader) {
       isLeader = false;
@@ -463,10 +415,6 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
         LOG.error("Error while unlocking: {}", lockId, e);
       }
     }
-  }
-
-  public long getLockId() {
-    return lockId;
   }
 
   @Override

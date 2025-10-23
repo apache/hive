@@ -19,11 +19,9 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
-import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
+import org.apache.hadoop.hive.metastore.leader.LeaderElectionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,44 +34,42 @@ import static org.junit.Assert.assertTrue;
 
 public class TestMetastoreLeaseLeader extends MetastoreHousekeepingLeaderTestBase {
 
-  LeaderElection<TableName> election;
+  CombinedLeaderElector elector;
 
   @Before
   public void setUp() throws Exception {
     Configuration configuration = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.TXN_TIMEOUT, 1, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.TXN_TIMEOUT, 3, TimeUnit.SECONDS);
     MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 200, TimeUnit.MILLISECONDS);
-    configuration.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, false);
-    configuration.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
+    MetastoreConf.setLongVar(configuration, MetastoreConf.ConfVars.HMS_HANDLER_ATTEMPTS, 3);
+    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.HMS_HANDLER_INTERVAL, 100, TimeUnit.MILLISECONDS);
     configuration.set("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-
+    LeaderElectionFactory.addElectionCreator(LeaderElectionFactory.Method.LOCK, conf -> new ReleaseAndRequireLease(conf, false));
     setup(null, configuration);
 
     Configuration conf = new Configuration(configuration);
-    conf.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, true);
-    election = new LeaseLeaderElection();
-    election.setName("TestMetastoreLeaseLeader");
-    TableName tableName = (TableName) LeaderElectionContext.getLeaderMutex(conf,
-        LeaderElectionContext.TTYPE.HOUSEKEEPING, null);
-    election.tryBeLeader(conf, tableName);
+    elector = new CombinedLeaderElector(conf);
+    elector.setName("TestMetastoreLeaseLeader");
+    elector.tryBeLeader();
   }
 
   @Test
   public void testHouseKeepingThreads() throws Exception {
-    CountDownLatch latch = new CountDownLatch(1);
-    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.setMonitor(latch);
+    int size = LeaderElectionContext.TTYPE.values().length;
+    CountDownLatch latch = new CountDownLatch(size);
+    MetastoreHousekeepingLeaderTestBase.ReleaseAndRequireLease.setMonitor(latch);
     // hms is the leader now
     checkHouseKeepingThreadExistence(true);
-    assertFalse(election.isLeader());
+    assertFalse(elector.isLeader());
     latch.await();
-    // the lease of hms is timeout, election becomes leader now
-    assertTrue(election.isLeader());
-    // hms should shutdown all housekeeping tasks
+    // the lease of hms is timeout, the elector becomes leader now
+    assertTrue(elector.isLeader());
+    // hms should shut down all housekeeping tasks
     checkHouseKeepingThreadExistence(false);
 
-    latch = new CountDownLatch(1);
-    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.setMonitor(latch);
-    election.close();
+    latch = new CountDownLatch(size);
+    MetastoreHousekeepingLeaderTestBase.ReleaseAndRequireLease.setMonitor(latch);
+    elector.close();
     latch.await();
     // hms becomes leader again
     checkHouseKeepingThreadExistence(true);
@@ -81,7 +77,7 @@ public class TestMetastoreLeaseLeader extends MetastoreHousekeepingLeaderTestBas
 
   @After
   public void afterTest() {
-    MetastoreHousekeepingLeaderTestBase.TestLeaderNotification.reset();
+    MetastoreHousekeepingLeaderTestBase.ReleaseAndRequireLease.reset();
   }
 
 }

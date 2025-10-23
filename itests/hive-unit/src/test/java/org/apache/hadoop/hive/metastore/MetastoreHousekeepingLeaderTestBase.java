@@ -18,11 +18,15 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection;
+import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
+import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.stats.StatsUpdaterThread;
 import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
@@ -32,7 +36,10 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -41,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Base class for HMS leader config testing.
  */
-public abstract class MetastoreHousekeepingLeaderTestBase {
+abstract class MetastoreHousekeepingLeaderTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(MetastoreHousekeepingLeaderTestBase.class);
   private static HiveMetaStoreClient client;
   protected Configuration conf;
@@ -71,8 +78,6 @@ public abstract class MetastoreHousekeepingLeaderTestBase {
     addHouseKeepingThreadConfigs();
 
     warehouse = new Warehouse(conf);
-
-    conf.set("metastore.leader.test.listener", TestLeaderNotification.class.getName());
 
     if (isServerStarted) {
       Assert.assertNotNull("Unable to connect to the MetaStore server", client);
@@ -201,30 +206,143 @@ public abstract class MetastoreHousekeepingLeaderTestBase {
     threadClasses.forEach((thread, status) -> threadClasses.put(thread, false));
   }
 
-  public static class TestLeaderNotification implements LeaderElection.LeadershipStateListener {
-    private static CountDownLatch latch;
+  static class CombinedLeaderElector implements AutoCloseable {
+    List<Pair<TableName, LeaderElection<TableName>>> elections = new ArrayList<>();
+    private final Configuration configuration;
+    private String name;
 
-    public static void setMonitor(CountDownLatch latch) {
-      TestLeaderNotification.latch = latch;
+    CombinedLeaderElector(Configuration conf) throws IOException {
+      this.configuration = conf;
+      for (LeaderElectionContext.TTYPE type : LeaderElectionContext.TTYPE.values()) {
+        TableName table = type.getTableName();
+        elections.add(Pair.of(table, new LeaseLeaderElection()));
+      }
     }
-    public static void reset() {
-      TestLeaderNotification.latch = null;
+
+    public void tryBeLeader() throws Exception {
+      int i = 0;
+      for (Pair<TableName, LeaderElection<TableName>> election : elections) {
+        LeaderElection<TableName> le = election.getRight();
+        le.setName(name + "-" + i++);
+        le.tryBeLeader(configuration, election.getLeft());
+      }
+    }
+
+    public boolean isLeader() {
+      boolean isLeader = true;
+      for (Pair<TableName, LeaderElection<TableName>> election : elections) {
+        isLeader &= election.getRight().isLeader();
+      }
+      return isLeader;
+    }
+
+    public void setName(String name) {
+      this.name = name;
     }
 
     @Override
-    public void takeLeadership(LeaderElection election) throws Exception {
+    public void close() throws Exception {
+      for (Pair<TableName, LeaderElection<TableName>> election : elections) {
+        election.getRight().close();
+      }
+    }
+  }
+
+  static class ReleaseAndRequireLease extends LeaseLeaderElection {
+    private static CountDownLatch latch;
+    private final Configuration configuration;
+    private final boolean needRenewLease;
+    private TableName tableName;
+
+    public static void setMonitor(CountDownLatch latch) {
+      ReleaseAndRequireLease.latch = latch;
+    }
+    public static void reset() {
+      ReleaseAndRequireLease.latch = null;
+    }
+
+    public ReleaseAndRequireLease(Configuration conf, boolean needRenewLease) throws IOException {
+      super();
+      this.configuration = conf;
+      this.needRenewLease = needRenewLease;
+    }
+
+    @Override
+    public void setName(String name) {
+      super.setName(name);
+      LeaderElectionContext.TTYPE type = null;
+      for (LeaderElectionContext.TTYPE value : LeaderElectionContext.TTYPE.values()) {
+        if (value.getName().equalsIgnoreCase(name)) {
+          type = value;
+          break;
+        }
+      }
+      if (type == null) {
+        // This shouldn't happen at all
+        throw new AssertionError("Unknown elector name: " + name);
+      }
+      this.tableName = type.getTableName();
+    }
+
+    @Override
+    protected void notifyListener() {
+      super.notifyListener();
+      if (isLeader) {
+        if (!needRenewLease) {
+          super.shutdownWatcher();
+          // In our tests, the time spent on notifying the listener might be greater than the lease timeout,
+          // which makes the leader loss the leadership quickly after wake up, and kill all housekeeping services.
+          // Make sure the leader is still valid while notifying the listener, and switch to ReleaseAndRequireWatcher
+          // after all listeners finish their work.
+          heartbeater = new ReleaseAndRequireWatcher(configuration, tableName);
+          heartbeater.startWatch();
+        }
+      } else {
+        try {
+          // This is the last one get notified, sleep some time to make sure all other
+          // services have been stopped before return
+          Thread.sleep(12000);
+        } catch (InterruptedException ignore) {
+        }
+      }
       if (latch != null) {
         latch.countDown();
       }
     }
 
-    @Override
-    public void lossLeadership(LeaderElection election) throws Exception {
-      if (latch != null) {
-        // This is the last one get notified, sleep some time to make sure all other
-        // services have been stopped before return
-        Thread.sleep(12000);
-        latch.countDown();
+    // For testing purpose only, lock would become timeout and then acquire it again
+    private class ReleaseAndRequireWatcher extends LeaseWatcher {
+      long timeout;
+      public ReleaseAndRequireWatcher(Configuration conf,
+          TableName tableName) {
+        super(conf, tableName);
+        timeout = MetastoreConf.getTimeVar(conf,
+            MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS) + 3000;
+        setName("ReleaseAndRequireWatcher-" + ((name != null) ? name + "-" : "") + ID.incrementAndGet());
+      }
+
+      @Override
+      public void beforeRun() {
+        try {
+          Thread.sleep(timeout);
+        } catch (InterruptedException e) {
+          // ignore this
+        }
+      }
+
+      @Override
+      public void runInternal() {
+        shutDown();
+        // The timeout lock should be cleaned,
+        // sleep some time to let others take the chance to become the leader
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          // ignore
+        }
+        // Acquire the lock again
+        conf = new Configuration(conf);
+        reclaim();
       }
     }
   }

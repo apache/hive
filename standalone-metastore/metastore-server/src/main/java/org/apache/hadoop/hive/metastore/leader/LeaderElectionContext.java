@@ -26,10 +26,10 @@ import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection.LeadershipStateListener;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +45,6 @@ public class LeaderElectionContext {
   public enum TTYPE {
     HOUSEKEEPING(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "__METASTORE_LEADER_ELECTION__",
         "metastore_housekeeping"), "housekeeping"),
-    WORKER(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "__METASTORE_LEADER_ELECTION__",
-        "metastore_compactor_worker"), "compactor_worker"),
     ALWAYS_TASKS(new TableName(Warehouse.DEFAULT_CATALOG_NAME, "__METASTORE_LEADER_ELECTION__",
         "metastore_always_tasks"), "always_tasks");
     // Mutex of TTYPE, which can be a nonexistent table
@@ -75,9 +73,8 @@ public class LeaderElectionContext {
   // State change listeners group by type
   private final Map<TTYPE, List<LeadershipStateListener>> listeners;
   // Collection of leader candidates
-  private final List<LeaderElection> leaderElections = new ArrayList<>();
+  private final List<LeaderElection<?>> leaderElections = new ArrayList<>();
   // Property for testing, a single leader will be created
-  public final static String LEADER_IN_TEST = "metastore.leader.election.in.test";
 
   private LeaderElectionContext(String servHost, Configuration conf,
       Map<TTYPE, List<LeadershipStateListener>> listeners,
@@ -98,46 +95,32 @@ public class LeaderElectionContext {
   }
 
   public void start() throws Exception {
-    Map<TTYPE, List<LeadershipStateListener>> listenerMap = this.listeners;
-    if (conf.getBoolean(LEADER_IN_TEST, false)) {
-      Map<TTYPE, List<LeadershipStateListener>> newListeners = new HashMap<>();
-      List<LeadershipStateListener> listeners = new ArrayList<>();
-      listenerMap.forEach((k, v) -> listeners.addAll(v));
-      String testListenerCls = conf.get("metastore.leader.test.listener");
-      if (StringUtils.isNotEmpty(testListenerCls)) {
-        // Add the test listener to the last
-        listeners.add((LeadershipStateListener) JavaUtils.newInstance(Class.forName(testListenerCls)));
-      }
-      newListeners.put(TTYPE.HOUSEKEEPING, listeners);
-      listenerMap = newListeners;
-    }
-    for (Map.Entry<TTYPE, List<LeadershipStateListener>> entry :
-        listenerMap.entrySet()) {
-      List<LeadershipStateListener> listenerList = entry.getValue();
+    List<TTYPE> ttypes = new ArrayList<>(listeners.keySet());
+    Collections.shuffle(ttypes);
+    for (TTYPE ttype : ttypes) {
+      List<LeadershipStateListener> listenerList = listeners.get(ttype);
       if (listenerList.isEmpty()) {
         continue;
       }
       if (auditLeaderListener != null) {
-        listenerList.add(0, auditLeaderListener);
+        listenerList.addFirst(auditLeaderListener);
       }
-      TTYPE ttype = entry.getKey();
       LeaderElection leaderElection = LeaderElectionFactory.create(conf);
       leaderElection.setName(ttype.name);
-      listenerList.forEach(listener -> leaderElection.addStateListener(listener));
+      listenerList.forEach(leaderElection::addStateListener);
       leaderElections.add(leaderElection);
-      
       Thread daemon = new Thread(() -> {
         try {
-          Object mutex = getLeaderMutex(conf, ttype, servHost);
+          Object mutex = LeaderElectionFactory.getMutex(conf, ttype, servHost);
           leaderElection.tryBeLeader(conf, mutex);
         } catch (LeaderException e) {
           throw new RuntimeException("Error claiming to be leader: " + leaderElection.getName(), e);
         }
       });
-      daemon.setName("Metastore Election " + leaderElection.getName());
-      daemon.setDaemon(true);
 
       if (startAsDaemon) {
+        daemon.setName("Metastore Election " + leaderElection.getName());
+        daemon.setDaemon(true);
         daemon.start();
       } else {
         daemon.run();
@@ -153,25 +136,6 @@ public class LeaderElectionContext {
         HiveMetaStore.LOG.warn("Error closing election: " + le.getName(), e);
       }
     });
-  }
-
-  public static Object getLeaderMutex(Configuration conf, TTYPE ttype, String servHost) {
-    String method =
-        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION);
-    switch (method.toLowerCase()) {
-    case "host":
-      return servHost;
-    case "lock":
-      TableName mutex = ttype.getTableName();
-      String namespace =
-          MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_LOCK_NAMESPACE);
-      if (StringUtils.isNotEmpty(namespace)) {
-        return new TableName(mutex.getCat(), namespace, mutex.getTable());
-      }
-      return mutex;
-    default:
-      throw new UnsupportedOperationException(method + " not supported for leader election");
-    }
   }
 
   public static class ContextBuilder {
