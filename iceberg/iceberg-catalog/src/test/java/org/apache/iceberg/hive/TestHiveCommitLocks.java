@@ -281,7 +281,6 @@ public class TestHiveCommitLocks {
         .doReturn(acquiredLockResponse)
         .when(spyClient)
         .checkLock(eq(dummyLockId));
-    doNothing().when(spyOps).doUnlock(any());
     doNothing().when(spyClient).heartbeat(eq(0L), eq(dummyLockId));
 
     spyOps.doCommit(metadataV2, metadataV1);
@@ -307,7 +306,6 @@ public class TestHiveCommitLocks {
 
     doReturn(showLocksResponse).when(spyClient).showLocks(any());
     doReturn(acquiredLockResponse).when(spyClient).checkLock(eq(dummyLockId));
-    doNothing().when(spyOps).doUnlock(any());
     doNothing().when(spyClient).heartbeat(eq(0L), eq(dummyLockId));
 
     spyOps.doCommit(metadataV2, metadataV1);
@@ -569,11 +567,11 @@ public class TestHiveCommitLocks {
   }
 
   @Test
-  public void testLockHeartbeat() throws TException {
+  public void testLockHeartbeat() throws TException, InterruptedException {
     doReturn(acquiredLockResponse).when(spyClient).lock(any());
     doAnswer(AdditionalAnswers.answersWithDelay(2000, InvocationOnMock::callRealMethod))
-        .when(spyClient)
-        .getTable(any(), any());
+        .when(spyOps)
+        .loadHmsTable();
     doNothing().when(spyClient).heartbeat(eq(0L), eq(dummyLockId));
 
     spyOps.doCommit(metadataV2, metadataV1);

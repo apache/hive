@@ -36,16 +36,14 @@ import static java.util.Objects.requireNonNull;
 public class CompactorTasks implements LeaderElection.LeadershipStateListener {
 
   private final Configuration configuration;
-  private final boolean runOnlyWorker;
 
   // each MetaStoreThread runs as a thread
   private Map<MetaStoreThread, AtomicBoolean> metastoreThreadsMap;
 
-  public CompactorTasks(Configuration configuration, boolean runOnlyWorker) {
+  public CompactorTasks(Configuration configuration) {
     // recreate a new configuration
     this.configuration = new Configuration(requireNonNull(configuration,
         "configuration is null"));
-    this.runOnlyWorker = runOnlyWorker;
   }
 
   // Copied from HiveMetaStore
@@ -62,66 +60,41 @@ public class CompactorTasks implements LeaderElection.LeadershipStateListener {
 
   public List<MetaStoreThread> getCompactorThreads() throws Exception {
     List<MetaStoreThread> compactors = new ArrayList<>();
-    if (!runOnlyWorker) {
-      if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)) {
-        MetaStoreThread initiator = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Initiator");
-        compactors.add(initiator);
-      }
-      if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON)) {
-        MetaStoreThread cleaner = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Cleaner");
-        compactors.add(cleaner);
-      }
-    } else {
-      boolean runInMetastore = MetastoreConf.getVar(configuration,
-          MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore");
-      if (runInMetastore) {
-        HiveMetaStore.LOG.warn("Running compaction workers on HMS side is not suggested because compaction pools are not supported in HMS " +
-            "(HIVE-26443). Consider removing the hive.metastore.runworker.in configuration setting, as it will be " +
-            "comletely removed in future releases.");
-        int numWorkers = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
-        for (int i = 0; i < numWorkers; i++) {
-          MetaStoreThread worker = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Worker");
-          compactors.add(worker);
-        }
-      }
+    if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)) {
+      MetaStoreThread initiator = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Initiator");
+      compactors.add(initiator);
+    }
+    if (MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON)) {
+      MetaStoreThread cleaner = instantiateThread("org.apache.hadoop.hive.ql.txn.compactor.Cleaner");
+      compactors.add(cleaner);
     }
     return compactors;
   }
 
   private void logCompactionParameters() {
-    if (!runOnlyWorker) {
-      HiveMetaStore.LOG.info("Compaction HMS parameters:");
-      HiveMetaStore.LOG.info("metastore.compactor.initiator.on = {}",
-          MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON));
-      HiveMetaStore.LOG.info("metastore.compactor.cleaner.on = {}",
-          MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON));
-      HiveMetaStore.LOG.info("metastore.compactor.worker.threads = {}",
-          MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
-      HiveMetaStore.LOG.info("hive.metastore.runworker.in = {}",
-          MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN));
-      HiveMetaStore.LOG.info("metastore.compactor.history.retention.did.not.initiate = {}",
-          MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
-      HiveMetaStore.LOG.info("metastore.compactor.history.retention.failed = {}",
-          MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED));
-      HiveMetaStore.LOG.info("metastore.compactor.history.retention.succeeded = {}",
-          MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
-      HiveMetaStore.LOG.info("metastore.compactor.initiator.failed.compacts.threshold = {}",
-          MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD));
-      HiveMetaStore.LOG.info("metastore.compactor.enable.stats.compression",
-          MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_MINOR_STATS_COMPRESSION));
+    HiveMetaStore.LOG.info("Compaction HMS parameters:");
+    HiveMetaStore.LOG.info("metastore.compactor.initiator.on = {}",
+        MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON));
+    HiveMetaStore.LOG.info("metastore.compactor.cleaner.on = {}",
+        MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON));
+    HiveMetaStore.LOG.info("metastore.compactor.worker.threads = {}",
+        MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
+    HiveMetaStore.LOG.info("metastore.compactor.history.retention.did.not.initiate = {}",
+        MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE));
+    HiveMetaStore.LOG.info("metastore.compactor.history.retention.failed = {}",
+        MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED));
+    HiveMetaStore.LOG.info("metastore.compactor.history.retention.succeeded = {}",
+        MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
+    HiveMetaStore.LOG.info("metastore.compactor.initiator.failed.compacts.threshold = {}",
+        MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_FAILED_THRESHOLD));
+    HiveMetaStore.LOG.info("metastore.compactor.enable.stats.compression",
+        MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_MINOR_STATS_COMPRESSION));
 
-      if (!MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)) {
-        HiveMetaStore.LOG.warn("Compactor Initiator is turned Off. Automatic compaction will not be triggered.");
-      }
-      if (!MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON)) {
-        HiveMetaStore.LOG.warn("Compactor Cleaner is turned Off. Automatic compaction cleaner will not be triggered.");
-      }
-
-    } else {
-      int numThreads = MetastoreConf.getIntVar(configuration, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
-      if (numThreads < 1) {
-        HiveMetaStore.LOG.warn("Invalid number of Compactor Worker threads({}) on HMS", numThreads);
-      }
+    if (!MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON)) {
+      HiveMetaStore.LOG.warn("Compactor Initiator is turned Off. Automatic compaction will not be triggered.");
+    }
+    if (!MetastoreConf.getBoolVar(configuration, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON)) {
+      HiveMetaStore.LOG.warn("Compactor Cleaner is turned Off. Automatic compaction cleaner will not be triggered.");
     }
   }
 

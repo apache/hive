@@ -15,4 +15,4 @@ POSTHOOK: Output: default@table_priv_gfail1
 PREHOOK: query: GRANT INSERT ON table_priv_gfail1 TO USER user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@table_priv_gfail1
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation GRANT_PRIVILEGE [[INSERT with grant] on Object [type=TABLE_OR_VIEW, name=default.table_priv_gfail1]]
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation GRANT_PRIVILEGE [[INSERT with grant] on Object [type=TABLE_OR_VIEW, name=hive.default.table_priv_gfail1]]

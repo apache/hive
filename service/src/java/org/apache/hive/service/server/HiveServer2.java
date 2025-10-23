@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ServiceContext;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
@@ -96,9 +97,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorThread;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
-import org.apache.hadoop.hive.registry.impl.ZookeeperUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -270,7 +269,7 @@ public class HiveServer2 extends CompositeService {
     } catch (Throwable t) {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
     }
-
+    setUpZooKeeperAuth(hiveConf);
     // Do not allow sessions - leader election or initialization will allow them for an active HS2.
     cliService = new CLIService(this, false);
     addService(cliService);
@@ -559,11 +558,9 @@ public class HiveServer2 extends CompositeService {
 
   private void logCompactionParameters(HiveConf hiveConf) {
     LOG.info("Compaction HS2 parameters:");
-    String runWorkerIn = MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN);
-    LOG.info("hive.metastore.runworker.in = {}", runWorkerIn);
     int numWorkers = MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS);
     LOG.info("metastore.compactor.worker.threads = {}", numWorkers);
-    if ("hs2".equals(runWorkerIn) && numWorkers < 1) {
+    if (numWorkers < 1) {
       LOG.warn("Invalid number of Compactor Worker threads({}) on HS2", numWorkers);
     }
   }
@@ -608,7 +605,9 @@ public class HiveServer2 extends CompositeService {
   private ACLProvider zooKeeperAclProvider;
 
   private ACLProvider getACLProvider(HiveConf hiveConf) {
-    final boolean isSecure = ZookeeperUtils.isKerberosEnabled(hiveConf);
+    final boolean isSecure =
+        AuthType.isKerberosAuthMode(hiveConf) &&
+        HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
 
     return new ACLProvider() {
       @Override
@@ -682,18 +681,18 @@ public class HiveServer2 extends CompositeService {
    * @return
    * @throws Exception
    */
-  private static void setUpZooKeeperAuth(HiveConf hiveConf) throws Exception {
-    if (ZookeeperUtils.isKerberosEnabled(hiveConf)) {
-      String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
-      if (principal.isEmpty()) {
-        throw new IOException("HiveServer2 Kerberos principal is empty");
+  private static void setUpZooKeeperAuth(HiveConf hiveConf) {
+    try {
+      if (AuthType.isKerberosAuthMode(hiveConf) &&
+          StringUtils.isNotEmpty(HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM)) &&
+          HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS)) {
+        // Install the JAAS Configuration for the runtime
+        String principal = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL);
+        String keyTab = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
+        SecurityUtils.setZookeeperClientKerberosJaasConfig(principal, keyTab);
       }
-      String keyTabFile = hiveConf.getVar(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB);
-      if (keyTabFile.isEmpty()) {
-        throw new IOException("HiveServer2 Kerberos keytab is empty");
-      }
-      // Install the JAAS Configuration for the runtime
-      Utils.setZookeeperClientKerberosJaasConfig(principal, keyTabFile);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to configure the jaas for ZooKeeper", e);
     }
   }
 
@@ -1186,7 +1185,6 @@ public class HiveServer2 extends CompositeService {
     }
 
     if (policyContainer.size() > 0) {
-      setUpZooKeeperAuth(hiveConf);
       zKClientForPrivSync = hiveConf.getZKConfig().startZookeeperClient(zooKeeperAclProvider, true);
       String rootNamespace = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_ZOOKEEPER_NAMESPACE);
       String path = ZooKeeperHiveHelper.ZOOKEEPER_PATH_SEPARATOR + rootNamespace
@@ -1262,59 +1260,57 @@ public class HiveServer2 extends CompositeService {
 
   public Map<String, Integer> maybeStartCompactorThreads(HiveConf hiveConf) {
     Map<String, Integer> startedWorkers = new HashMap<>();
-    if (MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("hs2")) {
-      Ref<Integer> numWorkers = new Ref<>(MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
-      Map<String, Integer> customPools = CompactorUtil.getPoolConf(hiveConf);
+    Ref<Integer> numWorkers = new Ref<>(MetastoreConf.getIntVar(hiveConf, MetastoreConf.ConfVars.COMPACTOR_WORKER_THREADS));
+    Map<String, Integer> customPools = CompactorUtil.getPoolConf(hiveConf);
 
-      StringBuilder sb = new StringBuilder(2048);
-      sb.append("This HS2 instance will act as Compactor with the following worker pool configuration:\n");
-      sb.append("Global pool size: ").append(numWorkers.value).append("\n");
+    StringBuilder sb = new StringBuilder(2048);
+    sb.append("This HS2 instance will act as Compactor with the following worker pool configuration:\n");
+    sb.append("Global pool size: ").append(numWorkers.value).append("\n");
 
-      LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers.value);
-      customPools.forEach((poolName, poolWorkers) -> {
-        if (poolWorkers == 0) {
-          LOG.warn("Pool not initialized, configured with zero workers: {}", poolName);
-        }
-        else if (numWorkers.value == 0) {
-          LOG.warn("Pool not initialized, no available workers remained: {}", poolName);
-        }
-        else {
-          if (poolWorkers > numWorkers.value) {
-            LOG.warn("Global worker pool exhausted, compaction pool ({}) will be configured with less workers than the " +
-                "required number. ({} -> {})", poolName, poolWorkers, numWorkers.value);
-            poolWorkers = numWorkers.value;
-          }
-
-          LOG.info("Initializing compaction pool ({}) with {} workers.", poolName, poolWorkers);
-          IntStream.range(0, poolWorkers).forEach(i -> {
-            Worker w = new Worker();
-            w.setPoolName(poolName);
-            CompactorThread.initializeAndStartThread(w, hiveConf);
-            startedWorkers.compute(poolName, (k, v) -> (v == null) ? 1 : v + 1);
-            sb.append(
-                String.format("Worker - Name: %s, Pool: %s, Priority: %d", w.getName(), poolName, w.getPriority())
-            );
-          });
-          numWorkers.value -= poolWorkers;
-        }
-      });
-
-      if (numWorkers.value == 0) {
-        LOG.warn("No default compaction pool configured, all non-labeled compaction requests will remain unprocessed!");
-        if (customPools.size() > 0) {
-          sb.append("Pool not initialized, no remaining free workers: default\n");
-        }
-      } else {
-        LOG.info("Initializing default compaction pool with {} workers.", numWorkers.value);
-        IntStream.range(0, numWorkers.value).forEach(i -> {
-          Worker w = new Worker();
-          CompactorThread.initializeAndStartThread(w, hiveConf);
-          startedWorkers.compute(Constants.COMPACTION_DEFAULT_POOL, (k, v) -> (v == null) ? 1 : v + 1);
-          sb.append("Worker - Name: ").append(w.getName()).append(", Pool: default, Priority: ").append(w.getPriority()).append("\n");
-        });
+    LOG.info("Initializing the compaction pools with using the global worker limit: {} ", numWorkers.value);
+    customPools.forEach((poolName, poolWorkers) -> {
+      if (poolWorkers == 0) {
+        LOG.warn("Pool not initialized, configured with zero workers: {}", poolName);
       }
-      LOG.info(sb.toString());
+      else if (numWorkers.value == 0) {
+        LOG.warn("Pool not initialized, no available workers remained: {}", poolName);
+      }
+      else {
+        if (poolWorkers > numWorkers.value) {
+          LOG.warn("Global worker pool exhausted, compaction pool ({}) will be configured with less workers than the " +
+              "required number. ({} -> {})", poolName, poolWorkers, numWorkers.value);
+          poolWorkers = numWorkers.value;
+        }
+
+        LOG.info("Initializing compaction pool ({}) with {} workers.", poolName, poolWorkers);
+        IntStream.range(0, poolWorkers).forEach(i -> {
+          Worker w = new Worker();
+          w.setPoolName(poolName);
+          CompactorThread.initializeAndStartThread(w, hiveConf);
+          startedWorkers.compute(poolName, (k, v) -> (v == null) ? 1 : v + 1);
+          sb.append(
+            String.format("Worker - Name: %s, Pool: %s, Priority: %d", w.getName(), poolName, w.getPriority())
+          );
+        });
+        numWorkers.value -= poolWorkers;
+      }
+    });
+
+    if (numWorkers.value == 0) {
+      LOG.warn("No default compaction pool configured, all non-labeled compaction requests will remain unprocessed!");
+      if (customPools.size() > 0) {
+        sb.append("Pool not initialized, no remaining free workers: default\n");
+      }
+    } else {
+      LOG.info("Initializing default compaction pool with {} workers.", numWorkers.value);
+      IntStream.range(0, numWorkers.value).forEach(i -> {
+        Worker w = new Worker();
+        CompactorThread.initializeAndStartThread(w, hiveConf);
+        startedWorkers.compute(Constants.COMPACTION_DEFAULT_POOL, (k, v) -> (v == null) ? 1 : v + 1);
+        sb.append("Worker - Name: ").append(w.getName()).append(", Pool: default, Priority: ").append(w.getPriority()).append("\n");
+      });
     }
+    LOG.info(sb.toString());
     return startedWorkers;
   }
 

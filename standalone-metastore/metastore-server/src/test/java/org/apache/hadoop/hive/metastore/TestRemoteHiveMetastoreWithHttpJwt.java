@@ -137,10 +137,9 @@ public class TestRemoteHiveMetastoreWithHttpJwt {
   @Test(expected = TTransportException.class)
   public void testExpiredJWT() throws Exception {
     String validJwtToken = generateJWT(USER_1, jwtAuthorizedKeyFile.toPath(),
-        TimeUnit.MILLISECONDS.toMillis(2));
+        TimeUnit.MINUTES.toMillis(-2));
 
     new EnvironmentVariables("HMS_JWT", validJwtToken).execute(() -> {
-      Thread.sleep(TimeUnit.MILLISECONDS.toMillis(3));
       try (HiveMetaStoreClient client = new HiveMetaStoreClient(conf)) {
         String dbName = ("expired_jwt_" + TEST_DB_NAME_PREFIX + "_" + UUID.randomUUID()).toLowerCase();
         Database createdDb = new Database();

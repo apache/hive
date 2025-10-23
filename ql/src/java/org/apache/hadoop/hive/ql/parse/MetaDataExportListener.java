@@ -90,7 +90,7 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
       EximUtil.createExportDump(fs, outFile, mTbl, null, null,
           new HiveConf(conf, MetaDataExportListener.class));
       if (moveMetadataToTrash == true) {
-        wh.deleteDir(metaPath, true, false, false);
+        wh.deleteDir(metaPath, false, false);
       }
     } catch (IOException | SemanticException e) {
       throw new MetaException(e.getMessage());

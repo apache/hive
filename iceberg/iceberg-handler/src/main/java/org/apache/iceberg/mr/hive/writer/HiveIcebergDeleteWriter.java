@@ -71,8 +71,10 @@ class HiveIcebergDeleteWriter extends HiveIcebergWriterBase {
 
   @Override
   public FilesForCommit files() {
-    List<DeleteFile> deleteFiles = ((DeleteWriteResult) writer.result()).deleteFiles();
-    Set<CharSequence> referencedDataFiles = ((DeleteWriteResult) writer.result()).referencedDataFiles();
-    return FilesForCommit.onlyDelete(deleteFiles, referencedDataFiles);
+    DeleteWriteResult result = (DeleteWriteResult) writer.result();
+    List<DeleteFile> deleteFiles = result.deleteFiles();
+    Set<CharSequence> referencedDataFiles = result.referencedDataFiles();
+    List<DeleteFile> rewrittenDeleteFiles = result.rewrittenDeleteFiles();
+    return FilesForCommit.onlyDelete(deleteFiles, referencedDataFiles, rewrittenDeleteFiles);
   }
 }

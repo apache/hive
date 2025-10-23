@@ -28,8 +28,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
@@ -250,9 +248,8 @@ public class HiveClientCache {
    * @return the hive client
    * @throws MetaException
    * @throws IOException
-   * @throws LoginException
    */
-  public IMetaStoreClient get(final HiveConf hiveConf) throws MetaException, IOException, LoginException {
+  public IMetaStoreClient get(final HiveConf hiveConf) throws MetaException, IOException {
     final HiveClientCacheKey cacheKey = HiveClientCacheKey.fromHiveConf(hiveConf, getThreadId());
     ICacheableMetaStoreClient cacheableHiveMetaStoreClient = null;
 
@@ -279,10 +276,9 @@ public class HiveClientCache {
    * @return
    * @throws IOException
    * @throws MetaException
-   * @throws LoginException
    */
   private ICacheableMetaStoreClient getOrCreate(final HiveClientCacheKey cacheKey)
-      throws IOException, MetaException, LoginException {
+      throws IOException, MetaException {
     try {
       return hiveCache.get(cacheKey, new Callable<ICacheableMetaStoreClient>() {
         @Override
@@ -301,8 +297,6 @@ public class HiveClientCache {
         throw (IOException) t;
       } else if (t instanceof MetaException) {
         throw (MetaException) t;
-      } else if (t instanceof LoginException) {
-        throw (LoginException) t;
       } else {
         throw new IOException("Error creating hiveMetaStoreClient", t);
       }
@@ -321,14 +315,14 @@ public class HiveClientCache {
     final private HiveConf hiveConf;
     final private int threadId;
 
-    private HiveClientCacheKey(HiveConf hiveConf, final int threadId) throws IOException, LoginException {
+    private HiveClientCacheKey(HiveConf hiveConf, final int threadId) throws IOException {
       this.metaStoreURIs = hiveConf.getVar(HiveConf.ConfVars.METASTORE_URIS);
       ugi = Utils.getUGI();
       this.hiveConf = hiveConf;
       this.threadId = threadId;
     }
 
-    public static HiveClientCacheKey fromHiveConf(HiveConf hiveConf, final int threadId) throws IOException, LoginException {
+    public static HiveClientCacheKey fromHiveConf(HiveConf hiveConf, final int threadId) throws IOException {
       return new HiveClientCacheKey(hiveConf, threadId);
     }
 

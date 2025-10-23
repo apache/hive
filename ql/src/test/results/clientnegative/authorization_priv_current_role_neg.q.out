@@ -61,4 +61,4 @@ POSTHOOK: type: SHOW_ROLES
 PREHOOK: query: grant all on table tpriv_current_role to user user5
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@tpriv_current_role
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation GRANT_PRIVILEGE [[SELECT with grant, INSERT with grant, UPDATE with grant, DELETE with grant] on Object [type=TABLE_OR_VIEW, name=default.tpriv_current_role]]
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation GRANT_PRIVILEGE [[SELECT with grant, INSERT with grant, UPDATE with grant, DELETE with grant] on Object [type=TABLE_OR_VIEW, name=hive.default.tpriv_current_role]]

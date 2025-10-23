@@ -21,14 +21,20 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.security.authorization.HiveCustomStorageHandlerUtils;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.iceberg.BatchScan;
 import org.apache.iceberg.DeleteFile;
@@ -47,6 +53,7 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.IcebergTableUtil;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.util.ContentFileUtil;
 import org.apache.iceberg.util.DeleteFileSet;
 import org.apache.iceberg.util.PropertyUtil;
@@ -214,6 +221,7 @@ public class WriterBuilder {
     private final boolean isMergeTask;
     private final boolean skipRowData;
     private final boolean useDVs;
+    private final Set<String> missingColumns;
 
     Context(Map<String, String> properties, UnaryOperator<String> ops, String tableName) {
       String dataFileFormatName =
@@ -239,6 +247,10 @@ public class WriterBuilder {
       this.skipRowData = useDVs ||
           PropertyUtil.propertyAsBoolean(properties,
             ICEBERG_DELETE_SKIPROWDATA, ICEBERG_DELETE_SKIPROWDATA_DEFAULT);
+
+      this.missingColumns = Optional.ofNullable(ops.apply(SessionStateUtil.MISSING_COLUMNS))
+          .map(columns -> Arrays.stream(columns.split(",")).collect(Collectors.toCollection(HashSet::new)))
+          .orElse(Sets.newHashSet());
     }
 
     FileFormat dataFileFormat() {
@@ -279,6 +291,10 @@ public class WriterBuilder {
 
     public boolean useDVs() {
       return useDVs;
+    }
+
+    public Set<String> missingColumns() {
+      return missingColumns;
     }
   }
 }

@@ -26,9 +26,10 @@
   <name>Hive Storage API</name>
   <inceptionYear>2008</inceptionYear>
   <properties>
+    <checkstyle.version>11.1.0</checkstyle.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
-    <commons-logging.version>1.1.3</commons-logging.version>
+    <netty.version>4.1.127.Final</netty.version>
     <guava.version>22.0</guava.version>
     <hadoop.version>3.4.2</hadoop.version>
     <junit.version>4.13.2</junit.version>
@@ -36,13 +37,27 @@
     <junit.vintage.version>5.13.3</junit.vintage.version>
     <slf4j.version>1.7.30</slf4j.version>
     <spotbugs.version>4.8.6</spotbugs.version>
-    <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
+    <maven.checkstyle.plugin.version>3.5.0</maven.checkstyle.plugin.version>
     <maven.cyclonedx.plugin.version>2.7.10</maven.cyclonedx.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
     <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-handler</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport-native-epoll</artifactId>
+        <version>${netty.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <!-- compile inter-project -->
     <dependency>
@@ -172,6 +187,13 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
+          <dependencies>
+            <dependency>
+              <groupId>com.puppycrawl.tools</groupId>
+              <artifactId>checkstyle</artifactId>
+              <version>${checkstyle.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>

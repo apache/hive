@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer.lineage;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.ScriptOperator;
@@ -55,15 +57,27 @@ import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.Utils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
+import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.udf.ptf.Noop;
 
 /**
  * Operator factory for the rule processors for lineage.
@@ -103,24 +117,24 @@ public class OpProcFactory {
       // Create a single dependency list by concatenating the dependencies of all
       // the cols
       Dependency dep = new Dependency();
-      DependencyType new_type = LineageInfo.DependencyType.SCRIPT;
+      DependencyType newType = LineageInfo.DependencyType.SCRIPT;
       dep.setType(LineageInfo.DependencyType.SCRIPT);
       // TODO: Fix this to a non null value.
       dep.setExpr(null);
 
-      LinkedHashSet<BaseColumnInfo> col_set = new LinkedHashSet<BaseColumnInfo>();
+      LinkedHashSet<BaseColumnInfo> colSet = new LinkedHashSet<BaseColumnInfo>();
       for(ColumnInfo ci : inpOp.getSchema().getSignature()) {
         Dependency d = lCtx.getIndex().getDependency(inpOp, ci);
         if (d != null) {
-          new_type = LineageCtx.getNewDependencyType(d.getType(), new_type);
+          newType = LineageCtx.getNewDependencyType(d.getType(), newType);
           if (!ci.isHiddenVirtualCol()) {
-            col_set.addAll(d.getBaseCols());
+            colSet.addAll(d.getBaseCols());
           }
         }
       }
 
-      dep.setType(new_type);
-      dep.setBaseCols(col_set);
+      dep.setType(newType);
+      dep.setBaseCols(colSet);
 
       boolean isScript = op instanceof ScriptOperator;
 
@@ -128,9 +142,9 @@ public class OpProcFactory {
       for(ColumnInfo ci : op.getSchema().getSignature()) {
         Dependency d = dep;
         if (!isScript) {
-          Dependency dep_ci = lCtx.getIndex().getDependency(inpOp, ci);
-          if (dep_ci != null) {
-            d = dep_ci;
+          Dependency depCi = lCtx.getIndex().getDependency(inpOp, ci);
+          if (depCi != null) {
+            d = depCi;
           }
         }
         lCtx.getIndex().putDependency(op, ci, d);
@@ -330,12 +344,12 @@ public class OpProcFactory {
       // For the select path the columns are the ones at the beginning of the
       // current operators schema and for the udtf path the columns are
       // at the end of the operator schema.
-      List<ColumnInfo> out_cols = op.getSchema().getSignature();
-      int out_cols_size = out_cols.size();
-      int cols_size = cols.size();
-      int outColOffset = isUdtfPath ? out_cols_size - cols_size : 0;
-      for (int cnt = 0; cnt < cols_size; cnt++) {
-        ColumnInfo outCol = out_cols.get(outColOffset + cnt);
+      List<ColumnInfo> outCols = op.getSchema().getSignature();
+      int outColsSize = outCols.size();
+      int colsSize = cols.size();
+      int outColOffset = isUdtfPath ? outColsSize - colsSize : 0;
+      for (int cnt = 0; cnt < colsSize; cnt++) {
+        ColumnInfo outCol = outCols.get(outColOffset + cnt);
         if (!outCol.isHiddenVirtualCol()) {
           ColumnInfo col = cols.get(cnt);
           lCtx.getIndex().mergeDependency(op, outCol,
@@ -375,7 +389,7 @@ public class OpProcFactory {
       lctx.getIndex().copyPredicates(inpOp, sop);
 
       RowSchema rs = sop.getSchema();
-      List<ColumnInfo> col_infos = rs.getSignature();
+      List<ColumnInfo> colInfos = rs.getSignature();
       int cnt = 0;
       for(ExprNodeDesc expr : sop.getConf().getColList()) {
         Dependency dep = ExprProcFactory.getExprDependency(lctx, inpOp, expr, outputMap);
@@ -383,7 +397,7 @@ public class OpProcFactory {
             || dep.getType() != LineageInfo.DependencyType.SIMPLE)) {
           dep.setExpr(ExprProcFactory.getExprString(rs, expr, lctx, inpOp, null));
         }
-        lctx.getIndex().putDependency(sop, col_infos.get(cnt++), dep);
+        lctx.getIndex().putDependency(sop, colInfos.get(cnt++), dep);
       }
 
       Operator<? extends OperatorDesc> op = null;
@@ -416,13 +430,13 @@ public class OpProcFactory {
 
       LineageCtx lctx = (LineageCtx)procCtx;
       GroupByOperator gop = (GroupByOperator)nd;
-      List<ColumnInfo> col_infos = gop.getSchema().getSignature();
+      List<ColumnInfo> colInfos = gop.getSchema().getSignature();
       Operator<? extends OperatorDesc> inpOp = getParent(stack);
       lctx.getIndex().copyPredicates(inpOp, gop);
       int cnt = 0;
 
       for(ExprNodeDesc expr : gop.getConf().getKeys()) {
-        lctx.getIndex().putDependency(gop, col_infos.get(cnt++),
+        lctx.getIndex().putDependency(gop, colInfos.get(cnt++),
             ExprProcFactory.getExprDependency(lctx, inpOp, expr, outputMap));
       }
 
@@ -437,22 +451,22 @@ public class OpProcFactory {
         // Concatenate the dependencies of all the parameters to
         // create the new dependency
         Dependency dep = new Dependency();
-        DependencyType new_type = LineageInfo.DependencyType.EXPRESSION;
+        DependencyType newType = LineageInfo.DependencyType.EXPRESSION;
         StringBuilder sb = new StringBuilder();
         boolean first = true;
-        LinkedHashSet<BaseColumnInfo> bci_set = new LinkedHashSet<BaseColumnInfo>();
+        LinkedHashSet<BaseColumnInfo> bciSet = new LinkedHashSet<BaseColumnInfo>();
         for(ExprNodeDesc expr : agg.getParameters()) {
           if (first) {
             first = false;
           } else {
             sb.append(", ");
           }
-          Dependency expr_dep = ExprProcFactory.getExprDependency(lctx, inpOp, expr, outputMap);
-          if (expr_dep != null && !expr_dep.getBaseCols().isEmpty()) {
-            new_type = LineageCtx.getNewDependencyType(expr_dep.getType(), new_type);
-            bci_set.addAll(expr_dep.getBaseCols());
-            if (expr_dep.getType() == LineageInfo.DependencyType.SIMPLE) {
-              BaseColumnInfo col = expr_dep.getBaseCols().iterator().next();
+          Dependency exprDep = ExprProcFactory.getExprDependency(lctx, inpOp, expr, outputMap);
+          if (exprDep != null && !exprDep.getBaseCols().isEmpty()) {
+            newType = LineageCtx.getNewDependencyType(exprDep.getType(), newType);
+            bciSet.addAll(exprDep.getBaseCols());
+            if (exprDep.getType() == LineageInfo.DependencyType.SIMPLE) {
+              BaseColumnInfo col = exprDep.getBaseCols().iterator().next();
               Table t = col.getTabAlias().getTable();
               if (t != null) {
                 sb.append(Warehouse.getQualifiedName(t)).append(".");
@@ -460,9 +474,9 @@ public class OpProcFactory {
               sb.append(col.getColumn().getName());
             }
           }
-          if (expr_dep == null || expr_dep.getBaseCols().isEmpty()
-              || expr_dep.getType() != LineageInfo.DependencyType.SIMPLE) {
-            sb.append(expr_dep != null && expr_dep.getExpr() != null ? expr_dep.getExpr() :
+          if (exprDep == null || exprDep.getBaseCols().isEmpty()
+              || exprDep.getType() != LineageInfo.DependencyType.SIMPLE) {
+            sb.append(exprDep != null && exprDep.getExpr() != null ? exprDep.getExpr() :
               ExprProcFactory.getExprString(rs, expr, lctx, inpOp, null));
           }
         }
@@ -485,40 +499,40 @@ public class OpProcFactory {
         }
         dep.setExpr(expr);
 
-        // If the bci_set is empty, this means that the inputs to this
+        // If the bciSet is empty, this means that the inputs to this
         // aggregate function were all constants (e.g. count(1)). In this case
         // the aggregate function is just dependent on all the tables that are in
         // the dependency list of the input operator.
-        if (bci_set.isEmpty()) {
-          Set<TableAliasInfo> tai_set = new LinkedHashSet<TableAliasInfo>();
+        if (bciSet.isEmpty()) {
+          Set<TableAliasInfo> taiSet = new LinkedHashSet<TableAliasInfo>();
           if (inpOp.getSchema() != null && inpOp.getSchema().getSignature() != null ) {
             for(ColumnInfo ci : inpOp.getSchema().getSignature()) {
-              Dependency inp_dep = lctx.getIndex().getDependency(inpOp, ci);
+              Dependency inpDep = lctx.getIndex().getDependency(inpOp, ci);
               // The dependency can be null as some of the input cis may not have
               // been set in case of joins.
-              if (inp_dep != null) {
-                for(BaseColumnInfo bci : inp_dep.getBaseCols()) {
-                  new_type = LineageCtx.getNewDependencyType(inp_dep.getType(), new_type);
-                  tai_set.add(bci.getTabAlias());
+              if (inpDep != null) {
+                for(BaseColumnInfo bci : inpDep.getBaseCols()) {
+                  newType = LineageCtx.getNewDependencyType(inpDep.getType(), newType);
+                  taiSet.add(bci.getTabAlias());
                 }
               }
             }
           }
 
-          // Create the BaseColumnInfos and set them in the bci_set
-          for(TableAliasInfo tai : tai_set) {
+          // Create the BaseColumnInfos and set them in the bciSet
+          for(TableAliasInfo tai : taiSet) {
             BaseColumnInfo bci = new BaseColumnInfo();
             bci.setTabAlias(tai);
             // This is set to null to reflect that the dependency is not on any
             // particular column of the table.
             bci.setColumn(null);
-            bci_set.add(bci);
+            bciSet.add(bci);
           }
         }
 
-        dep.setBaseCols(bci_set);
-        dep.setType(new_type);
-        lctx.getIndex().putDependency(gop, col_infos.get(cnt++), dep);
+        dep.setBaseCols(bciSet);
+        dep.setType(newType);
+        lctx.getIndex().putDependency(gop, colInfos.get(cnt++), dep);
       }
 
       return null;
@@ -550,15 +564,15 @@ public class OpProcFactory {
       Operator<? extends OperatorDesc> inpOp = getParent(stack);
       lCtx.getIndex().copyPredicates(inpOp, op);
       RowSchema rs = op.getSchema();
-      List<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
+      List<ColumnInfo> inpCols = inpOp.getSchema().getSignature();
 
       // check only for input cols
-      for(ColumnInfo input : inp_cols) {
-        Dependency inp_dep = lCtx.getIndex().getDependency(inpOp, input);
-        if (inp_dep != null) {
+      for(ColumnInfo input : inpCols) {
+        Dependency inpDep = lCtx.getIndex().getDependency(inpOp, input);
+        if (inpDep != null) {
           //merge it with rs colInfo
           ColumnInfo ci = rs.getColumnInfo(input.getInternalName());
-          lCtx.getIndex().mergeDependency(op, ci, inp_dep);
+          lCtx.getIndex().mergeDependency(op, ci, inpDep);
         }
       }
       return null;
@@ -595,13 +609,13 @@ public class OpProcFactory {
       }
 
       if (op instanceof GroupByOperator) {
-        List<ColumnInfo> col_infos = rop.getSchema().getSignature();
+        List<ColumnInfo> colInfos = rop.getSchema().getSignature();
         for(ExprNodeDesc expr : rop.getConf().getKeyCols()) {
-          lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
+          lCtx.getIndex().putDependency(rop, colInfos.get(cnt++),
               ExprProcFactory.getExprDependency(lCtx, inpOp, expr, outputMap));
         }
         for(ExprNodeDesc expr : rop.getConf().getValueCols()) {
-          lCtx.getIndex().putDependency(rop, col_infos.get(cnt++),
+          lCtx.getIndex().putDependency(rop, colInfos.get(cnt++),
               ExprProcFactory.getExprDependency(lCtx, inpOp, expr, outputMap));
         }
       } else {
@@ -665,14 +679,252 @@ public class OpProcFactory {
         lCtx.getIndex().addPredicate(fop, cond);
       }
 
-      List<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
+      List<ColumnInfo> inpCols = inpOp.getSchema().getSignature();
       int cnt = 0;
       for(ColumnInfo ci : rs.getSignature()) {
         lCtx.getIndex().putDependency(fop, ci,
-            lCtx.getIndex().getDependency(inpOp, inp_cols.get(cnt++)));
+            lCtx.getIndex().getDependency(inpOp, inpCols.get(cnt++)));
       }
 
       return null;
+    }
+  }
+
+  /**
+   * PTF processor
+   */
+  public static class PTFLineage implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+      // LineageCTx
+      LineageCtx lCtx = (LineageCtx) procCtx;
+
+      // The operators
+      @SuppressWarnings("unchecked")
+      PTFOperator op = (PTFOperator)nd;
+      Operator<? extends OperatorDesc> inpOp = getParent(stack);
+      lCtx.getIndex().copyPredicates(inpOp, op);
+
+      Dependency dep = new Dependency();
+      DependencyType newType = DependencyType.EXPRESSION;
+      dep.setType(newType);
+
+      Set<String> columns = new HashSet<>();
+      PartitionedTableFunctionDef funcDef = op.getConf().getFuncDef();
+      StringBuilder sb = new StringBuilder();
+      WindowFrameDef windowFrameDef = null;
+
+      if (!(funcDef.getTFunction() instanceof Noop)) {
+
+        if (funcDef instanceof WindowTableFunctionDef) {
+          // function name
+          WindowFunctionDef windowFunctionDef = ((WindowTableFunctionDef) funcDef).getWindowFunctions().getFirst();
+          sb.append(windowFunctionDef.getName()).append("(");
+
+          addArgs(sb, columns, lCtx, inpOp, op.getSchema(), windowFunctionDef.getArgs());
+
+          windowFrameDef = windowFunctionDef.getWindowFrame();
+
+          if (sb.charAt(sb.length() - 2) == ',') {
+            sb.delete(sb.length() - 2, sb.length());
+          }
+          sb.append(")");
+          sb.append(" over (");
+        } else /* PartitionedTableFunctionDef */ {
+          // function name
+          sb.append(funcDef.getName()).append("(");
+          addArgs(sb, columns, lCtx, inpOp, funcDef.getRawInputShape().getRr().getRowSchema(), funcDef.getArgs());
+
+          // matchpath has argument pattern like matchpath(<input expression>, <argument methods: arg1(), arg2()...>)
+          if (funcDef.getInput() != null) {
+            sb.append("on ").append(funcDef.getInput().getAlias()).append(" ");
+
+            int counter = 1;
+            for (PTFExpressionDef arg : funcDef.getArgs()) {
+              ExprNodeDesc exprNode = arg.getExprNode();
+
+              addIfNotNull(columns, exprNode.getCols());
+
+              sb.append("arg").append(counter++).append("(");
+              sb.append(ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), arg.getExprNode(), lCtx, inpOp, null));
+              sb.append("), ");
+            }
+
+            sb.delete(sb.length() - 2, sb.length());
+          }
+        }
+      }
+
+      /*
+        Collect partition by and distribute by information.
+        Please note, at the expression node level, there is no difference between those.
+        That means distribute by gets a string partition by in the expression string.
+       */
+      if (funcDef.getPartition() != null ) {
+        List<PTFExpressionDef> partitionExpressions = funcDef.getPartition().getExpressions();
+
+        boolean isPartitionByAdded = false;
+        for (PTFExpressionDef partitionExpr : partitionExpressions) {
+          ExprNodeDesc partitionExprNode = partitionExpr.getExprNode();
+
+          if (partitionExprNode.getCols() != null && !partitionExprNode.getCols().isEmpty()) {
+            if (!isPartitionByAdded) {
+              sb.append("partition by ");
+              isPartitionByAdded = true;
+            }
+
+            addIfNotNull(columns, partitionExprNode.getCols());
+
+            if (partitionExprNode instanceof ExprNodeColumnDesc) {
+              sb.append(ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), partitionExprNode, lCtx, inpOp, null));
+              sb.append(", ");
+            }
+
+            sb.delete(sb.length() - 2, sb.length());
+          }
+        }
+
+      }
+
+      /*
+        Collects the order by and sort by information.
+        Please note, at the expression node level, there is no difference between those.
+        That means sort by gets a string partition by in the expression string.
+       */
+      if (funcDef.getOrder() != null) {
+        /*
+        Order by is sometimes added by the compiler to make the PTF call deterministic.
+        At this point of the code execution, we don't know if it is added by the compiler or
+        it was originally part of the query string.
+        */
+        List<OrderExpressionDef> orderExpressions = funcDef.getOrder().getExpressions();
+
+        if (!sb.isEmpty() && sb.charAt(sb.length() - 1) != '(') {
+          sb.append(" ");
+        }
+        sb.append("order by ");
+
+        for (OrderExpressionDef orderExpr : orderExpressions) {
+          ExprNodeDesc orderExprNode = orderExpr.getExprNode();
+          addIfNotNull(columns, orderExprNode.getCols());
+
+          sb.append(ExprProcFactory.getExprString(funcDef.getRawInputShape().getRr().getRowSchema(), orderExprNode, lCtx, inpOp, null));
+          if (PTFInvocationSpec.Order.DESC.equals(orderExpr.getOrder())) {
+            sb.append(" desc");
+          }
+          sb.append(", ");
+        }
+
+        sb.delete(sb.length() - 2, sb.length());
+      }
+
+      /*
+      Window frame is sometimes added by the compiler to make the PTF call deterministic.
+      At this point of the code execution, we don't know if it is added by the compiler or
+      it was originally part of the query string.
+      */
+      if (windowFrameDef != null) {
+        sb.append(" ").append(windowFrameDef.getWindowType()).append(" between ");
+
+        appendBoundary(windowFrameDef.getStart(), sb, " preceding");
+
+        sb.append(" and ");
+
+        appendBoundary(windowFrameDef.getEnd(), sb, " following");
+      }
+
+      sb.append(")");
+      dep.setExpr(sb.toString());
+
+      LinkedHashSet<BaseColumnInfo> colSet = new LinkedHashSet<>();
+      for(ColumnInfo ci : inpOp.getSchema().getSignature()) {
+        Dependency d = lCtx.getIndex().getDependency(inpOp, ci);
+        if (d != null) {
+          newType = LineageCtx.getNewDependencyType(d.getType(), newType);
+          if (!ci.isHiddenVirtualCol() && columns.contains(ci.getInternalName())) {
+            colSet.addAll(d.getBaseCols());
+          }
+        }
+      }
+
+      dep.setType(newType);
+      dep.setBaseCols(colSet);
+
+      // This dependency is then set for all the colinfos of the script operator
+      for(ColumnInfo ci : op.getSchema().getSignature()) {
+        Dependency d = dep;
+          Dependency depCi = lCtx.getIndex().getDependency(inpOp, ci);
+          if (depCi != null) {
+            d = depCi;
+          }
+        lCtx.getIndex().putDependency(op, ci, d);
+      }
+
+      return null;
+    }
+
+    private static void appendBoundary(BoundaryDef boundary, StringBuilder sb, String boundaryText) {
+      if (boundary.isCurrentRow()) {
+        sb.append("current_row");
+      } else {
+        sb.append(boundary.isUnbounded() ? "unbounded" : boundary.getAmt() + boundaryText);
+      }
+    }
+
+    /*
+      Adds the PTF arguments for the lineage column list and also the expression string.
+    */
+    private void addArgs(
+            StringBuilder sb,
+            Set<String> columns,
+            LineageCtx lCtx,
+            Operator<? extends OperatorDesc> inpOp,
+            RowSchema rowSchema,
+            List<PTFExpressionDef> args)
+    {
+      if (args == null || args.isEmpty()) {
+        return;
+      }
+
+      for (PTFExpressionDef arg : args) {
+        ExprNodeDesc argNode = arg.getExprNode();
+
+        if (argNode.getCols() != null && !argNode.getCols().isEmpty()) {
+          addIfNotNull(columns, argNode.getCols());
+        }
+
+        if (argNode instanceof ExprNodeConstantDesc) {
+          boolean isString = "string".equals(argNode.getTypeInfo().getTypeName());
+
+          if (isString) {
+            sb.append("'");
+          }
+          sb.append(((ExprNodeConstantDesc) argNode).getValue());
+          if (isString) {
+            sb.append("'");
+          }
+          sb.append(", ");
+        } else if (argNode instanceof ExprNodeColumnDesc || argNode instanceof ExprNodeGenericFuncDesc) {
+          ExprNodeDesc exprNode = arg.getExprNode();
+
+          addIfNotNull(columns, exprNode.getCols());
+          sb.append(ExprProcFactory.getExprString(rowSchema, exprNode, lCtx, inpOp, null));
+          sb.append(", ");
+        }
+      }
+    }
+
+    private void addIfNotNull(Set<String> set, List<String> items) {
+      if (items == null || items.isEmpty()) {
+        return;
+      }
+
+      for (String item : items) {
+        if (item != null) {
+          set.add(item);
+        }
+      }
     }
   }
 
@@ -699,11 +951,11 @@ public class OpProcFactory {
       Operator<? extends OperatorDesc> inpOp = getParent(stack);
       lCtx.getIndex().copyPredicates(inpOp, op);
       RowSchema rs = op.getSchema();
-      List<ColumnInfo> inp_cols = inpOp.getSchema().getSignature();
+      List<ColumnInfo> inpCols = inpOp.getSchema().getSignature();
       int cnt = 0;
       for(ColumnInfo ci : rs.getSignature()) {
         lCtx.getIndex().putDependency(op, ci,
-            lCtx.getIndex().getDependency(inpOp, inp_cols.get(cnt++)));
+            lCtx.getIndex().getDependency(inpOp, inpCols.get(cnt++)));
       }
       return null;
     }
@@ -748,4 +1000,6 @@ public class OpProcFactory {
   public static SemanticNodeProcessor getFilterProc() {
     return new FilterLineage();
   }
+
+  public static SemanticNodeProcessor getPTFProc() { return new PTFLineage(); }
 }

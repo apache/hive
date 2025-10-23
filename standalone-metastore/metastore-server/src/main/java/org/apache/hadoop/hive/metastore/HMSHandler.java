@@ -952,7 +952,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         if (!success) {
           ms.rollbackTransaction();
           if (madeDir) {
-            wh.deleteDir(catPath, true, false, false);
+            wh.deleteDir(catPath, false, false);
           }
         }
 
@@ -1139,7 +1139,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     } finally {
       if (success) {
-        wh.deleteDir(wh.getDnsPath(new Path(cat.getLocationUri())), false, false, false);
+        wh.deleteDir(wh.getDnsPath(new Path(cat.getLocationUri())), false, false);
       } else {
         ms.rollbackTransaction();
       }
@@ -2545,7 +2545,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!success) {
         ms.rollbackTransaction();
         if (madeDir) {
-          wh.deleteDir(tblPath, true, false, ReplChangeManager.shouldEnableCm(db, tbl));
+          wh.deleteDir(tblPath, false, ReplChangeManager.shouldEnableCm(db, tbl));
         }
       }
 
@@ -3136,7 +3136,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void deleteTableData(Path tablePath, boolean ifPurge, Database db) {
     if (tablePath != null) {
       try {
-        wh.deleteDir(tablePath, true, ifPurge, db);
+        wh.deleteDir(tablePath, ifPurge, db);
       } catch (Exception e) {
         LOG.error("Failed to delete table directory: " + tablePath +
             " " + e.getMessage());
@@ -3174,7 +3174,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (partPaths != null && !partPaths.isEmpty()) {
       for (Path partPath : partPaths) {
         try {
-          wh.deleteDir(partPath, true, ifPurge, db);
+          wh.deleteDir(partPath, ifPurge, db);
         } catch (Exception e) {
           LOG.error("Failed to delete partition directory: " + partPath +
               " " + e.getMessage());
@@ -3199,16 +3199,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         FileStatus[] statuses = path.getFileSystem(conf).listStatus(path,
             ReplChangeManager.CMROOT_PATH_FILTER);
         for (final FileStatus status : statuses) {
-          wh.deleteDir(status.getPath(), true, ifPurge, shouldEnableCm);
+          wh.deleteDir(status.getPath(), ifPurge, shouldEnableCm);
         }
         //Check if table directory is empty, delete it
         FileStatus[] statusWithoutFilter = path.getFileSystem(conf).listStatus(path);
         if (statusWithoutFilter.length == 0) {
-          wh.deleteDir(path, true, ifPurge, shouldEnableCm);
+          wh.deleteDir(path, ifPurge, shouldEnableCm);
         }
       } else {
         //If no cm delete the complete table directory
-        wh.deleteDir(path, true, ifPurge, shouldEnableCm);
+        wh.deleteDir(path, ifPurge, shouldEnableCm);
       }
     } catch (Exception e) {
       LOG.error("Failed to delete directory: {}", path, e);
@@ -3596,7 +3596,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       FileStatus targetStatus = fs.getFileStatus(location);
       String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
       
-      wh.deleteDir(location, true, isSkipTrash, needCmRecycle);
+      wh.deleteDir(location, isSkipTrash, needCmRecycle);
       fs.mkdirs(location);
       HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
     } else {
@@ -3605,7 +3605,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         return;
       }
       for (final FileStatus status : statuses) {
-        wh.deleteDir(status.getPath(), true, isSkipTrash, needCmRecycle);
+        wh.deleteDir(status.getPath(), isSkipTrash, needCmRecycle);
       }
     }
   }
@@ -4112,7 +4112,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       if (!success) {
         ms.rollbackTransaction();
         if (madeDir) {
-          wh.deleteDir(partLocation, true, false, ReplChangeManager.shouldEnableCm(db, tbl));
+          wh.deleteDir(partLocation, false, ReplChangeManager.shouldEnableCm(db, tbl));
         }
       }
 
@@ -5120,9 +5120,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // Archived partitions have har:/to_har_file as their location.
         // The original directory was saved in params
         if (isArchived) {
-          wh.deleteDir(archiveParentDir, true, mustPurge, needsCm);
+          wh.deleteDir(archiveParentDir, mustPurge, needsCm);
         } else {
-          wh.deleteDir(partPath, true, mustPurge, needsCm);
+          wh.deleteDir(partPath, mustPurge, needsCm);
           deleteParentRecursive(partPath.getParent(), part_vals.size() - 1, mustPurge, needsCm);
         }
         // ok even if the data is not deleted
@@ -5181,7 +5181,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   private void deleteParentRecursive(Path parent, int depth, boolean mustPurge, boolean needRecycle)
       throws IOException, MetaException {
     if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmptyDir(parent)) {
-      wh.deleteDir(parent, true, mustPurge, needRecycle);
+      wh.deleteDir(parent, mustPurge, needRecycle);
       deleteParentRecursive(parent.getParent(), depth - 1, mustPurge, needRecycle);
     }
   }
@@ -5372,7 +5372,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // Archived partitions have har:/to_har_file as their location.
         // The original directory was saved in params
         for (Path path : archToDelete) {
-          wh.deleteDir(path, true, mustPurge, needsCm);
+          wh.deleteDir(path, mustPurge, needsCm);
         }
 
         // Uses a priority queue to delete the parents of deleted directories if empty.
@@ -5381,7 +5381,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // avoided.
         PriorityQueue<PathAndDepth> parentsToDelete = new PriorityQueue<>();
         for (PathAndDepth p : dirsToDelete) {
-          wh.deleteDir(p.path, true, mustPurge, needsCm);
+          wh.deleteDir(p.path, mustPurge, needsCm);
           addParentForDel(parentsToDelete, p);
         }
 
@@ -5396,7 +5396,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
             Path path = p.path;
             if (wh.isWritable(path) && wh.isEmptyDir(path)) {
-              wh.deleteDir(path, true, mustPurge, needsCm);
+              wh.deleteDir(path, mustPurge, needsCm);
               addParentForDel(parentsToDelete, p);
             }
           } catch (IOException ex) {

@@ -69,7 +69,6 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -262,6 +261,10 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       if (serviceDiscoveryMode == null || serviceDiscoveryMode.trim().isEmpty()) {
         metastoreUrisString = Arrays.asList(thriftUris.split(","));
       } else if (serviceDiscoveryMode.equalsIgnoreCase("zookeeper")) {
+        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL) &&
+            MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS)) {
+          SecurityUtils.setZookeeperClientKerberosJaasConfig(null, null);
+        }
         metastoreUrisString = new ArrayList<String>();
         // Add scheme to the bare URI we get.
         for (String s : MetastoreConf.getZKConfig(conf).getServerUris()) {
@@ -746,8 +749,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
             try {
               UserGroupInformation ugi = SecurityUtils.getUGI();
               client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
-            } catch (LoginException e) {
-              LOG.warn("Failed to do login. set_ugi() is not successful, Continuing without it.", e);
             } catch (IOException e) {
               LOG.warn("Failed to find ugi of client set_ugi() is not successful, Continuing without it.", e);
             } catch (TException e) {
@@ -1726,13 +1727,13 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   @Override
   public List<String> getDatabases(String catName, String databasePattern) throws TException {
-    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook,
+    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, catName,
         client.get_databases(prependCatalogToDbName(catName, databasePattern, conf)));
   }
 
   @Override
   public List<String> getAllDatabases(String catName) throws TException {
-    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook,
+    return FilterUtils.filterDbNamesIfEnabled(isClientFilterEnabled, filterHook, catName,
         client.get_databases(prependCatalogToDbName(catName, null, conf)));
   }
 
@@ -3935,5 +3936,10 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     }
     PropertyGetResponse response = client.get_properties(request);
     return response.getProperties();
+  }
+
+  @VisibleForTesting
+  public URI[] getMetastoreUris() {
+    return metastoreUris;
   }
 }

@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
-import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +56,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.util.ReflectionUtils;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
@@ -83,7 +81,6 @@ public class Warehouse {
 
   public static final Logger LOG = LoggerFactory.getLogger("hive.metastore.warehouse");
 
-  private MetaStoreFS fsHandler = null;
   private boolean storageAuthCheck = false;
   private ReplChangeManager cm = null;
 
@@ -95,26 +92,10 @@ public class Warehouse {
           + " is not set in the config or blank");
     }
     whRootExternalString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
-    fsHandler = getMetaStoreFsHandler(conf);
     cm = ReplChangeManager.getInstance(conf);
     storageAuthCheck = MetastoreConf.getBoolVar(conf, ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS);
     isTenantBasedStorage = MetastoreConf.getBoolVar(conf, ConfVars.ALLOW_TENANT_BASED_STORAGE);
   }
-
-  private MetaStoreFS getMetaStoreFsHandler(Configuration conf)
-      throws MetaException {
-    String handlerClassStr = MetastoreConf.getVar(conf, ConfVars.FS_HANDLER_CLS);
-    try {
-      Class<? extends MetaStoreFS> handlerClass = (Class<? extends MetaStoreFS>) Class
-          .forName(handlerClassStr, true, JavaUtils.getClassLoader());
-      MetaStoreFS handler = ReflectionUtils.newInstance(handlerClass, conf);
-      return handler;
-    } catch (ClassNotFoundException e) {
-      throw new MetaException("Error in loading MetaStoreFS handler."
-          + e.getMessage());
-    }
-  }
-
 
   /**
    * Helper functions to convert IOException to MetaException
@@ -451,15 +432,15 @@ public class Warehouse {
     }
   }
 
-  public boolean deleteDir(Path f, boolean recursive, Database db) throws MetaException {
-    return deleteDir(f, recursive, false, db);
+  public boolean deleteDir(Path f, Database db) throws MetaException {
+    return deleteDir(f, false, db);
   }
 
-  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, Database db) throws MetaException {
-    return deleteDir(f, recursive, ifPurge, ReplChangeManager.isSourceOfReplication(db));
+  public boolean deleteDir(Path f, boolean ifPurge, Database db) throws MetaException {
+    return deleteDir(f, ifPurge, ReplChangeManager.isSourceOfReplication(db));
   }
 
-  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, boolean needCmRecycle) throws MetaException {
+  public boolean deleteDir(Path f, boolean ifPurge, boolean needCmRecycle) throws MetaException {
     if (needCmRecycle) {
       try {
         cm.recycle(f, RecycleType.MOVE, ifPurge);
@@ -472,7 +453,13 @@ public class Warehouse {
       LOG.warn("Har path {} is not supported to delete, skipping it.", f);
       return true;
     }
-    return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
+    boolean delete = false;
+    try {
+      delete = FileUtils.deleteDir(fs, f, ifPurge, conf);
+    } catch (IOException e) {
+      MetaStoreUtils.throwMetaException(e);
+    }
+    return delete;
   }
 
   public void recycleDirToCmPath(Path f, boolean ifPurge) throws MetaException {
@@ -503,7 +490,7 @@ public class Warehouse {
     }
   }
 
-  public boolean isWritable(Path path) throws IOException {
+  public boolean isWritable(Path path) {
     if (!storageAuthCheck) {
       // no checks for non-secure hadoop installations
       return true;
@@ -511,12 +498,9 @@ public class Warehouse {
     if (path == null) { //what??!!
       return false;
     }
-    final FileStatus stat;
-    final FileSystem fs;
     try {
-      fs = getFs(path);
-      stat = fs.getFileStatus(path);
-      HdfsUtils.checkFileAccess(fs, stat, FsAction.WRITE);
+      FileSystem fs = getFs(path);
+      HdfsUtils.checkFileAccess(fs, path, FsAction.WRITE);
       return true;
     } catch (FileNotFoundException fnfe){
       // File named by path doesn't exist; nothing to validate.

@@ -19,15 +19,20 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /*
 HiveMetaStoreAuthorizableEvent: Abstract class for getting the MetaStore Event context for HiveMetaStore Authorization
@@ -38,6 +43,27 @@ public abstract class HiveMetaStoreAuthorizableEvent {
 
   protected HiveMetaStoreAuthorizableEvent(PreEventContext preEventContext) {
     this.preEventContext = preEventContext;
+  }
+
+  protected HiveAuthzContext buildAuthzContext(String commandString) {
+    HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
+
+    if (commandString != null) {
+      builder.setCommandString(commandString);
+    }
+
+    // TODO: refer to SessionManager/HiveSessionImpl for details on getting ipAddress and forwardedAddresses
+    builder.setForwardedAddresses(new ArrayList<>());
+
+    String ipAddress = HMSHandler.getIPAddress();
+    builder.setUserIpAddress(ipAddress);
+
+    Map<String, Object> clientConfig = HiveMetaStoreAuthorizer.getClientConfig();
+    if (clientConfig != null) {
+      builder.setClientConfig(clientConfig);
+    }
+
+    return builder.build();
   }
 
   public abstract HiveMetaStoreAuthzInfo getAuthzContext();
@@ -53,27 +79,27 @@ public abstract class HiveMetaStoreAuthorizableEvent {
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Database database) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATABASE, database.getName(),
+    return new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, database.getCatalogName(), database.getName(),
         null, null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
         database.getOwnerName(), database.getOwnerType());
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(Table table) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.TABLE_OR_VIEW, table.getDbName(),
+    return new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, table.getCatName(), table.getDbName(),
         table.getTableName(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
         table.getOwner(), table.getOwnerType());
   }
 
   protected HivePrivilegeObject getHivePrivilegeObjectDfsUri(String uri) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DFS_URI, null, uri);
+    return new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri);
   }
 
   protected HivePrivilegeObject getHivePrivilegeObjectLocalUri(String uri) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.LOCAL_URI, null, uri);
+    return new HivePrivilegeObject(HivePrivilegeObjectType.LOCAL_URI, uri);
   }
 
   protected HivePrivilegeObject getHivePrivilegeObject(DataConnector connector) {
-    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATACONNECTOR, null,
+    return new HivePrivilegeObject(HivePrivilegeObject.HivePrivilegeObjectType.DATACONNECTOR, null, null,
         connector.getName(), null, null, HivePrivilegeObject.HivePrivObjectActionType.OTHER, null, null,
         connector.getOwnerName(), connector.getOwnerType());
   }

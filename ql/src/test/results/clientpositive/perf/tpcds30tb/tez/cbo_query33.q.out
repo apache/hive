@@ -1,23 +1,3 @@
-CTE Suggestion:
-HiveProject(ca_address_sk=[$0], ca_gmt_offset=[CAST(-6:DECIMAL(5, 2)):DECIMAL(5, 2)])
-  HiveFilter(condition=[=($11, -6:DECIMAL(1, 0))])
-    HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
-
-CTE Suggestion:
-HiveProject(d_date_sk=[$0], d_year=[CAST(1999):INTEGER], d_moy=[CAST(3):INTEGER])
-  HiveFilter(condition=[AND(=($6, 1999), =($8, 3))])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
-CTE Suggestion:
-HiveProject(i_item_sk=[$0], i_manufact_id=[$13])
-  HiveFilter(condition=[IS NOT NULL($13)])
-    HiveTableScan(table=[[default, item]], table:alias=[item])
-
-CTE Suggestion:
-HiveProject(i_manufact_id=[$13])
-  HiveFilter(condition=[AND(=($12, _UTF-16LE'Books                                             '), IS NOT NULL($13))])
-    HiveTableScan(table=[[default, item]], table:alias=[item])
-
 CBO PLAN:
 HiveSortLimit(sort0=[$1], dir0=[ASC], fetch=[100])
   HiveProject(i_manufact_id=[$0], $f1=[$1])

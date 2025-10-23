@@ -37,10 +37,10 @@ public class HivePrivilegeObjectUtils {
    * @param dbList
    * @return
    */
-  public static List<HivePrivilegeObject> getHivePrivDbObjects(List<String> dbList) {
+  public static List<HivePrivilegeObject> getHivePrivDbObjects(String catName, List<String> dbList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for (String dbname : dbList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, dbname, dbname));
+      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATABASE, catName, dbname, dbname));
     }
     return objs;
 
@@ -54,16 +54,16 @@ public class HivePrivilegeObjectUtils {
   public static List<HivePrivilegeObject> getHivePrivDcObjects(List<String> dcList) {
     List<HivePrivilegeObject> objs = new ArrayList<HivePrivilegeObject>();
     for (String dcname : dcList) {
-      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATACONNECTOR, null, dcname));
+      objs.add(new HivePrivilegeObject(HivePrivilegeObjectType.DATACONNECTOR, dcname));
     }
     return objs;
   }
 
   /**
-   * A helper enabling efficient lookup of a table in a list by database name, table name.
+   * A helper enabling efficient lookup of a table in a list by catalog name, database name, table name.
    * <p>When filtering a source list of tables by checking their presence in another permission list
-   * using the database name, table name, we need to avoid performing a cartesian product. This
-   * product stems from checking each table from the source (n tables) by comparing it to each
+   * using the catalog name, database name, table name, we need to avoid performing a cartesian product.
+   * This product stems from checking each table from the source (n tables) by comparing it to each
    * table in the permission list (m permissions), thus an n * m complexity.</p>
    * <p>This class reduces the complexity of the lookup in the permission by sorting them and
    * using a binary search; the sort cost is m*log(m) and each lookup is log(m), the overall
@@ -74,6 +74,12 @@ public class HivePrivilegeObjectUtils {
   public abstract static class TableLookup<T> {
     /** The container. */
     private final T[] index;
+
+    /**
+     * @param table the table
+     * @return the catalog name of the table
+     */
+    protected abstract String getCatName(T table);
 
     /**
      * @param table the table
@@ -94,25 +100,22 @@ public class HivePrivilegeObjectUtils {
      * @return &lt; 0, 0, &gt; 0
      */
     private int compareNames(final T table, final T arg) {
-      int cmp = getDbName(table).compareTo(getDbName(arg));
-      if (cmp == 0) {
-        String argTableName = getTableName(arg);
-        if (argTableName != null) {
-          cmp = getTableName(table).compareTo(argTableName);
-        }
-      }
-      return cmp;
+      return compareNames(table, getCatName(arg), getDbName(arg), getTableName(arg));
     }
 
     /**
      * Compares a table to names.
      * @param table the table
+     * @param catName the argument catalog name
      * @param dbName the argument database name
      * @param dbName the argument table name
      * @return &lt; 0, 0, &gt; 0
      */
-    private int compareNames(final T table, final String dbName, final String tableName) {
-      int cmp = getDbName(table).compareTo(dbName);
+    private int compareNames(final T table, final String catName, final String dbName, final String tableName) {
+      int cmp = getCatName(table).compareTo(catName);
+      if (cmp == 0 && dbName != null) {
+        cmp = getDbName(table).compareTo(dbName);
+      }
       if (cmp == 0 && tableName != null) {
         cmp = getTableName(table).compareTo(tableName);
       }
@@ -134,18 +137,19 @@ public class HivePrivilegeObjectUtils {
     }
 
     /**
-     * Lookup using dichotomy using order described by database name, table name.
+     * Lookup using dichotomy using order described by catalog name, database name, table name.
+     * @param catName the catalog name
      * @param dbName the database name
      * @param tableName the table name
      * @return the table if found in the index, null otherwise
      */
-    public final T lookup(final String dbName, final String tableName) {
+    public final T lookup(final String catName, final String dbName, final String tableName) {
       int low = 0;
       int high = index.length - 1;
       while (low <= high) {
         int mid = (low + high) >>> 1;
         T item = index[mid];
-        int cmp = compareNames(item, dbName, tableName);
+        int cmp = compareNames(item, catName, dbName, tableName);
         if (cmp < 0) {
           low = mid + 1;
         } else if (cmp > 0) {
@@ -163,7 +167,7 @@ public class HivePrivilegeObjectUtils {
      * @return true if the set contains an item having the same database and table name
      */
     public final boolean contains(T tt) {
-      return lookup(getDbName(tt), getTableName(tt)) != null;
+      return lookup(getCatName(tt), getDbName(tt), getTableName(tt)) != null;
     }
   }
 
@@ -173,6 +177,10 @@ public class HivePrivilegeObjectUtils {
   public static class TablePrivilegeLookup extends TableLookup<HivePrivilegeObject> {
     public TablePrivilegeLookup(List<HivePrivilegeObject> tables) {
       super(tables);
+    }
+
+    @Override protected String getCatName(HivePrivilegeObject o) {
+      return o.getCatName();
     }
 
     @Override protected String getDbName(HivePrivilegeObject o) {

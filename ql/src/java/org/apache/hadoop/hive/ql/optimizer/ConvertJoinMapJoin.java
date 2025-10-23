@@ -656,32 +656,39 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     // on small table(s).
     ReduceSinkOperator bigTableRS = (ReduceSinkOperator)joinOp.getParentOperators().get(bigTablePosition);
     OpTraits opTraits = bigTableRS.getOpTraits();
-    List<List<String>> listBucketCols = opTraits.getBucketColNames();
+    // It is guaranteed there is only 1 list within bigTableRS.getOpTraits().getBucketColNames().
+    List<String> listBucketCols = opTraits.getBucketColNames().get(0);
     List<ExprNodeDesc> bigTablePartitionCols = bigTableRS.getConf().getPartitionCols();
-    boolean updatePartitionCols = false;
+    boolean updatePartitionCols = listBucketCols.size() != bigTablePartitionCols.size();
     List<Integer> positions = new ArrayList<>();
 
-    CustomBucketFunction bucketFunction = opTraits.getCustomBucketFunctions().get(0);
-    if (listBucketCols.get(0).size() != bigTablePartitionCols.size()) {
-      updatePartitionCols = true;
-      // Prepare updated partition columns for small table(s).
-      // Get the positions of bucketed columns
-
-      int bigTableExprPos = 0;
-      Map<String, ExprNodeDesc> colExprMap = bigTableRS.getColumnExprMap();
-      final boolean[] retainedColumns = new boolean[listBucketCols.get(0).size()];
-      for (ExprNodeDesc bigTableExpr : bigTablePartitionCols) {
-        // It is guaranteed there is only 1 list within listBucketCols.
-        for (int i = 0; i < listBucketCols.get(0).size(); i++) {
-          final String colName = listBucketCols.get(0).get(i);
-          if (colExprMap.get(colName).isSame(bigTableExpr)) {
-            positions.add(bigTableExprPos);
-            retainedColumns[i] = true;
-          }
+    // Compare the partition columns and the bucket columns of bigTableRS.
+    Map<String, ExprNodeDesc> colExprMap = bigTableRS.getColumnExprMap();
+    final boolean[] retainedColumns = new boolean[listBucketCols.size()];
+    for (int bucketColIdx = 0; bucketColIdx < listBucketCols.size(); bucketColIdx++) {
+      for (int bigTablePartIdx = 0; bigTablePartIdx < bigTablePartitionCols.size(); bigTablePartIdx++) {
+        ExprNodeDesc bigTablePartExpr = bigTablePartitionCols.get(bigTablePartIdx);
+        ExprNodeDesc bucketColExpr = colExprMap.get(listBucketCols.get(bucketColIdx));
+        if (bigTablePartExpr.isSame(bucketColExpr)) {
+          positions.add(bigTablePartIdx);
+          retainedColumns[bucketColIdx] = true;
+          // If the positions of the partition column and the bucket column are not the same,
+          // then we need to update the position of the partition column in small tables.
+          updatePartitionCols = updatePartitionCols || bucketColIdx != bigTablePartIdx;
+          break;
         }
-        bigTableExprPos = bigTableExprPos + 1;
       }
+    }
 
+    // If the number of partition columns is less than the number of bucket columns,
+    // then we cannot properly distribute small tables onto bucketized map tasks.
+    // Bail out.
+    if (positions.size() < listBucketCols.size()) {
+      return false;
+    }
+
+    CustomBucketFunction bucketFunction = opTraits.getCustomBucketFunctions().get(0);
+    if (updatePartitionCols) {
       Preconditions.checkState(opTraits.getCustomBucketFunctions().size() == 1);
       if (opTraits.getCustomBucketFunctions().get(0) != null) {
         final Optional<CustomBucketFunction> selected =

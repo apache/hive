@@ -25,8 +25,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.registry.impl.TezAmInstance;
@@ -120,7 +118,7 @@ class TezSessionPoolSession extends TezSessionState {
   @Override
   protected void openInternal(String[] additionalFiles,
       boolean isAsync, LogHelper console, HiveResources resources)
-          throws IOException, LoginException, URISyntaxException, TezException {
+          throws IOException, URISyntaxException, TezException {
     super.openInternal(additionalFiles, isAsync, console, resources);
     parent.registerOpenSession(this);
     if (expirationTracker != null) {

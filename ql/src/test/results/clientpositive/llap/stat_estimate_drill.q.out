@@ -66,11 +66,11 @@ POSTHOOK: type: ANALYZE_TABLE
 POSTHOOK: Input: default@t3
 POSTHOOK: Output: default@t3
 #### A masked pattern was here ####
-PREHOOK: query: select sum(a) from t3 where b in (2,3) group by b
+PREHOOK: query: select sum(`a`) from `t3` where `b` in (2,3) group by `b`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(a) from t3 where b in (2,3) group by b
+POSTHOOK: query: select sum(`a`) from `t3` where `b` in (2,3) group by `b`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
@@ -107,11 +107,11 @@ Stage-0
                   TableScan [TS_0] (rows=1000/1000 width=8)
                     default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
-PREHOOK: query: select sum(a) from t3 where a=1 or a=2 group by b
+PREHOOK: query: select sum(`a`) from `t3` where `a`=1 or `a`=2 group by `b`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(a) from t3 where a=1 or a=2 group by b
+POSTHOOK: query: select sum(`a`) from `t3` where `a`=1 or `a`=2 group by `b`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
@@ -148,11 +148,11 @@ Stage-0
                   TableScan [TS_0] (rows=1000/1000 width=8)
                     default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
-PREHOOK: query: select sum(a) from t3 where a=1 or (a=2  and b=3) group by b
+PREHOOK: query: select sum(`a`) from `t3` where `a`=1 or (`a`=2  and `b`=3) group by `b`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(a) from t3 where a=1 or (a=2  and b=3) group by b
+POSTHOOK: query: select sum(`a`) from `t3` where `a`=1 or (`a`=2  and `b`=3) group by `b`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
@@ -189,11 +189,11 @@ Stage-0
                   TableScan [TS_0] (rows=1000/1000 width=8)
                     default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
-PREHOOK: query: select sum(a) from t3 where a=1 group by b
+PREHOOK: query: select sum(`a`) from `t3` where `a`=1 group by `b`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(a) from t3 where a=1 group by b
+POSTHOOK: query: select sum(`a`) from `t3` where `a`=1 group by `b`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
@@ -232,11 +232,11 @@ Stage-0
                     TableScan [TS_0] (rows=1000/1000 width=8)
                       default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
-PREHOOK: query: select sum(a) from t3 where a=1 and b=2 group by b
+PREHOOK: query: select sum(`a`) from `t3` where `a`=1 and `b`=2 group by `b`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(a) from t3 where a=1 and b=2 group by b
+POSTHOOK: query: select sum(`a`) from `t3` where `a`=1 and `b`=2 group by `b`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
@@ -274,11 +274,11 @@ Stage-0
                     TableScan [TS_0] (rows=1000/1000 width=8)
                       default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b"]
 
-PREHOOK: query: select sum(a) from t3 where a=1 and b=2 and c=3 group by b
+PREHOOK: query: select sum(`a`) from `t3` where `a`=1 and `b`=2 and `c`=3 group by `b`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(a) from t3 where a=1 and b=2 and c=3 group by b
+POSTHOOK: query: select sum(`a`) from `t3` where `a`=1 and `b`=2 and `c`=3 group by `b`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
@@ -316,11 +316,11 @@ Stage-0
                     TableScan [TS_0] (rows=1000/1000 width=12)
                       default@t3,t3,Tbl:COMPLETE,Col:COMPLETE,Output:["a","b","c"]
 
-PREHOOK: query: select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b
+PREHOOK: query: select sum(`a`) from `t3` where (`a`=1 and `b`=2) or (`a`=2 and `b`=3) or (`a`=3 and `b`=4) group by `b`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select sum(a) from t3 where (a=1 and b=2) or (a=2 and b=3) or (a=3 and b=4) group by b
+POSTHOOK: query: select sum(`a`) from `t3` where (`a`=1 and `b`=2) or (`a`=2 and `b`=3) or (`a`=3 and `b`=4) group by `b`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####

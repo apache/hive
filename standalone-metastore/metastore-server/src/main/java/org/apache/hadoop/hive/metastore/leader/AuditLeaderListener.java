@@ -146,7 +146,7 @@ public class AuditLeaderListener implements LeaderElection.LeadershipStateListen
           thisLeaderFiles.sort((Comparator.comparing(o -> o.getPath().getName())));
           // delete the files that beyond the limit
           for (int i = 0; i < thisLeaderFiles.size() - limit; i++) {
-            FileUtils.moveToTrash(fs, thisLeaderFiles.get(i).getPath(), configuration, true);
+            FileUtils.deleteDir(fs, thisLeaderFiles.get(i).getPath(), false, configuration);
           }
         }
       }

@@ -75,7 +75,7 @@ select
   ltrim(c2) = ltrim(c4)
 from char_udf_1 limit 1;
 
--- In hive wiki page https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF
+-- In hive wiki page https://hive.apache.org/docs/latest/language/languagemanual-udf
 -- we only allow A regexp B, not regexp (A,B).
 
 select

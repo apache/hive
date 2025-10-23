@@ -29,6 +29,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.ql.ddl.view.create.AbstractCreateViewAnalyzer.validateTablesUsed;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
+import static org.apache.hadoop.hive.ql.session.SessionStateUtil.MISSING_COLUMNS;
 
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -255,6 +256,8 @@ import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -823,6 +826,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected Map<String, String> getColNameToDefaultValueMap(Table tbl) throws SemanticException {
     Map<String, String> colNameToDefaultVal = null;
+    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().supportsDefaultColumnValues(tbl.getParameters())) {
+      return Collections.emptyMap();
+    }
     try {
       DefaultConstraint dc = Hive.get().getEnabledDefaultConstraints(tbl.getDbName(), tbl.getTableName());
       colNameToDefaultVal = dc.getColNameToDefaultValueMap();
@@ -5026,6 +5032,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if(targetCol2Projection.size() < targetTableColNames.size()) {
       colNameToDefaultVal = getColNameToDefaultValueMap(target);
     }
+    Set<String> missingColumns = new HashSet<>();
     for (int i = 0; i < targetTableColNames.size(); i++) {
       String f = targetTableColNames.get(i);
       if(targetCol2Projection.containsKey(f)) {
@@ -5038,6 +5045,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       else {
         //add new 'synthetic' columns for projections not provided by Select
         assert(colNameToDefaultVal != null);
+        missingColumns.add(f);
         ExprNodeDesc exp = null;
         if(colNameToDefaultVal.containsKey(f)) {
           // make an expression for default value
@@ -5064,6 +5072,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       colListPos++;
     }
+    SessionStateUtil.addResource(conf, MISSING_COLUMNS, missingColumns);
     return newOutputRR;
   }
 
@@ -12827,8 +12836,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             List<String> colNames = new ArrayList<>();
             extractColumnInfos(table, colNames, new ArrayList<>());
 
-            basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames,
-                table.getOwner(), table.getOwnerType()), null);
+            basicInfos.put(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW,
+                table.getCatName(), table.getDbName(), table.getTableName(), null, colNames,
+                HivePrivObjectActionType.OTHER, null, null, table.getOwner(), table.getOwnerType()), null);
           }
         } else {
           List<String> colNames;
@@ -12844,8 +12854,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             extractColumnInfos(table, colNames, colTypes);
           }
 
-          basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames,
-              table.getOwner(), table.getOwnerType()),
+          basicInfos.put(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, table.getCatName(),
+                  table.getDbName(), table.getTableName(), null, colNames,
+                  HivePrivObjectActionType.OTHER, null, null, table.getOwner(), table.getOwnerType()),
               new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView(), table.isNonNative()));
         }
       }
@@ -12868,13 +12879,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // Currently we do not support querying directly a materialized view
             // when mask/filter should be applied on source tables
             throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES,
-                privObj.getDbname(), privObj.getObjectName());
+                privObj.getCatName(), privObj.getDbname(), privObj.getObjectName());
           } else {
             String replacementText = tableMask.create(privObj, info);
             // We don't support masking/filtering against ACID query at the moment
             if (ctx.getIsUpdateDeleteMerge()) {
               throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_ACID_NOT_SUPPORTED,
-                  privObj.getDbname(), privObj.getObjectName());
+                  privObj.getCatName(), privObj.getDbname(), privObj.getObjectName());
             }
             tableMask.setNeedsRewrite(true);
             tableMask.addTranslation(info.astNode, replacementText);
@@ -15186,7 +15197,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     String queryString = getQueryStringForCache(astNode);
     if (queryString != null) {
       ValidTxnWriteIdList writeIdList = getQueryValidTxnWriteIdList();
-      lookupInfo = new QueryResultsCache.LookupInfo(queryString, () -> writeIdList);
+      Set<Long> involvedTables = tablesFromReadEntities(inputs).stream()
+          .map(Table::getTTable)
+          .map(org.apache.hadoop.hive.metastore.api.Table::getId)
+          .collect(Collectors.toSet());
+      lookupInfo = new QueryResultsCache.LookupInfo(queryString, () -> writeIdList, involvedTables);
     }
     return lookupInfo;
   }

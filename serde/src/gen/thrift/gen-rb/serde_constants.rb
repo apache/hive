@@ -91,6 +91,8 @@ STRUCT_TYPE_NAME = %q"struct"
 
 UNION_TYPE_NAME = %q"uniontype"
 
+VARIANT_TYPE_NAME = %q"variant"
+
 LIST_COLUMNS = %q"columns"
 
 LIST_COLUMN_TYPES = %q"columns.types"

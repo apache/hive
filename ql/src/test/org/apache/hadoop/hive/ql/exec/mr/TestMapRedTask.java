@@ -26,8 +26,6 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Arrays;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -59,7 +57,7 @@ public class TestMapRedTask {
   }
 
   @Test
-  public void mrTaskSumbitViaChildWithImpersonation() throws IOException, LoginException {
+  public void mrTaskSumbitViaChildWithImpersonation() throws IOException {
     Utils.getUGI().setAuthenticationMethod(PROXY);
 
     Context ctx = Mockito.mock(Context.class);

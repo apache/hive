@@ -1,8 +1,3 @@
-CTE Suggestion:
-HiveProject(d_date_sk=[$0])
-  HiveFilter(condition=[AND(=($6, 2000), =($8, 12))])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$3], sort2=[$4], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
   HiveProject(channel=[$0], item=[$1], return_ratio=[$2], return_rank=[$3], currency_rank=[$4])

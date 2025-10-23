@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -96,7 +95,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -866,7 +864,7 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode ast, boolean lowerCase, TokenRewriteStream tokenRewriteStream,
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
       List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
-      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
+      List<ConstraintsUtils.ConstraintInfo> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
       Configuration conf) throws SemanticException {
     List<FieldSchema> colList = new ArrayList<>();
     Tree parent = ast.getParent();
@@ -919,8 +917,6 @@ public abstract class BaseSemanticAnalyzer {
           ASTNode typeChild = (ASTNode) (child.getChild(1));
           col.setType(getTypeStringFromAST(typeChild));
 
-          // child 2 is the optional comment of the column
-          // child 3 is the optional constraint
           ASTNode constraintChild = null;
           if (child.getChildCount() == 4) {
             col.setComment(unescapeSQLString(child.getChild(2).getText()));
@@ -932,8 +928,9 @@ public abstract class BaseSemanticAnalyzer {
             constraintChild = (ASTNode) child.getChild(2);
           }
           if (constraintChild != null) {
-            final TableName tName =
-                getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf));
+            final TableName tName = constraintChild.getToken().getType() != HiveParser.TOK_DEFAULT_VALUE ?
+                getQualifiedTableName((ASTNode) parent.getChild(0), MetaStoreUtils.getDefaultCatalog(conf)) :
+                null;
             // TODO CAT - for now always use the default catalog.  Eventually will want to see if
             // the user specified a catalog
             // Process column constraint
@@ -943,8 +940,9 @@ public abstract class BaseSemanticAnalyzer {
                   checkConstraints, typeChild, tokenRewriteStream);
               break;
             case HiveParser.TOK_DEFAULT_VALUE:
-              ConstraintsUtils.processDefaultConstraints(tName, constraintChild, ImmutableList.of(col.getName()),
-                  defaultConstraints, typeChild, tokenRewriteStream);
+              defaultConstraints.addAll(
+                  ConstraintsUtils.processDefaultConstraints(constraintChild, ImmutableList.of(col.getName()),
+                      typeChild, tokenRewriteStream));
               break;
             case HiveParser.TOK_NOT_NULL:
               ConstraintsUtils.processNotNullConstraints(tName, constraintChild, ImmutableList.of(col.getName()),
@@ -1047,6 +1045,7 @@ public abstract class BaseSemanticAnalyzer {
     TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_YEAR_MONTH, serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
     TOKEN_TO_TYPE.put(HiveParser.TOK_INTERVAL_DAY_TIME, serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
     TOKEN_TO_TYPE.put(HiveParser.TOK_DECIMAL, serdeConstants.DECIMAL_TYPE_NAME);
+    TOKEN_TO_TYPE.put(HiveParser.TOK_VARIANT, serdeConstants.VARIANT_TYPE_NAME);
   }
 
   private static String getTypeName(ASTNode node) throws SemanticException {

@@ -28,8 +28,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
-import javax.security.auth.login.LoginException;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -47,6 +45,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipOutputStream;
@@ -181,13 +180,13 @@ public class DagUtils {
   public static final String TEZ_TMP_DIR_KEY = "_hive_tez_tmp_dir";
   private static final Logger LOG = LoggerFactory.getLogger(DagUtils.class.getName());
   private static final String TEZ_DIR = "_tez_scratch_dir";
-  private static final DagUtils instance = new DagUtils(defaultCredentialSuppliers());
+  private static final DagUtils instance = new DagUtils(DagUtils::defaultCredentialSuppliers);
   // The merge file being currently processed.
   public static final String TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX =
       "hive.tez.current.merge.file.prefix";
   // A comma separated list of work names used as prefix.
   public static final String TEZ_MERGE_WORK_FILE_PREFIXES = "hive.tez.merge.file.prefixes";
-  private final List<DagCredentialSupplier> credentialSuppliers;
+  private final Supplier<List<DagCredentialSupplier>> credentialSuppliers;
   /**
    * Notifiers to synchronize resource localization across threads. If one thread is localizing
    * a file, other threads can wait on the corresponding notifier object instead of just sleeping
@@ -288,7 +287,7 @@ public class DagUtils {
     if (!UserGroupInformation.isSecurityEnabled()){
       return;
     }
-    for (DagCredentialSupplier supplier : credentialSuppliers) {
+    for (DagCredentialSupplier supplier : credentialSuppliers.get()) {
       Text alias = supplier.getTokenAlias();
       Token<?> t = dag.getCredentials().getToken(alias);
       if (t != null) {
@@ -1059,11 +1058,10 @@ public class DagUtils {
   /**
    * @param conf
    * @return path to destination directory on hdfs
-   * @throws LoginException if we are unable to figure user information
    * @throws IOException when any dfs operation fails.
    */
   @SuppressWarnings("deprecation")
-  public Path getDefaultDestDir(Configuration conf) throws LoginException, IOException {
+  public Path getDefaultDestDir(Configuration conf) throws IOException {
     UserGroupInformation ugi = Utils.getUGI();
     String userName = ugi.getShortUserName();
     String userPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USER_INSTALL_DIR);
@@ -1097,10 +1095,9 @@ public class DagUtils {
    * @param conf
    * @return List&lt;LocalResource&gt; local resources to add to execution
    * @throws IOException when hdfs operation fails
-   * @throws LoginException when getDefaultDestDir fails with the same exception
    */
   public List<LocalResource> localizeTempFilesFromConf(
-      String hdfsDirPathStr, Configuration conf) throws IOException, LoginException {
+      String hdfsDirPathStr, Configuration conf) throws IOException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
     if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ADD_FILES_USE_HDFS_LOCATION)) {
@@ -1233,7 +1230,7 @@ public class DagUtils {
     return tmpResourcesMap;
   }
 
-  public FileStatus getHiveJarDirectory(Configuration conf) throws IOException, LoginException {
+  public FileStatus getHiveJarDirectory(Configuration conf) throws IOException {
     FileStatus fstatus = null;
     String hdfsDirPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_JAR_DIRECTORY, (String)null);
     if (hdfsDirPathStr != null) {
@@ -1612,14 +1609,8 @@ public class DagUtils {
    */
   public Path createTezDir(Path scratchDir, Configuration conf)
       throws IOException {
-    UserGroupInformation ugi;
-    String userName = System.getProperty("user.name");
-    try {
-      ugi = Utils.getUGI();
-      userName = ugi.getShortUserName();
-    } catch (LoginException e) {
-      throw new IOException(e);
-    }
+    UserGroupInformation ugi = Utils.getUGI();
+    String userName = ugi.getShortUserName();
 
     scratchDir = new Path(scratchDir, userName);
 
@@ -1707,7 +1698,7 @@ public class DagUtils {
   }
 
   @VisibleForTesting
-  DagUtils(List<DagCredentialSupplier> suppliers) {
+  DagUtils(Supplier<List<DagCredentialSupplier>> suppliers) {
     this.credentialSuppliers = suppliers;
   }
 

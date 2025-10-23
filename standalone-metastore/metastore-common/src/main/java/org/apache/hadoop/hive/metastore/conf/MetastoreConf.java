@@ -697,7 +697,7 @@ public class MetastoreConf {
             "hive.compactor.connectionPool.maxPoolSize", 5,
             "Specify the maximum number of connections in the connection pool used by the compactor."),
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
-        "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
+        "javax.jdo.option.ConnectionDriverName", "org.apache.derby.iapi.jdbc.AutoloadedDriver",
         "Driver class name for a JDBC metastore"),
     CONNECTION_POOLING_MAX_CONNECTIONS("datanucleus.connectionPool.maxPoolSize",
         "datanucleus.connectionPool.maxPoolSize", 10,
@@ -906,8 +906,6 @@ public class MetastoreConf {
         org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl.class.getName(),
         "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager"
             + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
-    FS_HANDLER_CLS("metastore.fs.handler.class", "hive.metastore.fs.handler.class",
-        "org.apache.hadoop.hive.metastore.HiveMetaStoreFsImpl", ""),
     FS_HANDLER_THREADS_COUNT("metastore.fshandler.threads", "hive.metastore.fshandler.threads", 15,
         "Number of threads to be allocated for metastore handler for fs operations."),
     HMS_HANDLER_ATTEMPTS("metastore.hmshandler.retry.attempts", "hive.hmshandler.retry.attempts", 10,
@@ -983,8 +981,8 @@ public class MetastoreConf {
                 "  NOSASL:  Raw transport" +
                 "  JWT:  JSON Web Token authentication via JWT token. Only supported in Http/Https mode"),
     THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL("metastore.authentication.jwt.jwks.url",
-        "hive.metastore.authentication.jwt.jwks.url", "", "File URL from where URLBasedJWKSProvider "
-        + "in metastore server will try to load JWKS to match a JWT sent in HTTP request header. Used only when "
+        "hive.metastore.authentication.jwt.jwks.url", "", "File URL from where "
+        + "metastore server will try to load JWKS to match a JWT sent in HTTP request header. Used only when "
         + "Hive metastore server is running in JWT auth mode"),
     METASTORE_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
             "hive.metastore.custom.authentication.class",
@@ -1776,16 +1774,6 @@ public class MetastoreConf {
         "Batch size for partition and other object retrieval from the underlying DB in JDO.\n" +
         "The JDO implementation such as DataNucleus may run into issues when the generated queries are\n" +
         "too large. Use this parameter to break the query into multiple batches. -1 means no batching."),
-    /**
-     * @deprecated Deprecated due to HIVE-26443
-     */
-    @Deprecated
-    HIVE_METASTORE_RUNWORKER_IN("hive.metastore.runworker.in",
-        "hive.metastore.runworker.in", "hs2", new StringSetValidator("metastore", "hs2"),
-        "Deprecated. HMS side compaction workers doesn't support pooling. With the concept of compaction " +
-            "pools (HIVE-26443), running workers on HMS side is still supported but not suggested anymore. " +
-            "This config value will be removed in the future.\n" +
-            "Chooses where the compactor worker threads should run, Only possible values are \"metastore\" and \"hs2\""),
     // Hive values we have copied and use as is
     // These two are used to indicate that we are running tests
     HIVE_IN_TEST("hive.in.test", "hive.in.test", false, "internal usage only, true in test mode"),
@@ -1873,8 +1861,56 @@ public class MetastoreConf {
             " positive value will be used as-is."
     ),
     CATALOG_SERVLET_AUTH("metastore.catalog.servlet.auth",
-        "hive.metastore.catalog.servlet.auth", "jwt", new StringSetValidator("none", "simple", "jwt"),
-        "HMS Catalog servlet authentication method (none, simple, or jwt)."
+        "hive.metastore.catalog.servlet.auth", "jwt", new StringSetValidator("none", "simple", "jwt", "oauth2"),
+        "HMS Catalog servlet authentication method (none, simple, jwt, or oauth2)."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_ISSUER("metastore.catalog.servlet.auth.oauth2.issuer",
+        "hive.metastore.catalog.servlet.auth.oauth2.issuer", "",
+        "The authorization server's identifier, which is a URL. This is required when you use " +
+        "metastore.catalog.servlet.auth=oauth2"
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_AUDIENCE("metastore.catalog.servlet.auth.oauth2.audience",
+        "hive.metastore.catalog.servlet.auth.oauth2.audience", "",
+        "The acceptable name in the audience(aud) claim. This is required when you use " +
+        "metastore.catalog.servlet.auth=oauth2"
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_VALIDATION_METHOD("metastore.catalog.servlet.auth.oauth2.validation.method",
+        "hive.metastore.catalog.servlet.auth.oauth2.validation.method", "jwt",
+        new StringSetValidator("jwt", "introspection"),
+        "How to evaluate an access token. When your authorization server issues opaque tokens or you need " +
+        "to consider additional security requirements such as token revocations, use introspection."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_ID("metastore.catalog.servlet.auth.oauth2.client.id",
+        "hive.metastore.catalog.servlet.auth.oauth2.client.id", "",
+        "The client ID to authenticate HMS, as a resource server, to the introspection endpoint. This is required to " +
+        "use metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET("metastore.catalog.servlet.auth.oauth2.client.secret",
+        "hive.metastore.catalog.servlet.auth.oauth2.client.secret", "",
+        "The client secret to authenticate HMS, as a resource server, to the introspection endpoint. This is " +
+        "required to use metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_INTROSPECTION_CACHE_EXPIRY(
+        "metastore.catalog.servlet.auth.oauth2.introspection.cache.expiry",
+        "hive.metastore.catalog.servlet.auth.oauth2.introspection.cache.expiry", 60, TimeUnit.SECONDS,
+        "The expiry time of the token introspection cache. Set to 0 to disable caching."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_INTROSPECTION_CACHE_SIZE(
+        "metastore.catalog.servlet.auth.oauth2.introspection.cache.num",
+        "hive.metastore.catalog.servlet.auth.oauth2.introspection.cache.num", 1000L,
+        "The number of entries of the token introspection cache."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_PRINCIPAL_MAPPER_REGEX_FIELD(
+        "metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.field",
+        "hive.metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.field", "sub",
+        "The claim name including a username. This is effective when you use RegexPrincipalMapper. For example, if " +
+            "you want to resolve a user name from the email claim, set this to email."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_PRINCIPAL_MAPPER_REGEX_PATTERN(
+        "metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.pattern",
+        "hive.metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.pattern", "(.*)",
+        "The pattern to extract a user name. This is effective when you use RegexPrincipalMapper. For example, if " +
+        "you want to extract a user name from the local part of the email claim, set this to (.*)@example.com."
     ),
     ICEBERG_CATALOG_SERVLET_PATH("metastore.iceberg.catalog.servlet.path",
         "hive.metastore.iceberg.catalog.servlet.path", "iceberg",

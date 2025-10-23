@@ -238,7 +238,7 @@ public class HiveDriver implements Driver {
       port = "";
     }
     else if(port.equals("0") || port.equals("-1")){
-      port = Utils.DEFAULT_PORT;
+      port = Utils.getDefaultPort(params);
     }
     String db = params.getDbName();
     urlProps.put(HOST_PROPERTY_KEY, host);

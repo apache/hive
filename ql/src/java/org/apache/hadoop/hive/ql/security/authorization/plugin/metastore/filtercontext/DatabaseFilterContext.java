@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
 import org.slf4j.Logger;
@@ -39,11 +38,13 @@ public class DatabaseFilterContext extends HiveMetaStoreAuthorizableEvent {
 
   private static final Logger LOG = LoggerFactory.getLogger(DatabaseFilterContext.class);
 
+  String catName = null;
   List<String> databaseNames = null;
   Map<String, Database> databaseMap = null;
 
-  public DatabaseFilterContext(List<String> dbNames) {
+  public DatabaseFilterContext(String catName, List<String> dbNames) {
     super(null);
+    this.catName = catName;
     this.databaseNames = dbNames;
     getAuthzContext();
   }
@@ -53,10 +54,6 @@ public class DatabaseFilterContext extends HiveMetaStoreAuthorizableEvent {
     this.databaseNames = dbNames != null ? dbNames : new ArrayList<>();
     this.databaseMap = dbMap != null ? dbMap : new HashMap<>();
     getAuthzContext();
-  }
-
-  public static DatabaseFilterContext createFromNames(List<String> dbNames) {
-    return new DatabaseFilterContext(dbNames, null);
   }
 
   public static DatabaseFilterContext createFromDatabases(List<Database> databases) {
@@ -87,15 +84,12 @@ public class DatabaseFilterContext extends HiveMetaStoreAuthorizableEvent {
 
     List<HivePrivilegeObject> ret = new ArrayList<>();
     HivePrivilegeObjectType type = HivePrivilegeObjectType.DATABASE;
-    HivePrivObjectActionType objectActionType = HivePrivObjectActionType.OTHER;
     for (String dbName : databaseNames) {
       Database db = (databaseMap != null) ? databaseMap.get(dbName) : null;
       if (db != null) {
         ret.add(getHivePrivilegeObject(db));
       } else {
-        HivePrivilegeObject hivePrivilegeObject = new HivePrivilegeObject(
-            type, dbName, null, null, null,
-            objectActionType, null, null);
+        HivePrivilegeObject hivePrivilegeObject = new HivePrivilegeObject(type, dbName);
         ret.add(hivePrivilegeObject);
       }
     }

@@ -144,7 +144,7 @@ ALTER TABLE table23 ADD CONSTRAINT pk23_1 PRIMARY KEY (b) DISABLE RELY;
 
 DESCRIBE FORMATTED table23;
 
-set hive.metastore.try.direct.sql=false;
+set metaconf:metastore.try.direct.sql=false;
 CREATE TABLE numericDataType_n0(a TINYINT, b SMALLINT NOT NULL ENABLE, c INT,
  d BIGINT , e DOUBLE , f DECIMAL(9,2));
 INSERT INTO numericDataType_n0 values(2,45,5667,67890,5.6,678.5);

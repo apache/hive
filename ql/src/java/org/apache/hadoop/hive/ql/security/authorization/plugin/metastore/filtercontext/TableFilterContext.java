@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
-import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizableEvent;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthzInfo;
 
@@ -40,6 +39,7 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
 
   List<Table> tables = null;
   List<String> tableNames = null;
+  String catName = null;
   String dbName = null;
 
   public TableFilterContext(List<Table> tables) {
@@ -48,8 +48,9 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
     getAuthzContext();
   }
 
-  public TableFilterContext(String dbName, List<String> tableNames) {
+  public TableFilterContext(String catName, String dbName, List<String> tableNames) {
     super(null);
+    this.catName = catName;
     this.dbName = dbName;
     this.tableNames = tableNames;
   }
@@ -92,9 +93,8 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
     } else {
       for (String tableName : tableNames) {
         HivePrivilegeObjectType type = HivePrivilegeObjectType.TABLE_OR_VIEW;
-        HivePrivObjectActionType objectActionType = HivePrivObjectActionType.OTHER;
         HivePrivilegeObject hivePrivilegeObject = new HivePrivilegeObject(
-            type, dbName, tableName, null, null, objectActionType, null, null);
+            type, catName, dbName, tableName);
         ret.add(hivePrivilegeObject);
       }
     }

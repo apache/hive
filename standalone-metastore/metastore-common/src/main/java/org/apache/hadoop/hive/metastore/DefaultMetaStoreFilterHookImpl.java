@@ -29,16 +29,20 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+
 /**
  * Default no-op implementation of the MetaStoreFilterHook that returns the result as is
  */
 public class DefaultMetaStoreFilterHookImpl implements MetaStoreFilterHook {
+  protected final Configuration conf;
 
   public DefaultMetaStoreFilterHookImpl(Configuration conf) {
+    this.conf = conf;
   }
 
   @Override
-  public List<String> filterDatabases(List<String> dbList) throws MetaException {
+  public List<String> filterDatabases(String catName, List<String> dbList) throws MetaException {
     return dbList;
   }
 

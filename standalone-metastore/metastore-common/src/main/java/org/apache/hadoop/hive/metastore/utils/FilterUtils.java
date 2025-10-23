@@ -78,6 +78,7 @@ public class FilterUtils {
    * Filter the list of databases if filtering is enabled. Otherwise, return original list
    * @param isFilterEnabled true: filtering is enabled; false: filtring is disabled.
    * @param filterHook: the object that does filtering
+   * @param catName: the catalog name of the databases
    * @param dbNames: the list of database names to filter
    * @return the list of database names that current user has access if filtering is enabled;
    *         otherwise, the original list
@@ -86,10 +87,11 @@ public class FilterUtils {
   public static List<String> filterDbNamesIfEnabled(
       boolean isFilterEnabled,
       MetaStoreFilterHook filterHook,
+      String catName,
       List<String> dbNames) throws MetaException {
 
     if (isFilterEnabled) {
-      return filterHook.filterDatabases(dbNames);
+      return filterHook.filterDatabases(catName, dbNames);
     }
 
     return dbNames;
@@ -396,7 +398,7 @@ public class FilterUtils {
       throw new NoSuchObjectException("dbName is not valid");
     }
 
-    List<String> filteredDb = filterDbNamesIfEnabled(isFilterEnabled, filterHook,
+    List<String> filteredDb = filterDbNamesIfEnabled(isFilterEnabled, filterHook, catName,
         Collections.singletonList(dbName));
 
     if (filteredDb.isEmpty()) {

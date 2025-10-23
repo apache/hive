@@ -24,4 +24,4 @@ PREHOOK: Output: default@t1
 POSTHOOK: query: msck repair table t1
 POSTHOOK: type: MSCK
 POSTHOOK: Output: default@t1
-FAILED: HiveAccessControlException Permission denied: Principal [name=user3, type=USER] does not have following privileges for operation MSCK [[INSERT] on Object [type=TABLE_OR_VIEW, name=default.t1]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user3, type=USER] does not have following privileges for operation MSCK [[INSERT] on Object [type=TABLE_OR_VIEW, name=hive.default.t1]]

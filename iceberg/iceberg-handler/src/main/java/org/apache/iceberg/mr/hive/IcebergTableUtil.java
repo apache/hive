@@ -20,10 +20,11 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.time.ZoneId;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +35,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -44,7 +47,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.TableFetcher;
@@ -79,6 +81,7 @@ import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
+import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
@@ -87,16 +90,22 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
-import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.puffin.BlobMetadata;
+import org.apache.iceberg.puffin.Puffin;
+import org.apache.iceberg.puffin.PuffinReader;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
+import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.ByteBuffers;
+import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.PropertyUtil;
 import org.apache.iceberg.util.SnapshotUtil;
 import org.apache.iceberg.util.StructProjection;
@@ -106,7 +115,6 @@ import org.slf4j.LoggerFactory;
 import static org.apache.iceberg.RowLevelOperationMode.COPY_ON_WRITE;
 import static org.apache.iceberg.RowLevelOperationMode.MERGE_ON_READ;
 import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_NAME;
-import static org.apache.iceberg.mr.InputFormatConfig.CATALOG_WAREHOUSE_TEMPLATE;
 
 public class IcebergTableUtil {
   private static final Logger LOG = LoggerFactory.getLogger(IcebergTableUtil.class);
@@ -223,18 +231,18 @@ public class IcebergTableUtil {
     return table.currentSnapshot();
   }
 
-  static Optional<Path> getColStatsPath(Table table) {
+  static String getColStatsPath(Table table) {
     return getColStatsPath(table, table.currentSnapshot().snapshotId());
   }
 
-  static Optional<Path> getColStatsPath(Table table, long snapshotId) {
+  static String getColStatsPath(Table table, long snapshotId) {
     return table.statisticsFiles().stream()
       .filter(stats -> stats.snapshotId() == snapshotId)
       .filter(stats -> stats.blobMetadata().stream()
         .anyMatch(metadata -> ColumnStatisticsObj.class.getSimpleName().equals(metadata.type()))
       )
-      .map(stats -> new Path(stats.path()))
-      .findAny();
+      .map(StatisticsFile::path)
+      .findAny().orElse(null);
   }
 
   static PartitionStatisticsFile getPartitionStatsFile(Table table, long snapshotId) {
@@ -482,37 +490,20 @@ public class IcebergTableUtil {
       String partColName = entry.getKey();
       if (partitionFieldMap.containsKey(partColName)) {
         PartitionField partitionField = partitionFieldMap.get(partColName);
-        Type resultType = partitionField.transform().getResultType(table.schema()
-            .findField(partitionField.sourceId()).type());
-        Object value = Conversions.fromPartitionString(resultType, entry.getValue());
-        TransformSpec.TransformType transformType = TransformSpec.fromString(partitionField.transform().toString());
-        Iterable<?> iterable = () -> Collections.singletonList(value).iterator();
-        if (TransformSpec.TransformType.IDENTITY == transformType) {
-          Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
+        if (partitionField.transform().isIdentity()) {
+          final Type partKeyType = table.schema().findField(partitionField.sourceId()).type();
+          final Object partKeyVal = Conversions.fromPartitionString(partKeyType, entry.getValue());
+          Expression boundPredicate = Expressions.equal(partColName, partKeyVal);
           finalExp = Expressions.and(finalExp, boundPredicate);
         } else {
           throw new SemanticException(
-              String.format("Partition transforms are not supported via truncate operation: %s", partColName));
+              String.format("Partition transforms are not supported here: %s", partColName));
         }
       } else {
-        throw new SemanticException(String.format("No partition column/transform by the name: %s", partColName));
+        throw new SemanticException(String.format("No partition column by the name: %s", partColName));
       }
     }
     return finalExp;
-  }
-
-  public static List<FieldSchema> getPartitionKeys(Table table, int specId) {
-    Schema schema = table.specs().get(specId).schema();
-    List<FieldSchema> hiveSchema = HiveSchemaUtil.convert(schema);
-    Map<String, String> colNameToColType = hiveSchema.stream()
-        .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
-    return table.specs().get(specId).fields().stream()
-        .map(partField -> new FieldSchema(
-            schema.findColumnName(partField.sourceId()),
-            colNameToColType.get(schema.findColumnName(partField.sourceId())),
-            String.format("Transform: %s", partField.transform().toString()))
-        )
-        .collect(Collectors.toList());
   }
 
   public static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
@@ -553,7 +544,7 @@ public class IcebergTableUtil {
                 expression, false);
             return e.getValue().isPartitioned() &&
               resEval.residualFor(e.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
-              (e.getValue().specId() == table.spec().specId() || !latestSpecOnly);
+                (e.getValue().specId() == table.spec().specId() || !latestSpecOnly);
 
           }).transform(e -> e.getValue().partitionToPath(e.getKey())).toSortedList(
             Comparator.naturalOrder());
@@ -590,6 +581,33 @@ public class IcebergTableUtil {
     return spec;
   }
 
+  public static <T> List<T> readColStats(Table table, Long snapshotId, Predicate<BlobMetadata> filter) {
+    List<T> colStats = Lists.newArrayList();
+
+    String statsPath  = IcebergTableUtil.getColStatsPath(table, snapshotId);
+    if (statsPath == null) {
+      return colStats;
+    }
+    try (PuffinReader reader = Puffin.read(table.io().newInputFile(statsPath)).build()) {
+      List<BlobMetadata> blobMetadata = reader.fileMetadata().blobs();
+
+      if (filter != null) {
+        blobMetadata = blobMetadata.stream().filter(filter)
+          .toList();
+      }
+      Iterator<ByteBuffer> it = Iterables.transform(reader.readAll(blobMetadata), Pair::second).iterator();
+      LOG.info("Using column stats from: {}", statsPath);
+
+      while (it.hasNext()) {
+        byte[] byteBuffer = ByteBuffers.toByteArray(it.next());
+        colStats.add(SerializationUtils.deserialize(byteBuffer));
+      }
+    } catch (Exception e) {
+      LOG.warn("Unable to read column stats: {}", e.getMessage());
+    }
+    return colStats;
+  }
+
   public static ExecutorService newDeleteThreadPool(String completeName, int numThreads) {
     AtomicInteger deleteThreadsIndex = new AtomicInteger(0);
     return Executors.newFixedThreadPool(numThreads, runnable -> {
@@ -608,7 +626,7 @@ public class IcebergTableUtil {
             .anyMatch(id -> id != table.spec().specId());
   }
 
-  public static <T extends ContentFile> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
+  public static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
       Boolean latestSpecOnly) {
     Set<String> partitions = Sets.newHashSet();
     int tableSpecId = icebergTable.spec().specId();
@@ -646,7 +664,7 @@ public class IcebergTableUtil {
       Configuration conf, Properties catalogProperties) {
     StringBuilder sb = new StringBuilder();
     String warehouseLocation = conf.get(String.format(
-        CATALOG_WAREHOUSE_TEMPLATE, catalogProperties.getProperty(CATALOG_NAME))
+        CatalogUtils.CATALOG_WAREHOUSE_TEMPLATE, catalogProperties.getProperty(CATALOG_NAME))
     );
     sb.append(warehouseLocation).append('/');
     for (String level : tableIdentifier.namespace().levels()) {

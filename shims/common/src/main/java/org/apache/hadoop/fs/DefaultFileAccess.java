@@ -26,8 +26,6 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.security.auth.login.LoginException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -50,7 +48,7 @@ public class DefaultFileAccess {
   private static List<String> emptyGroups = new ArrayList<String>(0);
 
   public static void checkFileAccess(FileSystem fs, FileStatus stat, FsAction action)
-      throws IOException, AccessControlException, LoginException {
+      throws IOException, AccessControlException {
     // Get the user/groups for checking permissions based on the current UGI.
     UserGroupInformation currentUgi = Utils.getUGI();
     DefaultFileAccess.checkFileAccess(fs, stat, action,

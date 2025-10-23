@@ -5948,13 +5948,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     final SessionState parentSession = SessionState.get();
     for (final FileStatus status : statuses) {
       if (null == pool) {
-        result &= FileUtils.moveToTrash(fs, status.getPath(), conf, purge);
+        result &= org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, status.getPath(), purge, conf);
       } else {
         futures.add(pool.submit(new Callable<Boolean>() {
           @Override
           public Boolean call() throws Exception {
             SessionState.setCurrentSessionState(parentSession);
-            return FileUtils.moveToTrash(fs, status.getPath(), conf, purge);
+            return org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, status.getPath(), purge, conf);
           }
         }));
       }
@@ -6181,7 +6181,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<ColumnStatisticsObj> retv = null;
     try {
       if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
-        return tbl.getStorageHandler().getColStatistics(tbl);
+        return tbl.getStorageHandler().getColStatistics(tbl, colNames);
       }
       if (checkTransactional) {
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);

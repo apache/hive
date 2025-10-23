@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RawLocalFileSystem;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -31,9 +32,8 @@ import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Mockito;
 
-import javax.security.auth.login.LoginException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,143 +65,143 @@ public class TestHdfsUtils {
     return p;
   }
 
-  private Configuration makeConf() {
-    // Make sure that the user doesn't happen to be in the super group
-    Configuration conf = new Configuration();
-    conf.set("dfs.permissions.supergroup", "ubermensch");
-    return conf;
-  }
-
-  private UserGroupInformation ugiInvalidUserValidGroups() throws LoginException, IOException {
-    UserGroupInformation ugi = Mockito.mock(UserGroupInformation.class);
-    Mockito.when(ugi.getShortUserName()).thenReturn("nosuchuser");
-    Mockito.when(ugi.getGroupNames()).thenReturn(SecurityUtils.getUGI().getGroupNames());
-    return ugi;
+  private UserGroupInformation ugiInvalidUserValidGroups() throws IOException {
+    return UserGroupInformation.createUserForTesting("nosuchuser", SecurityUtils.getUGI().getGroupNames());
   }
 
   private UserGroupInformation ugiInvalidUserInvalidGroups() {
-    UserGroupInformation ugi = Mockito.mock(UserGroupInformation.class);
-    Mockito.when(ugi.getShortUserName()).thenReturn("nosuchuser");
-    Mockito.when(ugi.getGroupNames()).thenReturn(new String[]{"nosuchgroup"});
-    return ugi;
+    return UserGroupInformation.createUserForTesting("nosuchuser", new String[]{"nosuchgroup"});
   }
 
   @Test
-  public void userReadWriteExecute() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
+  public void userReadWriteExecute() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
     Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.NONE, FsAction.NONE));
     UserGroupInformation ugi = SecurityUtils.getUGI();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.READ, ugi);
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.WRITE, ugi);
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.EXECUTE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.READ, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.WRITE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.EXECUTE, ugi);
   }
 
   @Test(expected = AccessControlException.class)
-  public void userNoRead() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
+  public void userNoRead() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
     Path p = createFile(fs, new FsPermission(FsAction.NONE, FsAction.ALL, FsAction.ALL));
     UserGroupInformation ugi = SecurityUtils.getUGI();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.READ, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.READ, ugi);
   }
 
   @Test(expected = AccessControlException.class)
-  public void userNoWrite() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
+  public void userNoWrite() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
     Path p = createFile(fs, new FsPermission(FsAction.NONE, FsAction.ALL, FsAction.ALL));
     UserGroupInformation ugi = SecurityUtils.getUGI();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.WRITE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.WRITE, ugi);
   }
 
   @Test(expected = AccessControlException.class)
-  public void userNoExecute() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
+  public void userNoExecute() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
     Path p = createFile(fs, new FsPermission(FsAction.NONE, FsAction.ALL, FsAction.ALL));
     UserGroupInformation ugi = SecurityUtils.getUGI();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.EXECUTE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.EXECUTE, ugi);
   }
 
   @Test
-  public void groupReadWriteExecute() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
+  public void groupReadWriteExecute() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
     Path p = createFile(fs, new FsPermission(FsAction.NONE, FsAction.ALL, FsAction.NONE));
     UserGroupInformation ugi = ugiInvalidUserValidGroups();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.READ, ugi);
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.WRITE, ugi);
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.EXECUTE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.READ, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.WRITE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.EXECUTE, ugi);
   }
 
   @Test(expected = AccessControlException.class)
-  public void groupNoRead() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
+  public void groupNoRead() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
     Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.NONE, FsAction.ALL));
     UserGroupInformation ugi = ugiInvalidUserValidGroups();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.READ, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.READ, ugi);
   }
 
   @Test(expected = AccessControlException.class)
-  public void groupNoWrite() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
+  public void groupNoWrite() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
     Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.NONE, FsAction.ALL));
     UserGroupInformation ugi = ugiInvalidUserValidGroups();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.WRITE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.WRITE, ugi);
   }
 
   @Test(expected = AccessControlException.class)
-  public void groupNoExecute() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
+  public void groupNoExecute() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
     Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.NONE, FsAction.ALL));
     UserGroupInformation ugi = ugiInvalidUserValidGroups();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.EXECUTE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.EXECUTE, ugi);
   }
 
   @Test
-  public void otherReadWriteExecute() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
+  public void otherReadWriteExecute() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
     Path p = createFile(fs, new FsPermission(FsAction.NONE, FsAction.NONE, FsAction.ALL));
     UserGroupInformation ugi = ugiInvalidUserInvalidGroups();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.READ, ugi);
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.WRITE, ugi);
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.EXECUTE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.READ, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.WRITE, ugi);
+    HdfsUtils.checkFileAccess(fs, p, FsAction.EXECUTE, ugi);
   }
 
   @Test(expected = AccessControlException.class)
-  public void otherNoRead() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
-    Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.NONE));
-    UserGroupInformation ugi = ugiInvalidUserInvalidGroups();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.READ, ugi);
-  }
-
-  @Test(expected = AccessControlException.class)
-  public void otherNoWrite() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
-    Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.NONE));
-    UserGroupInformation ugi = ugiInvalidUserInvalidGroups();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.WRITE, ugi);
-  }
-
-  @Test(expected = AccessControlException.class)
-  public void otherNoExecute() throws IOException, LoginException {
-    FileSystem fs = FileSystem.get(makeConf());
-    Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.NONE));
-    UserGroupInformation ugi = ugiInvalidUserInvalidGroups();
-    HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.EXECUTE, ugi);
-  }
-
-  @Test
-  public void rootReadWriteExecute() throws IOException, LoginException {
-    UserGroupInformation ugi = SecurityUtils.getUGI();
+  public void otherNoRead() throws IOException {
     FileSystem fs = FileSystem.get(new Configuration());
-    String old = fs.getConf().get("dfs.permissions.supergroup");
-    try {
-      fs.getConf().set("dfs.permissions.supergroup", ugi.getPrimaryGroupName());
-      Path p = createFile(fs, new FsPermission(FsAction.NONE, FsAction.NONE, FsAction.NONE));
-      HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.READ, ugi);
-      HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.WRITE, ugi);
-      HdfsUtils.checkFileAccess(fs, fs.getFileStatus(p), FsAction.EXECUTE, ugi);
-    } finally {
-      fs.getConf().set("dfs.permissions.supergroup", old);
-    }
+    Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.NONE));
+    UserGroupInformation ugi = ugiInvalidUserInvalidGroups();
+    HdfsUtils.checkFileAccess(fs, p, FsAction.READ, ugi);
+  }
+
+  @Test(expected = AccessControlException.class)
+  public void otherNoWrite() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
+    Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.NONE));
+    UserGroupInformation ugi = ugiInvalidUserInvalidGroups();
+    HdfsUtils.checkFileAccess(fs, p, FsAction.WRITE, ugi);
+  }
+
+  @Test(expected = AccessControlException.class)
+  public void otherNoExecute() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
+    Path p = createFile(fs, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.NONE));
+    UserGroupInformation ugi = ugiInvalidUserInvalidGroups();
+    HdfsUtils.checkFileAccess(fs, p, FsAction.EXECUTE, ugi);
+  }
+
+  @Test (expected = FileNotFoundException.class)
+  public void nonExistentFile() throws IOException {
+    FileSystem fs = FileSystem.get(new Configuration());
+    Path p = new Path("/tmp/nosuchfile");
+    UserGroupInformation ugi = SecurityUtils.getUGI();
+    HdfsUtils.checkFileAccess(fs, p, FsAction.READ, ugi);
+  }
+
+  @Test(expected = AccessControlException.class)
+  public void accessPerssionFromCustomFilesystem() throws IOException {
+    FileSystem fs = new RawLocalFileSystem() {
+      @Override
+      public void access(Path path, FsAction mode) throws AccessControlException, IOException {
+        if (path.toString().contains("noaccess")) {
+          throw new AccessControlException("no access");
+        }
+      }
+
+      @Override
+      public Configuration getConf() {
+        return new Configuration();
+      }
+    };
+
+    UserGroupInformation ugi = SecurityUtils.getUGI();
+    Path p = new Path("/tmp/noaccess");
+    HdfsUtils.checkFileAccess(fs, p, FsAction.EXECUTE, ugi);
   }
 
   /**

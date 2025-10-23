@@ -64,7 +64,6 @@ public class Initiator extends MetaStoreCompactorThread {
     try (ExecutorService compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
         conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
         COMPACTOR_INTIATOR_THREAD_NAME_FORMAT)) {
-      recoverFailedCompactions(false);
       TxnStore.MutexAPI mutex = shouldUseMutex ? txnHandler.getMutexAPI() : new NoMutex();
 
       // Make sure we run through the loop once before checking to stop as this makes testing
@@ -80,6 +79,9 @@ public class Initiator extends MetaStoreCompactorThread {
         try (TxnStore.MutexAPI.LockHandle handle = mutex.acquireLock(TxnStore.MUTEX_KEY.Initiator.name())) {
           startedAt = System.currentTimeMillis();
           prevStart = handle.getLastUpdateTime();
+
+          // Check for timed out workers.
+          recoverFailedCompactions();
 
           if (metricsEnabled) {
             perfLogger.perfLogBegin(CLASS_NAME, MetricsConstants.COMPACTION_INITIATOR_CYCLE);
@@ -159,8 +161,6 @@ public class Initiator extends MetaStoreCompactorThread {
           //Use get instead of join, so we can receive InterruptedException and shutdown gracefully
           CompletableFuture.allOf(compactionList.toArray(new CompletableFuture[0])).get();
 
-          // Check for timed out remote workers.
-          recoverFailedCompactions(true);
           handle.releaseLocks(startedAt);
         } catch (InterruptedException e) {
           // do not ignore interruption requests
@@ -235,8 +235,7 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
-  private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
-    if (!remoteOnly) txnHandler.revokeFromLocalWorkers(ServerUtils.hostname());
+  private void recoverFailedCompactions() throws MetaException {
     txnHandler.revokeTimedoutWorkers(HiveConf.getTimeVar(conf,
         HiveConf.ConfVars.HIVE_COMPACTOR_WORKER_TIMEOUT, TimeUnit.MILLISECONDS));
   }

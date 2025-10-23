@@ -25,9 +25,12 @@ insert into ice01 values (1),(2),(3),(4);
 select * from ice01;
 
 -- delete some values
-delete from ice01 where id>2;
+delete from ice01 where id=3;
 select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files;
+-- delete one more time to trigger one more delete file for the same data file
+delete from ice01 where id=4;
 
+select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files;
 -- check the values, the delete value should be there
 select * from ice01 order by id;
 
@@ -39,6 +42,14 @@ select * from ice01 order by id;
 
 -- delete one value
 delete from ice01 where id=7;
+select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files;
+
+-- check the entries, the deleted entries shouldn't be there.
+select * from ice01 order by id;
+
+-- update one value part of the same data file where delete happened
+update ice01 set id=20 where id=8;
+
 select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files;
 
 -- check the entries, the deleted entries shouldn't be there.

@@ -20,3 +20,32 @@ select n.* from n left outer join t on (n.a=t.a) where cast(t.a as float) is nul
 select assert_true(count(1)=4) from n left outer join t on (n.a=t.a) where cast(t.a as float) is null;
 
 
+create table tab1 (col1 int, col2 int);
+create table tab2 (col1 int, col2 int);
+
+insert into tab1 values (123, 1000), (456, 1000), (123, 5000);
+
+insert into tab2 values (123, 1000), (456, 1000), (788, 1000);
+
+select t1.col1, t1.col2 from tab1 t1
+left join tab2 t2
+on t2.col1=t1.col1 AND t2.col2=t1.col2
+left join tab1 t3
+on t3.col1=t1.col1 AND t2.col2=t1.col2
+where t3.col1 is null;
+
+set hive.auto.convert.anti.join=true;
+
+explain CBO select t1.col1, t1.col2 from tab1 t1
+left join tab2 t2
+on t2.col1=t1.col1 AND t2.col2=t1.col2
+left join tab1 t3
+on t3.col1=t1.col1 AND t2.col2=t1.col2
+where t3.col1 is null;
+
+select t1.col1, t1.col2 from tab1 t1
+left join tab2 t2
+on t2.col1=t1.col1 AND t2.col2=t1.col2
+left join tab1 t3
+on t3.col1=t1.col1 AND t2.col2=t1.col2
+where t3.col1 is null;

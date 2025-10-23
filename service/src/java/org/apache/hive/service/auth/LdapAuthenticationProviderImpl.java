@@ -130,7 +130,7 @@ public class LdapAuthenticationProviderImpl implements PasswdAuthenticationProvi
         String.format("No candidate principals for %s was found.", user));
   }
 
-  private static Filter resolveFilter(HiveConf conf) {
+  public static Filter resolveFilter(HiveConf conf) {
     for (FilterFactory filterProvider : FILTER_FACTORIES) {
       Filter filter = filterProvider.getInstance(conf);
       if (filter != null) {

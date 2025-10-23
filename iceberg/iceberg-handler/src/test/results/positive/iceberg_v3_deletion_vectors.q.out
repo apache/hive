@@ -59,11 +59,28 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
 3
 4
-PREHOOK: query: delete from ice01 where id>2
+PREHOOK: query: delete from ice01 where id=3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice01
 PREHOOK: Output: default@ice01
-POSTHOOK: query: delete from ice01 where id>2
+POSTHOOK: query: delete from ice01 where id=3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	PUFFIN	0	1	4
+PREHOOK: query: delete from ice01 where id=4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: delete from ice01 where id=4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ice01
 POSTHOOK: Output: default@ice01
@@ -139,6 +156,39 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 5
 6
 8
+PREHOOK: query: update ice01 set id=20 where id=8
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: default@ice01
+PREHOOK: Output: default@ice01
+POSTHOOK: query: update ice01 set id=20 where id=8
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: default@ice01
+POSTHOOK: Output: default@ice01
+PREHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select content, file_format, spec_id, record_count, content_offset from default.ice01.delete_files
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	PUFFIN	0	2	4
+1	PUFFIN	0	2	4
+PREHOOK: query: select * from ice01 order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice01
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from ice01 order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice01
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+5
+6
+20
 PREHOOK: query: create table icepart01 (id int) partitioned by (part int) Stored by Iceberg stored as ORC
  TBLPROPERTIES('format-version'='3')
 PREHOOK: type: CREATETABLE

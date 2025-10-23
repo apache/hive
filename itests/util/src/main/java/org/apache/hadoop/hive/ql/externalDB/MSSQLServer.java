@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.externalDB;
 
-public class MSSQLServer extends AbstractExternalDB {
+public class MSSQLServer extends DockerizedDatabase {
 
   @Override
   public String getRootUser() {

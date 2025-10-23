@@ -685,28 +685,25 @@ public class MetaStoreServerUtils {
     return true;
   }
 
-  /*
+  /**
      * This method is to check if the new column list includes all the old columns with same name and
      * type. The column comment does not count.
+     *
+     * @return A list of columns that not appear in the new column list
      */
-  public static boolean columnsIncludedByNameType(List<FieldSchema> oldCols,
-                                                  List<FieldSchema> newCols) {
-    if (oldCols.size() > newCols.size()) {
-      return false;
-    }
-
+  public static List<String> findStaleColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     Map<String, String> columnNameTypePairMap = new HashMap<>(newCols.size());
     for (FieldSchema newCol : newCols) {
       columnNameTypePairMap.put(newCol.getName().toLowerCase(), newCol.getType());
     }
+    List<String> changedCols = new ArrayList<>();
     for (final FieldSchema oldCol : oldCols) {
       if (!columnNameTypePairMap.containsKey(oldCol.getName())
           || !columnNameTypePairMap.get(oldCol.getName()).equalsIgnoreCase(oldCol.getType())) {
-        return false;
+        changedCols.add(oldCol.getName());
       }
     }
-
-    return true;
+    return changedCols;
   }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */

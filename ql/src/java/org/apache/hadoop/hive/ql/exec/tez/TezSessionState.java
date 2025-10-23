@@ -39,7 +39,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.security.auth.login.LoginException;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -236,7 +235,7 @@ public class TezSessionState {
     return UUID.randomUUID().toString();
   }
 
-  public void open() throws IOException, LoginException, URISyntaxException, TezException {
+  public void open() throws IOException, URISyntaxException, TezException {
     String[] noFiles = null;
     open(noFiles);
   }
@@ -246,24 +245,24 @@ public class TezSessionState {
    * submit multiple DAGs against a session (as long as they are executed serially).
    */
   public void open(String[] additionalFilesNotFromConf)
-      throws IOException, LoginException, URISyntaxException, TezException {
+      throws IOException, URISyntaxException, TezException {
     openInternal(additionalFilesNotFromConf, false, null, null);
   }
 
 
   public void open(HiveResources resources)
-      throws LoginException, IOException, URISyntaxException, TezException {
+      throws IOException, URISyntaxException, TezException {
     openInternal(null, false, null, resources);
   }
 
   public void beginOpen(String[] additionalFiles, LogHelper console)
-      throws IOException, LoginException, URISyntaxException, TezException {
+      throws IOException, URISyntaxException, TezException {
     openInternal(additionalFiles, true, console, null);
   }
 
   protected void openInternal(String[] additionalFilesNotFromConf,
       boolean isAsync, LogHelper console, HiveResources resources)
-          throws IOException, LoginException, URISyntaxException, TezException {
+          throws IOException, URISyntaxException, TezException {
     // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
     String confQueueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
     if (queueName != null && !queueName.equals(confQueueName)) {
@@ -634,7 +633,7 @@ public class TezSessionState {
 
   /** This is called in openInternal and in TezTask.updateSession to localize conf resources. */
   public void ensureLocalResources(Configuration conf, String[] newFilesNotFromConf)
-          throws IOException, LoginException, URISyntaxException, TezException {
+          throws IOException, URISyntaxException, TezException {
     if (resources == null) {
       throw new AssertionError("Ensure called on an unitialized (or closed) session " + sessionId);
     }
@@ -820,12 +819,11 @@ public class TezSessionState {
    * @param localJarPath Local path to the jar to be localized.
    * @return LocalResource corresponding to the localized hive exec resource.
    * @throws IOException when any file system related call fails.
-   * @throws LoginException when we are unable to determine the user.
    * @throws URISyntaxException when current jar location cannot be determined.
    */
   @VisibleForTesting
   LocalResource createJarLocalResource(String localJarPath)
-      throws IOException, LoginException, IllegalArgumentException {
+      throws IOException, IllegalArgumentException {
     // TODO Reduce the number of lookups that happen here. This shouldn't go to HDFS for each call.
     // The hiveJarDir can be determined once per client.
     FileStatus destDirStatus = utils.getHiveJarDirectory(conf);
@@ -854,19 +852,7 @@ public class TezSessionState {
     return fileStatus.getPath() + ":" + fileStatus.getLen() + ":" + fileStatus.getModificationTime();
   }
 
-  private void addJarLRByClassName(String className, final Map<String, LocalResource> lrMap) throws
-      IOException, LoginException {
-    Class<?> clazz;
-    try {
-      clazz = Class.forName(className);
-    } catch (ClassNotFoundException e) {
-      throw new IOException("Cannot find " + className + " in classpath", e);
-    }
-    addJarLRByClass(clazz, lrMap);
-  }
-
-  private void addJarLRByClass(Class<?> clazz, final Map<String, LocalResource> lrMap) throws IOException,
-      LoginException {
+  private void addJarLRByClass(Class<?> clazz, final Map<String, LocalResource> lrMap) throws IOException {
     String jarPath = Utilities.jarFinderGetJar(clazz);
     if (jarPath == null) {
       throw new IOException("Can't find jar for: " + clazz);

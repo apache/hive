@@ -69,24 +69,14 @@ public class InputFormatConfig {
   public static final int COMMIT_TABLE_THREAD_POOL_SIZE_DEFAULT = 10;
   public static final String COMMIT_FILE_THREAD_POOL_SIZE = "iceberg.mr.commit.file.thread.pool.size";
   public static final int COMMIT_FILE_THREAD_POOL_SIZE_DEFAULT = 10;
-  public static final String WRITE_TARGET_FILE_SIZE = "iceberg.mr.write.target.file.size";
 
   public static final String CASE_SENSITIVE = "iceberg.mr.case.sensitive";
   public static final boolean CASE_SENSITIVE_DEFAULT = true;
 
   public static final String CATALOG_NAME = "iceberg.catalog";
-  public static final String HADOOP_CATALOG = "hadoop.catalog";
-  public static final String HADOOP_TABLES = "hadoop.tables";
   public static final String HIVE_CATALOG = "hive.catalog";
-  public static final String ICEBERG_SNAPSHOTS_TABLE_SUFFIX = ".snapshots";
-  public static final String SNAPSHOT_TABLE = "iceberg.snapshots.table";
-  public static final String SNAPSHOT_TABLE_SUFFIX = "__snapshots";
 
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
-  public static final String CATALOG_TYPE_TEMPLATE = "iceberg.catalog.%s.type";
-  public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.catalog.%s.warehouse";
-  public static final String CATALOG_CLASS_TEMPLATE = "iceberg.catalog.%s.catalog-impl";
-  public static final String CATALOG_DEFAULT_CONFIG_PREFIX = "iceberg.catalog-default.";
 
   public enum InMemoryDataModel {
     HIVE,
@@ -213,18 +203,6 @@ public class InputFormatConfig {
 
   public static boolean fetchVirtualColumns(Configuration conf) {
     return conf.getBoolean(InputFormatConfig.FETCH_VIRTUAL_COLUMNS, false);
-  }
-
-  /**
-   * Get Hadoop config key of a catalog property based on catalog name
-   * @param catalogName catalog name
-   * @param catalogProperty catalog property, can be any custom property,
-   *                        a commonly used list of properties can be found
-   *                        at {@link org.apache.iceberg.CatalogProperties}
-   * @return Hadoop config key of a catalog property for the catalog name
-   */
-  public static String catalogPropertyConfigKey(String catalogName, String catalogProperty) {
-    return String.format("%s%s.%s", CATALOG_CONFIG_PREFIX, catalogName, catalogProperty);
   }
 
   private static Schema schema(Configuration conf, String key) {

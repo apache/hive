@@ -38,7 +38,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
@@ -65,7 +64,7 @@ public class TestCleanerWithReplication extends CompactorTest {
   }
 
   @BeforeClass
-  public static void classLevelSetup() throws LoginException, IOException {
+  public static void classLevelSetup() throws IOException {
     Configuration hadoopConf = new Configuration();
     hadoopConf.set("dfs.client.use.datanode.hostname", "true");
     hadoopConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");

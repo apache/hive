@@ -108,7 +108,7 @@ public class GetTablesOperation extends MetadataOperation {
       String schemaPattern = convertSchemaPattern(schemaName);
       List<String> matchingDbs = metastoreClient.getDatabases(schemaPattern);
       if(isAuthV2Enabled()){
-        List<HivePrivilegeObject> privObjs = HivePrivilegeObjectUtils.getHivePrivDbObjects(matchingDbs);
+        List<HivePrivilegeObject> privObjs = HivePrivilegeObjectUtils.getHivePrivDbObjects(catalogName, matchingDbs);
         String cmdStr = "catalog : " + catalogName + ", schemaPattern : " + schemaName;
         authorizeMetaGets(HiveOperationType.GET_TABLES, privObjs, cmdStr);
       }

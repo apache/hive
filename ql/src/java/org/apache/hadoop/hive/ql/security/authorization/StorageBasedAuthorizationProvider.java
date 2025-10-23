@@ -25,8 +25,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -380,10 +378,6 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
 
       checkPermissions(getConf(), path, actions);
 
-    } catch (AccessControlException ex) {
-      throw authorizationException(ex);
-    } catch (LoginException ex) {
-      throw authorizationException(ex);
     } catch (IOException ex) {
       throw hiveException(ex);
     }
@@ -395,7 +389,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
    * If the given path does not exists, it checks for its parent folder.
    */
   protected void checkPermissions(final Configuration conf, final Path path,
-      final EnumSet<FsAction> actions) throws IOException, LoginException, HiveException {
+      final EnumSet<FsAction> actions) throws IOException, HiveException {
 
     if (path == null) {
       throw new IllegalArgumentException("path is null");
@@ -472,10 +466,6 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
 
   private HiveException hiveException(Exception e) {
     return new HiveException(e);
-  }
-
-  private AuthorizationException authorizationException(Exception e) {
-    return new AuthorizationException(e);
   }
 
   private static AccessControlException accessControlException(Exception e) {

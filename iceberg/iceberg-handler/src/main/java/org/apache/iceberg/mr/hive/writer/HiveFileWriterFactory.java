@@ -77,7 +77,7 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
   @Override
   protected void configureDataWrite(Parquet.DataWriteBuilder builder) {
-    builder.createWriterFunc(GenericParquetWriter::buildWriter);
+    builder.createWriterFunc(GenericParquetWriter::create);
   }
 
   @Override
@@ -87,7 +87,7 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
   @Override
   protected void configurePositionDelete(Parquet.DeleteWriteBuilder builder) {
-    builder.createWriterFunc(GenericParquetWriter::buildWriter);
+    builder.createWriterFunc(GenericParquetWriter::create);
   }
 
   @Override
@@ -138,15 +138,15 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
     HiveFileWriterFactory build() {
       return new HiveFileWriterFactory(
-        table,
-        dataFileFormat,
-        dataSchema,
-        null,
-        deleteFileFormat,
-        null,
-        null,
-        null,
-        positionDeleteRowSchema);
+          table,
+          dataFileFormat,
+          dataSchema,
+          null,
+          deleteFileFormat,
+          null,
+          null,
+          null,
+          positionDeleteRowSchema);
     }
   }
 }
