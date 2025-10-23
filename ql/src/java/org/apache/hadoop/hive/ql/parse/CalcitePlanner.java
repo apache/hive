@@ -2458,8 +2458,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       new RelVisitor() {
         @Override
         public void visit(RelNode node, int ordinal, RelNode parent) {
-          if (node instanceof TableScan) {
-            TableScan ts = (TableScan) node;
+          if (node instanceof TableScan ts) {
             Table table = ((RelOptHiveTable) ts.getTable()).getHiveTableMD();
             if (AcidUtils.isTransactionalTable(table) ||
                   table.isNonNative() && table.getStorageHandler().areSnapshotsSupported()) {
@@ -5112,7 +5111,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return hiveColNameToInputPosMapBuilder.build();
     }
 
-    private QBParseInfo getQBParseInfo(QB qb) throws CalciteSemanticException {
+    private QBParseInfo getQBParseInfo(QB qb) {
       return qb.getParseInfo();
     }
   }
