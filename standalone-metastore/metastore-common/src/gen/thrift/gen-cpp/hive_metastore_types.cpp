@@ -14673,16 +14673,6 @@ void PrimaryKeysRequest::__set_catName(const std::string& val) {
   this->catName = val;
 __isset.catName = true;
 }
-
-void PrimaryKeysRequest::__set_validWriteIdList(const std::string& val) {
-  this->validWriteIdList = val;
-__isset.validWriteIdList = true;
-}
-
-void PrimaryKeysRequest::__set_tableId(const int64_t val) {
-  this->tableId = val;
-__isset.tableId = true;
-}
 std::ostream& operator<<(std::ostream& out, const PrimaryKeysRequest& obj)
 {
   obj.printTo(out);
@@ -14737,22 +14727,6 @@ uint32_t PrimaryKeysRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->validWriteIdList);
-          this->__isset.validWriteIdList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->tableId);
-          this->__isset.tableId = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -14787,16 +14761,6 @@ uint32_t PrimaryKeysRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeString(this->catName);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 4);
-    xfer += oprot->writeString(this->validWriteIdList);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.tableId) {
-    xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 5);
-    xfer += oprot->writeI64(this->tableId);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -14807,8 +14771,6 @@ void swap(PrimaryKeysRequest &a, PrimaryKeysRequest &b) {
   swap(a.db_name, b.db_name);
   swap(a.tbl_name, b.tbl_name);
   swap(a.catName, b.catName);
-  swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.tableId, b.tableId);
   swap(a.__isset, b.__isset);
 }
 
@@ -14816,16 +14778,12 @@ PrimaryKeysRequest::PrimaryKeysRequest(const PrimaryKeysRequest& other539) {
   db_name = other539.db_name;
   tbl_name = other539.tbl_name;
   catName = other539.catName;
-  validWriteIdList = other539.validWriteIdList;
-  tableId = other539.tableId;
   __isset = other539.__isset;
 }
 PrimaryKeysRequest& PrimaryKeysRequest::operator=(const PrimaryKeysRequest& other540) {
   db_name = other540.db_name;
   tbl_name = other540.tbl_name;
   catName = other540.catName;
-  validWriteIdList = other540.validWriteIdList;
-  tableId = other540.tableId;
   __isset = other540.__isset;
   return *this;
 }
@@ -14835,8 +14793,6 @@ void PrimaryKeysRequest::printTo(std::ostream& out) const {
   out << "db_name=" << to_string(db_name);
   out << ", " << "tbl_name=" << to_string(tbl_name);
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
-  out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "tableId="; (__isset.tableId ? (out << to_string(tableId)) : (out << "<null>"));
   out << ")";
 }
 
@@ -14977,16 +14933,6 @@ void ForeignKeysRequest::__set_catName(const std::string& val) {
   this->catName = val;
 __isset.catName = true;
 }
-
-void ForeignKeysRequest::__set_validWriteIdList(const std::string& val) {
-  this->validWriteIdList = val;
-__isset.validWriteIdList = true;
-}
-
-void ForeignKeysRequest::__set_tableId(const int64_t val) {
-  this->tableId = val;
-__isset.tableId = true;
-}
 std::ostream& operator<<(std::ostream& out, const ForeignKeysRequest& obj)
 {
   obj.printTo(out);
@@ -15055,22 +15001,6 @@ uint32_t ForeignKeysRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
           xfer += iprot->skip(ftype);
         }
         break;
-      case 6:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->validWriteIdList);
-          this->__isset.validWriteIdList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 7:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->tableId);
-          this->__isset.tableId = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -15109,16 +15039,6 @@ uint32_t ForeignKeysRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeString(this->catName);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 6);
-    xfer += oprot->writeString(this->validWriteIdList);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.tableId) {
-    xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 7);
-    xfer += oprot->writeI64(this->tableId);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -15131,8 +15051,6 @@ void swap(ForeignKeysRequest &a, ForeignKeysRequest &b) {
   swap(a.foreign_db_name, b.foreign_db_name);
   swap(a.foreign_tbl_name, b.foreign_tbl_name);
   swap(a.catName, b.catName);
-  swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.tableId, b.tableId);
   swap(a.__isset, b.__isset);
 }
 
@@ -15142,8 +15060,6 @@ ForeignKeysRequest::ForeignKeysRequest(const ForeignKeysRequest& other549) {
   foreign_db_name = other549.foreign_db_name;
   foreign_tbl_name = other549.foreign_tbl_name;
   catName = other549.catName;
-  validWriteIdList = other549.validWriteIdList;
-  tableId = other549.tableId;
   __isset = other549.__isset;
 }
 ForeignKeysRequest& ForeignKeysRequest::operator=(const ForeignKeysRequest& other550) {
@@ -15152,8 +15068,6 @@ ForeignKeysRequest& ForeignKeysRequest::operator=(const ForeignKeysRequest& othe
   foreign_db_name = other550.foreign_db_name;
   foreign_tbl_name = other550.foreign_tbl_name;
   catName = other550.catName;
-  validWriteIdList = other550.validWriteIdList;
-  tableId = other550.tableId;
   __isset = other550.__isset;
   return *this;
 }
@@ -15165,8 +15079,6 @@ void ForeignKeysRequest::printTo(std::ostream& out) const {
   out << ", " << "foreign_db_name=" << to_string(foreign_db_name);
   out << ", " << "foreign_tbl_name=" << to_string(foreign_tbl_name);
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
-  out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "tableId="; (__isset.tableId ? (out << to_string(tableId)) : (out << "<null>"));
   out << ")";
 }
 
@@ -15298,16 +15210,6 @@ void UniqueConstraintsRequest::__set_db_name(const std::string& val) {
 void UniqueConstraintsRequest::__set_tbl_name(const std::string& val) {
   this->tbl_name = val;
 }
-
-void UniqueConstraintsRequest::__set_validWriteIdList(const std::string& val) {
-  this->validWriteIdList = val;
-__isset.validWriteIdList = true;
-}
-
-void UniqueConstraintsRequest::__set_tableId(const int64_t val) {
-  this->tableId = val;
-__isset.tableId = true;
-}
 std::ostream& operator<<(std::ostream& out, const UniqueConstraintsRequest& obj)
 {
   obj.printTo(out);
@@ -15363,22 +15265,6 @@ uint32_t UniqueConstraintsRequest::read(::apache::thrift::protocol::TProtocol* i
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->validWriteIdList);
-          this->__isset.validWriteIdList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->tableId);
-          this->__isset.tableId = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -15414,16 +15300,6 @@ uint32_t UniqueConstraintsRequest::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeString(this->tbl_name);
   xfer += oprot->writeFieldEnd();
 
-  if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 4);
-    xfer += oprot->writeString(this->validWriteIdList);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.tableId) {
-    xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 5);
-    xfer += oprot->writeI64(this->tableId);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -15434,26 +15310,17 @@ void swap(UniqueConstraintsRequest &a, UniqueConstraintsRequest &b) {
   swap(a.catName, b.catName);
   swap(a.db_name, b.db_name);
   swap(a.tbl_name, b.tbl_name);
-  swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.tableId, b.tableId);
-  swap(a.__isset, b.__isset);
 }
 
 UniqueConstraintsRequest::UniqueConstraintsRequest(const UniqueConstraintsRequest& other559) {
   catName = other559.catName;
   db_name = other559.db_name;
   tbl_name = other559.tbl_name;
-  validWriteIdList = other559.validWriteIdList;
-  tableId = other559.tableId;
-  __isset = other559.__isset;
 }
 UniqueConstraintsRequest& UniqueConstraintsRequest::operator=(const UniqueConstraintsRequest& other560) {
   catName = other560.catName;
   db_name = other560.db_name;
   tbl_name = other560.tbl_name;
-  validWriteIdList = other560.validWriteIdList;
-  tableId = other560.tableId;
-  __isset = other560.__isset;
   return *this;
 }
 void UniqueConstraintsRequest::printTo(std::ostream& out) const {
@@ -15462,8 +15329,6 @@ void UniqueConstraintsRequest::printTo(std::ostream& out) const {
   out << "catName=" << to_string(catName);
   out << ", " << "db_name=" << to_string(db_name);
   out << ", " << "tbl_name=" << to_string(tbl_name);
-  out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "tableId="; (__isset.tableId ? (out << to_string(tableId)) : (out << "<null>"));
   out << ")";
 }
 
@@ -15595,16 +15460,6 @@ void NotNullConstraintsRequest::__set_db_name(const std::string& val) {
 void NotNullConstraintsRequest::__set_tbl_name(const std::string& val) {
   this->tbl_name = val;
 }
-
-void NotNullConstraintsRequest::__set_validWriteIdList(const std::string& val) {
-  this->validWriteIdList = val;
-__isset.validWriteIdList = true;
-}
-
-void NotNullConstraintsRequest::__set_tableId(const int64_t val) {
-  this->tableId = val;
-__isset.tableId = true;
-}
 std::ostream& operator<<(std::ostream& out, const NotNullConstraintsRequest& obj)
 {
   obj.printTo(out);
@@ -15660,22 +15515,6 @@ uint32_t NotNullConstraintsRequest::read(::apache::thrift::protocol::TProtocol* 
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->validWriteIdList);
-          this->__isset.validWriteIdList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->tableId);
-          this->__isset.tableId = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -15711,16 +15550,6 @@ uint32_t NotNullConstraintsRequest::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeString(this->tbl_name);
   xfer += oprot->writeFieldEnd();
 
-  if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 4);
-    xfer += oprot->writeString(this->validWriteIdList);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.tableId) {
-    xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 5);
-    xfer += oprot->writeI64(this->tableId);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -15731,26 +15560,17 @@ void swap(NotNullConstraintsRequest &a, NotNullConstraintsRequest &b) {
   swap(a.catName, b.catName);
   swap(a.db_name, b.db_name);
   swap(a.tbl_name, b.tbl_name);
-  swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.tableId, b.tableId);
-  swap(a.__isset, b.__isset);
 }
 
 NotNullConstraintsRequest::NotNullConstraintsRequest(const NotNullConstraintsRequest& other569) {
   catName = other569.catName;
   db_name = other569.db_name;
   tbl_name = other569.tbl_name;
-  validWriteIdList = other569.validWriteIdList;
-  tableId = other569.tableId;
-  __isset = other569.__isset;
 }
 NotNullConstraintsRequest& NotNullConstraintsRequest::operator=(const NotNullConstraintsRequest& other570) {
   catName = other570.catName;
   db_name = other570.db_name;
   tbl_name = other570.tbl_name;
-  validWriteIdList = other570.validWriteIdList;
-  tableId = other570.tableId;
-  __isset = other570.__isset;
   return *this;
 }
 void NotNullConstraintsRequest::printTo(std::ostream& out) const {
@@ -15759,8 +15579,6 @@ void NotNullConstraintsRequest::printTo(std::ostream& out) const {
   out << "catName=" << to_string(catName);
   out << ", " << "db_name=" << to_string(db_name);
   out << ", " << "tbl_name=" << to_string(tbl_name);
-  out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "tableId="; (__isset.tableId ? (out << to_string(tableId)) : (out << "<null>"));
   out << ")";
 }
 
@@ -15892,16 +15710,6 @@ void DefaultConstraintsRequest::__set_db_name(const std::string& val) {
 void DefaultConstraintsRequest::__set_tbl_name(const std::string& val) {
   this->tbl_name = val;
 }
-
-void DefaultConstraintsRequest::__set_validWriteIdList(const std::string& val) {
-  this->validWriteIdList = val;
-__isset.validWriteIdList = true;
-}
-
-void DefaultConstraintsRequest::__set_tableId(const int64_t val) {
-  this->tableId = val;
-__isset.tableId = true;
-}
 std::ostream& operator<<(std::ostream& out, const DefaultConstraintsRequest& obj)
 {
   obj.printTo(out);
@@ -15957,22 +15765,6 @@ uint32_t DefaultConstraintsRequest::read(::apache::thrift::protocol::TProtocol* 
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->validWriteIdList);
-          this->__isset.validWriteIdList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->tableId);
-          this->__isset.tableId = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -16008,16 +15800,6 @@ uint32_t DefaultConstraintsRequest::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeString(this->tbl_name);
   xfer += oprot->writeFieldEnd();
 
-  if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 4);
-    xfer += oprot->writeString(this->validWriteIdList);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.tableId) {
-    xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 5);
-    xfer += oprot->writeI64(this->tableId);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -16028,26 +15810,17 @@ void swap(DefaultConstraintsRequest &a, DefaultConstraintsRequest &b) {
   swap(a.catName, b.catName);
   swap(a.db_name, b.db_name);
   swap(a.tbl_name, b.tbl_name);
-  swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.tableId, b.tableId);
-  swap(a.__isset, b.__isset);
 }
 
 DefaultConstraintsRequest::DefaultConstraintsRequest(const DefaultConstraintsRequest& other579) {
   catName = other579.catName;
   db_name = other579.db_name;
   tbl_name = other579.tbl_name;
-  validWriteIdList = other579.validWriteIdList;
-  tableId = other579.tableId;
-  __isset = other579.__isset;
 }
 DefaultConstraintsRequest& DefaultConstraintsRequest::operator=(const DefaultConstraintsRequest& other580) {
   catName = other580.catName;
   db_name = other580.db_name;
   tbl_name = other580.tbl_name;
-  validWriteIdList = other580.validWriteIdList;
-  tableId = other580.tableId;
-  __isset = other580.__isset;
   return *this;
 }
 void DefaultConstraintsRequest::printTo(std::ostream& out) const {
@@ -16056,8 +15829,6 @@ void DefaultConstraintsRequest::printTo(std::ostream& out) const {
   out << "catName=" << to_string(catName);
   out << ", " << "db_name=" << to_string(db_name);
   out << ", " << "tbl_name=" << to_string(tbl_name);
-  out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "tableId="; (__isset.tableId ? (out << to_string(tableId)) : (out << "<null>"));
   out << ")";
 }
 
@@ -16189,16 +15960,6 @@ void CheckConstraintsRequest::__set_db_name(const std::string& val) {
 void CheckConstraintsRequest::__set_tbl_name(const std::string& val) {
   this->tbl_name = val;
 }
-
-void CheckConstraintsRequest::__set_validWriteIdList(const std::string& val) {
-  this->validWriteIdList = val;
-__isset.validWriteIdList = true;
-}
-
-void CheckConstraintsRequest::__set_tableId(const int64_t val) {
-  this->tableId = val;
-__isset.tableId = true;
-}
 std::ostream& operator<<(std::ostream& out, const CheckConstraintsRequest& obj)
 {
   obj.printTo(out);
@@ -16254,22 +16015,6 @@ uint32_t CheckConstraintsRequest::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->validWriteIdList);
-          this->__isset.validWriteIdList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->tableId);
-          this->__isset.tableId = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -16305,16 +16050,6 @@ uint32_t CheckConstraintsRequest::write(::apache::thrift::protocol::TProtocol* o
   xfer += oprot->writeString(this->tbl_name);
   xfer += oprot->writeFieldEnd();
 
-  if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 4);
-    xfer += oprot->writeString(this->validWriteIdList);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.tableId) {
-    xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 5);
-    xfer += oprot->writeI64(this->tableId);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -16325,26 +16060,17 @@ void swap(CheckConstraintsRequest &a, CheckConstraintsRequest &b) {
   swap(a.catName, b.catName);
   swap(a.db_name, b.db_name);
   swap(a.tbl_name, b.tbl_name);
-  swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.tableId, b.tableId);
-  swap(a.__isset, b.__isset);
 }
 
 CheckConstraintsRequest::CheckConstraintsRequest(const CheckConstraintsRequest& other589) {
   catName = other589.catName;
   db_name = other589.db_name;
   tbl_name = other589.tbl_name;
-  validWriteIdList = other589.validWriteIdList;
-  tableId = other589.tableId;
-  __isset = other589.__isset;
 }
 CheckConstraintsRequest& CheckConstraintsRequest::operator=(const CheckConstraintsRequest& other590) {
   catName = other590.catName;
   db_name = other590.db_name;
   tbl_name = other590.tbl_name;
-  validWriteIdList = other590.validWriteIdList;
-  tableId = other590.tableId;
-  __isset = other590.__isset;
   return *this;
 }
 void CheckConstraintsRequest::printTo(std::ostream& out) const {
@@ -16353,8 +16079,6 @@ void CheckConstraintsRequest::printTo(std::ostream& out) const {
   out << "catName=" << to_string(catName);
   out << ", " << "db_name=" << to_string(db_name);
   out << ", " << "tbl_name=" << to_string(tbl_name);
-  out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "tableId="; (__isset.tableId ? (out << to_string(tableId)) : (out << "<null>"));
   out << ")";
 }
 
@@ -16486,16 +16210,6 @@ void AllTableConstraintsRequest::__set_tblName(const std::string& val) {
 void AllTableConstraintsRequest::__set_catName(const std::string& val) {
   this->catName = val;
 }
-
-void AllTableConstraintsRequest::__set_validWriteIdList(const std::string& val) {
-  this->validWriteIdList = val;
-__isset.validWriteIdList = true;
-}
-
-void AllTableConstraintsRequest::__set_tableId(const int64_t val) {
-  this->tableId = val;
-__isset.tableId = true;
-}
 std::ostream& operator<<(std::ostream& out, const AllTableConstraintsRequest& obj)
 {
   obj.printTo(out);
@@ -16551,22 +16265,6 @@ uint32_t AllTableConstraintsRequest::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->validWriteIdList);
-          this->__isset.validWriteIdList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 5:
-        if (ftype == ::apache::thrift::protocol::T_I64) {
-          xfer += iprot->readI64(this->tableId);
-          this->__isset.tableId = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -16602,16 +16300,6 @@ uint32_t AllTableConstraintsRequest::write(::apache::thrift::protocol::TProtocol
   xfer += oprot->writeString(this->catName);
   xfer += oprot->writeFieldEnd();
 
-  if (this->__isset.validWriteIdList) {
-    xfer += oprot->writeFieldBegin("validWriteIdList", ::apache::thrift::protocol::T_STRING, 4);
-    xfer += oprot->writeString(this->validWriteIdList);
-    xfer += oprot->writeFieldEnd();
-  }
-  if (this->__isset.tableId) {
-    xfer += oprot->writeFieldBegin("tableId", ::apache::thrift::protocol::T_I64, 5);
-    xfer += oprot->writeI64(this->tableId);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -16622,26 +16310,17 @@ void swap(AllTableConstraintsRequest &a, AllTableConstraintsRequest &b) {
   swap(a.dbName, b.dbName);
   swap(a.tblName, b.tblName);
   swap(a.catName, b.catName);
-  swap(a.validWriteIdList, b.validWriteIdList);
-  swap(a.tableId, b.tableId);
-  swap(a.__isset, b.__isset);
 }
 
 AllTableConstraintsRequest::AllTableConstraintsRequest(const AllTableConstraintsRequest& other599) {
   dbName = other599.dbName;
   tblName = other599.tblName;
   catName = other599.catName;
-  validWriteIdList = other599.validWriteIdList;
-  tableId = other599.tableId;
-  __isset = other599.__isset;
 }
 AllTableConstraintsRequest& AllTableConstraintsRequest::operator=(const AllTableConstraintsRequest& other600) {
   dbName = other600.dbName;
   tblName = other600.tblName;
   catName = other600.catName;
-  validWriteIdList = other600.validWriteIdList;
-  tableId = other600.tableId;
-  __isset = other600.__isset;
   return *this;
 }
 void AllTableConstraintsRequest::printTo(std::ostream& out) const {
@@ -16650,8 +16329,6 @@ void AllTableConstraintsRequest::printTo(std::ostream& out) const {
   out << "dbName=" << to_string(dbName);
   out << ", " << "tblName=" << to_string(tblName);
   out << ", " << "catName=" << to_string(catName);
-  out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
-  out << ", " << "tableId="; (__isset.tableId ? (out << to_string(tableId)) : (out << "<null>"));
   out << ")";
 }
 
