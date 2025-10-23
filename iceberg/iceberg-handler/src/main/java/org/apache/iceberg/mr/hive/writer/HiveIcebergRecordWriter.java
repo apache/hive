@@ -40,6 +40,8 @@ class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
   private final Set<String> missingColumns;
   private final List<Types.NestedField> missingOrStructFields;
 
+  private final HiveFileWriterFactory fileWriterFactory;
+
   HiveIcebergRecordWriter(Table table, HiveFileWriterFactory fileWriterFactory,
       OutputFileFactory dataFileFactory, Context context) {
     super(table, newDataWriter(table, fileWriterFactory, dataFileFactory, context));
@@ -48,16 +50,17 @@ class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
     this.missingColumns = context.missingColumns();
     this.missingOrStructFields = specs.get(currentSpecId).schema().asStruct().fields().stream()
         .filter(field -> missingColumns.contains(field.name()) || field.type().isStructType()).toList();
+    this.fileWriterFactory = fileWriterFactory;
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
     HiveSchemaUtil.setDefaultValues(record, missingOrStructFields, missingColumns);
+    fileWriterFactory.initialize(record);
 
     writer.write(record, specs.get(currentSpecId), partition(record, currentSpecId));
   }
-
 
   @Override
   public FilesForCommit files() {
