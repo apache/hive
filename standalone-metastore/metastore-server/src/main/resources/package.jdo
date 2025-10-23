@@ -101,6 +101,18 @@
         <!-- allows null is true to keep backwards compatibility with old releases -->
         <column name="CREATE_TIME" jdbc-type="integer" allows-null="true"/>
       </field>
+      <field name="parameters" table="CATALOG_PARAMS">
+        <map key-type="java.lang.String" value-type="java.lang.String"/>
+         <join>
+           <column name="CTLG_ID"/>
+         </join>
+         <key>
+           <column name="PARAM_KEY" length="180" jdbc-type="VARCHAR"/>
+         </key>
+         <value>
+          <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
+         </value>
+      </field>
     </class>
 
     <class name="MFieldSchema" embedded-only="true" table="TYPE_FIELDS" detachable="true">
@@ -1608,7 +1620,7 @@
             <column name="PARAM_KEY" length="180" jdbc-type="VARCHAR"/>
           </key>
           <value>
-           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
+           <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
           </value>
        </field>
     </class>

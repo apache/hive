@@ -123,7 +123,7 @@ createTableStatement
 createDataConnectorStatement
 @init { gParent.pushMsg("create connector statement", state); }
 @after { gParent.popMsg(state); }
-    : KW_CREATE KW_DATACONNECTOR ifNotExists? name=identifier dataConnectorType dataConnectorUrl dataConnectorComment? ( KW_WITH KW_DCPROPERTIES dcprops=dcProperties)?
+    : KW_CREATE KW_DATACONNECTOR ifNotExists? name=identifier dataConnectorType dataConnectorUrl dataConnectorComment? ( KW_WITH KW_DCPROPERTIES dcprops=properties)?
     -> ^(TOK_CREATEDATACONNECTOR $name ifNotExists? dataConnectorType dataConnectorUrl dataConnectorComment? $dcprops?)
     ;
 
@@ -146,13 +146,6 @@ dataConnectorType
 @after { gParent.popMsg(state); }
     : KW_TYPE dcType=StringLiteral
     -> ^(TOK_DATACONNECTORTYPE $dcType)
-    ;
-
-dcProperties
-@init { gParent.pushMsg("dcproperties", state); }
-@after { gParent.popMsg(state); }
-    :
-      LPAREN dbPropertiesList RPAREN -> ^(TOK_DATACONNECTORPROPERTIES dbPropertiesList)
     ;
 
 dropDataConnectorStatement
