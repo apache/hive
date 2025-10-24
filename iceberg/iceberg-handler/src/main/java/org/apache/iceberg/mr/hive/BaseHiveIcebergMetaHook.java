@@ -79,6 +79,7 @@ import org.slf4j.LoggerFactory;
 import static org.apache.iceberg.RowLevelOperationMode.MERGE_ON_READ;
 import static org.apache.iceberg.mr.InputFormatConfig.SORT_COLUMNS;
 import static org.apache.iceberg.mr.InputFormatConfig.SORT_ORDER;
+import static org.apache.iceberg.mr.InputFormatConfig.ZORDER;
 
 public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(BaseHiveIcebergMetaHook.class);
@@ -89,6 +90,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   private static final Set<String> PARAMETERS_TO_REMOVE = ImmutableSet
       .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME, InputFormatConfig.PARTITION_SPEC);
   static final String ORC_FILES_ONLY = "iceberg.orc.files.only";
+  private static final String ZORDER_FIELDS_JSON_KEY = "zorderFields";
 
   protected final Configuration conf;
   protected Table icebergTable = null;
@@ -244,7 +246,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
     if (isZOrderJSON(sortOrderJSONString)) {
       properties.remove(TableProperties.DEFAULT_SORT_ORDER);
-      setZOrderSortOrder(sortOrderJSONString, properties);
+      setZOrderSortOrder(sortOrderJSONString, properties, hmsTable.getTableName());
       return;
     }
 
@@ -254,9 +256,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
         SortOrder.Builder sortOrderBuilder = SortOrder.builderFor(schema);
         sortFields.getSortFields().forEach(fieldDesc -> {
           NullOrder nullOrder = fieldDesc.getNullOrdering() == NullOrdering.NULLS_FIRST ?
-                  NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
+              NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
           SortDirection sortDirection = fieldDesc.getDirection() == SortFieldDesc.SortDirection.ASC ?
-                  SortDirection.ASC : SortDirection.DESC;
+              SortDirection.ASC : SortDirection.DESC;
           sortOrderBuilder.sortBy(fieldDesc.getColumnName(), sortDirection, nullOrder);
         });
         properties.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(sortOrderBuilder.build()));
@@ -272,21 +274,20 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
    *
    * @param jsonString the JSON string representing sort orders
    * @param properties the Properties object to store sort order metadata
+   * @param tableName name of the table
    */
-  private void setZOrderSortOrder(String jsonString, Properties properties) {
+  private void setZOrderSortOrder(String jsonString, Properties properties, String tableName) {
     try {
       ZOrderFields zorderFields = JSON_OBJECT_MAPPER.reader().readValue(jsonString, ZOrderFields.class);
       if (zorderFields != null && !zorderFields.getZOrderFields().isEmpty()) {
         List<String> columnNames = zorderFields.getZOrderFields().stream()
-                .map(ZOrderFieldDesc::getColumnName)
-                .collect(Collectors.toList());
+            .map(ZOrderFieldDesc::getColumnName)
+            .collect(Collectors.toList());
 
-        LOG.info("Setting Z-order sort order for columns: {}", columnNames);
-
-        properties.put(SORT_ORDER, "ZORDER");
+        properties.put(SORT_ORDER, ZORDER);
         properties.put(SORT_COLUMNS, String.join(",", columnNames));
 
-        LOG.info("Z-order sort order configured for Iceberg table with columns: {}", columnNames);
+        LOG.debug("Applying Z-ordering for Iceberg Table {} with Columns: {}", tableName, columnNames);
       }
     } catch (Exception e) {
       LOG.warn("Failed to parse Z-order sort order", e);
@@ -296,7 +297,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   private boolean isZOrderJSON(String jsonString) {
     try {
       JsonNode node = JSON_OBJECT_MAPPER.readTree(jsonString);
-      return node.has("zorderFields");
+      return node.has(ZORDER_FIELDS_JSON_KEY);
     } catch (Exception e) {
       return false;
     }

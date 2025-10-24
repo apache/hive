@@ -1880,7 +1880,7 @@ tableWriteLocallyOrderedBy
 @init { pushMsg("table write locally ordered by specification", state); }
 @after { popMsg(state); }
     :
-      KW_WRITE (KW_LOCALLY)? KW_ORDERED KW_BY 
+      KW_WRITE (KW_LOCALLY)? KW_ORDERED KW_BY
       (
         // Z-order: WRITE [LOCALLY] ORDERED BY zorder(col1, col2, ...)
         KW_ZORDER LPAREN sortColsZ=columnNameList RPAREN
