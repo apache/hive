@@ -222,6 +222,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     @Override
     public void init(HiveConf conf, LogHelper console) throws IOException {
       this.console = console;
+      this.conf = conf;
       dir = new Path(partish.getPartSd().getLocation());
       fs = dir.getFileSystem(conf);
     }
@@ -311,8 +312,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
         String who = (partish.getPartition() == null) ? ("table " + partish.getTable().getFullyQualifiedName())
                 : ("partition " + partish.getPartition().getName());
-        long threshold = (conf != null) ? conf.getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE)
-                : HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE.defaultLongVal;
+        long threshold = conf.getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE);
         SmallFilesWarningUtil.smallFilesWarnings(parameters, 100L, threshold, who, "[ANALYZE][NOSCAN]")
                 .ifPresent(msg -> {
                   LOG.warn(msg);
