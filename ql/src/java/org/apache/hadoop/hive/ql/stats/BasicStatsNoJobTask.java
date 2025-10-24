@@ -311,7 +311,8 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
 
         String who = (partish.getPartition() == null) ? ("table " + partish.getTable().getFullyQualifiedName())
                 : ("partition " + partish.getPartition().getName());
-        long threshold = conf.getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE);
+        long threshold = (conf != null) ? conf.getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE)
+                : HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE.defaultLongVal;
         SmallFilesWarningUtil.smallFilesWarnings(parameters, 100L, threshold, who, "[ANALYZE][NOSCAN]")
                 .ifPresent(msg -> {
                   LOG.warn(msg);

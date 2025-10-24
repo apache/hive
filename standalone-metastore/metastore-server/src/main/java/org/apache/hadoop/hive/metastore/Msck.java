@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -258,6 +259,9 @@ public class Msck {
                   .collect(Collectors.toList());
 
           int partFetchBatch = MetastoreConf.getIntVar(getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+          if (partFetchBatch <= 0) {
+            partFetchBatch = Batchable.NO_BATCHING;
+          }
           final Map<String, Partition> byName = new HashMap<>(names.size() * 2);
           List<Partition> allParts = Batchable.runBatched(
             partFetchBatch,
@@ -269,9 +273,9 @@ public class Msck {
                     new GetPartitionsByNamesRequest(table.getDbName(), table.getTableName());
                 req.setNames(batch);
                 try {
-                  @SuppressWarnings("unchecked")
-                  List<Partition> plist = (List<Partition>) getMsc().getPartitionsByNames(req);
-                  return (plist != null) ? plist : Collections.emptyList();
+                  GetPartitionsByNamesResult res = getMsc().getPartitionsByNames(req);
+                  List<Partition> plist = (res != null && res.getPartitions() != null) ? res.getPartitions() : Collections.emptyList();
+                  return plist;
                 } catch (NoSuchObjectException e) {
                   return Collections.emptyList();
                 }
