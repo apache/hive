@@ -31,7 +31,7 @@ import java.io.UncheckedIOException;
  */
 public class PostgresTPCDS extends Postgres {
   public PostgresTPCDS() {
-    super(DockerImageName.parse("zabetak/postgres-tpcds-metastore:1.3").asCompatibleSubstituteFor("postgres"));
+    super(DockerImageName.parse("thomasrebele/postgres-tpcds-metastore:1.4").asCompatibleSubstituteFor("postgres"));
     container.withUsername("postgres");
   }
 

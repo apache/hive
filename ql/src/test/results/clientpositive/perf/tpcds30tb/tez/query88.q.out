@@ -87,7 +87,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             input vertices:
                               1 Reducer 33
-                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 68186024 Data size: 545488192 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -127,7 +127,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             input vertices:
                               1 Reducer 29
-                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 68186024 Data size: 545488192 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -167,7 +167,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             input vertices:
                               1 Reducer 32
-                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 68186024 Data size: 545488192 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -207,7 +207,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             input vertices:
                               1 Reducer 28
-                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 70575814 Data size: 564606512 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -247,7 +247,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             input vertices:
                               1 Reducer 30
-                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 70575814 Data size: 564606512 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -287,7 +287,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             input vertices:
                               1 Map 26
-                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 70575814 Data size: 564606512 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -327,7 +327,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             input vertices:
                               1 Reducer 27
-                            Statistics: Num rows: 64348537 Data size: 514788296 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 70575814 Data size: 564606512 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -367,7 +367,7 @@ STAGE PLANS:
                               1 _col0 (type: bigint)
                             input vertices:
                               1 Reducer 31
-                            Statistics: Num rows: 62169611 Data size: 497356888 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 68186024 Data size: 545488192 Basic stats: COMPLETE Column stats: COMPLETE
                             Group By Operator
                               aggregations: count()
                               minReductionHashAggr: 0.99
@@ -561,62 +561,62 @@ STAGE PLANS:
                 TableScan
                   alias: store
                   filterExpr: (s_store_name = 'ese') (type: boolean)
-                  Statistics: Num rows: 1704 Data size: 163584 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 1704 Data size: 162704 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (s_store_name = 'ese') (type: boolean)
-                    Statistics: Num rows: 155 Data size: 14880 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 170 Data size: 16320 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: s_store_sk (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 11 
@@ -811,7 +811,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 28 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -823,7 +823,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 29 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -835,7 +835,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -860,7 +860,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 31 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -872,7 +872,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 32 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -884,7 +884,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 33 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -896,7 +896,7 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Map-reduce partition columns: _col0 (type: bigint)
-                  Statistics: Num rows: 155 Data size: 1240 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 170 Data size: 1360 Basic stats: COMPLETE Column stats: COMPLETE
         Reducer 4 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

@@ -349,17 +349,17 @@ STAGE PLANS:
                 TableScan
                   alias: item
                   filterExpr: (((i_category = 'Books                                             ') and i_manufact_id is not null) or i_manufact_id is not null) (type: boolean)
-                  Statistics: Num rows: 462000 Data size: 43423396 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 462000 Data size: 43323316 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((i_category = 'Books                                             ') and i_manufact_id is not null) (type: boolean)
-                    Statistics: Num rows: 41895 Data size: 3937718 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 46085 Data size: 4321634 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: i_manufact_id (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 41895 Data size: 167168 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 46085 Data size: 183884 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int)
-                        minReductionHashAggr: 0.97641724
+                        minReductionHashAggr: 0.97856134
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 988 Data size: 3948 Basic stats: COMPLETE Column stats: COMPLETE
