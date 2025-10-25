@@ -581,7 +581,8 @@ public class CachedStore implements RawStore, Configurable {
               }
 
               Deadline.startTimer("getAllTableConstraints");
-              SQLAllTableConstraints tableConstraints = rawStore.getAllTableConstraints(new AllTableConstraintsRequest(catName, dbName, tblName));
+              SQLAllTableConstraints tableConstraints = rawStore.getAllTableConstraints(
+                  new AllTableConstraintsRequest(catName, dbName, tblName));
               Deadline.stopTimer();
               cacheObjects.setTableConstraints(tableConstraints);
 
@@ -917,7 +918,8 @@ public class CachedStore implements RawStore, Configurable {
       SQLAllTableConstraints constraints = null;
       try {
         Deadline.startTimer("getAllTableConstraints");
-        constraints = rawStore.getAllTableConstraints(new AllTableConstraintsRequest(catName, dbName, tblName));
+        constraints = rawStore.getAllTableConstraints(
+            new AllTableConstraintsRequest(catName, dbName, tblName));
         Deadline.stopTimer();
       } catch (MetaException | NoSuchObjectException e) {
         LOG.info("Updating CachedStore: unable to update table constraints of catalog: " + catName + ", database: " + dbName

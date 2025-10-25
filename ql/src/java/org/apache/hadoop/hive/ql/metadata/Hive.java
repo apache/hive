@@ -6637,14 +6637,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public SQLAllTableConstraints getTableConstraints(String dbName, String tblName, long tableId)
+  public SQLAllTableConstraints getTableConstraints(String dbName, String tblName)
       throws HiveException, NoSuchObjectException {
     try {
-      ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
-      AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
-      request.setTableId(tableId);
-      request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
-      return getMSC().getAllTableConstraints(request);
+      return getMSC().getAllTableConstraints(
+          new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf)));
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
@@ -6653,18 +6650,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public TableConstraintsInfo getTableConstraints(String dbName, String tblName, boolean fetchReliable,
-      boolean fetchEnabled, long tableId) throws HiveException {
+      boolean fetchEnabled) throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_CONSTRAINTS);
-
     try {
-
-      ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName,tblName);
-      AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
-      request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
-      request.setTableId(tableId);
-
-      SQLAllTableConstraints tableConstraints = getMSC().getAllTableConstraints(request);
+      SQLAllTableConstraints tableConstraints = getMSC().getAllTableConstraints(
+          new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf)));
       if (fetchReliable && tableConstraints != null) {
         if (CollectionUtils.isNotEmpty(tableConstraints.getPrimaryKeys())) {
           tableConstraints.setPrimaryKeys(
