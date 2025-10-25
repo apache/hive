@@ -63,7 +63,7 @@ public class TestHiveConnection {
   @Test
   public void testHiveConnectionParameters() throws SQLException, ZooKeeperHiveClientException {
     JdbcConnectionParams params = Utils.parseURL(
-        "jdbc:hive2://hello.host:10002/default;transportMode=http;httpPath=cliservice;socketTimeout=60;requestTrack=true;");
+        "jdbc:hive2://hello.host:10002/default;transportMode=http;httpPath=cliservice;socketTimeout=60;connectTimeout=10;requestTrack=true;");
 
     Assert.assertEquals("hello.host", params.getHost());
     Assert.assertEquals("default", params.getDbName());
@@ -72,6 +72,7 @@ public class TestHiveConnection {
     Assert.assertEquals("http", params.getSessionVars().get(JdbcConnectionParams.TRANSPORT_MODE));
     Assert.assertEquals("cliservice", params.getSessionVars().get(JdbcConnectionParams.HTTP_PATH));
     Assert.assertEquals("60", params.getSessionVars().get(JdbcConnectionParams.SOCKET_TIMEOUT));
+    Assert.assertEquals("10", params.getSessionVars().get(JdbcConnectionParams.CONNECT_TIMEOUT));
     Assert.assertEquals("true", params.getSessionVars().get(JdbcConnectionParams.JDBC_PARAM_REQUEST_TRACK));
 
     JdbcConnectionParams nonPortParams = Utils.parseURL("jdbc:hive2://hello.host/default");
