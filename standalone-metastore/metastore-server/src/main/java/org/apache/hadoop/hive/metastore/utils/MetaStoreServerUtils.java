@@ -81,6 +81,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
@@ -997,10 +998,6 @@ public class MetaStoreServerUtils {
     }
   }
 
-  public static String getIndexTableName(String dbName, String baseTblName, String indexName) {
-    return dbName + "__" + baseTblName + "_" + indexName + "__";
-  }
-
   static public String validateTblColumns(List<FieldSchema> cols) {
     for (FieldSchema fieldSchema : cols) {
       // skip this, as validateColumnName always returns true
@@ -1759,5 +1756,12 @@ public class MetaStoreServerUtils {
 
   public static boolean isCompactionTxn(TxnType txnType) {
     return TxnType.COMPACTION.equals(txnType) || TxnType.REBALANCE_COMPACTION.equals(txnType);
+  }
+
+  public static GetTableRequest newGetTableReq(TableName table, String writeIdList) {
+    GetTableRequest getTableRequest = new GetTableRequest(table.getDb(), table.getTable());
+    getTableRequest.setCatName(table.getCat());
+    getTableRequest.setValidWriteIdList(writeIdList);
+    return getTableRequest;
   }
 }

@@ -75,26 +75,6 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
       throws NoSuchObjectException, MetaException;
 
   /**
-   * Equivalent of get_table, but does not log audits and fire pre-event listener.
-   * Meant to be used for calls made by other hive classes, that are not using the
-   * thrift interface.
-   * @param catName catalog name
-   * @param dbname database name
-   * @param name table name
-   * @return Table object
-   * @throws NoSuchObjectException If the table does not exist.
-   * @throws MetaException  If another error occurs.
-   */
-  @Deprecated
-  Table get_table_core(final String catName, final String dbname, final String name)
-      throws MetaException, NoSuchObjectException;
-  @Deprecated
-  Table get_table_core(final String catName, final String dbname,
-                       final String name,
-                       final String writeIdList)
-      throws MetaException, NoSuchObjectException;
-
-  /**
    *
    * @param getTableRequest request object to query table in HMS
    * @return Table Object

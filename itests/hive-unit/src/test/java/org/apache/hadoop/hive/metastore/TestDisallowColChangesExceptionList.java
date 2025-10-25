@@ -32,13 +32,15 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test which makes sure that incompatible column changes are allowed if the serde of the
  * table is defined in the configuration metastore.allow.incompatible.col.type.changes.serdes
  */
 public class TestDisallowColChangesExceptionList {
-
+  private static final Logger LOG = LoggerFactory.getLogger(TestDisallowColChangesExceptionList.class);
   public static MiniHS2 miniHS2 = null;
 
   @BeforeClass
@@ -109,6 +111,7 @@ public class TestDisallowColChangesExceptionList {
         stmt.execute("alter table testText change column c2 c2 smallint");
         fail("Exception not thrown");
       } catch (Exception e1) {
+        LOG.error("message: {}", e1.getMessage(), e1);
         assertTrue("Unexpected exception: " + e1.getMessage(), e1.getMessage().contains(
             "Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions"));
       }
@@ -118,6 +121,7 @@ public class TestDisallowColChangesExceptionList {
         stmt.execute("alter table testText replace columns (c2 int)");
         fail("Exception not thrown");
       } catch (Exception e1) {
+        LOG.error("message: {}", e1.getMessage(), e1);
         assertTrue("Unexpected exception: " + e1.getMessage(), e1.getMessage().contains(
             "Unable to alter table. The following columns have types incompatible with the existing columns in their respective positions"));
       }

@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.SeedTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
@@ -476,7 +477,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     try {
       RawStore rawStore = hmsHandler.getMS();
       String catName = getTableCatalog(table);
-      List<Partition> partitions = rawStore.getPartitions(catName, table.getDbName(), table.getTableName(), -1);
+      List<Partition> partitions = rawStore.getPartitions(catName, table.getDbName(), table.getTableName(), GetPartitionsArgs.getAllPartitions());
       return partitions;
     } catch (Exception err) {
       String msg = "Error getting partitions for " + Warehouse.getQualifiedName(table);
