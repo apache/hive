@@ -173,10 +173,10 @@ public class PersistenceManagerProvider {
       return;
     }
     LOG.info("Updating the pmf due to property change");
-    if (LOG.isDebugEnabled() && !newProps.equals(prop)) {
+    if (!newProps.equals(prop)) {
       for (String key : prop.stringPropertyNames()) {
         if (!key.equals(newProps.get(key))) {
-          if (LOG.isDebugEnabled() && MetastoreConf.isPrintable(key)) {
+          if (MetastoreConf.isPrintable(key)) {
             // The jdbc connection url can contain sensitive information like username and password
             // which should be masked out before logging.
             String oldVal = prop.getProperty(key);
@@ -185,10 +185,10 @@ public class PersistenceManagerProvider {
               oldVal = MetaStoreServerUtils.anonymizeConnectionURL(oldVal);
               newVal = MetaStoreServerUtils.anonymizeConnectionURL(newVal);
             }
-            LOG.debug("Found {} to be different. Old val : {} : New Val : {}", key,
+            LOG.warn("Found {} to be different. Old val : {} : New Val : {}", key,
                 oldVal, newVal);
           } else {
-            LOG.debug("Found masked property {} to be different", key);
+            LOG.warn("Found masked property {} to be different", key);
           }
         }
       }

@@ -19,56 +19,54 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
-import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
+import org.apache.hadoop.hive.metastore.leader.LeaderElectionFactory;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
 
-public class TestMetastoreLeaseNonLeader {
+public class TestMetastoreLeaseNonLeader extends MetastoreHousekeepingLeaderTestBase {
 
-  LeaderElection election;
-
-  TestMetastoreHousekeepingLeader hms;
+  CombinedLeaderElector elector;
 
   @Before
   public void setUp() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.prepDb(conf);
-    election = new LeaseLeaderElection();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION, "lock");
-    TableName tableName = (TableName) LeaderElectionContext.getLeaderMutex(conf,
-        LeaderElectionContext.TTYPE.HOUSEKEEPING, null);
-    election.tryBeLeader(conf, tableName);
-    assertTrue("The elector should hold the lease now", election.isLeader());
+    elector = new CombinedLeaderElector(conf);
+    elector.setName("TestMetastoreLeaseNonLeader");
+    elector.tryBeLeader();
+    assertTrue("The elector should hold the lease now", elector.isLeader());
     // start the non-leader hms now
-    hms = new TestMetastoreHousekeepingLeader();
-    MetastoreConf.setTimeVar(hms.conf, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 1, TimeUnit.SECONDS);
-    hms.conf.setBoolean(LeaderElectionContext.LEADER_IN_TEST, true);
-    hms.internalSetup("", false);
+    Configuration configuration = new Configuration(conf);
+    MetastoreConf.setTimeVar(configuration, MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, 100, TimeUnit.MILLISECONDS);
+    LeaderElectionFactory.addElectionCreator(LeaderElectionFactory.Method.LOCK,  c -> new ReleaseAndRequireLease(c, true));
+    setup(null, configuration);
   }
 
   @Test
   public void testHouseKeepingThreads() throws Exception {
-    try {
-      hms.testHouseKeepingThreadExistence();
-      throw new IllegalStateException("HMS shouldn't start any housekeeping tasks");
-    } catch (AssertionError e) {
-      // expected
-    }
+    checkHouseKeepingThreadExistence(false);
     // elector releases the lease
-    election.close();
-    Thread.sleep(10 * 1000);
+    CountDownLatch latch = new CountDownLatch(LeaderElectionContext.TTYPE.values().length);
+    MetastoreHousekeepingLeaderTestBase.ReleaseAndRequireLease.setMonitor(latch);
+    elector.close();
+    latch.await();
     // housing threads are here now as the hms wins the election
-    hms.testHouseKeepingThreadExistence();
+    checkHouseKeepingThreadExistence(true);
+  }
+
+  @After
+  public void afterTest() {
+    MetastoreHousekeepingLeaderTestBase.ReleaseAndRequireLease.reset();
   }
 
 }
