@@ -12,7 +12,7 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100]): rowcount = ###Masked###, cum
                 HiveJoin(condition=[=($3, $4)], joinType=[inner], algorithm=[none], cost=[not available]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                   HiveProject(sr_customer_sk=[$2], sr_store_sk=[$6], sr_fee=[$13], sr_returned_date_sk=[$19]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                     HiveFilter(condition=[AND(IS NOT NULL($6), IS NOT NULL($2), IS NOT NULL($19))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-                      HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+                      HiveTableScan(table=[[default, store_returns]], plKey=[default.store_returns;sr_returned_date_sk is not null], table:alias=[store_returns]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                   HiveProject(d_date_sk=[$0]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                     HiveFilter(condition=[=($6, 2000)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                       HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
@@ -27,7 +27,7 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100]): rowcount = ###Masked###, cum
                 HiveJoin(condition=[=($3, $4)], joinType=[inner], algorithm=[none], cost=[not available]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                   HiveProject(sr_customer_sk=[$2], sr_store_sk=[$6], sr_fee=[$13], sr_returned_date_sk=[$19]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                     HiveFilter(condition=[AND(IS NOT NULL($6), IS NOT NULL($19))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-                      HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+                      HiveTableScan(table=[[default, store_returns]], plKey=[default.store_returns;sr_returned_date_sk is not null], table:alias=[store_returns]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                   HiveProject(d_date_sk=[$0]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                     HiveFilter(condition=[=($6, 2000)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                       HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
@@ -46,7 +46,7 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100]): rowcount = ###Masked###, cum
                 HiveJoin(condition=[=($3, $4)], joinType=[inner], algorithm=[none], cost=[{8.033148661966447E9 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                   HiveProject(sr_customer_sk=[$2], sr_store_sk=[$6], sr_fee=[$13], sr_returned_date_sk=[$19]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                     HiveFilter(condition=[AND(IS NOT NULL($6), IS NOT NULL($2), IS NOT NULL($19))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-                      HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+                      HiveTableScan(table=[[default, store_returns]], plKey=[default.store_returns;sr_returned_date_sk is not null], table:alias=[store_returns]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                   HiveProject(d_date_sk=[$0]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                     HiveFilter(condition=[=($6, 2000)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                       HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
@@ -61,7 +61,7 @@ HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100]): rowcount = ###Masked###, cum
                 HiveJoin(condition=[=($3, $4)], joinType=[inner], algorithm=[none], cost=[{8.180936341080402E9 rows, 0.0 cpu, 0.0 io}]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                   HiveProject(sr_customer_sk=[$2], sr_store_sk=[$6], sr_fee=[$13], sr_returned_date_sk=[$19]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                     HiveFilter(condition=[AND(IS NOT NULL($6), IS NOT NULL($19))]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-                      HiveTableScan(table=[[default, store_returns]], table:alias=[store_returns]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+                      HiveTableScan(table=[[default, store_returns]], plKey=[default.store_returns;sr_returned_date_sk is not null], table:alias=[store_returns]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                   HiveProject(d_date_sk=[$0]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                     HiveFilter(condition=[=($6, 2000)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
                       HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
