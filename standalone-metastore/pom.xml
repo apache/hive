@@ -692,6 +692,7 @@
           <excludes>
             <exclude>*.patch</exclude>
             <exclude>DEV-README</exclude>
+            <exclude>checkstyle/**</exclude>
             <exclude>**/src/main/sql/**</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/*.iml</exclude>
