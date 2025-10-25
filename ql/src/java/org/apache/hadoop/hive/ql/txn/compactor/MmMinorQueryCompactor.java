@@ -80,7 +80,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
    * Clean up the empty table dir of 'tmpTableName'.
    */
   @Override protected void commitCompaction(String tmpTableName, HiveConf conf) throws IOException, HiveException {
-    Util.cleanupEmptyTableDir(conf, tmpTableName);
+    Util.cleanupEmptyTableDir(conf, tmpTableName + "_result");
   }
 
   /**
