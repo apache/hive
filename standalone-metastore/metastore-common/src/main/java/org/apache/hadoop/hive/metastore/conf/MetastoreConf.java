@@ -1811,6 +1811,10 @@ public class MetastoreConf {
             "A ZooKeeper instance must be up and running when using zookeeper Hive lock manager "),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
+    MSCK_SMALLFILES_AVG_SIZE("metastore.msck.smallfiles.avgsize", "metastore.msck.smallfiles.avgsize", (long) (16 * 1000 * 1000),
+            "When the average files size of a table/partition is less than this number, in msck command process, if total number\n" +
+                    "of files is greater than 100, the small files warnings will be shown to the end users in console, and\n" +
+                    "also recorded in the logs."),
 
     // External RDBMS support
     USE_CUSTOM_RDBMS("metastore.use.custom.database.product",
