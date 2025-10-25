@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.entities.OperationType;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
-import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -74,6 +73,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.apache.hadoop.hive.metastore.txn.TxnHandler.ConfVars;
 import static org.apache.hadoop.hive.metastore.txn.TxnHandler.notifyCommitOrAbortEvent;
 import static org.apache.hadoop.hive.metastore.txn.TxnUtils.getEpochFn;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
@@ -159,7 +159,9 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     long tempCommitId = TxnUtils.generateTemporaryId();
 
     if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
-      new AcquireTxnLockFunction(false).execute(jdbcResource);
+      if (!ConfVars.useMinHistoryWriteId()) {
+        new AcquireTxnLockFunction(false).execute(jdbcResource);
+      }
       commitId = jdbcResource.execute(new GetHighWaterMarkHandler());
 
     } else if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn) {
@@ -188,8 +190,9 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
          */
         Object undoWriteSetForCurrentTxn = context.createSavepoint();
         jdbcResource.getJdbcTemplate().update(
-            writeSetInsertSql + (TxnHandler.ConfVars.useMinHistoryLevel() ? conflictSQLSuffix :
-            "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"= :txnId AND \"TC_OPERATION_TYPE\" <> :type"),
+            writeSetInsertSql + (ConfVars.useMinHistoryLevel() ? conflictSQLSuffix :
+            "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"= :txnId" + (
+                (txnType != TxnType.REBALANCE_COMPACTION) ? "" : " AND \"TC_OPERATION_TYPE\" <> :type")),
             new MapSqlParameterSource()
                 .addValue("txnId", txnid)
                 .addValue("type", OperationType.COMPACT.getSqlConst()));
@@ -235,11 +238,10 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
             throw new TxnAbortedException(msg);
           }
         }
-      } else if (!TxnHandler.ConfVars.useMinHistoryLevel()) {
-        jdbcResource.getJdbcTemplate().update(writeSetInsertSql + "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = :txnId AND \"TC_OPERATION_TYPE\" <> :type",
+      } else if (!ConfVars.useMinHistoryLevel()) {
+        jdbcResource.getJdbcTemplate().update(writeSetInsertSql + "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = :txnId",
             new MapSqlParameterSource()
-                .addValue("txnId", txnid)
-                .addValue("type", OperationType.COMPACT.getSqlConst()));
+                .addValue("txnId", txnid));
         commitId = jdbcResource.execute(new GetHighWaterMarkHandler());
       }
     } else {
@@ -255,7 +257,6 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
        */
       assert true;
     }
-
 
     if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn && !MetaStoreServerUtils.isCompactionTxn(txnType)) {
       moveTxnComponentsToCompleted(jdbcResource, txnid, isUpdateDelete);
@@ -575,7 +576,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     if (txnType == TxnType.MATER_VIEW_REBUILD) {
       queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
     }
-    if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
+    if (txnType == TxnType.SOFT_DELETE || MetaStoreServerUtils.isCompactionTxn(txnType)) {
       queryBatch.add("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
           getEpochFn(jdbcResource.getDatabaseProduct()) + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }

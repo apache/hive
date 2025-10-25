@@ -374,7 +374,7 @@ class CompactionTxnHandler extends TxnHandler {
     String strState = CompactionState.fromSqlConst(ci.state).toString();
 
     LOG.debug("Marking as {}: CompactionInfo: {}", strState, ci);
-    CompactionInfo ciActual = jdbcResource.execute(new GetCompactionInfoHandler(ci.id, false)); 
+    CompactionInfo ciActual = jdbcResource.execute(new GetCompactionInfoHandler(ci.id, false));
 
     long endTime = getDbTime().getTime();
     if (ciActual != null) {
@@ -505,7 +505,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.Idempotent
   @Deprecated
   public long findMinTxnIdSeenOpen() {
-    if (!ConfVars.useMinHistoryLevel() || ConfVars.useMinHistoryWriteId()) {
+    if (!ConfVars.useMinHistoryLevel()) {
       return Long.MAX_VALUE;
     }
     try {
