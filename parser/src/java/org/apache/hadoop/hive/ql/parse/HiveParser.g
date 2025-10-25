@@ -524,6 +524,7 @@ TOK_AS_OF_VERSION;
 TOK_FROM_VERSION;
 TOK_AS_OF_TAG;
 TOK_WRITE_LOCALLY_ORDERED;
+TOK_WRITE_LOCALLY_ORDERED_BY_ZORDER;
 }
 
 
@@ -568,6 +569,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_NULLS", "NULLS");
     xlateMap.put("KW_LAST", "LAST");
     xlateMap.put("KW_ORDER", "ORDER");
+    xlateMap.put("KW_ZORDER", "ZORDER");
     xlateMap.put("KW_ORDERED", "ORDERED");
     xlateMap.put("KW_LOCALLY", "LOCALLY");
     xlateMap.put("KW_BY", "BY");
@@ -1875,12 +1877,20 @@ tableImplBuckets
     -> ^(TOK_ALTERTABLE_BUCKETS $num)
     ;
 
-tableWriteLocallyOrdered
-@init { pushMsg("table sorted specification", state); }
+tableWriteLocallyOrderedBy
+@init { pushMsg("table write locally ordered by specification", state); }
 @after { popMsg(state); }
     :
-      KW_WRITE KW_LOCALLY KW_ORDERED KW_BY sortCols=columnNameOrderList
-    -> ^(TOK_WRITE_LOCALLY_ORDERED $sortCols?)
+      KW_WRITE (KW_LOCALLY)? KW_ORDERED KW_BY
+      (
+        // Z-order: WRITE [LOCALLY] ORDERED BY zorder(col1, col2, ...)
+        KW_ZORDER LPAREN sortColsZ=columnNameList RPAREN
+        -> ^(TOK_WRITE_LOCALLY_ORDERED_BY_ZORDER $sortColsZ?)
+      |
+        // Regular sort: WRITE [LOCALLY] ORDERED BY col1 ASC, col2 DESC null first, ...
+        sortCols=columnNameOrderList
+        -> ^(TOK_WRITE_LOCALLY_ORDERED $sortCols?)
+      )
     ;
     
 tableSkewed

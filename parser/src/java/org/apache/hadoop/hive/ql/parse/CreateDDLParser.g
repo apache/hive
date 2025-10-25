@@ -49,6 +49,10 @@ likeTableOrFile
     | (KW_LIKE likeName=tableName) -> ^(TOK_LIKETABLE $likeName)
     ;
 
+tableOrderOption
+    : tableWriteLocallyOrderedBy
+    ;
+
 //----------------------- Rules for parsing createtable -----------------------------
 createTableStatement
 @init { gParent.pushMsg("create table statement", state); }
@@ -64,7 +68,7 @@ createTableStatement
          tableComment?
          createTablePartitionSpec?
          tableBuckets?
-         tableWriteLocallyOrdered?
+         tableOrderOption?
          tableSkewed?
          tableRowFormat?
          tableFileFormat?
@@ -78,7 +82,7 @@ createTableStatement
          tableComment?
          createTablePartitionSpec?
          tableBuckets?
-         tableWriteLocallyOrdered?
+         tableOrderOption?
          tableSkewed?
          tableRowFormat?
          tableFileFormat?
@@ -96,7 +100,7 @@ createTableStatement
          tableComment?
          createTablePartitionSpec?
          tableBuckets?
-         tableWriteLocallyOrdered?
+         tableOrderOption?
          tableSkewed?
          tableRowFormat?
          tableFileFormat?
@@ -110,7 +114,7 @@ createTableStatement
          tableComment?
          createTablePartitionSpec?
          tableBuckets?
-         tableWriteLocallyOrdered?
+         tableOrderOption?
          tableSkewed?
          tableRowFormat?
          tableFileFormat?
