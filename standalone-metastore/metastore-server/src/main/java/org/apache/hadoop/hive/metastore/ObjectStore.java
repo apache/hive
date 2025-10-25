@@ -9504,6 +9504,9 @@ public class ObjectStore implements RawStore, Configurable {
       // So let's not use them anywhere unless absolutely necessary.
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
       MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
+      lockForUpdate("TBLS", "TBL_ID", Optional.of("\"TBL_ID\" = " + mTable.getId()));
+      // Get the newest version of mTable
+      pm.refresh(mTable);
       Table table = convertToTable(mTable);
       List<String> colNames = new ArrayList<>();
       for (ColumnStatisticsObj statsObj : statsObjs) {
@@ -9592,22 +9595,27 @@ public class ObjectStore implements RawStore, Configurable {
       List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
       ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
       String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(), getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), TxnUtils.isAcidTable(table));
+      MPartition mPartition = getMPartition(
+          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
+      Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(),
+          mPartition, TxnUtils.isAcidTable(table));
       List<String> colNames = new ArrayList<>();
 
       for(ColumnStatisticsObj statsObj : statsObjs) {
         colNames.add(statsObj.getColName());
       }
 
-      Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
-          .getPartName(), colNames, colStats.getEngine());
-
-      MPartition mPartition = getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
-      if (partition == null) {
+      List<Long> partitionIds = directSql.getPartitionFieldsViaSqlFilter(catName, statsDesc.getDbName(), statsDesc.getTableName(),
+          Arrays.asList("\"PART_ID\""), "\"PARTITIONS\".\"PART_NAME\" = ?",
+          Arrays.asList(Warehouse.makePartName(table.getPartitionKeys(), partVals)), Collections.emptyList(), -1);
+      if (partition == null || partitionIds.isEmpty()) {
         throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
       }
+
+      Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
+          .getPartName(), colNames, colStats.getEngine());
+      lockForUpdate("PARTITIONS", "PART_ID", Optional.of("\"PART_ID\" = " + partitionIds.getFirst()));
+      pm.refresh(mPartition);
 
       for (ColumnStatisticsObj statsObj : statsObjs) {
         MPartitionColumnStatistics mStatsObj =
@@ -11435,36 +11443,34 @@ public class ObjectStore implements RawStore, Configurable {
     return writeEventInfoList;
   }
 
-  private void prepareQuotes() throws SQLException {
-    String s = dbType.getPrepareTxnStmt();
-    if (s != null) {
-      assert pm.currentTransaction().isActive();
-      JDOConnection jdoConn = pm.getDataStoreConnection();
-      try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
-        statement.execute(s);
-      } finally {
-        jdoConn.close();
-      }
-    }
-  }
-
-  private void lockNotificationSequenceForUpdate() throws MetaException {
+  private void lockForUpdate(String tableName, String column, Optional<String> rowFilter)
+      throws MetaException {
     if (sqlGenerator.getDbProduct().isDERBY() && directSql != null) {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.
       new RetryingExecutor(conf, () -> {
-        directSql.lockDbTable("NOTIFICATION_SEQUENCE");
+        directSql.lockDbTable(tableName);
       }).run();
     } else {
-      String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
+      String selectQuery = "select \"" + column + "\" from \"" + tableName + "\"" +
+          rowFilter.map(f -> " where " + f).orElse("");
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
       new RetryingExecutor(conf, () -> {
-        prepareQuotes();
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", lockingQuery))) {
-          query.setUnique(true);
-          // only need to execute it to get db Lock
-          query.execute();
+        String txnStmt = dbType.getPrepareTxnStmt();
+        List<String> statements = new ArrayList<>();
+        if (txnStmt != null) {
+          statements.add(txnStmt);
+        }
+        statements.add(lockingQuery);
+        assert pm.currentTransaction().isActive();
+        JDOConnection jdoConn = pm.getDataStoreConnection();
+        try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
+          for (String s : statements) {
+            statement.execute(s);
+          }
+        } finally {
+          jdoConn.close();
         }
       }).run();
     }
@@ -11532,7 +11538,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       pm.flush();
       openTransaction();
-      lockNotificationSequenceForUpdate();
+      lockForUpdate("NOTIFICATION_SEQUENCE", "NEXT_EVENT_ID", Optional.empty());
       query = pm.newQuery(MNotificationNextId.class);
       Collection<MNotificationNextId> ids = (Collection) query.execute();
       MNotificationNextId mNotificationNextId = null;
