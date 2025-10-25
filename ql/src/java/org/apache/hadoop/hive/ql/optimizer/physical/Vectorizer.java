@@ -4501,6 +4501,12 @@ public class Vectorizer implements PhysicalPlanResolver {
       vecAggrClasses = new Class[] {
           VectorUDAFComputeDsKllSketchDouble.class, VectorUDAFComputeDsKllSketchFinal.class
       };
+    } else if (VECTORIZABLE_UDAF.COUNT.toString().equalsIgnoreCase(aggregationName) && parameterList.size() > 1) {
+      // Handle unsupported multi-column COUNT DISTINCT
+      String issue = "Unsupported COUNT DISTINCT with multiple columns: "
+              + aggregationName + "(" + parameterList + "). "
+              + "Hive only supports COUNT(DISTINCT col) in vectorized execution. ";
+      return new ImmutablePair<>(null, issue);
     } else {
       VectorizedUDAFs annotation =
           AnnotationUtils.getAnnotation(evaluator.getClass(), VectorizedUDAFs.class);
