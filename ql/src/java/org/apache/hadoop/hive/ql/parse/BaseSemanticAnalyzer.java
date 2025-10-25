@@ -2091,7 +2091,7 @@ public abstract class BaseSemanticAnalyzer {
   public void endAnalysis(ASTNode tree) {
     if (ctx != null){
       queryProperties.setUsedTables(
-          CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
+          TableHelper.getUniqueNames(ctx.getParsedTables()));
     }
     setQueryType(tree); // at this point we know the query type for sure
   }
