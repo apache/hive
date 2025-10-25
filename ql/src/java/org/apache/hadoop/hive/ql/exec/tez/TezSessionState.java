@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.hadoop.hive.common.JavaVersionUtils;
-import org.apache.hadoop.registry.client.api.RegistryOperations;
 
 import java.io.File;
 import java.io.IOException;
@@ -308,7 +307,11 @@ public class TezSessionState {
       addJarLRByClass(LlapTaskSchedulerService.class, commonLocalResources);
       addJarLRByClass(LlapProtocolClientImpl.class, commonLocalResources);
       addJarLRByClass(LlapProtocolClientProxy.class, commonLocalResources);
-      addJarLRByClass(RegistryOperations.class, commonLocalResources);
+      addJarLRByClassName(
+        getClass().getClassLoader(),
+        "org.apache.hadoop.registry.client.api.RegistryOperations",
+        commonLocalResources
+      );
     }
 
     // Create environment for AM.
@@ -852,15 +855,27 @@ public class TezSessionState {
     return fileStatus.getPath() + ":" + fileStatus.getLen() + ":" + fileStatus.getModificationTime();
   }
 
+  private void addJarLRByPath(String jarPath, final Map<String, LocalResource> lrMap) throws IOException {
+    final File jar = new File(jarPath);
+    final String localJarPath = jar.toURI().toURL().toExternalForm();
+    final LocalResource jarLr = createJarLocalResource(localJarPath);
+    lrMap.put(DagUtils.getBaseName(jarLr), jarLr);
+  }
+
   private void addJarLRByClass(Class<?> clazz, final Map<String, LocalResource> lrMap) throws IOException {
     String jarPath = Utilities.jarFinderGetJar(clazz);
     if (jarPath == null) {
       throw new IOException("Can't find jar for: " + clazz);
     }
-    final File jar = new File(jarPath);
-    final String localJarPath = jar.toURI().toURL().toExternalForm();
-    final LocalResource jarLr = createJarLocalResource(localJarPath);
-    lrMap.put(DagUtils.getBaseName(jarLr), jarLr);
+    addJarLRByPath(jarPath, lrMap);
+  }
+
+  private void addJarLRByClassName(ClassLoader loader, String className, final Map<String, LocalResource> lrMap) throws IOException {
+    String jarPath = Utilities.jarFinderGetJar(loader, className);
+    if (jarPath == null) {
+      throw new IOException("Can't find jar for: " + className);
+    }
+    addJarLRByPath(jarPath, lrMap);
   }
 
   private String getSha(final Path localFile) throws IOException, IllegalArgumentException {
