@@ -43,10 +43,8 @@ POSTHOOK: Input: default@t1
 CBO PLAN:
 HiveProject(key=[$0], value=[$1], key0=[$4], value0=[$5], key1=[$2], value1=[$3])
   HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(key=[$0], value=[$1], key0=[$2], value0=[$3])
-      HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
-        HiveProject(key=[$0], value=[$1])
-          HiveTableScan(table=[[default, mv]], table:alias=[default.mv])
-        HiveTableScan(table=[[default, mv]], table:alias=[default.mv])
+    HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveTableScan(table=[[default, mv]], table:alias=[default.mv])
+      HiveTableScan(table=[[default, mv]], table:alias=[default.mv])
     HiveTableScan(table=[[default, mv]], table:alias=[default.mv])
 
