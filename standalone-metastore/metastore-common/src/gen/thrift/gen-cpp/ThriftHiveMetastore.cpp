@@ -1310,7 +1310,20 @@ uint32_t ThriftHiveMetastore_get_catalogs_args::read(::apache::thrift::protocol:
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->pattern.read(iprot);
+          this->__isset.pattern = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -1323,6 +1336,10 @@ uint32_t ThriftHiveMetastore_get_catalogs_args::write(::apache::thrift::protocol
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_catalogs_args");
+
+  xfer += oprot->writeFieldBegin("pattern", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->pattern.write(oprot);
+  xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
@@ -1338,6 +1355,10 @@ uint32_t ThriftHiveMetastore_get_catalogs_pargs::write(::apache::thrift::protoco
   uint32_t xfer = 0;
   ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_catalogs_pargs");
+
+  xfer += oprot->writeFieldBegin("pattern", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += (*(this->pattern)).write(oprot);
+  xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
@@ -67317,18 +67338,19 @@ void ThriftHiveMetastoreClient::recv_get_catalog(GetCatalogResponse& _return)
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_catalog failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::get_catalogs(GetCatalogsResponse& _return)
+void ThriftHiveMetastoreClient::get_catalogs(GetCatalogsResponse& _return, const GetCatalogRequest& pattern)
 {
-  send_get_catalogs();
+  send_get_catalogs(pattern);
   recv_get_catalogs(_return);
 }
 
-void ThriftHiveMetastoreClient::send_get_catalogs()
+void ThriftHiveMetastoreClient::send_get_catalogs(const GetCatalogRequest& pattern)
 {
   int32_t cseqid = 0;
   oprot_->writeMessageBegin("get_catalogs", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_get_catalogs_pargs args;
+  args.pattern = &pattern;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();
@@ -85144,7 +85166,7 @@ void ThriftHiveMetastoreProcessor::process_get_catalogs(int32_t seqid, ::apache:
 
   ThriftHiveMetastore_get_catalogs_result result;
   try {
-    iface_->get_catalogs(result.success);
+    iface_->get_catalogs(result.success, args.pattern);
     result.__isset.success = true;
   } catch (MetaException &o1) {
     result.o1 = std::move(o1);
@@ -102124,19 +102146,20 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_catalog(GetCatalogResponse& _
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::get_catalogs(GetCatalogsResponse& _return)
+void ThriftHiveMetastoreConcurrentClient::get_catalogs(GetCatalogsResponse& _return, const GetCatalogRequest& pattern)
 {
-  int32_t seqid = send_get_catalogs();
+  int32_t seqid = send_get_catalogs(pattern);
   recv_get_catalogs(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_get_catalogs()
+int32_t ThriftHiveMetastoreConcurrentClient::send_get_catalogs(const GetCatalogRequest& pattern)
 {
   int32_t cseqid = this->sync_->generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(this->sync_.get());
   oprot_->writeMessageBegin("get_catalogs", ::apache::thrift::protocol::T_CALL, cseqid);
 
   ThriftHiveMetastore_get_catalogs_pargs args;
+  args.pattern = &pattern;
   args.write(oprot_);
 
   oprot_->writeMessageEnd();

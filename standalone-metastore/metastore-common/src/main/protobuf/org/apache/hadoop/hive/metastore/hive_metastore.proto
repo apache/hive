@@ -66,6 +66,7 @@ message GetCatalogResponse {
 }
 
 message GetCatalogsRequest {
+    string pattern = 1;
 }
 
 message GetCatalogsResponse {

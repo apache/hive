@@ -73,7 +73,12 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def get_catalogs(self):
+    def get_catalogs(self, pattern):
+        """
+        Parameters:
+         - pattern
+
+        """
         pass
 
     def drop_catalog(self, catName):
@@ -2628,13 +2633,19 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_catalog failed: unknown result")
 
-    def get_catalogs(self):
-        self.send_get_catalogs()
+    def get_catalogs(self, pattern):
+        """
+        Parameters:
+         - pattern
+
+        """
+        self.send_get_catalogs(pattern)
         return self.recv_get_catalogs()
 
-    def send_get_catalogs(self):
+    def send_get_catalogs(self, pattern):
         self._oprot.writeMessageBegin('get_catalogs', TMessageType.CALL, self._seqid)
         args = get_catalogs_args()
+        args.pattern = pattern
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -13158,7 +13169,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = get_catalogs_result()
         try:
-            result.success = self._handler.get_catalogs()
+            result.success = self._handler.get_catalogs(args.pattern)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -21926,7 +21937,15 @@ get_catalog_result.thrift_spec = (
 
 
 class get_catalogs_args(object):
+    """
+    Attributes:
+     - pattern
 
+    """
+
+
+    def __init__(self, pattern=None,):
+        self.pattern = pattern
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -21937,6 +21956,12 @@ class get_catalogs_args(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.pattern = GetCatalogRequest()
+                    self.pattern.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -21947,6 +21972,10 @@ class get_catalogs_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('get_catalogs_args')
+        if self.pattern is not None:
+            oprot.writeFieldBegin('pattern', TType.STRUCT, 1)
+            self.pattern.write(oprot)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -21965,6 +21994,8 @@ class get_catalogs_args(object):
         return not (self == other)
 all_structs.append(get_catalogs_args)
 get_catalogs_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'pattern', [GetCatalogRequest, None], None, ),  # 1
 )
 
 

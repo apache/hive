@@ -98,8 +98,8 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
-  public List<String> getCatalogs() throws MetaException, TException {
-    return delegate.getCatalogs();
+  public List<String> getCatalogs(String catalogPattern) throws MetaException, TException {
+    return delegate.getCatalogs(catalogPattern);
   }
 
   @Override
