@@ -40,6 +40,7 @@ import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -431,6 +432,43 @@ public abstract class BaseSemanticAnalyzer {
     return getUnescapedName(tableOrColumnNode, null);
   }
 
+
+  public static Triple<String, String, String> getDbTableNameTriple(ASTNode tableNameNode) throws SemanticException {
+
+    if (tableNameNode.getType() != HiveParser.TOK_TABNAME ||
+        (tableNameNode.getChildCount() < 1 || tableNameNode.getChildCount() > 4)) {
+      throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE_NAME.getMsg(), tableNameNode));
+    }
+
+    List<String> parts = new ArrayList<>();
+    for (int i = 0; i < tableNameNode.getChildCount(); i++) {
+      String part = unescapeIdentifier(tableNameNode.getChild(i).getText());
+      if (part != null && part.contains(".")) {
+        throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tableNameNode));
+      }
+      parts.add(part);
+    }
+
+    String catalog = null, db = null, table = null;
+
+    if (parts.size() == 1) {
+      table = parts.get(0);
+    } else if (parts.size() == 2) {
+      db = parts.get(0);
+      table = parts.get(1);
+    } else if (parts.size() == 3) {
+      catalog = parts.get(0);
+      db = parts.get(1);
+      table = parts.get(2);
+    } else if (parts.size() == 4) {
+      catalog = parts.get(0);
+      db = parts.get(1);
+      table = parts.get(2) + "." + parts.get(3);  // meta table
+    }
+
+    return Triple.of(catalog, db, table);
+  }
+  // todo remove this function
   public static Map.Entry<String, String> getDbTableNamePair(ASTNode tableNameNode) throws SemanticException {
 
     if (tableNameNode.getType() != HiveParser.TOK_TABNAME ||
@@ -463,8 +501,8 @@ public abstract class BaseSemanticAnalyzer {
     int tokenType = tableOrColumnNode.getToken().getType();
     if (tokenType == HiveParser.TOK_TABNAME) {
       // table node
-      Map.Entry<String,String> dbTablePair = getDbTableNamePair(tableOrColumnNode);
-      String tableName = dbTablePair.getValue();
+      Triple<String, String, String> dbTablePair = getDbTableNameTriple(tableOrColumnNode);
+      String tableName = dbTablePair.getRight();
       String tableMetaRef = null;
       if (tableName.contains(".")) {
         String[] tmpNames = tableName.split("\\.");
@@ -472,8 +510,8 @@ public abstract class BaseSemanticAnalyzer {
         tableMetaRef = tmpNames[1];
       }
       return TableName.fromString(tableName,
-          null,
-          dbTablePair.getKey() == null ? currentDatabase : dbTablePair.getKey(),
+              dbTablePair.getLeft() == null ? SessionState.get().getCurrentCatalog() : dbTablePair.getLeft(),
+          dbTablePair.getMiddle() == null ? currentDatabase : dbTablePair.getMiddle(),
           tableMetaRef)
           .getNotEmptyDbTable();
     } else if (tokenType == HiveParser.StringLiteral) {
@@ -548,13 +586,13 @@ public abstract class BaseSemanticAnalyzer {
     assert node.getChildCount() <= 3;
     assert node.getType() == HiveParser.TOK_TABNAME;
 
-    if (node.getChildCount() == 2 || node.getChildCount() == 3) {
+    if (node.getChildCount() == 2 || node.getChildCount() == 3 || node.getChildCount() == 4) {
       node = (ASTNode) node.getChild(1);
     }
 
     String tableName = getUnescapedName(node);
-    if (node.getChildCount() == 3) {
-      tableName = tableName + "." + node.getChild(2);
+    if (node.getChildCount() == 4) {
+      tableName = tableName + "." + node.getChild(3);
     }
     return tableName;
   }
@@ -1969,7 +2007,7 @@ public abstract class BaseSemanticAnalyzer {
     try {
       String tableName = tableMetaRef == null ? tblName : tblName + "." + tableMetaRef;
       tab = database == null ? db.getTable(tableName, false)
-          : db.getTable(database, tblName, tableMetaRef, false);
+          : db.getTable(SessionState.get().getCurrentCatalog(), database, tblName, tableMetaRef, false);
     }
     catch (InvalidTableException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);

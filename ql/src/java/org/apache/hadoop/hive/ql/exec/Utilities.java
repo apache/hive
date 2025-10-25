@@ -2326,7 +2326,7 @@ public final class Utilities {
    */
   @Deprecated
   public static String[] getDbTableName(String dbtable) throws SemanticException {
-    return getDbTableName(SessionState.get().getCurrentDatabase(), dbtable);
+    return getDbTableName(SessionState.get().getCurrentCatalog(), SessionState.get().getCurrentDatabase(), dbtable);
   }
 
   /**
@@ -2338,17 +2338,19 @@ public final class Utilities {
    * @deprecated use {@link TableName} or {@link org.apache.hadoop.hive.ql.parse.HiveTableName} instead
    */
   @Deprecated
-  public static String[] getDbTableName(String defaultDb, String dbtable) throws SemanticException {
+  public static String[] getDbTableName(String defaultCatalog, String defaultDb, String dbtable) throws SemanticException {
     if (dbtable == null) {
       return new String[2];
     }
     String[] names =  dbtable.split("\\.");
     switch (names.length) {
+      case 4:
       case 3:
-      case 2:
         return names;
+      case 2:
+        return new String [] {defaultCatalog, names[0], names[1]};
       case 1:
-        return new String [] {defaultDb, dbtable};
+        return new String [] {defaultCatalog, defaultDb, dbtable};
       default:
         throw new SemanticException(ErrorMsg.INVALID_TABLE_NAME, dbtable);
     }
@@ -2381,7 +2383,7 @@ public final class Utilities {
    * @param dbTableName
    * @return a {@link TableName}
    * @throws SemanticException
-   * @deprecated handle null values and use {@link TableName#fromString(String, String, String)}
+   * @deprecated handle null values and use {@link TableName#fromString(String, String, String)} (why deprecated)
    */
   @Deprecated
   public static TableName getNullableTableName(String dbTableName) throws SemanticException {
@@ -2396,7 +2398,7 @@ public final class Utilities {
    * @param defaultDb
    * @return a {@link TableName}
    * @throws SemanticException
-   * @deprecated handle null values and use {@link TableName#fromString(String, String, String)}
+   * @deprecated handle null values and use {@link TableName#fromString(String, String, String)}(why deprecated)
    */
   @Deprecated
   public static TableName getNullableTableName(String dbTableName, String defaultDb) throws SemanticException {

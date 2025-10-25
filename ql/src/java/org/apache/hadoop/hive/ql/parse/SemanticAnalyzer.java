@@ -330,6 +330,7 @@ import com.google.common.math.LongMath;
 public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
 
+  public static final String DUMMY_CATALOG = "_dummy_catalog";
   public static final String DUMMY_DATABASE = "_dummy_database";
   public static final String DUMMY_TABLE = "_dummy_table";
   public static final String SUBQUERY_TAG_1 = "-subquery1";
@@ -2406,7 +2407,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (tab == null) {
-        if(tabName.equals(DUMMY_DATABASE + "." + DUMMY_TABLE)) {
+        if(tabName.equals(DUMMY_CATALOG + "." + DUMMY_DATABASE + "." + DUMMY_TABLE)) {
           continue;
         }
         ASTNode src = qb.getParseInfo().getSrcForAlias(alias);
@@ -2543,7 +2544,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               ast, "The class is " + outputFormatClass.toString()));
         }
 
-        boolean isTableWrittenTo = qb.getParseInfo().isInsertIntoTable(ts.tableHandle.getDbName(),
+        boolean isTableWrittenTo = qb.getParseInfo().isInsertIntoTable(ts.tableHandle.getCatName(), ts.tableHandle.getDbName(),
             ts.tableHandle.getTableName(), ts.tableHandle.getSnapshotRef());
         isTableWrittenTo |= (qb.getParseInfo().getInsertOverwriteTables().
             get(getUnescapedName((ASTNode) ast.getChild(0), ts.tableHandle.getDbName()).toLowerCase()) != null);
@@ -7634,7 +7635,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         writeId = allocateTableWriteId(destinationTable.getFullTableName(), isMmTable || acidOp != Operation.NOT_ACID);
         
         boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
-            destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getSnapshotRef());
+            destinationTable.getCatName(), destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getSnapshotRef());
         ltd = new LoadTableDesc(queryTmpdir, tableDescriptor, dpCtx, acidOp, isReplace, writeId);
         if (writeId != null) {
           ltd.setStmtId(txnMgr.getCurrentStmtId());
@@ -7643,7 +7644,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         boolean isInsertInto = qb.getParseInfo().isInsertIntoTable(
-            destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getSnapshotRef());
+            destinationTable.getCatName(), destinationTable.getDbName(), destinationTable.getTableName(), destinationTable.getSnapshotRef());
         LoadFileType loadType;
         if (isDirectInsert) {
           loadType = LoadFileType.IGNORE;
@@ -7662,8 +7663,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // We need to set stats as inaccurate.
         setStatsForNonNativeTable(destinationTable.getDbName(), destinationTable.getTableName());
         // true if it is insert overwrite.
-        boolean overwrite = !qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
-            destinationTable.getSnapshotRef());
+        boolean overwrite = !qb.getParseInfo().isInsertIntoTable(destinationTable.getCatName(), destinationTable.getDbName(),
+                destinationTable.getTableName(), destinationTable.getSnapshotRef());
         createPreInsertDesc(destinationTable, overwrite);
 
         ltd = new LoadTableDesc(queryTmpdir, tableDescriptor, partSpec == null ? ImmutableMap.of() : partSpec);
@@ -8259,11 +8260,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
       if (destType == QBMetaData.DEST_TABLE) {
         genAutoColumnStatsGatheringPipeline(destinationTable, partSpec, input,
-            qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
+            qb.getParseInfo().isInsertIntoTable(destinationTable.getCatName(), destinationTable.getDbName(), destinationTable.getTableName(),
                 destinationTable.getSnapshotRef()), false);
       } else if (destType == QBMetaData.DEST_PARTITION) {
         genAutoColumnStatsGatheringPipeline(destinationTable, destinationPartition.getSpec(), input,
-            qb.getParseInfo().isInsertIntoTable(destinationTable.getDbName(), destinationTable.getTableName(),
+            qb.getParseInfo().isInsertIntoTable(destinationTable.getCatName(), destinationTable.getDbName(), destinationTable.getTableName(),
                 destinationTable.getSnapshotRef()), false);
       } else if (destType == QBMetaData.DEST_LOCAL_FILE || destType == QBMetaData.DEST_DFS_FILE) {
         // CTAS or CMV statement
@@ -8760,7 +8761,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // If the query here is an INSERT_INTO and the target is an immutable table,
     // verify that our destination is empty before proceeding
     if (!dest_tab.isImmutable() || !qb.getParseInfo().isInsertIntoTable(
-        dest_tab.getDbName(), dest_tab.getTableName(), dest_tab.getSnapshotRef())) {
+        dest_tab.getCatName(), dest_tab.getDbName(), dest_tab.getTableName(), dest_tab.getSnapshotRef())) {
       return;
     }
     try {
@@ -12525,6 +12526,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     Table desc = new Table(DUMMY_DATABASE, DUMMY_TABLE);
+    desc.setCatName(DUMMY_CATALOG);
     desc.getTTable().getSd().setLocation(dummyPath.toString());
     desc.getTTable().getSd().getSerdeInfo().setSerializationLib(NullStructSerDe.class.getName());
     desc.setInputFormatClass(NullRowsInputFormat.class);
@@ -13898,6 +13900,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     t.setParameters(tblProps);
     t.setTableType(type);
     t.setTemporary(isTemporary);
+//    t.setCatName("hive");  // just for test
     HiveStorageHandler storageHandler = null;
     if (storageFormat.getStorageHandler() != null) {
       try {
