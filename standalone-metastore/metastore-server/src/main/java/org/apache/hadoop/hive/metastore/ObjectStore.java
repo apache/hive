@@ -3811,7 +3811,7 @@ public class ObjectStore implements RawStore, Configurable {
    *          you want results for.  E.g., if resultsCol is partitionName, the Collection
    *          has types of String, and if resultsCol is null, the types are MPartition.
    */
-  private Collection<String> getPartitionPsQueryResults(String catName, String dbName,
+  private <T> Collection<T> getPartitionPsQueryResults(String catName, String dbName,
                                                         String tableName, List<String> part_vals,
                                                         int max_parts, String resultsCol)
       throws MetaException, NoSuchObjectException {
@@ -3831,6 +3831,7 @@ public class ObjectStore implements RawStore, Configurable {
     String filter = getJDOFilterStrForPartitionVals(table, part_vals, params);
     try (QueryWrapper query = new QueryWrapper(pm.newQuery(MPartition.class))) {
       query.setFilter(filter);
+      query.setOrdering("partitionName ascending");
       query.declareParameters(makeParameterDeclarationString(params));
       if (max_parts >= 0) {
         // User specified a row limit, set it on the Query
@@ -3839,9 +3840,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (resultsCol != null && !resultsCol.isEmpty()) {
         query.setResult(resultsCol);
       }
-
-      Collection<String> result = (Collection<String>) query.executeWithMap(params);
-
+      Collection<T> result = (Collection<T>) query.executeWithMap(params);
       return Collections.unmodifiableCollection(new ArrayList<>(result));
     }
   }
@@ -3912,11 +3911,11 @@ public class ObjectStore implements RawStore, Configurable {
       protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx)
           throws MetaException, NoSuchObjectException {
         List<Partition> result = new ArrayList<>();
-        Collection parts = getPartitionPsQueryResults(catName, dbName, tblName,
+        Collection<MPartition> parts = getPartitionPsQueryResults(catName, dbName, tblName,
             args.getPart_vals(), args.getMax(), null);
         boolean isAcidTable = TxnUtils.isAcidTable(ctx.getTable());
-        for (Object o : parts) {
-          Partition part = convertToPart(catName, dbName, tblName, (MPartition) o, isAcidTable, args);
+        for (MPartition o : parts) {
+          Partition part = convertToPart(catName, dbName, tblName, o, isAcidTable, args);
           result.add(part);
         }
         return result;
