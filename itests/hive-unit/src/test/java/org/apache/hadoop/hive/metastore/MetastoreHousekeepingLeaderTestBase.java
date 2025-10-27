@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
+import org.apache.hadoop.hive.metastore.leader.LeaderElectionFactory;
 import org.apache.hadoop.hive.metastore.leader.LeaseLeaderElection;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.stats.StatsUpdaterThread;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -68,7 +70,7 @@ abstract class MetastoreHousekeepingLeaderTestBase {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setVar(conf, ConfVars.THRIFT_BIND_HOST, "localhost");
     MetastoreConf.setVar(conf, ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION,
-        leaderHostName != null ? "host" : "lock");
+        leaderHostName != null ? LeaderElectionFactory.Method.HOST.name() : LeaderElectionFactory.Method.LOCK.name());
     if (leaderHostName != null) {
       MetastoreConf.setVar(conf, ConfVars.METASTORE_HOUSEKEEPING_LEADER_HOSTNAME, leaderHostName);
     }
@@ -286,6 +288,13 @@ abstract class MetastoreHousekeepingLeaderTestBase {
 
     @Override
     protected void notifyListener() {
+      ScheduledExecutorService service = null;
+      if (!isLeader) {
+        try {
+          service = ThreadPool.getPool();
+        } catch (Exception ignored) {
+        }
+      }
       super.notifyListener();
       if (isLeader) {
         if (!needRenewLease) {
@@ -298,11 +307,17 @@ abstract class MetastoreHousekeepingLeaderTestBase {
           heartbeater.startWatch();
         }
       } else {
-        try {
-          // This is the last one get notified, sleep some time to make sure all other
-          // services have been stopped before return
-          Thread.sleep(12000);
-        } catch (InterruptedException ignore) {
+        if (service != null) {
+          // If the housekeeping task is running behind
+          Assert.assertTrue(service.isShutdown());
+          // Interrupt all sleeping tasks
+          service.shutdownNow();
+          try {
+            // This is the last one get notified, sleep some time to make sure all other
+            // services have been stopped before return
+            Thread.sleep(12000);
+          } catch (InterruptedException ignore) {
+          }
         }
       }
       if (latch != null) {
