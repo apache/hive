@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
 import java.time.Instant;
@@ -9605,16 +9604,13 @@ public class ObjectStore implements RawStore, Configurable {
         colNames.add(statsObj.getColName());
       }
 
-      List<Long> partitionIds = directSql.getPartitionFieldsViaSqlFilter(catName, statsDesc.getDbName(), statsDesc.getTableName(),
-          Arrays.asList("\"PART_ID\""), "\"PARTITIONS\".\"PART_NAME\" = ?",
-          Arrays.asList(Warehouse.makePartName(table.getPartitionKeys(), partVals)), Collections.emptyList(), -1);
-      if (partition == null || partitionIds.isEmpty()) {
+      if (partition == null) {
         throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
       }
 
       Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
           .getPartName(), colNames, colStats.getEngine());
-      lockForUpdate("PARTITIONS", "PART_ID", Optional.of("\"PART_ID\" = " + partitionIds.getFirst()));
+      lockForUpdate("PARTITIONS", "PART_ID", Optional.of("\"PART_ID\" = " + mPartition.getId()));
       pm.refresh(mPartition);
 
       for (ColumnStatisticsObj statsObj : statsObjs) {
