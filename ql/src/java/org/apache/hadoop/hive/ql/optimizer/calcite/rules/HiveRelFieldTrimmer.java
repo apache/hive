@@ -202,6 +202,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     return dispatchTrimFields(input, fieldsUsedBuilder.build(), extraFields);
   }
 
+  @Override
   protected void setColumnAccessInfoForViews(RelNode rel, ImmutableBitSet fieldsUsed) {
     final ColumnAccessInfo columnAccessInfo = COLUMN_ACCESS_INFO.get();
     final Map<RelNode, Table> relNodeToTableAndProjects = VIEW_RELNODE_TO_TABLE.get();

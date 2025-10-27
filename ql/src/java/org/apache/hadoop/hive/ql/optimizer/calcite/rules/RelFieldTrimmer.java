@@ -1239,8 +1239,17 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     final Mapping mapping = createMapping(fieldsUsed, fieldCount);
     return result(newTableAccessRel, mapping);
   }
-  
-  protected void setColumnAccessInfoForViews(RelNode rel, ImmutableBitSet fieldsUsed) {}
+
+  /**
+   * Sets columnAccessInfo object for views.
+   * 
+   * @param rel RelNode
+   * @param fieldsUsed Fields used
+   */
+  protected void setColumnAccessInfoForViews(RelNode rel, ImmutableBitSet fieldsUsed) {
+    // This method is overridden in child class
+    throw new UnsupportedOperationException();
+  }
 
   //~ Inner Classes ----------------------------------------------------------
 
