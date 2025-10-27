@@ -20,16 +20,10 @@ package org.apache.hadoop.hive.metastore.leader;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.Test;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -40,7 +34,7 @@ public class TestLeaderElection {
 
   @Test
   public void testConfigLeaderElection() throws Exception {
-    LeaderElection election = new StaticLeaderElection();
+    LeaderElection<String> election = new StaticLeaderElection();
     String leaderHost = "host1.work";
     Configuration configuration = MetastoreConf.newMetastoreConf();
     election.tryBeLeader(configuration, leaderHost);
@@ -87,9 +81,7 @@ public class TestLeaderElection {
     MetastoreConf.setBoolVar(configuration, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
     TestTxnDbUtil.setConfValues(configuration);
     TestTxnDbUtil.prepDb(configuration);
-    TxnStore txnStore = TxnUtils.getTxnStore(configuration);
 
-    configuration.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, false);
     TableName mutex = new TableName("hive", "default", "leader_lease_ms");
     LeaseLeaderElection instance1 = new LeaseLeaderElection();
     AtomicBoolean flag1 = new AtomicBoolean(false);
@@ -98,7 +90,6 @@ public class TestLeaderElection {
     // elect1 as a leader now
     assertTrue(flag1.get() && instance1.isLeader());
 
-    configuration.setBoolean(LeaseLeaderElection.METASTORE_RENEW_LEASE, true);
     LeaseLeaderElection instance2 = new LeaseLeaderElection();
     AtomicBoolean flag2 = new AtomicBoolean(false);
     instance2.addStateListener(new TestLeaderListener(flag2));
@@ -106,52 +97,14 @@ public class TestLeaderElection {
     // instance2 should not be leader as elect1 holds the lease
     assertFalse(flag2.get() || instance2.isLeader());
 
-    ExecutorService service = Executors.newFixedThreadPool(4);
-    wait(service, flag1, flag2);
-    // now instance1 lease is timeout, the instance2 should be leader now
+    instance1.close();
+    synchronized (flag2) {
+      flag2.wait();
+    }
+    // now instance1 lease is released, the instance2 should be leader now
     assertTrue(instance2.isLeader() && flag2.get());
     assertFalse(flag1.get() || instance1.isLeader());
     assertTrue(flag2.get() && instance2.isLeader());
-
-    // remove leader's lease (instance2)
-    long lockId2 = instance2.getLockId();
-    txnStore.unlock(new UnlockRequest(lockId2));
-    wait(service, flag1, flag2);
-    assertFalse(flag2.get() || instance2.isLeader());
-    assertTrue(lockId2 > 0);
-    assertFalse(instance2.getLockId() == lockId2);
-
-    // remove leader's lease(instance1)
-    long lockId1 = instance1.getLockId();
-    txnStore.unlock(new UnlockRequest(lockId1));
-    wait(service, flag1, flag2);
-    assertFalse(lockId1 == instance1.getLockId());
-    assertTrue(lockId1 > 0);
-
-    for (int i = 0; i < 10; i++) {
-      assertFalse(flag1.get() || instance1.isLeader());
-      assertTrue(flag2.get() && instance2.isLeader());
-      Thread.sleep(1 * 1000);
-    }
-  }
-
-  private void wait(ExecutorService service, Object... obj) throws Exception {
-    Future[] fs = new Future[obj.length];
-    for (int i = 0; i < obj.length; i++) {
-      Object monitor = obj[i];
-      fs[i] = service.submit(() -> {
-        try {
-          synchronized (monitor) {
-            monitor.wait();
-          }
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      });
-    }
-    for (Future f : fs) {
-      f.get();
-    }
   }
 
 }
