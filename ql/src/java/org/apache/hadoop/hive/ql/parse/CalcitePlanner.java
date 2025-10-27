@@ -1578,7 +1578,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final Map<String, PrunedPartitionList>        partitionCache;
     private final Map<String, ColumnStatsList>            colStatsCache;
     private final ColumnAccessInfo columnAccessInfo;
-    private Map<RelNode, Pair<Table, List<RexNode>>> relNodeToTableAndProjects;
+    private Map<RelNode, Table> relNodeToTable;
     private final QB rootQB;
 
     // correlated vars across subqueries within same query needs to have different ID
@@ -1667,7 +1667,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
                 calcitePlan,
                 this.columnAccessInfo,
-                this.relNodeToTableAndProjects
+                this.relNodeToTable
             );
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITE_FIELD_TRIMMER);
@@ -4922,13 +4922,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         aliasToRel.put(subqAlias, relNode);
         if (qb.getViewToTabSchema().containsKey(subqAlias)) {
-          List<RexNode> projects = relNode instanceof HiveProject project ?
-              project.getProjects() :
-              HiveCalciteUtil.getProjsFromBelowAsInputRef(Objects.requireNonNull(relNode));
-          if (this.relNodeToTableAndProjects == null) {
-            this.relNodeToTableAndProjects = new HashMap<>();
+          if (this.relNodeToTable == null) {
+            this.relNodeToTable = new HashMap<>();
           }
-          relNodeToTableAndProjects.put(relNode, Pair.of(qb.getViewToTabSchema().get(subqAlias), projects));
+          relNodeToTable.put(relNode, qb.getViewToTabSchema().get(subqAlias));
         }
       }
 

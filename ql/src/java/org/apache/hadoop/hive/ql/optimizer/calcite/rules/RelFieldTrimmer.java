@@ -282,6 +282,7 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
       RelNode rel,
       ImmutableBitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
+    setColumnAccessInfoForViews(rel, fieldsUsed);
     final TrimResult trimResult =
         trimFieldsDispatcher.invoke(rel, fieldsUsed, extraFields);
     final RelNode newRel = trimResult.left;
@@ -1238,6 +1239,8 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     final Mapping mapping = createMapping(fieldsUsed, fieldCount);
     return result(newTableAccessRel, mapping);
   }
+  
+  protected void setColumnAccessInfoForViews(RelNode rel, ImmutableBitSet fieldsUsed) {}
 
   //~ Inner Classes ----------------------------------------------------------
 
