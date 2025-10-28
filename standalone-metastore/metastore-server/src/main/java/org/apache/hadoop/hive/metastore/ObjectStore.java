@@ -52,9 +52,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -67,7 +68,6 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -254,6 +254,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.RetryingExecutor;
 import org.apache.thrift.TException;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
@@ -344,8 +345,6 @@ public class ObjectStore implements RawStore, Configurable {
   private boolean areTxnStatsSupported = false;
   private PropertyStore propertyStore;
 
-  private static Striped<Lock> tablelocks;
-
   public ObjectStore() {
   }
 
@@ -394,15 +393,6 @@ public class ObjectStore implements RawStore, Configurable {
       throw new RuntimeException("Unable to create persistence manager. Check log for details");
     } else {
       LOG.debug("Initialized ObjectStore");
-    }
-
-    if (tablelocks == null) {
-      synchronized (ObjectStore.class) {
-        if (tablelocks == null) {
-          int numTableLocks = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_NUM_STRIPED_TABLE_LOCKS);
-          tablelocks = Striped.lazyWeakLock(numTableLocks);
-        }
-      }
     }
   }
 
@@ -9165,96 +9155,93 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  /**
-   * Get table's column stats
-   *
-   * @return Map of column name and its stats
-   */
-  private Map<String, MTableColumnStatistics> getPartitionColStats(Table table, List<String> colNames, String engine)
-      throws MetaException {
-    Map<String, MTableColumnStatistics> statsMap = Maps.newHashMap();
-    List<MTableColumnStatistics> stats = getMTableColumnStatistics(table, colNames, engine);
-    for (MTableColumnStatistics cStat : stats) {
-      statsMap.put(cStat.getColName(), cStat);
-    }
-    return statsMap;
-  }
-  
   @Override
   public Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
-
     List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
     ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-    
-    Lock tableLock = getTableLockFor(statsDesc.getDbName(), statsDesc.getTableName());
-    tableLock.lock();
+    long start = System.currentTimeMillis();
+    String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
     try {
       openTransaction();
       // DataNucleus objects get detached all over the place for no (real) reason.
       // So let's not use them anywhere unless absolutely necessary.
-      String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
+      int maxRetries = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
+      long sleepInterval = ThreadLocalRandom.current().nextLong(MetastoreConf.getTimeVar(conf,
+          ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS)) + 30;
       MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      Table table = convertToTable(mTable);
-      List<String> colNames = new ArrayList<>();
-      for (ColumnStatisticsObj statsObj : statsObjs) {
-        colNames.add(statsObj.getColName());
-      }
-
-      Map<String, MTableColumnStatistics> oldStats = getPartitionColStats(table, colNames, colStats.getEngine());
-
-      for (ColumnStatisticsObj statsObj : statsObjs) {
-        MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
-          mTable, statsDesc,
-          statsObj, colStats.getEngine());
-        writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
-        // There is no need to add colname again, otherwise we will get duplicate colNames.
-      }
-
-      // TODO: (HIVE-20109) ideally the col stats stats should be in colstats, not in the table!
-      // Set the table properties
-      // No need to check again if it exists.
-      String dbname = table.getDbName();
-      String name = table.getTableName();
-      MTable oldt = mTable;
-      Map<String, String> newParams = new HashMap<>(table.getParameters());
-      StatsSetupConst.setColumnStatsState(newParams, colNames);
-      boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
-      if (isTxn) {
-        if (!areTxnStatsSupported) {
-          StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-        } else {
-          String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name),
-            oldt.getParameters(), newParams, writeId, validWriteIds, true);
-          if (errorMsg != null) {
-            throw new MetaException(errorMsg);
-          }
-          if (!isCurrentStatsValidForTheQuery(oldt, validWriteIds, true)) {
-            // Make sure we set the flag to invalid regardless of the current value.
-            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-            LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table "
-              + dbname + "." + name);
-          }
-          oldt.setWriteId(writeId);
+      Map<String, String> result = new RetryingExecutor<>(maxRetries, sleepInterval, () -> {
+        Ref<Exception> exceptionRef = new Ref<>();
+        String savePoint = "uts_" + ThreadLocalRandom.current().nextInt(10000) + "_" + System.nanoTime();
+        setTransactionSavePoint(savePoint);
+        executePlainSQL(
+            sqlGenerator.addForUpdateNoWait("SELECT \"TBL_ID\" FROM \"TBLS\" WHERE \"TBL_ID\" = " + mTable.getId()),
+            exception -> {
+              rollbackTransactionToSavePoint(savePoint);
+              exceptionRef.t = exception;
+            });
+        if (exceptionRef.t != null) {
+          throw new RetryingExecutor.RetryException(exceptionRef.t);
         }
-      }
-      oldt.setParameters(newParams);
+        pm.refresh(mTable);
+        Table table = convertToTable(mTable);
+        List<String> colNames = new ArrayList<>();
+        for (ColumnStatisticsObj statsObj : statsObjs) {
+          colNames.add(statsObj.getColName());
+        }
 
+        Map<String, MTableColumnStatistics> oldStats = Maps.newHashMap();
+        List<MTableColumnStatistics> stats = getMTableColumnStatistics(table, colNames, colStats.getEngine());
+        for (MTableColumnStatistics cStat : stats) {
+          oldStats.put(cStat.getColName(), cStat);
+        }
+
+        for (ColumnStatisticsObj statsObj : statsObjs) {
+          MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(mTable, statsDesc,
+              statsObj, colStats.getEngine());
+          writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
+          // There is no need to add colname again, otherwise we will get duplicate colNames.
+        }
+
+        // TODO: (HIVE-20109) ideally the col stats stats should be in colstats, not in the table!
+        // Set the table properties
+        // No need to check again if it exists.
+        String dbname = table.getDbName();
+        String name = table.getTableName();
+        MTable oldt = mTable;
+        Map<String, String> newParams = new HashMap<>(table.getParameters());
+        StatsSetupConst.setColumnStatsState(newParams, colNames);
+        boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
+        if (isTxn) {
+          if (!areTxnStatsSupported) {
+            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+          } else {
+            String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name), oldt.getParameters(), newParams,
+                writeId, validWriteIds, true);
+            if (errorMsg != null) {
+              throw new MetaException(errorMsg);
+            }
+            if (!isCurrentStatsValidForTheQuery(oldt, validWriteIds, true)) {
+              // Make sure we set the flag to invalid regardless of the current value.
+              StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+              LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table " + dbname + "." + name);
+            }
+            oldt.setWriteId(writeId);
+          }
+        }
+        oldt.setParameters(newParams);
+        return newParams;
+      }).onRetry(RetryingExecutor.RetryException.class).commandName("updateTableColumnStatistics").run();
       committed = commitTransaction();
       // TODO: similar to update...Part, this used to do "return committed;"; makes little sense.
-      return committed ? newParams : null;
+      return committed ? result : null;
     } finally {
-      try {
-        rollbackAndCleanup(committed, null);
-      } finally {
-        tableLock.unlock();
-      }
+      LOG.info("{} updateTableColumnStatistics took {}ms, success: {}",
+          new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()),
+          System.currentTimeMillis() - start, committed);
+      rollbackAndCleanup(committed, null);
     }
-  }
-
-  private Lock getTableLockFor(String dbName, String tblName) {
-    return tablelocks.get(dbName + "." + tblName);
   }
 
   /**
@@ -11091,93 +11078,50 @@ public class ObjectStore implements RawStore, Configurable {
     return writeEventInfoList;
   }
 
-  private void prepareQuotes() throws SQLException {
+  private void executePlainSQL(String sql, Consumer<Exception> exceptionConsumer)
+      throws SQLException {
     String s = dbType.getPrepareTxnStmt();
-    if (s != null) {
-      assert pm.currentTransaction().isActive();
-      JDOConnection jdoConn = pm.getDataStoreConnection();
-      try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
+    assert pm.currentTransaction().isActive();
+    JDOConnection jdoConn = pm.getDataStoreConnection();
+    Connection conn = (Connection) jdoConn.getNativeConnection();
+    try (Statement statement = conn.createStatement()) {
+      if (s != null) {
         statement.execute(s);
-      } finally {
-        jdoConn.close();
       }
+      try {
+        statement.execute(sql);
+      } catch (SQLException e) {
+        if (exceptionConsumer != null) {
+          exceptionConsumer.accept(e);
+        } else {
+          throw e;
+        }
+      }
+    } finally {
+      jdoConn.close();
     }
   }
 
   private void lockNotificationSequenceForUpdate() throws MetaException {
+    int maxRetries =
+        MetastoreConf.getIntVar(conf, ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES);
+    long sleepInterval = MetastoreConf.getTimeVar(conf,
+        ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
     if (sqlGenerator.getDbProduct().isDERBY() && directSql != null) {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.
-      new RetryingExecutor(conf, () -> {
+      new RetryingExecutor<Void>(maxRetries, sleepInterval, () -> {
         directSql.lockDbTable("NOTIFICATION_SEQUENCE");
-      }).run();
+        return null;
+      }).commandName("lockNotificationSequenceForUpdate").run();
     } else {
       String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
-      new RetryingExecutor(conf, () -> {
-        prepareQuotes();
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", lockingQuery))) {
-          query.setUnique(true);
-          // only need to execute it to get db Lock
-          query.execute();
-        }
-      }).run();
-    }
-  }
-
-  static class RetryingExecutor {
-    interface Command {
-      void process() throws Exception;
-    }
-
-    private static Logger LOG = LoggerFactory.getLogger(RetryingExecutor.class);
-    private final int maxRetries;
-    private final long sleepInterval;
-    private int currentRetries = 0;
-    private final Command command;
-
-    RetryingExecutor(Configuration config, Command command) {
-      this.maxRetries =
-          MetastoreConf.getIntVar(config, ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES);
-      this.sleepInterval = MetastoreConf.getTimeVar(config,
-          ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
-      this.command = command;
-    }
-
-    public void run() throws MetaException {
-      while (true) {
-        try {
-          command.process();
-          break;
-        } catch (Exception e) {
-          LOG.info(
-              "Attempting to acquire the DB log notification lock: {} out of {}" +
-                " retries", currentRetries, maxRetries, e);
-          if (currentRetries >= maxRetries) {
-            String message =
-                "Couldn't acquire the DB log notification lock because we reached the maximum"
-                    + " # of retries: " + maxRetries
-                    + " retries. If this happens too often, then is recommended to "
-                    + "increase the maximum number of retries on the"
-                    + " hive.notification.sequence.lock.max.retries configuration";
-            LOG.error(message, e);
-            throw new MetaException(message + " :: " + e.getMessage());
-          }
-          currentRetries++;
-          try {
-            Thread.sleep(sleepInterval);
-          } catch (InterruptedException e1) {
-            String msg = "Couldn't acquire the DB notification log lock on " + currentRetries
-                + " retry, because the following error: ";
-            LOG.error(msg, e1);
-            throw new MetaException(msg + e1.getMessage());
-          }
-        }
-      }
-    }
-    public long getSleepInterval() {
-      return sleepInterval;
+      new RetryingExecutor<Void>(maxRetries, sleepInterval, () -> {
+        executePlainSQL(lockingQuery, null);
+        return null;
+      }).commandName("lockNotificationSequenceForUpdate").run();
     }
   }
 

@@ -66,7 +66,9 @@ public class DatabaseProduct implements Configurable {
    */
   private static final ReentrantLock derbyLock = new ReentrantLock(true);
 
-  public enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
+  public enum DbType {
+    DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED
+  };
   static public DbType dbType;
 
   // Singleton instance
@@ -75,6 +77,9 @@ public class DatabaseProduct implements Configurable {
   Configuration myConf;
 
   private String productName;
+
+  private String dbVersion;
+
   /**
    * Protected constructor for singleton class
    */
@@ -92,7 +97,8 @@ public class DatabaseProduct implements Configurable {
       Configuration conf) {
     try (Connection conn = connPool.getConnection()) {
       String s = conn.getMetaData().getDatabaseProductName();
-      return determineDatabaseProduct(s, conf);
+      String version = conn.getMetaData().getDatabaseProductVersion();
+      return determineDatabaseProduct(s, version, conf);
     } catch (SQLException e) {
       throw new IllegalStateException("Unable to get database product name", e);
     }
@@ -103,8 +109,12 @@ public class DatabaseProduct implements Configurable {
    * @param productName string to defer database connection
    * @return database product type
    */
-  public static DatabaseProduct determineDatabaseProduct(String productName,
-      Configuration conf) {
+  public static  DatabaseProduct determineDatabaseProduct(String productName, Configuration configuration) {
+    return determineDatabaseProduct(productName, null, configuration);
+  }
+
+  private static DatabaseProduct determineDatabaseProduct(String productName,
+      String version, Configuration conf) {
     DbType dbt;
 
     Preconditions.checkNotNull(conf, "Configuration is null");
@@ -117,6 +127,9 @@ public class DatabaseProduct implements Configurable {
         dbt = DbType.CUSTOM;
       }
       Preconditions.checkState(theDatabaseProduct.dbType == dbt);
+      if (theDatabaseProduct.dbVersion == null && version != null) {
+        theDatabaseProduct.dbVersion = version;
+      }
       return theDatabaseProduct;
     }
 
@@ -160,6 +173,9 @@ public class DatabaseProduct implements Configurable {
 
         theDatabaseProduct.dbType = dbt;
         theDatabaseProduct.productName = productName;
+        if (version != null) {
+          theDatabaseProduct.dbVersion = version;
+        }
       }
     }
     return theDatabaseProduct;
@@ -424,24 +440,43 @@ public class DatabaseProduct implements Configurable {
     return condition;
   }
 
-  public String addForUpdateClause(String selectStatement) throws MetaException {
+  public String addForUpdateClause(String selectStatement, boolean noWait) throws MetaException {
     switch (dbType) {
     case DERBY:
       //https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
       //sadly in Derby, FOR UPDATE doesn't meant what it should
       return selectStatement;
-    case MYSQL:
-      //http://dev.mysql.com/doc/refman/5.7/en/select.html
     case ORACLE:
       //https://docs.oracle.com/cd/E17952_01/refman-5.6-en/select.html
     case POSTGRES:
       //http://www.postgresql.org/docs/9.0/static/sql-select.html
     case CUSTOM: // ANSI SQL
+      return selectStatement + " for update" + (noWait ? " NOWAIT" : "");
+    case MYSQL:
+      //http://dev.mysql.com/doc/refman/5.7/en/select.html
+      if (noWait) {
+        // Prior to MySQL 8.0.1, the NOWAIT clause for row locking was not supported directly in the s4u syntax.
+        // Use the MAX_EXECUTION_TIME to ensure the s4u does not run indefinitely.
+        // https://dev.mysql.com/blog-archive/mysql-8-0-1-using-skip-locked-and-nowait-to-handle-hot-rows/
+        String dbName = productName.replaceAll("\\s+", "").toLowerCase();
+        boolean addNoWait = dbName.contains(MYSQL_NAME) &&
+            dbVersion != null && dbVersion.compareToIgnoreCase("8.0.1") >= 0;
+        // https://mariadb.com/docs/release-notes/community-server/old-releases/release-notes-mariadb-10-3-series/mariadb-1030-release-notes
+        addNoWait |= productName.contains(MARIADB_NAME) &&
+            dbVersion != null && dbVersion.compareToIgnoreCase("10.3") >= 0;
+        if (addNoWait) {
+          return selectStatement + " for update NOWAIT";
+        } else {
+          int selectLength = "select".length();
+          return selectStatement.trim().substring(0, selectLength) + " /*+ MAX_EXECUTION_TIME(300) */ " +
+              selectStatement.trim().substring(selectLength) + " for update";
+        }
+      }
       return selectStatement + " for update";
     case SQLSERVER:
       //https://msdn.microsoft.com/en-us/library/ms189499.aspx
       //https://msdn.microsoft.com/en-us/library/ms187373.aspx
-      String modifier = " with (updlock)";
+      String modifier = " with (updlock" + (noWait ? ",NOWAIT" : "") + ")";
       int wherePos = selectStatement.toUpperCase().indexOf(" WHERE ");
       if (wherePos < 0) {
         return selectStatement + modifier;
