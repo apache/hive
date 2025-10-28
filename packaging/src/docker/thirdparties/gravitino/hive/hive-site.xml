@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+
+<configuration>
+
+  <property>
+    <name>hive.jar.directory</name>
+    <value>file:/tmp/hive/jars</value>
+  </property>
+
+  <property>
+    <name>hive.user.install.directory</name>
+    <value>file:/tmp/hive/user_install</value>
+  </property>
+
+  <property>
+    <name>tez.local.mode</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>tez.runtime.optimize.local.fetch</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>tez.am.mode.session</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>hive.scheduled.queries.executor.enabled</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>hive.materializedview.rebuild.incremental</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>hive.metastore.transactional.event.listeners</name>
+    <value></value>
+  </property>
+
+  <property>
+    <name>hive.notification.event.poll.interval</name>
+    <value>0</value>
+  </property>
+
+  <property>
+    <name>hive.stats.autogather</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>hive.stats.fetch.column.stats</name>
+    <value>false</value>
+  </property>
+
+  <property>
+    <name>hive.stats.estimate</name>
+    <value>false</value>
+  </property>
+
+
+  <!-- Iceberg REST Catalog: general -->
+
+
+  <property>
+    <name>metastore.catalog.default</name>
+    <value>ice01</value>
+  </property>
+
+  <property>
+    <name>metastore.client.impl</name>
+    <value>org.apache.iceberg.hive.client.HiveRESTCatalogClient</value>
+  </property>
+
+  <property>
+    <name>iceberg.catalog.ice01.uri</name>
+    <value>http://gravitino:9001/iceberg</value>
+  </property>
+
+  <property>
+    <name>iceberg.catalog.ice01.type</name>
+    <value>rest</value>
+  </property>
+
+  <!-- Iceberg REST Catalog: oAuth2 -->
+
+  <property>
+    <name>iceberg.catalog.ice01.rest.auth.type</name>
+    <value>oauth2</value>
+  </property>
+
+  <property>
+    <name>iceberg.catalog.ice01.oauth2-server-uri</name>
+    <value>http://keycloak:8080/realms/hive/protocol/openid-connect/token</value>
+  </property>
+
+  <property>
+    <name>iceberg.catalog.ice01.credential</name>
+    <value>iceberg-client:iceberg-client-secret</value>
+  </property>
+
+</configuration>

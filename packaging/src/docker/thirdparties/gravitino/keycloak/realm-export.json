@@ -1,0 +1,43 @@
+{
+  "realm": "hive",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "iceberg-client",
+      "secret": "iceberg-client-secret",
+      "enabled": true,
+      "redirectUris": ["*"],
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": false,
+      "defaultClientScopes": ["catalog"],
+      "optionalClientScopes": [],
+      "protocolMappers": [
+        {
+          "name": "audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "hive-iceberg",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ],
+      "attributes": {
+        "access.token.lifespan": "3600"
+      }
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "catalog",
+      "protocol": "openid-connect",
+      "attributes": {},
+      "protocolMappers": []
+    }
+  ]
+}
