@@ -225,7 +225,6 @@ public class MetastoreConf {
       ConfVars.HMS_HANDLER_ATTEMPTS,
       ConfVars.HMS_HANDLER_INTERVAL,
       ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF,
-      ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
       ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS,
       ConfVars.USERS_IN_ADMIN_ROLE,
       ConfVars.HIVE_TXN_MANAGER,
@@ -244,18 +243,26 @@ public class MetastoreConf {
       ConfVars.AGGREGATE_STATS_CACHE_MAX_READER_WAIT,
       ConfVars.AGGREGATE_STATS_CACHE_MAX_FULL,
       ConfVars.AGGREGATE_STATS_CACHE_CLEAN_UNTIL,
-      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       ConfVars.FILE_METADATA_THREADS,
       ConfVars.METASTORE_CLIENT_FILTER_ENABLED,
       ConfVars.METASTORE_SERVER_FILTER_ENABLED,
       ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN,
-      ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN
+      ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN,
+      // Add metaConfVars here as well
+      ConfVars.TRY_DIRECT_SQL,
+      ConfVars.TRY_DIRECT_SQL_DDL,
+      ConfVars.CLIENT_SOCKET_TIMEOUT,
+      ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
+      ConfVars.PARTITION_ORDER_EXPR,
+      ConfVars.CAPABILITY_CHECK,
+      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
+      ConfVars.EXPRESSION_PROXY_CLASS
   };
 
   /**
    * User configurable Metastore vars
    */
-  private static final MetastoreConf.ConfVars[] metaConfVars = {
+  public static final MetastoreConf.ConfVars[] metaConfVars = {
       ConfVars.TRY_DIRECT_SQL,
       ConfVars.TRY_DIRECT_SQL_DDL,
       ConfVars.CLIENT_SOCKET_TIMEOUT,
