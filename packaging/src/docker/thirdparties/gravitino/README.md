@@ -19,7 +19,7 @@ limitations under the License.
 
 # Hive + Gravitino + Keycloak: Docker-Compose Setup
 
-This repository contains a docker-compose-based setup integrating Apache Hive, Gravitino Iceberg REST server, and Keycloak for OAuth2 authentication. It allows Hive to use an Iceberg REST catalog secured via Keycloak.
+This package contains a docker-compose-based setup integrating Apache Hive, Gravitino Iceberg REST server, and Keycloak for OAuth2 authentication. It allows Hive to use an Iceberg REST catalog secured via Keycloak.
 
 ## Table of Contents
 - Architecture Overview

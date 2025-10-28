@@ -19,7 +19,7 @@ limitations under the License.
 
 # Hive + Polaris: Docker-Compose Setup
 
-This folder contains a docker-compose-based setup integrating Apache Hive and Polaris. 
+This package contains a docker-compose-based setup integrating Apache Hive and Polaris. 
 It allows Hive to use an Iceberg REST catalog secured with oauth2 provided by Polaris.
 
 ## Table of Contents
