@@ -38,7 +38,11 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.Collections;
+
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -92,8 +96,9 @@ public class TestShowProcessList {
 
   @Test
   public void testQueries() throws Exception {
-    //Initiate several parallel connections, each with a query that may begin a transaction.
-    for (int i = 0; i < 20; i++) {
+    int connections = 10;
+    //Initiate 10 parallel connections, each with a query that begins a transaction.
+    for (int i = 0; i < connections; i++) {
       executor.submit(() -> {
         try (Connection con = DriverManager.getConnection(miniHS2.getJdbcURL(), user, "bar");
             Statement stmt = con.createStatement()) {
@@ -104,27 +109,28 @@ public class TestShowProcessList {
         }
       });
     }
+    Set<Integer> txnIds = new HashSet<>();
     try (Connection testCon = DriverManager.getConnection(miniHS2.getJdbcURL(), user, "bar");
         Statement s = testCon.createStatement()) {
       while (executor.getActiveCount() > 0) {
-        long txnId = executeShowProcessList(s);
-        System.out.println("txnId is " + txnId);
-        // -1 implies that there are no queries running at that moment or txn is not yet opened
-        if (txnId > -1) {
-          Assert.assertTrue(txnId >= 1);
-          break;
-        }
+        // retrieve txnIds from show processlist output
+        txnIds.addAll(getTxnIdsFromShowProcesslist(s));
       }
     }
+    System.out.println(txnIds);
+    // max txnId should be equal to the number of connections
+    int maxTxnId = Collections.max(txnIds);
+    Assert.assertEquals(maxTxnId, connections);
   }
 
-  private static long executeShowProcessList(Statement s) {
+  private static Set<Integer> getTxnIdsFromShowProcesslist(Statement s) {
+    Set<Integer> txnIds = new HashSet<>();
     try (ResultSet rs = s.executeQuery("show processlist")) {
       while (rs.next()) {
-        long txnId = Long.parseLong(rs.getString("Txn ID"));
+        int txnId = Integer.parseInt(rs.getString("Txn ID"));
         // TxnId can be 0 because the query has not yet opened txn when show processlist is run.
         if (txnId > 0) {
-          return txnId;
+          txnIds.add(txnId);
         }
       }
     } catch (Exception exception) {
@@ -132,7 +138,7 @@ public class TestShowProcessList {
       LOG.error(Arrays.toString(exception.getStackTrace()));
 
     }
-    return -1;
+    return txnIds;
   }
 
 }
