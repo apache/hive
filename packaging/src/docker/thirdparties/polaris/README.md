@@ -74,29 +74,23 @@ This diagram illustrates the key docker-compose components and their interaction
 - ```$HIVE_HOME``` environment variable pointing to Hive installation (for connecting to Beeline)
 
 ## Quickstart
-### STEP 1: Build Hive Docker Image
-- Currently, only Hive 4.2.0-SNAPSHOT has the required Iceberg REST catalog client.
-- To build the Hive Docker image with Iceberg REST catalog client on your local machine, follow these steps:
-    - Build Hive using Docker profile.
-    - Copy ```apache-hive-4.2.0-SNAPSHOT-bin.tar.gz``` to ```packaging/cache``` folder.
-    - Execute ```build.sh``` from ```packaging/src/docker/``` folder.
 
-### STEP 2: Export the Hive version
+### STEP 1: Export the Hive version
 ```shell
 export HIVE_VERSION=4.2.0-SNAPSHOT
 ```
 
-### STEP 3: Start services
+### STEP 2: Start services
 ```shell
 docker-compose up -d
 ```
 
-### STEP 4: Connect to beeline
+### STEP 3: Connect to beeline
 ```shell
 "${HIVE_HOME}/bin/beeline" -u "jdbc:hive2://localhost:10001/default" -n hive -p hive
 ```
 
-### STEP 5: Stop services:
+### STEP 4: Stop services:
 ```shell
 docker-compose down -v
 ```
