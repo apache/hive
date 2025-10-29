@@ -214,11 +214,10 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
         relNodeToTableAndProjects.containsKey(rel)) {
       Table table = relNodeToTableAndProjects.get(rel);
       List<FieldSchema> tableAllCols = table.getAllCols();
-
-      rel.getRowType().getFieldList().stream()
-          .map(RelDataTypeField::getIndex)
-          .filter(fieldsUsed::get)
-          .forEach(i -> columnAccessInfo.add(table.getCompleteName(), tableAllCols.get(i).getName()));
+      
+      for (int i = fieldsUsed.nextSetBit(0); i >= 0; i = fieldsUsed.nextSetBit(i + 1)) {
+        columnAccessInfo.add(table.getCompleteName(), tableAllCols.get(i).getName());
+      }
     }
   }
 
