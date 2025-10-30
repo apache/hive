@@ -322,7 +322,7 @@ abstract class CompactionQueryBuilder {
 
   private void buildAddClauseForAlter(StringBuilder query) {
     if (validWriteIdList == null || dir == null) {
-      LOG.info("There is no delta to be added as partition to the temp external table used by the minor compaction. " +
+      LOG.warn("There is no delta to be added as partition to the temp external table used by the minor compaction. " +
           "This may result an empty compaction directory.");
       query.setLength(0);
       return;  // avoid NPEs, don't throw an exception but return an empty query
