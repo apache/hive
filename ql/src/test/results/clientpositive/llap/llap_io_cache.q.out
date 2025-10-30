@@ -1,0 +1,60 @@
+PREHOOK: query: CREATE TABLE tbl_parq (
+  id INT,
+  payload STRING
+)
+STORED AS PARQUET
+TBLPROPERTIES (
+  'parquet.block.size'='16777216',
+  'parquet.page.size'='16777216',
+  'parquet.compression'='UNCOMPRESSED'
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_parq
+POSTHOOK: query: CREATE TABLE tbl_parq (
+  id INT,
+  payload STRING
+)
+STORED AS PARQUET
+TBLPROPERTIES (
+  'parquet.block.size'='16777216',
+  'parquet.page.size'='16777216',
+  'parquet.compression'='UNCOMPRESSED'
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_parq
+PREHOOK: query: INSERT OVERWRITE TABLE tbl_parq
+SELECT
+  1 AS id,
+  RPAD('x', 16777177, 'x') AS payload
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_parq
+POSTHOOK: query: INSERT OVERWRITE TABLE tbl_parq
+SELECT
+  1 AS id,
+  RPAD('x', 16777177, 'x') AS payload
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_parq
+POSTHOOK: Lineage: tbl_parq.id SIMPLE []
+POSTHOOK: Lineage: tbl_parq.payload SIMPLE []
+PREHOOK: query: SELECT LENGTH(payload) FROM tbl_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parq
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT LENGTH(payload) FROM tbl_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parq
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+16777177
+PREHOOK: query: SELECT SUM(LENGTH(payload)) FROM tbl_parq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_parq
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT SUM(LENGTH(payload)) FROM tbl_parq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_parq
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+16777177
