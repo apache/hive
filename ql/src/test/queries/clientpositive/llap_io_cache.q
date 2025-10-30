@@ -3,6 +3,8 @@ set hive.llap.io.memory.mode=cache;
 set hive.llap.io.allocator.alloc.max=16Mb;
 set hive.vectorized.execution.enabled=true;
 
+DROP TABLE IF EXISTS tbl_parq;
+
 CREATE TABLE tbl_parq (
   id INT,
   payload STRING
@@ -14,7 +16,7 @@ TBLPROPERTIES (
   'parquet.compression'='UNCOMPRESSED'
 );
 
-INSERT OVERWRITE TABLE tbl_parq
+INSERT INTO TABLE tbl_parq
 SELECT
   1 AS id,
   RPAD('x', 16777177, 'x') AS payload;

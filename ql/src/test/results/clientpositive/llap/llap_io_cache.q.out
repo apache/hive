@@ -1,3 +1,9 @@
+PREHOOK: query: DROP TABLE IF EXISTS tbl_parq
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS tbl_parq
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: CREATE TABLE tbl_parq (
   id INT,
   payload STRING
@@ -24,14 +30,14 @@ TBLPROPERTIES (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tbl_parq
-PREHOOK: query: INSERT OVERWRITE TABLE tbl_parq
+PREHOOK: query: INSERT INTO TABLE tbl_parq
 SELECT
   1 AS id,
   RPAD('x', 16777177, 'x') AS payload
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@tbl_parq
-POSTHOOK: query: INSERT OVERWRITE TABLE tbl_parq
+POSTHOOK: query: INSERT INTO TABLE tbl_parq
 SELECT
   1 AS id,
   RPAD('x', 16777177, 'x') AS payload
