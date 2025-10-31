@@ -1052,10 +1052,25 @@ public final class Utilities {
   }
 
   public static Path toTempPath(Path orig) {
-    if (orig.getName().indexOf(tmpPrefix) == 0) {
+    return toTempPath(orig, tmpPrefix);
+  }
+
+  private static Path toTempPath(Path orig, String prefix) {
+    if (orig.getName().indexOf(prefix) == 0) {
       return orig;
     }
-    return new Path(orig.getParent(), tmpPrefix + orig.getName());
+    return new Path(orig.getParent(), prefix + orig.getName());
+  }
+
+  /**
+   * This method is to convert a path into a temporary path for the direct insert manifest files.
+   * It is important to use a prefix which starts with '_', like '_tmp.', so the content of this
+   * directory would be filtered out by the AcidUtils.acidHiddenFileFilter.
+   * @param orig
+   * @return
+   */
+  public static Path toManifestDirTempPath(String orig) {
+    return toTempPath(new Path(orig), hadoopTmpPrefix);
   }
 
   /**
@@ -4564,7 +4579,7 @@ public final class Utilities {
     if (isDelete) {
       deltaDir = AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId);
     }
-    Path manifestPath = new Path(manifestRoot, Utilities.toTempPath(deltaDir));
+    Path manifestPath = new Path(manifestRoot, Utilities.toManifestDirTempPath(deltaDir));
 
     if (isInsertOverwrite) {
       // When doing a multi-statement insert overwrite query with dynamic partitioning, the
