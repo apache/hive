@@ -1471,18 +1471,19 @@ public class Parquet {
       Map<String, String> metadata)
       throws IOException {
     OutputFile file = Files.localOutput(outputFile);
-    ParquetFileWriter writer =
+    try (ParquetFileWriter writer =
         new ParquetFileWriter(
             ParquetIO.file(file),
             ParquetSchemaUtil.convert(schema, "table"),
             ParquetFileWriter.Mode.CREATE,
             rowGroupSize,
-            0);
-    writer.start();
-    for (File inputFile : inputFiles) {
-      writer.appendFile(ParquetIO.file(Files.localInput(inputFile)));
+            0)) {
+      writer.start();
+      for (File inputFile : inputFiles) {
+        writer.appendFile(ParquetIO.file(Files.localInput(inputFile)));
+      }
+      writer.end(metadata);
     }
-    writer.end(metadata);
   }
 
   public static VariantShreddingFunction constructVariantShreddingFunction(Record sampleRecord, Schema schema) {
