@@ -57,7 +57,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
     String tmpTableName = getTempTableName(table);
     String resultTmpTableName = tmpTableName + "_result";
     Path resultDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds, driverConf,
-        false, false, false, dir);
+        false, false, dir);
 
     List<String> createTableQueries = getCreateQueries(tmpTableName, table, storageDescriptor, dir,
         writeIds, resultDeltaDir);

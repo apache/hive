@@ -57,7 +57,7 @@ final class MergeCompactor extends QueryCompactor {
     if (isMergeCompaction(hiveConf, dir, storageDescriptor)) {
       // Only inserts happened, it is much more performant to merge the files than running a query
       Path outputDirPath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
-          hiveConf, compactionInfo.isMajorCompaction(), false, false, dir);
+          hiveConf, compactionInfo.isMajorCompaction(), false, dir);
       try {
         return mergeFiles(hiveConf, compactionInfo.isMajorCompaction(),
                 dir, outputDirPath, AcidUtils.isInsertOnlyTable(table.getParameters()));
