@@ -59,9 +59,9 @@ final class MinorQueryCompactor extends QueryCompactor {
         table.getDbName() + "_tmp_compactor_" + table.getTableName() + "_" + System.currentTimeMillis();
 
     Path resultDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor,
-        writeIds, conf, false, false, false, dir);
+        writeIds, conf, false, false, dir);
     Path resultDeleteDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor,
-        writeIds, conf, false, true, false, dir);
+        writeIds, conf, false, true, dir);
 
     List<String> createQueries = getCreateQueries(table, tmpTableName, dir, writeIds,
         resultDeltaDir, resultDeleteDeltaDir);

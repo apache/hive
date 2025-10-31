@@ -3369,7 +3369,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     testCompactionWithMerge(CompactionType.MINOR, false, false, null,
             Collections.singletonList("bucket_00000"),
             Arrays.asList("delta_0000004_0000004_0000", "delta_0000005_0000005_0000", "delta_0000006_0000006_0000"),
-            Collections.singletonList("delta_0000001_0000006_v0000013"), false, true, false);
+            Collections.singletonList("delta_0000004_0000006_v0000013"), false, true, false);
   }
 
   @Test
@@ -3709,4 +3709,97 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
     Assert.assertEquals(3, StatsSetupConst.getColumnsHavingStats(partition.getParameters()).size());
   }
+
+  @Test
+  public void testMinorWithAbortedAndOpenTnx() throws Exception {
+    String dbName = "default";
+    String tableName = "testAbortedAndOpenTnxTbl";
+    // Create test table
+    TestDataProvider testDataProvider = new TestDataProvider();
+    testDataProvider.createFullAcidTable(tableName, false, false);
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+
+    // Abort the first insert transaction
+    driver.getConf().setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, true);
+    testDataProvider.insertOnlyTestData(tableName, 1);
+    driver.getConf().setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, false);
+    // Do threee successful insert to create 3 deltas
+    testDataProvider.insertOnlyTestData(tableName, 3);
+
+    // Start an insert and leave it open when the compaction is running
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder().withFieldDelimiter(',').build();
+    StreamingConnection connection = HiveStreamingConnection.newBuilder().withDatabase(dbName).withTable(tableName)
+        .withAgentInfo("UT_" + Thread.currentThread().getName()).withHiveConf(conf).withRecordWriter(writer)
+        .withTransactionBatchSize(1).connect();
+    connection.beginTransaction();
+    connection.write("4,4".getBytes());
+    // Run query-based MINOR compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
+    // Finish the open transaction
+    connection.commitTransaction();
+    connection.close();
+    List<String> expectedData = testDataProvider.getAllData(tableName, false);
+    // Run cleaner. It is expected to delete all deltas except the one created by the compaction and the one belong to the open transaction.
+    CompactorTestUtil.runCleaner(conf);
+
+    verifySuccessfulCompaction(1);
+    List<String> resultData = testDataProvider.getAllData(tableName);
+    Assert.assertEquals(expectedData, resultData);
+    List<String> deltas = CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
+    Assert.assertEquals(2, deltas.size());
+    Assert.assertEquals("Delta directory names are not matching after compaction",
+        Arrays.asList("delta_0000002_0000004_v0000007", "delta_0000005_0000005"), deltas);
+    for (String delta: deltas) {
+      // Check if none of the delta directories are empty
+      List<String> files = CompactorTestUtil.getBucketFileNames(fs, table, null, delta);
+      Assert.assertFalse(files.isEmpty());
+    }
+  }
+
+  @Test
+  public void testMinorWithOpenTnx() throws Exception {
+    String dbName = "default";
+    String tableName = "testAbortedAndOpenTnxTbl";
+    // Create test table
+    TestDataProvider testDataProvider = new TestDataProvider();
+    testDataProvider.createFullAcidTable(tableName, false, false);
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+
+    // Do threee successful insert to create 3 deltas
+    testDataProvider.insertOnlyTestData(tableName, 3);
+
+    // Start an insert and leave it open when the compaction is running
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder().withFieldDelimiter(',').build();
+    StreamingConnection connection = HiveStreamingConnection.newBuilder().withDatabase(dbName).withTable(tableName)
+        .withAgentInfo("UT_" + Thread.currentThread().getName()).withHiveConf(conf).withRecordWriter(writer)
+        .withTransactionBatchSize(1).connect();
+    connection.beginTransaction();
+    connection.write("4,4".getBytes());
+    // Run query-based MINOR compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
+    // Finish the open transaction
+    connection.commitTransaction();
+    connection.close();
+    List<String> expectedData = testDataProvider.getAllData(tableName, false);
+    // Run cleaner. It is expected to delete all deltas except the one created by the compaction and the one belong to the open transaction.
+    CompactorTestUtil.runCleaner(conf);
+
+    verifySuccessfulCompaction(1);
+    List<String> resultData = testDataProvider.getAllData(tableName);
+    Assert.assertEquals(expectedData, resultData);
+    List<String> deltas = CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null);
+    Assert.assertEquals(2, deltas.size());
+    Assert.assertEquals("Delta directory names are not matching after compaction",
+        Arrays.asList("delta_0000001_0000003_v0000006", "delta_0000004_0000004"), deltas);
+    for (String delta: deltas) {
+      // Check if none of the delta directories are empty
+      List<String> files = CompactorTestUtil.getBucketFileNames(fs, table, null, delta);
+      Assert.assertFalse(files.isEmpty());
+    }
+  }
+
 }
