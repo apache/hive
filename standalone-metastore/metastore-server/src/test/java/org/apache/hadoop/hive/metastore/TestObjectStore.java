@@ -133,6 +133,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
 public class TestObjectStore {
@@ -953,6 +956,56 @@ public class TestObjectStore {
           Arrays.asList("test_col1", "test_col2"));
     }
     Assert.assertEquals(0, tabColStats.size());
+  }
+
+  @Test
+  public void testDirectSQLDropStatsSQlInject() throws Exception {
+    createPartitionedTable(true, true);
+    List<ColumnStatistics> tabColStats;
+    ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, DB1, TABLE1);
+    ColumnStatisticsObj statsObj1 = new ColumnStatisticsObj("test_col1", "int",
+        new ColumnStatisticsData(ColumnStatisticsData._Fields.DECIMAL_STATS, new DecimalColumnStatsData(100, 1000)));
+    ColumnStatisticsObj statsObj2 = new ColumnStatisticsObj("test_col2", "int",
+        new ColumnStatisticsData(ColumnStatisticsData._Fields.DECIMAL_STATS, new DecimalColumnStatsData(200, 2000)));
+    ColumnStatistics colStats = new ColumnStatistics(statsDesc, Arrays.asList(statsObj1, statsObj2));
+    colStats.setEngine(ENGINE);
+    objectStore.updateTableColumnStatistics(colStats, null, 0);
+    try (AutoCloseable c = deadline()) {
+      tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_col1", "test_col2"));
+    }
+    Assert.assertEquals(1, tabColStats.size());
+    Assert.assertEquals(2, tabColStats.get(0).getStatsObjSize());
+
+    String sqlInjectEngine = "hive' OR 1=1 --'"; // This can delete all the records
+    assertFalse(objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col1", sqlInjectEngine));
+    try (AutoCloseable c = deadline()) {
+      tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_col1", "test_col2"));
+    }
+    Assert.assertEquals(1, tabColStats.size());
+    Assert.assertEquals(2, tabColStats.get(0).getStatsObjSize()); // Verify that sql injection didn't delete any records
+
+    AggrStats aggrStats;
+    try (AutoCloseable c = deadline()) {
+      aggrStats = objectStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"), ENGINE);
+    }
+    List<ColumnStatisticsObj> stats = aggrStats.getColStats();
+    Assert.assertEquals(1, stats.size());
+    Assert.assertEquals(3, aggrStats.getPartsFound());
+
+    objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+        "test_part_col=a0", Arrays.asList("a0"), null, sqlInjectEngine);
+    List<List<ColumnStatistics>> partitionStats;
+    try (AutoCloseable c = deadline()) {
+      partitionStats = objectStore.getPartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+          Collections.singletonList("test_part_col"));
+    }
+    Assert.assertEquals(1, partitionStats.size());
+    Assert.assertEquals(3, partitionStats.get(0).size());
   }
 
   @Test
