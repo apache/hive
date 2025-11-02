@@ -308,7 +308,7 @@ public class TezSessionState {
       addJarLRByClass(LlapProtocolClientImpl.class, commonLocalResources);
       addJarLRByClass(LlapProtocolClientProxy.class, commonLocalResources);
       addJarLRByClassName(
-        getClass().getClassLoader(),
+        Utilities.getSessionSpecifiedClassLoader(),
         "org.apache.hadoop.registry.client.api.RegistryOperations",
         commonLocalResources
       );
