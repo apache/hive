@@ -3295,8 +3295,6 @@ class MetaStoreDirectSql {
 
           try (QueryWrapper queryParams = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", deleteSql))) {
             executeWithArray(queryParams.getInnerQuery(), params.toArray(), deleteSql);
-          } catch (MetaException e) {
-            throw new MetaException("Error removing partition column stats: " + e.getMessage());
           }
         }
         return null;
