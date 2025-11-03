@@ -308,9 +308,9 @@ public class TezSessionState {
       addJarLRByClass(LlapProtocolClientImpl.class, commonLocalResources);
       addJarLRByClass(LlapProtocolClientProxy.class, commonLocalResources);
       addJarLRByClassName(
-        Utilities.getSessionSpecifiedClassLoader(),
-        "org.apache.hadoop.registry.client.api.RegistryOperations",
-        commonLocalResources
+          Utilities.getSessionSpecifiedClassLoader(),
+          "org.apache.hadoop.registry.client.api.RegistryOperations",
+          commonLocalResources
       );
     }
 
@@ -870,12 +870,18 @@ public class TezSessionState {
     addJarLRByPath(jarPath, lrMap);
   }
 
-  private void addJarLRByClassName(ClassLoader loader, String className, final Map<String, LocalResource> lrMap) throws IOException {
+  private void addJarLRByClassName(
+    ClassLoader loader,
+    String className,
+    final Map<String, LocalResource> lrMap
+  ) throws IOException {
+
     String jarPath = Utilities.jarFinderGetJar(loader, className);
     if (jarPath == null) {
       throw new IOException("Can't find jar for: " + className);
     }
     addJarLRByPath(jarPath, lrMap);
+
   }
 
   private String getSha(final Path localFile) throws IOException, IllegalArgumentException {

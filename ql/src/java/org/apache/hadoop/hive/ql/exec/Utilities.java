@@ -4162,10 +4162,10 @@ public final class Utilities {
    */
   public static String jarFinderGetJar(ClassLoader loader, String className) {
     if (loader != null) {
-      String class_file = className.replaceAll("\\.", "/") + ".class";
+      String classFilePath = className.replace('.', '/') + ".class";
       try {
-        for (Enumeration itr = loader.getResources(class_file); itr.hasMoreElements();) {
-          URL url = (URL) itr.nextElement();
+        for (Enumeration<URL> itr = loader.getResources(classFilePath); itr.hasMoreElements();) {
+          URL url = itr.nextElement();
           String path = url.getPath();
           if (path.startsWith("file:")) {
             path = path.substring("file:".length());
