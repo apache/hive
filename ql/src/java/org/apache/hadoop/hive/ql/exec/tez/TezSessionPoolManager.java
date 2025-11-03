@@ -237,7 +237,8 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     //       able to handle not being initialized. Perhaps we should get rid of the instance and
     //       move the setupPool code to ctor. For now, at least hasInitialSessions will be false.
     String queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
-    if (queueName == null || queueName.isEmpty()) {
+    String tez_queues = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES);
+    if ((queueName == null || queueName.isEmpty()) && (tez_queues == null || tez_queues.isEmpty())) {
       queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
     }
     boolean hasQueue = (queueName != null) && !queueName.isEmpty();
