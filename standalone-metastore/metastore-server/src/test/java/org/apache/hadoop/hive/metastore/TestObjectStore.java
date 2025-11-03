@@ -919,14 +919,14 @@ public class TestObjectStore {
     List<ColumnStatistics> tabColStats;
     try (AutoCloseable c = deadline()) {
       tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_col1", "test_col2"));
+          Arrays.asList("test_col1", "test_col' 2"));
     }
     Assert.assertEquals(0, tabColStats.size());
 
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc(true, DB1, TABLE1);
     ColumnStatisticsObj statsObj1 = new ColumnStatisticsObj("test_col1", "int",
         new ColumnStatisticsData(ColumnStatisticsData._Fields.DECIMAL_STATS, new DecimalColumnStatsData(100, 1000)));
-    ColumnStatisticsObj statsObj2 = new ColumnStatisticsObj("test_col2", "int",
+    ColumnStatisticsObj statsObj2 = new ColumnStatisticsObj("test_col' 2", "int",
         new ColumnStatisticsData(ColumnStatisticsData._Fields.DECIMAL_STATS, new DecimalColumnStatsData(200, 2000)));
     ColumnStatistics colStats = new ColumnStatistics(statsDesc, Arrays.asList(statsObj1, statsObj2));
     colStats.setEngine(ENGINE);
@@ -934,7 +934,7 @@ public class TestObjectStore {
 
     try (AutoCloseable c = deadline()) {
       tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_col1", "test_col2"));
+          Arrays.asList("test_col1", "test_col' 2"));
     }
     Assert.assertEquals(1, tabColStats.size());
     Assert.assertEquals(2, tabColStats.get(0).getStatsObjSize());
@@ -942,17 +942,23 @@ public class TestObjectStore {
     objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col1", ENGINE);
     try (AutoCloseable c = deadline()) {
       tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_col1", "test_col2"));
+          Arrays.asList("test_col1", "test_col' 2"));
     }
     Assert.assertEquals(1, tabColStats.size());
     Assert.assertEquals(1, tabColStats.get(0).getStatsObjSize());
 
-    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col2", ENGINE);
+    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col' 2", ENGINE);
     try (AutoCloseable c = deadline()) {
       tabColStats = objectStore.getTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_col1", "test_col2"));
+          Arrays.asList("test_col1", "test_col' 2"));
     }
     Assert.assertEquals(0, tabColStats.size());
+  }
+
+  @Test
+  public void testDeleteTableColumnStatisticsWhenEngineHasSpecialCharacter() throws Exception {
+    createPartitionedTable(true, true);
+    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col1", "special '");
   }
 
   @Test
@@ -1007,6 +1013,14 @@ public class TestObjectStore {
   }
 
   @Test
+  public void testDeletePartitionColumnStatisticsWhenEngineHasSpecialCharacter() throws Exception {
+    createPartitionedTable(true, true);
+    objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+            "test_part_col=a2", List.of("a2"), null, "special '");
+  }
+
+
+  @Test
   public void testAggrStatsUseDB() throws Exception {
     Configuration conf2 = MetastoreConf.newMetastoreConf(conf);
     MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_BITVECTOR, false);
@@ -1051,7 +1065,7 @@ public class TestObjectStore {
             .setDbName(DB1)
             .setTableName(TABLE1)
             .addCol("test_col1", "int")
-            .addCol("test_col2", "int")
+            .addCol("test_col' 2", "int")
             .addPartCol("test_part_col", "int")
             .addCol("test_bucket_col", "int", "test bucket col comment")
             .addCol("test_skewed_col", "int", "test skewed col comment")
@@ -1237,6 +1251,12 @@ public class TestObjectStore {
     }.run(false);
 
     Assert.assertEquals(1, directSqlErrors.getCount());
+  }
+
+  @Test(expected = MetaException.class)
+  public void testLockDbTableThrowsExceptionWhenTableIsNotAllowedToLock() throws Exception {
+    MetaStoreDirectSql metaStoreDirectSql = new MetaStoreDirectSql(objectStore.getPersistenceManager(), conf, null);
+    metaStoreDirectSql.lockDbTable("TBLS");
   }
 
   @Deprecated
