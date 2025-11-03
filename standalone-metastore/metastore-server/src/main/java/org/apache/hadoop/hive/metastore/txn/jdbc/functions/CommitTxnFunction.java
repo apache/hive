@@ -154,8 +154,9 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
       TxnUtils.raiseTxnUnexpectedState(actualTxnStatus, txnid);
     }
 
-    String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
-        OperationType.UPDATE + "," + OperationType.DELETE + ")";
+    String conflictSQLSuffix = String.format("""
+        FROM "TXN_COMPONENTS" WHERE "TC_TXNID" = %d AND "TC_OPERATION_TYPE" IN (%s, %s)
+        """, txnid, OperationType.UPDATE, OperationType.DELETE);
     long tempCommitId = TxnUtils.generateTemporaryId();
 
     if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
@@ -165,9 +166,14 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
       commitId = jdbcResource.execute(new GetHighWaterMarkHandler());
 
     } else if (txnType != TxnType.READ_ONLY && !isReplayedReplTxn) {
-      String writeSetInsertSql = "INSERT INTO \"WRITE_SET\" (\"WS_DATABASE\", \"WS_TABLE\", \"WS_PARTITION\"," +
-          "   \"WS_TXNID\", \"WS_COMMIT_ID\", \"WS_OPERATION_TYPE\")" +
-          " SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\", " + tempCommitId + ", \"TC_OPERATION_TYPE\" ";
+      String writeSetInsertSql = """
+          INSERT INTO "WRITE_SET"
+            ("WS_DATABASE", "WS_TABLE", "WS_PARTITION", "WS_TXNID", "WS_COMMIT_ID", "WS_OPERATION_TYPE")
+          SELECT DISTINCT
+            "TC_DATABASE", "TC_TABLE", "TC_PARTITION", "TC_TXNID",
+            :commitId,
+            "TC_OPERATION_TYPE"
+          """;
 
       boolean isUpdateOrDelete = Boolean.TRUE.equals(jdbcResource.getJdbcTemplate().query(
           jdbcResource.getSqlGenerator().addLimitClause(1, "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix),
@@ -195,6 +201,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
                 (txnType != TxnType.REBALANCE_COMPACTION) ? "" : " AND \"TC_OPERATION_TYPE\" <> :type")),
             new MapSqlParameterSource()
                 .addValue("txnId", txnid)
+                .addValue("commitId", tempCommitId)
                 .addValue("type", OperationType.COMPACT.getSqlConst()));
 
         /**
@@ -241,8 +248,8 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
       } else if (!ConfVars.useMinHistoryLevel()) {
         jdbcResource.getJdbcTemplate().update(writeSetInsertSql + "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = :txnId",
             new MapSqlParameterSource()
-                .addValue("txnId", txnid));
-        commitId = jdbcResource.execute(new GetHighWaterMarkHandler());
+                .addValue("txnId", txnid)
+                .addValue("commitId", txnid));
       }
     } else {
       /*
