@@ -1253,6 +1253,12 @@ public class TestObjectStore {
     Assert.assertEquals(1, directSqlErrors.getCount());
   }
 
+  @Test(expected = MetaException.class)
+  public void testLockDbTableThrowsExceptionWhenTableIsNotAllowedToLock() throws Exception {
+    MetaStoreDirectSql metaStoreDirectSql = new MetaStoreDirectSql(objectStore.getPersistenceManager(), conf, null);
+    metaStoreDirectSql.lockDbTable("TBLS");
+  }
+
   @Deprecated
   private static void dropAllStoreObjects(RawStore store)
       throws MetaException, InvalidObjectException, InvalidInputException {
