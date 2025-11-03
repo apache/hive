@@ -3204,6 +3204,7 @@ class MetaStoreDirectSql {
   }
 
   public void lockDbTable(String tableName) throws MetaException {
+    // Only certain tables are allowed to be locked, and the API should restrict them.
     if (!ALLOWED_TABLES_TO_LOCK.contains(tableName)) {
       throw new MetaException("Error while locking table " + tableName);
     }
