@@ -75,7 +75,7 @@
     <datanucleus-rdbms.version>6.0.10</datanucleus-rdbms.version>
     <derby.version>10.17.1.0</derby.version>
     <mariadb.version>2.5.0</mariadb.version>
-    <mssql.version>6.2.1.jre8</mssql.version>
+    <mssql.version>10.2.4.jre8</mssql.version>
     <mysql.version>8.2.0</mysql.version>
     <postgres.version>42.7.3</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
