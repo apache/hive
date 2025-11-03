@@ -871,9 +871,9 @@ public class TezSessionState {
   }
 
   private void addJarLRByClassName(
-    ClassLoader loader,
-    String className,
-    final Map<String, LocalResource> lrMap
+      ClassLoader loader,
+      String className,
+      final Map<String, LocalResource> lrMap
   ) throws IOException {
 
     String jarPath = Utilities.jarFinderGetJar(loader, className);
