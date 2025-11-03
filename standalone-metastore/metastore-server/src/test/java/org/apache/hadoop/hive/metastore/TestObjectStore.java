@@ -956,6 +956,12 @@ public class TestObjectStore {
   }
 
   @Test
+  public void testDeleteTableColumnStatisticsWhenEngineHasSpecialCharacter() throws Exception {
+    createPartitionedTable(true, true);
+    objectStore.deleteTableColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1, "test_col1", "special '");
+  }
+
+  @Test
   public void testPartitionStatisticsOps() throws Exception {
     createPartitionedTable(true, true);
 
@@ -1005,6 +1011,14 @@ public class TestObjectStore {
     }
     Assert.assertEquals(0, stat.size());
   }
+
+  @Test
+  public void testDeletePartitionColumnStatisticsWhenEngineHasSpecialCharacter() throws Exception {
+    createPartitionedTable(true, true);
+    objectStore.deletePartitionColumnStatistics(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+            "test_part_col=a2", List.of("a2"), null, "special '");
+  }
+
 
   @Test
   public void testAggrStatsUseDB() throws Exception {
