@@ -32,6 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -80,6 +81,8 @@ public class DatabaseProduct implements Configurable {
 
   private String dbVersion;
 
+  private Pair<Integer, Integer> versionNums;
+
   /**
    * Protected constructor for singleton class
    */
@@ -98,7 +101,9 @@ public class DatabaseProduct implements Configurable {
     try (Connection conn = connPool.getConnection()) {
       String s = conn.getMetaData().getDatabaseProductName();
       String version = conn.getMetaData().getDatabaseProductVersion();
-      return determineDatabaseProduct(s, version, conf);
+      int majorVersion = conn.getMetaData().getDatabaseMajorVersion();
+      int minorVersion = conn.getMetaData().getDatabaseMinorVersion();
+      return determineDatabaseProduct(s, version, Pair.of(majorVersion, minorVersion), conf);
     } catch (SQLException e) {
       throw new IllegalStateException("Unable to get database product name", e);
     }
@@ -109,12 +114,12 @@ public class DatabaseProduct implements Configurable {
    * @param productName string to defer database connection
    * @return database product type
    */
-  public static  DatabaseProduct determineDatabaseProduct(String productName, Configuration configuration) {
-    return determineDatabaseProduct(productName, null, configuration);
+  public static DatabaseProduct determineDatabaseProduct(String productName, Configuration configuration) {
+    return determineDatabaseProduct(productName, null, null, configuration);
   }
 
   private static DatabaseProduct determineDatabaseProduct(String productName,
-      String version, Configuration conf) {
+      String version, Pair<Integer, Integer> versionNums, Configuration conf) {
     DbType dbt;
 
     Preconditions.checkNotNull(conf, "Configuration is null");
@@ -129,6 +134,9 @@ public class DatabaseProduct implements Configurable {
       Preconditions.checkState(theDatabaseProduct.dbType == dbt);
       if (theDatabaseProduct.dbVersion == null && version != null) {
         theDatabaseProduct.dbVersion = version;
+      }
+      if (theDatabaseProduct.versionNums == null && versionNums != null) {
+        theDatabaseProduct.versionNums = versionNums;
       }
       return theDatabaseProduct;
     }
@@ -175,6 +183,9 @@ public class DatabaseProduct implements Configurable {
         theDatabaseProduct.productName = productName;
         if (version != null) {
           theDatabaseProduct.dbVersion = version;
+        }
+        if (versionNums != null) {
+          theDatabaseProduct.versionNums = versionNums;
         }
       }
     }
@@ -455,16 +466,7 @@ public class DatabaseProduct implements Configurable {
     case MYSQL:
       //http://dev.mysql.com/doc/refman/5.7/en/select.html
       if (noWait) {
-        // Prior to MySQL 8.0.1, the NOWAIT clause for row locking was not supported directly in the s4u syntax.
-        // Use the MAX_EXECUTION_TIME to ensure the s4u does not run indefinitely.
-        // https://dev.mysql.com/blog-archive/mysql-8-0-1-using-skip-locked-and-nowait-to-handle-hot-rows/
-        String dbName = productName.replaceAll("\\s+", "").toLowerCase();
-        boolean addNoWait = dbName.contains(MYSQL_NAME) &&
-            dbVersion != null && dbVersion.compareToIgnoreCase("8.0.1") >= 0;
-        // https://mariadb.com/docs/release-notes/community-server/old-releases/release-notes-mariadb-10-3-series/mariadb-1030-release-notes
-        addNoWait |= productName.contains(MARIADB_NAME) &&
-            dbVersion != null && dbVersion.compareToIgnoreCase("10.3") >= 0;
-        if (addNoWait) {
+        if (canMySQLSupportNoWait()) {
           return selectStatement + " for update NOWAIT";
         } else {
           int selectLength = "select".length();
@@ -487,6 +489,26 @@ public class DatabaseProduct implements Configurable {
       String msg = "Unrecognized database product name <" + dbType + ">";
       LOG.error(msg);
       throw new MetaException(msg);
+    }
+  }
+
+  private boolean canMySQLSupportNoWait() {
+    if (versionNums == null) {
+      // Cannot determine the real version of back db
+      return false;
+    }
+    // Prior to MySQL 8.0.1, the NOWAIT clause for row locking was not supported directly in the s4u syntax.
+    // Use the MAX_EXECUTION_TIME to ensure the s4u does not run indefinitely.
+    String dbName = productName.replaceAll("\\s+", "").toLowerCase();
+    boolean isMariaDB = dbName.contains(MARIADB_NAME) ||
+        (dbVersion != null && dbVersion.toLowerCase().contains(MARIADB_NAME));
+    if (isMariaDB) {
+      // https://mariadb.com/docs/release-notes/community-server/old-releases/release-notes-mariadb-10-3-series/mariadb-1030-release-notes
+      return (versionNums.getLeft() >= 10 && versionNums.getRight() > 2);
+    } else {
+      // https://dev.mysql.com/blog-archive/mysql-8-0-1-using-skip-locked-and-nowait-to-handle-hot-rows/
+      return versionNums.getLeft() > 8 ||
+          (versionNums.getLeft() == 8 && dbVersion != null && dbVersion.compareToIgnoreCase("8.0.1") >= 0);
     }
   }
 
