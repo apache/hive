@@ -245,6 +245,13 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   // that appear in the small table portion of the join output.
   protected transient VectorCopyRow outerSmallTableKeyVectorCopy;
 
+  /**
+   * Helper to copy BigTable keys to SmallTable value output columns.
+   * This is initialized in {@link #initializeOp(Configuration)} and used 
+   * in {@link VectorMapJoinGenerateResultOperator}.
+   */
+  protected transient VectorCopyRow bigTableKeyToSmallTableValueCopy;
+
   // This helper object deserializes LazyBinary format small table values into columns of a row
   // in a vectorized row batch.
   protected transient VectorDeserializeRow<LazyBinaryDeserializeRead> smallTableValueVectorDeserializeRow;
@@ -594,6 +601,16 @@ private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
     if (outerSmallTableKeyMapping.getCount() > 0) {
       outerSmallTableKeyVectorCopy = new VectorCopyRow();
       outerSmallTableKeyVectorCopy.init(outerSmallTableKeyMapping);
+    }
+
+    // Checks if the plan is projecting values from the SmallTable
+    // AND if the number of projected values matches the number of join keys.
+    if (smallTableValueMapping.getCount() > 0 &&
+        smallTableValueMapping.getCount() == bigTableKeyColumnMap.length) {
+      bigTableKeyToSmallTableValueCopy = new VectorCopyRow();
+      bigTableKeyToSmallTableValueCopy.init(
+          bigTableKeyColumnMap, smallTableValueMapping.getOutputColumns(), bigTableKeyTypeInfos
+      );
     }
 
     /*

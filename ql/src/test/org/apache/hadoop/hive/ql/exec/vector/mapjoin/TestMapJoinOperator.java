@@ -43,8 +43,10 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.junit.Ignore;
 
@@ -52,6 +54,10 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 
 import org.junit.Assert;
+
+import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory.intTypeInfo;
+import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory.longTypeInfo;
+import static org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory.stringTypeInfo;
 
 public class TestMapJoinOperator {
 
@@ -1343,6 +1349,93 @@ public class TestMapJoinOperator {
     } while (!hiveConfVariationsDone);
   }
 
+  /**
+   * Test case for INNER vector map join with only small table key projection - string type.
+   * 
+   * @throws Exception Exception
+   */
+  @Test
+  public void testSmallTableKeyOnlyProjectionWithEmptyValueString() throws Exception {
+    long seed = 26653L;
+    int rowCount = 100;
+    
+    MapJoinTestDescription testDesc = getTestDescriptionForSmallTableEmptyValue(stringTypeInfo);
+
+    // Create the test data.
+    MapJoinTestData testData = new MapJoinTestData(rowCount, testDesc, seed);
+    
+    executeTest(testDesc, testData, "testSmallTableKeyOnlyProjectionWithEmptyValueString");
+  }
+
+  /**
+   * Test case for INNER vector map join with only small table key projection - int type.
+   *
+   * @throws Exception Exception
+   */
+  @Test
+  public void testSmallTableKeyOnlyProjectionWithEmptyValueInt() throws Exception {
+    long seed = 26653L;
+    int rowCount = 100;
+
+    MapJoinTestDescription testDesc = getTestDescriptionForSmallTableEmptyValue(intTypeInfo);
+
+    // Create the test data.
+    MapJoinTestData testData = new MapJoinTestData(rowCount, testDesc, seed);
+
+    executeTest(testDesc, testData, "testSmallTableKeyOnlyProjectionWithEmptyValueInt");
+  }
+
+  /**
+   * Test case for INNER vector map join with only small table key projection - long type.
+   *
+   * @throws Exception Exception
+   */
+  @Test
+  public void testSmallTableKeyOnlyProjectionWithEmptyValueLong() throws Exception {
+    long seed = 26653L;
+    int rowCount = 100;
+
+    MapJoinTestDescription testDesc = getTestDescriptionForSmallTableEmptyValue(longTypeInfo);
+    // Increase the probability of a big table key being present in the small table.
+    // 200 out of 1000 keys in small table.
+    testDesc.smallTableGenerationParameters.setKeyOutOfAThousand(200);
+
+    // Create the test data.
+    MapJoinTestData testData = new MapJoinTestData(rowCount, testDesc, seed);
+
+    executeTest(testDesc, testData, "testSmallTableKeyOnlyProjectionWithEmptyValueLong");
+  }
+
+  private @NotNull MapJoinTestDescription getTestDescriptionForSmallTableEmptyValue(PrimitiveTypeInfo typeInfo) {
+    // Define BigTable
+    TypeInfo[] bigTableTypeInfos = new TypeInfo[] {typeInfo};
+    int[] bigTableKeyColumnNums = new int[] { 0 }; // key is column 0
+    
+    // Define SmallTable
+    TypeInfo[] smallTableValueTypeInfos = new TypeInfo[] {typeInfo};
+    int[] smallTableRetainKeyColumnNums = new int[] { 0 }; // retain key column 0
+
+    // Generate empty values for small table
+    SmallTableGenerationParameters smallTableGenParams = new SmallTableGenerationParameters();
+    smallTableGenParams.setValueOption(ValueOption.EMPTY_VALUE);
+
+    // Create an INNER MapJoin test description
+    MapJoinTestDescription mapJoinTestDescription = new MapJoinTestDescription(
+        getHiveConf(),
+        VectorMapJoinVariation.INNER,
+        bigTableTypeInfos,
+        bigTableKeyColumnNums,
+        smallTableValueTypeInfos,
+        smallTableRetainKeyColumnNums,
+        smallTableGenParams,
+        MapJoinPlanVariation.DYNAMIC_PARTITION_HASH_JOIN);
+    mapJoinTestDescription.implementations =
+        new MapJoinTestImplementation[] {MapJoinTestImplementation.NATIVE_VECTOR_OPTIMIZED};
+    mapJoinTestDescription.shouldCheckForExpectedOutputAndFail = true;
+    
+    return mapJoinTestDescription;
+  }
+
   public boolean doTestString2(long seed, int hiveConfVariation,
       VectorMapJoinVariation vectorMapJoinVariation,
       MapJoinPlanVariation mapJoinPlanVariation) throws Exception {
@@ -1512,8 +1605,17 @@ public class TestMapJoinOperator {
                 Object[] valueRow = valueList.get(v).getRow();
                 final int smallTableRetainValueColumnNumsLength =
                     testDesc.smallTableRetainValueColumnNums.length;
+
+                // When EMPTY_VALUE is specified, the small table value columns are not
+                // actually stored in the small table HashMap. So we have to simulate that here.
+                // The expected output should have values from the big table key columns.
+                final boolean isEmptyValue = 
+                    testDesc.smallTableGenerationParameters.getValueOption() == ValueOption.EMPTY_VALUE &&
+                    testDesc.smallTableRetainValueColumnNums.length > 0 &&
+                    testDesc.smallTableRetainValueColumnNums.length == testDesc.bigTableKeyColumnNums.length;
+                
                 for (int o = 0; o < smallTableRetainValueColumnNumsLength; o++) {
-                  outputObjects[outputColumnNum++] =
+                  outputObjects[outputColumnNum++] = isEmptyValue ? bigTableKeyObjects[o] :
                       valueRow[testDesc.smallTableRetainValueColumnNums[o]];
                 }
 
@@ -1773,7 +1875,7 @@ public class TestMapJoinOperator {
         " totalValueCount " + expectedTestRowMultiSet.getTotalValueCount());
 
     // Execute all implementation variations.
-    for (MapJoinTestImplementation mapJoinImplementation : MapJoinTestImplementation.values()) {
+    for (MapJoinTestImplementation mapJoinImplementation : testDesc.implementations) {
 
       if (testDesc.vectorMapJoinVariation == VectorMapJoinVariation.FULL_OUTER &&
           mapJoinImplementation == MapJoinTestImplementation.ROW_MODE_HASH_MAP) {
@@ -1981,6 +2083,11 @@ public class TestMapJoinOperator {
           " for implementation " + mapJoinImplementation +
           " variation " + testDesc.vectorMapJoinVariation + option);
       expectedTestRowMultiSet.displayDifferences(outputTestRowMultiSet, "expected", "actual");
+      
+      if (testDesc.shouldCheckForExpectedOutputAndFail) {
+        Assert.fail(title + " failed for implementation " + mapJoinImplementation +
+            " variation " + testDesc.vectorMapJoinVariation + option);
+      }
     } else {
       System.out.println("*BENCHMARK* " + title + " verify succeeded " +
           " for implementation " + mapJoinImplementation +

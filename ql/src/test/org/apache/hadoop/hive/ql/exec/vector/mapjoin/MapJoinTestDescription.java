@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.util.DescriptionTest;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestConfig.MapJoinTestImplementation;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -44,7 +45,8 @@ public class MapJoinTestDescription extends DescriptionTest {
     public static enum ValueOption {
       NO_RESTRICTION,
       ONLY_ONE,
-      NO_REGULAR_SMALL_KEYS
+      NO_REGULAR_SMALL_KEYS,
+      EMPTY_VALUE, // Generate empty value entries.
     }
 
     private ValueOption valueOption;
@@ -135,6 +137,8 @@ public class MapJoinTestDescription extends DescriptionTest {
   public ObjectInspector[] outputObjectInspectors;
 
   final MapJoinPlanVariation mapJoinPlanVariation;
+  public MapJoinTestImplementation [] implementations;
+  public boolean shouldCheckForExpectedOutputAndFail = false;
 
   public MapJoinTestDescription (
       HiveConf hiveConf,
@@ -183,6 +187,8 @@ public class MapJoinTestDescription extends DescriptionTest {
     this.smallTableGenerationParameters = smallTableGenerationParameters;
 
     this.mapJoinPlanVariation = mapJoinPlanVariation;
+    
+    this.implementations = MapJoinTestImplementation.values();
 
     computeDerived();
   }

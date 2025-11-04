@@ -38,10 +38,8 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinBytesTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
-import org.apache.hadoop.hive.ql.exec.util.collectoroperator.CollectorTestOperator;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.CountCollectorTestOperator;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.RowCollectorTestOperator;
-import org.apache.hadoop.hive.ql.exec.util.collectoroperator.RowCollectorTestOperatorBase;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.RowVectorCollectorTestOperator;
 import org.apache.hadoop.hive.ql.exec.util.rowobjects.RowTestObjects;
 import org.apache.hadoop.hive.ql.exec.util.rowobjects.RowTestObjectsMultiSet;
@@ -53,6 +51,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOuterFilteredOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestDescription.SmallTableGenerationParameters.ValueOption;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VectorMapJoinFastTableContainer;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast.VerifyFastRow;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -80,10 +79,6 @@ import org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableSerializeWrite;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hive.common.util.ReflectionUtil;
@@ -776,7 +771,7 @@ public class MapJoinTestConfig {
 
           keyBytesWritable.set(keyOutput.getData(), 0, keyOutput.getLength());
 
-          if (valueRow == null) {
+          if (valueRow == null || ValueOption.EMPTY_VALUE == testDesc.smallTableGenerationParameters.getValueOption()) {
             // Empty value.
             mapJoinTableContainer.putRow(keyBytesWritable, valueBytesWritable);
           } else {
