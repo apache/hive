@@ -87,7 +87,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.Constants;
@@ -363,7 +362,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private Map<SelectOperator, Table> viewProjectToTableSchema;
   private Operator<? extends OperatorDesc> sinkOp;
-  private final CacheTableHelper cacheTableHelper = new CacheTableHelper();
 
   /**
    * a map for the split sampling, from alias to an instance of SplitSample
@@ -2883,8 +2881,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewText = tab.getViewExpandedText();
       TableMask viewMask = new TableMask(this, conf, false);
       viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
-      cacheTableHelper.populateCacheForView(ctx.getParsedTables(), conf,
-          getTxnMgr(), tab.getDbName(), tab.getTableName());
+
       if (viewMask.isEnabled() && analyzeRewrite == null) {
         ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
@@ -13163,16 +13160,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.GENERATE_RESOLVED_PARSETREE);
     // 1. Generate Resolved Parse tree from syntax tree
     boolean needsTransform = needsTransform();
-    //change the location of position alias process here
+    // change the location of position alias process here
     processPositionAlias(ast);
-    cacheTableHelper.populateCache(ctx.getParsedTables(), conf, getTxnMgr());
     PlannerContext plannerCtx = pcf.get();
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
     }
-    if (tablesFromReadEntities(inputs).stream().anyMatch(AcidUtils::isTransactionalTable)) {
-      queryState.getValidTxnList();
-    }
+    openTxnAndSetValidTxnList();
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY)) {
       for (String alias : qb.getSubqAliases()) {
@@ -15164,39 +15158,48 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             .toString(RESULTS_CACHE_KEY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
   }
 
-  private ValidTxnWriteIdList getQueryValidTxnWriteIdList() throws SemanticException {
-    // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
-    //cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
-    //
-    List<String> transactionalTables = tablesFromReadEntities(inputs)
-      .stream()
-      .filter(AcidUtils::isTransactionalTable)
-      .map(Table::getFullyQualifiedName)
-      .collect(Collectors.toList());
-    
-    if (transactionalTables.size() > 0) {
-      String txnString = queryState.getValidTxnList();
-      if (txnString == null) {
-        return null;
-      }
-      try {
-        return getTxnMgr().getValidWriteIds(transactionalTables, txnString);
-      } catch (Exception err) {
-        String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
-                + " and validTxnList " + conf.get(ValidTxnList.VALID_TXNS_KEY);
-        throw new SemanticException(msg, err);
-      }
+  private void openTxnAndSetValidTxnList() throws SemanticException {
+    if (tablesFromReadEntities(inputs).stream().noneMatch(AcidUtils::isTransactionalTable)
+        || SessionState.get().isCompaction()) {
+      return;
     }
+    if (queryState.getHMSCache() != null) {
+      // this step primes the cache containing the validTxnWriteIdList. It will fetch
+      // all the tables into the MetaStore Client cache with one HMS call.
+      getValidTxnWriteIdList();
+    } else {
+      queryState.getValidTxnList();
+    }
+  }
 
-    // No transactional tables.
-    return null;
+  private ValidTxnWriteIdList getValidTxnWriteIdList() throws SemanticException {
+    // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
+    // cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
+    //
+    var transactionalTables = tablesFromReadEntities(inputs)
+        .stream()
+        .filter(AcidUtils::isTransactionalTable)
+        .map(Table::getFullyQualifiedName)
+        .toList();
+
+    if (transactionalTables.isEmpty()) {
+      return null;
+    }
+    String txnString = queryState.getValidTxnList();
+    try {
+      return getTxnMgr().getValidWriteIds(transactionalTables, txnString);
+    } catch (Exception err) {
+      String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
+          + " and validTxnList " + txnString;
+      throw new SemanticException(msg, err);
+    }
   }
 
   private QueryResultsCache.LookupInfo createLookupInfoForQuery(ASTNode astNode) throws SemanticException {
     QueryResultsCache.LookupInfo lookupInfo = null;
     String queryString = getQueryStringForCache(astNode);
     if (queryString != null) {
-      ValidTxnWriteIdList writeIdList = getQueryValidTxnWriteIdList();
+      ValidTxnWriteIdList writeIdList = getValidTxnWriteIdList();
       Set<Long> involvedTables = tablesFromReadEntities(inputs).stream()
           .map(Table::getTTable)
           .map(org.apache.hadoop.hive.metastore.api.Table::getId)
