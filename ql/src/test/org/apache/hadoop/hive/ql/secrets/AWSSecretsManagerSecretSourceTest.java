@@ -19,21 +19,22 @@ package org.apache.hadoop.hive.ql.secrets;
 
 import static org.junit.Assert.assertEquals;
 
-import com.amazonaws.secretsmanager.caching.SecretCache;
+import com.google.common.cache.LoadingCache;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.ExecutionException;
 
 public class AWSSecretsManagerSecretSourceTest {
   private AWSSecretsManagerSecretSource source = new AWSSecretsManagerSecretSource();
-  private SecretCache cache;
+  private LoadingCache<String, String> cache;
 
   @Before
   public void setupTest() {
-    cache = Mockito.mock(SecretCache.class);
+    cache = Mockito.mock(LoadingCache.class);
     source.setCache(cache);
   }
 
@@ -50,25 +51,25 @@ public class AWSSecretsManagerSecretSourceTest {
   @Test
   public void testAWSSecretsManagerSuccess() throws Exception {
     // Test good case.
-    Mockito.when(cache.getSecretString("test")).thenReturn("{\"password\":\"super-secret\"}");
+    Mockito.when(cache.get("test")).thenReturn("{\"password\":\"super-secret\"}");
     assertEquals("super-secret", source.getSecret(new URI("aws-sm:///test")));
   }
 
   @Test(expected = IOException.class)
   public void testAWSSecretsManagerServiceException() throws Exception {
-    Mockito.when(cache.getSecretString("bad")).thenThrow(RuntimeException.class);
+    Mockito.when(cache.get("bad")).thenThrow(new ExecutionException(new RuntimeException()));
     source.getSecret(new URI("aws-sm:///bad"));
   }
 
   @Test(expected = IOException.class)
   public void testAWSSecretsManagerInvalidJson() throws Exception {
-    Mockito.when(cache.getSecretString("test")).thenReturn("{\"password\":\"super-secret\"");
+    Mockito.when(cache.get("test")).thenReturn("{\"password\":\"super-secret\"");
     source.getSecret(new URI("aws-sm:///test"));
   }
 
   @Test(expected = IOException.class)
   public void testAWSSecretsManagerArrayJson() throws Exception {
-    Mockito.when(cache.getSecretString("test")).thenReturn("[]");
+    Mockito.when(cache.get("test")).thenReturn("[]");
     source.getSecret(new URI("aws-sm:///test"));
   }
 }
