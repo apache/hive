@@ -208,7 +208,7 @@ class ZooKeeperHiveClientHelper {
       try (CuratorFramework zooKeeperClient = getZkClient(connParams)) {
         final List<String> serverHosts = getServerHosts(connParams, zooKeeperClient);
         if (serverHosts.isEmpty()) {
-          throw new ZooKeeperHiveClientException("No more HiveServer2 URIs from ZooKeeper to attempt");
+          throw new ZooKeeperHiveClientException("Empty HiveServer2 URIs found from ZooKeeper to attempt");
         }
         // Pick a server node randomly
         final String serverNode = serverHosts.get(ThreadLocalRandom.current().nextInt(serverHosts.size()));
