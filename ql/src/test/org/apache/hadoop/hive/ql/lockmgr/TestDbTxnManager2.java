@@ -3566,6 +3566,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     swapTxnManager(txnMgr);
 
     driver.run();
+    txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
     swapTxnManager(txnMgr2);
 

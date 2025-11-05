@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.txn.entities.TxnWriteDetails;
+import org.apache.hadoop.hive.metastore.txn.jdbc.InClauseBatchCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.commands.DeleteReplTxnMapEntryCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.commands.InsertCompletedTxnComponentsCommand;
 import org.apache.hadoop.hive.metastore.txn.jdbc.commands.RemoveTxnsFromMinHistoryLevelCommand;
@@ -70,6 +71,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -126,7 +128,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
         throw new RollbackException(null);
       }
       assert targetTxnIds.size() == 1;
-      txnid = targetTxnIds.get(0);
+      txnid = targetTxnIds.getFirst();
     }
 
     /**
@@ -155,8 +157,8 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     }
 
     String conflictSQLSuffix = String.format("""
-        FROM "TXN_COMPONENTS" WHERE "TC_TXNID" = %d AND "TC_OPERATION_TYPE" IN (%s, %s)
-        """, txnid, OperationType.UPDATE, OperationType.DELETE);
+        FROM "TXN_COMPONENTS" WHERE "TC_TXNID" = :txnId AND "TC_OPERATION_TYPE" IN (%s, %s)
+        """, OperationType.UPDATE, OperationType.DELETE);
     long tempCommitId = TxnUtils.generateTemporaryId();
 
     if (txnType == TxnType.SOFT_DELETE || txnType == TxnType.COMPACTION) {
@@ -176,7 +178,10 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
           """;
 
       boolean isUpdateOrDelete = Boolean.TRUE.equals(jdbcResource.getJdbcTemplate().query(
-          jdbcResource.getSqlGenerator().addLimitClause(1, "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix),
+          jdbcResource.getSqlGenerator()
+              .addLimitClause(1, "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix),
+          new MapSqlParameterSource()
+              .addValue("txnId", txnid),
           ResultSet::next));
       
       if (isUpdateOrDelete) {
@@ -197,12 +202,12 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
         Object undoWriteSetForCurrentTxn = context.createSavepoint();
         jdbcResource.getJdbcTemplate().update(
             writeSetInsertSql + (ConfVars.useMinHistoryLevel() ? conflictSQLSuffix :
-            "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"= :txnId" + (
-                (txnType != TxnType.REBALANCE_COMPACTION) ? "" : " AND \"TC_OPERATION_TYPE\" <> :type")),
+                "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"= :txnId" + (
+                    (txnType != TxnType.REBALANCE_COMPACTION) ? "" : " AND \"TC_OPERATION_TYPE\" <> :type")),
             new MapSqlParameterSource()
                 .addValue("txnId", txnid)
-                .addValue("commitId", tempCommitId)
-                .addValue("type", OperationType.COMPACT.getSqlConst()));
+                .addValue("type", OperationType.COMPACT.getSqlConst())
+                .addValue("commitId", tempCommitId));
 
         /**
          * This S4U will mutex with other commitTxn() and openTxns().
@@ -249,7 +254,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
         jdbcResource.getJdbcTemplate().update(writeSetInsertSql + "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = :txnId",
             new MapSqlParameterSource()
                 .addValue("txnId", txnid)
-                .addValue("commitId", txnid));
+                .addValue("commitId", jdbcResource.execute(new GetHighWaterMarkHandler())));
       }
     } else {
       /*
@@ -274,8 +279,7 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
       jdbcResource.execute(new DeleteReplTxnMapEntryCommand(sourceTxnId, rqst.getReplPolicy()));
     }
     updateWSCommitIdAndCleanUpMetadata(jdbcResource, txnid, txnType, commitId, tempCommitId);
-    jdbcResource.execute(new RemoveTxnsFromMinHistoryLevelCommand(ImmutableList.of(txnid)));
-    jdbcResource.execute(new RemoveWriteIdsFromMinHistoryCommand(ImmutableList.of(txnid)));
+
     if (rqst.isSetKeyValue()) {
       updateKeyValueAssociatedWithTxn(jdbcResource, rqst);
     }
@@ -562,11 +566,8 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     }
   }
 
-  /**
-   * See overridden method in CompactionTxnHandler also.
-   */
-  private void updateWSCommitIdAndCleanUpMetadata(MultiDataSourceJdbcResource jdbcResource, long txnid, TxnType txnType,
-                                                    Long commitId, long tempId) throws MetaException {
+  private void updateWSCommitIdAndCleanUpMetadata(MultiDataSourceJdbcResource jdbcResource,
+        long txnid, TxnType txnType, Long commitId, long tempId) throws MetaException {
     List<String> queryBatch = new ArrayList<>(6);
     // update write_set with real commitId
     if (commitId != null) {
@@ -587,9 +588,17 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
       queryBatch.add("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
           getEpochFn(jdbcResource.getDatabaseProduct()) + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
-    
+
     // execute all in one batch
     jdbcResource.getJdbcTemplate().getJdbcTemplate().batchUpdate(queryBatch.toArray(new String[0]));
+
+    List<Function<List<Long>, InClauseBatchCommand<Long>>> commands = List.of(
+        RemoveTxnsFromMinHistoryLevelCommand::new,
+        RemoveWriteIdsFromMinHistoryCommand::new
+    );
+    for (var cmd : commands) {
+      jdbcResource.execute(cmd.apply(ImmutableList.of(txnid)));
+    }
   }
 
   /**
