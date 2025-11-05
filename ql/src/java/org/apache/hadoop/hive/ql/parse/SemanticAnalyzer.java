@@ -13166,17 +13166,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
     }
-
-    if (tablesFromReadEntities(inputs).stream().anyMatch(AcidUtils::isTransactionalTable)
-        && !SessionState.get().isCompaction()) {
-      if (queryState.getHMSCache() != null) {
-        // this step primes the cache containing the validTxnWriteIdList. It will fetch
-        // all the tables into the MetaStore Client cache with one HMS call.
-        getQueryValidTxnWriteIdList();
-      } else {
-        queryState.getValidTxnList();
-      }
-    }
+    openTxnAndSetValidTxnList();
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY)) {
       for (String alias : qb.getSubqAliases()) {
@@ -15168,7 +15158,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             .toString(RESULTS_CACHE_KEY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
   }
 
-  private ValidTxnWriteIdList getQueryValidTxnWriteIdList() throws SemanticException {
+  private void openTxnAndSetValidTxnList() throws SemanticException {
+    if (tablesFromReadEntities(inputs).stream().noneMatch(AcidUtils::isTransactionalTable)
+        || SessionState.get().isCompaction()) {
+      return;
+    }
+    if (queryState.getHMSCache() != null) {
+      // this step primes the cache containing the validTxnWriteIdList. It will fetch
+      // all the tables into the MetaStore Client cache with one HMS call.
+      getValidTxnWriteIdList();
+    } else {
+      queryState.getValidTxnList();
+    }
+  }
+
+  private ValidTxnWriteIdList getValidTxnWriteIdList() throws SemanticException {
     // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
     // cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
     //
@@ -15195,7 +15199,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QueryResultsCache.LookupInfo lookupInfo = null;
     String queryString = getQueryStringForCache(astNode);
     if (queryString != null) {
-      ValidTxnWriteIdList writeIdList = getQueryValidTxnWriteIdList();
+      ValidTxnWriteIdList writeIdList = getValidTxnWriteIdList();
       Set<Long> involvedTables = tablesFromReadEntities(inputs).stream()
           .map(Table::getTTable)
           .map(org.apache.hadoop.hive.metastore.api.Table::getId)
