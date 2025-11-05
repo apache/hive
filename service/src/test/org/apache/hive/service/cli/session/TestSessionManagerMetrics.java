@@ -80,6 +80,7 @@ public class TestSessionManagerMetrics {
     //it maybe impact TestSessionCleanup, because they use the same location ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LOG_LOCATION,
     // when we run testing in parallel on local machine with -DforkCount=x, it happen.
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER, 2);
     MetricsFactory.init(conf);
 
     sm = new SessionManager(null, true);
@@ -395,5 +396,46 @@ public class TestSessionManagerMetrics {
       // loop until the value is correct or we run out of tries
     } while (!expectedValue.equals(currentValue) && --count > 0);
     Assert.assertEquals(expectedValue, currentValue);
+  }
+
+  @Test
+  public void testSessionLimitsPerUserWhenSessionCreationFails() throws Exception {
+    sm.start();
+    HashMap<String, String> sessionConf = new HashMap<>(1);
+    // modifying this property at runtime is not allowed, it will throw exception and session will not be created
+    sessionConf.put("hive.in.test", "true");
+    for (int i = 0; i < 3; i++) {
+      try {
+        sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1", sessionConf);
+      } catch (HiveSQLException e) {
+        // Here 'hive.server2.limit.connections.per.user' property value set as 2 so when we create 3 sessions, for all 3 sessions it should throw exception with failure reason
+        // It should not throw exception with 'Connection limit per user reached (user: user limit: 2)' message
+        if (i == 0 || i == 1) {
+          Assert.assertEquals(
+              "Failed to open new session: Cannot modify hive.in.test at runtime. It is in the list of parameters that can't be modified at runtime or is prefixed by a restricted variable",
+              e.getMessage());
+        }
+        // for the 3rd session creation also it should throw exception with actual failure reason, should not throw exception with limit reason.
+        if (i == 2) {
+          Assert.assertNotEquals("Connection limit per user reached (user: user limit: 2)", e.getMessage());
+          Assert.assertEquals(
+              "Failed to open new session: Cannot modify hive.in.test at runtime. It is in the list of parameters that can't be modified at runtime or is prefixed by a restricted variable",
+              e.getMessage());
+        }
+      }
+    }
+    SessionHandle handle = null;
+    // After 3 unsuccessful session creation now with session creation with proper details should be able to create the session
+    try {
+      handle = sm.openSession(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9, "user", "passw", "127.0.0.1",
+          new HashMap<String, String>());
+    } catch (Exception e) {
+      Assert.fail("Should not throw exception, session should be created successfully. " + e.getMessage());
+    }
+    finally {
+      if (null != handle) {
+        sm.closeSession(handle);
+      }
+    }
   }
 }
