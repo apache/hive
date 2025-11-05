@@ -52,6 +52,7 @@
                 <include>org.apache.thrift:libthrift:jar</include>
                 <include>org.slf4j:slf4j-api:jar</include>
                 <include>net.sf.supercsv:super-csv:jar</include>
+                <include>dnsjava:dnsjava:jar</include>
             </includes>
             <excludes>
                 <exclude>org.apache.hive:hive-jdbc:*:standalone</exclude>
