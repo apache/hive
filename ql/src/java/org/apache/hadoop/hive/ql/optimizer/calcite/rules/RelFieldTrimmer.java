@@ -282,7 +282,7 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
       RelNode rel,
       ImmutableBitSet fieldsUsed,
       Set<RelDataTypeField> extraFields) {
-    setColumnAccessInfoForViews(rel, fieldsUsed);
+    preTrim(rel, fieldsUsed);
     final TrimResult trimResult =
         trimFieldsDispatcher.invoke(rel, fieldsUsed, extraFields);
     final RelNode newRel = trimResult.left;
@@ -1241,15 +1241,12 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
   }
 
   /**
-   * Sets columnAccessInfo object for views.
+   * Run this method before trimming columns from a relational expression.
    * 
    * @param rel RelNode
    * @param fieldsUsed Fields used
    */
-  protected void setColumnAccessInfoForViews(RelNode rel, ImmutableBitSet fieldsUsed) {
-    // This method is overridden in child class
-    throw new UnsupportedOperationException();
-  }
+  protected void preTrim(RelNode rel, ImmutableBitSet fieldsUsed) {}
 
   //~ Inner Classes ----------------------------------------------------------
 

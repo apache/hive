@@ -1577,7 +1577,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final Map<String, PrunedPartitionList>        partitionCache;
     private final Map<String, ColumnStatsList>            colStatsCache;
     private final ColumnAccessInfo columnAccessInfo;
-    private Map<RelNode, Table> relNodeToTable;
+    private final Map<RelNode, Table> relToTable;
     private final QB rootQB;
 
     // correlated vars across subqueries within same query needs to have different ID
@@ -1604,6 +1604,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       this.rootQB = rootQB;
       this.colStatsCache = ctx.getOpContext().getColStatsCache();
       this.columnAccessInfo = columnAccessInfo;
+      this.relToTable = new HashMap<>();
     }
 
     @Override
@@ -1666,7 +1667,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
                 calcitePlan,
                 this.columnAccessInfo,
-                this.relNodeToTable
+                this.relToTable
             );
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITE_FIELD_TRIMMER);
@@ -4921,10 +4922,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         aliasToRel.put(subqAlias, relNode);
         if (qb.getViewToTabSchema().containsKey(subqAlias)) {
-          if (this.relNodeToTable == null) {
-            this.relNodeToTable = new HashMap<>();
-          }
-          relNodeToTable.put(relNode, qb.getViewToTabSchema().get(subqAlias));
+          relToTable.put(relNode, qb.getViewToTabSchema().get(subqAlias));
         }
       }
 
@@ -5045,8 +5043,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       setQB(qb);
       return srcRel;
     }
-
-
+    
     private RelNode genGBHavingLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
       RelNode gbFilter = null;
       QBParseInfo qbp = getQBParseInfo(qb);

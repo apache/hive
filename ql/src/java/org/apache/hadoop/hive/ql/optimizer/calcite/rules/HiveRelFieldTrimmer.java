@@ -101,7 +101,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
 
   private static final ThreadLocal<ColumnAccessInfo> COLUMN_ACCESS_INFO =
       new ThreadLocal<>();
-  private static final ThreadLocal<Map<RelNode, Table>> VIEW_RELNODE_TO_TABLE = new ThreadLocal<>();
+  private static final ThreadLocal<Map<RelNode, Table>> REL_TO_TABLE = new ThreadLocal<>();
 
 
   protected HiveRelFieldTrimmer(boolean fetchStats) {
@@ -158,13 +158,13 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
     try {
       // Set local thread variables
       COLUMN_ACCESS_INFO.set(columnAccessInfo);
-      VIEW_RELNODE_TO_TABLE.set(relNodeToTable);
+      REL_TO_TABLE.set(relNodeToTable);
       // Execute pruning
       return super.trim(relBuilder, root);
     } finally {
       // Always remove the local thread variables to avoid leaks
       COLUMN_ACCESS_INFO.remove();
-      VIEW_RELNODE_TO_TABLE.remove();
+      REL_TO_TABLE.remove();
     }
   }
 
@@ -203,20 +203,25 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
   }
 
   @Override
+  protected void preTrim(RelNode rel, ImmutableBitSet fieldsUsed) {
+    setColumnAccessInfoForViews(rel, fieldsUsed);
+  }
+
   protected void setColumnAccessInfoForViews(RelNode rel, ImmutableBitSet fieldsUsed) {
     final ColumnAccessInfo columnAccessInfo = COLUMN_ACCESS_INFO.get();
-    final Map<RelNode, Table> relNodeToTableAndProjects = VIEW_RELNODE_TO_TABLE.get();
+    final Map<RelNode, Table> relToTable = REL_TO_TABLE.get();
 
     // HiveTableScans are handled separately in HiveTableScan's trimFields method.
     if (!(rel instanceof HiveTableScan) &&
         columnAccessInfo != null &&
-        relNodeToTableAndProjects != null &&
-        relNodeToTableAndProjects.containsKey(rel)) {
-      Table table = relNodeToTableAndProjects.get(rel);
+        relToTable != null &&
+        relToTable.containsKey(rel)) {
+      Table table = relToTable.get(rel);
+      String tableName = table.getCompleteName();
       List<FieldSchema> tableAllCols = table.getAllCols();
       
-      for (int i = fieldsUsed.nextSetBit(0); i >= 0; i = fieldsUsed.nextSetBit(i + 1)) {
-        columnAccessInfo.add(table.getCompleteName(), tableAllCols.get(i).getName());
+      for (int i : fieldsUsed) {
+        columnAccessInfo.add(tableName, tableAllCols.get(i).getName());
       }
     }
   }
