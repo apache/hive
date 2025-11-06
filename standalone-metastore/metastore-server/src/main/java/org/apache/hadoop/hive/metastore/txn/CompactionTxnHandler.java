@@ -212,7 +212,7 @@ class CompactionTxnHandler extends TxnHandler {
   
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
-   * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
+   * min(max(TXNS.txn_id), min(WRITE_SET.WS_TXNID), min(Aborted TXNS.txn_id)).
    */
   @Override
   @RetrySemantics.SafeToRetry
@@ -374,7 +374,7 @@ class CompactionTxnHandler extends TxnHandler {
     String strState = CompactionState.fromSqlConst(ci.state).toString();
 
     LOG.debug("Marking as {}: CompactionInfo: {}", strState, ci);
-    CompactionInfo ciActual = jdbcResource.execute(new GetCompactionInfoHandler(ci.id, false)); 
+    CompactionInfo ciActual = jdbcResource.execute(new GetCompactionInfoHandler(ci.id, false));
 
     long endTime = getDbTime().getTime();
     if (ciActual != null) {
@@ -505,7 +505,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.Idempotent
   @Deprecated
   public long findMinTxnIdSeenOpen() {
-    if (!ConfVars.useMinHistoryLevel() || ConfVars.useMinHistoryWriteId()) {
+    if (!ConfVars.useMinHistoryLevel()) {
       return Long.MAX_VALUE;
     }
     try {

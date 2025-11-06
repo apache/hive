@@ -1682,10 +1682,11 @@ public class MetastoreConf {
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
     TXN_OPENTXN_TIMEOUT("metastore.txn.opentxn.timeout", "hive.txn.opentxn.timeout", 1000, TimeUnit.MILLISECONDS,
         "Time before an open transaction operation should persist, otherwise it is considered invalid and rolled back"),
+    @Deprecated
     TXN_USE_MIN_HISTORY_LEVEL("metastore.txn.use.minhistorylevel", "hive.txn.use.minhistorylevel", true,
         "Set this to false, for the TxnHandler and Cleaner to not use MIN_HISTORY_LEVEL table and take advantage of openTxn optimisation.\n"
             + "If the table is dropped HMS will switch this flag to false, any other value changes need a restart to take effect."),
-    TXN_USE_MIN_HISTORY_WRITE_ID("metastore.txn.use.minhistorywriteid", "hive.txn.use.minhistorywriteid", false,
+    TXN_USE_MIN_HISTORY_WRITE_ID("metastore.txn.use.minhistorywriteid", "hive.txn.use.minhistorywriteid", true,
       "Set this to true, to avoid global minOpenTxn check in Cleaner.\n"
             + "If the table is dropped HMS will switch this flag to false."),
     LOCK_NUMRETRIES("metastore.lock.numretries", "hive.lock.numretries", 100,
