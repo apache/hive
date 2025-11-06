@@ -38,7 +38,9 @@ import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.RetryingExecutor;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,8 +103,8 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     hostName = InetAddress.getLocalHost().getHostName();
   }
 
-  private synchronized void doWork(LockResponse resp, Configuration conf,
-      TableName tableName) throws LeaderException {
+  private synchronized void
+      doWork(LockResponse resp, Configuration conf, TableName tableName) {
     long start = System.currentTimeMillis();
     lockId = resp.getLockid();
     assert resp.getState() == LockState.ACQUIRED || resp.getState() == LockState.WAITING;
@@ -163,47 +165,36 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
             .setOperationType(DataOperationType.NO_TXN)
             .build());
 
-    boolean lockable = false;
-    Exception recentException = null;
     long start = System.currentTimeMillis();
     LockRequest req = new LockRequest(components, userName, hostName);
     int numRetries = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LOCK_NUMRETRIES);
     long maxSleep = MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, TimeUnit.MILLISECONDS);
-    for (int i = 0; i < numRetries && !stopped; i++) {
-      try {
-        LockResponse res = store.lock(req);
-        if (res.getState() == LockState.WAITING || res.getState() == LockState.ACQUIRED) {
-          lockable = true;
-          LOG.debug("{} Spent {}ms to take part in election, retries: {}", getName(), System.currentTimeMillis() - start, i);
-          doWork(res, conf, table);
-          break;
-        }
-      } catch (NoSuchTxnException | TxnAbortedException e) {
-        throw new AssertionError("This should not happen, we didn't open txn", e);
-      } catch (MetaException e) {
-        recentException = e;
-        LOG.warn("Error while locking the table: {}, num retries: {}, max retries: {}",
-            table, i, numRetries, e);
-      }
-      backoff(maxSleep);
-    }
-    if (!lockable) {
-      throw new LeaderException("Error locking the table: " + table + " in " + numRetries +
-          " retries, time spent: " + (System.currentTimeMillis() - start) + " ms", recentException);
-    }
-  }
-
-  // Sleep before we send checkLock again, but do it with a back off
-  // so we don't sit and hammer the metastore in a tight loop
-  private void backoff(long maxSleep) {
-    nextSleep *= 2;
-    if (nextSleep > maxSleep)
-      nextSleep = maxSleep;
     try {
-      Thread.sleep(nextSleep);
-    } catch (InterruptedException ignored) {
+      if (stopped) {
+        throw new LeaderException("Invalid candidate as " + getName() + " has been stopped");
+      }
+      new RetryingExecutor<>(numRetries, () -> {
+        LockResponse res = store.lock(req);
+        if (res.getState() == LockState.WAITING
+            || res.getState() == LockState.ACQUIRED) {
+          doWork(res, conf, table);
+          return true;
+        } else {
+          throw new MetaException("Un-desirable lock state: " + res.getState());
+        }
+      }).onRetry(e -> e instanceof MetaException && !stopped)
+        .commandName("LeaseLeaderElection#tryBeLeader")
+        .sleepInterval(nextSleep, nextSleep -> {
+          nextSleep *= 2;
+          if (nextSleep > maxSleep)
+            nextSleep = maxSleep;
+          return nextSleep;
+        }).run();
+    } catch (TException e) {
+      throw new LeaderException("Unable to take the lock on table: " + table, e);
     }
+    LOG.debug("{}: is leader? {}, time spent: {}", getName(), isLeader(), System.currentTimeMillis() - start);
   }
 
   protected void shutdownWatcher() {

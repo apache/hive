@@ -9236,7 +9236,7 @@ public class ObjectStore implements RawStore, Configurable {
         return newParams;
       }).onRetry(e -> e instanceof RetryingExecutor.RetryException)
         .commandName("updateTableColumnStatistics").sleepInterval(sleepInterval, interval ->
-              ThreadLocalRandom.current().nextLong(sleepInterval) + 30).run();
+              ThreadLocalRandom.current().nextLong(sleepInterval) + 30).runWithMetaException();
       committed = commitTransaction();
       return committed ? result : null;
     } finally {
@@ -9327,7 +9327,7 @@ public class ObjectStore implements RawStore, Configurable {
         return newParams;
       }).onRetry(e -> e instanceof RetryingExecutor.RetryException)
           .commandName("updatePartitionColumnStatistics").sleepInterval(sleepInterval, interval ->
-              ThreadLocalRandom.current().nextLong(sleepInterval) + 30).run();
+              ThreadLocalRandom.current().nextLong(sleepInterval) + 30).runWithMetaException();
       committed = commitTransaction();
       return committed ? result : null;
     } finally {
@@ -11133,14 +11133,14 @@ public class ObjectStore implements RawStore, Configurable {
       new RetryingExecutor<Void>(maxRetries, () -> {
         directSql.lockDbTable("NOTIFICATION_SEQUENCE");
         return null;
-      }).commandName("lockNotificationSequenceForUpdate").sleepInterval(sleepInterval).run();
+      }).commandName("lockNotificationSequenceForUpdate").sleepInterval(sleepInterval).runWithMetaException();
     } else {
       String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
       new RetryingExecutor<Void>(maxRetries, () -> {
         executePlainSQL(lockingQuery, false, null);
         return null;
-      }).commandName("lockNotificationSequenceForUpdate").sleepInterval(sleepInterval).run();
+      }).commandName("lockNotificationSequenceForUpdate").sleepInterval(sleepInterval).runWithMetaException();
     }
   }
 

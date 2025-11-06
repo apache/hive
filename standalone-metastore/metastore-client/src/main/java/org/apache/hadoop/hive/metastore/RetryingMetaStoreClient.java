@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -31,6 +30,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -39,13 +40,13 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.RetryingExecutor;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -70,7 +71,6 @@ public class RetryingMetaStoreClient implements InvocationHandler {
   private final long connectionLifeTimeInMillis;
   private long lastConnectionTime;
   private boolean localMetaStore;
-
 
   protected RetryingMetaStoreClient(Configuration conf, Class<?>[] constructorArgTypes,
       Object[] constructorArgs, Map<String, Long> metaCallTimeMap,
@@ -174,11 +174,6 @@ public class RetryingMetaStoreClient implements InvocationHandler {
 
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    Object ret;
-    int retriesMade = 0;
-    TException caughtException;
-
-    boolean allowReconnect = ! method.isAnnotationPresent(NoReconnect.class);
     boolean allowRetry = true;
     Annotation[] directives = method.getDeclaredAnnotations();
     if(directives != null) {
@@ -188,73 +183,60 @@ public class RetryingMetaStoreClient implements InvocationHandler {
         }
       }
     }
+    boolean finalAllowRetry = allowRetry;
+    Predicate<Throwable> retryPolicy = ex -> finalAllowRetry && !base.isLocalMetaStore() &&
+        TTransportException.class.isAssignableFrom(ex.getClass());
+    AtomicInteger retriesMade = new AtomicInteger(0);
+    return new RetryingExecutor<>(retryLimit, () -> {
+      reconnect(method, retriesMade);
+      Object ret;
+      if (metaCallTimeMap == null) {
+        ret = method.invoke(base, args);
+      } else {
+        // need to capture the timing
+        long startTime = System.currentTimeMillis();
+        ret = method.invoke(base, args);
+        long timeTaken = System.currentTimeMillis() - startTime;
+        addMethodTime(method, timeTaken);
+      }
+      return ret;
+    }).sleepInterval(retryDelaySeconds * 1000)
+        .commandName(method.getName())
+        .onRetry(retryPolicy)
+        .run();
+  }
 
-    while (true) {
-      try {
-        SecurityUtils.reloginExpiringKeytabUser();
+  private void reconnect(Method method, AtomicInteger retriesMade) throws Exception {
+    SecurityUtils.reloginExpiringKeytabUser();
+    boolean allowReconnect = ! method.isAnnotationPresent(NoReconnect.class);
+    if (allowReconnect) {
+      if (retriesMade.getAndIncrement() > 0 || hasConnectionLifeTimeReached(method)) {
+        if (this.ugi != null) {
+          // Perform reconnect with the proper user context
+          try {
+            LOG.info("RetryingMetaStoreClient trying reconnect as " + this.ugi);
 
-        if (allowReconnect) {
-          if (retriesMade > 0 || hasConnectionLifeTimeReached(method)) {
-            if (this.ugi != null) {
-              // Perform reconnect with the proper user context
-              try {
-                LOG.info("RetryingMetaStoreClient trying reconnect as " + this.ugi);
-
-                this.ugi.doAs(
-                  new PrivilegedExceptionAction<Object> () {
-                    @Override
-                    public Object run() throws MetaException {
-                      base.reconnect();
-                      return null;
-                    }
-                  });
-              } catch (UndeclaredThrowableException e) {
-                Throwable te = e.getCause();
-                if (te instanceof PrivilegedActionException) {
-                  throw te.getCause();
-                } else {
-                  throw te;
-                }
-              }
-              lastConnectionTime = System.currentTimeMillis();
+            this.ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
+              base.reconnect();
+              return null;
+            });
+          } catch (UndeclaredThrowableException e) {
+            Throwable te = e.getCause();
+            if (te instanceof PrivilegedActionException pe) {
+              throw pe;
+            } else if (te instanceof Exception ex){
+              throw ex;
             } else {
-              LOG.warn("RetryingMetaStoreClient unable to reconnect. No UGI information.");
-              throw new MetaException("UGI information unavailable. Will not attempt a reconnect.");
+              throw new RuntimeException(te);
             }
           }
-        }
-
-        if (metaCallTimeMap == null) {
-          ret = method.invoke(base, args);
+          lastConnectionTime = System.currentTimeMillis();
         } else {
-          // need to capture the timing
-          long startTime = System.currentTimeMillis();
-          ret = method.invoke(base, args);
-          long timeTaken = System.currentTimeMillis() - startTime;
-          addMethodTime(method, timeTaken);
-        }
-        break;
-      } catch (UndeclaredThrowableException e) {
-        throw e.getCause();
-      } catch (InvocationTargetException e) {
-        Throwable t = e.getCause();
-        // Metastore client needs retry for only TTransportException.
-        if (TTransportException.class.isAssignableFrom(t.getClass())) {
-          caughtException = (TTransportException) t;
-        } else {
-          throw t;
+          LOG.warn("RetryingMetaStoreClient unable to reconnect. No UGI information.");
+          throw new MetaException("UGI information unavailable. Will not attempt a reconnect.");
         }
       }
-
-      if (retriesMade >= retryLimit || base.isLocalMetaStore() || !allowRetry) {
-        throw caughtException;
-      }
-      retriesMade++;
-      LOG.warn("MetaStoreClient lost connection. Attempting to reconnect (" + retriesMade + " of " +
-          retryLimit + ") after " + retryDelaySeconds + "s. " + method.getName(), caughtException);
-      Thread.sleep(retryDelaySeconds * 1000);
     }
-    return ret;
   }
 
   /**
