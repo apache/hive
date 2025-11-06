@@ -1277,7 +1277,8 @@ public class TestObjectStore {
         MetastoreConf.getIntVar(conf, ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES);
     long sleepInterval = MetastoreConf.getTimeVar(conf,
         ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
-    RetryingExecutor<Void> re = new RetryingExecutor<>(maxRetries, sleepInterval, null);
+    RetryingExecutor<Void> re = new RetryingExecutor<Void>(maxRetries, null)
+        .sleepInterval(sleepInterval);
     Assert.assertTrue("invalid sleep value", re.getSleepInterval() >= 0);
   }
 

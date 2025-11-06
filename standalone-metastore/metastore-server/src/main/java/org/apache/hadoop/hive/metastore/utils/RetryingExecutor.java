@@ -18,37 +18,57 @@
 
 package org.apache.hadoop.hive.metastore.utils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RetryingExecutor<T> {
-  private static Logger LOG = LoggerFactory.getLogger(RetryingExecutor.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RetryingExecutor.class);
 
   private final int maxRetries;
-  private final long sleepInterval;
+  private long sleepInterval = 1000;
   private final Callable<T> command;
-  private final List<Class<? extends Exception>> retriableException = new ArrayList<>();
+  private Predicate<Exception> retryPolicy;
   private int currentRetries = 0;
   private String commandName;
+  private Function<Long, Long> sleepIntervalFunc;
 
-  public RetryingExecutor(int maxRetries, long sleepInterval, Callable<T> command) {
+  public RetryingExecutor(int maxRetries, Callable<T> command) {
     this.maxRetries = maxRetries;
-    this.sleepInterval = sleepInterval;
     this.command = command;
+    // default commandName unless specified
+    this.commandName = StackWalker.getInstance()
+        .walk(frames -> frames
+            .skip(1)
+            .findFirst()
+            .map(StackWalker.StackFrame::getMethodName)).get();
   }
 
-  public RetryingExecutor<T> onRetry(Class<? extends Exception> ex) {
-    this.retriableException.add(ex);
+  public RetryingExecutor<T> onRetry(Predicate<Exception> retryPolicy) {
+    this.retryPolicy = retryPolicy;
     return this;
   }
 
   public RetryingExecutor<T> commandName(String name) {
     this.commandName = name;
+    return this;
+  }
+
+  public RetryingExecutor<T> sleepInterval(long sleepInterval) {
+    return sleepInterval(sleepInterval, null);
+  }
+
+  public RetryingExecutor<T> sleepInterval(long sleepInterval,
+      Function<Long, Long> sleepIntervalFunc) {
+    this.sleepInterval = sleepInterval;
+    this.sleepIntervalFunc = sleepIntervalFunc;
     return this;
   }
 
@@ -68,7 +88,7 @@ public class RetryingExecutor<T> {
         }
         currentRetries++;
         try {
-          Thread.sleep(sleepInterval);
+          Thread.sleep(getSleepInterval());
         } catch (InterruptedException e1) {
           String msg = "Couldn't run the command: " + commandName + " in " + currentRetries +
               " retry, because the following error: ";
@@ -80,11 +100,16 @@ public class RetryingExecutor<T> {
   }
 
   private void checkException(Exception e) throws MetaException {
-    if (!retriableException.isEmpty() &&
-        retriableException.stream().noneMatch(nex -> nex.isInstance(e))) {
-      String message = "See a non-retriable exception, avoid to retry the command:" + commandName;
+    if (retryPolicy != null && !retryPolicy.test(e)) {
+      String message = "See a fatal exception, avoid to retry the command:" + commandName;
       LOG.info(message, e);
-      throw new MetaException(message + " :: " + e.getMessage());
+      String errorMessage = ExceptionUtils.getMessage(e);
+      if (e instanceof InvocationTargetException || e instanceof UndeclaredThrowableException) {
+        errorMessage = ExceptionUtils.getMessage(e.getCause());
+      }
+      Throwable rootCause = ExceptionUtils.getRootCause(e);
+      errorMessage += (rootCause == null ? "" : ("\nRoot cause: " + rootCause));
+      throw new MetaException(message + " :: " + errorMessage);
     }
   }
 
@@ -101,6 +126,9 @@ public class RetryingExecutor<T> {
   }
 
   public long getSleepInterval() {
+    if (sleepIntervalFunc != null) {
+      this.sleepInterval = sleepIntervalFunc.apply(sleepInterval);
+    }
     return sleepInterval;
   }
 }

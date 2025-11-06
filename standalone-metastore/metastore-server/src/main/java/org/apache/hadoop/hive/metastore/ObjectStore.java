@@ -9167,11 +9167,11 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       // DataNucleus objects get detached all over the place for no (real) reason.
       // So let's not use them anywhere unless absolutely necessary.
-      int maxRetries = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
-      long sleepInterval = ThreadLocalRandom.current().nextLong(MetastoreConf.getTimeVar(conf,
-          ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS)) + 30;
       MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      Map<String, String> result = new RetryingExecutor<>(maxRetries, sleepInterval, () -> {
+      int maxRetries = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
+      long sleepInterval = MetastoreConf.getTimeVar(conf,
+          ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
+      Map<String, String> result = new RetryingExecutor<>(maxRetries, () -> {
         Ref<Exception> exceptionRef = new Ref<>();
         String savePoint = "uts_" + ThreadLocalRandom.current().nextInt(10000) + "_" + System.nanoTime();
         setTransactionSavePoint(savePoint);
@@ -9232,7 +9232,9 @@ public class ObjectStore implements RawStore, Configurable {
         }
         oldt.setParameters(newParams);
         return newParams;
-      }).onRetry(RetryingExecutor.RetryException.class).commandName("updateTableColumnStatistics").run();
+      }).onRetry(e -> e instanceof RetryingExecutor.RetryException)
+        .commandName("updateTableColumnStatistics").sleepInterval(sleepInterval, interval ->
+              ThreadLocalRandom.current().nextLong(sleepInterval) + 30).run();
       committed = commitTransaction();
       // TODO: similar to update...Part, this used to do "return committed;"; makes little sense.
       return committed ? result : null;
@@ -11111,17 +11113,17 @@ public class ObjectStore implements RawStore, Configurable {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.
-      new RetryingExecutor<Void>(maxRetries, sleepInterval, () -> {
+      new RetryingExecutor<Void>(maxRetries, () -> {
         directSql.lockDbTable("NOTIFICATION_SEQUENCE");
         return null;
-      }).commandName("lockNotificationSequenceForUpdate").run();
+      }).commandName("lockNotificationSequenceForUpdate").sleepInterval(sleepInterval).run();
     } else {
       String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
-      new RetryingExecutor<Void>(maxRetries, sleepInterval, () -> {
+      new RetryingExecutor<Void>(maxRetries, () -> {
         executePlainSQL(lockingQuery, null);
         return null;
-      }).commandName("lockNotificationSequenceForUpdate").run();
+      }).commandName("lockNotificationSequenceForUpdate").sleepInterval(sleepInterval).run();
     }
   }
 
