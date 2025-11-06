@@ -182,4 +182,8 @@ public class GetPartitionsArgs {
       return additionalArgs;
     }
   }
+
+  public static GetPartitionsArgs getAllPartitions() {
+    return new GetPartitionsArgsBuilder().max(-1).build();
+  }
 }

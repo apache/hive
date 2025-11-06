@@ -997,10 +997,6 @@ public class MetaStoreServerUtils {
     }
   }
 
-  public static String getIndexTableName(String dbName, String baseTblName, String indexName) {
-    return dbName + "__" + baseTblName + "_" + indexName + "__";
-  }
-
   static public String validateTblColumns(List<FieldSchema> cols) {
     for (FieldSchema fieldSchema : cols) {
       // skip this, as validateColumnName always returns true
