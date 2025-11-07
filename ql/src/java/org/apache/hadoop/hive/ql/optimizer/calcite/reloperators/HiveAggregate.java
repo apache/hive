@@ -24,6 +24,7 @@ import java.util.Set;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Aggregate;
@@ -49,6 +50,11 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
       List<AggregateCall> aggCalls) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, false,
             groupSet, groupSets, aggCalls);
+  }
+
+  public HiveAggregate(RelInput input) {
+    this(input.getCluster(), input.getTraitSet(), input.getInput(),
+        input.getBitSet("group"), input.getBitSetList("groups"), input.getAggregateCalls("aggs"));
   }
 
   @Override
