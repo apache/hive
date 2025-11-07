@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -54,7 +55,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -233,12 +233,7 @@ public final class ShowUtils {
   }
 
   public static String convertToString(Decimal val) {
-    if (val == null) {
-      return "";
-    }
-
-    HiveDecimal result = HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale());
-    return (result != null) ? result.toString() : "";
+    return MetaStoreServerUtils.decimalToString(val);
   }
 
   public static String convertToString(org.apache.hadoop.hive.metastore.api.Date val) {
