@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
-  HiveProject(ca_zip=[$0], $f1=[$1])
+  HiveProject(ca_zip=[$0], _c1=[$1])
     HiveAggregate(group=[{3}], agg#0=[sum($7)])
       HiveJoin(condition=[AND(=($6, $0), OR($4, $9, $5))], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])

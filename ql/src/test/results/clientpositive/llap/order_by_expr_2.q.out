@@ -226,7 +226,7 @@ POSTHOOK: Input: default@store
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$1], dir0=[ASC])
-  HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+  HiveProject(c0=[$0], c1=[$1], c2=[$2])
     HiveAggregate(group=[{0, 1, 2}])
       HiveProject($f0=[$0], $f1=[CASE(=($0, _UTF-16LE'HQ'), null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE", $0)], $f2=[$1])
         HiveTableScan(table=[[default, store]], table:alias=[store])

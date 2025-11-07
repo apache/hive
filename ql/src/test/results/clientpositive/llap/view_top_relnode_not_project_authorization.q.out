@@ -28,8 +28,9 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@vw_t0
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}])
-  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+HiveProject(vw_t0.username=[$0])
+  HiveAggregate(group=[{0}])
+    HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: create view vw_t1 as select distinct username from t1 order by username desc limit 5
 PREHOOK: type: CREATEVIEW
@@ -54,7 +55,7 @@ POSTHOOK: Input: default@vw_t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[DESC], fetch=[5])
-  HiveProject(username=[$0])
+  HiveProject(vw_t1.username=[$0])
     HiveAggregate(group=[{0}])
       HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
@@ -82,10 +83,11 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@vw_t2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveFilter(condition=[>($0, _UTF-16LE'a')])
-  HiveProject(username=[$0])
-    HiveSortLimit(fetch=[1])
-      HiveProject(username=[$0])
-        HiveFilter(condition=[>($1, 10)])
-          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+HiveProject(vw_t2.username=[$0])
+  HiveFilter(condition=[>($0, _UTF-16LE'a')])
+    HiveProject(username=[$0])
+      HiveSortLimit(fetch=[1])
+        HiveProject(username=[$0])
+          HiveFilter(condition=[>($1, 10)])
+            HiveTableScan(table=[[default, t1]], table:alias=[t1])
 

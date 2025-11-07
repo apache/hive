@@ -23,11 +23,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@employee
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count($0)], agg#1=[count($1)])
-  HiveProject($f0=[CASE(=($2, 1), 1, null:INTEGER)], $f1=[null:INTEGER])
-    HiveAggregate(group=[{0, 1}], groups=[[{0}, {1}]], GROUPING__ID=[GROUPING__ID()])
-      HiveProject($f0=[true], $f1=[true])
-        HiveTableScan(table=[[default, employee]], table:alias=[employee])
+HiveProject(_c0=[$0], _c1=[$1])
+  HiveAggregate(group=[{}], agg#0=[count($0)], agg#1=[count($1)])
+    HiveProject($f0=[CASE(=($2, 1), 1, null:INTEGER)], $f1=[null:INTEGER])
+      HiveAggregate(group=[{0, 1}], groups=[[{0}, {1}]], GROUPING__ID=[GROUPING__ID()])
+        HiveProject($f0=[true], $f1=[true])
+          HiveTableScan(table=[[default, employee]], table:alias=[employee])
 
 PREHOOK: query: select count(distinct 0), count(distinct null) from employee
 PREHOOK: type: QUERY

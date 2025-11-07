@@ -150,7 +150,7 @@ select count(1) from combine2_n0 where value is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@combine2_n0
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`combine2_n0`
 WHERE `value` IS NOT NULL
 STAGE DEPENDENCIES:

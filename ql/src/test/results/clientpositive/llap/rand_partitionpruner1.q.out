@@ -6,7 +6,7 @@ POSTHOOK: query: explain extended select * from src where rand(1) < 0.1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`
+OPTIMIZED SQL: SELECT `key` AS `src.key`, `value` AS `src.value`
 FROM `default`.`src`
 WHERE RAND(1) < 0.1
 STAGE DEPENDENCIES:

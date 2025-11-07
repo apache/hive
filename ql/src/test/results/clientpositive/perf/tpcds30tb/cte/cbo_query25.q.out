@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
-  HiveProject(i_item_id=[$2], i_item_desc=[$3], s_store_id=[$0], s_store_name=[$1], $f4=[$4], $f5=[$5], $f6=[$6])
+  HiveProject(i_item_id=[$2], i_item_desc=[$3], s_store_id=[$0], s_store_name=[$1], store_sales_profit=[$4], store_returns_loss=[$5], catalog_sales_profit=[$6])
     HiveAggregate(group=[{19, 20, 22, 23}], agg#0=[sum($9)], agg#1=[sum($15)], agg#2=[sum($2)])
       HiveJoin(condition=[=($21, $5)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveJoin(condition=[=($18, $7)], joinType=[inner], algorithm=[none], cost=[not available])

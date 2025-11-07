@@ -44,7 +44,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t5`.`$f0`, `t12`.`$f1`, `t12`.`$f2`, `t5`.`$f0` AS `$f00`, `t5`.`$f1` AS `$f10`, `t5`.`$f2` AS `$f20`
+OPTIMIZED SQL: SELECT `t5`.`$f0` AS `aa.a`, `t12`.`$f1` AS `aa.b`, `t12`.`$f2` AS `aa.c`, `t5`.`$f0` AS `bb.a`, `t5`.`$f1` AS `bb.b`, `t5`.`$f2` AS `bb.c`
 FROM (SELECT `t0`.`key` AS `$f0`, SUM(CAST(`t0`.`value` AS DOUBLE)) / COUNT(CAST(`t0`.`value` AS DOUBLE)) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
 FROM (SELECT `key`, `value`
 FROM `default`.`src`
@@ -501,7 +501,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`$f0`, `t11`.`$f1`, `t11`.`$f2`, `t4`.`$f0` AS `$f00`, `t4`.`$f1` AS `$f10`, `t4`.`$f2` AS `$f20`, `t17`.`$f0` AS `$f01`, `t17`.`$f1` AS `$f11`, `t17`.`$f2` AS `$f21`, `t23`.`$f0` AS `$f02`, `t23`.`$f1` AS `$f12`, `t23`.`$f2` AS `$f22`
+OPTIMIZED SQL: SELECT `t4`.`$f0` AS `aa.a`, `t11`.`$f1` AS `aa.b`, `t11`.`$f2` AS `aa.c`, `t4`.`$f0` AS `bb.a`, `t4`.`$f1` AS `bb.b`, `t4`.`$f2` AS `bb.c`, `t17`.`$f0` AS `cc.a`, `t17`.`$f1` AS `cc.b`, `t17`.`$f2` AS `cc.c`, `t23`.`$f0` AS `dd.a`, `t23`.`$f1` AS `dd.b`, `t23`.`$f2` AS `dd.c`
 FROM (SELECT `t0`.`key` AS `$f0`, SUM(`t0`.`b`) / COUNT(`t0`.`b`) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
 FROM (SELECT `key`, 2 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`
@@ -1197,7 +1197,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@src1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t4`.`$f0`, `t11`.`$f1`, `t11`.`$f2`, `t4`.`$f0` AS `$f00`, `t4`.`$f1` AS `$f10`, `t4`.`$f2` AS `$f20`, `t17`.`$f0` AS `$f01`, `t17`.`$f1` AS `$f11`, `t17`.`$f2` AS `$f21`, `t23`.`$f0` AS `$f02`, `t23`.`$f1` AS `$f12`, `t23`.`$f2` AS `$f22`
+OPTIMIZED SQL: SELECT `t4`.`$f0` AS `aa.a`, `t11`.`$f1` AS `aa.b`, `t11`.`$f2` AS `aa.c`, `t4`.`$f0` AS `bb.a`, `t4`.`$f1` AS `bb.b`, `t4`.`$f2` AS `bb.c`, `t17`.`$f0` AS `cc.a`, `t17`.`$f1` AS `cc.b`, `t17`.`$f2` AS `cc.c`, `t23`.`$f0` AS `dd.a`, `t23`.`$f1` AS `dd.b`, `t23`.`$f2` AS `dd.c`
 FROM (SELECT `t0`.`key` AS `$f0`, SUM(`t0`.`b`) / COUNT(`t0`.`b`) AS `$f1`, SUM(`t2`.`value`) AS `$f2`
 FROM (SELECT `key`, 2 * CAST(`value` AS DOUBLE) AS `b`
 FROM `default`.`src`

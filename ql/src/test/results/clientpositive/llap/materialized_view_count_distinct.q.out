@@ -43,7 +43,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: count_distinct@base
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[$1])
+HiveProject(_c0=[$1])
   HiveAggregate(group=[{1}], agg#0=[count($0)])
     HiveProject(c1=[$0], c2=[$1])
       HiveAggregate(group=[{0, 1}])
@@ -86,7 +86,7 @@ POSTHOOK: Input: count_distinct@base
 POSTHOOK: Input: count_distinct@base_mview1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[$1])
+HiveProject(_c0=[$1])
   HiveAggregate(group=[{1}], agg#0=[count($0)])
     HiveTableScan(table=[[count_distinct, base_mview1]], table:alias=[count_distinct.base_mview1])
 
@@ -138,7 +138,7 @@ POSTHOOK: Input: count_distinct@base
 POSTHOOK: Input: count_distinct@base_mview2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[$1])
+HiveProject(_c0=[$1])
   HiveAggregate(group=[{1}], agg#0=[count($0)])
     HiveTableScan(table=[[count_distinct, base_mview2]], table:alias=[count_distinct.base_mview2])
 

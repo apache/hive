@@ -112,7 +112,7 @@ POSTHOOK: Input: default@daysales_temp
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `customer`, `dt`
+OPTIMIZED SQL: SELECT `customer` AS `daysales_temp.customer`, `dt` AS `daysales_temp.dt`
 FROM `default`.`daysales_temp`
 WHERE NVL(`dt` = '2001-01-01' AND `customer` = 1, FALSE)
 STAGE DEPENDENCIES:
@@ -216,7 +216,7 @@ POSTHOOK: Input: default@daysales_temp
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `customer`, `dt`
+OPTIMIZED SQL: SELECT `customer` AS `daysales_temp.customer`, `dt` AS `daysales_temp.dt`
 FROM `default`.`daysales_temp`
 WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)
 STAGE DEPENDENCIES:
@@ -320,7 +320,7 @@ POSTHOOK: Input: default@daysales_temp
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-01
 POSTHOOK: Input: default@daysales_temp@dt=2001-01-03
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `customer`, `dt`
+OPTIMIZED SQL: SELECT `customer` AS `daysales_temp.customer`, `dt` AS `daysales_temp.dt`
 FROM `default`.`daysales_temp`
 WHERE NVL(`dt` = '2001-01-01' OR `customer` = 3, FALSE)
 STAGE DEPENDENCIES:

@@ -78,7 +78,8 @@ POSTHOOK: Input: default@src3_n2
 POSTHOOK: Input: default@src4_n0
 POSTHOOK: Input: default@src5_n3
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `count`
+OPTIMIZED SQL: SELECT `key` AS `s.key`, `count` AS `s.count`
+FROM (SELECT `key`, `count`
 FROM `default`.`src2_n6`
 WHERE `key` < 10
 UNION ALL
@@ -93,7 +94,7 @@ UNION ALL
 SELECT `key`, COUNT(*) AS `$f1`
 FROM `default`.`src5_n3`
 WHERE `key` < 10
-GROUP BY `key`
+GROUP BY `key`) AS `t8`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -536,7 +537,8 @@ POSTHOOK: Input: default@src3_n2
 POSTHOOK: Input: default@src4_n0
 POSTHOOK: Input: default@src5_n3
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `count`
+OPTIMIZED SQL: SELECT `key` AS `s.key`, `count` AS `s.count`
+FROM (SELECT `key`, `count`
 FROM `default`.`src2_n6`
 WHERE `key` < 10
 UNION ALL
@@ -550,7 +552,7 @@ FROM `default`.`src4_n0`
 WHERE `key` < 10) AS `t4`
 INNER JOIN (SELECT `key`, `count`
 FROM `default`.`src5_n3`
-WHERE `key` < 10) AS `t6` ON `t4`.`key` = `t6`.`key`
+WHERE `key` < 10) AS `t6` ON `t4`.`key` = `t6`.`key`) AS `t8`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -972,7 +974,8 @@ POSTHOOK: Input: default@src3_n2
 POSTHOOK: Input: default@src4_n0
 POSTHOOK: Input: default@src5_n3
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `count`
+OPTIMIZED SQL: SELECT `key` AS `s.key`, `count` AS `s.count`
+FROM (SELECT `key`, `count`
 FROM `default`.`src2_n6`
 WHERE `key` < 10
 UNION ALL
@@ -987,7 +990,7 @@ WHERE `key` < 10) AS `t4`
 INNER JOIN (SELECT `key`
 FROM `default`.`src5_n3`
 WHERE `key` < 10) AS `t6` ON `t4`.`key` = `t6`.`key`
-GROUP BY `t4`.`key`
+GROUP BY `t4`.`key`) AS `t9`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

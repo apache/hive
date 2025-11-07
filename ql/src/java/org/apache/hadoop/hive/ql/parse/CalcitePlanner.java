@@ -295,6 +295,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedV
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.PlanModifierForASTConv;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper.AggregateInfo;
 import org.apache.hadoop.hive.ql.parse.type.HiveFunctionHelper;
@@ -605,7 +606,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
             }
           } else {
             // 1. Convert Plan to AST
-            ASTNode newAST = getOptimizedAST(newPlan);
+            newPlan = PlanModifierForASTConv.convertOpTree(newPlan, resultSchema,
+                HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT));
+            ASTNode newAST = ASTConverter.convert(newPlan, ctx.getPlanMapper());
 
             // 1.1. Fix up the query for insert/ctas/materialized views
             newAST = fixUpAfterCbo(ast, newAST, cboCtx);
@@ -1382,28 +1385,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       LOG.warn("Rel2SQL Rewrite threw error", e);
     }
     return null;
-  }
-
-  /**
-   * Get Optimized AST for the given QB tree in the semAnalyzer.
-   *
-   * @return Optimized operator tree translated in to Hive AST
-   * @throws SemanticException
-   */
-  ASTNode getOptimizedAST() throws SemanticException {
-    return getOptimizedAST(logicalPlan());
-  }
-
-  /**
-   * Get Optimized AST for the given QB tree in the semAnalyzer.
-   *
-   * @return Optimized operator tree translated in to Hive AST
-   * @throws SemanticException
-   */
-  ASTNode getOptimizedAST(RelNode optimizedOptiqPlan) throws SemanticException {
-    ASTNode optiqOptimizedAST = ASTConverter.convert(optimizedOptiqPlan, resultSchema,
-            HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_COLUMN_ALIGNMENT),ctx.getPlanMapper());
-    return optiqOptimizedAST;
   }
 
   /**

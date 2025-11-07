@@ -81,15 +81,17 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.MYSQL]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-  JdbcProject(lname=[$1], title=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-    JdbcJoin(condition=[=($0, $3)], joinType=[inner]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-      JdbcProject(id=[$0], lname=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-        JdbcFilter(condition=[IS NOT NULL($0)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-          JdbcProject(id=[$0], lname=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-            JdbcHiveTableScan(table=[[default, author]], table:alias=[a]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-      JdbcProject(title=[$0], author=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-        JdbcFilter(condition=[IS NOT NULL($1)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-          JdbcProject(title=[$1], author=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
-            JdbcHiveTableScan(table=[[default, book]], table:alias=[b]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+HiveProject(a.lname=[$0], b.title=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+  HiveProject(lname=[$0], title=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+    HiveJdbcConverter(convention=[JDBC.MYSQL]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+      JdbcProject(lname=[$1], title=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+        JdbcJoin(condition=[=($0, $3)], joinType=[inner]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+          JdbcProject(id=[$0], lname=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+            JdbcFilter(condition=[IS NOT NULL($0)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+              JdbcProject(id=[$0], lname=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+                JdbcHiveTableScan(table=[[default, author]], table:alias=[a]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+          JdbcProject(title=[$0], author=[$1]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+            JdbcFilter(condition=[IS NOT NULL($1)]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+              JdbcProject(title=[$1], author=[$2]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
+                JdbcHiveTableScan(table=[[default, book]], table:alias=[b]): rowcount = ###Masked###, cumulative cost = ###Masked###, id = ###Masked###
 

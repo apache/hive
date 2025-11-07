@@ -84,15 +84,16 @@ POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{2}], agg#0=[max($1)])
-  HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(watches=[$2])
-      HiveFilter(condition=[IS NOT NULL($2)])
-        HiveTableScan(table=[[arc_view, wealth]], table:alias=[t2])
-    HiveProject(total_views=[$1], quartile=[$2], program=[$0])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveProject(program=[$0], total_views=[$1], _o__col7=[sum(CAST(1.5:DECIMAL(2, 1)):DECIMAL(9, 4)) OVER (PARTITION BY 0 ORDER BY $1 NULLS LAST)])
-          HiveTableScan(table=[[arc_view, tv_view_data]], table:alias=[tv_view_data])
+HiveProject(t.quartile=[$0], total=[$1])
+  HiveAggregate(group=[{2}], agg#0=[max($1)])
+    HiveJoin(condition=[=($3, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(watches=[$2])
+        HiveFilter(condition=[IS NOT NULL($2)])
+          HiveTableScan(table=[[arc_view, wealth]], table:alias=[t2])
+      HiveProject(total_views=[$1], quartile=[$2], program=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveProject(program=[$0], total_views=[$1], _o__col7=[sum(CAST(1.5:DECIMAL(2, 1)):DECIMAL(9, 4)) OVER (PARTITION BY 0 ORDER BY $1 NULLS LAST)])
+            HiveTableScan(table=[[arc_view, tv_view_data]], table:alias=[tv_view_data])
 
 PREHOOK: query: create materialized view mv_tv_view_data_av1 stored as orc TBLPROPERTIES ('transactional'='true') as
 select
@@ -168,7 +169,7 @@ POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(quartile=[$0], total=[$1])
+  HiveProject(t.quartile=[$0], total=[$1])
     HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
 
 PREHOOK: query: select
@@ -478,7 +479,7 @@ POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(quartile=[$0], total=[$1])
+  HiveProject(t.quartile=[$0], total=[$1])
     HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
 
 PREHOOK: query: select
@@ -789,7 +790,7 @@ POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(quartile=[$0], total=[$1])
+  HiveProject(t.quartile=[$0], total=[$1])
     HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
 
 PREHOOK: query: select

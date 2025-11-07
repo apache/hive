@@ -666,7 +666,7 @@ POSTHOOK: Input: default@supplier_n4
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$1], sort1=[$2], dir0=[ASC], dir1=[ASC])
-  HiveProject($f2=[$2], d_year=[$1], p_brand1=[$0])
+  HiveProject(lo_revenue=[$2], d_year=[$1], p_brand1=[$0])
     HiveAggregate(group=[{0, 7}], agg#0=[sum($9)])
       HiveFilter(condition=[AND(=(CAST($8):BIGINT NOT NULL, 0), =($1, _UTF-16LE'MFGR#12'), =($4, _UTF-16LE'AMERICA'))])
         HiveTableScan(table=[[default, ssb_mv_n4]], table:alias=[default.ssb_mv_n4])
@@ -717,7 +717,7 @@ POSTHOOK: Input: default@supplier_n4
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$1], sort1=[$2], dir0=[ASC], dir1=[ASC])
-  HiveProject($f2=[$2], d_year=[$1], p_brand1=[$0])
+  HiveProject(lo_revenue=[$2], d_year=[$1], p_brand1=[$0])
     HiveAggregate(group=[{0, 7}], agg#0=[sum($9)])
       HiveFilter(condition=[AND(=(CAST($8):BIGINT NOT NULL, 0), BETWEEN(false, $0, _UTF-16LE'MFGR#2221':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'MFGR#2228':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), =($4, _UTF-16LE'ASIA'))])
         HiveTableScan(table=[[default, ssb_mv_n4]], table:alias=[default.ssb_mv_n4])

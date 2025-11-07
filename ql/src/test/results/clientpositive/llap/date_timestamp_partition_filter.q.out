@@ -38,7 +38,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testpd
 POSTHOOK: Input: default@testpd@partitiondate=2023-01-01
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `col1`, `col2`, CAST(DATE '2023-01-01' AS DATE) AS `partitiondate`
+OPTIMIZED SQL: SELECT `col1` AS `testpd.col1`, `col2` AS `testpd.col2`, CAST(DATE '2023-01-01' AS DATE) AS `testpd.partitiondate`
 FROM `default`.`testpd`
 WHERE `partitiondate` = DATE '2023-01-01'
 STAGE DEPENDENCIES:
@@ -145,7 +145,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testpt
 POSTHOOK: Input: default@testpt@partitiontimestamp=2023-01-01 10%3A20%3A30
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `col1`, `col2`, CAST(TIMESTAMP '2023-01-01 10:20:30.000000000' AS TIMESTAMP) AS `partitiontimestamp`
+OPTIMIZED SQL: SELECT `col1` AS `testpt.col1`, `col2` AS `testpt.col2`, CAST(TIMESTAMP '2023-01-01 10:20:30.000000000' AS TIMESTAMP) AS `testpt.partitiontimestamp`
 FROM `default`.`testpt`
 WHERE `partitiontimestamp` = TIMESTAMP '2023-01-01 10:20:30.000000000'
 STAGE DEPENDENCIES:

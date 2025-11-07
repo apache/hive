@@ -37,7 +37,7 @@ HiveFilter(condition=[IS NOT NULL($5)])
             HiveTableScan(table=[[default, item]], table:alias=[item])
 
 CBO PLAN:
-HiveProject(i_category=[$0], d_year=[$1], d_moy=[$2], avg_monthly_sales=[$3], sum_sales=[$4], psum=[$5], nsum=[$6])
+HiveProject(v2.i_category=[$0], v2.d_year=[$1], v2.d_moy=[$2], v2.avg_monthly_sales=[$3], v2.sum_sales=[$4], v2.psum=[$5], v2.nsum=[$6])
   HiveSortLimit(sort0=[$7], sort1=[$2], dir0=[ASC], dir1=[ASC], fetch=[100])
     HiveProject(i_category=[$12], d_year=[$16], d_moy=[$17], avg_monthly_sales=[$19], sum_sales=[$18], psum=[$10], nsum=[$4], (- (tok_table_or_col sum_sales) (tok_table_or_col avg_monthly_sales))1=[-($18, $19)])
       HiveJoin(condition=[AND(=($12, $0), =($13, $1), =($14, $2), =($15, $3), =($20, $5))], joinType=[inner], algorithm=[none], cost=[not available])

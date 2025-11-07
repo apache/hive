@@ -26,7 +26,7 @@ select 1, key, 1, value, 1 from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
-OPTIMIZED SQL: SELECT 1 AS `_o__c0`, `key`, 1 AS `_o__c2`, `value`, 1 AS `_o__c4`
+OPTIMIZED SQL: SELECT 1 AS `_c0`, `key`, 1 AS `_c2`, `value`, 1 AS `_c4`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -302,7 +302,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_mul_col_n0
 POSTHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `col1`, CAST('466' AS STRING) AS `col2`, `col3`, CAST('val_466' AS STRING) AS `col4`, `col5`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`
+OPTIMIZED SQL: SELECT `col1` AS `list_bucketing_mul_col_n0.col1`, CAST('466' AS STRING) AS `list_bucketing_mul_col_n0.col2`, `col3` AS `list_bucketing_mul_col_n0.col3`, CAST('val_466' AS STRING) AS `list_bucketing_mul_col_n0.col4`, `col5` AS `list_bucketing_mul_col_n0.col5`, CAST('2008-04-08' AS STRING) AS `list_bucketing_mul_col_n0.ds`, CAST('11' AS STRING) AS `list_bucketing_mul_col_n0.hr`
 FROM `default`.`list_bucketing_mul_col_n0`
 WHERE `col2` = '466' AND `col4` = 'val_466' AND `ds` = '2008-04-08' AND `hr` = '11'
 STAGE DEPENDENCIES:
@@ -390,7 +390,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@list_bucketing_mul_col_n0
 POSTHOOK: Input: default@list_bucketing_mul_col_n0@ds=2008-04-08/hr=11
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `col1`, CAST('382' AS STRING) AS `col2`, `col3`, CAST('val_382' AS STRING) AS `col4`, `col5`, CAST('2008-04-08' AS STRING) AS `ds`, CAST('11' AS STRING) AS `hr`
+OPTIMIZED SQL: SELECT `col1` AS `list_bucketing_mul_col_n0.col1`, CAST('382' AS STRING) AS `list_bucketing_mul_col_n0.col2`, `col3` AS `list_bucketing_mul_col_n0.col3`, CAST('val_382' AS STRING) AS `list_bucketing_mul_col_n0.col4`, `col5` AS `list_bucketing_mul_col_n0.col5`, CAST('2008-04-08' AS STRING) AS `list_bucketing_mul_col_n0.ds`, CAST('11' AS STRING) AS `list_bucketing_mul_col_n0.hr`
 FROM `default`.`list_bucketing_mul_col_n0`
 WHERE `col2` = '382' AND `col4` = 'val_382' AND `ds` = '2008-04-08' AND `hr` = '11'
 STAGE DEPENDENCIES:

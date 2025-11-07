@@ -100,7 +100,7 @@ POSTHOOK: Input: default@my_table_0001_00
 POSTHOOK: Input: default@my_table_0001_01
 POSTHOOK: Input: default@my_table_0003
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`col_7`, `t0`.`col_3`, `t0`.`col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1`, `t4`.`col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23`
+OPTIMIZED SQL: SELECT `t0`.`col_7` AS `table__323.col_7`, `t0`.`col_3`, `t0`.`col_20` AS `table__323.col_20`, `t2`.`col_21` AS `col_21_1232`, `t0`.`col_1` AS `table__323.col_1`, `t4`.`col_22` AS `table__133.col_22`, `t6`.`col_21` AS `col_21_879`, `t4`.`col_23` AS `table__133.col_23`
 FROM (SELECT `col_1`, `col_7`, `col_20`, CAST(`col_3` AS DATE) AS `col_3`
 FROM `default`.`my_table_0001`
 WHERE (`col_7` IS NULL OR CAST(`col_7` AS DOUBLE) IS NOT NULL) AND `col_20` IN ('part1', 'part2', 'part3') AND CAST(`col_3` AS DATE) BETWEEN DATE '2018-07-01' AND DATE '2019-01-23') AS `t0`
@@ -587,7 +587,7 @@ WHERE (`t14`.`$f2` IS NULL OR `t6`.`c` = 0 OR `t6`.`c` IS NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `p_name`
+OPTIMIZED SQL: SELECT `p_name` AS `t.p_name`
 FROM (SELECT `t`.`p_name`, `t`.`p_type`, `t`.`size`, `t7`.`$f0` AS `size0`, `t3`.`$f1` AS `c`, `t3`.`$f2` AS `ck`, `t16`.`p_type` AS `p_type0`, `t16`.`size` AS `size1`, `t16`.`$f2`
 FROM (SELECT `p_name`, `p_type`, `p_size` + 1 AS `size`
 FROM `default`.`part`) AS `t`

@@ -45,7 +45,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v1
 CBO PLAN:
-HiveProject($f0=[CAST(10):INTEGER])
+HiveProject(col0=[CAST(10):INTEGER])
   HiveFilter(condition=[=($0, 10)])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
@@ -79,7 +79,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@v1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject($f0=[CAST(10):INTEGER])
+HiveProject(v1.col0=[CAST(10):INTEGER])
   HiveFilter(condition=[=(10, $0)])
     HiveTableScan(table=[[default, mv1]], table:alias=[default.mv1])
 

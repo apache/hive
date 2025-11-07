@@ -155,7 +155,7 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(b_title=[$0])
+HiveProject(b.b_title=[$0])
   HiveSemiJoin(condition=[=($1, $2)], joinType=[semi])
     HiveProject(b_title=[$1], $f7=[CASE(IS NOT NULL($2), $2, 300)])
       HiveTableScan(table=[[default, book]], table:alias=[b])
@@ -209,7 +209,7 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(b_title=[$0])
+HiveProject(b.b_title=[$0])
   HiveSemiJoin(condition=[=($1, $2)], joinType=[semi])
     HiveProject(b_title=[$1], $f7=[CASE(IS NOT NULL($2), $2, 400)])
       HiveTableScan(table=[[default, book]], table:alias=[b])
@@ -262,7 +262,7 @@ POSTHOOK: Input: default@author
 POSTHOOK: Input: default@book
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(b_title=[$0])
+HiveProject(b.b_title=[$0])
   HiveAntiJoin(condition=[=($1, $3)], joinType=[anti])
     HiveProject(b_title=[$1], $f7=[CASE(IS NOT NULL($2), $2, 400)])
       HiveTableScan(table=[[default, book]], table:alias=[b])
@@ -330,19 +330,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[AND(=($3, $0), =($4, $1))], joinType=[semi])
-  HiveProject(promo_sk=[$0], sales_price=[$1], list_price=[$2])
-    HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-      HiveTableScan(table=[[default, store_sales]], table:alias=[a])
-  HiveProject(promo_sk0=[$3], sales_price0=[$4])
-    HiveJoin(condition=[AND(=($3, $0), >($4, $2), <($4, $1))], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(promo_sk=[$0], sales_price=[$1], list_price=[$2])
-        HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($1))])
-          HiveTableScan(table=[[default, store_sales]], table:alias=[b])
-      HiveProject(promo_sk=[$0], sales_price=[$1])
-        HiveAggregate(group=[{0, 1}])
-          HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-            HiveTableScan(table=[[default, store_sales]], table:alias=[a])
+HiveProject(a.promo_sk=[$0], a.sales_price=[$1], a.list_price=[$2])
+  HiveSemiJoin(condition=[AND(=($3, $0), =($4, $1))], joinType=[semi])
+    HiveProject(promo_sk=[$0], sales_price=[$1], list_price=[$2])
+      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+        HiveTableScan(table=[[default, store_sales]], table:alias=[a])
+    HiveProject(promo_sk0=[$3], sales_price0=[$4])
+      HiveJoin(condition=[AND(=($3, $0), >($4, $2), <($4, $1))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(promo_sk=[$0], sales_price=[$1], list_price=[$2])
+          HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($2), IS NOT NULL($1))])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[b])
+        HiveProject(promo_sk=[$0], sales_price=[$1])
+          HiveAggregate(group=[{0, 1}])
+            HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+              HiveTableScan(table=[[default, store_sales]], table:alias=[a])
 
 PREHOOK: query: select * from store_sales A where exists( 
 select 1 from store_sales B 

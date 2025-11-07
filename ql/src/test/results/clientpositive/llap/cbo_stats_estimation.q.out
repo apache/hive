@@ -22,7 +22,7 @@ POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM claims WHERE typ_c=3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@claims
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`claims`
 WHERE `typ_c` = 3
 STAGE DEPENDENCIES:
@@ -152,7 +152,7 @@ POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM claims WHERE typ_c=3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@claims
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`claims`
 WHERE `typ_c` = 3
 STAGE DEPENDENCIES:

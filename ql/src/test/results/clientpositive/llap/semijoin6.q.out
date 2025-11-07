@@ -158,11 +158,12 @@ POSTHOOK: Input: default@tx1_n1
 POSTHOOK: Input: default@tx2_n0
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[IS NOT DISTINCT FROM($1, $2)], joinType=[semi])
-  HiveProject(a=[$0], b=[$1])
-    HiveTableScan(table=[[default, tx1_n1]], table:alias=[u])
-  HiveProject(b=[$1])
-    HiveTableScan(table=[[default, tx2_n0]], table:alias=[v])
+HiveProject(u.a=[$0], u.b=[$1])
+  HiveSemiJoin(condition=[IS NOT DISTINCT FROM($1, $2)], joinType=[semi])
+    HiveProject(a=[$0], b=[$1])
+      HiveTableScan(table=[[default, tx1_n1]], table:alias=[u])
+    HiveProject(b=[$1])
+      HiveTableScan(table=[[default, tx2_n0]], table:alias=[v])
 
 PREHOOK: query: explain
 select * from tx1_n1 u left semi join tx2_n0 v on u.b <=> v.b

@@ -12,7 +12,7 @@ POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
+OPTIMIZED SQL: SELECT `key` AS `x.key`, `value` AS `x.value`, CAST('2008-04-08' AS STRING) AS `x.ds`, `hr` AS `x.hr`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08' AND `key` IS NOT NULL
 STAGE DEPENDENCIES:

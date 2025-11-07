@@ -20,7 +20,7 @@ insert overwrite table list_bucketing select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@list_bucketing
-OPTIMIZED SQL: SELECT `key`, `value`
+OPTIMIZED SQL: SELECT `key` AS `src.key`, `value` AS `src.value`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

@@ -1,7 +1,7 @@
 Warning: Map Join MAPJOIN[112][bigTable=?] in task 'Reducer 2' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
-  HiveProject(rnk=[$3], best_performing=[$1], worst_performing=[$7])
+  HiveProject(asceding.rnk=[$3], best_performing=[$1], worst_performing=[$7])
     HiveJoin(condition=[=($6, $4)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject(i_item_sk=[$0], i_product_name=[$21])

@@ -17,17 +17,18 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
-  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+HiveProject(src1.key=[$0], src1.value=[$1], src2.key=[$2], src2.value=[$3], src3.key=[$4], src3.value=[$5])
+  HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1), IS NOT NULL($0))])
+          HiveTableScan(table=[[default, src]], table:alias=[src1])
+      HiveProject(key=[$0], value=[$1])
+        HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1), IS NOT NULL($0))])
+          HiveTableScan(table=[[default, src]], table:alias=[src2])
     HiveProject(key=[$0], value=[$1])
       HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1), IS NOT NULL($0))])
-        HiveTableScan(table=[[default, src]], table:alias=[src1])
-    HiveProject(key=[$0], value=[$1])
-      HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1), IS NOT NULL($0))])
-        HiveTableScan(table=[[default, src]], table:alias=[src2])
-  HiveProject(key=[$0], value=[$1])
-    HiveFilter(condition=[AND(>(CAST($0):DOUBLE, 1E1), <(CAST($0):DOUBLE, 2E1), IS NOT NULL($0))])
-      HiveTableScan(table=[[default, src]], table:alias=[src3])
+        HiveTableScan(table=[[default, src]], table:alias=[src3])
 
 PREHOOK: query: EXPLAIN CBO
 SELECT *
@@ -50,7 +51,7 @@ POSTHOOK: Input: default@src
 Excluded rules: HiveJoinPushTransitivePredicatesRule
 
 CBO PLAN:
-HiveProject(key=[$4], value=[$5], key0=[$2], value0=[$3], key1=[$0], value1=[$1])
+HiveProject(src1.key=[$4], src1.value=[$5], src2.key=[$2], src2.value=[$3], src3.key=[$0], src3.value=[$1])
   HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0], value=[$1])
       HiveFilter(condition=[IS NOT NULL($0)])
@@ -84,7 +85,7 @@ POSTHOOK: Input: default@src
 Excluded rules: HiveJoinPushTransitivePredicatesRule|HiveJoinAddNotNullRule
 
 CBO PLAN:
-HiveProject(key=[$4], value=[$5], key0=[$2], value0=[$3], key1=[$0], value1=[$1])
+HiveProject(src1.key=[$4], src1.value=[$5], src2.key=[$2], src2.value=[$3], src3.key=[$0], src3.value=[$1])
   HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0], value=[$1])
       HiveTableScan(table=[[default, src]], table:alias=[src3])
@@ -116,7 +117,7 @@ POSTHOOK: Input: default@src
 Excluded rules: HiveJoin.*Rule
 
 CBO PLAN:
-HiveProject(key=[$4], value=[$5], key0=[$2], value0=[$3], key1=[$0], value1=[$1])
+HiveProject(src1.key=[$4], src1.value=[$5], src2.key=[$2], src2.value=[$3], src3.key=[$0], src3.value=[$1])
   HiveJoin(condition=[=($4, $0)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0], value=[$1])
       HiveTableScan(table=[[default, src]], table:alias=[src3])
@@ -148,7 +149,7 @@ POSTHOOK: Input: default@src
 Excluded rules: .*
 
 CBO PLAN:
-HiveProject(key=[$0], value=[$1], key1=[$6], value1=[$7], key2=[$12], value2=[$13])
+HiveProject(src1.key=[$0], src1.value=[$1], src2.key=[$6], src2.value=[$7], src3.key=[$12], src3.value=[$13])
   HiveFilter(condition=[AND(>(CAST($0):DOUBLE, CAST(10):DOUBLE), <(CAST($0):DOUBLE, CAST(20):DOUBLE))])
     HiveJoin(condition=[=($0, $12)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])

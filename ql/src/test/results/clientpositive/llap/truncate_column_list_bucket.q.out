@@ -59,7 +59,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab_n3
 POSTHOOK: Input: default@test_tab_n3@part=1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `part`
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `test_tab_n3.key`, `value` AS `test_tab_n3.value`, CAST('1' AS STRING) AS `test_tab_n3.part`
 FROM `default`.`test_tab_n3`
 WHERE `key` = '484' AND `part` = '1'
 STAGE DEPENDENCIES:
@@ -138,7 +138,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab_n3
 POSTHOOK: Input: default@test_tab_n3@part=1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('0' AS STRING) AS `key`, `value`, CAST('1' AS STRING) AS `part`
+OPTIMIZED SQL: SELECT CAST('0' AS STRING) AS `test_tab_n3.key`, `value` AS `test_tab_n3.value`, CAST('1' AS STRING) AS `test_tab_n3.part`
 FROM `default`.`test_tab_n3`
 WHERE `key` = '0' AND `part` = '1'
 STAGE DEPENDENCIES:
