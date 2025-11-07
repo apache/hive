@@ -573,15 +573,17 @@ POSTHOOK: Input: default@ext_simple_derby_table1
 POSTHOOK: Input: default@ext_simple_derby_table2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.DERBY])
-  JdbcProject(fkey=[$1], dkey=[$3])
-    JdbcJoin(condition=[=($0, $2)], joinType=[inner])
-      JdbcProject(ikey=[$0], fkey=[$1])
-        JdbcFilter(condition=[IS NOT NULL($0)])
-          JdbcProject(ikey=[$0], fkey=[$2])
-            JdbcHiveTableScan(table=[[default, ext_simple_derby_table1]], table:alias=[ext_simple_derby_table1])
-      JdbcProject(ikey=[$0], dkey=[$1])
-        JdbcFilter(condition=[IS NOT NULL($0)])
-          JdbcProject(ikey=[$0], dkey=[$3])
-            JdbcHiveTableScan(table=[[default, ext_simple_derby_table2]], table:alias=[ext_simple_derby_table2])
+HiveProject(ext_simple_derby_table1.fkey=[$0], ext_simple_derby_table2.dkey=[$1])
+  HiveProject(fkey=[$0], dkey=[$1])
+    HiveJdbcConverter(convention=[JDBC.DERBY])
+      JdbcProject(fkey=[$1], dkey=[$3])
+        JdbcJoin(condition=[=($0, $2)], joinType=[inner])
+          JdbcProject(ikey=[$0], fkey=[$1])
+            JdbcFilter(condition=[IS NOT NULL($0)])
+              JdbcProject(ikey=[$0], fkey=[$2])
+                JdbcHiveTableScan(table=[[default, ext_simple_derby_table1]], table:alias=[ext_simple_derby_table1])
+          JdbcProject(ikey=[$0], dkey=[$1])
+            JdbcFilter(condition=[IS NOT NULL($0)])
+              JdbcProject(ikey=[$0], dkey=[$3])
+                JdbcHiveTableScan(table=[[default, ext_simple_derby_table2]], table:alias=[ext_simple_derby_table2])
 
