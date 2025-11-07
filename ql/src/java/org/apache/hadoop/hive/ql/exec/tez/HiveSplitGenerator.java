@@ -360,7 +360,7 @@ public class HiveSplitGenerator extends InputInitializer {
           }
         } else {
           // Raw splits
-          splits = inputFormat.getSplits(jobConf, numSplits.orElse(Math.multiplyExact(availableSlots, (int)waves)));
+          splits = inputFormat.getSplits(jobConf, numSplits.orElse((int) (availableSlots * waves)));
         }
         // Sort the splits, so that subsequent grouping is consistent.
         Arrays.sort(splits, new InputSplitComparator());
