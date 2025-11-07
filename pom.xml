@@ -1691,6 +1691,7 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
+          <suppressionsLocation>${checkstyle.conf.dir}/suppressions.xml</suppressionsLocation>
           <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
