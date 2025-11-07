@@ -1,0 +1,75 @@
+PREHOOK: query: CREATE TABLE IF NOT EXISTS t1(c0 DOUBLE, c1 FLOAT, c2 integer)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS t1(c0 DOUBLE, c1 FLOAT, c2 integer)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: CREATE VIEW v0 AS (SELECT ALL (t1.c1) AS c0 FROM t1)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@v0
+POSTHOOK: query: CREATE VIEW v0 AS (SELECT ALL (t1.c1) AS c0 FROM t1)
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@v0
+POSTHOOK: Lineage: v0.c0 SIMPLE [(t1)t1.FieldSchema(name:c1, type:float, comment:null), ]
+PREHOOK: query: INSERT INTO t1(c0) VALUES(0.3485010744027526)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: INSERT INTO t1(c0) VALUES(0.3485010744027526)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.c0 SCRIPT []
+POSTHOOK: Lineage: t1.c1 SIMPLE []
+POSTHOOK: Lineage: t1.c2 SIMPLE []
+PREHOOK: query: INSERT INTO t1(c1) VALUES(8.574871E8), (8.574871E8), (0.053164534), (0.11833945), (0.83558863)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: INSERT INTO t1(c1) VALUES(8.574871E8), (8.574871E8), (0.053164534), (0.11833945), (0.83558863)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.c0 SIMPLE []
+POSTHOOK: Lineage: t1.c1 SCRIPT []
+POSTHOOK: Lineage: t1.c2 SIMPLE []
+PREHOOK: query: explain cbo SELECT t1.c0 from t1 WHERE ((1008753865)/(0)) IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo SELECT t1.c0 from t1 WHERE ((1008753865)/(0)) IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: explain cbo SELECT v0.c0 FROM v0 WHERE ((1008753865)/(0)) IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo SELECT v0.c0 FROM v0 WHERE ((1008753865)/(0)) IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveValues(tuples=[[]])
+
+PREHOOK: query: SELECT v0.c0 FROM v0 WHERE ((1008753865)/(0)) IS NOT NULL
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@v0
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT v0.c0 FROM v0 WHERE ((1008753865)/(0)) IS NOT NULL
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@v0
+#### A masked pattern was here ####
