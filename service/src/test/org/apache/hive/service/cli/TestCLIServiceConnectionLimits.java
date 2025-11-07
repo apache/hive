@@ -17,11 +17,13 @@ package org.apache.hive.service.cli;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.IPStackUtils;
 import org.apache.hive.service.cli.session.SessionManager;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
@@ -341,6 +343,52 @@ public class TestCLIServiceConnectionLimits {
       for (SessionHandle sessionHandle : sessionHandles) {
         service.closeSession(sessionHandle);
       }
+      service.stop();
+    }
+  }
+
+  @Test
+  public void testConnectionLimitPerUserWhenSessionCreationFails() throws HiveSQLException {
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER, 2);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS, 0);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER_IPADDRESS, 0);
+    testConnectionLimits();
+  }
+
+  @Test
+  public void testConnectionLimitPerIpAddressWhenSessionCreationFails() throws HiveSQLException {
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER, 0);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS, 2);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER_IPADDRESS, 0);
+    testConnectionLimits();
+  }
+
+  @Test
+  public void testConnectionLimitPerUserIpAddressWhenSessionCreationFails() throws HiveSQLException {
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER, 0);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_IPADDRESS, 0);
+    conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LIMIT_CONNECTIONS_PER_USER_IPADDRESS, 2);
+    testConnectionLimits();
+  }
+
+  private void testConnectionLimits() {
+    CLIService service = getService(conf);
+    HashMap<String, String> sessionConf = new HashMap<>(1);
+    // modifying this property at runtime is not allowed, it will throw exception and session will not be created
+    sessionConf.put("hive.conf.locked.list", "test");
+    try {
+      // Here limit is set as 2 but if session creation fails it shouldn't increment the count and should not throw limit reached exception
+      for (int i = 0; i < 3; i++) {
+        try {
+          service.openSession(CLIService.SERVER_VERSION, "foo", "bar", IPStackUtils.resolveLoopbackAddress(),
+              sessionConf);
+        } catch (HiveSQLException he) {
+          Assert.assertEquals(
+              "Failed to open new session: Cannot modify hive.conf.locked.list at runtime. It is in the list of parameters that can't be modified at runtime or is prefixed by a restricted variable",
+              he.getMessage());
+        }
+      }
+    } finally {
       service.stop();
     }
   }
