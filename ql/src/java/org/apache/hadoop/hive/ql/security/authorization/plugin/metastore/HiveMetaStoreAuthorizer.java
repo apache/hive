@@ -136,7 +136,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
       }
     } catch (Exception e) {
       LOG.error("HiveMetaStoreAuthorizer.onEvent(): failed", e);
-      throw MetaStoreUtils.newMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
 
     LOG.debug("<== HiveMetaStoreAuthorizer.onEvent(): EventType=" + preEventContext.getEventType());
