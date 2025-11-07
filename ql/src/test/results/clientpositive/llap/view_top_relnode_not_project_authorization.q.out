@@ -1,0 +1,91 @@
+PREHOOK: query: create table t1 (username string, id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (username string, id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: create view vw_t0 as select distinct username from t1 group by username
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vw_t0
+POSTHOOK: query: create view vw_t0 as select distinct username from t1 group by username
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vw_t0
+POSTHOOK: Lineage: vw_t0.username SIMPLE [(t1)t1.FieldSchema(name:username, type:string, comment:null), ]
+PREHOOK: query: explain cbo select * from vw_t0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@vw_t0
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from vw_t0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@vw_t0
+#### A masked pattern was here ####
+CBO PLAN:
+HiveAggregate(group=[{0}])
+  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: create view vw_t1 as select distinct username from t1 order by username desc limit 5
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vw_t1
+POSTHOOK: query: create view vw_t1 as select distinct username from t1 order by username desc limit 5
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vw_t1
+POSTHOOK: Lineage: vw_t1.username SIMPLE [(t1)t1.FieldSchema(name:username, type:string, comment:null), ]
+PREHOOK: query: explain cbo select * from vw_t1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@vw_t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from vw_t1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@vw_t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortLimit(sort0=[$0], dir0=[DESC], fetch=[5])
+  HiveProject(username=[$0])
+    HiveAggregate(group=[{0}])
+      HiveTableScan(table=[[default, t1]], table:alias=[t1])
+
+PREHOOK: query: create view vw_t2 as 
+select username from (select username, id from t1 where id > 10 limit 1) x where username > 'a' order by id
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@vw_t2
+POSTHOOK: query: create view vw_t2 as 
+select username from (select username, id from t1 where id > 10 limit 1) x where username > 'a' order by id
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@vw_t2
+POSTHOOK: Lineage: vw_t2.username SIMPLE [(t1)t1.FieldSchema(name:username, type:string, comment:null), ]
+PREHOOK: query: explain cbo select * from vw_t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+PREHOOK: Input: default@vw_t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select * from vw_t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+POSTHOOK: Input: default@vw_t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveFilter(condition=[>($0, _UTF-16LE'a')])
+  HiveProject(username=[$0])
+    HiveSortLimit(fetch=[1])
+      HiveProject(username=[$0])
+        HiveFilter(condition=[>($1, 10)])
+          HiveTableScan(table=[[default, t1]], table:alias=[t1])
+

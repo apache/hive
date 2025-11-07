@@ -1577,7 +1577,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final Map<String, PrunedPartitionList>        partitionCache;
     private final Map<String, ColumnStatsList>            colStatsCache;
     private final ColumnAccessInfo columnAccessInfo;
-    private Map<HiveProject, Table> viewProjectToTableSchema;
+    private final Map<RelNode, Table> relToTable;
     private final QB rootQB;
 
     // correlated vars across subqueries within same query needs to have different ID
@@ -1604,6 +1604,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       this.rootQB = rootQB;
       this.colStatsCache = ctx.getOpContext().getColStatsCache();
       this.columnAccessInfo = columnAccessInfo;
+      this.relToTable = new HashMap<>();
     }
 
     @Override
@@ -1662,8 +1663,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // We need to get the ColumnAccessInfo and viewToTableSchema for views.
       if (conf.getBoolVar(ConfVars.HIVE_STATS_COLLECT_SCANCOLS) || !skipAuthorization()) {
         HiveRelFieldTrimmer.get()
-            .trim(HiveRelFactories.HIVE_BUILDER.create(optCluster, null), calcitePlan, this.columnAccessInfo,
-                this.viewProjectToTableSchema);
+            .trim(
+                HiveRelFactories.HIVE_BUILDER.create(optCluster, null),
+                calcitePlan,
+                this.columnAccessInfo,
+                this.relToTable
+            );
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.MV_REWRITE_FIELD_TRIMMER);
 
@@ -4917,15 +4922,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         aliasToRel.put(subqAlias, relNode);
         if (qb.getViewToTabSchema().containsKey(subqAlias)) {
-          if (relNode instanceof HiveProject) {
-            if (this.viewProjectToTableSchema == null) {
-              this.viewProjectToTableSchema = new LinkedHashMap<>();
-            }
-            viewProjectToTableSchema.put((HiveProject) relNode, qb.getViewToTabSchema().get(subqAlias));
-          } else {
-            throw new SemanticException("View " + subqAlias + " is corresponding to "
-                + relNode.toString() + ", rather than a HiveProject.");
-          }
+          relToTable.put(relNode, qb.getViewToTabSchema().get(subqAlias));
         }
       }
 
@@ -5046,7 +5043,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       setQB(qb);
       return srcRel;
     }
-
+    
     private RelNode genGBHavingLogicalPlan(QB qb, RelNode srcRel) throws SemanticException {
       RelNode gbFilter = null;
       QBParseInfo qbp = getQBParseInfo(qb);
