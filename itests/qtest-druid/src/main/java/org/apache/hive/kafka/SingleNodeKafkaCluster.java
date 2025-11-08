@@ -83,8 +83,8 @@ public class SingleNodeKafkaCluster extends AbstractService {
 
     properties.setProperty("zookeeper.connect", zkString);
     properties.setProperty("broker.id", String.valueOf(1));
-    properties.setProperty("host.name", LOCALHOST);
-    properties.setProperty("port", Integer.toString(brokerPort));
+    properties.setProperty("listeners", "PLAINTEXT://" + LOCALHOST + ":" + Integer.toString(brokerPort));
+    properties.setProperty("advertised.listeners", "PLAINTEXT://" + LOCALHOST + ":" + Integer.toString(brokerPort));
     properties.setProperty("log.dir", logDir);
     // This property is very important, we are sending form records with a specific time
     // Thus need to make sure that they don't get DELETED

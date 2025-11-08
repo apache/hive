@@ -225,8 +225,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: Drop table kafka_table_offsets
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: Drop table kafka_table_offsets
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: create table kafka_table_offsets(partition_id int, max_offset bigint, insert_time timestamp)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -257,8 +259,10 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	-1
 PREHOOK: query: Drop table orc_kafka_table
 PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
 POSTHOOK: query: Drop table orc_kafka_table
 POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
 PREHOOK: query: Create table orc_kafka_table (partition_id int, row_offset bigint, kafka_ts bigint,
  `__time` timestamp , `page` string, `user` string, `language` string,
 `country` string,`continent` string, `namespace` string, `newPage` boolean, `unpatrolled` boolean,
@@ -435,10 +439,12 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: Drop table kafka_table_offsets
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@kafka_table_offsets
+PREHOOK: Output: database:default
 PREHOOK: Output: default@kafka_table_offsets
 POSTHOOK: query: Drop table kafka_table_offsets
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@kafka_table_offsets
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@kafka_table_offsets
 PREHOOK: query: create table kafka_table_offsets(partition_id int, max_offset bigint, insert_time timestamp)
 PREHOOK: type: CREATETABLE
@@ -451,10 +457,12 @@ POSTHOOK: Output: default@kafka_table_offsets
 PREHOOK: query: Drop table orc_kafka_table
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_kafka_table
+PREHOOK: Output: database:default
 PREHOOK: Output: default@orc_kafka_table
 POSTHOOK: query: Drop table orc_kafka_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@orc_kafka_table
+POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_kafka_table
 PREHOOK: query: Create table orc_kafka_table (partition_id int, row_offset bigint, kafka_ts bigint,
  `__time` timestamp , `page` string, `user` string, `language` string,
@@ -1077,7 +1085,7 @@ POSTHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-OPTIMIZED SQL: SELECT `__offset` AS `$f0`, CAST(`__timestamp` AS TIMESTAMP) AS `$f1`, `__key` AS `$f2`
+OPTIMIZED SQL: SELECT `__offset`, CAST(`__timestamp` AS TIMESTAMP) AS `_c1`, `__key`
 FROM `default`.`wiki_kafka_avro_table`
 GROUP BY `__offset`, CAST(`__timestamp` AS TIMESTAMP), `__key`
 STAGE DEPENDENCIES:
@@ -1408,7 +1416,7 @@ POSTHOOK: query: explain extended select distinct `__offset`, cast(`__timestamp`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@wiki_kafka_avro_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-OPTIMIZED SQL: SELECT `__offset` AS `$f0`, CAST(`__timestamp` AS TIMESTAMP) AS `$f1`, `__key` AS `$f2`
+OPTIMIZED SQL: SELECT `__offset`, CAST(`__timestamp` AS TIMESTAMP) AS `_c1`, `__key`
 FROM `default`.`wiki_kafka_avro_table`
 GROUP BY `__offset`, CAST(`__timestamp` AS TIMESTAMP), `__key`
 STAGE DEPENDENCIES:
@@ -1569,72 +1577,12 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.kafka.KafkaOutputFormat
                     properties:
                       EXTERNAL TRUE
-                      avro.schema.literal {
-  "type" : "record",
-  "name" : "Wikipedia",
-  "namespace" : "org.apache.hive.kafka",
-  "version": "1",
-  "fields" : [ {
-    "name" : "isrobot",
-    "type" : "boolean"
-  }, {
-    "name" : "channel",
-    "type" : "string"
-  }, {
-    "name" : "timestamp",
-    "type" : "string"
-  }, {
-    "name" : "flags",
-    "type" : "string"
-  }, {
-    "name" : "isunpatrolled",
-    "type" : "boolean"
-  }, {
-    "name" : "page",
-    "type" : "string"
-  }, {
-    "name" : "diffurl",
-    "type" : "string"
-  }, {
-    "name" : "added",
-    "type" : "long"
-  }, {
-    "name" : "comment",
-    "type" : "string"
-  }, {
-    "name" : "commentlength",
-    "type" : "long"
-  }, {
-    "name" : "isnew",
-    "type" : "boolean"
-  }, {
-    "name" : "isminor",
-    "type" : "boolean"
-  }, {
-    "name" : "delta",
-    "type" : "long"
-  }, {
-    "name" : "isanonymous",
-    "type" : "boolean"
-  }, {
-    "name" : "user",
-    "type" : "string"
-  }, {
-    "name" : "deltabucket",
-    "type" : "double"
-  }, {
-    "name" : "deleted",
-    "type" : "long"
-  }, {
-    "name" : "namespace",
-    "type" : "string"
-  } ]
-}
+                      avro.schema.literal {"type":"record","name":"Wikipedia","namespace":"org.apache.hive.kafka","fields":[{"name":"isrobot","type":"boolean"},{"name":"channel","type":"string"},{"name":"timestamp","type":"string"},{"name":"flags","type":"string"},{"name":"isunpatrolled","type":"boolean"},{"name":"page","type":"string"},{"name":"diffurl","type":"string"},{"name":"added","type":"long"},{"name":"comment","type":"string"},{"name":"commentlength","type":"long"},{"name":"isnew","type":"boolean"},{"name":"isminor","type":"boolean"},{"name":"delta","type":"long"},{"name":"isanonymous","type":"boolean"},{"name":"user","type":"string"},{"name":"deltabucket","type":"double"},{"name":"deleted","type":"long"},{"name":"namespace","type":"string"}],"version":"1"}
                       bucketing_version 2
                       column.name.delimiter ,
-                      columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace,__key,__partition,__offset,__timestamp
+                      columns isrobot,channel,timestamp,flags,isunpatrolled,page,diffurl,added,comment,commentlength,isnew,isminor,delta,isanonymous,user,deltabucket,deleted,namespace
                       columns.comments 'from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer','from deserializer'
-                      columns.types boolean:string:string:string:boolean:string:string:bigint:string:bigint:boolean:boolean:bigint:boolean:string:double:bigint:string:binary:int:bigint:bigint
+                      columns.types boolean,string,string,string,boolean,string,string,bigint,string,bigint,boolean,boolean,bigint,boolean,string,double,bigint,string
 #### A masked pattern was here ####
                       hive.kafka.max.retries 6
                       hive.kafka.metadata.poll.timeout.ms 30000
