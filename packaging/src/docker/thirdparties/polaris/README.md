@@ -77,7 +77,7 @@ This diagram illustrates the key docker-compose components and their interaction
 
 ### STEP 1: Export the Hive version
 ```shell
-export HIVE_VERSION=4.2.0-SNAPSHOT
+export HIVE_VERSION=4.2.0
 ```
 
 ### STEP 2: Start services

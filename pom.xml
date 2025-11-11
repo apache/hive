@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>4.2.0-SNAPSHOT</version>
+  <version>4.2.0</version>
   <packaging>pom</packaging>
   <name>Hive</name>
   <url>https://hive.apache.org</url>
@@ -63,7 +63,7 @@
     <module>iceberg</module>
   </modules>
   <properties>
-    <standalone-metastore.version>4.2.0-SNAPSHOT</standalone-metastore.version>
+    <standalone-metastore.version>4.2.0</standalone-metastore.version>
     <hive.version.shortname>4.2.0</hive.version.shortname>
     <!-- Build Properties -->
     <maven.compiler.source>21</maven.compiler.source>
@@ -208,7 +208,7 @@
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>4.2.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>4.2.0</storage-api.version>
     <tez.version>0.10.5</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -239,7 +239,7 @@
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
     <spring.ldap.version>2.4.4</spring.ldap.version>
-    <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-11-11T17:01:09Z</project.build.outputTimestamp>
     <keycloak.version>26.0.6</keycloak.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
   </properties>
