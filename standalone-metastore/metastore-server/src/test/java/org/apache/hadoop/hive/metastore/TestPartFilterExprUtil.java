@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -34,21 +35,29 @@ public class TestPartFilterExprUtil {
   @Test
   public void testAndOrPrecedence() throws MetaException {
     checkFilter("dt=10 or dt=20 and dt=30 and dt=40 or dt=50 or dt=60 and dt=70",
-            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=40}}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=60}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}");
+            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=40}}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=60}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}",
+            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=MultiAndLeafNode[{keyName='dt', operator='=', value=20}, {keyName='dt', operator='=', value=30}, {keyName='dt', operator='=', value=40}]}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=MultiAndLeafNode[{keyName='dt', operator='=', value=60}, {keyName='dt', operator='=', value=70}]}");
     checkFilter("dt=10 or dt=20 and (dt=30 and dt=40 or dt=50) or dt=60 and dt=70",
-            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=30}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=40}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=60}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}");
+            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=30}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=40}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=60}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}",
+            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=MultiAndLeafNode[{keyName='dt', operator='=', value=30}, {keyName='dt', operator='=', value=40}], andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=20}}}, andOr='OR', rhs=MultiAndLeafNode[{keyName='dt', operator='=', value=60}, {keyName='dt', operator='=', value=70}]}");
     checkFilter("dt=10 or dt=20 and dt=30 and (dt=40 or dt=50 or dt=60) and dt=70",
-            "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}");
+            "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}",
+            "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}, andOr='AND', rhs=MultiAndLeafNode[{keyName='dt', operator='=', value=20}, {keyName='dt', operator='=', value=30}, {keyName='dt', operator='=', value=70}]}}");
     checkFilter("(dt=10 or dt=20) and dt=30 and (dt=40 or dt=50) or dt=60 and dt=70",
-            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=60}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}");
+            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=60}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}",
+            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='OR', rhs=MultiAndLeafNode[{keyName='dt', operator='=', value=60}, {keyName='dt', operator='=', value=70}]}");
     checkFilter("(dt=10 or dt=20) and dt=30 and ((dt=40 or dt=50) or dt=60) and dt=70",
-            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}");
+            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}",
+            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=MultiAndLeafNode[{keyName='dt', operator='=', value=30}, {keyName='dt', operator='=', value=70}]}");
     checkFilter("(dt=10 or dt=20) and (dt=30 and ((dt=40 or dt=50) or dt=60) and dt=70)",
-            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=30}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}");
+            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=30}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}",
+            "TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=MultiAndLeafNode[{keyName='dt', operator='=', value=30}, {keyName='dt', operator='=', value=70}]}");
     checkFilter("dt=10 or dt=20 and (dt=30 and ((dt=40 or dt=50) or dt=60) and dt=70)",
-            "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=30}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}}");
+            "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=30}, andOr='AND', rhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}}",
+            "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}, andOr='AND', rhs=MultiAndLeafNode[{keyName='dt', operator='=', value=20}, {keyName='dt', operator='=', value=30}, {keyName='dt', operator='=', value=70}]}}");
     checkFilter("dt=10 or (dt=20 and dt=30 and (dt=40 or dt=50) or dt=60) and dt=70",
-            "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}");
+            "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=20}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=30}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}",
+            "TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=10}, andOr='OR', rhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='dt', operator='=', value=40}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=50}}, andOr='AND', rhs=MultiAndLeafNode[{keyName='dt', operator='=', value=20}, {keyName='dt', operator='=', value=30}]}, andOr='OR', rhs=LeafNode{keyName='dt', operator='=', value=60}}, andOr='AND', rhs=LeafNode{keyName='dt', operator='=', value=70}}}");
   }
 
   @Test
@@ -56,7 +65,8 @@ public class TestPartFilterExprUtil {
     checkFilter("(a) in (10, 20) and a != 30",
             "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='a', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='=', value=20}}, andOr='AND', rhs=LeafNode{keyName='a', operator='!=', value=30}}");
     checkFilter("(a) in (10, 20) and a between 10 and 15",
-            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='a', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='a', operator='>=', value=10}, andOr='AND', rhs=LeafNode{keyName='a', operator='<=', value=15}}}");
+            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='a', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='a', operator='>=', value=10}, andOr='AND', rhs=LeafNode{keyName='a', operator='<=', value=15}}}",
+            "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='a', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='=', value=20}}, andOr='AND', rhs=MultiAndLeafNode[{keyName='a', operator='>=', value=10}, {keyName='a', operator='<=', value=15}]}");
     checkFilter("(a) in (10, 20) and a not between 10 and 15",
             "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='a', operator='=', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='=', value=20}}, andOr='AND', rhs=TreeNode{lhs=LeafNode{keyName='a', operator='<', value=10}, andOr='OR', rhs=LeafNode{keyName='a', operator='>', value=15}}}");
     checkFilter("(a) in (10, 20) and a not between 10 and 15 and b < 10",
@@ -92,13 +102,15 @@ public class TestPartFilterExprUtil {
   @Test
   public void testMultiColInExpressionWhenDateLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("(struct(ds1,ds2)) IN (struct(2000-05-08, 2001-04-08), struct(2000-05-09, 2001-04-09))",
-    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09}}}");
+    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09}}}",
+    "TreeNode{lhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-08}, {keyName='ds2', operator='=', value=2001-04-08}], andOr='OR', rhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-09}, {keyName='ds2', operator='=', value=2001-04-09}]}");
   }
 
   @Test
   public void testMultiColInExpressionWhenDateLiteralTypeIsSpecified() throws MetaException {
     checkFilter("(struct(ds1,ds2)) IN (struct(DATE'2000-05-08',DATE'2001-04-08'), struct(DATE'2000-05-09',DATE'2001-04-09'))",
-    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09}}}");
+    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09}}}",
+    "TreeNode{lhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-08}, {keyName='ds2', operator='=', value=2001-04-08}], andOr='OR', rhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-09}, {keyName='ds2', operator='=', value=2001-04-09}]}");
   }
 
   @Test
@@ -116,61 +128,71 @@ public class TestPartFilterExprUtil {
   @Test
   public void testMultiColInExpressionWhenTimestampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("(struct(ds1,ds2)) IN (struct(2000-05-08 01:00:00, 2001-04-08 01:00:00), struct(2000-05-09 01:00:00, 2001-04-09 01:00:00))",
-    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00}}}");
+    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00}}}",
+    "TreeNode{lhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, {keyName='ds2', operator='=', value=2001-04-08 01:00:00}], andOr='OR', rhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, {keyName='ds2', operator='=', value=2001-04-09 01:00:00}]}");
   }
 
   @Test
   public void testMultiColInExpressionWhenTimestampLiteralTypeIsSpecified() throws MetaException {
     checkFilter("(struct(ds1,ds2)) IN (struct(TIMESTAMP'2000-05-08 01:00:00',TIMESTAMP'2001-04-08 01:00:00'), struct(TIMESTAMP'2000-05-09 01:00:00',TIMESTAMP'2001-04-09 01:00:00'))",
-    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00}}}");
+    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00}}}",
+    "TreeNode{lhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, {keyName='ds2', operator='=', value=2001-04-08 01:00:00}], andOr='OR', rhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, {keyName='ds2', operator='=', value=2001-04-09 01:00:00}]}");
   }
 
   @Test
   public void testBetweenExpressionWhenDateLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("(j BETWEEN 1990-11-10 AND 1990-11-11)",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='>=', value=1990-11-10}, andOr='AND', rhs=LeafNode{keyName='j', operator='<=', value=1990-11-11}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='>=', value=1990-11-10}, andOr='AND', rhs=LeafNode{keyName='j', operator='<=', value=1990-11-11}}",
+    "MultiAndLeafNode[{keyName='j', operator='>=', value=1990-11-10}, {keyName='j', operator='<=', value=1990-11-11}]");
   }
 
   @Test
   public void testBetweenExpressionWhenDateLiteralTypeIsSpecified() throws MetaException {
     checkFilter("(j BETWEEN DATE'1990-11-10' AND DATE'1990-11-11')",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='>=', value=1990-11-10}, andOr='AND', rhs=LeafNode{keyName='j', operator='<=', value=1990-11-11}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='>=', value=1990-11-10}, andOr='AND', rhs=LeafNode{keyName='j', operator='<=', value=1990-11-11}}",
+    "MultiAndLeafNode[{keyName='j', operator='>=', value=1990-11-10}, {keyName='j', operator='<=', value=1990-11-11}]");
   }
 
   @Test
   public void testBetweenExpressionWhenTimestampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("dt BETWEEN 2000-01-01 01:00:00 AND 2000-01-01 01:42:00)",
-    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00}}");
+    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00}}",
+    "MultiAndLeafNode[{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, {keyName='dt', operator='<=', value=2000-01-01 01:42:00}]");
   }
 
   @Test
   public void testBetweenExpressionWhenTimestampLiteralTypeIsSpecified() throws MetaException {
     checkFilter("dt BETWEEN TIMESTAMP'2000-01-01 01:00:00' AND TIMESTAMP'2000-01-01 01:42:00')",
-    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00}}");
+    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00}}",
+    "MultiAndLeafNode[{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, {keyName='dt', operator='<=', value=2000-01-01 01:42:00}]");
   }
 
   @Test
   public void testBinaryExpressionWhenDateLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("(j = 1990-11-10 or j = 1990-11-11 and j = 1990-11-12)",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}}",
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=MultiAndLeafNode[{keyName='j', operator='=', value=1990-11-11}, {keyName='j', operator='=', value=1990-11-12}]}");
   }
 
   @Test
   public void testBinaryExpressionWhenDateLiteralTypeIsSpecified() throws MetaException {
     checkFilter("(j = DATE'1990-11-10' or j = DATE'1990-11-11' and j = DATE'1990-11-12')",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}}",
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=MultiAndLeafNode[{keyName='j', operator='=', value=1990-11-11}, {keyName='j', operator='=', value=1990-11-12}]}");
   }
 
   @Test
   public void testBinaryExpressionWhenTimeStampLiteralTypeIsNotSpecifiedNorQuoted() throws MetaException {
     checkFilter("(j = 1990-11-10 01:00:00 or j = 1990-11-11 01:00:24 and j = 1990-11-12 01:42:00)",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00}}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00}}}",
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=MultiAndLeafNode[{keyName='j', operator='=', value=1990-11-11 01:00:24}, {keyName='j', operator='=', value=1990-11-12 01:42:00}]}");
   }
 
   @Test
   public void testBinaryExpressionWhenTimeStampLiteralTypeIsSpecified() throws MetaException {
     checkFilter("(j = TIMESTAMP'1990-11-10 01:00:00' or j = TIMESTAMP'1990-11-11 01:00:24' and j = TIMESTAMP'1990-11-12 01:42:00')",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00}}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00}}}",
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=MultiAndLeafNode[{keyName='j', operator='=', value=1990-11-11 01:00:24}, {keyName='j', operator='=', value=1990-11-12 01:42:00}]}");
   }
 
 
@@ -183,7 +205,8 @@ public class TestPartFilterExprUtil {
   @Test
   public void testBetweenExpressionWithIntLiteral() throws MetaException {
     checkFilter("dt between 10 and 20",
-    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=10}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=20}}");
+    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=10}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=20}}",
+    "MultiAndLeafNode[{keyName='dt', operator='>=', value=10}, {keyName='dt', operator='<=', value=20}]");
   }
 
   @Test
@@ -213,19 +236,22 @@ public class TestPartFilterExprUtil {
   @Test
   public void testMultiColInExpressionWithDateLikeString() throws MetaException {
     checkFilter("(struct(ds1,ds2)) IN (struct('2000-05-08','2001-04-08'), struct('2000-05-09','2001-04-09'))",
-    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09}}}");
+    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09}}}",
+    "TreeNode{lhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-08}, {keyName='ds2', operator='=', value=2001-04-08}], andOr='OR', rhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-09}, {keyName='ds2', operator='=', value=2001-04-09}]}");
   }
 
   @Test
   public void testBetweenExpressionWithStringLikeDate() throws MetaException {
     checkFilter("(j BETWEEN '1990-11-10' AND '1990-11-11')",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='>=', value=1990-11-10}, andOr='AND', rhs=LeafNode{keyName='j', operator='<=', value=1990-11-11}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='>=', value=1990-11-10}, andOr='AND', rhs=LeafNode{keyName='j', operator='<=', value=1990-11-11}}",
+    "MultiAndLeafNode[{keyName='j', operator='>=', value=1990-11-10}, {keyName='j', operator='<=', value=1990-11-11}]");
   }
 
   @Test
   public void testBinaryExpressionWithStringLikeDate() throws MetaException {
     checkFilter("(j = '1990-11-10' or j = '1990-11-11' and j = '1990-11-12')",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12}}}",
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10}, andOr='OR', rhs=MultiAndLeafNode[{keyName='j', operator='=', value=1990-11-11}, {keyName='j', operator='=', value=1990-11-12}]}");
   }
 
   @Test
@@ -237,24 +263,34 @@ public class TestPartFilterExprUtil {
   @Test
   public void testMultiColInExpressionWithTimestampLikeString() throws MetaException {
     checkFilter("(struct(ds1,ds2)) IN (struct('2000-05-08 01:00:00','2001-04-08 01:00:00'), struct('2000-05-09 01:00:00','2001-04-09 01:00:00'))",
-    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00}}}");
+    "TreeNode{lhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-08 01:00:00}}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, andOr='AND', rhs=LeafNode{keyName='ds2', operator='=', value=2001-04-09 01:00:00}}}",
+    "TreeNode{lhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-08 01:00:00}, {keyName='ds2', operator='=', value=2001-04-08 01:00:00}], andOr='OR', rhs=MultiAndLeafNode[{keyName='ds1', operator='=', value=2000-05-09 01:00:00}, {keyName='ds2', operator='=', value=2001-04-09 01:00:00}]}");
   }
 
   @Test
   public void testBetweenExpressionWithStringLikeTimestamp() throws MetaException {
     checkFilter("dt BETWEEN '2000-01-01 01:00:00' AND '2000-01-01 01:42:00')",
-    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00}}");
+    "TreeNode{lhs=LeafNode{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, andOr='AND', rhs=LeafNode{keyName='dt', operator='<=', value=2000-01-01 01:42:00}}",
+    "MultiAndLeafNode[{keyName='dt', operator='>=', value=2000-01-01 01:00:00}, {keyName='dt', operator='<=', value=2000-01-01 01:42:00}]");
   }
 
   @Test
   public void testBinaryExpressionWithStringLikeTimeStamp() throws MetaException {
     checkFilter("(j = '1990-11-10 01:00:00' or j = '1990-11-11 01:00:24' and j = '1990-11-12 01:42:00')",
-    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00}}}");
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-11 01:00:24}, andOr='AND', rhs=LeafNode{keyName='j', operator='=', value=1990-11-12 01:42:00}}}",
+    "TreeNode{lhs=LeafNode{keyName='j', operator='=', value=1990-11-10 01:00:00}, andOr='OR', rhs=MultiAndLeafNode[{keyName='j', operator='=', value=1990-11-11 01:00:24}, {keyName='j', operator='=', value=1990-11-12 01:42:00}]}");
   }
 
   private void checkFilter(String filter, String expectTreeString) throws MetaException {
+    checkFilter(filter, expectTreeString, expectTreeString);
+  }
+
+  private void checkFilter(String filter, String expectTreeString, String expectedFlattenedTreeString)
+      throws MetaException {
     ExpressionTree expressionTree = PartFilterExprUtil.parseFilterTree(filter);
     assertThat(expressionTree.getRoot().toString(), is(expectTreeString));
+    TreeNode flattened = PartFilterExprUtil.flattenAndExpressions(expressionTree.getRoot());
+    assertThat(flattened.toString(), is(expectedFlattenedTreeString));
   }
 
   @Test

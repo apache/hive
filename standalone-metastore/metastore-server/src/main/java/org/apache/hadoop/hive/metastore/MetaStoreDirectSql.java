@@ -104,9 +104,11 @@ import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Condition;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.MultiAndLeafNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
@@ -1368,6 +1370,9 @@ class MetaStoreDirectSql {
       PartitionFilterGenerator visitor = new PartitionFilterGenerator(
           catName, dbName, tableName, partitionKeys,
           params, joins, dbHasJoinCastBug, defaultPartName, dbType, schema);
+      TreeNode flattened = PartFilterExprUtil.flattenAndExpressions(tree.getRoot());
+      tree.setRoot(flattened);
+
       tree.accept(visitor);
       if (visitor.filterBuffer.hasError()) {
         LOG.info("Unable to push down SQL filter: " + visitor.filterBuffer.getErrorMessage());
@@ -1422,14 +1427,6 @@ class MetaStoreDirectSql {
         this.clazz = clazz;
       }
 
-      public Set<String> getType() {
-        return colTypes;
-      }
-
-      public Class<?> getClazz() {
-        return clazz;
-      }
-
       public static FilterType fromType(String colTypeStr) {
         for (FilterType filterType : FilterType.values()) {
           if (filterType.colTypes.contains(colTypeStr)) {
@@ -1451,10 +1448,55 @@ class MetaStoreDirectSql {
 
     @Override
     public void visit(LeafNode node) throws MetaException {
-      int partColCount = partitionKeys.size();
-      int partColIndex = LeafNode.getPartColIndexForFilter(node.keyName, partitionKeys, filterBuffer);
+      String filter = visitCondition(node.getCondition(), true);
       if (filterBuffer.hasError()) {
         return;
+      }
+
+      filterBuffer.append("(" + filter + ")");
+    }
+
+    @Override
+    public void visit(MultiAndLeafNode node) throws MetaException {
+      StringBuilder filterBuilder = new StringBuilder();
+      List<String> partValues = new ArrayList<>(Collections.nCopies(partitionKeys.size(), null));
+      boolean hasEqualCondition = false;
+      for (Condition condition : node.getConditions()) {
+        boolean isEqual = Operator.isEqualOperator(condition.getOperator());
+        if (isEqual) {
+          hasEqualCondition = true;
+          int partColIndex = getPartColIndexForFilter(condition.getKeyName(), partitionKeys, filterBuffer);
+          if (filterBuffer.hasError()) {
+            return;
+          }
+          String partValue = partValues.get(partColIndex);
+          String nodeValueStr = condition.getValue().toString();
+          if (partValue != null && !partValue.equals(nodeValueStr)) {
+            // Conflicting equal conditions for the same partition key - the filter is unsatisfiable.
+            filterBuffer.append("(1 = 0)");
+            return;
+          }
+          partValues.set(partColIndex, nodeValueStr);
+        }
+        if (!filterBuilder.isEmpty()) {
+          filterBuilder.append(" and ");
+        }
+        filterBuilder.append(visitCondition(condition, !isEqual));
+      }
+      // Concatenate equality conditions to match a longer index prefix.
+      if (hasEqualCondition) {
+        String partName = Warehouse.makePartName(partitionKeys, partValues, "%");
+        filterBuilder.append(" and " + PARTITIONS + ".\"PART_NAME\" like ?");
+        params.add(partName);
+      }
+
+      filterBuffer.append("(" + filterBuilder.toString() + ")");
+    }
+
+    private String visitCondition(Condition condition, boolean addPartNameFilter) throws MetaException {
+      int partColIndex = getPartColIndexForFilter(condition.getKeyName(), partitionKeys, filterBuffer);
+      if (filterBuffer.hasError()) {
+        return null;
       }
 
       FieldSchema partCol = partitionKeys.get(partColIndex);
@@ -1462,13 +1504,13 @@ class MetaStoreDirectSql {
       FilterType colType = FilterType.fromType(colTypeStr);
       if (colType == FilterType.Invalid) {
         filterBuffer.setError("Filter pushdown not supported for type " + colTypeStr);
-        return;
+        return null;
       }
-      FilterType valType = FilterType.fromClass(node.value);
-      Object nodeValue = node.value;
+      Object nodeValue = condition.getValue();
+      FilterType valType = FilterType.fromClass(nodeValue);
       if (valType == FilterType.Invalid) {
-        filterBuffer.setError("Filter pushdown not supported for value " + node.value.getClass());
-        return;
+        filterBuffer.setError("Filter pushdown not supported for value " + nodeValue.getClass());
+        return null;
       }
 
       String nodeValue0 = "?";
@@ -1487,7 +1529,7 @@ class MetaStoreDirectSql {
       } else if (colType == FilterType.Timestamp) {
         if (dbType.isDERBY() || dbType.isMYSQL()) {
           filterBuffer.setError("Filter pushdown on timestamp not supported for " + dbType.dbType);
-          return;
+          return null;
         }
         try {
           MetaStoreUtils.convertStringToTimestamp((String) nodeValue);
@@ -1506,7 +1548,7 @@ class MetaStoreDirectSql {
         // to be coerced?). Let the expression evaluation sort this one out, not metastore.
         filterBuffer.setError("Cannot push down filter for "
             + colTypeStr + " column and value " + nodeValue.getClass());
-        return;
+        return null;
       }
 
       if (joins.isEmpty()) {
@@ -1514,7 +1556,7 @@ class MetaStoreDirectSql {
         // joining multiple times for one column (if there are several filters on it), we will
         // keep numCols elements in the list, one for each column; we will fill it with nulls,
         // put each join at a corresponding index when necessary, and remove nulls in the end.
-        for (int i = 0; i < partColCount; ++i) {
+        for (int i = 0; i < partitionKeys.size(); ++i) {
           joins.add(null);
         }
       }
@@ -1527,7 +1569,8 @@ class MetaStoreDirectSql {
       // Build the filter and add parameters linearly; we are traversing leaf nodes LTR.
       String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
 
-      if (node.isReverseOrder && nodeValue != null) {
+      boolean isReverseOrder = condition.isReverseOrder();
+      if (isReverseOrder && nodeValue != null) {
         params.add(nodeValue);
       }
       String tableColumn = tableValue;
@@ -1559,22 +1602,23 @@ class MetaStoreDirectSql {
         tableValue += " then " + tableValue0 + " else null end)";
       }
 
-      if (!node.isReverseOrder && nodeValue != null) {
+      if (!isReverseOrder && nodeValue != null) {
         params.add(nodeValue);
       }
 
       // The following syntax is required for using LIKE clause wildcards '_' and '%' as literals.
-      if (node.operator == Operator.LIKE) {
+      Operator operator = condition.getOperator();
+      if (operator == Operator.LIKE) {
         nodeValue0 = nodeValue0 + " ESCAPE '\\' ";
       }
-      String filter = node.isReverseOrder
-              ? nodeValue0 + " " + node.operator.getSqlOp() + " " + tableValue
-              : tableValue + " " + node.operator.getSqlOp() + " " + nodeValue0;
+      String filter = isReverseOrder
+              ? nodeValue0 + " " + operator.getSqlOp() + " " + tableValue
+              : tableValue + " " + operator.getSqlOp() + " " + nodeValue0;
       // For equals and not-equals filter, we can add partition name filter to improve performance.
-      boolean isOpEquals = Operator.isEqualOperator(node.operator);
-      boolean isOpNotEqual = Operator.isNotEqualOperator(node.operator);
-      String nodeValueStr = node.value.toString();
-      if (StringUtils.isNotEmpty(nodeValueStr) && (isOpEquals || isOpNotEqual)) {
+      boolean isOpEquals = Operator.isEqualOperator(operator);
+      boolean isOpNotEqual = Operator.isNotEqualOperator(operator);
+      String nodeValueStr = condition.getValue().toString();
+      if (addPartNameFilter && StringUtils.isNotEmpty(nodeValueStr) && (isOpEquals || isOpNotEqual)) {
         Map<String, String> partKeyToVal = new HashMap<>();
         partKeyToVal.put(partCol.getName(), nodeValueStr);
         String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
@@ -1583,6 +1627,7 @@ class MetaStoreDirectSql {
           // match PART_NAME by like clause.
           escapedNameFragment += "%";
         }
+        int partColCount = partitionKeys.size();
         if (colType != FilterType.Date && partColCount == 1) {
           // Case where partition column type is not date and there is no other partition columns
           params.add(escapedNameFragment);
@@ -1604,8 +1649,7 @@ class MetaStoreDirectSql {
           filter += " and " + PARTITIONS + ".\"PART_NAME\"" + (isOpEquals ? " like ? " : " not like ? ");
         }
       }
-
-      filterBuffer.append("(" + filter + ")");
+      return filter;
     }
   }
 
