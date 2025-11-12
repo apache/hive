@@ -16,7 +16,6 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-29261] - Clean up GitHub Actions for Docker Release
 
 
-
 ** Bug
     * [HIVE-23708] - MergeFileTask.execute() need to close jobclient
     * [HIVE-25351] - stddev(), stddev_pop() with CBO enable returning null
@@ -91,7 +90,7 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-29296] - Remove getPrimaryKeys codes from beeline module
     * [HIVE-29297] - The directory of the direct insert manifest files should be hidden from read queries
     * [HIVE-29303] - Fix the 'DnsjavaInetAddressResolverProvider not found' exception in Java-based Beeline
-
+    * [HIVE-29307] - Incorrect split calculation causing less container to launch
 
 
 ** New Feature
@@ -100,6 +99,7 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-29006] - Iceberg: V3 support deletion vectors
     * [HIVE-29028] - Iceberg: Implement auto compaction
     * [HIVE-29075] - Iceberg: Optimize auto-compaction by evaluating compaction needs only on modified partitions
+
 
 ** Improvement
     * [HIVE-12679] - Allow users to be able to specify an implementation of IMetaStoreClient via HiveConf
@@ -168,6 +168,7 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-29292] - Do not call getMSC from client itself, this can lead to deadlock
     * [HIVE-29298] - Refactoring minor issues in profile output servlet
 
+
 ** Test
     * [HIVE-25379] - Fix external_jdbc_table.q and external_jdbc_table_pe​rf.q
     * [HIVE-28965] - tez.DagUtils: Failed to add credential supplier, ClassNotFoundException: org.apache.hadoop.hive.kafka.KafkaDagCredentialSupplier
@@ -182,7 +183,7 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-28813] - MSCK/Analyze commands can show a warning in console for Small files.
     * [HIVE-28838] - Remove JDBC connection info from explain extended output
     * [HIVE-29000] - Upgrade nimbus-jose-jwt to resolve CVEs
-    * [HIVE-29045] -  Preparing for 4.2.0 development
+    * [HIVE-29045] - Preparing for 4.2.0 development
     * [HIVE-29064] - Drop usage of repository.apache.org
     * [HIVE-29068] - Drop deprecated compactor.history.retention.attempted property
     * [HIVE-29107] - Drop avatica version management and use of shaded jars

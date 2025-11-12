@@ -65,6 +65,7 @@
         <include>README.txt</include>
         <include>LICENSE</include>
         <include>NOTICE</include>
+        <include>RELEASE_NOTES.txt</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>

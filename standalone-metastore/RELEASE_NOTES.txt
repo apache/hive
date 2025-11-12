@@ -1,0 +1,83 @@
+Release Notes - Hive - Version 4.2.0
+
+** Sub-task
+    * [HIVE-20189] - Separate metastore client code into its own module
+    * [HIVE-26148] - Keep MetaStoreFilterHook interface compatibility after introducing catalogs
+    * [HIVE-29178] - Add Catalog properties support
+    * [HIVE-29184] - Basic Variant type support in Hive
+
+
+** Bug
+    * [HIVE-28804] - The user does not have the permission for the table hdfs, but can delete the metadata
+    * [HIVE-28848] - Remove DFS_URI auth from ALTER_PARTITION if there is no change in partition location
+    * [HIVE-29066] - PARTITION_NAME_WHITELIST_PATTERN is not honouring session level configuration
+    * [HIVE-29078] - RuntimeException: Null when starting standalone HMS
+    * [HIVE-29089] - MSCK Repair table adding invalid partitions for non string partitions columns
+    * [HIVE-29130] - Remove jline 2.x
+    * [HIVE-29145] - HMS Iceberg REST fails on common HMS
+    * [HIVE-29157] - Fix flaky tests TestMetastoreLeaseLeader and TestMetastoreLeaseNonLeader
+    * [HIVE-29167] - Use access() api to check permission for different filesystems
+    * [HIVE-29182] - Upgrade maven-checkstyle-plugin version from 2.17 to 3.5.0
+    * [HIVE-29251] - Hive ACID: HiveConf object shouldn't be shared between multiple cleanup task threads
+    * [HIVE-29269] - SQL injection vulnerability when processing delete column statistics requests via the HMS Thrift APIs
+
+
+** New Feature
+    * [HIVE-28219] - Support drop partitions by names in IMetaStoreClient
+    * [HIVE-28967] - Support multiple partitions in RELOAD event
+    * [HIVE-29028] - Iceberg: Implement auto compaction
+
+
+** Improvement
+    * [HIVE-12679] - Allow users to be able to specify an implementation of IMetaStoreClient via HiveConf
+    * [HIVE-25324] - Add option to disable PartitionManagementTask
+    * [HIVE-25495] - Upgrade to JLine3
+    * [HIVE-27473] - Make SessionHiveMetaStoreClient and HiveMetaStoreClientWithLocalCache composable
+    * [HIVE-28346] - Make ALTER CHANGE COLUMN more efficient with many partitions
+    * [HIVE-28658] -  Iceberg REST Catalog client
+    * [HIVE-28844] - Drop the property hive.metastore.server.tcp.keepalive and hive.server.tcp.keepalive
+    * [HIVE-28899] - HMS 'get_table_meta' causes full scan on TBLS and increases MySQL CPU usage
+    * [HIVE-28952] - TableFetcher to return Table objects instead of names
+    * [HIVE-28975] - [HiveAcidReplication] Remove dangling txns from Target side post incremental replication
+    * [HIVE-28983] - Log HS2 and HMS PID and update hive-env.sh template
+    * [HIVE-29020] - Support OAuth 2 in Iceberg REST Catalog
+    * [HIVE-29026] - Cleanup Log4j properties file to adhere to 2.x changes
+    * [HIVE-29027] - Move to JDK-21
+    * [HIVE-29036] - Support ViewCatalog through Iceberg REST API
+    * [HIVE-29046] - Avoid unecessary perf overhead from handling deprecated properties in MetastoreConf
+    * [HIVE-29050] - Optimize the partition validation in add_partitions
+    * [HIVE-29056] - Use ExitUtil.terminate instead of System.exit to handle System.setSecurityManager()
+    * [HIVE-29062] - Add standalone module for packaging the Metastore
+    * [HIVE-29071] - Add release workflow for HMS docker image
+    * [HIVE-29073] - Overlay modified session level metaconf to new hmsclient connection
+    * [HIVE-29077] - Reduce HMS calls while adding entries into transactionListers while abortTxn
+    * [HIVE-29109] - Upgrade JUnit Jupiter to 5.13.3 and Maven Surefire Plugin to 3.5.3.
+    * [HIVE-29112] - HMS: enable https for Catalog & Property servlets
+    * [HIVE-29123] - Extend ProtobufInputFormat to handle EOFException for partially written proto files.
+    * [HIVE-29138] - Authentication failure when connecting to SASL enforced ZooKeeper
+    * [HIVE-29165] - PartColNameInfo could introduce high hash collision due to the wide table
+    * [HIVE-29179] - Keep the backward compatibility for HIVE-28967
+    * [HIVE-29209] - Remove unnecessary usage of LoginException
+    * [HIVE-29211] -  Add LDAP group filtering support for Kerberos-authenticated users
+    * [HIVE-29234] - Iceberg: Validate HMS REST Catalog Client with OAuth2
+    * [HIVE-29239] - Upgrade checkstyle to 11.1.0
+    * [HIVE-29245] - Normalize Java license headers, part 1 - illegal Javadoc
+    * [HIVE-29246] - Upgrade derby version to 10.17.1.0
+    * [HIVE-29253] - Bump netty version to 4.1.127.Final due to CVE-2025-58057, CVE-2025-58056
+    * [HIVE-29280] - Drop deprecated methods from Metastore server side
+    * [HIVE-29291] - Hive ACID: Use minHistoryWriteId by default
+
+
+** Test
+    * [HIVE-29274] - Flaky TestMetastoreLeaseLeader#testHouseKeepingThreads
+
+
+** Task
+    * [HIVE-24419] - Refactor junit database rules to exploit testcontainers
+    * [HIVE-28813] - MSCK/Analyze commands can show a warning in console for Small files.
+    * [HIVE-29000] - Upgrade nimbus-jose-jwt to resolve CVEs
+    * [HIVE-29045] - Preparing for 4.2.0 development
+    * [HIVE-29068] - Drop deprecated compactor.history.retention.attempted property
+    * [HIVE-29117] - Refactor deleteDir and moveToTrash
+    * [HIVE-29207] - Remove check-spelling CI action
+    * [HIVE-29270] - Remove HMS compactor workers deprecated functionality
