@@ -18,15 +18,24 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.BaseLeafNode;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Condition;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.MultiAndLeafNode;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.PartFilterParser;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 
 /**
  * Utility functions for working with partition filter expressions
@@ -115,5 +124,60 @@ public class PartFilterExprUtil {
 
   public static ExpressionTree parseFilterTree(String filter) throws MetaException {
     return PartFilterParser.parseFilter(filter);
+  }
+
+  public static TreeNode buildTreeFromNodes(List<? extends TreeNode> nodes, LogicalOperator operator) {
+    // The 'nodes' list is expected to have at least one element.
+    // If the list if empty, the lexer parse would have failed.
+    assert !nodes.isEmpty() ;
+    if (nodes.size() == 1) {
+      return nodes.get(0);
+    }
+    TreeNode root = new TreeNode(nodes.get(0), operator, nodes.get(1));
+    for (int i = 2; i < nodes.size(); ++i) {
+      TreeNode tmp = new TreeNode(root, operator, nodes.get(i));
+      root = tmp;
+    }
+    return root;
+  }
+
+  /**
+   * Flatten all AND-connected leaf nodes in the given expression tree
+   * into MultiAndLeafNodes for more efficient evaluation.
+   */
+  public static TreeNode flattenAndExpressions(TreeNode node) {
+    if (node == null || node instanceof BaseLeafNode) {
+      return node;
+    }
+    TreeNode left = flattenAndExpressions(node.getLhs());
+    TreeNode right = flattenAndExpressions(node.getRhs());
+    if (node.getAndOr() == LogicalOperator.AND) {
+      List<Condition> flatConditions = new ArrayList<>();
+      List<TreeNode> orNodes = new ArrayList<>();
+      flattenConditions(left, flatConditions, orNodes);
+      flattenConditions(right, flatConditions, orNodes);
+      if (!flatConditions.isEmpty()) {
+        TreeNode andNode = flatConditions.size() == 1 ?
+            new LeafNode(flatConditions.get(0)) :
+            new MultiAndLeafNode(flatConditions);
+        orNodes.add(andNode);
+      }
+      return buildTreeFromNodes(orNodes, LogicalOperator.AND);
+    }
+    return new TreeNode(left, node.getAndOr(), right);
+  }
+
+  private static void flattenConditions(TreeNode node, List<Condition> flatConditions, List<TreeNode> orNodes) {
+    if (node == null) {
+      return;
+    }
+    if (node instanceof BaseLeafNode leaf) {
+      flatConditions.addAll(leaf.getConditions());
+    } else if (node.getAndOr() == LogicalOperator.AND) {
+      flattenConditions(node.getLhs(), flatConditions, orNodes);
+      flattenConditions(node.getRhs(), flatConditions, orNodes);
+    } else {
+      orNodes.add(node);
+    }
   }
 }
