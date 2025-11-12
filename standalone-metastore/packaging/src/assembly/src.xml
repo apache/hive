@@ -34,6 +34,7 @@
     <fileSet>
       <directory>${project.parent.basedir}</directory>
       <includes>
+        <include>RELEASE_NOTES.txt</include>
         <include>DEV-README</include>
         <include>LICENSE</include>
         <include>NOTICE</include>
