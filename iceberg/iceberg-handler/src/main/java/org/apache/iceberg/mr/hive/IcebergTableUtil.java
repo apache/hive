@@ -784,14 +784,15 @@ public class IcebergTableUtil {
     List<String> fieldNames = Lists.newArrayList(Warehouse.makeSpecFromName(partitionPath).keySet());
 
     return icebergTable.specs().values().stream()
-        .filter(spec -> {
-          List<String> specFieldNames = spec.fields().stream()
-              .map(PartitionField::name)
-              .toList();
-          return specFieldNames.equals(fieldNames);
-        })
-        .findFirst() // Supposed to be only one matching spec
-        .orElseThrow(() -> new HiveException("No matching partition spec found for partition path: " + partitionPath));
+            .filter(spec -> {
+              List<String> specFieldNames = spec.fields().stream()
+                      .map(PartitionField::name)
+                      .toList();
+              return specFieldNames.equals(fieldNames);
+            })
+            .findFirst() // Supposed to be only one matching spec
+            .orElseThrow(() -> new HiveException(
+                    "No matching partition spec found for partition path: " + partitionPath));
   }
 
   public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
