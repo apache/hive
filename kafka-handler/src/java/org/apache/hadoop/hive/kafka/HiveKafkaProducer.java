@@ -45,7 +45,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Future;
 
 /**
@@ -188,27 +187,43 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
    */
   private void flushNewPartitions() {
     LOG.info("Flushing new partitions");
-    Object transactionManager = getValue(kafkaProducer, "transactionManager");
-    Set<TopicPartition> newPartitionsInTransaction =
-            (Set<TopicPartition>) getValue(transactionManager, "newPartitionsInTransaction");
-    if (!newPartitionsInTransaction.isEmpty()) {
-      TransactionalRequestResult result = enqueueNewPartitions();
-      Object sender = getValue(kafkaProducer, "sender");
-      invoke(sender, "wakeup");
-      result.await();
-    }
+    TransactionalRequestResult result = enqueueNewPartitions();
+    Object sender = getValue(kafkaProducer, "sender");
+    invoke(sender, "wakeup");
+    result.await();
   }
 
   private synchronized TransactionalRequestResult enqueueNewPartitions() {
     Object transactionManager = getValue(kafkaProducer, "transactionManager");
-    Object txnRequestHandler = invoke(transactionManager, "addPartitionsToTransactionHandler");
-    invoke(transactionManager,
-        "enqueueRequest",
-        new Class[] {txnRequestHandler.getClass().getSuperclass()},
-        new Object[] {txnRequestHandler});
-    return (TransactionalRequestResult) getValue(txnRequestHandler,
-        txnRequestHandler.getClass().getSuperclass(),
-        "result");
+    synchronized (transactionManager) {
+      Object newPartitionsInTransaction =
+              getValue(transactionManager, "newPartitionsInTransaction");
+      Object newPartitionsInTransactionIsEmpty =
+              invoke(newPartitionsInTransaction, "isEmpty");
+      TransactionalRequestResult result;
+      if (newPartitionsInTransactionIsEmpty instanceof Boolean
+              && !((Boolean) newPartitionsInTransactionIsEmpty)) {
+        Object txnRequestHandler =
+                invoke(transactionManager, "addPartitionsToTransactionHandler");
+        invoke(
+                transactionManager,
+                "enqueueRequest",
+                new Class[]{txnRequestHandler.getClass().getSuperclass()},
+                new Object[]{txnRequestHandler});
+
+        result = (TransactionalRequestResult)
+                getValue(
+                        txnRequestHandler,
+                        txnRequestHandler.getClass().getSuperclass(),
+                        "result");
+      } else {
+        // we don't have an operation but this operation string is also used in
+        // addPartitionsToTransactionHandler.
+        result = new TransactionalRequestResult("AddPartitionsToTxn");
+        result.done();
+      }
+      return result;
+    }
   }
 
   @SuppressWarnings("unchecked") private static Enum<?> getEnum(String enumFullName) {

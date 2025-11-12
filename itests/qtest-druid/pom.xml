@@ -36,7 +36,6 @@
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
-    <kafka.test.version>3.9.1</kafka.test.version>
     <druid.guice.version>4.1.0</druid.guice.version>
     <slf4j.version>1.7.30</slf4j.version>
   </properties>
@@ -219,17 +218,17 @@
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka_2.12</artifactId>
-      <version>${kafka.test.version}</version>
+      <version>${kafka.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
-      <version>${kafka.test.version}</version>
+      <version>${kafka.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-server</artifactId>
-      <version>${kafka.test.version}</version>
+      <version>${kafka.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
