@@ -718,7 +718,8 @@ public class IcebergTableUtil {
               return specFieldNames.equals(fieldNames);
             })
             .findFirst() // Supposed to be only one matching spec
-            .orElseThrow(() -> new HiveException("No matching partition spec found for partition path: " + partitionPath));
+            .orElseThrow(() -> new HiveException(
+                    "No matching partition spec found for partition path: " + partitionPath));
   }
 
   public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
