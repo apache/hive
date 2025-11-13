@@ -101,7 +101,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
       }
     } else {
       try {
-        Table table = IcebergTableUtil.getTable(conf, serDeProperties);
+        Table table = getIcebergDbObject(conf, serDeProperties);
         // always prefer the original table schema if there is one
         this.tableSchema = table.schema();
         this.partitionColumns = table.spec().fields().stream().map(PartitionField::name).collect(Collectors.toList());
@@ -151,6 +151,13 @@ public class HiveIcebergSerDe extends AbstractSerDe {
     } catch (Exception e) {
       throw new SerDeException(e);
     }
+  }
+
+  private Table getIcebergDbObject(Configuration conf, Properties serDeProperties) {
+    if ("iceberg-view".equalsIgnoreCase(serDeProperties.getProperty("table_type"))) {
+      return IcebergTableUtil.getMaterializedView(conf, serDeProperties, false).getStotageTable();
+    }
+    return  IcebergTableUtil.getTable(conf, serDeProperties);
   }
 
   private static Schema projectedSchema(Configuration conf, String tableName, Schema tableSchema,

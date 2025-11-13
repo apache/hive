@@ -5,6 +5,7 @@ set hive.explain.user=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.iceberg.materializedview.metadata.location=iceberg;
+--set hive.server2.materializedviews.registry.impl=DUMMY;
 
 
 drop materialized view if exists mat1;
