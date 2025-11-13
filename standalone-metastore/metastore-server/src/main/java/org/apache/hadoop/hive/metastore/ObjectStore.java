@@ -9239,7 +9239,7 @@ public class ObjectStore implements RawStore, Configurable {
       // TODO: similar to update...Part, this used to do "return committed;"; makes little sense.
       return committed ? result : null;
     } finally {
-      LOG.info("{} updateTableColumnStatistics took {}ms, success: {}",
+      LOG.debug("{} updateTableColumnStatistics took {}ms, success: {}",
           new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()),
           System.currentTimeMillis() - start, committed);
       rollbackAndCleanup(committed, null);

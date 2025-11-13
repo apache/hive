@@ -1310,7 +1310,7 @@ public class MetastoreConf {
             + "  prohibit: do not consider alternate locations; throw error if the default is not available\n"
             + "  force: use the default location even in case the directory is already available"),
     METASTORE_S4U_NOWAIT_MAX_RETRIES("metastore.s4u.nowait.max.retries",
-        "hive.metastore.s4u.nowait.max.retries", 20,
+        "hive.metastore.s4u.nowait.max.retries", 100,
         "Number of retries required to acquire a row lock immediately without waiting."),
     METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL(
         "metastore.s4u.nowait.retry.sleep.interval",
