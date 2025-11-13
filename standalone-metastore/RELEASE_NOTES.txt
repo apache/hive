@@ -20,6 +20,7 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-29182] - Upgrade maven-checkstyle-plugin version from 2.17 to 3.5.0
     * [HIVE-29251] - Hive ACID: HiveConf object shouldn't be shared between multiple cleanup task threads
     * [HIVE-29269] - SQL injection vulnerability when processing delete column statistics requests via the HMS Thrift APIs
+    * [HIVE-29315] - Metastore-client module is missing in metastore sources .tar.gz
 
 
 ** New Feature
