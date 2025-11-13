@@ -71,7 +71,10 @@ public class ShowProcessListOperation extends HiveCommandOperation {
           LocalDateTime beginTime = LocalDateTime.ofInstant(
               Instant.ofEpochMilli(query.getBeginTime()), ZoneId.systemDefault()
           );
-
+          long txnId = 0;
+          if (op.queryState != null && op.queryState.getTxnManager() != null) {
+            txnId = op.queryState.getTxnManager().getCurrentTxnId();
+          }
           return new ProcessListInfo.Builder()
               .setUserName(session.getUserName())
               .setIpAddr(session.getIpAddress())
@@ -84,6 +87,7 @@ public class ShowProcessListOperation extends HiveCommandOperation {
               .setRuntime(query.getRuntime() == null ? "Not finished" : String.valueOf(query.getRuntime() / 1000))
               .setElapsedTime(query.getElapsedTime() / 1000)
               .setState(query.getState())
+              .setTxnId(txnId)
               .build();
         })
         .collect(Collectors.toList());
