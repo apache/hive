@@ -74,6 +74,7 @@ import org.apache.iceberg.exceptions.NotFoundException;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mr.Catalogs;
@@ -234,7 +235,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
      * Wrapper class for storing output {@link Table} and it's context for committing changes:
      * JobContext, CommitInfo.
      */
-  private record OutputTable(String catalogName, String tableName, Table table) {
+  private record OutputTable(String catalogName, String tableName, Table table, String tableType) {
 
     @Override
     public boolean equals(Object o) {
@@ -304,16 +305,25 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList);
     for (JobContext jobContext : jobContextList) {
       for (String output : outputTables(jobContext.getJobConf())) {
-        Table table = SessionStateUtil.getResource(jobContext.getJobConf(), output)
-            .filter(o -> o instanceof Table).map(o -> (Table) o)
-            // fall back to getting the serialized table from the config
-            .orElseGet(() -> HiveTableUtil.deserializeTable(jobContext.getJobConf(), output));
-        if (table != null) {
-          String catalogName = catalogName(jobContext.getJobConf(), output);
-          outputs.put(new OutputTable(catalogName, output, table), jobContext);
-        } else {
-          LOG.info("Found no table object in QueryState or conf for: {}. Skipping job commit.", output);
+        Optional<Object> resource = SessionStateUtil.getResource(jobContext.getJobConf(), output);
+        if (resource.isEmpty()) {
+          LOG.info("No Iceberg database object found in Query state with the name {}", output);
+          continue;
         }
+
+        Table table;
+        String tableType;
+        if (resource.get() instanceof Catalogs.MaterializedView) {
+          tableType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
+          table = resource.map(o -> ((Catalogs.MaterializedView) o).getStotageTable()).get();
+        } else {
+          tableType = "ICEBERG";
+          table = resource.map(o -> (Table) o)
+                  // fall back to getting the serialized table from the config
+                  .orElseGet(() -> HiveTableUtil.deserializeTable(jobContext.getJobConf(), output));
+        }
+        String catalogName = catalogName(jobContext.getJobConf(), output);
+        outputs.put(new OutputTable(catalogName, output, table, tableType), jobContext);
       }
     }
     return outputs;
@@ -437,7 +447,12 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     for (JobContext jobContext : jobContexts) {
       JobConf conf = jobContext.getJobConf();
 
-      table = Optional.ofNullable(table).orElseGet(() -> Catalogs.loadTable(conf, catalogProperties));
+      table = Optional.ofNullable(table).orElseGet(() -> {
+        if (HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(outputTable.tableType)) {
+          return Catalogs.loadMaterializedView(conf, catalogProperties).getStotageTable();
+        }
+        return Catalogs.loadTable(conf, catalogProperties);
+      });
       branchName = conf.get(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF);
       snapshotId = getSnapshotId(outputTable.table, branchName);
 
