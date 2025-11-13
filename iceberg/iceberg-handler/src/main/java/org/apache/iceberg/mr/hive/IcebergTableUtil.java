@@ -45,7 +45,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -96,6 +98,9 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.expressions.ResidualEvaluator;
+import org.apache.iceberg.hive.HiveOperationsBase;
+import org.apache.iceberg.expressions.UnboundTerm;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileIO;
@@ -154,10 +159,15 @@ public class IcebergTableUtil {
     properties.setProperty(Catalogs.NAME, TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()).toString());
     properties.setProperty(Catalogs.LOCATION, hmsTable.getSd().getLocation());
     hmsTable.getParameters().computeIfPresent(InputFormatConfig.CATALOG_NAME,
-        (k, v) -> {
-          properties.setProperty(k, v);
-          return v;
-        });
+            (k, v) -> {
+              properties.setProperty(k, v);
+              return v;
+            });
+
+    if (TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(hmsTable.getTableType())) {
+      return getMaterializedView(configuration, hmsTable, skipCache).getStotageTable();
+    }
+
     return getTable(configuration, properties, skipCache);
   }
 
@@ -186,26 +196,43 @@ public class IcebergTableUtil {
     }
     String tableIdentifier = props.getProperty(Catalogs.NAME);
     Function<Void, Table> tableLoadFunc =
-        unused -> {
-          Table tab = Catalogs.loadTable(configuration, props);
-          SessionStateUtil.addResource(configuration, tableIdentifier, tab);
-          return tab;
-        };
+            unused -> {
+              Table tab;
+              Object tableType = properties.get(HiveMetaHook.TABLE_TYPE);
+              if (tableType != null &&
+                      HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableType.toString())) {
+                tab = Catalogs.loadMaterializedView(configuration, props).getStotageTable();
+              } else {
+                tab = Catalogs.loadTable(configuration, props);
+              }
+              SessionStateUtil.addResource(configuration, tableIdentifier, tab);
+              return tab;
+            };
 
     if (skipCache) {
       return tableLoadFunc.apply(null);
     } else {
-      return SessionStateUtil.getResource(configuration, tableIdentifier)
-          .filter(Table.class::isInstance)
-          .map(Table.class::cast)
-          .map(tbl -> Optional.ofNullable(IcebergAcidUtil.getTransaction(tbl))
-              .map(Transaction::table)
-              .orElse(tbl))
-          .orElseGet(() -> {
-            LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog",
-                tableIdentifier);
-            return tableLoadFunc.apply(null);
-          });
+      Optional<Object> resource = SessionStateUtil.getResource(configuration, tableIdentifier);
+      if (resource.isPresent()) {
+        if (resource.get() instanceof Table) {
+          return resource
+              .map(Table.class::cast)
+              .map(tbl -> Optional.ofNullable(IcebergAcidUtil.getTransaction(tbl))
+                  .map(Transaction::table)
+                  .orElse(tbl))
+              .orElseGet(() -> {
+                LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog",
+                    tableIdentifier);
+                return tableLoadFunc.apply(null);
+              });
+        }
+
+        if (resource.get() instanceof Catalogs.MaterializedView) {
+          return ((Catalogs.MaterializedView) resource.get()).getStotageTable();
+        }
+      }
+
+      return tableLoadFunc.apply(null);
     }
   }
 
@@ -938,13 +965,14 @@ public class IcebergTableUtil {
     if (skipCache) {
       return mvLoadFunc.apply(null);
     } else {
-      return SessionStateUtil.getResource(configuration, viewIdentifier).filter(o -> o instanceof Table)
-          .map(o -> (Catalogs.MaterializedView) o).orElseGet(() -> {
-            LOG.debug("Iceberg table {} is not found in QueryState. " +
-                    "Loading materialized view from configured catalog",
-                viewIdentifier);
-            return mvLoadFunc.apply(null);
-          });
+      return SessionStateUtil.getResource(configuration, viewIdentifier)
+              .filter(o -> o instanceof Catalogs.MaterializedView)
+              .map(o -> (Catalogs.MaterializedView) o).orElseGet(() -> {
+                LOG.debug("Iceberg table {} is not found in QueryState. " +
+                                "Loading materialized view from configured catalog",
+                        viewIdentifier);
+                return mvLoadFunc.apply(null);
+              });
     }
   }
 }
