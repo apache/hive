@@ -91,6 +91,7 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-29297] - The directory of the direct insert manifest files should be hidden from read queries
     * [HIVE-29303] - Fix the 'DnsjavaInetAddressResolverProvider not found' exception in Java-based Beeline
     * [HIVE-29307] - Incorrect split calculation causing less container to launch
+    * [HIVE-29315] - Metastore-client module is missing in metastore sources .tar.gz
 
 
 ** New Feature

@@ -39,6 +39,7 @@
         <include>LICENSE</include>
         <include>NOTICE</include>
         <include>pom.xml</include>
+        <include>metastore-client/**/*</include>
         <include>metastore-common/**/*</include>
         <include>metastore-server/**/*</include>
         <include>metastore-tools/**/*</include>
