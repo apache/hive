@@ -22,3 +22,9 @@ create materialized view mat1 stored by iceberg stored as orc tblproperties ('fo
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
 
 select * from mat1;
+
+show tables;
+
+show materialized views;
+
+select 1;
