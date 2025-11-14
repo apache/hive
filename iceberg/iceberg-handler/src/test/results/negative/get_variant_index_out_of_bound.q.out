@@ -1,0 +1,1 @@
+FAILED: RuntimeException org.apache.hadoop.hive.ql.exec.UDFArgumentException: org.apache.hadoop.hive.ql.metadata.HiveException: Failed to extract variant: Array index 5 is out of bounds
