@@ -85,6 +85,7 @@ alterTableStatementSuffix
     | alterStatementSuffixRenameBranch
     | alterStatementSuffixReplaceBranch
     | alterStatementSuffixReplaceTag
+    | alterStatementSuffixSetWriteOrder
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -684,6 +685,13 @@ alterStatementSuffixCreateOrReplaceTag
 @after { gParent.popMsg(state); }
      : KW_CREATE KW_OR KW_REPLACE KW_TAG tagName=identifier snapshotIdOfRef? refRetain?
      -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName KW_REPLACE snapshotIdOfRef? refRetain?)
+     ;
+
+alterStatementSuffixSetWriteOrder
+@init { gParent.pushMsg("alter table set write order", state); }
+@after { gParent.popMsg(state); }
+     : KW_SET tableWriteLocallyOrderedBy
+     -> ^(TOK_ALTERTABLE_SET_WRITE_ORDER tableWriteLocallyOrderedBy)
      ;
 
 fileFormat
