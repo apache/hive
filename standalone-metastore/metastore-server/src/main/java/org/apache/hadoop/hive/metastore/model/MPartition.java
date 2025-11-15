@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MPartition {
-
+  private long id;
   private String partitionName; // partitionname ==>  (key=value/)*(key=value)
   private MTable table; 
   private List<String> values;
@@ -31,7 +31,6 @@ public class MPartition {
   private MStorageDescriptor sd;
   private Map<String, String> parameters;
   private long writeId;
-  
   public MPartition() {}
   
   /**
@@ -158,5 +157,9 @@ public class MPartition {
 
   public void setWriteId(long writeId) {
     this.writeId = writeId;
+  }
+
+  public long getId() {
+    return id;
   }
 }

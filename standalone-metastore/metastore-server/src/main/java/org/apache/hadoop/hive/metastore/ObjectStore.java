@@ -9246,85 +9246,93 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  /**
-   * Get partition's column stats
-   *
-   * @return Map of column name and its stats
-   */
-  private Map<String, MPartitionColumnStatistics> getPartitionColStats(Table table, String partitionName,
-      List<String> colNames, String engine) throws NoSuchObjectException, MetaException {
-    Map<String, MPartitionColumnStatistics> statsMap = Maps.newHashMap();
-    List<MPartitionColumnStatistics> stats =
-        getMPartitionColumnStatistics(table, Lists.newArrayList(partitionName), colNames, engine);
-    for (MPartitionColumnStatistics cStat : stats) {
-      statsMap.put(cStat.getColName(), cStat);
-    }
-    return statsMap;
-  }
-
   @Override
   public Map<String, String> updatePartitionColumnStatistics(Table table, MTable mTable, ColumnStatistics colStats,
       List<String> partVals, String validWriteIds, long writeId)
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
-
+    long start = System.currentTimeMillis();
+    List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+    String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
     try {
       openTransaction();
-      List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
-      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-      String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(), getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), TxnUtils.isAcidTable(table));
-      List<String> colNames = new ArrayList<>();
-
-      for(ColumnStatisticsObj statsObj : statsObjs) {
-        colNames.add(statsObj.getColName());
-      }
-
-      Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
-          .getPartName(), colNames, colStats.getEngine());
-
       MPartition mPartition = getMPartition(
           catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
+      Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(),
+          mPartition, TxnUtils.isAcidTable(table));
       if (partition == null) {
         throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
       }
 
-      for (ColumnStatisticsObj statsObj : statsObjs) {
-        MPartitionColumnStatistics mStatsObj =
-            StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj, colStats.getEngine());
-        writeMPartitionColumnStatistics(table, partition, mStatsObj,
-            oldStats.get(statsObj.getColName()));
+      List<String> colNames = new ArrayList<>();
+      for(ColumnStatisticsObj statsObj : statsObjs) {
+        colNames.add(statsObj.getColName());
       }
-      // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
-      Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
-      StatsSetupConst.setColumnStatsState(newParams, colNames);
-      boolean isTxn = TxnUtils.isTransactionalTable(table);
-      if (isTxn) {
-        if (!areTxnStatsSupported) {
-          StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-        } else {
-          String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(statsDesc.getDbName(),
-                                                                      statsDesc.getTableName()),
-                  mPartition.getParameters(), newParams, writeId, validWriteIds, true);
-          if (errorMsg != null) {
-            throw new MetaException(errorMsg);
-          }
-          if (!isCurrentStatsValidForTheQuery(mPartition, validWriteIds, true)) {
-            // Make sure we set the flag to invalid regardless of the current value.
-            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-            LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
-                    + statsDesc.getDbName() + "." + statsDesc.getTableName() + "." + statsDesc.getPartName());
-          }
-          mPartition.setWriteId(writeId);
+      int maxRetries = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
+      long sleepInterval = MetastoreConf.getTimeVar(conf,
+          ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
+      Map<String, String> result = new RetryingExecutor<>(maxRetries, () -> {
+        Ref<Exception> exceptionRef = new Ref<>();
+        String savePoint = "ups_" + ThreadLocalRandom.current().nextInt(10000) + "_" + System.nanoTime();
+        setTransactionSavePoint(savePoint);
+        executePlainSQL(sqlGenerator.addForUpdateNoWait(
+            "SELECT \"PART_ID\" FROM \"PARTITIONS\" WHERE \"PART_ID\" = " + mPartition.getId()), exception -> {
+          rollbackTransactionToSavePoint(savePoint);
+          exceptionRef.t = exception;
+        });
+        if (exceptionRef.t != null) {
+          throw new RetryingExecutor.RetryException(exceptionRef.t);
         }
-      }
+        pm.refresh(mPartition);
+        Map<String, MPartitionColumnStatistics> oldStats = Maps.newHashMap();
+        List<MPartitionColumnStatistics> stats =
+            getMPartitionColumnStatistics(table, Lists.newArrayList(statsDesc.getPartName()), colNames, colStats.getEngine());
+        for (MPartitionColumnStatistics cStat : stats) {
+          oldStats.put(cStat.getColName(), cStat);
+        }
 
-      mPartition.setParameters(newParams);
+        for (ColumnStatisticsObj statsObj : statsObjs) {
+          MPartitionColumnStatistics mStatsObj = StatObjectConverter.convertToMPartitionColumnStatistics(mPartition,
+              statsDesc, statsObj, colStats.getEngine());
+          writeMPartitionColumnStatistics(table, partition, mStatsObj, oldStats.get(statsObj.getColName()));
+        }
+
+        // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
+        Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
+        StatsSetupConst.setColumnStatsState(newParams, colNames);
+        boolean isTxn = TxnUtils.isTransactionalTable(table);
+        if (isTxn) {
+          if (!areTxnStatsSupported) {
+            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+          } else {
+            String errorMsg = verifyStatsChangeCtx(
+                TableName.getDbTable(statsDesc.getDbName(), statsDesc.getTableName()), mPartition.getParameters(),
+                newParams, writeId, validWriteIds, true);
+            if (errorMsg != null) {
+              throw new MetaException(errorMsg);
+            }
+            if (!isCurrentStatsValidForTheQuery(mPartition, validWriteIds, true)) {
+              // Make sure we set the flag to invalid regardless of the current value.
+              StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+              LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition: {}, {} ",
+                  new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), statsDesc.getPartName());
+            }
+            mPartition.setWriteId(writeId);
+          }
+        }
+        mPartition.setParameters(newParams);
+        return newParams;
+      }).onRetry(e -> e instanceof RetryingExecutor.RetryException)
+          .commandName("updatePartitionColumnStatistics").sleepInterval(sleepInterval, interval ->
+              ThreadLocalRandom.current().nextLong(sleepInterval) + 30).run();
       committed = commitTransaction();
       // TODO: what is the "return committed;" about? would it ever return false without throwing?
-      return committed ? newParams : null;
+      return committed ? result : null;
     } finally {
+      LOG.debug("{} updatePartitionColumnStatistics took {}ms, success: {}",
+          new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()),
+          System.currentTimeMillis() - start, committed);
       rollbackAndCleanup(committed, null);
     }
   }
