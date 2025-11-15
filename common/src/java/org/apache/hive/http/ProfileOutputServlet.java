@@ -17,11 +17,15 @@ package org.apache.hive.http;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.hadoop.yarn.webapp.MimeType;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,19 +37,43 @@ public class ProfileOutputServlet extends DefaultServlet {
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(ProfileOutputServlet.class);
 
+  public static final String FILE_QUERY_PARAM = "file";
+
   @Override
   protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
     throws ServletException, IOException {
-    String absoluteDiskPath = getServletContext().getRealPath(req.getPathInfo());
-    File requestedFile = new File(absoluteDiskPath);
+    String queriedFile = req.getParameter(FILE_QUERY_PARAM);
+
+    if (queriedFile == null) {
+      writeMessage(resp, "Run the profiler to be able to receive its output");
+      return;
+    }
+    Path outputDir = Paths.get(ProfileServlet.OUTPUT_DIR).toAbsolutePath().normalize();
+    Path requestedPath = outputDir.resolve(queriedFile).normalize();
+
+    if (!requestedPath.startsWith(outputDir)) {
+      resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      writeMessage(resp, "Access denied: Invalid Path");
+      return;
+    }
+
+    File outputFile = requestedPath.toFile();
+
     // async-profiler version 1.4 writes 'Started [cpu] profiling' to output file when profiler is running which
     // gets replaced by final output. If final output is not ready yet, the file size will be <100 bytes (in all modes).
-    if (requestedFile.length() < 100) {
-      LOG.info("{} is incomplete. Sending auto-refresh header..", requestedFile);
+    if (outputFile.length() < 100) {
+      LOG.info("{} is incomplete. Sending auto-refresh header..", outputFile);
       resp.setHeader("Refresh", "2," + req.getRequestURI());
       resp.getWriter().write("This page will auto-refresh every 2 second until output file is ready..");
     } else {
       super.doGet(req, resp);
     }
+  }
+
+  private void writeMessage(HttpServletResponse response, String message) throws IOException {
+    response.setContentType(MimeType.TEXT);
+    PrintWriter out = response.getWriter();
+    out.println(message);
+    out.close();
   }
 }
