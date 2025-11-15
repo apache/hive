@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.RetryingMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.iceberg.ClientPoolImpl;
 import org.apache.iceberg.common.DynMethods;
+import org.apache.iceberg.exceptions.ForbiddenException;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
@@ -76,6 +77,31 @@ public class HiveClientPool extends ClientPoolImpl<IMetaStoreClient, TException>
   }
 
   @Override
+  public <R> R run(Action<R, IMetaStoreClient, TException> action) throws TException, InterruptedException {
+    try {
+      return super.run(action);
+    } catch (MetaException e) {
+      if (isAccessControlException(e)) {
+        throw new ForbiddenException(e, "Access denied: %s", e.getMessage());
+      }
+      throw e;
+    }
+  }
+
+  @Override
+  public <R> R run(Action<R, IMetaStoreClient, TException> action, boolean retry)
+      throws TException, InterruptedException {
+    try {
+      return super.run(action, retry);
+    } catch (MetaException e) {
+      if (isAccessControlException(e)) {
+        throw new ForbiddenException(e, "Access denied: %s", e.getMessage());
+      }
+      throw e;
+    }
+  }
+
+  @Override
   protected IMetaStoreClient reconnect(IMetaStoreClient client) {
     try {
       client.close();
@@ -90,6 +116,11 @@ public class HiveClientPool extends ClientPoolImpl<IMetaStoreClient, TException>
   protected boolean isConnectionException(Exception e) {
     return super.isConnectionException(e) || e != null && e instanceof MetaException &&
         e.getMessage().contains("Got exception: org.apache.thrift.transport.TTransportException");
+  }
+
+  private boolean isAccessControlException(MetaException exception) {
+    return exception.getMessage() != null && exception.getMessage().startsWith(
+        "Got exception: org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException");
   }
 
   @Override
