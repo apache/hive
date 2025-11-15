@@ -23,13 +23,13 @@ import org.apache.hadoop.hive.common.histogram.KllHistogramEstimator;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.columnstats.DecimalComparator;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 
 import com.google.common.base.MoreObjects;
 
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.decimalInspectorFromStats;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +82,8 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger<Decimal> {
   @Override
   public Decimal mergeLowValue(Decimal oldValue, Decimal newValue) {
     if (oldValue != null && newValue != null) {
-      return ObjectUtils.min(oldValue, newValue);
+      int cmp = DecimalComparator.INSTANCE.compare(oldValue, newValue);
+      return cmp < 0 ? oldValue : newValue;
     }
     if (oldValue != null || newValue != null) {
       return MoreObjects.firstNonNull(oldValue, newValue);
@@ -93,7 +94,8 @@ public class DecimalColumnStatsMerger extends ColumnStatsMerger<Decimal> {
   @Override
   public Decimal mergeHighValue(Decimal oldValue, Decimal newValue) {
     if (oldValue != null && newValue != null) {
-      return ObjectUtils.max(oldValue, newValue);
+      int cmp = DecimalComparator.INSTANCE.compare(oldValue, newValue);
+      return cmp < 0 ? newValue : oldValue;
     }
     if (oldValue != null || newValue != null) {
       return MoreObjects.firstNonNull(oldValue, newValue);
