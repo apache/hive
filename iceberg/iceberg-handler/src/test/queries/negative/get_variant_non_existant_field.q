@@ -1,0 +1,1 @@
+SELECT variant_get(parse_json('{"a": 1, "b": 2}'), '$.c');

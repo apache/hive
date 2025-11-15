@@ -1,0 +1,1 @@
+SELECT variant_get(parse_json('123'), '$.name');

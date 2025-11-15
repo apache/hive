@@ -133,23 +133,17 @@ public class GenericUDFVariantGet extends GenericUDF {
     if (variant == null || path == null) {
       return null;
     }
-    try {
-      List<VariantToken> tokens = VariantPathParser.parse(path);
-      Variant current = variant;
+    List<VariantToken> tokens = VariantPathParser.parse(path);
+    Variant current = variant;
 
-      for (VariantToken token : tokens) {
-        if (current == null) {
-          // The path goes deeper than the object structure.
-          return null;
-        }
-        current = token.get(current);
+    for (VariantToken token : tokens) {
+      if (current == null) {
+        // The path goes deeper than the object structure.
+        return null;
       }
-      return current;
-
-    } catch (IllegalArgumentException e) {
-      LOG.warn("Invalid path syntax provided: {}", e.getMessage());
-      return null;
+      current = token.get(current);
     }
+    return current;
   }
 
   private static Object castValue(Variant value, String targetType) {
@@ -256,10 +250,13 @@ public class GenericUDFVariantGet extends GenericUDF {
   private record FieldToken(String key) implements VariantToken {
     @Override
     public Variant get(Variant target) {
-      if (target != null && target.getType() == VariantUtil.Type.OBJECT) {
-        return target.getFieldByKey(key);
+      if (target == null) {
+        return null;
       }
-      return null;
+      if (target.getType() != VariantUtil.Type.OBJECT) {
+        throw new IllegalArgumentException("Cannot access field '" + key + "' on non-object type: " + target.getType());
+      }
+      return target.getFieldByKey(key);
     }
   }
 
@@ -269,10 +266,13 @@ public class GenericUDFVariantGet extends GenericUDF {
   private record IndexToken(int index) implements VariantToken {
     @Override
     public Variant get(Variant target) {
-      if (target != null && target.getType() == VariantUtil.Type.ARRAY) {
-        return target.getElementAtIndex(index);
+      if (target == null) {
+        return null;
       }
-      return null;
+      if (target.getType() != VariantUtil.Type.ARRAY) {
+        throw new IllegalArgumentException("Cannot access index " + index + " on non-array type: " + target.getType());
+      }
+      return target.getElementAtIndex(index);
     }
   }
 

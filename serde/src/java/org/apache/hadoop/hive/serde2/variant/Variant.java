@@ -192,7 +192,7 @@ public final class Variant {
           }
         }
       }
-      return null;
+      throw new IllegalArgumentException("Field '" + key + "' does not exist in object");
     });
   }
 
@@ -231,12 +231,13 @@ public final class Variant {
     return handleArray(value, pos, (size, offsetSize, offsetStart, dataStart) -> size);
   }
 
-  // Get the array element at the `index` slot. Return null if `index` is out of the bound of
-  // `[0, arraySize())`.
+  // Get the array element at the `index` slot.
   // It is only legal to call it when `getType()` is `Type.ARRAY`.
   public Variant getElementAtIndex(int index) {
     return handleArray(value, pos, (size, offsetSize, offsetStart, dataStart) -> {
-      if (index < 0 || index >= size) return null;
+      if (index < 0 || index >= size) {
+        throw new IllegalArgumentException("Array index " + index + " is out of bounds");
+      }
       int offset = readUnsigned(value, offsetStart + offsetSize * index, offsetSize);
       return new Variant(value, metadata, dataStart + offset);
     });
