@@ -85,6 +85,7 @@ alterTableStatementSuffix
     | alterStatementSuffixRenameBranch
     | alterStatementSuffixReplaceBranch
     | alterStatementSuffixReplaceTag
+    | alterStatementSuffixSetWriteZOrder
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -684,6 +685,13 @@ alterStatementSuffixCreateOrReplaceTag
 @after { gParent.popMsg(state); }
      : KW_CREATE KW_OR KW_REPLACE KW_TAG tagName=identifier snapshotIdOfRef? refRetain?
      -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName KW_REPLACE snapshotIdOfRef? refRetain?)
+     ;
+
+alterStatementSuffixSetWriteZOrder
+@init { gParent.pushMsg("alter table set write zorder", state); }
+@after { gParent.popMsg(state); }
+     : KW_SET KW_WRITE (KW_LOCALLY)? KW_ORDERED KW_BY KW_ZORDER LPAREN columnNameList RPAREN
+     -> ^(TOK_ALTERTABLE_SET_WRITE_ZORDER columnNameList)
      ;
 
 fileFormat

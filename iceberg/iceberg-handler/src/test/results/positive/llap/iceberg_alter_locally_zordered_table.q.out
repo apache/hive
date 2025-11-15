@@ -1,0 +1,267 @@
+PREHOOK: query: create table ice_orc_zorder (id int, name string, age int, city string) stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_orc_zorder
+POSTHOOK: query: create table ice_orc_zorder (id int, name string, age int, city string) stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_orc_zorder
+PREHOOK: query: describe formatted ice_orc_zorder
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc_zorder
+POSTHOOK: query: describe formatted ice_orc_zorder
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc_zorder
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+age                 	int                 	                    
+city                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"age\":\"true\",\"city\":\"true\",\"id\":\"true\",\"name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"age\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"city\",\"required\":false,\"type\":\"string\"}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#                   
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: insert into ice_orc_zorder values (1, 'Alice', 30, 'NYC'),(2, 'Bob', 25, 'LA'),(3, 'Charlie', 35, 'SF')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_zorder
+POSTHOOK: query: insert into ice_orc_zorder values (1, 'Alice', 30, 'NYC'),(2, 'Bob', 25, 'LA'),(3, 'Charlie', 35, 'SF')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_zorder
+PREHOOK: query: select * from ice_orc_zorder
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_zorder
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc_zorder
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_zorder
+#### A masked pattern was here ####
+1	Alice	30	NYC
+2	Bob	25	LA
+3	Charlie	35	SF
+PREHOOK: query: alter table ice_orc_zorder set WRITE LOCALLY ORDERED BY ZORDER (id, age)
+PREHOOK: type: ALTERTABLE_SET_WRITE_ZORDER
+PREHOOK: Input: default@ice_orc_zorder
+PREHOOK: Output: default@ice_orc_zorder
+POSTHOOK: query: alter table ice_orc_zorder set WRITE LOCALLY ORDERED BY ZORDER (id, age)
+POSTHOOK: type: ALTERTABLE_SET_WRITE_ZORDER
+POSTHOOK: Input: default@ice_orc_zorder
+POSTHOOK: Output: default@ice_orc_zorder
+PREHOOK: query: describe formatted ice_orc_zorder
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc_zorder
+POSTHOOK: query: describe formatted ice_orc_zorder
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc_zorder
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+age                 	int                 	                    
+city                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"age\":\"true\",\"city\":\"true\",\"id\":\"true\",\"name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"age\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"city\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"3\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"3\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	3                   
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	1                   
+	sort.columns        	id,age              
+	sort.order          	ZORDER              
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#                 
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: insert into ice_orc_zorder values (4, 'David', 28, 'Seattle'),(5, 'Eve', 32, 'Boston'),(6, 'Frank', 29, 'Austin'),(7, 'Grace', 31, 'Denver')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_zorder
+POSTHOOK: query: insert into ice_orc_zorder values (4, 'David', 28, 'Seattle'),(5, 'Eve', 32, 'Boston'),(6, 'Frank', 29, 'Austin'),(7, 'Grace', 31, 'Denver')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_zorder
+PREHOOK: query: select * from ice_orc_zorder
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_zorder
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc_zorder
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_zorder
+#### A masked pattern was here ####
+4	David	28	Seattle
+6	Frank	29	Austin
+7	Grace	31	Denver
+5	Eve	32	Boston
+1	Alice	30	NYC
+2	Bob	25	LA
+3	Charlie	35	SF
+PREHOOK: query: alter table ice_orc_zorder set WRITE LOCALLY ORDERED BY ZORDER (name, city)
+PREHOOK: type: ALTERTABLE_SET_WRITE_ZORDER
+PREHOOK: Input: default@ice_orc_zorder
+PREHOOK: Output: default@ice_orc_zorder
+POSTHOOK: query: alter table ice_orc_zorder set WRITE LOCALLY ORDERED BY ZORDER (name, city)
+POSTHOOK: type: ALTERTABLE_SET_WRITE_ZORDER
+POSTHOOK: Input: default@ice_orc_zorder
+POSTHOOK: Output: default@ice_orc_zorder
+PREHOOK: query: describe formatted ice_orc_zorder
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_orc_zorder
+POSTHOOK: query: describe formatted ice_orc_zorder
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_orc_zorder
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+name                	string              	                    
+age                 	int                 	                    
+city                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"age\":\"true\",\"city\":\"true\",\"id\":\"true\",\"name\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"age\",\"required\":false,\"type\":\"int\"},{\"id\":4,\"name\":\"city\",\"required\":false,\"type\":\"string\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"4\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"7\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"2\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	7                   
+	parquet.compression 	zstd                
+#### A masked pattern was here ####
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	2                   
+	sort.columns        	name,city           
+	sort.order          	ZORDER              
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#                
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: insert into ice_orc_zorder values (8, 'Harry', 29, 'Texas'),(9, 'Ivan', 31, 'California')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_zorder
+POSTHOOK: query: insert into ice_orc_zorder values (8, 'Harry', 29, 'Texas'),(9, 'Ivan', 31, 'California')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_zorder
+PREHOOK: query: insert into ice_orc_zorder values (8, 'Harry', 29, 'Texas'),(9, 'Ivan', 31, 'California')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_orc_zorder
+POSTHOOK: query: insert into ice_orc_zorder values (8, 'Harry', 29, 'Texas'),(9, 'Ivan', 31, 'California')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_orc_zorder
+PREHOOK: query: select * from ice_orc_zorder
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_orc_zorder
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc_zorder
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_orc_zorder
+#### A masked pattern was here ####
+4	David	28	Seattle
+6	Frank	29	Austin
+7	Grace	31	Denver
+5	Eve	32	Boston
+9	Ivan	31	California
+8	Harry	29	Texas
+1	Alice	30	NYC
+2	Bob	25	LA
+3	Charlie	35	SF
+9	Ivan	31	California
+8	Harry	29	Texas
+PREHOOK: query: drop table ice_orc_zorder
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ice_orc_zorder
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_orc_zorder
+POSTHOOK: query: drop table ice_orc_zorder
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ice_orc_zorder
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_orc_zorder
