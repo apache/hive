@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
@@ -173,7 +174,7 @@ public class ClearDanglingScratchDir implements Runnable {
               consoleMessage(message);
             }
           }
-          if (removable) {
+          if (removable && !isWithinGracePeriod(scratchDir, conf, verbose)) {
             scratchDirToRemove.add(scratchDir.getPath());
           }
         }
@@ -263,5 +264,26 @@ public class ClearDanglingScratchDir implements Runnable {
         }
       }
     }
+  }
+
+  /**
+   * Returns true if the scratch directory was modified within the grace period,
+   * meaning it should be skipped from cleanup.
+   * Hive updates the directory’s last modified time when finalizing output streaming.
+   */
+  private boolean isWithinGracePeriod(FileStatus scratchDir, HiveConf conf, boolean verbose) throws IOException {
+    long lastModifiedTime = scratchDir.getModificationTime();
+    long currentTime = System.currentTimeMillis();
+
+    long gracePeriodMs = HiveConf.getTimeVar(conf,
+            HiveConf.ConfVars.HIVE_SCRATCH_DIR_CLEANUP_GRACE_PERIOD, TimeUnit.MILLISECONDS);
+
+    if (gracePeriodMs > 0 && (currentTime - lastModifiedTime) < gracePeriodMs) {
+      if (verbose) {
+        consoleMessage("Skipping " + scratchDir.getPath() + " because it was modified within the grace period.");
+      }
+      return true;
+    }
+    return false;
   }
 }
