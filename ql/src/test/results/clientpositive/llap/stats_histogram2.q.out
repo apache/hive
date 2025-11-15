@@ -1,0 +1,215 @@
+PREHOOK: query: CREATE TABLE sh2a AS (SELECT cast(key as int) as k1, cast(key as int) as k2 FROM src)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sh2a
+POSTHOOK: query: CREATE TABLE sh2a AS (SELECT cast(key as int) as k1, cast(key as int) as k2 FROM src)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sh2a
+POSTHOOK: Lineage: sh2a.k1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sh2a.k2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: DESCRIBE FORMATTED sh2a k1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sh2a
+POSTHOOK: query: DESCRIBE FORMATTED sh2a k1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sh2a
+col_name            	k1                  
+data_type           	int                 
+min                 	0                   
+max                 	498                 
+num_nulls           	0                   
+distinct_count      	303                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"k1\":\"true\",\"k2\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED sh2a k2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sh2a
+POSTHOOK: query: DESCRIBE FORMATTED sh2a k2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sh2a
+col_name            	k2                  
+data_type           	int                 
+min                 	0                   
+max                 	498                 
+num_nulls           	0                   
+distinct_count      	303                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"k1\":\"true\",\"k2\":\"true\"}}
+PREHOOK: query: explain SELECT 1 FROM sh2a WHERE k1 < 10 AND k2 < 250
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sh2a
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT 1 FROM sh2a WHERE k1 < 10 AND k2 < 250
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sh2a
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sh2a
+                  filterExpr: ((k1 < 10) and (k2 < 250)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((k1 < 10) and (k2 < 250)) (type: boolean)
+                    Statistics: Num rows: #Masked# Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: 1 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: #Masked# Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: #Masked# Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT count(1) FROM sh2a WHERE k1 < 10 AND k2 < 250
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sh2a
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(1) FROM sh2a WHERE k1 < 10 AND k2 < 250
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sh2a
+#### A masked pattern was here ####
+10
+PREHOOK: query: CREATE TABLE sh2b AS (SELECT cast(key as int) as k1, cast(key as int) as k2 FROM src)
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sh2b
+POSTHOOK: query: CREATE TABLE sh2b AS (SELECT cast(key as int) as k1, cast(key as int) as k2 FROM src)
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sh2b
+POSTHOOK: Lineage: sh2b.k1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: sh2b.k2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: ANALYZE TABLE sh2b COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@sh2b
+PREHOOK: Output: default@sh2b
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE sh2b COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@sh2b
+POSTHOOK: Output: default@sh2b
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE FORMATTED sh2b k1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sh2b
+POSTHOOK: query: DESCRIBE FORMATTED sh2b k1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sh2b
+col_name            	k1                  
+data_type           	int                 
+min                 	0                   
+max                 	498                 
+num_nulls           	0                   
+distinct_count      	303                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	Q1: #Masked#, Q2: #Masked#, Q3: #Masked#
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"k1\":\"true\",\"k2\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED sh2b k2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@sh2b
+POSTHOOK: query: DESCRIBE FORMATTED sh2b k2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@sh2b
+col_name            	k2                  
+data_type           	int                 
+min                 	0                   
+max                 	498                 
+num_nulls           	0                   
+distinct_count      	303                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+histogram           	Q1: #Masked#, Q2: #Masked#, Q3: #Masked#
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"k1\":\"true\",\"k2\":\"true\"}}
+PREHOOK: query: explain SELECT 1 FROM sh2b WHERE k1 < 10 AND k2 < 250
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sh2b
+#### A masked pattern was here ####
+POSTHOOK: query: explain SELECT 1 FROM sh2b WHERE k1 < 10 AND k2 < 250
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sh2b
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sh2b
+                  filterExpr: ((k1 < 10) and (k2 < 250)) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((k1 < 10) and (k2 < 250)) (type: boolean)
+                    Statistics: Num rows: #Masked# Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: 1 (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: #Masked# Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: #Masked# Data size: #Masked# Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
