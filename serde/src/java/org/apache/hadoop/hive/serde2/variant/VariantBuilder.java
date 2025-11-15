@@ -301,7 +301,7 @@ public class VariantBuilder {
   // - when `allowDuplicateKeys` is true, the field with the greatest offset value (the last
   // appended one) is kept.
   // - otherwise, throw an exception.
-  public void finishWritingObject(int start, ArrayList<FieldEntry> fields) {
+  public void finishWritingObject(int start, List<FieldEntry> fields) {
     int size = fields.size();
     Collections.sort(fields);
     int maxId = size == 0 ? 0 : fields.getFirst().id;
