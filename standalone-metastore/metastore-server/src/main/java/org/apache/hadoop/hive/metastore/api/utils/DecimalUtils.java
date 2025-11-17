@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore.api.utils;
 import java.nio.ByteBuffer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.Decimal;
 
 /**
@@ -45,5 +47,9 @@ public class DecimalUtils {
 
   public static String createJdoDecimalString(Decimal d) {
     return new BigDecimal(new BigInteger(d.getUnscaled()), d.getScale()).toString();
+  }
+  
+  public static HiveDecimal getHiveDecimal(Decimal decimal) {
+    return HiveDecimal.create(new BigInteger(decimal.getUnscaled()), decimal.getScale());
   }
 }

@@ -68,6 +68,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.ExceptionHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
@@ -250,6 +251,15 @@ public class MetaStoreServerUtils {
 
   public static double decimalToDouble(Decimal decimal) {
     return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
+  }
+
+  public static String decimalToString(Decimal val) {
+    if (val == null) {
+      return "";
+    }
+
+    HiveDecimal result = HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale());
+    return (result != null) ? result.toString() : "";
   }
 
   private static Pattern getPartitionValidationRegex(Configuration conf) {
