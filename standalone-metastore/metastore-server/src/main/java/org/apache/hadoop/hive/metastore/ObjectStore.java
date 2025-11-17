@@ -27,6 +27,7 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 import java.io.IOException;
 import java.net.InetAddress;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
@@ -9178,6 +9179,7 @@ public class ObjectStore implements RawStore, Configurable {
         setTransactionSavePoint(savePoint);
         executePlainSQL(
             sqlGenerator.addForUpdateNoWait("SELECT \"TBL_ID\" FROM \"TBLS\" WHERE \"TBL_ID\" = " + mTable.getId()),
+            true,
             exception -> {
               rollbackTransactionToSavePoint(savePoint);
               exceptionRef.t = exception;
@@ -9276,10 +9278,12 @@ public class ObjectStore implements RawStore, Configurable {
         String savePoint = "ups_" + ThreadLocalRandom.current().nextInt(10000) + "_" + System.nanoTime();
         setTransactionSavePoint(savePoint);
         executePlainSQL(sqlGenerator.addForUpdateNoWait(
-            "SELECT \"PART_ID\" FROM \"PARTITIONS\" WHERE \"PART_ID\" = " + mPartition.getId()), exception -> {
-          rollbackTransactionToSavePoint(savePoint);
-          exceptionRef.t = exception;
-        });
+            "SELECT \"PART_ID\" FROM \"PARTITIONS\" WHERE \"PART_ID\" = " + mPartition.getId()),
+            true,
+            exception -> {
+              rollbackTransactionToSavePoint(savePoint);
+              exceptionRef.t = exception;
+            });
         if (exceptionRef.t != null) {
           throw new RetryingExecutor.RetryException(exceptionRef.t);
         }
@@ -11089,8 +11093,10 @@ public class ObjectStore implements RawStore, Configurable {
     return writeEventInfoList;
   }
 
-  private void executePlainSQL(String sql, Consumer<Exception> exceptionConsumer)
-      throws SQLException {
+  private void executePlainSQL(String sql,
+      boolean atLeastOnRecord,
+      Consumer<Exception> exceptionConsumer)
+      throws SQLException, MetaException {
     String s = dbType.getPrepareTxnStmt();
     assert pm.currentTransaction().isActive();
     JDOConnection jdoConn = pm.getDataStoreConnection();
@@ -11101,6 +11107,12 @@ public class ObjectStore implements RawStore, Configurable {
       }
       try {
         statement.execute(sql);
+        try (ResultSet rs = statement.getResultSet()) {
+          // sqlserver needs rs.next for validating the s4u nowait
+          if (atLeastOnRecord && !rs.next()) {
+            throw new MetaException("At least one record but none is returned from the query: " + sql);
+          }
+        }
       } catch (SQLException e) {
         if (exceptionConsumer != null) {
           exceptionConsumer.accept(e);
@@ -11130,7 +11142,7 @@ public class ObjectStore implements RawStore, Configurable {
       String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
       new RetryingExecutor<Void>(maxRetries, () -> {
-        executePlainSQL(lockingQuery, null);
+        executePlainSQL(lockingQuery, false, null);
         return null;
       }).commandName("lockNotificationSequenceForUpdate").sleepInterval(sleepInterval).run();
     }
