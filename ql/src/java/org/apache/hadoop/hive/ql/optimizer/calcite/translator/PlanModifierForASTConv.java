@@ -229,12 +229,16 @@ public class PlanModifierForASTConv {
         // No self-join detected, return the join as is
         aliases.addAll(lf.aliases);
         aliases.addAll(rf.aliases);
+      } else {
+        // Self-join detected, introduce a derived table for the left side
+        aliases.addAll(rf.aliases);
+        newL = introduceDerivedTable(newL);
+      }
+      if (newL == join.getLeft() && newR == join.getRight()) {
+        return join;
+      } else {
         return join.copy(join.getTraitSet(), Arrays.asList(newL, newR));
       }
-      // Self-join detected, introduce a derived table for the left side
-      aliases.addAll(rf.aliases);
-      introduceDerivedTable(newL, join);
-      return join;
     }
 
     @Override
