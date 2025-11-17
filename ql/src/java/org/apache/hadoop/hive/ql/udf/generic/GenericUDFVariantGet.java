@@ -26,6 +26,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantStringObjectInspector;
 import org.apache.hadoop.hive.serde2.variant.Variant;
 import org.apache.hadoop.hive.serde2.variant.VariantUtil;
 import org.slf4j.Logger;
@@ -58,8 +60,7 @@ public class GenericUDFVariantGet extends GenericUDF {
   private StructObjectInspector variantOI;
   private PrimitiveObjectInspector pathOI;
 
-  private PrimitiveObjectInspector typeOI;
-  private boolean hasTypeArgument;
+  private String targetType;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -77,12 +78,15 @@ public class GenericUDFVariantGet extends GenericUDF {
     }
     pathOI = (PrimitiveObjectInspector) arguments[1];
 
-    hasTypeArgument = arguments.length == 3;
+    boolean hasTypeArgument = arguments.length == 3;
     if (hasTypeArgument) {
-      if (!(arguments[2] instanceof PrimitiveObjectInspector)) {
+      if (!(arguments[2] instanceof WritableConstantStringObjectInspector typeOI)) {
         throw new UDFArgumentException("Third argument must be string type name");
       }
-      typeOI = (PrimitiveObjectInspector) arguments[2];
+      targetType = typeOI.getWritableConstantValue().toString();
+
+      return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(targetType).primitiveCategory);
     }
 
     return PrimitiveObjectInspectorFactory.javaStringObjectInspector;
@@ -102,14 +106,6 @@ public class GenericUDFVariantGet extends GenericUDF {
         return null;
       }
       String path = pathOI.getPrimitiveJavaObject(pathObj).toString();
-
-      String targetType = null;
-      if (hasTypeArgument) {
-        Object typeObj = arguments[2].get();
-        if (typeObj != null) {
-          targetType = typeOI.getPrimitiveJavaObject(typeObj).toString();
-        }
-      }
 
       Variant result = extractValueByPath(variant, path);
       // cast to target type
