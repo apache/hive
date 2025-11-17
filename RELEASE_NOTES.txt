@@ -70,6 +70,7 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-29166] - Repeated MERGE query generates duplicates
     * [HIVE-29167] - Use access() api to check permission for different filesystems
     * [HIVE-29175] - Wrong Anti join conversion leading to missing results
+    * [HIVE-29176] - Wrong result when HiveAntiJoin is replacing an IS NULL filter on a nullable column
     * [HIVE-29180] - SonarQube reports issues unrelated to changes in the pull request
     * [HIVE-29182] - Upgrade maven-checkstyle-plugin version from 2.17 to 3.5.0
     * [HIVE-29187] - Unable to parse explain analyze statement when query has quoted identifier with special character
@@ -81,17 +82,22 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-29218] - LOAD OVERWRITE PARTITION on muti-level partititoned external Iceberg table may unexpectedly delete other partitions
     * [HIVE-29222] - Compilation failure when running with thrift profile
     * [HIVE-29230] - Iceberg: Reads fails after Schema evolution with complex type columns
+    * [HIVE-29249] - RuntimeException in PlanModifierForASTConv.introduceDerivedTable for queries with self joins
     * [HIVE-29251] - Hive ACID: HiveConf object shouldn't be shared between multiple cleanup task threads
     * [HIVE-29264] - Use metaconf prefix to honor metastore configurations for direct sql in q-files
     * [HIVE-29267] - Fix NPE on Grouping Sets Optimizer for UNION ALL Queries
-    * [HIVE-29269] - SQL injection vulnerability when processing delete column statistics requests via the HMS Thrift APIs
     * [HIVE-29272] - Query-based MINOR compaction should not consider minOpenWriteId
     * [HIVE-29273] - Default port appended should respect transport mode when host is specified without port
+    * [HIVE-29277] - Invalid index should return null for get_json_object 
+    * [HIVE-29290] - Wrong results when n-way join contains both anti and outer join
     * [HIVE-29296] - Remove getPrimaryKeys codes from beeline module
     * [HIVE-29297] - The directory of the direct insert manifest files should be hidden from read queries
     * [HIVE-29303] - Fix the 'DnsjavaInetAddressResolverProvider not found' exception in Java-based Beeline
+    * [HIVE-29304] - HS2 fails to start if cluster is configured with a mix of LDAP and Kerberos
     * [HIVE-29307] - Incorrect split calculation causing less container to launch
+    * [HIVE-29310] - Type casting issue in variant_get UDF
     * [HIVE-29315] - Metastore-client module is missing in metastore sources .tar.gz
+    * [HIVE-29318] - PostgreSQL requires every NULL parameter to have an explicit SQL type
 
 
 ** New Feature
@@ -163,6 +169,7 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-29246] - Upgrade derby version to 10.17.1.0
     * [HIVE-29252] - Iceberg: Add support for Column Defaults with Alter commands
     * [HIVE-29253] - Bump netty version to 4.1.127.Final due to CVE-2025-58057, CVE-2025-58056 
+    * [HIVE-29254] - Display TxnId associated with the query in show processlist command
     * [HIVE-29280] - Drop deprecated methods from Metastore server side
     * [HIVE-29285] - Iceberg: Add docker-compose setups for REST Catalog integrations with Gravitino and Polaris
     * [HIVE-29291] - Hive ACID: Use minHistoryWriteId by default
@@ -184,7 +191,6 @@ Release Notes - Hive - Version 4.2.0
     * [HIVE-28813] - MSCK/Analyze commands can show a warning in console for Small files.
     * [HIVE-28838] - Remove JDBC connection info from explain extended output
     * [HIVE-29000] - Upgrade nimbus-jose-jwt to resolve CVEs
-    * [HIVE-29045] - Preparing for 4.2.0 development
     * [HIVE-29064] - Drop usage of repository.apache.org
     * [HIVE-29068] - Drop deprecated compactor.history.retention.attempted property
     * [HIVE-29107] - Drop avatica version management and use of shaded jars
