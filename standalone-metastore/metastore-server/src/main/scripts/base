@@ -28,7 +28,6 @@ bin=`cd "$bin" 2>&1 > /dev/null; pwd`
 
 SERVICE=""
 HELP=""
-SKIP_HADOOPVERSION=false
 
 SERVICE_ARGS=()
 while [ $# -gt 0 ]; do
@@ -40,10 +39,6 @@ while [ $# -gt 0 ]; do
     --service)
       shift
       SERVICE=$1
-      shift
-      ;;
-    --skiphadoopversion)
-      SKIP_HADOOPVERSION=true
       shift
       ;;
     --help)
@@ -67,10 +62,6 @@ if [ "$SERVICE" = "" ] ; then
   else
     SERVICE="cli"
   fi
-fi
-
-if [[ "$SERVICE" =~ ^(help|schemaTool)$ ]] ; then
-  SKIP_HADOOPVERSION=true
 fi
 
 if [ -f "${METASTORE_CONF_DIR}/metastore-env.sh" ]; then
@@ -165,35 +156,6 @@ HADOOP=$HADOOP_HOME/bin/hadoop
 if [ ! -f ${HADOOP} ]; then
   echo "Cannot find hadoop installation: \$HADOOP_HOME or \$HADOOP_PREFIX must be set or hadoop must be in the path";
   exit 4;
-fi
-
-if [ "$SKIP_HADOOPVERSION" = false ]; then
-  # Make sure we're using a compatible version of Hadoop
-  if [ "x$HADOOP_VERSION" == "x" ]; then
-      HADOOP_VERSION=$($HADOOP version 2>&2 | awk -F"\t" '/Hadoop/ {print $0}' | cut -d' ' -f 2);
-  fi
-  
-  # Save the regex to a var to workaround quoting incompatabilities
-  # between Bash 3.1 and 3.2
-  hadoop_version_re="^([[:digit:]]+)\.([[:digit:]]+)(\.([[:digit:]]+))?.*$"
-  
-  if [[ "$HADOOP_VERSION" =~ $hadoop_version_re ]]; then
-      hadoop_major_ver=${BASH_REMATCH[1]}
-      hadoop_minor_ver=${BASH_REMATCH[2]}
-      hadoop_patch_ver=${BASH_REMATCH[4]}
-  else
-      echo "Unable to determine Hadoop version information."
-      echo "'hadoop version' returned:"
-      echo `$HADOOP version`
-      exit 5
-  fi
-  
-  if [ "$hadoop_major_ver" -lt "2" ] || [ "$hadoop_major_ver" -eq "2" -a "$hadoop_minor_ver" -lt "6" ]; then
-      echo "Standalone metastore requires Hadoop 2.6 or later."
-      echo "'hadoop version' returned:"
-      echo `$HADOOP version`
-      exit 6
-  fi
 fi
 
 if [ "${AUX_PARAM}" != "" ]; then
