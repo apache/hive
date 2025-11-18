@@ -194,15 +194,15 @@ public class GeometryUtils {
 
   public static OGCType getInferredOGCType(Geometry geom) {
     switch (geom.getType()) {
-      case Polygon:
-        Polygon poly = (Polygon) geom;
-        // Number of outer rings defines single vs multi
-        int ringCount = poly.getExteriorRingCount();
-        if (ringCount == 1) {
-          return OGCType.ST_POLYGON;
-        } else {
-          return OGCType.ST_MULTIPOLYGON;
-        }
+    case Polygon:
+      Polygon poly = (Polygon) geom;
+      // Number of outer rings defines single vs multi
+      int ringCount = poly.getExteriorRingCount();
+      if (ringCount == 1) {
+        return OGCType.ST_POLYGON;
+      } else {
+        return OGCType.ST_MULTIPOLYGON;
+      }
     case Polyline:
       return OGCType.ST_MULTILINESTRING;
     case MultiPoint:
