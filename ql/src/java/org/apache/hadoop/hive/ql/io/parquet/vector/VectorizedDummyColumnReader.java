@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
@@ -62,83 +63,67 @@ public class VectorizedDummyColumnReader extends BaseVectorizedColumnReader {
     col.noNulls = true;
     col.isNull[0] = false;
 
-    switch (typeInfo.getCategory()) {
-      case PRIMITIVE:
-        fillPrimitive(col, (PrimitiveTypeInfo) typeInfo, defaultValue);
-        break;
-
-      case STRUCT:
-      case LIST:
-      case MAP:
-        throw new IOException(
-          "Default values for complex types not supported yet in DummyColumnReader: " +
-            typeInfo.getTypeName());
-
-      default:
-        throw new IOException(
-          "Unsupported type category in DummyColumnReader: " +
-            typeInfo.getCategory());
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      fillPrimitive(col, (PrimitiveTypeInfo) typeInfo, defaultValue);
+    } else {
+      throw new IOException("Unsupported type category in DummyColumnReader: " + typeInfo.getCategory());
     }
   }
 
   /* -------------------------
      Primitive/leaf-type filler
      ------------------------- */
-  private void fillPrimitive(ColumnVector col, PrimitiveTypeInfo ti, Object value)
-      throws IOException {
+  private void fillPrimitive(ColumnVector col, PrimitiveTypeInfo ti, Object value) throws IOException {
 
     switch (ti.getPrimitiveCategory()) {
 
-      case BOOLEAN:
-        ((LongColumnVector) col).vector[0] = ((Boolean) value) ? 1 : 0;
-        return;
+    case BOOLEAN:
+      ((LongColumnVector) col).vector[0] = ((Boolean) value) ? 1 : 0;
+      return;
 
-      case BYTE:
-      case SHORT:
-      case INT:
-      case LONG:
-        ((LongColumnVector) col).vector[0] = ((Number) value).longValue();
-        return;
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+      ((LongColumnVector) col).vector[0] = ((Number) value).longValue();
+      return;
 
-      case FLOAT:
-      case DOUBLE:
-        ((DoubleColumnVector) col).vector[0] = ((Number) value).doubleValue();
-        return;
+    case FLOAT:
+    case DOUBLE:
+      ((DoubleColumnVector) col).vector[0] = ((Number) value).doubleValue();
+      return;
 
-      case STRING:
-      case VARCHAR:
-      case CHAR:
-        byte[] bytes = value.toString().getBytes(StandardCharsets.UTF_8);
-        ((BytesColumnVector) col).setRef(0, bytes, 0, bytes.length);
-        return;
+    case STRING:
+    case VARCHAR:
+    case CHAR:
+      byte[] bytes = value.toString().getBytes(StandardCharsets.UTF_8);
+      ((BytesColumnVector) col).setRef(0, bytes, 0, bytes.length);
+      return;
 
-      case DECIMAL:
-        DecimalColumnVector dcv = (DecimalColumnVector) col;
-        dcv.set(0, HiveDecimal.create(value.toString()));
-        return;
+    case DECIMAL:
+      DecimalColumnVector dcv = (DecimalColumnVector) col;
+      dcv.set(0, HiveDecimal.create(value.toString()));
+      return;
 
-      case TIMESTAMP: {
-        TimestampColumnVector tcv = (TimestampColumnVector) col;
+    case TIMESTAMP: {
+      TimestampColumnVector tcv = (TimestampColumnVector) col;
 
-        long micros = (Long) value;
-        long seconds = micros / 1_000_000L;
-        long nanos = (micros % 1_000_000L) * 1000L;
-        tcv.time[0] = seconds * 1000L;
-        tcv.nanos[0] = (int) nanos;
+      long micros = (Long) value;
+      long seconds = micros / 1_000_000L;
+      long nanos = (micros % 1_000_000L) * 1000L;
+      tcv.time[0] = seconds * 1000L;
+      tcv.nanos[0] = (int) nanos;
 
-        return;
-      }
+      return;
+    }
 
-      case DATE: {
-        LongColumnVector lcv = (LongColumnVector) col;
-        lcv.vector[0] = ((Number) value).intValue();
-        return;
-      }
-
+    case DATE: {
+      LongColumnVector lcv = (LongColumnVector) col;
+      lcv.vector[0] = ((Number) value).intValue();
+      return;
+    }
       default:
-        throw new IOException(
-          "Unsupported primitive type in DummyColumnReader: "
-            + ti.getPrimitiveCategory());
+        throw new IOException("Unsupported primitive type in DummyColumnReader: " + ti.getPrimitiveCategory());
     }
   }
 }

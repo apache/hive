@@ -58,8 +58,8 @@ public class VectorizedParquetInputFormat
   public void setMetadata(ParquetMetadata metadata) throws IOException {
     this.metadata = metadata;
   }
-  
-    public void seInitialColumnDefaults(Map<String, Object> initialDefaults) throws IOException {
+
+  public void seInitialColumnDefaults(Map<String, Object> initialDefaults) {
     this.initialDefaults = initialDefaults;
   }
 
