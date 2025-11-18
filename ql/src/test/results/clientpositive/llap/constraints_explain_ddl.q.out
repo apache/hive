@@ -383,21 +383,16 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +
-                      keys: d_datekey (type: bigint)
-                      null sort order: z
+                    Select Operator
+                      expressions: d_datekey (type: bigint)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Select Operator
-                        expressions: d_datekey (type: bigint)
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: bigint)
-                          null sort order: z
-                          sort order: +
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -529,21 +524,16 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
                     Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +
-                      keys: d_datekey (type: bigint)
-                      null sort order: z
+                    Select Operator
+                      expressions: d_datekey (type: bigint)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Select Operator
-                        expressions: d_datekey (type: bigint)
-                        outputColumnNames: _col0
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
                         Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          key expressions: _col0 (type: bigint)
-                          null sort order: z
-                          sort order: +
-                          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:

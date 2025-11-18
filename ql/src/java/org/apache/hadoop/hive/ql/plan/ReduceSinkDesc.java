@@ -141,6 +141,9 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   // used to decide whether global order is needed
   private transient boolean hasOrderBy = false;
 
+  // used to decide whether topn key optimisation can be applied
+  private transient boolean hasOnlyOrderByLimit = false;
+
   private AcidUtils.Operation writeType;
 
   public ReduceSinkDesc() {
@@ -197,6 +200,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     desc.reduceTraits = reduceTraits.clone();
     desc.setDeduplicated(isDeduplicated);
     desc.setHasOrderBy(hasOrderBy);
+    desc.setHasOnlyOrderByLimit(hasOnlyOrderByLimit);
     desc.outputName = outputName;
     return desc;
   }
@@ -586,6 +590,14 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public void setHasOrderBy(boolean hasOrderBy) {
     this.hasOrderBy = hasOrderBy;
+  }
+
+  public boolean hasOnlyOrderByLimit() {
+    return hasOnlyOrderByLimit;
+  }
+
+  public void setHasOnlyOrderByLimit(boolean hasOnlyOrderByLimit) {
+    this.hasOnlyOrderByLimit = hasOnlyOrderByLimit;
   }
 
   // Use LinkedHashSet to give predictable display order.

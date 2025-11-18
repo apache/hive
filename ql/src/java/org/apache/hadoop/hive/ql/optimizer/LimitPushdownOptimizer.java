@@ -26,6 +26,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -117,18 +118,31 @@ public class LimitPushdownOptimizer extends Transform {
     @Override
     public Object process(Node nd, Stack<Node> stack,
                           NodeProcessorCtx procCtx, Object... nodeOutputs) throws SemanticException {
+      boolean hasOnlyOrderByLimit = true;
       ReduceSinkOperator rs = null;
+      boolean shouldBreak = false;
       for (int i = stack.size() - 2 ; i >= 0; i--) {
         Operator<?> operator = (Operator<?>) stack.get(i);
-        if (operator.getNumChild() != 1) {
-          return false; // multi-GBY single-RS (TODO)
+
+        if (operator instanceof GroupByOperator || operator instanceof JoinOperator) {
+          hasOnlyOrderByLimit = false;
+          if (rs != null) {
+            shouldBreak = true;
+          }
         }
-        if (operator instanceof ReduceSinkOperator) {
-          rs = (ReduceSinkOperator) operator;
+        if (!shouldBreak && rs == null) {
+          if (operator.getNumChild() != 1) {
+            return false; // multi-GBY single-RS (TODO)
+          }
+
+          if (operator instanceof ReduceSinkOperator) {
+            rs = (ReduceSinkOperator) operator;
+          } else if (!operator.acceptLimitPushdown()) {
+            return false;
+          }
+        }
+        if (shouldBreak) {
           break;
-        }
-        if (!operator.acceptLimitPushdown()) {
-          return false;
         }
       }
       if (rs != null) {
@@ -149,6 +163,7 @@ public class LimitPushdownOptimizer extends Transform {
         Integer offset = limitDesc.getOffset();
         rs.getConf().setTopN(limitDesc.getLimit() + ((offset == null) ? 0 : offset));
         rs.getConf().setTopNMemoryUsage(((LimitPushdownContext) procCtx).threshold);
+        rs.getConf().setHasOnlyOrderByLimit(hasOnlyOrderByLimit);
         if (rs.getNumChild() == 1 && rs.getChildren().get(0) instanceof GroupByOperator) {
           rs.getConf().setMapGroupBy(true);
         }
