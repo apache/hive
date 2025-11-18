@@ -148,16 +148,18 @@ select ST_Relate(geom, ST_Polygon(1, 1, 1, 4, 4, 4, 4, 1), '****T****'),
 from geom_binary
 where id = 25;
 
+select ST_AsText(ST_ConvexHull(ST_GeomFromText('multipoint ((0 0), (2 0), (2 2), (0 2), (1 1))')));
 
+SELECT ST_AsText(
+  ST_Union(
+    ST_GeomFromText('polygon ((0 0, 2 0, 2 2, 0 2, 0 0))'),
+    ST_GeomFromText('polygon ((10 10, 12 10, 12 12, 10 12, 10 10))')
+  )
+);
 
-
-
-
-
-
-
-
-
-
-
-
+SELECT ST_AsText(
+  ST_Union(
+    ST_GeomFromText('polygon ((0 0, 5 0, 5 5, 0 5, 0 0))'),
+    ST_GeomFromText('point (2 2)')
+  )
+);
