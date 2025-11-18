@@ -18,7 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Equator;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
@@ -29,6 +30,7 @@ import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -378,8 +380,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * @return <code>false</code> if an ACID file, <code>true</code> if a simple orc file
    */
   public static boolean isOriginal(Reader file) {
-    return !CollectionUtils.isEqualCollection(file.getSchema().getFieldNames(),
-        OrcRecordUpdater.ALL_ACID_ROW_NAMES);
+    return !checkIfAcidRowNamesFilled(file.getSchema().getFieldNames());
   }
 
   /**
@@ -388,8 +389,21 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * @return <code>false</code> if an ACID file, <code>true</code> if a simple orc file
    */
   public static boolean isOriginal(Footer footer) {
-    return !CollectionUtils.isEqualCollection(footer.getTypesList().get(0).getFieldNamesList(),
-        OrcRecordUpdater.ALL_ACID_ROW_NAMES);
+    return !checkIfAcidRowNamesFilled(footer.getTypesList().getFirst().getFieldNamesList());
+  }
+
+  private static boolean checkIfAcidRowNamesFilled(Collection<String> fieldNames) {
+    return CollectionUtils.isEqualCollection(OrcRecordUpdater.ALL_ACID_ROW_NAMES, fieldNames, new Equator<>() {
+      @Override
+      public boolean equate(String s, String t1) {
+        return s.equalsIgnoreCase(t1);
+      }
+
+      @Override
+      public int hash(String s) {
+        return 0;
+      }
+    });
   }
 
   public static boolean[] genIncludedColumns(TypeDescription readerSchema,
