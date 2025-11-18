@@ -3568,6 +3568,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               for (int j = 0; j < grpByAstExprs.size(); j++) {
                 ASTNode grpByExpr = grpByAstExprs.get(j);
                 if (grpByExpr.toStringTree().equals(c.toStringTree())) {
+                  // Add the copy translation for grouping udf keys. This will make sure that same translation as
+                  // group by key is applied on the grouping udf key. If translation is added to group by key
+                  // to add the table name to the column name (tbl.key), then same thing will be done for grouping
+                  // udf keys also.
+                  unparseTranslator.addCopyTranslation(c, grpByExpr);
                   // Create and add AST node with position of grouping function input
                   // in group by clause
                   ASTNode childN = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
