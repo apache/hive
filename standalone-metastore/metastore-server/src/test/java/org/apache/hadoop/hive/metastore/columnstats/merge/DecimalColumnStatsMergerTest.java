@@ -40,16 +40,6 @@ import static org.junit.Assert.assertTrue;
 
 @Category(MetastoreUnitTest.class)
 public class DecimalColumnStatsMergerTest {
-
-  /**
-   * Creates a decimal and checks its string representation.
-   */
-  private static Decimal getDecimal(String expected, int number, int scale) {
-    Decimal d = DecimalUtils.getDecimal(number, scale);
-    assertEquals(expected, MetaStoreServerUtils.decimalToString(d));
-    return d;
-  }
-
   private static final Decimal DECIMAL_1 = getDecimal("1", 1, 0);
   private static final Decimal DECIMAL_3 = getDecimal("3", 3, 0);
   private static final Decimal DECIMAL_5 = getDecimal("5", 5, 0);
@@ -66,6 +56,15 @@ public class DecimalColumnStatsMergerTest {
   }
 
   private final DecimalColumnStatsMerger merger = new DecimalColumnStatsMerger();
+
+  /**
+   * Creates a decimal and checks its string representation.
+   */
+  private static Decimal getDecimal(String expected, int number, int scale) {
+    Decimal d = DecimalUtils.getDecimal(number, scale);
+    assertEquals(expected, MetaStoreServerUtils.decimalToString(d));
+    return d;
+  }
 
   @Test
   public void testMergeNullValues() {
