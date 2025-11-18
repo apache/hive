@@ -84,6 +84,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -527,7 +528,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     // reader that produces nulls. This allows queries to proceed even
     // when new columns have been added after the file was written.
     if (!fileSchema.getColumns().contains(descriptors.get(0))) {
-      return new VectorizedDummyColumnReader(initialDefaults.getOrDefault(descriptors.get(0).getPath()[0], null));
+      return new VectorizedDummyColumnReader(Optional.ofNullable(initialDefaults)
+          .map(defaults -> defaults.getOrDefault(descriptors.get(0).getPath()[0], null)).orElse(null));
     }
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:
