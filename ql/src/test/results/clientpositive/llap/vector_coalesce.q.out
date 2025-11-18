@@ -36,19 +36,15 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: SelectColumnIsNull(col 5:double)
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 6:string, col 2:int, col 4:float, col 1:smallint, IfExprColumnCondExpr(col 14:boolean, col 6:stringcol 21:string)(children: IsNotNull(col 6:string) -> 14:boolean, col 6:string, IfExprCondExprCondExpr(col 15:boolean, col 16:string, col 20:string)(children: IsNotNull(col 2:int) -> 15:boolean, CastLongToString(col 2:int) -> 16:string, IfExprCondExprCondExpr(col 17:boolean, col 18:string, col 19:string)(children: IsNotNull(col 4:float) -> 17:boolean, CastFloatToString(col 4:float) -> 18:string, CastLongToString(col 1:smallint) -> 19:string) -> 20:string) -> 21:string) -> 22:string
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
-                        Select Vectorization:
-                            className: VectorSelectOperator
+                          projectedOutputColumnNums: [6, 2, 4, 1, 22]
+                          selectExpressions: IfExprColumnCondExpr(col 14:boolean, col 6:stringcol 21:string)(children: IsNotNull(col 6:string) -> 14:boolean, col 6:string, IfExprCondExprCondExpr(col 15:boolean, col 16:string, col 20:string)(children: IsNotNull(col 2:int) -> 15:boolean, CastLongToString(col 2:int) -> 16:string, IfExprCondExprCondExpr(col 17:boolean, col 18:string, col 19:string)(children: IsNotNull(col 4:float) -> 17:boolean, CastFloatToString(col 4:float) -> 18:string, CastLongToString(col 1:smallint) -> 19:string) -> 20:string) -> 21:string) -> 22:string
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
                             native: true
-                            projectedOutputColumnNums: [6, 2, 4, 1, 31]
-                            selectExpressions: IfExprColumnCondExpr(col 23:boolean, col 6:stringcol 30:string)(children: IsNotNull(col 6:string) -> 23:boolean, col 6:string, IfExprCondExprCondExpr(col 24:boolean, col 25:string, col 29:string)(children: IsNotNull(col 2:int) -> 24:boolean, CastLongToString(col 2:int) -> 25:string, IfExprCondExprCondExpr(col 26:boolean, col 27:string, col 28:string)(children: IsNotNull(col 4:float) -> 26:boolean, CastFloatToString(col 4:float) -> 27:string, CastLongToString(col 1:smallint) -> 28:string) -> 29:string) -> 30:string) -> 31:string
-                          Reduce Sink Vectorization:
-                              className: VectorReduceSinkObjectHashOperator
-                              native: true
-                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -152,19 +148,15 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: SelectColumnIsNull(col 0:tinyint)
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 5:double, col 2:int, IfExprCondExprColumn(col 17:boolean, col 19:double, col 20:double)(children: ColAndCol(col 14:boolean, col 16:boolean)(children: IsNotNull(col 5:double) -> 14:boolean, IsNotNull(col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 16:boolean) -> 17:boolean, DoubleColAddDoubleColumn(col 5:double, col 18:double)(children: FuncLog2LongToDouble(col 2:int) -> 18:double) -> 19:double, ConstantVectorExpression(val 0.0) -> 20:double) -> 21:double
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
-                        Select Vectorization:
-                            className: VectorSelectOperator
+                          projectedOutputColumnNums: [5, 2, 21]
+                          selectExpressions: IfExprCondExprColumn(col 17:boolean, col 19:double, col 20:double)(children: ColAndCol(col 14:boolean, col 16:boolean)(children: IsNotNull(col 5:double) -> 14:boolean, IsNotNull(col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 16:boolean) -> 17:boolean, DoubleColAddDoubleColumn(col 5:double, col 18:double)(children: FuncLog2LongToDouble(col 2:int) -> 18:double) -> 19:double, ConstantVectorExpression(val 0.0) -> 20:double) -> 21:double
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
                             native: true
-                            projectedOutputColumnNums: [5, 2, 23]
-                            selectExpressions: IfExprCondExprColumn(col 22:boolean, col 18:double, col 15:double)(children: ColAndCol(col 14:boolean, col 16:boolean)(children: IsNotNull(col 5:double) -> 14:boolean, IsNotNull(col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 16:boolean) -> 22:boolean, DoubleColAddDoubleColumn(col 5:double, col 15:double)(children: FuncLog2LongToDouble(col 2:int) -> 15:double) -> 18:double, ConstantVectorExpression(val 0.0) -> 15:double) -> 23:double
-                          Reduce Sink Vectorization:
-                              className: VectorReduceSinkObjectHashOperator
-                              native: true
-                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -378,19 +370,15 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprOrExpr(children: SelectColumnIsNotNull(col 9:timestamp), SelectColumnIsNotNull(col 8:timestamp))
-                      Top N Key Vectorization:
-                          className: VectorTopNKeyOperator
-                          keyExpressions: col 8:timestamp, col 9:timestamp, IfExprTimestampColumnColumn(col 14:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 14:boolean) -> 15:timestamp
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
-                        Select Vectorization:
-                            className: VectorSelectOperator
+                          projectedOutputColumnNums: [8, 9, 15]
+                          selectExpressions: IfExprTimestampColumnColumn(col 14:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 14:boolean) -> 15:timestamp
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
                             native: true
-                            projectedOutputColumnNums: [8, 9, 16]
-                            selectExpressions: IfExprTimestampColumnColumn(col 14:boolean, col 8:timestampcol 9:timestamp)(children: IsNotNull(col 8:timestamp) -> 14:boolean) -> 16:timestamp
-                          Reduce Sink Vectorization:
-                              className: VectorReduceSinkObjectHashOperator
-                              native: true
-                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
