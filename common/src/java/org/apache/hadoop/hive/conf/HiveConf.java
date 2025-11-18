@@ -6551,6 +6551,10 @@ public class HiveConf extends Configuration {
     initialize(cls);
   }
 
+  private HiveConf(Configuration other) {
+    super(other);
+  }
+
   /**
    * Copy constructor
    */
@@ -7298,6 +7302,7 @@ public class HiveConf extends Configuration {
     return ret;
   }
 
+
   public static boolean shouldComputeLineage(HiveConf conf) {
     Collection<String> lineageFilter =
       conf.getTrimmedStringCollection(HiveConf.ConfVars.HIVE_LINEAGE_STATEMENT_FILTER.varname);
@@ -7313,4 +7318,16 @@ public class HiveConf extends Configuration {
       set(e.getKey(), e.getValue());
     }
   }
+
+  /**
+   * Sometimes if the configuration contains all the information we want,
+   * but want to cast it to a HiveConf, without loading the props from the
+   * source file again, which is wasteful and might cost dozens of milliseconds.
+   * @param configuration The original configuration
+   * @return A HiveConf wrapping on the original configuration
+   */
+  public static HiveConf cloneConf(Configuration configuration) {
+    return new HiveConf(configuration);
+  }
+
 }
