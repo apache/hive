@@ -96,6 +96,7 @@ import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FI
 public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   implements RecordReader<NullWritable, VectorizedRowBatch>, RowPositionAwareVectorizedRecordReader {
   public static final Logger LOG = LoggerFactory.getLogger(VectorizedParquetRecordReader.class);
+  private final Map<String, Object> initialDefaults;
 
   private List<Integer> colsToInclude;
 
@@ -154,7 +155,8 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
   }
 
   public VectorizedParquetRecordReader(InputSplit oldInputSplit, JobConf conf, FileMetadataCache metadataCache,
-      DataCache dataCache, Configuration cacheConf, ParquetMetadata parquetMetadata) throws IOException {
+      DataCache dataCache, Configuration cacheConf, ParquetMetadata parquetMetadata,
+      Map<String, Object> initialDefaults) throws IOException {
     super(conf, oldInputSplit);
     try {
       this.metadataCache = metadataCache;
@@ -188,6 +190,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
       }
       initPartitionValues(fileSplit, conf);
       bucketIdentifier = BucketIdentifier.from(conf, filePath);
+      this.initialDefaults = initialDefaults;
     } catch (Throwable e) {
       LOG.error("Failed to create the vectorized reader due to exception " + e);
       throw new RuntimeException(e);
@@ -196,7 +199,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
 
   public VectorizedParquetRecordReader(InputSplit oldInputSplit, JobConf conf, FileMetadataCache metadataCache,
       DataCache dataCache, Configuration cacheConf) throws IOException {
-    this(oldInputSplit, conf, metadataCache, dataCache, cacheConf, null);
+    this(oldInputSplit, conf, metadataCache, dataCache, cacheConf, null, null);
   }
 
   private void initPartitionValues(FileSplit fileSplit, JobConf conf) throws IOException {
@@ -524,7 +527,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     // reader that produces nulls. This allows queries to proceed even
     // when new columns have been added after the file was written.
     if (!fileSchema.getColumns().contains(descriptors.get(0))) {
-      return new VectorizedDummyColumnReader();
+      return new VectorizedDummyColumnReader(initialDefaults.getOrDefault(descriptors.get(0).getPath()[0], null));
     }
     switch (typeInfo.getCategory()) {
     case PRIMITIVE:

@@ -14,6 +14,7 @@
 package org.apache.hadoop.hive.ql.io.parquet;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.DataCache;
@@ -40,6 +41,7 @@ public class VectorizedParquetInputFormat
   private DataCache dataCache = null;
   private Configuration cacheConf = null;
   private ParquetMetadata metadata;
+  private Map<String, Object> initialDefaults;
 
   public VectorizedParquetInputFormat() {
   }
@@ -50,11 +52,15 @@ public class VectorizedParquetInputFormat
     JobConf jobConf,
     Reporter reporter) throws IOException {
     return new VectorizedParquetRecordReader(
-        inputSplit, jobConf, metadataCache, dataCache, cacheConf, metadata);
+        inputSplit, jobConf, metadataCache, dataCache, cacheConf, metadata, initialDefaults);
   }
 
   public void setMetadata(ParquetMetadata metadata) throws IOException {
     this.metadata = metadata;
+  }
+  
+    public void seInitialColumnDefaults(Map<String, Object> initialDefaults) throws IOException {
+    this.initialDefaults = initialDefaults;
   }
 
   @Override
