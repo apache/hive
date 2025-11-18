@@ -120,7 +120,8 @@ public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
       info.retryRetention = rs.getInt(9);
       info.nextTxnId = rs.getLong(10);
       if (TxnHandler.ConfVars.useMinHistoryWriteId()) {
-        info.minOpenWriteId = rs.getLong(11);
+        long value = rs.getLong(11);
+        info.minOpenWriteId = !rs.wasNull() ? value : Long.MAX_VALUE;
       }
       infos.add(info);
     }

@@ -34,7 +34,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@emps
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ename=[$0], birth_epoch_secs=[$1])
+HiveProject(emps.ename=[$0], emps.birth_epoch_secs=[$1])
   HiveFilter(condition=[<=(CAST($1):BIGINT, 1746205503)])
     HiveTableScan(table=[[default, emps]], table:alias=[emps])
 

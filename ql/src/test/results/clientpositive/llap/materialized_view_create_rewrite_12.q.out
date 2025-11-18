@@ -190,7 +190,8 @@ POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveProject(a=[$0])
+  HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: SELECT a
 FROM t1

@@ -113,7 +113,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE db1_ext_auth1
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -133,7 +133,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE db1_ext_auth1
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -153,7 +153,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE db2_ext_auth2
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user2",
                 "hive.sql.dbcp.password" = "passwd2",
@@ -173,7 +173,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE db2_ext_auth2
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user2",
                 "hive.sql.dbcp.password" = "passwd2",
@@ -193,7 +193,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE db1_ext_auth2
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -213,7 +213,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE db1_ext_auth2
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
 #### A masked pattern was here ####
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
@@ -420,7 +420,7 @@ POSTHOOK: Input: default@db1_ext_auth2
 #### A masked pattern was here ####
 -20	-20	-20.0	-20.0	-20	8	9.0	11.0
 20	20	20.0	20.0	20	20	20.0	20.0
-Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
 PREHOOK: type: QUERY
@@ -512,7 +512,7 @@ FROM "EXTERNAL_JDBC_SIMPLE_DERBY2_TABLE1"
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[10][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[9][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT db1_ext_auth1.ikey, b.ikey * 2 FROM db1_ext_auth1 JOIN (SELECT * FROM db1_ext_auth1) b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@db1_ext_auth1

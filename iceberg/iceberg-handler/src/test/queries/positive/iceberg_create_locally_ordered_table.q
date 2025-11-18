@@ -41,4 +41,3 @@ select * from ice_orc_sorted;
 
 drop table ice_orc;
 drop table ice_orc_sorted;
-

@@ -21,11 +21,8 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.MergeTaskProperties;
-import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.mr.Catalogs;
@@ -45,25 +42,14 @@ public class IcebergMergeTaskProperties implements MergeTaskProperties {
 
   @Override
   public Properties getSplitProperties() throws IOException {
-    List<JobContext> jobContextList = getJobContexts(properties);
+    List<JobContext> jobContextList = HiveIcebergOutputCommitter.getJobContexts(properties);
     if (jobContextList.isEmpty()) {
       return null;
     }
-    List<ContentFile<?>> contentFiles = HiveIcebergOutputCommitter.getInstance().getOutputContentFiles(jobContextList);
+    List<ContentFile<?>> contentFiles = HiveIcebergOutputCommitter.getOutputContentFiles(jobContextList);
     Properties pathToContentFile = new Properties();
     contentFiles.forEach(contentFile ->
-        pathToContentFile.put(new Path(String.valueOf(contentFile.path())), contentFile));
+        pathToContentFile.put(new Path(contentFile.location()), contentFile));
     return pathToContentFile;
-  }
-
-  static List<JobContext> getJobContexts(Properties properties) {
-    String tableName = properties.getProperty(Catalogs.NAME);
-    String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
-    Configuration configuration = SessionState.getSessionConf();
-
-    return HiveIcebergOutputCommitter.generateJobContext(configuration, tableName, snapshotRef)
-      .stream()
-      .map(TezUtil::enrichContextWithVertexId)
-      .collect(Collectors.toList());
   }
 }

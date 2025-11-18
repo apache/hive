@@ -26,7 +26,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
-import javax.security.auth.login.LoginException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -72,7 +71,7 @@ public class SampleTezSessionState extends WmTezSession {
   }
 
   @Override
-  public void open() throws LoginException, IOException {
+  public void open() throws IOException {
     UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
     this.doAsEnabled = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
@@ -80,12 +79,12 @@ public class SampleTezSessionState extends WmTezSession {
   }
 
   @Override
-  public void open(HiveResources resources) throws LoginException, IOException {
+  public void open(HiveResources resources) throws IOException {
     open();
   }
 
   @Override
-  public void open(String[] additionalFiles) throws IOException, LoginException {
+  public void open(String[] additionalFiles) throws IOException {
     open();
   }
 

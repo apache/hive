@@ -398,6 +398,7 @@ public final class TypeInfoUtils {
             && !serdeConstants.MAP_TYPE_NAME.equals(t.text)
             && !serdeConstants.STRUCT_TYPE_NAME.equals(t.text)
             && !serdeConstants.UNION_TYPE_NAME.equals(t.text)
+            && !serdeConstants.VARIANT_TYPE_NAME.equals(t.text)
             && null == PrimitiveObjectInspectorUtils
             .getTypeEntryFromTypeName(t.text)
             && !t.text.equals(alternative)) {
@@ -566,6 +567,11 @@ public final class TypeInfoUtils {
         } while (true);
 
         return TypeInfoFactory.getUnionTypeInfo(objectTypeInfos);
+      }
+
+      // Is this a variant type?
+      if (serdeConstants.VARIANT_TYPE_NAME.equals(t.text)) {
+        return TypeInfoFactory.getVariantTypeInfo();
       }
 
       throw new RuntimeException("Internal error parsing position "

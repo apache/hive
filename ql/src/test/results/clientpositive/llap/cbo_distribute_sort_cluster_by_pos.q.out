@@ -18,7 +18,7 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortExchange(distribution=[hash[1]], collation=[[]])
-  HiveProject(a=[$0], b=[$1], c=[$2])
+  HiveProject(t1.a=[$0], t1.b=[$1], t1.c=[$2])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain
@@ -93,7 +93,7 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortExchange(distribution=[hash[0, 1]], collation=[[1]])
-  HiveProject(a=[$0], b=[$1], c=[$2])
+  HiveProject(t1.a=[$0], t1.b=[$1], t1.c=[$2])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain
@@ -169,7 +169,7 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortExchange(distribution=[hash[0, 1]], collation=[[0 ASC-nulls-first, 1 ASC-nulls-first]])
-  HiveProject(a=[$0], b=[$1], c=[$2])
+  HiveProject(t1.a=[$0], t1.b=[$1], t1.c=[$2])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain

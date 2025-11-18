@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -248,11 +246,7 @@ public class HiveMetaStoreUtils {
         }
       }
     }
-    try {
-      return hiveClientCache.get(hiveConf);
-    } catch (LoginException e) {
-      throw new IOException("Couldn't create hiveMetaStoreClient, Error getting UGI for user", e);
-    }
+    return hiveClientCache.get(hiveConf);
   }
 
 }

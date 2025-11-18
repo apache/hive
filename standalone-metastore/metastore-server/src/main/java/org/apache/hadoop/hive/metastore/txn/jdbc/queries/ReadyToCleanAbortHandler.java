@@ -113,7 +113,7 @@ public class ReadyToCleanAbortHandler implements QueryHandler<List<CompactionInf
         info.partName = rs.getString("PART");
         // In this case, this field contains min open write txn ID.
         long value = rs.getLong("MIN_OPEN_WRITE_TXNID");
-        info.minOpenWriteTxnId = value > 0 ? value : Long.MAX_VALUE;
+        info.minOpenWriteTxnId = !rs.wasNull() ? value : Long.MAX_VALUE;
         // The specific type, state assigned to abort cleanup.
         info.type = CompactionType.ABORT_TXN_CLEANUP;
         info.state = READY_FOR_CLEANING;

@@ -279,7 +279,7 @@ public class SQLAuthorizationUtils {
     case TABLE_OR_VIEW: {
       Table thriftTableObj = null;
       try {
-        thriftTableObj = metastoreClient.getTable(hivePrivObject.getDbname(),
+        thriftTableObj = metastoreClient.getTable(hivePrivObject.getCatName(), hivePrivObject.getDbname(),
             hivePrivObject.getObjectName());
       } catch (Exception e) {
         throwGetObjErr(e, hivePrivObject);

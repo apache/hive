@@ -225,7 +225,6 @@ public class MetastoreConf {
       ConfVars.HMS_HANDLER_ATTEMPTS,
       ConfVars.HMS_HANDLER_INTERVAL,
       ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF,
-      ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
       ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS,
       ConfVars.USERS_IN_ADMIN_ROLE,
       ConfVars.HIVE_TXN_MANAGER,
@@ -244,18 +243,26 @@ public class MetastoreConf {
       ConfVars.AGGREGATE_STATS_CACHE_MAX_READER_WAIT,
       ConfVars.AGGREGATE_STATS_CACHE_MAX_FULL,
       ConfVars.AGGREGATE_STATS_CACHE_CLEAN_UNTIL,
-      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       ConfVars.FILE_METADATA_THREADS,
       ConfVars.METASTORE_CLIENT_FILTER_ENABLED,
       ConfVars.METASTORE_SERVER_FILTER_ENABLED,
       ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN,
-      ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN
+      ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN,
+      // Add metaConfVars here as well
+      ConfVars.TRY_DIRECT_SQL,
+      ConfVars.TRY_DIRECT_SQL_DDL,
+      ConfVars.CLIENT_SOCKET_TIMEOUT,
+      ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
+      ConfVars.PARTITION_ORDER_EXPR,
+      ConfVars.CAPABILITY_CHECK,
+      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
+      ConfVars.EXPRESSION_PROXY_CLASS
   };
 
   /**
    * User configurable Metastore vars
    */
-  private static final MetastoreConf.ConfVars[] metaConfVars = {
+  public static final MetastoreConf.ConfVars[] metaConfVars = {
       ConfVars.TRY_DIRECT_SQL,
       ConfVars.TRY_DIRECT_SQL_DDL,
       ConfVars.CLIENT_SOCKET_TIMEOUT,
@@ -697,7 +704,7 @@ public class MetastoreConf {
             "hive.compactor.connectionPool.maxPoolSize", 5,
             "Specify the maximum number of connections in the connection pool used by the compactor."),
     CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
-        "javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
+        "javax.jdo.option.ConnectionDriverName", "org.apache.derby.iapi.jdbc.AutoloadedDriver",
         "Driver class name for a JDBC metastore"),
     CONNECTION_POOLING_MAX_CONNECTIONS("datanucleus.connectionPool.maxPoolSize",
         "datanucleus.connectionPool.maxPoolSize", 10,
@@ -906,8 +913,6 @@ public class MetastoreConf {
         org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl.class.getName(),
         "Metastore hook class for filtering the metadata read results. If hive.security.authorization.manager"
             + "is set to instance of HiveAuthorizerFactory, then this value is ignored."),
-    FS_HANDLER_CLS("metastore.fs.handler.class", "hive.metastore.fs.handler.class",
-        "org.apache.hadoop.hive.metastore.HiveMetaStoreFsImpl", ""),
     FS_HANDLER_THREADS_COUNT("metastore.fshandler.threads", "hive.metastore.fshandler.threads", 15,
         "Number of threads to be allocated for metastore handler for fs operations."),
     HMS_HANDLER_ATTEMPTS("metastore.hmshandler.retry.attempts", "hive.hmshandler.retry.attempts", 10,
@@ -983,8 +988,8 @@ public class MetastoreConf {
                 "  NOSASL:  Raw transport" +
                 "  JWT:  JSON Web Token authentication via JWT token. Only supported in Http/Https mode"),
     THRIFT_METASTORE_AUTHENTICATION_JWT_JWKS_URL("metastore.authentication.jwt.jwks.url",
-        "hive.metastore.authentication.jwt.jwks.url", "", "File URL from where URLBasedJWKSProvider "
-        + "in metastore server will try to load JWKS to match a JWT sent in HTTP request header. Used only when "
+        "hive.metastore.authentication.jwt.jwks.url", "", "File URL from where "
+        + "metastore server will try to load JWKS to match a JWT sent in HTTP request header. Used only when "
         + "Hive metastore server is running in JWT auth mode"),
     METASTORE_CUSTOM_AUTHENTICATION_CLASS("metastore.custom.authentication.class",
             "hive.metastore.custom.authentication.class",
@@ -1265,7 +1270,8 @@ public class MetastoreConf {
       "Similarly if partition object exists in metastore and partition location does not exist, partition object\n" +
       "will be dropped. The second piece in partition management is retention period. When 'discover.partition'\n" +
       "is set to true and if 'partition.retention.period' table property is defined, partitions that are older\n" +
-      "than the specified retention period will be automatically dropped from metastore along with the data."),
+      "than the specified retention period will be automatically dropped from metastore along with the data.\n" +
+      "Set this value to 0 inorder to disable Partition Management Task"),
     PARTITION_MANAGEMENT_TABLE_TYPES("metastore.partition.management.table.types",
       "metastore.partition.management.table.types", "MANAGED_TABLE,EXTERNAL_TABLE",
       "Comma separated list of table types to use for partition management"),
@@ -1303,6 +1309,14 @@ public class MetastoreConf {
             + "  seqprefix: adds a 'N_' prefix to the table name to get a unique location (table,1_table,2_table,...)\n"
             + "  prohibit: do not consider alternate locations; throw error if the default is not available\n"
             + "  force: use the default location even in case the directory is already available"),
+    METASTORE_S4U_NOWAIT_MAX_RETRIES("metastore.s4u.nowait.max.retries",
+        "hive.metastore.s4u.nowait.max.retries", 100,
+        "Number of retries required to acquire a row lock immediately without waiting."),
+    METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL(
+        "metastore.s4u.nowait.retry.sleep.interval",
+        "hive.metastore.s4u.nowait.retry.sleep.interval", 300, TimeUnit.MILLISECONDS,
+        "Sleep interval between retries to acquire a row lock immediately described part of property "
+            + METASTORE_S4U_NOWAIT_MAX_RETRIES.name()),
 
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
         "Set this to true if multiple threads access metastore through JDO concurrently."),
@@ -1676,10 +1690,11 @@ public class MetastoreConf {
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
     TXN_OPENTXN_TIMEOUT("metastore.txn.opentxn.timeout", "hive.txn.opentxn.timeout", 1000, TimeUnit.MILLISECONDS,
         "Time before an open transaction operation should persist, otherwise it is considered invalid and rolled back"),
+    @Deprecated
     TXN_USE_MIN_HISTORY_LEVEL("metastore.txn.use.minhistorylevel", "hive.txn.use.minhistorylevel", true,
         "Set this to false, for the TxnHandler and Cleaner to not use MIN_HISTORY_LEVEL table and take advantage of openTxn optimisation.\n"
             + "If the table is dropped HMS will switch this flag to false, any other value changes need a restart to take effect."),
-    TXN_USE_MIN_HISTORY_WRITE_ID("metastore.txn.use.minhistorywriteid", "hive.txn.use.minhistorywriteid", false,
+    TXN_USE_MIN_HISTORY_WRITE_ID("metastore.txn.use.minhistorywriteid", "hive.txn.use.minhistorywriteid", true,
       "Set this to true, to avoid global minOpenTxn check in Cleaner.\n"
             + "If the table is dropped HMS will switch this flag to false."),
     LOCK_NUMRETRIES("metastore.lock.numretries", "hive.lock.numretries", 100,
@@ -1775,16 +1790,6 @@ public class MetastoreConf {
         "Batch size for partition and other object retrieval from the underlying DB in JDO.\n" +
         "The JDO implementation such as DataNucleus may run into issues when the generated queries are\n" +
         "too large. Use this parameter to break the query into multiple batches. -1 means no batching."),
-    /**
-     * @deprecated Deprecated due to HIVE-26443
-     */
-    @Deprecated
-    HIVE_METASTORE_RUNWORKER_IN("hive.metastore.runworker.in",
-        "hive.metastore.runworker.in", "hs2", new StringSetValidator("metastore", "hs2"),
-        "Deprecated. HMS side compaction workers doesn't support pooling. With the concept of compaction " +
-            "pools (HIVE-26443), running workers on HMS side is still supported but not suggested anymore. " +
-            "This config value will be removed in the future.\n" +
-            "Chooses where the compactor worker threads should run, Only possible values are \"metastore\" and \"hs2\""),
     // Hive values we have copied and use as is
     // These two are used to indicate that we are running tests
     HIVE_IN_TEST("hive.in.test", "hive.in.test", false, "internal usage only, true in test mode"),
@@ -1822,6 +1827,10 @@ public class MetastoreConf {
             "A ZooKeeper instance must be up and running when using zookeeper Hive lock manager "),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
+    MSCK_SMALLFILES_AVG_SIZE("metastore.msck.smallfiles.avgsize", "metastore.msck.smallfiles.avgsize", (long) (16 * 1000 * 1000),
+            "When the average files size of a table/partition is less than this number, in msck command process, if total number\n" +
+                    "of files is greater than 100, the small files warnings will be shown to the end users in console, and\n" +
+                    "also recorded in the logs."),
 
     // External RDBMS support
     USE_CUSTOM_RDBMS("metastore.use.custom.database.product",
@@ -1872,8 +1881,56 @@ public class MetastoreConf {
             " positive value will be used as-is."
     ),
     CATALOG_SERVLET_AUTH("metastore.catalog.servlet.auth",
-        "hive.metastore.catalog.servlet.auth", "jwt", new StringSetValidator("none", "simple", "jwt"),
-        "HMS Catalog servlet authentication method (none, simple, or jwt)."
+        "hive.metastore.catalog.servlet.auth", "jwt", new StringSetValidator("none", "simple", "jwt", "oauth2"),
+        "HMS Catalog servlet authentication method (none, simple, jwt, or oauth2)."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_ISSUER("metastore.catalog.servlet.auth.oauth2.issuer",
+        "hive.metastore.catalog.servlet.auth.oauth2.issuer", "",
+        "The authorization server's identifier, which is a URL. This is required when you use " +
+        "metastore.catalog.servlet.auth=oauth2"
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_AUDIENCE("metastore.catalog.servlet.auth.oauth2.audience",
+        "hive.metastore.catalog.servlet.auth.oauth2.audience", "",
+        "The acceptable name in the audience(aud) claim. This is required when you use " +
+        "metastore.catalog.servlet.auth=oauth2"
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_VALIDATION_METHOD("metastore.catalog.servlet.auth.oauth2.validation.method",
+        "hive.metastore.catalog.servlet.auth.oauth2.validation.method", "jwt",
+        new StringSetValidator("jwt", "introspection"),
+        "How to evaluate an access token. When your authorization server issues opaque tokens or you need " +
+        "to consider additional security requirements such as token revocations, use introspection."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_ID("metastore.catalog.servlet.auth.oauth2.client.id",
+        "hive.metastore.catalog.servlet.auth.oauth2.client.id", "",
+        "The client ID to authenticate HMS, as a resource server, to the introspection endpoint. This is required to " +
+        "use metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_CLIENT_SECRET("metastore.catalog.servlet.auth.oauth2.client.secret",
+        "hive.metastore.catalog.servlet.auth.oauth2.client.secret", "",
+        "The client secret to authenticate HMS, as a resource server, to the introspection endpoint. This is " +
+        "required to use metastore.catalog.servlet.auth.oauth2.validation.method=introspection."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_INTROSPECTION_CACHE_EXPIRY(
+        "metastore.catalog.servlet.auth.oauth2.introspection.cache.expiry",
+        "hive.metastore.catalog.servlet.auth.oauth2.introspection.cache.expiry", 60, TimeUnit.SECONDS,
+        "The expiry time of the token introspection cache. Set to 0 to disable caching."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_INTROSPECTION_CACHE_SIZE(
+        "metastore.catalog.servlet.auth.oauth2.introspection.cache.num",
+        "hive.metastore.catalog.servlet.auth.oauth2.introspection.cache.num", 1000L,
+        "The number of entries of the token introspection cache."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_PRINCIPAL_MAPPER_REGEX_FIELD(
+        "metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.field",
+        "hive.metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.field", "sub",
+        "The claim name including a username. This is effective when you use RegexPrincipalMapper. For example, if " +
+            "you want to resolve a user name from the email claim, set this to email."
+    ),
+    CATALOG_SERVLET_AUTH_OAUTH2_PRINCIPAL_MAPPER_REGEX_PATTERN(
+        "metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.pattern",
+        "hive.metastore.catalog.servlet.auth.oauth2.principal.mapper.regex.username.pattern", "(.*)",
+        "The pattern to extract a user name. This is effective when you use RegexPrincipalMapper. For example, if " +
+        "you want to extract a user name from the local part of the email claim, set this to (.*)@example.com."
     ),
     ICEBERG_CATALOG_SERVLET_PATH("metastore.iceberg.catalog.servlet.path",
         "hive.metastore.iceberg.catalog.servlet.path", "iceberg",

@@ -33,7 +33,7 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(id=[$0], $f0=[$1])
+  HiveProject(id=[$0], _c1=[$1])
     HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
       HiveProject(id=[$0])
         HiveTableScan(table=[[default, t2]], table:alias=[t2])
@@ -66,7 +66,7 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(id=[$0], $f0=[$1])
+  HiveProject(id=[$0], _c1=[$1])
     HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
       HiveProject(id=[$0])
         HiveTableScan(table=[[default, t2]], table:alias=[t2])
@@ -99,7 +99,7 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(id=[$0], $f0=[$1])
+  HiveProject(id=[$0], _c1=[$1])
     HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
       HiveProject(id=[$0])
         HiveTableScan(table=[[default, t2]], table:alias=[t2])

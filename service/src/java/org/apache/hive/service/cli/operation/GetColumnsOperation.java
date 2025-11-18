@@ -234,7 +234,7 @@ public class GetColumnsOperation extends MetadataOperation {
     List<HivePrivilegeObject> privObjs = new ArrayList<>();
     for (Entry<String, List<String>> dbTabs : db2Tabs.entrySet()) {
       for (String tabName : dbTabs.getValue()) {
-        privObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, dbTabs.getKey(),
+        privObjs.add(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, catalogName, dbTabs.getKey(),
             tabName));
       }
     }

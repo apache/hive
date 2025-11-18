@@ -83,7 +83,7 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveProject(a=[$0], b=[$1], c=[null:INTEGER], d=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"])
+HiveProject(t1.a=[$0], t1.b=[$1], s.c=[null:INTEGER], s.d=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"])
   HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: select * from t1
@@ -181,7 +181,7 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveProject(a=[null:INTEGER], b=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"], c=[$0], d=[$1])
+HiveProject(s.a=[null:INTEGER], s.b=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"], t2.c=[$0], t2.d=[$1])
   HiveTableScan(table=[[default, t2]], table:alias=[t2])
 
 PREHOOK: query: select * from (select a, b from t1 where 0=1) s
@@ -248,7 +248,7 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveProject(a=[null:INTEGER], b=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"], c=[$0], d=[$1])
+HiveProject(s.a=[null:INTEGER], s.b=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"], t2.c=[$0], t2.d=[$1])
   HiveTableScan(table=[[default, t2]], table:alias=[t2])
 
 PREHOOK: query: select * from (select a, b from t1 where 0=1) s
@@ -284,7 +284,7 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveProject(a=[$0], b=[$1], c=[null:INTEGER], d=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"])
+HiveProject(t1.a=[$0], t1.b=[$1], s.c=[null:INTEGER], s.d=[null:VARCHAR(10) CHARACTER SET "UTF-16LE"])
   HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: select * from t1
@@ -349,7 +349,7 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveProject(a=[$0])
+HiveProject(t1.a=[$0])
   HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: select t1.a from t1 left join (select c, d from t2 where 1=0) s on s.c = t1.a where s.c is null

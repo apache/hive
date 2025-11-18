@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorContext;
 import org.apache.hadoop.mapred.JobConf;
@@ -85,6 +86,7 @@ import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.WriterRegistry;
 import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
+import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -103,14 +105,9 @@ import org.slf4j.LoggerFactory;
 public class HiveIcebergOutputCommitter extends OutputCommitter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergOutputCommitter.class);
 
+  private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
   private static final String FOR_COMMIT_EXTENSION = ".forCommit";
-  private static final String CONFLICT_DETECTION_FILTER_MSG = "Conflict detection Filter Expression: {}";
-
-  private static final HiveIcebergOutputCommitter OUTPUT_COMMITTER = new HiveIcebergOutputCommitter();
-
-  public static HiveIcebergOutputCommitter getInstance() {
-    return OUTPUT_COMMITTER;
-  }
+  private static final String CONFLICT_DETECTION_FILTER = "Conflict detection Filter Expression: {}";
 
   private ExecutorService workerPool;
 
@@ -143,7 +140,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     TaskAttemptID attemptID = context.getTaskAttemptID();
     JobConf jobConf = context.getJobConf();
     Set<Path> mergedPaths = getCombinedLocations(jobConf);
-    Set<String> outputs = HiveIcebergStorageHandler.outputTables(context.getJobConf());
+    Set<String> outputs = outputTables(context.getJobConf());
 
     Map<String, List<HiveIcebergWriter>> writers = Optional.ofNullable(WriterRegistry.writers(attemptID))
         .orElseGet(() -> {
@@ -160,7 +157,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .throwFailureWhenFinished()
           .executeWith(tableExecutor)
           .run(output -> {
-            Table table = HiveIcebergStorageHandler.table(context.getJobConf(), output);
+            Table table = HiveTableUtil.deserializeTable(context.getJobConf(), output);
             if (table != null) {
               String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
                   attemptID.getJobID(), attemptID.getTaskID().getId());
@@ -168,6 +165,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                 List<DataFile> dataFiles = Lists.newArrayList();
                 List<DeleteFile> deleteFiles = Lists.newArrayList();
                 List<DataFile> replacedDataFiles = Lists.newArrayList();
+                List<DeleteFile> rewrittenDeleteFiles = Lists.newArrayList();
                 Set<CharSequence> referencedDataFiles = Sets.newHashSet();
 
                 for (HiveIcebergWriter writer : writers.get(output)) {
@@ -176,10 +174,11 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                   deleteFiles.addAll(files.deleteFiles());
                   replacedDataFiles.addAll(files.replacedDataFiles());
                   referencedDataFiles.addAll(files.referencedDataFiles());
+                  rewrittenDeleteFiles.addAll(files.rewrittenDeleteFiles());
                 }
                 createFileForCommit(
-                    new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedPaths),
-                    fileForCommitLocation, table.io());
+                    new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles,
+                        rewrittenDeleteFiles, mergedPaths), fileForCommitLocation, table.io());
               } else {
                 LOG.info("CommitTask found no writer for specific table: {}, attemptID: {}", output, attemptID);
                 createFileForCommit(FilesForCommit.empty(), fileForCommitLocation, table.io());
@@ -236,19 +235,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   /**
-   * Wrapper class for storing output {@link Table} and it's context for committing changes:
-   * JobContext, CommitInfo.
-   */
-  private static class OutputTable {
-    private final String catalogName;
-    private final String tableName;
-    private final Table table;
-
-    private OutputTable(String catalogName, String tableName, Table table) {
-      this.catalogName = catalogName;
-      this.tableName = tableName;
-      this.table = table;
-    }
+     * Wrapper class for storing output {@link Table} and it's context for committing changes:
+     * JobContext, CommitInfo.
+     */
+  private record OutputTable(String catalogName, String tableName, Table table) {
 
     @Override
     public boolean equals(Object o) {
@@ -279,18 +269,16 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .map(TezUtil::enrichContextWithVertexId)
         .collect(Collectors.toList());
     Multimap<OutputTable, JobContext> outputs = collectOutputs(jobContextList);
-    JobConf jobConf = jobContextList.get(0).getJobConf();
+    JobConf jobConf = jobContextList.getFirst().getJobConf();
     long startTime = System.currentTimeMillis();
 
     String ids = jobContextList.stream()
         .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
     LOG.info("Committing job(s) {} has started", ids);
 
-    ExecutorService fileExecutor = fileExecutor(jobConf);
-    ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size());
-
     Collection<String> jobLocations = new ConcurrentLinkedQueue<>();
-    try {
+    try (ExecutorService fileExecutor = fileExecutor(jobConf);
+         ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size())) {
       // Commits the changes for the output tables in parallel
       Tasks.foreach(outputs.keySet())
           .throwFailureWhenFinished()
@@ -307,31 +295,25 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
       // Cleanup any merge input files.
       cleanMergeTaskInputFiles(jobContextList, fileExecutor);
-    } finally {
-      fileExecutor.shutdown();
-      if (tableExecutor != null) {
-        tableExecutor.shutdown();
-      }
     }
 
     LOG.info("Commit took {} ms for job(s) {}", System.currentTimeMillis() - startTime, ids);
-
     for (JobContext jobContext : jobContextList) {
       cleanup(jobContext, jobLocations);
     }
   }
 
-  private Multimap<OutputTable, JobContext> collectOutputs(List<JobContext> jobContextList) {
+  private static Multimap<OutputTable, JobContext> collectOutputs(List<JobContext> jobContextList) {
     Multimap<OutputTable, JobContext> outputs =
         Multimaps.newListMultimap(Maps.newHashMap(), Lists::newArrayList);
     for (JobContext jobContext : jobContextList) {
-      for (String output : HiveIcebergStorageHandler.outputTables(jobContext.getJobConf())) {
+      for (String output : outputTables(jobContext.getJobConf())) {
         Table table = SessionStateUtil.getResource(jobContext.getJobConf(), output)
             .filter(o -> o instanceof Table).map(o -> (Table) o)
             // fall back to getting the serialized table from the config
-            .orElseGet(() -> HiveIcebergStorageHandler.table(jobContext.getJobConf(), output));
+            .orElseGet(() -> HiveTableUtil.deserializeTable(jobContext.getJobConf(), output));
         if (table != null) {
-          String catalogName = HiveIcebergStorageHandler.catalogName(jobContext.getJobConf(), output);
+          String catalogName = catalogName(jobContext.getJobConf(), output);
           outputs.put(new OutputTable(catalogName, output, table), jobContext);
         } else {
           LOG.info("Found no table object in QueryState or conf for: {}. Skipping job commit.", output);
@@ -358,7 +340,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .map(TezUtil::enrichContextWithVertexId)
         .collect(Collectors.toList());
     Multimap<OutputTable, JobContext> outputs = collectOutputs(jobContextList);
-    JobConf jobConf = jobContextList.get(0).getJobConf();
+    JobConf jobConf = jobContextList.getFirst().getJobConf();
 
     String ids = jobContextList.stream()
         .map(jobContext -> jobContext.getJobID().toString()).collect(Collectors.joining(","));
@@ -373,7 +355,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       Tasks.foreach(outputs.keySet())
           .suppressFailureWhenFinished()
           .executeWith(tableExecutor)
-          .onFailure((output, exc) -> LOG.warn("Failed cleanup table {} on abort job", output, exc))
+          .onFailure((output, ex) -> LOG.warn("Failed cleanup table {} on abort job", output, ex))
           .run(output -> {
             for (JobContext jobContext : outputs.get(output)) {
               LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
@@ -390,8 +372,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
                   .retry(3)
                   .suppressFailureWhenFinished()
                   .executeWith(fileExecutor)
-                  .onFailure((file, exc) -> LOG.warn("Failed to remove data file {} on abort job", file.path(), exc))
-                  .run(file -> table.io().deleteFile(file.path().toString()));
+                  .onFailure((file, ex) -> LOG.warn("Failed to remove data file {} on abort job", file.location(), ex))
+                  .run(file -> table.io().deleteFile(file.location()));
             }
           }, IOException.class);
     } finally {
@@ -402,7 +384,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
 
     LOG.info("Job(s) {} are aborted. Data file cleaning finished", ids);
-
     for (JobContext jobContext : jobContextList) {
       cleanup(jobContext, jobLocations);
     }
@@ -417,7 +398,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @return The set of forCommit files under the job location
    * @throws IOException if the listing fails
    */
-  private Set<FileStatus> listForCommits(JobConf jobConf, String jobLocation) throws IOException {
+  private static Set<FileStatus> listForCommits(JobConf jobConf, String jobLocation) throws IOException {
     Path path = new Path(jobLocation);
     LOG.debug("Listing job location to get commitTask manifest files for abort: {}", jobLocation);
     FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
@@ -447,6 +428,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     List<DataFile> dataFiles = Lists.newArrayList();
     List<DeleteFile> deleteFiles = Lists.newArrayList();
     List<DataFile> replacedDataFiles = Lists.newArrayList();
+    List<DeleteFile> rewrittenDeleteFiles = Lists.newArrayList();
     Set<CharSequence> referencedDataFiles = Sets.newHashSet();
     Set<Path> mergedAndDeletedFiles = Sets.newHashSet();
 
@@ -488,15 +470,17 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       deleteFiles.addAll(writeResults.deleteFiles());
       replacedDataFiles.addAll(writeResults.replacedDataFiles());
       referencedDataFiles.addAll(writeResults.referencedDataFiles());
+      rewrittenDeleteFiles.addAll(writeResults.rewrittenDeleteFiles());
 
       mergedAndDeletedFiles.addAll(writeResults.mergedAndDeletedFiles());
     }
 
-    dataFiles.removeIf(dataFile -> mergedAndDeletedFiles.contains(new Path(String.valueOf(dataFile.path()))));
-    deleteFiles.removeIf(deleteFile -> mergedAndDeletedFiles.contains(new Path(String.valueOf(deleteFile.path()))));
+    dataFiles.removeIf(dataFile -> mergedAndDeletedFiles.contains(new Path(dataFile.location())));
+    deleteFiles.removeIf(deleteFile -> mergedAndDeletedFiles.contains(new Path(deleteFile.location())));
 
-    FilesForCommit filesForCommit = new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles,
-        Collections.emptySet());
+    FilesForCommit filesForCommit =
+        new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, rewrittenDeleteFiles,
+            Collections.emptySet());
     long startTime = System.currentTimeMillis();
 
     if (Operation.IOW != operation) {
@@ -562,7 +546,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         write.validateFromSnapshot(snapshotId);
       }
       if (filterExpr != null) {
-        LOG.debug(CONFLICT_DETECTION_FILTER_MSG, filterExpr);
+        LOG.debug(CONFLICT_DETECTION_FILTER, filterExpr);
         write.conflictDetectionFilter(filterExpr);
       }
       write.validateNoConflictingData();
@@ -583,6 +567,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       RowDelta write = table.newRowDelta();
       results.dataFiles().forEach(write::addRows);
       results.deleteFiles().forEach(write::addDeletes);
+      results.rewrittenDeleteFiles().forEach(write::removeDeletes);
 
       if (StringUtils.isNotEmpty(branchName)) {
         write.toBranch(HiveUtils.getTableSnapshotRef(branchName));
@@ -591,7 +576,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         write.validateFromSnapshot(snapshotId);
       }
       if (filterExpr != null) {
-        LOG.debug(CONFLICT_DETECTION_FILTER_MSG, filterExpr);
+        LOG.debug(CONFLICT_DETECTION_FILTER, filterExpr);
         write.conflictDetectionFilter(filterExpr);
       }
       if (!results.dataFiles().isEmpty()) {
@@ -708,7 +693,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     Tasks.foreach(jobLocations)
         .retry(3)
         .suppressFailureWhenFinished()
-        .onFailure((jobLocation, exc) -> LOG.debug("Failed to remove directory {} on job cleanup", jobLocation, exc))
+        .onFailure((jobLocation, ex) -> LOG.debug("Failed to remove directory {} on job cleanup", jobLocation, ex))
         .run(jobLocation -> {
           LOG.info("Cleaning location: {}", jobLocation);
           Path toDelete = new Path(jobLocation);
@@ -778,6 +763,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     Collection<DataFile> dataFiles = new ConcurrentLinkedQueue<>();
     Collection<DeleteFile> deleteFiles = new ConcurrentLinkedQueue<>();
     Collection<DataFile> replacedDataFiles = new ConcurrentLinkedQueue<>();
+    Collection<DeleteFile> rewrittenDeleteFiles = new ConcurrentLinkedQueue<>();
     Collection<CharSequence> referencedDataFiles = new ConcurrentLinkedQueue<>();
     Collection<Path> mergedAndDeletedFiles = new ConcurrentLinkedQueue<>();
     Tasks.range(numTasks)
@@ -792,11 +778,13 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           dataFiles.addAll(files.dataFiles());
           deleteFiles.addAll(files.deleteFiles());
           replacedDataFiles.addAll(files.replacedDataFiles());
+          rewrittenDeleteFiles.addAll(files.rewrittenDeleteFiles());
           referencedDataFiles.addAll(files.referencedDataFiles());
           mergedAndDeletedFiles.addAll(files.mergedAndDeletedFiles());
         });
 
-    return new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, mergedAndDeletedFiles);
+    return new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, rewrittenDeleteFiles,
+        mergedAndDeletedFiles);
   }
 
   /**
@@ -849,20 +837,20 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @return Returns the list of file statuses of the output files in the jobContexts
    * @throws IOException Throws IOException
    */
-  public List<FileStatus> getOutputFiles(List<JobContext> jobContexts) throws IOException {
+  public static List<FileStatus> getOutputFiles(List<JobContext> jobContexts) throws IOException {
     Multimap<OutputTable, JobContext> outputs = collectOutputs(jobContexts);
-    JobConf jobConf = jobContexts.get(0).getJobConf();
-
-    ExecutorService fileExecutor = fileExecutor(jobConf);
-    ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size());
+    JobConf jobConf = jobContexts.getFirst().getJobConf();
 
     Map<Path, List<FileStatus>> parentDirToDataFile = Maps.newConcurrentMap();
     Map<Path, List<FileStatus>> parentDirToDeleteFile = Maps.newConcurrentMap();
-    try {
+
+    try (ExecutorService fileExecutor = fileExecutor(jobConf);
+         ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size())) {
+
       Tasks.foreach(outputs.keySet())
           .suppressFailureWhenFinished()
           .executeWith(tableExecutor)
-          .onFailure((output, exc) -> LOG.warn("Failed to retrieve merge input file for the table {}", output, exc))
+          .onFailure((output, ex) -> LOG.warn("Failed to retrieve merge input file for the table {}", output, ex))
           .run(output -> {
             for (JobContext jobContext : outputs.get(output)) {
               Table table = output.table;
@@ -875,22 +863,17 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               FilesForCommit results = collectResults(numTasks, fileExecutor, table.location(), jobContext,
                   table.io(), false);
               for (DataFile dataFile : results.dataFiles()) {
-                Path filePath = new Path(dataFile.path().toString());
+                Path filePath = new Path(dataFile.location());
                 parentDirToDataFile.computeIfAbsent(filePath.getParent(), k -> Lists.newArrayList())
                     .add(fileSystem.getFileStatus(filePath));
               }
               for (DeleteFile deleteFile : results.deleteFiles()) {
-                Path filePath = new Path(deleteFile.path().toString());
+                Path filePath = new Path(deleteFile.location());
                 parentDirToDeleteFile.computeIfAbsent(filePath.getParent(), k -> Lists.newArrayList())
                     .add(fileSystem.getFileStatus(filePath));
               }
             }
           }, IOException.class);
-    } finally {
-      fileExecutor.shutdown();
-      if (tableExecutor != null) {
-        tableExecutor.shutdown();
-      }
     }
     return Stream.of(parentDirToDataFile, parentDirToDeleteFile)
       .flatMap(files ->
@@ -904,19 +887,19 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @return Returns the list of file statuses of the output files in the jobContexts
    * @throws IOException Throws IOException
    */
-  public List<ContentFile<?>> getOutputContentFiles(List<JobContext> jobContexts) throws IOException {
+  public static List<ContentFile<?>> getOutputContentFiles(List<JobContext> jobContexts) throws IOException {
     Multimap<OutputTable, JobContext> outputs = collectOutputs(jobContexts);
-    JobConf jobConf = jobContexts.get(0).getJobConf();
-
-    ExecutorService fileExecutor = fileExecutor(jobConf);
-    ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size());
+    JobConf jobConf = jobContexts.getFirst().getJobConf();
 
     Collection<ContentFile<?>> files = new ConcurrentLinkedQueue<>();
-    try {
+
+    try (ExecutorService fileExecutor = fileExecutor(jobConf);
+        ExecutorService tableExecutor = tableExecutor(jobConf, outputs.keySet().size())) {
+
       Tasks.foreach(outputs.keySet())
           .suppressFailureWhenFinished()
           .executeWith(tableExecutor)
-          .onFailure((output, exc) -> LOG.warn("Failed to retrieve merge input file for the table {}", output, exc))
+          .onFailure((output, ex) -> LOG.warn("Failed to retrieve merge input file for the table {}", output, ex))
           .run(output -> {
             for (JobContext jobContext : outputs.get(output)) {
               Table table = output.table;
@@ -931,11 +914,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
               files.addAll(results.deleteFiles());
             }
           }, IOException.class);
-    } finally {
-      fileExecutor.shutdown();
-      if (tableExecutor != null) {
-        tableExecutor.shutdown();
-      }
     }
     return Lists.newArrayList(files);
   }
@@ -954,11 +932,22 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .retry(3)
         .executeWith(fileExecutor)
         .run(path -> {
-          FileSystem fs = path.getFileSystem(jobContexts.get(0).getJobConf());
+          FileSystem fs = path.getFileSystem(jobContexts.getFirst().getJobConf());
           if (fs.exists(path)) {
             fs.delete(path, true);
           }
         }, IOException.class);
+  }
+
+  static List<JobContext> getJobContexts(Properties properties) {
+    Configuration configuration = SessionState.getSessionConf();
+    String tableName = properties.getProperty(Catalogs.NAME);
+    String snapshotRef = properties.getProperty(Catalogs.SNAPSHOT_REF);
+
+    return generateJobContexts(configuration, tableName, snapshotRef)
+        .stream()
+        .map(TezUtil::enrichContextWithVertexId)
+        .toList();
   }
 
   /**
@@ -968,10 +957,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param branchName the name of the branch
    * @return The generated Optional JobContext list or empty if not presents.
    */
-  static List<JobContext> generateJobContext(Configuration configuration, String tableName, String branchName) {
+  static List<JobContext> generateJobContexts(Configuration configuration, String tableName, String branchName) {
     JobConf jobConf = new JobConf(configuration);
     Optional<Map<String, SessionStateUtil.CommitInfo>> commitInfoMap =
-            SessionStateUtil.getCommitInfo(jobConf, tableName);
+        SessionStateUtil.getCommitInfo(jobConf, tableName);
     if (commitInfoMap.isPresent()) {
       List<JobContext> jobContextList = Lists.newLinkedList();
       for (SessionStateUtil.CommitInfo commitInfo : commitInfoMap.get().values()) {
@@ -984,7 +973,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         if (branchName != null) {
           jobConf.set(InputFormatConfig.OUTPUT_TABLE_SNAPSHOT_REF, branchName);
         }
-
         jobContextList.add(new JobContextImpl(jobConf, jobID, null));
       }
       return jobContextList;
@@ -995,7 +983,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     }
   }
 
-  private Set<Path> getCombinedLocations(JobConf jobConf) {
+  private static Set<Path> getCombinedLocations(JobConf jobConf) {
     Set<Path> mergedPaths = Sets.newHashSet();
     if (jobConf.getInputFormat().getClass().isAssignableFrom(CombineHiveInputFormat.class)) {
       MapWork mrwork = Utilities.getMapWork(jobConf);
@@ -1004,5 +992,24 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       }
     }
     return mergedPaths;
+  }
+
+  /**
+   * Returns the names of the output tables stored in the configuration.
+   * @param config The configuration used to get the data from
+   * @return The collection of the table names as returned by TableDesc.getTableName()
+   */
+  private static Set<String> outputTables(Configuration config) {
+    return Sets.newHashSet(TABLE_NAME_SPLITTER.split(config.get(InputFormatConfig.OUTPUT_TABLES)));
+  }
+
+  /**
+   * Returns the catalog name serialized to the configuration.
+   * @param config The configuration used to get the data from
+   * @param name The name of the table we neeed as returned by TableDesc.getTableName()
+   * @return catalog name
+   */
+  private static String catalogName(Configuration config, String name) {
+    return config.get(InputFormatConfig.TABLE_CATALOG_PREFIX + name);
   }
 }

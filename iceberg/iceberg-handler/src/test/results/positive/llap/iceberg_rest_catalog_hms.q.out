@@ -1,0 +1,233 @@
+PREHOOK: query: create database ice_rest
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:ice_rest
+POSTHOOK: query: create database ice_rest
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:ice_rest
+PREHOOK: query: use ice_rest
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:ice_rest
+POSTHOOK: query: use ice_rest
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:ice_rest
+PREHOOK: query: create table ice_orc1 (
+    first_name string, 
+    last_name string,
+    dept_id bigint,
+    team_id bigint
+ )
+partitioned by (company_id bigint)
+stored by iceberg stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:ice_rest
+PREHOOK: Output: ice_rest@ice_orc1
+POSTHOOK: query: create table ice_orc1 (
+    first_name string, 
+    last_name string,
+    dept_id bigint,
+    team_id bigint
+ )
+partitioned by (company_id bigint)
+stored by iceberg stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:ice_rest
+POSTHOOK: Output: ice_rest@ice_orc1
+PREHOOK: query: create table ice_orc2 (
+    first_name string, 
+    last_name string,
+    dept_id bigint,
+    team_id bigint
+ )
+partitioned by (company_id bigint)
+stored by iceberg stored as orc
+TBLPROPERTIES('format-version'='2', 'iceberg.catalog'='ice01')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:ice_rest
+PREHOOK: Output: ice_rest@ice_orc2
+POSTHOOK: query: create table ice_orc2 (
+    first_name string, 
+    last_name string,
+    dept_id bigint,
+    team_id bigint
+ )
+partitioned by (company_id bigint)
+stored by iceberg stored as orc
+TBLPROPERTIES('format-version'='2', 'iceberg.catalog'='ice01')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:ice_rest
+POSTHOOK: Output: ice_rest@ice_orc2
+PREHOOK: query: show create table ice_orc2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: ice_rest@ice_orc2
+POSTHOOK: query: show create table ice_orc2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: ice_rest@ice_orc2
+CREATE EXTERNAL TABLE `ice_orc2`(
+  `first_name` string, 
+  `last_name` string, 
+  `dept_id` bigint, 
+  `team_id` bigint, 
+  `company_id` bigint)
+PARTITIONED BY ( 
+  `company_id` bigint COMMENT 'Transform: identity')
+PARTITIONED BY SPEC ( 
+`company_id`)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+WITH SERDEPROPERTIES ( 
+  'serialization.format'='1')
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"first_name","required":false,"type":"string"},{"id":2,"name":"last_name","required":false,"type":"string"},{"id":3,"name":"dept_id","required":false,"type":"long"},{"id":4,"name":"team_id","required":false,"type":"long"},{"id":5,"name":"company_id","required":false,"type":"long"}]}', 
+  'default-partition-spec'='{"spec-id":0,"fields":[{"name":"company_id","transform":"identity","source-id":5,"field-id":1000}]}', 
+  'format-version'='2', 
+  'iceberg.catalog'='ice01', 
+  'iceberg.orc.files.only'='true', 
+#### A masked pattern was here ####
+  'name'='ice_rest.ice_orc2', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+  'type'='rest', 
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.format.default'='orc', 
+  'write.merge.mode'='merge-on-read', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: insert into ice_orc2 partition (company_id=100) 
+VALUES ('fn1','ln1', 1, 10), ('fn2','ln2', 2, 20), ('fn3','ln3', 3, 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: ice_rest@ice_orc2@company_id=100
+POSTHOOK: query: insert into ice_orc2 partition (company_id=100) 
+VALUES ('fn1','ln1', 1, 10), ('fn2','ln2', 2, 20), ('fn3','ln3', 3, 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: ice_rest@ice_orc2@company_id=100
+PREHOOK: query: describe formatted ice_orc2
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: ice_rest@ice_orc2
+POSTHOOK: query: describe formatted ice_orc2
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: ice_rest@ice_orc2
+# col_name            	data_type           	comment             
+first_name          	string              	                    
+last_name           	string              	                    
+dept_id             	bigint              	                    
+team_id             	bigint              	                    
+company_id          	bigint              	                    
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+company_id          	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	ice_rest            	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"first_name\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"last_name\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"dept_id\",\"required\":false,\"type\":\"long\"},{\"id\":4,\"name\":\"team_id\",\"required\":false,\"type\":\"long\"},{\"id\":5,\"name\":\"company_id\",\"required\":false,\"type\":\"long\"}]}
+	current-snapshot-id 	#Masked#
+	current-snapshot-summary	{\"added-data-files\":\"1\",\"added-records\":\"3\",\"added-files-size\":\"#Masked#\",\"changed-partition-count\":\"1\",\"total-records\":\"3\",\"total-files-size\":\"#Masked#\",\"total-data-files\":\"1\",\"total-delete-files\":\"0\",\"total-position-deletes\":\"0\",\"total-equality-deletes\":\"0\",\"iceberg-version\":\"#Masked#\"}
+	current-snapshot-timestamp-ms	#Masked#       
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"company_id\",\"transform\":\"identity\",\"source-id\":5,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.catalog     	ice01               
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	name                	ice_rest.ice_orc2   
+	numFiles            	1                   
+	numRows             	3                   
+	parquet.compression 	zstd                
+	serialization.format	1                   
+	snapshot-count      	1                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+	type                	rest                
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from ice_orc2
+PREHOOK: type: QUERY
+PREHOOK: Input: ice_rest@ice_orc2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ice_orc2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: ice_rest@ice_orc2
+#### A masked pattern was here ####
+fn1	ln1	1	10	100
+fn2	ln2	2	20	100
+fn3	ln3	3	30	100
+PREHOOK: query: show tables
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:ice_rest
+POSTHOOK: query: show tables
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:ice_rest
+ice_orc1
+ice_orc2
+PREHOOK: query: drop table ice_orc1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: ice_rest@ice_orc1
+PREHOOK: Output: database:ice_rest
+PREHOOK: Output: ice_rest@ice_orc1
+POSTHOOK: query: drop table ice_orc1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: ice_rest@ice_orc1
+POSTHOOK: Output: database:ice_rest
+POSTHOOK: Output: ice_rest@ice_orc1
+PREHOOK: query: drop table ice_orc2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: ice_rest@ice_orc2
+PREHOOK: Output: database:ice_rest
+PREHOOK: Output: ice_rest@ice_orc2
+POSTHOOK: query: drop table ice_orc2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: ice_rest@ice_orc2
+POSTHOOK: Output: database:ice_rest
+POSTHOOK: Output: ice_rest@ice_orc2
+PREHOOK: query: show tables
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:ice_rest
+POSTHOOK: query: show tables
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:ice_rest
+PREHOOK: query: show databases
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: show databases
+POSTHOOK: type: SHOWDATABASES
+default
+ice_rest
+PREHOOK: query: drop database ice_rest
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:ice_rest
+PREHOOK: Output: database:ice_rest
+POSTHOOK: query: drop database ice_rest
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:ice_rest
+POSTHOOK: Output: database:ice_rest
+PREHOOK: query: show databases
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: show databases
+POSTHOOK: type: SHOWDATABASES
+default

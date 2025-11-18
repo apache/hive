@@ -711,3 +711,37 @@ Column Name:null    	Check Value:`col1` + ` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` > 15
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:null    	Check Value:` "%&'()*+,-/;<=>?[]_|{}$^!~#@``` > 10	 
 	 	 
+PREHOOK: query: select 1 as ` "%&'()*+,-/;<=>?[]_|{}$^!~#@```
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1 as ` "%&'()*+,-/;<=>?[]_|{}$^!~#@```
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+PREHOOK: query: explain analyze
+select 1 as " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`"
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: explain analyze
+select 1 as " ""%&'()*+,-/;<=>?[]_|{}$^!~#@`"
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: _dummy_table
+          Row Limit Per Split: 1
+          Select Operator
+            expressions: 1 (type: int)
+            outputColumnNames: _col0
+            ListSink
+

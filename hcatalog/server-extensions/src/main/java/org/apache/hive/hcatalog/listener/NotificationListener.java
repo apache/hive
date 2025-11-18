@@ -36,6 +36,7 @@ import javax.naming.NamingException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -208,8 +209,9 @@ public class NotificationListener extends MetaStoreEventListener {
       Configuration conf = handler.getConf();
       Table newTbl;
       try {
-        newTbl = handler.get_table_core(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())
-          .deepCopy();
+        GetTableRequest getTableRequest = new GetTableRequest(tbl.getDbName(), tbl.getTableName());
+        getTableRequest.setCatName(tbl.getCatName());
+        newTbl = handler.get_table_core(getTableRequest).deepCopy();
         newTbl.getParameters().put(
           HCatConstants.HCAT_MSGBUS_TOPIC_NAME,
           getTopicPrefix(conf) + "." + newTbl.getDbName().toLowerCase() + "."

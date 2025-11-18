@@ -64,10 +64,10 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
   private static final Logger LOG = LoggerFactory.getLogger(LeaseLeaderElection.class);
 
-  private static final AtomicLong ID = new AtomicLong();
+  protected static final AtomicLong ID = new AtomicLong();
 
   // Result of election
-  private volatile boolean isLeader;
+  protected volatile boolean isLeader;
 
   private TxnStore store;
 
@@ -76,7 +76,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
   // A daemon used for renewing the lock before timeout,
   // this happens when the current instance wins the election.
-  private LeaseWatcher heartbeater;
+  protected LeaseWatcher heartbeater;
 
   // For non-leader instances to check the lock periodically to
   // see if there is a chance to take over the leadership.
@@ -86,15 +86,14 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   // Current lock id
   private volatile long lockId = -1;
 
+  private volatile boolean stopped = false;
+
   // Leadership change listeners
-  private List<LeadershipStateListener> listeners = new ArrayList<>();
+  private final List<LeadershipStateListener> listeners = new ArrayList<>();
 
-  // Property for testing only
-  public static final String METASTORE_RENEW_LEASE = "metastore.renew.leader.lease";
-
-  private String name;
-  private String userName;
-  private String hostName;
+  protected String name;
+  private final String userName;
+  private final String hostName;
   private boolean enforceMutex;
 
   public LeaseLeaderElection() throws IOException {
@@ -111,10 +110,8 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
     switch (resp.getState()) {
     case ACQUIRED:
-      boolean renewLease = conf.getBoolean(METASTORE_RENEW_LEASE, true);
-      heartbeater = renewLease ?
-          new Heartbeater(conf, tableName) : new ReleaseAndRequireWatcher(conf, tableName);
-      heartbeater.perform();
+      heartbeater = new Heartbeater(conf, tableName);
+      heartbeater.startWatch();
       if (!isLeader) {
         isLeader = true;
         notifyListener();
@@ -122,7 +119,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       break;
     case WAITING:
       nonLeaderWatcher = new NonLeaderWatcher(conf, tableName);
-      nonLeaderWatcher.perform();
+      nonLeaderWatcher.startWatch();
       if (isLeader) {
         isLeader = false;
         notifyListener();
@@ -134,7 +131,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     LOG.debug("Spent {}ms to notify the listeners, isLeader: {}", System.currentTimeMillis() - start, isLeader);
   }
 
-  private void notifyListener() {
+  protected void notifyListener() {
     listeners.forEach(listener -> {
       try {
         if (isLeader) {
@@ -143,8 +140,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
           listener.lossLeadership(this);
         }
       } catch (Exception e) {
-        LOG.error("Error notifying the listener: " + listener +
-            ", leader: " + isLeader, e);
+        LOG.error("Error notifying the listener: {}, leader: {}", listener, isLeader, e);
       }
     });
   }
@@ -157,14 +153,15 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     if (store == null) {
       store = TxnUtils.getTxnStore(conf);
     }
-    LockComponent component = new LockComponentBuilder()
-        .setDbName(table.getDb())
-        .setTableName(table.getTable())
-        .setLock(LockType.EXCL_WRITE)
-        .setOperationType(DataOperationType.NO_TXN)
-        .build();
-    List<LockComponent> components = new ArrayList<LockComponent>(1);
-    components.add(component);
+    
+    List<LockComponent> components = new ArrayList<>();
+    components.add(
+        new LockComponentBuilder()
+            .setDbName(table.getDb())
+            .setTableName(table.getTable())
+            .setLock(LockType.EXCL_WRITE)
+            .setOperationType(DataOperationType.NO_TXN)
+            .build());
 
     boolean lockable = false;
     Exception recentException = null;
@@ -173,28 +170,27 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     int numRetries = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LOCK_NUMRETRIES);
     long maxSleep = MetastoreConf.getTimeVar(conf,
         MetastoreConf.ConfVars.LOCK_SLEEP_BETWEEN_RETRIES, TimeUnit.MILLISECONDS);
-    for (int i = 0; i < numRetries; i++) {
+    for (int i = 0; i < numRetries && !stopped; i++) {
       try {
         LockResponse res = store.lock(req);
         if (res.getState() == LockState.WAITING || res.getState() == LockState.ACQUIRED) {
           lockable = true;
+          LOG.debug("{} Spent {}ms to take part in election, retries: {}", getName(), System.currentTimeMillis() - start, i);
           doWork(res, conf, table);
-          LOG.debug("Spent {}ms to lock the table {}, retries: {}", System.currentTimeMillis() - start, table, i);
           break;
         }
       } catch (NoSuchTxnException | TxnAbortedException e) {
         throw new AssertionError("This should not happen, we didn't open txn", e);
       } catch (MetaException e) {
         recentException = e;
-        LOG.warn("Error while locking the table: {}, num retries: {}," +
-                " max retries: {}, exception: {}", table, i, numRetries, e);
+        LOG.warn("Error while locking the table: {}, num retries: {}, max retries: {}",
+            table, i, numRetries, e);
       }
       backoff(maxSleep);
     }
     if (!lockable) {
       throw new LeaderException("Error locking the table: " + table + " in " + numRetries +
-          " retries, time spent: " + (System.currentTimeMillis() - start) + " ms",
-          recentException);
+          " retries, time spent: " + (System.currentTimeMillis() - start) + " ms", recentException);
     }
   }
 
@@ -206,11 +202,11 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       nextSleep = maxSleep;
     try {
       Thread.sleep(nextSleep);
-    } catch (InterruptedException e) {
+    } catch (InterruptedException ignored) {
     }
   }
 
-  private void shutdownWatcher() {
+  protected void shutdownWatcher() {
     if (heartbeater != null) {
       heartbeater.shutDown();
       heartbeater = null;
@@ -232,7 +228,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     return isLeader;
   }
 
-  private abstract class LeaseWatcher extends Thread {
+  protected abstract class LeaseWatcher extends Thread {
 
     protected Configuration conf;
 
@@ -240,17 +236,17 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
 
     private volatile boolean stopped = false;
 
-    LeaseWatcher(Configuration conf, TableName tableName) {
+    protected LeaseWatcher(Configuration conf, TableName tableName) {
       this.conf = conf;
       this.tableName = tableName;
       setDaemon(true);
-      StringBuilder builder = new StringBuilder("Leader-Watcher-")
-          .append(name != null ? name : "")
+      StringBuilder builder = new StringBuilder("Lease-Watcher-")
+          .append(name != null ? name + "-" : "")
           .append(ID.incrementAndGet());
       setName(builder.toString());
     }
 
-    public void perform() {
+    public void startWatch() {
       LOG.info("Starting a watcher: {} for {}", getClass().getName(), name);
       start();
     }
@@ -275,11 +271,9 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     }
 
     public void beforeRun() {
-      // do nothing
     }
 
     public void afterRun() {
-      // do nothing
     }
 
     public abstract void runInternal();
@@ -288,15 +282,15 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       try {
         tryBeLeader(conf, tableName);
       } catch (Exception e) {
-        LOG.error("Error reclaiming the leader, will retry in next cycle", e);
+        LOG.error("Error reclaiming the lease, will retry in next cycle", e);
       }
     }
   }
 
   private class NonLeaderWatcher extends LeaseWatcher {
-    private long sleep;
+    private final long sleep;
     private int count;
-    private CheckLockRequest request;
+    private final CheckLockRequest request;
 
     NonLeaderWatcher(Configuration conf, TableName table) {
       super(conf, table);
@@ -348,8 +342,8 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   }
 
   private class Heartbeater extends LeaseWatcher {
-    private HeartbeatRequest req;
-    private long heartbeatInterval;
+    private final HeartbeatRequest req;
+    private final long heartbeatInterval;
 
     Heartbeater(Configuration conf, TableName table) {
       super(conf, table);
@@ -389,7 +383,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
         reclaim();
       } catch (Exception e) {
         // Wait for next cycle.
-        LOG.warn("Heartbeat failed with exception: " + e.getMessage(), e);
+        LOG.warn("Heartbeat failed with exception: {}", e.getMessage(), e);
       }
     }
 
@@ -403,45 +397,9 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
     }
   }
 
-  // For testing purpose only, lock would become timeout and then acquire it again
-  private class ReleaseAndRequireWatcher extends LeaseWatcher {
-    long timeout;
-    public ReleaseAndRequireWatcher(Configuration conf,
-        TableName tableName) {
-      super(conf, tableName);
-      timeout = MetastoreConf.getTimeVar(conf,
-          MetastoreConf.ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS) + 3000;
-      setName("ReleaseAndRequireWatcher");
-    }
-
-    @Override
-    public void beforeRun() {
-      try {
-        Thread.sleep(timeout);
-      } catch (InterruptedException e) {
-        // ignore this
-      }
-    }
-
-    @Override
-    public void runInternal() {
-      shutDown();
-      // The timeout lock should be cleaned,
-      // sleep some time to let others take the chance to become the leader
-      try {
-        Thread.sleep(5000);
-      } catch (InterruptedException e) {
-        // ignore
-      }
-      // Acquire the lock again
-      conf = new Configuration(conf);
-      conf.setBoolean(METASTORE_RENEW_LEASE, true);
-      reclaim();
-    }
-  }
-
   @Override
   public void close() {
+    stopped = true;
     shutdownWatcher();
     if (isLeader) {
       isLeader = false;
@@ -454,13 +412,9 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
       } catch (NoSuchLockException | TxnOpenException e) {
         // ignore
       } catch (Exception e) {
-        LOG.error("Error while unlocking: " + lockId, e);
+        LOG.error("Error while unlocking: {}", lockId, e);
       }
     }
-  }
-
-  public long getLockId() {
-    return lockId;
   }
 
   @Override

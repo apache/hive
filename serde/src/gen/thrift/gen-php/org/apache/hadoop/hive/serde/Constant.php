@@ -60,6 +60,7 @@ final class Constant extends \Thrift\Type\TConstant
     static protected $MAP_TYPE_NAME;
     static protected $STRUCT_TYPE_NAME;
     static protected $UNION_TYPE_NAME;
+    static protected $VARIANT_TYPE_NAME;
     static protected $LIST_COLUMNS;
     static protected $LIST_COLUMN_TYPES;
     static protected $LIST_PARTITION_COLUMNS;
@@ -280,6 +281,11 @@ final class Constant extends \Thrift\Type\TConstant
     protected static function init_UNION_TYPE_NAME()
     {
         return "uniontype";
+    }
+
+    protected static function init_VARIANT_TYPE_NAME()
+    {
+        return "variant";
     }
 
     protected static function init_LIST_COLUMNS()

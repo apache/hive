@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
@@ -82,6 +83,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -92,12 +94,14 @@ import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
+import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.client.MetaStoreClientWrapper;
 import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.utils.HiveMetaStoreClientUtils;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
@@ -1059,7 +1063,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
         HdfsUtils.HadoopFileStatus status = HdfsUtils.HadoopFileStatus.createInstance(conf, fs, location);
         FileStatus targetStatus = fs.getFileStatus(location);
         String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-        FileUtils.moveToTrash(fs, location, conf, isSkipTrash);
+        org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, location, isSkipTrash, conf);
         fs.mkdirs(location);
         HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
       } else {
@@ -1121,7 +1125,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
     // Delete table data
     if (deleteData && !isExternalTable(table)) {
       try {
-        getWh().deleteDir(tablePath, true, ifPurge, false);
+        getWh().deleteDir(tablePath, ifPurge, false);
       } catch (Exception err) {
         LOG.error("Failed to delete temp table directory: " + tablePath, err);
         // Forgive error
@@ -1559,28 +1563,39 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
   }
 
   @Override
-  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
-      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
+  public List<Partition> dropPartitions(TableName tableName,
+      RequestPartsSpec partsSpec, PartitionDropOptions options, EnvironmentContext context)
       throws TException {
-    if (isDefaultCatalog(catName)) {
-      Table table = getTempTable(dbName, tblName);
+    if (isDefaultCatalog(tableName.getCat())) {
+      Table table = getTempTable(tableName.getDb(), tableName.getTable());
       if (table != null) {
         TempTable tt = getPartitionedTempTable(table);
+            List<List<String>> partValues = new ArrayList<>();
+        if (partsSpec.isSetExprs()) {
+          List<DropPartitionsExpr> exprs = partsSpec.getExprs();
+          for (DropPartitionsExpr expr : exprs) {
+            String filter = generateJDOFilter(table, expr.getExpr(),
+                conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
+            List<Partition> partitions = tt.listPartitionsByFilter(filter);
+            for (Partition p : partitions) {
+              partValues.add(p.getValues());
+            }
+          }
+        } else if (partsSpec.isSetNames()) {
+          List<String> partNames = partsSpec.getNames();
+          for (String partName : partNames) {
+            partValues.add(CachedStore.partNameToVals(partName));
+          }
+        }
+        boolean purgeData = options != null ? options.purgeData : true;
+        boolean deleteData = options != null ? options.deleteData : true;
         List<Partition> result = new ArrayList<>();
-        for (Pair<Integer, byte[]> pair : partExprs) {
-          byte[] expr = pair.getRight();
-          String filter = generateJDOFilter(table, expr,
-              conf.get(HiveConf.ConfVars.DEFAULT_PARTITION_NAME.varname));
-          List<Partition> partitions = tt.listPartitionsByFilter(filter);
-          for (Partition p : partitions) {
-            Partition droppedPartition = tt.dropPartition(p.getValues());
-            if (droppedPartition != null) {
-              result.add(droppedPartition);
-              boolean purgeData = options != null ? options.purgeData : true;
-              boolean deleteData = options != null ? options.deleteData : true;
-              if (deleteData && !tt.isExternal()) {
-                deletePartitionLocation(droppedPartition, purgeData);
-              }
+        for (List<String> partValue : partValues) {
+          Partition droppedPartition = tt.dropPartition(partValue);
+          if (droppedPartition != null) {
+            result.add(droppedPartition);
+            if (deleteData && !tt.isExternal()) {
+              deletePartitionLocation(droppedPartition, purgeData);
             }
           }
         }
@@ -1588,7 +1603,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       }
     }
 
-    return delegate.dropPartitions(catName, dbName, tblName, partExprs, options, context);
+    return delegate.dropPartitions(tableName, partsSpec, options, context);
   }
 
   @Override
@@ -2201,7 +2216,7 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       Path path = getWh().getDnsPath(new Path(location));
       try {
         do {
-          if (!getWh().deleteDir(path, true, purgeData, false)) {
+          if (!getWh().deleteDir(path, purgeData, false)) {
             throw new MetaException("Unable to delete partition at " + location);
           }
           path = path.getParent();
@@ -2546,9 +2561,11 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       final String validWriteIds = Hive.get().getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
       final String fullTableName = TableName.getDbTable(dbName, tblName);
 
-      ValidTxnWriteIdList validTxnWriteIdList = (validWriteIds != null) ?
+      final ValidTxnWriteIdList validTxnWriteIdList = (validWriteIds != null) ?
           ValidTxnWriteIdList.fromValue(validWriteIds) :
-          SessionState.get().getTxnMgr().getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList);
+          TxnCommonUtils.createValidTxnWriteIdList(
+              SessionState.get().getTxnMgr().getCurrentTxnId(),
+              getValidWriteIds(ImmutableList.of(fullTableName), validTxnsList));
 
       ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
       return (writeIdList != null) ? writeIdList.toString() : null;

@@ -45,13 +45,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
-  HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(ws_order_number=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
+    HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+    HiveProject(ws_order_number=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
 PREHOOK: query: select * from web_sales ws1
 where exists (select 1 from web_sales ws2 where ws1.ws_order_number = ws2.ws_order_number limit 1)
@@ -105,12 +106,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
-  HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-    HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(literalTrue=[true], ws_order_number=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
+  HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
+    HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+    HiveProject(literalTrue=[true], ws_order_number=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
 PREHOOK: query: select * from web_sales ws1
 where not exists (select 1 from web_sales ws2 where ws1.ws_order_number = ws2.ws_order_number limit 1)
@@ -139,13 +141,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
-  HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(ws_order_number=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
+    HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+    HiveProject(ws_order_number=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
 PREHOOK: query: select * from web_sales ws1
 where exists (select 1 from web_sales ws2 where ws1.ws_order_number = ws2.ws_order_number order by ws2.ws_order_number)
@@ -174,12 +177,13 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
-  HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-    HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(literalTrue=[true], ws_order_number=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
+  HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
+    HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+    HiveProject(literalTrue=[true], ws_order_number=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
 PREHOOK: query: select * from web_sales ws1
 where not exists (select 1 from web_sales ws2 where ws1.ws_order_number = ws2.ws_order_number order by ws2.ws_order_number)
@@ -209,14 +213,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[true], joinType=[semi])
-  HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-    HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(ws_order_number=[$0])
-    HiveSortLimit(fetch=[1])
-      HiveProject(ws_order_number=[CAST(2):INTEGER])
-        HiveFilter(condition=[=($0, 2)])
-          HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
+  HiveSemiJoin(condition=[true], joinType=[semi])
+    HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+    HiveProject(ws_order_number=[$0])
+      HiveSortLimit(fetch=[1])
+        HiveProject(ws_order_number=[CAST(2):INTEGER])
+          HiveFilter(condition=[=($0, 2)])
+            HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
 Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from web_sales ws1
@@ -275,16 +280,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
-  HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(ws_order_number=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveProject(ws_order_number=[$0])
-        HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[1])
-          HiveProject(ws_order_number=[$0])
-            HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
+    HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+    HiveProject(ws_order_number=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveProject(ws_order_number=[$0])
+          HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[1])
+            HiveProject(ws_order_number=[$0])
+              HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
 PREHOOK: query: select * from web_sales ws1
 where ws1.ws_order_number in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls last limit 1)
@@ -311,16 +317,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
-  HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
-  HiveProject(ws_order_number=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveProject(ws_order_number=[$0])
-        HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[1])
-          HiveProject(ws_order_number=[$0])
-            HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
+    HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+    HiveProject(ws_order_number=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveProject(ws_order_number=[$0])
+          HiveSortLimit(sort0=[$0], dir0=[ASC-nulls-first], fetch=[1])
+            HiveProject(ws_order_number=[$0])
+              HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
 PREHOOK: query: select * from web_sales ws1
 where ws1.ws_order_number in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls first limit 1)
@@ -346,7 +353,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
   HiveFilter(condition=[OR(=($2, 0), AND(IS NULL($5), >=($3, $2), IS NOT NULL($0)))])
     HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1], c=[$4], ck=[$5], ws_order_number0=[$2], literalTrue=[$3])
       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
@@ -393,7 +400,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
   HiveFilter(condition=[OR(=($2, 0), AND(IS NULL($5), >=($3, $2), IS NOT NULL($0)))])
     HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1], c=[$4], ck=[$5], ws_order_number0=[$2], literalTrue=[$3])
       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
@@ -438,7 +445,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ws_order_number=[$0], ws_warehouse_sk=[$1])
+HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
   HiveFilter(condition=[OR(=($2, 0), AND(IS NULL($5), >=($3, $2), IS NOT NULL($0)))])
     HiveJoin(condition=[=($0, $4)], joinType=[left], algorithm=[none], cost=[not available])
       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])

@@ -382,10 +382,10 @@ public enum ErrorMsg {
   DISTINCT_NOT_SUPPORTED(10285, "Distinct keyword is not support in current context"),
   NONACID_COMPACTION_NOT_SUPPORTED(10286, "Compaction is not allowed on non-ACID table {0}.{1}", true),
   MASKING_FILTERING_ON_ACID_NOT_SUPPORTED(10287,
-      "Detected {0}.{1} has row masking/column filtering enabled, " +
+      "Detected {0}.{1}.{2} has row masking/column filtering enabled, " +
       "which is not supported for query involving ACID operations", true),
   MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES(10288,
-      "Querying directly materialized view contents is not supported since we detected {0}.{1} " +
+      "Querying directly materialized view contents is not supported since we detected {0}.{1}.{2} " +
           "used by materialized view has row masking/column filtering enabled", true),
   MASKING_COMPLEX_TYPE_NOT_SUPPORTED(10289,
       "Masking complex types is not supported, found a masking expression {0} over column {1}:{2}", true),

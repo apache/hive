@@ -29,6 +29,7 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.ql.ddl.view.create.AbstractCreateViewAnalyzer.validateTablesUsed;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
+import static org.apache.hadoop.hive.ql.session.SessionStateUtil.MISSING_COLUMNS;
 
 import java.io.IOException;
 import java.security.AccessControlException;
@@ -86,7 +87,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.Constants;
@@ -255,6 +255,8 @@ import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivObjectActionType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject.HivePrivilegeObjectType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -360,7 +362,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Map<TableScanOperator, Map<String, ExprNodeDesc>> opToPartToSkewedPruner;
   private Map<SelectOperator, Table> viewProjectToTableSchema;
   private Operator<? extends OperatorDesc> sinkOp;
-  private final CacheTableHelper cacheTableHelper = new CacheTableHelper();
 
   /**
    * a map for the split sampling, from alias to an instance of SplitSample
@@ -823,6 +824,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected Map<String, String> getColNameToDefaultValueMap(Table tbl) throws SemanticException {
     Map<String, String> colNameToDefaultVal = null;
+    if (tbl.getStorageHandler() != null && tbl.getStorageHandler().supportsDefaultColumnValues(tbl.getParameters())) {
+      return Collections.emptyMap();
+    }
     try {
       DefaultConstraint dc = Hive.get().getEnabledDefaultConstraints(tbl.getDbName(), tbl.getTableName());
       colNameToDefaultVal = dc.getColNameToDefaultValueMap();
@@ -2877,8 +2881,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewText = tab.getViewExpandedText();
       TableMask viewMask = new TableMask(this, conf, false);
       viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
-      cacheTableHelper.populateCacheForView(ctx.getParsedTables(), conf,
-          getTxnMgr(), tab.getDbName(), tab.getTableName());
+
       if (viewMask.isEnabled() && analyzeRewrite == null) {
         ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
@@ -5026,6 +5029,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if(targetCol2Projection.size() < targetTableColNames.size()) {
       colNameToDefaultVal = getColNameToDefaultValueMap(target);
     }
+    Set<String> missingColumns = new HashSet<>();
     for (int i = 0; i < targetTableColNames.size(); i++) {
       String f = targetTableColNames.get(i);
       if(targetCol2Projection.containsKey(f)) {
@@ -5038,6 +5042,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       else {
         //add new 'synthetic' columns for projections not provided by Select
         assert(colNameToDefaultVal != null);
+        missingColumns.add(f);
         ExprNodeDesc exp = null;
         if(colNameToDefaultVal.containsKey(f)) {
           // make an expression for default value
@@ -5064,6 +5069,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       colListPos++;
     }
+    SessionStateUtil.addResource(conf, MISSING_COLUMNS, missingColumns);
     return newOutputRR;
   }
 
@@ -12827,8 +12833,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             List<String> colNames = new ArrayList<>();
             extractColumnInfos(table, colNames, new ArrayList<>());
 
-            basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames,
-                table.getOwner(), table.getOwnerType()), null);
+            basicInfos.put(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW,
+                table.getCatName(), table.getDbName(), table.getTableName(), null, colNames,
+                HivePrivObjectActionType.OTHER, null, null, table.getOwner(), table.getOwnerType()), null);
           }
         } else {
           List<String> colNames;
@@ -12844,8 +12851,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             extractColumnInfos(table, colNames, colTypes);
           }
 
-          basicInfos.put(new HivePrivilegeObject(table.getDbName(), table.getTableName(), colNames,
-              table.getOwner(), table.getOwnerType()),
+          basicInfos.put(new HivePrivilegeObject(HivePrivilegeObjectType.TABLE_OR_VIEW, table.getCatName(),
+                  table.getDbName(), table.getTableName(), null, colNames,
+                  HivePrivObjectActionType.OTHER, null, null, table.getOwner(), table.getOwnerType()),
               new MaskAndFilterInfo(colTypes, additionalTabInfo.toString(), alias, astNode, table.isView(), table.isNonNative()));
         }
       }
@@ -12868,13 +12876,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // Currently we do not support querying directly a materialized view
             // when mask/filter should be applied on source tables
             throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_MATERIALIZED_VIEWS_SOURCES,
-                privObj.getDbname(), privObj.getObjectName());
+                privObj.getCatName(), privObj.getDbname(), privObj.getObjectName());
           } else {
             String replacementText = tableMask.create(privObj, info);
             // We don't support masking/filtering against ACID query at the moment
             if (ctx.getIsUpdateDeleteMerge()) {
               throw new SemanticException(ErrorMsg.MASKING_FILTERING_ON_ACID_NOT_SUPPORTED,
-                  privObj.getDbname(), privObj.getObjectName());
+                  privObj.getCatName(), privObj.getDbname(), privObj.getObjectName());
             }
             tableMask.setNeedsRewrite(true);
             tableMask.addTranslation(info.astNode, replacementText);
@@ -13152,16 +13160,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.GENERATE_RESOLVED_PARSETREE);
     // 1. Generate Resolved Parse tree from syntax tree
     boolean needsTransform = needsTransform();
-    //change the location of position alias process here
+    // change the location of position alias process here
     processPositionAlias(ast);
-    cacheTableHelper.populateCache(ctx.getParsedTables(), conf, getTxnMgr());
     PlannerContext plannerCtx = pcf.get();
     if (!genResolvedParseTree(ast, plannerCtx)) {
       return;
     }
-    if (tablesFromReadEntities(inputs).stream().anyMatch(AcidUtils::isTransactionalTable)) {
-      queryState.getValidTxnList();
-    }
+    openTxnAndSetValidTxnList();
 
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_REMOVE_ORDERBY_IN_SUBQUERY)) {
       for (String alias : qb.getSubqAliases()) {
@@ -13719,7 +13724,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   public void validate() throws SemanticException {
     boolean wasAcidChecked = false;
     // Validate inputs and outputs have right protectmode to execute the query
-    for (ReadEntity readEntity : getInputs()) {
+    for (ReadEntity readEntity : getAllInputs()) {
       ReadEntity.Type type = readEntity.getType();
 
       if (type != ReadEntity.Type.TABLE &&
@@ -13744,7 +13749,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    for (WriteEntity writeEntity : getOutputs()) {
+    for (WriteEntity writeEntity : getAllOutputs()) {
       WriteEntity.Type type = writeEntity.getType();
 
       if (type == WriteEntity.Type.PARTITION || type == WriteEntity.Type.DUMMYPARTITION) {
@@ -15153,40 +15158,53 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             .toString(RESULTS_CACHE_KEY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
   }
 
-  private ValidTxnWriteIdList getQueryValidTxnWriteIdList() throws SemanticException {
-    // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
-    //cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
-    //
-    List<String> transactionalTables = tablesFromReadEntities(inputs)
-      .stream()
-      .filter(AcidUtils::isTransactionalTable)
-      .map(Table::getFullyQualifiedName)
-      .collect(Collectors.toList());
-    
-    if (transactionalTables.size() > 0) {
-      String txnString = queryState.getValidTxnList();
-      if (txnString == null) {
-        return null;
-      }
-      try {
-        return getTxnMgr().getValidWriteIds(transactionalTables, txnString);
-      } catch (Exception err) {
-        String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
-                + " and validTxnList " + conf.get(ValidTxnList.VALID_TXNS_KEY);
-        throw new SemanticException(msg, err);
-      }
+  private void openTxnAndSetValidTxnList() throws SemanticException {
+    if (tablesFromReadEntities(inputs).stream().noneMatch(AcidUtils::isTransactionalTable)
+        || SessionState.get().isCompaction()) {
+      return;
     }
+    if (queryState.getHMSCache() != null) {
+      // this step primes the cache containing the validTxnWriteIdList. It will fetch
+      // all the tables into the MetaStore Client cache with one HMS call.
+      getValidTxnWriteIdList();
+    } else {
+      queryState.getValidTxnList();
+    }
+  }
 
-    // No transactional tables.
-    return null;
+  private ValidTxnWriteIdList getValidTxnWriteIdList() throws SemanticException {
+    // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
+    // cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
+    //
+    var transactionalTables = tablesFromReadEntities(inputs)
+        .stream()
+        .filter(AcidUtils::isTransactionalTable)
+        .map(Table::getFullyQualifiedName)
+        .toList();
+
+    if (transactionalTables.isEmpty()) {
+      return null;
+    }
+    String txnString = queryState.getValidTxnList();
+    try {
+      return getTxnMgr().getValidWriteIds(transactionalTables, txnString);
+    } catch (Exception err) {
+      String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
+          + " and validTxnList " + txnString;
+      throw new SemanticException(msg, err);
+    }
   }
 
   private QueryResultsCache.LookupInfo createLookupInfoForQuery(ASTNode astNode) throws SemanticException {
     QueryResultsCache.LookupInfo lookupInfo = null;
     String queryString = getQueryStringForCache(astNode);
     if (queryString != null) {
-      ValidTxnWriteIdList writeIdList = getQueryValidTxnWriteIdList();
-      lookupInfo = new QueryResultsCache.LookupInfo(queryString, () -> writeIdList);
+      ValidTxnWriteIdList writeIdList = getValidTxnWriteIdList();
+      Set<Long> involvedTables = tablesFromReadEntities(inputs).stream()
+          .map(Table::getTTable)
+          .map(org.apache.hadoop.hive.metastore.api.Table::getId)
+          .collect(Collectors.toSet());
+      lookupInfo = new QueryResultsCache.LookupInfo(queryString, () -> writeIdList, involvedTables);
     }
     return lookupInfo;
   }

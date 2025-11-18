@@ -91,7 +91,7 @@ public class Cleaner extends MetaStoreCompactorThread {
           for (TaskHandler cleanupHandler : cleanupHandlers) {
             try {
               CompactorUtil.checkInterrupt(CLASS_NAME);
-              List<Runnable> tasks = cleanupHandler.getTasks();
+              List<Runnable> tasks = cleanupHandler.getTasks(conf);
               List<CompletableFuture<Void>> asyncTasks = new ArrayList<>();
               for (Runnable task : tasks) {
                 CompletableFuture<Void> asyncTask = CompletableFuture.runAsync(

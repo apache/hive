@@ -325,18 +325,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   /**
-   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
-   *
-   * @param port
-   * @param bridge
-   * @throws Throwable
-   */
-  public static void startMetaStore(int port, HadoopThriftAuthBridge bridge)
-      throws Throwable {
-    startMetaStore(port, bridge, MetastoreConf.newMetastoreConf(), false, null);
-  }
-
-  /**
    * Start the metastore store.
    * @param port
    * @param bridge
@@ -685,6 +673,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   public static void startMetaStore(int port, HadoopThriftAuthBridge bridge,
       Configuration conf, boolean startMetaStoreThreads, AtomicBoolean startedBackgroundThreads) throws Throwable {
     isMetaStoreRemote = true;
+    if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.THRIFT_ZOOKEEPER_USE_KERBEROS)) {
+      String principal = MetastoreConf.getVar(conf, ConfVars.KERBEROS_PRINCIPAL);
+      String keyTab = MetastoreConf.getVar(conf, ConfVars.KERBEROS_KEYTAB_FILE);
+      SecurityUtils.setZookeeperClientKerberosJaasConfig(principal, keyTab);
+    }
     String transportMode = MetastoreConf.getVar(conf, ConfVars.THRIFT_TRANSPORT_MODE, "binary");
     boolean isHttpTransport = transportMode.equalsIgnoreCase("http");
     if (isHttpTransport) {
@@ -843,12 +837,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
              .setTType(LeaderElectionContext.TTYPE.HOUSEKEEPING) // housekeeping tasks
              .addListener(new CMClearer(conf))
              .addListener(new StatsUpdaterTask(conf))
-             .addListener(new CompactorTasks(conf, false))
+             .addListener(new CompactorTasks(conf))
              .addListener(new CompactorPMF())
              .addListener(new HouseKeepingTasks(conf, true))
-             .setTType(LeaderElectionContext.TTYPE.WORKER) // compactor worker
-             .addListener(new CompactorTasks(conf, true),
-                 MetastoreConf.getVar(conf, MetastoreConf.ConfVars.HIVE_METASTORE_RUNWORKER_IN).equals("metastore"))
              .build();
           if (shutdownHookMgr != null) {
             shutdownHookMgr.addShutdownHook(() -> context.close(), 0);

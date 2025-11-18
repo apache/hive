@@ -29,7 +29,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-OPTIMIZED SQL: SELECT `key`, `value`, CAST(CASE WHEN CAST(`key` AS DOUBLE) % 100 = 0 THEN 'a1' ELSE 'b1' END AS STRING) AS `_o__c2`
+OPTIMIZED SQL: SELECT `key`, `value`, CAST(CASE WHEN CAST(`key` AS DOUBLE) % 100 = 0 THEN 'a1' ELSE 'b1' END AS STRING) AS `_c2`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
@@ -394,7 +394,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
-OPTIMIZED SQL: SELECT `key`, `value`, CAST(CASE WHEN CAST(`key` AS DOUBLE) % 100 = 0 THEN 'a1' ELSE 'b1' END AS STRING) AS `_o__c2`
+OPTIMIZED SQL: SELECT `key`, `value`, CAST(CASE WHEN CAST(`key` AS DOUBLE) % 100 = 0 THEN 'a1' ELSE 'b1' END AS STRING) AS `_c2`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08'
 STAGE DEPENDENCIES:
@@ -776,7 +776,7 @@ POSTHOOK: Input: default@list_bucketing_dynamic_part_n3
 POSTHOOK: Input: default@list_bucketing_dynamic_part_n3@ds=2008-04-08/hr=a1
 POSTHOOK: Input: default@list_bucketing_dynamic_part_n3@ds=2008-04-08/hr=b1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `key`, CAST('val_484' AS STRING) AS `value`, `ds`, `hr`
+OPTIMIZED SQL: SELECT CAST('484' AS STRING) AS `list_bucketing_dynamic_part_n3.key`, CAST('val_484' AS STRING) AS `list_bucketing_dynamic_part_n3.value`, `ds` AS `list_bucketing_dynamic_part_n3.ds`, `hr` AS `list_bucketing_dynamic_part_n3.hr`
 FROM `default`.`list_bucketing_dynamic_part_n3`
 WHERE `key` = '484' AND `value` = 'val_484'
 STAGE DEPENDENCIES:

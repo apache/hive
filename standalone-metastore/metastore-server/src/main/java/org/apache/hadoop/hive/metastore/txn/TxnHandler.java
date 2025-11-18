@@ -205,7 +205,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     private boolean useMinHistoryWriteId;
 
     public boolean useMinHistoryLevel() {
-      return useMinHistoryLevel;
+      return useMinHistoryLevel && !useMinHistoryWriteId;
     }
 
     public void setUseMinHistoryLevel(boolean useMinHistoryLevel) {

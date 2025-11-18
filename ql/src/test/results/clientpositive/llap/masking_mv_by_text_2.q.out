@@ -39,15 +39,16 @@ POSTHOOK: Input: default@masking_test_n_mv
 POSTHOOK: Input: default@masking_test_view_n_mv
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}])
-  HiveProject(col0=[$0])
-    HiveUnion(all=[true])
-      HiveProject(col0=[CAST($0):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
-        HiveFilter(condition=[AND(<($0, 10), =(MOD($0, 2), 0))])
-          HiveTableScan(table=[[default, masking_test_n_mv]], table:alias=[masking_test_n_mv])
-      HiveProject(col0=[reverse($1)])
-        HiveFilter(condition=[AND(<($0, 10), =(MOD($0, 2), 0))])
-          HiveTableScan(table=[[default, masking_test_n_mv]], table:alias=[masking_test_n_mv])
+HiveProject(col0=[$0])
+  HiveAggregate(group=[{0}])
+    HiveProject(col0=[$0])
+      HiveUnion(all=[true])
+        HiveProject(col0=[CAST($0):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+          HiveFilter(condition=[AND(<($0, 10), =(MOD($0, 2), 0))])
+            HiveTableScan(table=[[default, masking_test_n_mv]], table:alias=[masking_test_n_mv])
+        HiveProject(col0=[reverse($1)])
+          HiveFilter(condition=[AND(<($0, 10), =(MOD($0, 2), 0))])
+            HiveTableScan(table=[[default, masking_test_n_mv]], table:alias=[masking_test_n_mv])
 
 Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
 PREHOOK: query: create materialized view `masking_test_view_n_mv_masked` as
@@ -78,7 +79,8 @@ POSTHOOK: Input: default@masking_test_view_n_mv
 POSTHOOK: Input: default@masking_test_view_n_mv_masked
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[default, masking_test_view_n_mv_masked]], table:alias=[default.masking_test_view_n_mv_masked])
+HiveProject(col0=[$0])
+  HiveTableScan(table=[[default, masking_test_view_n_mv_masked]], table:alias=[default.masking_test_view_n_mv_masked])
 
 PREHOOK: query: select col0 from (select cast(key as string) col0 from `masking_test_n_mv` union select value col0 from `masking_test_n_mv`) sub
 PREHOOK: type: QUERY

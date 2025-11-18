@@ -2346,7 +2346,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@my_dim
 POSTHOOK: Input: default@my_fact
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`bucket_col`, `t2`.`join_col` AS `account1`, `t0`.`accounting_period`
+OPTIMIZED SQL: SELECT `t0`.`bucket_col`, `t2`.`join_col` AS `account1`, `t0`.`accounting_period` AS `my_fact.accounting_period`
 FROM (SELECT `bucket_col`, `join_col`, `accounting_period`
 FROM `default`.`my_fact`
 WHERE `fiscal_year` = '2015' AND `accounting_period` = 10 AND `join_col` IS NOT NULL) AS `t0`

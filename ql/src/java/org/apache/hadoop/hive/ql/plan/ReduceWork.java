@@ -381,4 +381,12 @@ public class ReduceWork extends BaseWork {
   public TezEdgeProperty getEdgePropRef() {
     return edgeProp;
   }
+
+  @Override
+  public void abort() {
+    super.abort();
+    if (reducer != null) {
+      reducer.abort();
+    }
+  }
 }

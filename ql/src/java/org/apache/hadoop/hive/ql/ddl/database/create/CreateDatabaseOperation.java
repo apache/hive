@@ -19,15 +19,16 @@
 package org.apache.hadoop.hive.ql.ddl.database.create;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.database.desc.DescDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -64,6 +65,10 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
         database.setRemote_dbname(desc.getRemoteDbName());
       } else { // should never be here
         throw new HiveException("Unsupported database type " + database.getType() + " for " + database.getName());
+      }
+      String defaultCatalog = MetastoreConf.get(context.getConf(), MetastoreConf.ConfVars.CATALOG_DEFAULT.getVarname());
+      if (!StringUtils.isEmpty(defaultCatalog) && !defaultCatalog.equals(Warehouse.DEFAULT_CATALOG_NAME)) {
+        database.setCatalogName(defaultCatalog);
       }
       context.getDb().createDatabase(database, desc.getIfNotExists());
     } catch (AlreadyExistsException ex) {

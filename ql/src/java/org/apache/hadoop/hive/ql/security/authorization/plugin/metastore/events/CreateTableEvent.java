@@ -71,7 +71,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
 
     // Skip DFS_URI only if table location is under default db path
     if (this.needDFSUriAuth(uri, this.getDefaultTablePath(database, table))) {
-      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+      ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri));
     }
 
     return ret;
@@ -93,7 +93,7 @@ public class CreateTableEvent extends HiveMetaStoreAuthorizableEvent {
       // Skip DFS_URI for external tables and if managed table location is under default db path
       if (!MetaStoreUtils.isExternalTable(table) && this.needDFSUriAuth(uri,
           this.getDefaultTablePath(database, table))) {
-        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, null, uri));
+        ret.add(new HivePrivilegeObject(HivePrivilegeObjectType.DFS_URI, uri));
       }
     }
 

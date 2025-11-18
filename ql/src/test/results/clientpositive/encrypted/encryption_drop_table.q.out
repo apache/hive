@@ -173,3 +173,4 @@ PREHOOK: Input: database:default
 POSTHOOK: query: SHOW TABLES LIKE "encrypted_%"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
+Encryption key deleted: 'key_128'

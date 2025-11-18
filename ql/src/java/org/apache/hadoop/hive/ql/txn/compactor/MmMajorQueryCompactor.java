@@ -56,7 +56,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     //       "insert overwrite directory" command if there were no bucketing or list bucketing.
     String tmpTableName = getTempTableName(table);
     Path resultBaseDir = QueryCompactor.Util.getCompactionResultDir(
-        storageDescriptor, writeIds, driverConf, true, true, false, null);
+        storageDescriptor, writeIds, driverConf, true, true, null);
 
     List<String> createTableQueries = getCreateQueries(tmpTableName, table, storageDescriptor,
         resultBaseDir.toString());

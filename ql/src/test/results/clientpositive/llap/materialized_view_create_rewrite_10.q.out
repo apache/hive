@@ -49,7 +49,7 @@ POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@mv1
 CBO PLAN:
-HiveProject(a=[$0], b=[CAST(1):INTEGER])
+HiveProject(t1.a=[$0], t1.b=[CAST(1):INTEGER])
   HiveFilter(condition=[=($1, 1)])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
@@ -139,7 +139,8 @@ POSTHOOK: Input: default@mv1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[default, mv1]], table:alias=[default.mv1])
+HiveProject(a=[$0], b=[$1])
+  HiveTableScan(table=[[default, mv1]], table:alias=[default.mv1])
 
 PREHOOK: query: select a, b from t1 where b = 1
 PREHOOK: type: QUERY

@@ -40,7 +40,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
@@ -164,7 +163,7 @@ public class CopyUtils {
   // if not match, copy again from cm
   public void copyAndVerify(Path destRoot, List<ReplChangeManager.FileInfo> srcFiles, Path origSrcPath,
                             boolean readSrcAsFilesList, boolean overwrite)
-          throws IOException, LoginException, HiveFatalException {
+          throws IOException, HiveFatalException {
     UserGroupInformation proxyUser = getProxyUser();
     if (CollectionUtils.isEmpty(srcFiles)) {
       throw new IOException(ErrorMsg.REPL_INVALID_ARGUMENTS.format("SrcFiles can not be empty during copy operation."));
@@ -230,7 +229,7 @@ public class CopyUtils {
 
   @VisibleForTesting
   void doCopy(Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry, UserGroupInformation proxyUser,
-                      boolean useRegularCopy, boolean overwrite, DataCopyStatistics copyStatistics) throws IOException, LoginException, HiveFatalException {
+                      boolean useRegularCopy, boolean overwrite, DataCopyStatistics copyStatistics) throws IOException, HiveFatalException {
     Path destination = destMapEntry.getKey();
     List<ReplChangeManager.FileInfo> fileInfoList = destMapEntry.getValue();
     // Get the file system again from cache. There is a chance that the file system stored in the map is closed.
@@ -246,7 +245,7 @@ public class CopyUtils {
 
   private void doCopyRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
                            Path destination, UserGroupInformation proxyUser,
-                           boolean useRegularCopy, boolean overwrite, DataCopyStatistics copyStatistics) throws IOException, LoginException, HiveFatalException {
+                           boolean useRegularCopy, boolean overwrite, DataCopyStatistics copyStatistics) throws IOException, HiveFatalException {
     int repeat = 0;
     boolean isCopyError = false;
     List<Path> pathList = Lists.transform(srcFileList, ReplChangeManager.FileInfo::getEffectivePath);
@@ -537,7 +536,7 @@ public class CopyUtils {
     mkdirs(fs, path);
   }
 
-  public void doCopy(Path destination, List<Path> srcPaths) throws IOException, LoginException {
+  public void doCopy(Path destination, List<Path> srcPaths) throws IOException {
     Map<FileSystem, List<Path>> map = fsToPathMap(srcPaths);
 
     UserGroupInformation proxyUser = getProxyUser();

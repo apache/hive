@@ -59,6 +59,7 @@ public class ShowProcessListProcessor implements CommandProcessor {
     sch.addToFieldSchemas(new FieldSchema("Session Idle Time (s)", STRING_TYPE_NAME, ""));
     sch.addToFieldSchemas(new FieldSchema("Query ID", STRING_TYPE_NAME, ""));
     sch.addToFieldSchemas(new FieldSchema("State", STRING_TYPE_NAME, ""));
+    sch.addToFieldSchemas(new FieldSchema("Txn ID", STRING_TYPE_NAME, ""));
     sch.addToFieldSchemas(new FieldSchema("Opened Timestamp (s)", STRING_TYPE_NAME, ""));
     sch.addToFieldSchemas(new FieldSchema("Elapsed Time (s)", STRING_TYPE_NAME, ""));
     sch.addToFieldSchemas(new FieldSchema("Runtime (s)", STRING_TYPE_NAME, ""));
@@ -91,6 +92,7 @@ public class ShowProcessListProcessor implements CommandProcessor {
                     query.getSessionIdleTime(),
                     query.getQueryId(),
                     query.getState(),
+                    query.getTxnId(),
                     query.getBeginTime(),
                     query.getElapsedTime(),
                     query.getRuntime()

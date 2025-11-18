@@ -65,7 +65,6 @@ import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.events.EventConsumer;
@@ -86,13 +85,15 @@ public final class QueryResultsCache {
   private static final Logger LOG = LoggerFactory.getLogger(QueryResultsCache.class);
 
   public static class LookupInfo {
-    private String queryText;
-    private Supplier<ValidTxnWriteIdList> txnWriteIdListProvider;
+    private final String queryText;
+    private final Supplier<ValidTxnWriteIdList> txnWriteIdListProvider;
+    private final Set<Long> tableIds;
 
-    public LookupInfo(String queryText, Supplier<ValidTxnWriteIdList> txnWriteIdListProvider) {
+    public LookupInfo(String queryText, Supplier<ValidTxnWriteIdList> txnWriteIdListProvider, Set<Long> tableIds) {
       super();
       this.queryText = queryText;
       this.txnWriteIdListProvider = txnWriteIdListProvider;
+      this.tableIds = tableIds;
     }
 
     public String getQueryText() {
@@ -429,7 +430,7 @@ public final class QueryResultsCache {
     Set<CacheEntry> entriesToRemove = new HashSet<CacheEntry>();
     Lock readLock = rwLock.readLock();
     try {
-      // Note: ReentrantReadWriteLock deos not allow upgrading a read lock to a write lock.
+      // Note: ReentrantReadWriteLock does not allow upgrading a read lock to a write lock.
       // Care must be taken while under read lock, to make sure we do not perform any actions
       // which attempt to take a write lock.
       readLock.lock();
@@ -671,10 +672,20 @@ public final class QueryResultsCache {
    */
   private boolean entryMatches(LookupInfo lookupInfo, CacheEntry entry, Set<CacheEntry> entriesToRemove) {
     QueryInfo queryInfo = entry.getQueryInfo();
+
     for (ReadEntity readEntity : queryInfo.getInputs()) {
-      // Check that the tables used do not resolve to temp tables.
       if (readEntity.getType() == Type.TABLE) {
         Table tableUsed = readEntity.getTable();
+        // we want that the lookupInfo.tableIds are all covered by the table ids of the cache entry
+        // the query is used as cache key, so the lookup and the entry should use the same number of tables
+        // so it is enough to check whether every cache table id is contained in the lookup
+        long id = tableUsed.getTTable().getId();
+        if (!lookupInfo.tableIds.contains(id)) {
+          LOG.debug("Cache entry contains a table (tableId={}) that is not present in the query", id);
+          return false;
+        }
+
+        // Check that the tables used do not resolve to temp tables.
         Map<String, Table> tempTables =
             SessionHiveMetaStoreClient.getTempTablesForDatabase(tableUsed.getDbName(), tableUsed.getTableName());
         if (tempTables != null && tempTables.containsKey(tableUsed.getTableName())) {

@@ -81,14 +81,14 @@ class TableStatsResult
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->tableStats = array();
-                        $_size523 = 0;
-                        $_etype526 = 0;
-                        $xfer += $input->readListBegin($_etype526, $_size523);
-                        for ($_i527 = 0; $_i527 < $_size523; ++$_i527) {
-                            $elem528 = null;
-                            $elem528 = new \metastore\ColumnStatisticsObj();
-                            $xfer += $elem528->read($input);
-                            $this->tableStats []= $elem528;
+                        $_size532 = 0;
+                        $_etype535 = 0;
+                        $xfer += $input->readListBegin($_etype535, $_size532);
+                        for ($_i536 = 0; $_i536 < $_size532; ++$_i536) {
+                            $elem537 = null;
+                            $elem537 = new \metastore\ColumnStatisticsObj();
+                            $xfer += $elem537->read($input);
+                            $this->tableStats []= $elem537;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -122,8 +122,8 @@ class TableStatsResult
             }
             $xfer += $output->writeFieldBegin('tableStats', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->tableStats));
-            foreach ($this->tableStats as $iter529) {
-                $xfer += $iter529->write($output);
+            foreach ($this->tableStats as $iter538) {
+                $xfer += $iter538->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

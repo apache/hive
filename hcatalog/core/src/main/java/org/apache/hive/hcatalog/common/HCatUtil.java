@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.security.auth.login.LoginException;
-
 import com.google.common.collect.Maps;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -551,11 +549,7 @@ public class HCatUtil {
         }
       }
     }
-    try {
-      return hiveClientCache.get(hiveConf);
-    } catch (LoginException e) {
-      throw new IOException("Couldn't create hiveMetaStoreClient, Error getting UGI for user", e);
-    }
+    return hiveClientCache.get(hiveConf);
   }
 
   /**

@@ -43,11 +43,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
-HiveFilter(condition=[>($1, 1)])
-  HiveAggregate(group=[{0}], agg#0=[count($1)])
-    HiveProject(col0=[$0], col1=[$1])
-      HiveAggregate(group=[{0, 1}])
-        HiveTableScan(table=[[default, t]], table:alias=[t])
+HiveProject(col0=[$0], _c1=[$1])
+  HiveFilter(condition=[>($1, 1)])
+    HiveAggregate(group=[{0}], agg#0=[count($1)])
+      HiveProject(col0=[$0], col1=[$1])
+        HiveAggregate(group=[{0, 1}])
+          HiveTableScan(table=[[default, t]], table:alias=[t])
 
 PREHOOK: query: select col0, count(distinct col1) from t
 group by col0

@@ -34,7 +34,7 @@ SELECT * FROM acidTblDefault WHERE a = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtbldefault
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-OPTIMIZED SQL: SELECT CAST(1 AS INT) AS `$f0`
+OPTIMIZED SQL: SELECT CAST(1 AS INT) AS `acidtbldefault.a`
 FROM `default`.`acidtbldefault`
 WHERE `a` = 1
 STAGE DEPENDENCIES:

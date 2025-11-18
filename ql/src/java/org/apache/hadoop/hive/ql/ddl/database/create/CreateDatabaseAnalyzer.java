@@ -66,7 +66,7 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_DATABASECOMMENT:
         comment = unescapeSQLString(childNode.getChild(0).getText());
         break;
-      case HiveParser.TOK_DATABASEPROPERTIES:
+      case HiveParser.TOK_PROPERTIES:
         props = getProps((ASTNode) childNode.getChild(0));
         break;
       case HiveParser.TOK_DATABASELOCATION:

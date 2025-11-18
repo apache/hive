@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskType;
@@ -42,6 +43,7 @@ import org.apache.iceberg.data.IcebergGenerics2;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
@@ -123,13 +125,15 @@ public class HiveIcebergWriterTestBase {
     TableMetadata meta = ops.current();
     ops.commit(meta, meta.upgradeToFormatVersion(2));
 
+    JobConf jc = new JobConf();
+    jc.set(Catalogs.NAME, "dummy");
     JobID jobId = new JobID("test", 0);
+
     TaskAttemptID taskAttemptID =
         new TaskAttemptID(jobId.getJtIdentifier(), jobId.getId(), TaskType.MAP, 0, 0);
-    writerBuilder = WriterBuilder.builderFor(table)
+    writerBuilder = WriterBuilder.builderFor(table, jc::get)
         .attemptID(taskAttemptID)
-        .queryId("Q_ID")
-        .tableName("dummy");
+        .queryId("Q_ID");
   }
 
   @After

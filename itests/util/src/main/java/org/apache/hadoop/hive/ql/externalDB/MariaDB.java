@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.externalDB;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MariaDB extends AbstractExternalDB {
+public class MariaDB extends DockerizedDatabase {
 
   @Override
   public String getRootUser() {

@@ -115,6 +115,13 @@ public abstract class HadoopThriftAuthBridge {
     return new Server(keytabFile, principalConf, clientConf);
   }
 
+  public Server createServer(String keytabFile, String principalConf, String clientConf,
+      CallbackHandler callbackHandler) throws TTransportException {
+    Server server = new Server(keytabFile, principalConf, clientConf);
+    server.setCallbackHandler(callbackHandler);
+    return server;
+  }
+
 
   public String getServerPrincipal(String principalConfig, String host)
       throws IOException {
@@ -324,6 +331,7 @@ public abstract class HadoopThriftAuthBridge {
     protected final UserGroupInformation realUgi;
     protected final UserGroupInformation clientValidationUGI;
     protected DelegationTokenSecretManager secretManager;
+    private CallbackHandler callbackHandler;
 
     public Server() throws TTransportException {
       try {
@@ -378,6 +386,10 @@ public abstract class HadoopThriftAuthBridge {
       this.secretManager = secretManager;
     }
 
+    public void setCallbackHandler(CallbackHandler callbackHandler) {
+      this.callbackHandler = callbackHandler;
+    }
+
     /**
      * Create a TTransportFactory that, upon connection of a client socket,
      * negotiates a Kerberized SASL transport. The resulting TTransportFactory
@@ -411,11 +423,14 @@ public abstract class HadoopThriftAuthBridge {
       }
 
       TSaslServerTransport.Factory transFactory = new TSaslServerTransport.Factory();
+      CallbackHandler kerberosCallbackHandler = this.callbackHandler != null
+        ? this.callbackHandler
+        : new SaslRpcServer.SaslGssCallbackHandler();
       transFactory.addServerDefinition(
           AuthMethod.KERBEROS.getMechanismName(),
           names[0], names[1],  // two parts of kerberos principal
           saslProps,
-          new SaslRpcServer.SaslGssCallbackHandler());
+          kerberosCallbackHandler);
       transFactory.addServerDefinition(AuthMethod.DIGEST.getMechanismName(),
           null, SaslRpcServer.SASL_DEFAULT_REALM,
           saslProps, new SaslDigestCallbackHandler(secretManager));

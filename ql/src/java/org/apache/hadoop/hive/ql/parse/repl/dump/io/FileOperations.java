@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -90,7 +88,7 @@ public class FileOperations {
   /**
    * This writes the actual data in the exportRootDataDir from the source.
    */
-  private void copyFiles() throws IOException, LoginException {
+  private void copyFiles() throws IOException {
     if (mmCtx == null) {
       for (Path dataPath : dataPathList) {
         copyOneDataPath(dataPath, exportRootDataDir);
@@ -100,7 +98,7 @@ public class FileOperations {
     }
   }
 
-  private void copyOneDataPath(Path fromPath, Path toPath) throws IOException, LoginException {
+  private void copyOneDataPath(Path fromPath, Path toPath) throws IOException {
     FileStatus[] fileStatuses = LoadSemanticAnalyzer.matchFilesOrDir(dataFileSystem, fromPath);
     List<Path> srcPaths = new ArrayList<>();
     for (FileStatus fileStatus : fileStatuses) {
@@ -110,7 +108,7 @@ public class FileOperations {
     new CopyUtils(distCpDoAsUser, hiveConf, toPath.getFileSystem(hiveConf)).doCopy(toPath, srcPaths);
   }
 
-  private void copyMmPath() throws LoginException, IOException {
+  private void copyMmPath() throws IOException {
     ValidWriteIdList ids = AcidUtils.getTableValidWriteIdList(hiveConf, mmCtx.getFqTableName());
     for (Path fromPath : dataPathList) {
       fromPath = dataFileSystem.makeQualified(fromPath);
@@ -163,7 +161,7 @@ public class FileOperations {
   /**
    * Since the bootstrap will do table directory level copy, need to check for existence of src path.
    */
-  private void validateSrcPathListExists() throws IOException, LoginException {
+  private void validateSrcPathListExists() throws IOException {
     if (dataPathList.isEmpty()) {
       return;
     }

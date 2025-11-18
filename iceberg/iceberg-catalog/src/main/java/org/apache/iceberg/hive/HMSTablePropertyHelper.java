@@ -22,17 +22,20 @@ package org.apache.iceberg.hive;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hive.iceberg.com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotSummary;
+import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableProperties;
@@ -42,6 +45,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableBiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.JsonUtil;
+import org.apache.parquet.Strings;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +55,7 @@ import static org.apache.iceberg.TableProperties.GC_ENABLED;
 public class HMSTablePropertyHelper {
   private static final Logger LOG = LoggerFactory.getLogger(HMSTablePropertyHelper.class);
   public static final String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+  public static final String PARTITION_SPEC = "iceberg.mr.table.partition.spec";
 
   private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION = ImmutableBiMap.of(
       // gc.enabled in Iceberg and external.table.purge in Hive are meant to do the same things
@@ -63,7 +68,7 @@ public class HMSTablePropertyHelper {
 
   /**
    * Provides key translation where necessary between Iceberg and HMS props. This translation is needed because some
-   * properties control the same behaviour but are named differently in Iceberg and Hive. Therefore changes to these
+   * properties control the same behaviour but are named differently in Iceberg and Hive. Therefore, changes to these
    * property pairs should be synchronized.
    *
    * Example: Deleting data files upon DROP TABLE is enabled using gc.enabled=true in Iceberg and
@@ -131,6 +136,12 @@ public class HMSTablePropertyHelper {
     tbl.setParameters(parameters);
   }
 
+  public static SortOrder getSortOrder(Properties props, Schema schema) {
+    String sortOrderJsonString = props.getProperty(TableProperties.DEFAULT_SORT_ORDER);
+    return Strings.isNullOrEmpty(sortOrderJsonString) ? SortOrder.unsorted() : SortOrderParser.fromJson(schema,
+        sortOrderJsonString);
+  }
+
   private static void setCommonParameters(
       String newMetadataLocation,
       String uuid,
@@ -143,8 +154,9 @@ public class HMSTablePropertyHelper {
     if (uuid != null) {
       parameters.put(TableProperties.UUID, uuid);
     }
-
-    obsoleteProps.forEach(parameters::remove);
+    if (obsoleteProps != null) {
+      obsoleteProps.forEach(parameters::remove);
+    }
 
     parameters.put(BaseMetastoreTableOperations.TABLE_TYPE_PROP, tableType);
     parameters.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, newMetadataLocation);
@@ -158,7 +170,7 @@ public class HMSTablePropertyHelper {
 
   @VisibleForTesting
   static void setStorageHandler(Map<String, String> parameters, boolean hiveEngineEnabled) {
-    // If needed set the 'storage_handler' property to enable query from Hive
+    // If needed, set the 'storage_handler' property to enable query from Hive
     if (hiveEngineEnabled) {
       parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
     } else {
@@ -207,6 +219,16 @@ public class HMSTablePropertyHelper {
       String spec = PartitionSpecParser.toJson(metadata.spec());
       setField(parameters, TableProperties.DEFAULT_PARTITION_SPEC, spec, maxHiveTablePropertySize);
     }
+  }
+
+  public static PartitionSpec getPartitionSpec(Map<String, String> props, Schema schema) {
+    String specJson = props.getOrDefault(
+        PARTITION_SPEC,
+        props.get(TableProperties.DEFAULT_PARTITION_SPEC)
+    );
+    return Optional.ofNullable(specJson)
+        .map(spec -> PartitionSpecParser.fromJson(schema, spec))
+        .orElseGet(PartitionSpec::unpartitioned);
   }
 
   @VisibleForTesting

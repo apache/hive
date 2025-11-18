@@ -25,6 +25,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlCollation;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ConversionUtil;
@@ -311,7 +312,7 @@ public class TestHivePointLookupOptimizerRule {
     HiveFilter filter = (HiveFilter) optimizedRelNode;
     RexNode condition = filter.getCondition();
     System.out.println(condition);
-    assertEquals("OR(IN($0, 1, 2), =($1, 99))", condition.toString());
+    assertEquals("OR(=($1, 99), IN($0, 1, 2))", condition.toString());
   }
 
   /** Despite that extraction happen at a higher level; nested parts should also be handled */
@@ -519,5 +520,28 @@ public class TestHivePointLookupOptimizerRule {
     RexNode condition = filter.getCondition();
     System.out.println(condition);
     assertEquals("IN($1, 10000:DECIMAL(19, 5), 11000:DECIMAL(19, 5))", condition.toString());
+  }
+
+  @Test
+  public void testNothingToBeMergedInOrExpressionAndOperandOrderIsUnchanged() {
+    // @formatter:off
+    final RelNode basePlan = relBuilder
+            .scan("t")
+            .filter(
+                    or(relBuilder,
+                            relBuilder.call(SqlStdOperatorTable.IS_NULL, relBuilder.field("f1")),
+                            relBuilder.call(HiveIn.INSTANCE,
+                                    relBuilder.field("f1"), relBuilder.literal(1), relBuilder.literal(2))
+                      )
+                    )
+            .build();
+    // @formatter:on
+
+    planner.setRoot(basePlan);
+    RelNode optimizedRelNode = planner.findBestExp();
+
+    HiveFilter filter = (HiveFilter) optimizedRelNode;
+    RexNode condition = filter.getCondition();
+    assertEquals("OR(IS NULL($0), IN($0, 1, 2))", condition.toString());
   }
 }

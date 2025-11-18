@@ -1,8 +1,3 @@
-CTE Suggestion:
-HiveProject(d_date_sk=[$0])
-  HiveFilter(condition=[=($6, 2000)])
-    HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
-
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[100])
   HiveProject(c_customer_id=[$1])

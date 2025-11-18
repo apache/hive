@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.externalDB;
  * MySQLExternalDB is a extension of abstractExternalDB
  * Designed for MySQL external database connection
  */
-public class PostgresExternalDB extends AbstractExternalDB {
+public class PostgresExternalDB extends DockerizedDatabase {
 
     public PostgresExternalDB() {
     }

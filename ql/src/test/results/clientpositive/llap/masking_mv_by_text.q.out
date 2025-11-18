@@ -229,7 +229,8 @@ POSTHOOK: Input: default@masking_test_view_n_mv
 POSTHOOK: Input: default@masking_test_view_n_mv_masked
 #### A masked pattern was here ####
 CBO PLAN:
-HiveTableScan(table=[[default, masking_test_view_n_mv_masked]], table:alias=[default.masking_test_view_n_mv_masked])
+HiveProject(key=[$0])
+  HiveTableScan(table=[[default, masking_test_view_n_mv_masked]], table:alias=[default.masking_test_view_n_mv_masked])
 
 PREHOOK: query: select key from `masking_test_n_mv`
 PREHOOK: type: QUERY

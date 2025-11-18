@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
@@ -126,6 +127,7 @@ import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.RequestPartsSpec;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
@@ -4065,8 +4067,23 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public List<Partition> dropPartitions(String dbName, String tableName,
       List<Pair<Integer, byte[]>> partitionExpressions,
       PartitionDropOptions dropOptions) throws HiveException {
+    RequestPartsSpec rps = new RequestPartsSpec();
+    List<DropPartitionsExpr> exprs = new ArrayList<>(partitionExpressions.size());
+
+    for (Pair<Integer, byte[]> partExpr : partitionExpressions) {
+      DropPartitionsExpr dpe = new DropPartitionsExpr();
+      dpe.setExpr(partExpr.getRight());
+      dpe.setPartArchiveLevel(partExpr.getLeft());
+      exprs.add(dpe);
+    }
+    rps.setExprs(exprs);
+    return dropPartitions(new TableName(getDefaultCatalog(conf), dbName, tableName), rps, dropOptions);
+  }
+
+  public List<Partition> dropPartitions(TableName tableName,
+      RequestPartsSpec partsSpec, PartitionDropOptions dropOptions) throws HiveException {
     try {
-      Table table = getTable(dbName, tableName);
+      Table table = getTable(tableName.getDb(), tableName.getTable());
       if (!dropOptions.deleteData) {
         AcidUtils.TableSnapshot snapshot = AcidUtils.getTableSnapshot(conf, table, true);
         if (snapshot != null) {
@@ -4076,8 +4093,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
           .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
         dropOptions.setTxnId(txnId);
       }
-      List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(dbName, tableName,
-          partitionExpressions, dropOptions);
+      List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC().dropPartitions(
+          tableName, partsSpec, dropOptions, null);
       return convertFromMetastore(table, partitions);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Partition or table doesn't exist.", e);
@@ -5931,13 +5948,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
     final SessionState parentSession = SessionState.get();
     for (final FileStatus status : statuses) {
       if (null == pool) {
-        result &= FileUtils.moveToTrash(fs, status.getPath(), conf, purge);
+        result &= org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, status.getPath(), purge, conf);
       } else {
         futures.add(pool.submit(new Callable<Boolean>() {
           @Override
           public Boolean call() throws Exception {
             SessionState.setCurrentSessionState(parentSession);
-            return FileUtils.moveToTrash(fs, status.getPath(), conf, purge);
+            return org.apache.hadoop.hive.metastore.utils.FileUtils.deleteDir(fs, status.getPath(), purge, conf);
           }
         }));
       }
@@ -6164,7 +6181,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<ColumnStatisticsObj> retv = null;
     try {
       if (tbl.isNonNative() && tbl.getStorageHandler().canProvideColStatistics(tbl)) {
-        return tbl.getStorageHandler().getColStatistics(tbl);
+        return tbl.getStorageHandler().getColStatistics(tbl, colNames);
       }
       if (checkTransactional) {
         AcidUtils.TableSnapshot tableSnapshot = AcidUtils.getTableSnapshot(conf, tbl);
@@ -6448,6 +6465,21 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public void setMetaConf(String propName, String propValue) throws HiveException {
     try {
+      /*
+       * Updates the 'conf' object with session-level metastore variables
+       * ('metaConfVars'). This object is used to initialize the
+       * Thrift client connection to the Hive Metastore, ensuring that any
+       * session-specific overrides are propagated to the underlying connection.
+       *
+       * For reference on how this 'conf' object is consumed, see the client
+       * instantiation logic in:
+       * org.apache.hadoop.hive.ql.metadata.Hive#createMetaStoreClient()
+       */
+      if (Arrays.stream(MetastoreConf.metaConfVars)
+          .anyMatch(s -> s.getVarname().equals(propName))) {
+        // Storing varname prevents conflicts with HiveServer2-level configurations
+        conf.set(propName, propValue);
+      }
       getMSC().setMetaConf(propName, propValue);
     } catch (TException te) {
       throw new HiveException(te);
@@ -6620,14 +6652,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  public SQLAllTableConstraints getTableConstraints(String dbName, String tblName, long tableId)
+  public SQLAllTableConstraints getTableConstraints(String dbName, String tblName)
       throws HiveException, NoSuchObjectException {
     try {
-      ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName, tblName);
-      AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
-      request.setTableId(tableId);
-      request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
-      return getMSC().getAllTableConstraints(request);
+      return getMSC().getAllTableConstraints(
+          new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf)));
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
@@ -6636,18 +6665,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public TableConstraintsInfo getTableConstraints(String dbName, String tblName, boolean fetchReliable,
-      boolean fetchEnabled, long tableId) throws HiveException {
+      boolean fetchEnabled) throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_CONSTRAINTS);
-
     try {
-
-      ValidWriteIdList validWriteIdList = getValidWriteIdList(dbName,tblName);
-      AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf));
-      request.setValidWriteIdList(validWriteIdList != null ? validWriteIdList.writeToString() : null);
-      request.setTableId(tableId);
-
-      SQLAllTableConstraints tableConstraints = getMSC().getAllTableConstraints(request);
+      SQLAllTableConstraints tableConstraints = getMSC().getAllTableConstraints(
+          new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf)));
       if (fetchReliable && tableConstraints != null) {
         if (CollectionUtils.isNotEmpty(tableConstraints.getPrimaryKeys())) {
           tableConstraints.setPrimaryKeys(

@@ -33,7 +33,10 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 
+import com.google.common.collect.Lists;
+
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -555,6 +558,23 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
       List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options)
       throws NoSuchObjectException, MetaException, TException {
     return dropPartitions(catName, dbName, tblName, partExprs, options, null);
+  }
+
+  @Override
+  public List<Partition> dropPartitions(String catName, String dbName, String tblName,
+      List<Pair<Integer, byte[]>> partExprs, PartitionDropOptions options, EnvironmentContext context)
+      throws NoSuchObjectException, MetaException, TException {
+    RequestPartsSpec rps = new RequestPartsSpec();
+    List<DropPartitionsExpr> exprs = new ArrayList<>(partExprs.size());
+
+    for (Pair<Integer, byte[]> partExpr : partExprs) {
+      DropPartitionsExpr dpe = new DropPartitionsExpr();
+      dpe.setExpr(partExpr.getRight());
+      dpe.setPartArchiveLevel(partExpr.getLeft());
+      exprs.add(dpe);
+    }
+    rps.setExprs(exprs);
+    return dropPartitions(new TableName(catName, dbName, tblName), rps, options, context);
   }
 
   @Override

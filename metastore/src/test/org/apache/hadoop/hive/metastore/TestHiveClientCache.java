@@ -30,7 +30,6 @@ import static org.junit.Assert.assertTrue;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Test;
 
-import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -42,7 +41,7 @@ public class TestHiveClientCache {
   final HiveConf hiveConf = new HiveConf();
 
   @Test
-  public void testCacheHit() throws IOException, MetaException, LoginException {
+  public void testCacheHit() throws IOException, MetaException {
     HiveClientCache cache = new HiveClientCache(1000);
     HiveClientCache.ICacheableMetaStoreClient client =
         (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
@@ -60,7 +59,7 @@ public class TestHiveClientCache {
   }
 
   @Test
-  public void testCacheMiss() throws IOException, MetaException, LoginException {
+  public void testCacheMiss() throws IOException, MetaException {
     HiveClientCache cache = new HiveClientCache(1000);
     IMetaStoreClient client = cache.get(hiveConf);
     assertNotNull(client);
@@ -77,7 +76,7 @@ public class TestHiveClientCache {
    * Also verify that the expiry time configuration is honoured
    */
   @Test
-  public void testCacheExpiry() throws IOException, MetaException, LoginException, InterruptedException {
+  public void testCacheExpiry() throws IOException, MetaException, InterruptedException {
     HiveClientCache cache = new HiveClientCache(1);
     HiveClientCache.ICacheableMetaStoreClient client =
         (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);
@@ -105,7 +104,7 @@ public class TestHiveClientCache {
 
     class GetHiveClient implements Callable<IMetaStoreClient> {
       @Override
-      public IMetaStoreClient call() throws IOException, MetaException, LoginException {
+      public IMetaStoreClient call() throws IOException, MetaException {
         return cache.get(hiveConf);
       }
     }
@@ -126,7 +125,7 @@ public class TestHiveClientCache {
   }
 
   @Test
-  public void testCloseAllClients() throws IOException, MetaException, LoginException {
+  public void testCloseAllClients() throws IOException, MetaException {
     final HiveClientCache cache = new HiveClientCache(1000);
     HiveClientCache.ICacheableMetaStoreClient client1 =
         (HiveClientCache.ICacheableMetaStoreClient) cache.get(hiveConf);

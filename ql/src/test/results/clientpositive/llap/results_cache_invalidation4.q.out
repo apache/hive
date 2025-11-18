@@ -1,0 +1,62 @@
+PREHOOK: query: CREATE TABLE author (fname STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@author
+POSTHOOK: query: CREATE TABLE author (fname STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@author
+PREHOOK: query: INSERT INTO author VALUES ('Victor')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@author
+POSTHOOK: query: INSERT INTO author VALUES ('Victor')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@author
+POSTHOOK: Lineage: author.fname SCRIPT []
+PREHOOK: query: SELECT fname FROM author
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT fname FROM author
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+#### A masked pattern was here ####
+Victor
+PREHOOK: query: DROP TABLE author
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@author
+PREHOOK: Output: database:default
+PREHOOK: Output: default@author
+POSTHOOK: query: DROP TABLE author
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@author
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@author
+PREHOOK: query: CREATE TABLE author (fname STRING) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@author
+POSTHOOK: query: CREATE TABLE author (fname STRING) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@author
+PREHOOK: query: INSERT INTO author VALUES ('Alexander')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@author
+POSTHOOK: query: INSERT INTO author VALUES ('Alexander')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@author
+POSTHOOK: Lineage: author.fname SCRIPT []
+PREHOOK: query: SELECT fname FROM author
+PREHOOK: type: QUERY
+PREHOOK: Input: default@author
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT fname FROM author
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@author
+#### A masked pattern was here ####
+Alexander

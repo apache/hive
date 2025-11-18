@@ -19,5 +19,5 @@
 import sys
 
 for line in sys.stdin:
-  print "1\\\\n2"
+  print("1\\\\n2")
 

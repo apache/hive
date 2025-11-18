@@ -18,11 +18,15 @@
 package org.apache.hadoop.hive.metastore.utils;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Iterators;
+import java.util.Collections;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.TableIterable;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +94,7 @@ public class TableFetcher {
     this.tableFilter = String.join(" and ", conditions);
   }
 
-  public List<TableName> getTables() throws Exception {
+  public List<TableName> getTableNames() throws Exception {
     List<TableName> candidates = new ArrayList<>();
 
     // if tableTypes is empty, then a list with single empty string has to specified to scan no tables.
@@ -102,19 +106,54 @@ public class TableFetcher {
     List<String> databases = client.getDatabases(catalogName, dbPattern);
 
     for (String db : databases) {
-      Database database = client.getDatabase(catalogName, db);
-      if (MetaStoreUtils.checkIfDbNeedsToBeSkipped(database)) {
-        LOG.debug("Skipping table under database: {}", db);
-        continue;
-      }
-      if (MetaStoreUtils.isDbBeingPlannedFailedOver(database)) {
-        LOG.info("Skipping table that belongs to database {} being failed over.", db);
-        continue;
-      }
-      List<String> tablesNames = client.listTableNamesByFilter(catalogName, db, tableFilter, -1);
+      List<String> tablesNames = getTableNamesForDatabase(catalogName, db);
       tablesNames.forEach(tablesName -> candidates.add(TableName.fromString(tablesName, catalogName, db)));
     }
     return candidates;
+  }
+
+  public Iterable<Table> getTables(Set<String> skipDBs, Set<String> skipTables, int maxBatchSize) throws Exception {
+    // if tableTypes is empty, then a list with single empty string has to specified to scan no tables.
+    if (tableTypes.isEmpty()) {
+      LOG.info("Table fetcher returns empty list as no table types specified");
+      return Collections.emptyList();
+    }
+
+    List<String> databases = client.getDatabases(catalogName, dbPattern).stream()
+        .filter(dbName -> skipDBs == null || !skipDBs.contains(dbName))
+        .toList();
+
+    return () -> Iterators.concat(
+        Iterators.transform(databases.iterator(), db -> {
+          try {
+            List<String> tableNames = getTableNamesForDatabase(catalogName, db).stream()
+                .filter(tableName -> skipTables == null || !skipTables.contains(TableName.getDbTable(db, tableName)))
+                .toList();
+            return new TableIterable(client, db, tableNames, maxBatchSize).iterator();
+          } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch tables for db: " + db, e);
+          }
+        })
+    );
+  }
+
+  public Iterable<Table> getTables(int maxBatchSize) throws Exception {
+    return getTables(null, null, maxBatchSize);
+  }
+
+  private List<String> getTableNamesForDatabase(String catalogName, String dbName) throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    Database database = client.getDatabase(catalogName, dbName);
+    if (MetaStoreUtils.checkIfDbNeedsToBeSkipped(database)) {
+      LOG.debug("Skipping table under database: {}", dbName);
+      return tableNames;
+    }
+    if (MetaStoreUtils.isDbBeingPlannedFailedOver(database)) {
+      LOG.info("Skipping table that belongs to database {} being failed over.", dbName);
+      return tableNames;
+    }
+    tableNames = client.listTableNamesByFilter(catalogName, dbName, tableFilter, -1);
+    return tableNames;
   }
 
   public static class Builder {

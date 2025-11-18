@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -140,29 +139,6 @@ public class IcebergAcidUtil {
   }
 
   /**
-   * @param dataCols The columns of the original file read schema
-   * @param table The table object - it is used for populating the partition struct meta column
-   * @return The schema for reading files, extended with metadata columns needed for deletes
-   */
-  public static Schema createFileReadSchemaForUpdate(List<Types.NestedField> dataCols, Table table) {
-    List<Types.NestedField> cols = Lists.newArrayListWithCapacity(dataCols.size() + FILE_READ_META_COLS.size());
-    FILE_READ_META_COLS.forEach((metaCol, index) -> {
-      if (metaCol == PARTITION_STRUCT_META_COL) {
-        cols.add(MetadataColumns.metadataColumn(table, MetadataColumns.PARTITION_COLUMN_NAME));
-      } else {
-        cols.add(metaCol);
-      }
-    });
-    // Old column values
-    cols.addAll(dataCols.stream()
-        .map(f -> Types.NestedField.optional(1147483545 + f.fieldId(), "__old_value_for" + f.name(), f.type()))
-        .collect(Collectors.toList()));
-    // New column values
-    cols.addAll(dataCols);
-    return new Schema(cols);
-  }
-
-  /**
    * @param dataCols The columns of the serde projection schema
    * @return The schema for SerDe operations, extended with metadata columns needed for deletes
    */
@@ -172,34 +148,10 @@ public class IcebergAcidUtil {
     // Old column values
     cols.addAll(dataCols.stream()
         .map(f -> Types.NestedField.optional(1147483545 + f.fieldId(), "__old_value_for_" + f.name(), f.type()))
-        .collect(Collectors.toList()));
+        .toList());
     // New column values
     cols.addAll(dataCols);
     return new Schema(cols);
-  }
-
-  /**
-   * Get the original record from the updated record. Populate the `original` with the filed values from `rec`.
-   * @param rec The record read by the file scan task, which contains both the metadata fields and the row data fields
-   * @param original The record object to populate. The end result is the original record before the update.
-   */
-  public static void populateWithOriginalValues(Record rec, Record original) {
-    int dataOffset = SERDE_META_COLS.size();
-    for (int i = dataOffset; i < dataOffset + original.size(); ++i) {
-      original.set(i - dataOffset, rec.get(i));
-    }
-  }
-
-  /**
-   * Get the new record from the updated record. Populate the `newRecord` with the filed values from `rec`.
-   * @param rec The record read by the file scan task, which contains both the metadata fields and the row data fields
-   * @param newRecord The record object to populate. The end result is the new record after the update.
-   */
-  public static void populateWithNewValues(Record rec, Record newRecord) {
-    int dataOffset = SERDE_META_COLS.size() + newRecord.size();
-    for (int i = dataOffset; i < dataOffset + newRecord.size(); ++i) {
-      newRecord.set(i - dataOffset, rec.get(i));
-    }
   }
 
   public static int parseSpecId(Record rec) {
@@ -261,28 +213,18 @@ public class IcebergAcidUtil {
     }
   }
 
-  public static void setPositionDeleteInfo(Configuration conf, int specId, long partitionHash,
-      String filePath, long filePos, String partProjection) {
-    PositionDeleteInfo.setIntoConf(conf, specId, partitionHash, filePath, filePos, partProjection);
-  }
-
   public static class VirtualColumnAwareIterator<T> implements CloseableIterator<T> {
 
     private final CloseableIterator<T> currentIterator;
-
-    private GenericRecord current;
-    private final Schema expectedSchema;
+    private final GenericRecord current;
     private final Configuration conf;
-    private final Table table;
 
-    public VirtualColumnAwareIterator(CloseableIterator<T> currentIterator, Schema expectedSchema, Configuration conf,
-                                      Table table) {
+    public VirtualColumnAwareIterator(
+        CloseableIterator<T> currentIterator, Schema expectedSchema, Configuration conf) {
       this.currentIterator = currentIterator;
-      this.expectedSchema = expectedSchema;
+      this.current = GenericRecord.create(
+          new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
       this.conf = conf;
-      current = GenericRecord.create(
-              new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
-      this.table = table;
     }
 
     @Override
@@ -313,18 +255,13 @@ public class IcebergAcidUtil {
   public static class MergeTaskVirtualColumnAwareIterator<T> implements CloseableIterator<T> {
 
     private final CloseableIterator<T> currentIterator;
-    private GenericRecordBuilder<T> recordBuilder;
-    private final Schema expectedSchema;
-    private final Configuration conf;
+    private final GenericRecordBuilder<T> recordBuilder;
     private final PartitionSpec partitionSpec;
     private final StructLike partition;
 
-    public MergeTaskVirtualColumnAwareIterator(CloseableIterator<T> currentIterator,
-                                           Schema expectedSchema, Configuration conf, ContentFile contentFile,
-                                           Table table) {
+    public MergeTaskVirtualColumnAwareIterator(
+        CloseableIterator<T> currentIterator, Schema expectedSchema, ContentFile<?> contentFile, Table table) {
       this.currentIterator = currentIterator;
-      this.expectedSchema = expectedSchema;
-      this.conf = conf;
       this.partition = contentFile.partition();
       this.recordBuilder = new GenericRecordBuilder<>(
           new Schema(expectedSchema.columns().subList(0, expectedSchema.columns().size())));

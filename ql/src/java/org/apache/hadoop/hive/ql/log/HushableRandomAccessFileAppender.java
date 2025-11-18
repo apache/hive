@@ -1,5 +1,3 @@
-package org.apache.hadoop.hive.ql.log;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with
@@ -16,6 +14,7 @@ package org.apache.hadoop.hive.ql.log;
  * See the license for the specific language governing permissions and
  * limitations under the license.
  */
+package org.apache.hadoop.hive.ql.log;
 
 import java.io.Serializable;
 import java.util.HashMap;

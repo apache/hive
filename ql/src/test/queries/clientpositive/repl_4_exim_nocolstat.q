@@ -2,7 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.test.mode=true;
 set hive.test.mode.prefix=;
 set hive.test.mode.nosamplelist=replsrc,repldst;
-set metastore.try.direct.sql=false;
+set metaconf:metastore.try.direct.sql=false;
 set hive.metastore.rawstore.impl=org.apache.hadoop.hive.metastore.ObjectStore;
 set hive.repl.run.data.copy.tasks.on.target=false;
 

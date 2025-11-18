@@ -36,4 +36,4 @@ POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@mytable1
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1_n44
-POSTHOOK: Lineage: t1_n44.bound1 SCRIPT [(mytable1)mytable1.FieldSchema(name:string1, type:string, comment:null), (mytable1)mytable1.FieldSchema(name:mytime, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: t1_n44.bound1 EXPRESSION [(mytable1)mytable1.FieldSchema(name:string1, type:string, comment:null), (mytable1)mytable1.FieldSchema(name:mytime, type:timestamp, comment:null), ]

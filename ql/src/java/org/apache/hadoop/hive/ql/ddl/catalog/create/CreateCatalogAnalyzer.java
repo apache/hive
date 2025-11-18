@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+import java.util.Map;
+
 /**
  * Analyzer for catalog creation commands.
  */
@@ -46,6 +48,7 @@ public class CreateCatalogAnalyzer extends BaseSemanticAnalyzer {
 
     boolean ifNotExists = false;
     String comment = null;
+    Map<String, String> props = null;
 
     for (int i = 2; i < root.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) root.getChild(i);
@@ -56,12 +59,15 @@ public class CreateCatalogAnalyzer extends BaseSemanticAnalyzer {
         case HiveParser.TOK_CATALOGCOMMENT:
           comment = unescapeSQLString(childNode.getChild(0).getText());
           break;
+        case HiveParser.TOK_PROPERTIES:
+          props = getProps((ASTNode) childNode.getChild(0));
+          break;
         default:
           throw new SemanticException("Unrecognized token in CREATE CATALOG statement");
       }
     }
 
-    CreateCatalogDesc desc = new CreateCatalogDesc(catalogName, comment, locationUrl, ifNotExists);
+    CreateCatalogDesc desc = new CreateCatalogDesc(catalogName, comment, locationUrl, ifNotExists, props);
     Catalog catalog = new Catalog(catalogName, locationUrl);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));

@@ -388,6 +388,7 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
+  @SqlRetry(lockInternally = true)
   @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   LockResponse checkLock(CheckLockRequest rqst)
@@ -425,7 +426,7 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
-  @SqlRetry
+  @SqlRetry(lockInternally = true)
   @Transactional(POOL_TX)
   @RetrySemantics.SafeToRetry
   void heartbeat(HeartbeatRequest ids)
@@ -715,7 +716,7 @@ public interface TxnStore extends Configurable {
 
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
-   * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
+   * min(max(TXNS.txn_id), min(WRITE_SET.WS_TXNID), min(Aborted TXNS.txn_id)).
    */
   @SqlRetry
   @Transactional(POOL_COMPACTOR)
@@ -742,25 +743,10 @@ public interface TxnStore extends Configurable {
   void cleanEmptyAbortedAndCommittedTxns() throws MetaException;
 
   /**
-   * This will take all entries assigned to workers
-   * on a host return them to INITIATED state.  The initiator should use this at start up to
-   * clean entries from any workers that were in the middle of compacting when the metastore
-   * shutdown.  It does not reset entries from worker threads on other hosts as those may still
-   * be working.
-   * @param hostname Name of this host.  It is assumed this prefixes the thread's worker id,
-   *                 so that like hostname% will match the worker id.
-   */
-  @SqlRetry
-  @Transactional(POOL_COMPACTOR)
-  @RetrySemantics.Idempotent
-  void revokeFromLocalWorkers(String hostname) throws MetaException;
-
-  /**
    * This call will return all compaction queue
    * entries assigned to a worker but over the timeout back to the initiated state.
    * This should be called by the initiator on start up and occasionally when running to clean up
-   * after dead threads.  At start up {@link #revokeFromLocalWorkers(String)} should be called
-   * first.
+   * after dead threads.
    * @param timeout number of milliseconds since start time that should elapse before a worker is
    *                declared dead.
    */

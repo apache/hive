@@ -55,6 +55,8 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.ddl.table.convert.AlterTableConvertOperation;
 import org.apache.hadoop.hive.ql.ddl.table.create.like.CreateTableLikeDesc;
@@ -74,7 +76,6 @@ import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.StorageFormat;
-import org.apache.hadoop.hive.ql.parse.TableMask;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
@@ -186,6 +187,29 @@ public class CreateTableAnalyzer extends CalcitePlanner {
       return JSON_OBJECT_MAPPER.writer().writeValueAsString(sortFields);
     } catch (JsonProcessingException e) {
       LOG.warn("Can not create write order json. ", e);
+      return null;
+    }
+  }
+
+  /**
+   * Converts AST child nodes to a JSON string of Z-order fields.
+   * Returns null if JSON serialization fails.
+   *
+   * @param ast AST node containing Z-order field names
+   * @return JSON string of Z-order fields or null on error
+   */
+  private String getZOrderJson(ASTNode ast) {
+    List<ZOrderFieldDesc> zOrderFieldDescs = new ArrayList<>();
+    ZOrderFields zOrderFields = new ZOrderFields(zOrderFieldDescs);
+    for (int i = 0; i < ast.getChildCount(); i++) {
+      ASTNode child = (ASTNode) ast.getChild(i);
+      String name = unescapeIdentifier(child.getText()).toLowerCase();
+      zOrderFieldDescs.add(new ZOrderFieldDesc(name));
+    }
+    try {
+      return JSON_OBJECT_MAPPER.writer().writeValueAsString(zOrderFields);
+    } catch (JsonProcessingException e) {
+      LOG.warn("Can not create z-order json. ", e);
       return null;
     }
   }
@@ -337,6 +361,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
     List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
     List<SQLNotNullConstraint> notNullConstraints = new ArrayList<>();
     List<SQLDefaultConstraint> defaultConstraints = new ArrayList<>();
+    List<ConstraintsUtils.ConstraintInfo> defaultConstraintInfo = new ArrayList<>();
     List<SQLCheckConstraint> checkConstraints = new ArrayList<>();
     List<Order> sortCols = new ArrayList<Order>();
     int numBuckets = -1;
@@ -461,14 +486,14 @@ public class CreateTableAnalyzer extends CalcitePlanner {
           break;
         case HiveParser.TOK_TABCOLLIST:
           cols = getColumns(child, true, ctx.getTokenRewriteStream(), primaryKeys, foreignKeys, uniqueConstraints,
-              notNullConstraints, defaultConstraints, checkConstraints, conf);
+              notNullConstraints, defaultConstraintInfo, checkConstraints, conf);
           break;
         case HiveParser.TOK_TABLECOMMENT:
           comment = unescapeSQLString(child.getChild(0).getText());
           break;
         case HiveParser.TOK_TABLEPARTCOLS:
           partCols = getColumns(child, false, ctx.getTokenRewriteStream(), primaryKeys, foreignKeys, uniqueConstraints,
-              notNullConstraints, defaultConstraints, checkConstraints, conf);
+              notNullConstraints, defaultConstraintInfo, checkConstraints, conf);
           if (hasConstraints(partCols, defaultConstraints, notNullConstraints, checkConstraints)) {
             //TODO: these constraints should be supported for partition columns
             throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg(
@@ -494,6 +519,9 @@ public class CreateTableAnalyzer extends CalcitePlanner {
           break;
         case HiveParser.TOK_WRITE_LOCALLY_ORDERED:
           sortOrder = getSortOrderJson((ASTNode) child.getChild(0));
+          break;
+        case HiveParser.TOK_WRITE_LOCALLY_ORDERED_BY_ZORDER:
+          sortOrder = getZOrderJson((ASTNode) child.getChild(0));
           break;
         case HiveParser.TOK_TABLEROWFORMAT:
           rowFormatParams.analyzeRowFormat(child);
@@ -542,15 +570,6 @@ public class CreateTableAnalyzer extends CalcitePlanner {
       queryState.setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
     } else {
       throw new SemanticException("Unrecognized command.");
-    }
-
-    if (isExt && ConstraintsUtils.hasEnabledOrValidatedConstraints(notNullConstraints, defaultConstraints,
-        checkConstraints)) {
-      throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg(
-          "Constraints are disallowed with External tables. " + "Only RELY is allowed."));
-    }
-    if (checkConstraints != null && !checkConstraints.isEmpty()) {
-      ConstraintsUtils.validateCheckConstraint(cols, checkConstraints, ctx.getConf());
     }
 
     storageFormat.fillDefaultStorageFormat(isExt, false);
@@ -648,15 +667,30 @@ public class CreateTableAnalyzer extends CalcitePlanner {
         } else {
           tblLocation = getDefaultLocation(qualifiedTabName.getDb(), qualifiedTabName.getTable(), isExt);
         }
+        boolean isNativeColumnDefaultSupported = false;
         try {
           HiveStorageHandler storageHandler = HiveUtils.getStorageHandler(conf, storageFormat.getStorageHandler());
           if (storageHandler != null) {
             storageHandler.addResourcesForCreateTable(tblProps, conf);
+            isNativeColumnDefaultSupported = storageHandler.supportsDefaultColumnValues(tblProps);
           }
         } catch (HiveException e) {
           throw new RuntimeException(e);
         }
+
+        ConstraintsUtils.constraintInfosToDefaultConstraints(qualifiedTabName, defaultConstraintInfo,
+            crtTblDesc.getDefaultConstraints(), isNativeColumnDefaultSupported);
         SessionStateUtil.addResourceOrThrow(conf, META_TABLE_LOCATION, tblLocation);
+
+        if (isExt && ConstraintsUtils.hasEnabledOrValidatedConstraints(notNullConstraints, crtTblDesc.getDefaultConstraints(),
+            checkConstraints, isNativeColumnDefaultSupported)) {
+          throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg(
+              "Constraints are disallowed with External tables. " + "Only RELY is allowed."));
+        }
+
+        if (checkConstraints != null && !checkConstraints.isEmpty()) {
+          ConstraintsUtils.validateCheckConstraint(cols, checkConstraints, ctx.getConf());
+        }
         break;
       case CTT: // CREATE TRANSACTIONAL TABLE
         if (isExt && !isDefaultTableTypeChanged) {

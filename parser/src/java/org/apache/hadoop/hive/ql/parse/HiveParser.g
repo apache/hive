@@ -156,8 +156,10 @@ TOK_LIST;
 TOK_STRUCT;
 TOK_MAP;
 TOK_UNIONTYPE;
+TOK_VARIANT;
 TOK_COLTYPELIST;
 TOK_CREATECATALOG;
+TOK_PROPERTIES;
 TOK_CREATEDATABASE;
 TOK_CREATEDATACONNECTOR;
 TOK_CREATETABLE;
@@ -169,7 +171,6 @@ TOK_DATACONNECTORCOMMENT;
 TOK_DATACONNECTORTYPE;
 TOK_DATACONNECTORURL;
 TOK_DATACONNECTOROWNER;
-TOK_DATACONNECTORPROPERTIES;
 TOK_DROPDATACONNECTOR;
 TOK_DESCTABLE;
 TOK_DESCFUNCTION;
@@ -377,11 +378,11 @@ TOK_DESCCATALOG;
 TOK_CATALOGLOCATION;
 TOK_CATALOGCOMMENT;
 TOK_ALTERCATALOG_LOCATION;
+TOK_ALTERCATALOG_PROPERTIES;
 TOK_DESCDATABASE;
-TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
 TOK_DATABASE_MANAGEDLOCATION;
-TOK_DBPROPLIST;
+TOK_PROPLIST;
 TOK_ALTERDATABASE_PROPERTIES;
 TOK_ALTERDATABASE_OWNER;
 TOK_ALTERDATABASE_LOCATION;
@@ -523,6 +524,7 @@ TOK_AS_OF_VERSION;
 TOK_FROM_VERSION;
 TOK_AS_OF_TAG;
 TOK_WRITE_LOCALLY_ORDERED;
+TOK_WRITE_LOCALLY_ORDERED_BY_ZORDER;
 }
 
 
@@ -567,6 +569,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_NULLS", "NULLS");
     xlateMap.put("KW_LAST", "LAST");
     xlateMap.put("KW_ORDER", "ORDER");
+    xlateMap.put("KW_ZORDER", "ZORDER");
     xlateMap.put("KW_ORDERED", "ORDERED");
     xlateMap.put("KW_LOCALLY", "LOCALLY");
     xlateMap.put("KW_BY", "BY");
@@ -681,7 +684,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_LIMIT", "LIMIT");
     xlateMap.put("KW_OFFSET", "OFFSET");
     xlateMap.put("KW_SET", "SET");
-    xlateMap.put("KW_PROPERTIES", "TBLPROPERTIES");
+    xlateMap.put("KW_PROPERTIES", "PROPERTIES");
     xlateMap.put("KW_VALUE_TYPE", "\$VALUE\$");
     xlateMap.put("KW_ELEM_TYPE", "\$ELEM\$");
     xlateMap.put("KW_DEFINED", "DEFINED");
@@ -1126,7 +1129,8 @@ createCatalogStatement
         name=identifier
         catLocation
         catalogComment?
-    -> ^(TOK_CREATECATALOG $name catLocation ifNotExists? catalogComment?)
+        (KW_PROPERTIES catprops=properties)?
+    -> ^(TOK_CREATECATALOG $name catLocation ifNotExists? catalogComment? $catprops?)
     ;
 
 catLocation
@@ -1141,6 +1145,13 @@ catalogComment
 @after { popMsg(state); }
     : KW_COMMENT comment=StringLiteral
     -> ^(TOK_CATALOGCOMMENT $comment)
+    ;
+
+properties
+@init { pushMsg("properties", state); }
+@after { popMsg(state); }
+    :
+      LPAREN propertiesList RPAREN -> ^(TOK_PROPERTIES propertiesList)
     ;
 
 dropCatalogStatement
@@ -1159,7 +1170,7 @@ createDatabaseStatement
         databaseComment?
         dbLocation?
         dbManagedLocation?
-        (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
+        (KW_WITH KW_DBPROPERTIES dbprops=properties)?
     -> ^(TOK_CREATEDATABASE $name ifNotExists? dbLocation? dbManagedLocation? databaseComment? $dbprops?)
 
     | KW_CREATE KW_REMOTE (KW_DATABASE|KW_SCHEMA)
@@ -1167,7 +1178,7 @@ createDatabaseStatement
         name=identifier
         databaseComment?
         dbConnectorName
-        (KW_WITH KW_DBPROPERTIES dbprops=dbProperties)?
+        (KW_WITH KW_DBPROPERTIES dbprops=properties)?
     -> ^(TOK_CREATEDATABASE $name ifNotExists? databaseComment? $dbprops? dbConnectorName)
     ;
 
@@ -1185,18 +1196,11 @@ dbManagedLocation
       KW_MANAGEDLOCATION locn=StringLiteral -> ^(TOK_DATABASE_MANAGEDLOCATION $locn)
     ;
 
-dbProperties
-@init { pushMsg("dbproperties", state); }
+propertiesList
+@init { pushMsg("properties list", state); }
 @after { popMsg(state); }
     :
-      LPAREN dbPropertiesList RPAREN -> ^(TOK_DATABASEPROPERTIES dbPropertiesList)
-    ;
-
-dbPropertiesList
-@init { pushMsg("database properties list", state); }
-@after { popMsg(state); }
-    :
-      keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_DBPROPLIST keyValueProperty+)
+      keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_PROPLIST keyValueProperty+)
     ;
 
 dbConnectorName
@@ -1873,12 +1877,20 @@ tableImplBuckets
     -> ^(TOK_ALTERTABLE_BUCKETS $num)
     ;
 
-tableWriteLocallyOrdered
-@init { pushMsg("table sorted specification", state); }
+tableWriteLocallyOrderedBy
+@init { pushMsg("table write locally ordered by specification", state); }
 @after { popMsg(state); }
     :
-      KW_WRITE KW_LOCALLY KW_ORDERED KW_BY sortCols=columnNameOrderList
-    -> ^(TOK_WRITE_LOCALLY_ORDERED $sortCols?)
+      KW_WRITE (KW_LOCALLY)? KW_ORDERED KW_BY
+      (
+        // Z-order: WRITE [LOCALLY] ORDERED BY zorder(col1, col2, ...)
+        KW_ZORDER LPAREN sortColsZ=columnNameList RPAREN
+        -> ^(TOK_WRITE_LOCALLY_ORDERED_BY_ZORDER $sortColsZ?)
+      |
+        // Regular sort: WRITE [LOCALLY] ORDERED BY col1 ASC, col2 DESC null first, ...
+        sortCols=columnNameOrderList
+        -> ^(TOK_WRITE_LOCALLY_ORDERED $sortCols?)
+      )
     ;
     
 tableSkewed
@@ -2285,11 +2297,16 @@ columnRefOrder
 columnNameType
 @init { pushMsg("column specification", state); }
 @after { popMsg(state); }
-    : colName=identifier colType (KW_COMMENT comment=StringLiteral)?
-    -> {containExcludedCharForCreateTableColumnName($colName.text)}? {throwColumnNameException()}
-    -> {$comment == null}? ^(TOK_TABCOL $colName colType)
-    ->                     ^(TOK_TABCOL $colName colType $comment)
+    : colName=identifier colType
+      (KW_COMMENT comment=StringLiteral)?
+      defaultClause
+    -> ^(TOK_TABCOL $colName colType $comment? defaultClause?)
     ;
+
+defaultClause
+    : (KW_DEFAULT v=expression -> ^(TOK_DEFAULT_VALUE $v))?
+    ;
+
 
 columnNameTypeOrConstraint
 @init { pushMsg("column name or constraint", state); }
@@ -2389,7 +2406,8 @@ type
     | listType
     | structType
     | mapType
-    | unionType;
+    | unionType
+    | variantType;
 
 primitiveType
 @init { pushMsg("primitive type specification", state); }
@@ -2440,6 +2458,12 @@ unionType
 @init { pushMsg("uniontype type", state); }
 @after { popMsg(state); }
     : KW_UNIONTYPE LESSTHAN colTypeList GREATERTHAN -> ^(TOK_UNIONTYPE colTypeList)
+    ;
+
+variantType
+@init { pushMsg("variant type", state); }
+@after { popMsg(state); }
+    : KW_VARIANT -> TOK_VARIANT
     ;
 
 setOperator

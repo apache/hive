@@ -43,3 +43,4 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_table_n4
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table_n4
+Encryption key deleted: 'key_128'

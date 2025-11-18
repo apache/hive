@@ -18,7 +18,7 @@ POSTHOOK: query: EXPLAIN EXTENDED SELECT explode(array(1, 2, 3)) AS myCol FROM s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `col` AS `mycol`
 FROM TABLE(EXPLODE(ARRAY[1, 2, 3]))
 LIMIT 3
 STAGE DEPENDENCIES:
@@ -52,10 +52,11 @@ POSTHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `col`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `col` AS `a.mycol`, `$f1` AS `_c1`
+FROM (SELECT `col`, COUNT(*) AS `$f1`
 FROM TABLE(EXPLODE(ARRAY[1, 2, 3]))
 GROUP BY `col`
-LIMIT 3
+LIMIT 3) AS `t3`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -323,7 +324,7 @@ POSTHOOK: query: EXPLAIN EXTENDED SELECT a.myKey, a.myVal, count(1) FROM (SELECT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT *
+OPTIMIZED SQL: SELECT `key` AS `a.mykey`, `value` AS `a.myval`, `$f2` AS `_c2`
 FROM (SELECT `key`, `value`, COUNT(*) AS `$f2`
 FROM TABLE(EXPLODE(MAP[1, 'one', 2, 'two', 3, 'three']))
 GROUP BY `key`, `value`

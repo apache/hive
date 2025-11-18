@@ -48,10 +48,10 @@ POSTHOOK: query: insert into ice01 values (1,5),(2,5),(3,5),(4,5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
-PREHOOK: query: delete from ice01
+PREHOOK: query: delete from `ice01`
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@ice01
-POSTHOOK: query: delete from ice01
+POSTHOOK: query: delete from `ice01`
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain analyze delete from ice01
@@ -200,10 +200,10 @@ POSTHOOK: query: insert into ice01 values (1,5),(2,5),(3,5),(4,5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
-PREHOOK: query: delete from ice01
+PREHOOK: query: delete from `ice01`
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@ice01
-POSTHOOK: query: delete from ice01
+POSTHOOK: query: delete from `ice01`
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain analyze delete from ice01
@@ -351,10 +351,10 @@ POSTHOOK: query: insert into ice01 values (1,5),(2,5),(3,5),(4,5)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice01
-PREHOOK: query: delete from ice01
+PREHOOK: query: delete from `ice01`
 PREHOOK: type: TRUNCATETABLE
 PREHOOK: Output: default@ice01
-POSTHOOK: query: delete from ice01
+POSTHOOK: query: delete from `ice01`
 POSTHOOK: type: TRUNCATETABLE
 POSTHOOK: Output: default@ice01
 PREHOOK: query: explain analyze delete from ice01

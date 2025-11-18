@@ -304,16 +304,6 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     return metaClients;
   }
 
-  void doUnlock(HiveLock lock) {
-    if (lock != null) {
-      try {
-        lock.unlock();
-      } catch (Exception e) {
-        LOG.warn("Failed to unlock {}.{}", database, tableName, e);
-      }
-    }
-  }
-
   /**
    * Returns if the hive engine related values should be enabled on the table, or not.
    * <p>

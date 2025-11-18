@@ -97,7 +97,7 @@ final class AlterTableArchiveUtils {
   static void deleteDir(Path dir, boolean shouldEnableCm, Configuration conf) throws HiveException {
     try {
       Warehouse wh = new Warehouse(conf);
-      wh.deleteDir(dir, true, false, shouldEnableCm);
+      wh.deleteDir(dir, false, shouldEnableCm);
     } catch (MetaException e) {
       throw new HiveException(e);
     }

@@ -1972,7 +1972,7 @@ public class TezCompiler extends TaskCompiler {
       for (SemijoinOperatorInfo roi : reductionFactorMap.values()) {
         // This semijoin will be kept
         // We are going to adjust the filter statistics
-        long newNumRows = (long) (1.0 - roi.reductionFactor) * roi.filterStats.getNumRows();
+        long newNumRows = (long) ((1.0 - roi.reductionFactor) * roi.filterStats.getNumRows());
         if (LOG.isDebugEnabled()) {
           LOG.debug("Old stats for {}: {}", roi.filterOperator, roi.filterStats);
           LOG.debug("Number of rows reduction: {}/{}", newNumRows, roi.filterStats.getNumRows());

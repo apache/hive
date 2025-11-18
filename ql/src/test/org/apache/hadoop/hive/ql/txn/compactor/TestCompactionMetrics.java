@@ -86,6 +86,7 @@ public class TestCompactionMetrics  extends CompactorTest {
   public void setUp() throws Exception {
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.METRICS_ENABLED, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, true);
+    TxnHandler.ConfVars.setUseMinHistoryLevel(true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
     MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
     // re-initialize metrics

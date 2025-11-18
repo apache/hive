@@ -54,7 +54,7 @@
     <!--
     enable file based auth for Hive on metastore side, i.e. enforce metadata 
     security as if it were stored together with data
-    https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization
+    https://hive.apache.org/docs/latest/language/languagemanual-authorization
     <property>
         <name>hive.metastore.execute.setugi</name>
         <value>true</value>

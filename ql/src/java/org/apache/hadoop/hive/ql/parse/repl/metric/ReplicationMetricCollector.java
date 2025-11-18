@@ -136,6 +136,22 @@ public abstract class ReplicationMetricCollector {
     }
   }
 
+  public void setSrcTimeInProgress(long endTimeOnSrc) throws SemanticException {
+    if (isEnabled) {
+      LOG.debug("Updating last commit time on src in progress as: {}", endTimeOnSrc);
+      Progress progress = replicationMetric.getProgress();
+      Stage stage = progress.getStageByName("REPL_LOAD");
+      if (stage == null) {
+        return;
+      }
+      stage.setEndTimeOnSrc(endTimeOnSrc);
+      stage.setEndTimeOnTgt(getCurrentTimeInMillis());
+      progress.addStage(stage);
+      replicationMetric.setProgress(progress);
+      metricCollector.addMetric(replicationMetric);
+    }
+  }
+
   public void reportStageEnd(String stageName, Status status, long lastReplId,
       SnapshotUtils.ReplSnapshotCount replSnapshotCount, ReplStatsTracker replStatsTracker) throws SemanticException {
     unRegisterMBeanSafe();

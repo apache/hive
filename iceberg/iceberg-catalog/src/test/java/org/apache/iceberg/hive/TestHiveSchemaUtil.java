@@ -220,7 +220,7 @@ public class TestHiveSchemaUtil {
     // Convert to TypeInfo
     assertThat(HiveSchemaUtil.convert(type)).isEqualTo(typeInfo);
     // Convert to Type
-    assertEquals(type, HiveSchemaUtil.convert(typeInfo));
+    assertEquals(type, HiveSchemaUtil.convert(typeInfo, null));
   }
 
   /**

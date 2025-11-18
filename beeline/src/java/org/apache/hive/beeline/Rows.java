@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
 abstract class Rows implements Iterator {
   protected final BeeLine beeLine;
   final ResultSetMetaData rsMeta;
-  final Boolean[] primaryKeys;
   final NumberFormat numberFormat;
   private boolean convertBinaryArrayToString;
   private final String nullStr;
@@ -51,8 +50,6 @@ abstract class Rows implements Iterator {
     this.beeLine = beeLine;
     nullStr = beeLine.getOpts().getNullString();
     rsMeta = rs.getMetaData();
-    int count = rsMeta.getColumnCount();
-    primaryKeys = new Boolean[count];
     if (beeLine.getOpts().getNumberFormat().equals("default")) {
       numberFormat = null;
     } else {
@@ -71,45 +68,6 @@ abstract class Rows implements Iterator {
    * maximum length of each column in the Rows.
    */
   abstract void normalizeWidths();
-
-  /**
-   * Return whether the specified column (0-based index) is
-   * a primary key. Since this method depends on whether the
-   * JDBC driver property implements {@link ResultSetMetaData#getTableName} (many do not), it
-   * is not reliable for all databases.
-   */
-  boolean isPrimaryKey(int col) {
-    if (primaryKeys[col] == null) {
-      try {
-        // this doesn't always work, since some JDBC drivers (e.g.,
-        // Oracle's) return a blank string from getDbTableName.
-        String table = rsMeta.getTableName(col + 1);
-        String column = rsMeta.getColumnName(col + 1);
-
-        if (table == null || table.isEmpty() || column == null || column.isEmpty()) {
-          primaryKeys[col] = Boolean.FALSE;
-        } else {
-          ResultSet pks = beeLine.getDatabaseConnection().getDatabaseMetaData().getPrimaryKeys(
-              beeLine.getDatabaseConnection().getDatabaseMetaData().getConnection().getCatalog(), null, table);
-
-          primaryKeys[col] = Boolean.FALSE;
-          try {
-            while (pks.next()) {
-              if (column.equalsIgnoreCase(pks.getString("COLUMN_NAME"))) {
-                primaryKeys[col] = Boolean.TRUE;
-                break;
-              }
-            }
-          } finally {
-            pks.close();
-          }
-        }
-      } catch (SQLException sqle) {
-        primaryKeys[col] = Boolean.FALSE;
-      }
-    }
-    return primaryKeys[col].booleanValue();
-  }
 
   class Row {
     final String[] values;
@@ -134,7 +92,7 @@ abstract class Rows implements Iterator {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
       return Arrays.asList(values).toString();
     }
 
@@ -156,7 +114,7 @@ abstract class Rows implements Iterator {
       } catch (Throwable t) {
       }
 
-       for (int i = 0; i < size; i++) {
+      for (int i = 0; i < size; i++) {
         Object o = rs.getObject(i + 1);
         String value = null;
 
@@ -164,9 +122,9 @@ abstract class Rows implements Iterator {
           value = nullStr;
         } else if (o instanceof Number) {
           value = numberFormat != null ? numberFormat.format(o) :
-              o instanceof BigDecimal ? ((BigDecimal)o).toPlainString() : o.toString();
+                  o instanceof BigDecimal ? ((BigDecimal) o).toPlainString() : o.toString();
         } else if (o instanceof byte[]) {
-          value = convertBinaryArrayToString ? new String((byte[])o, StandardCharsets.UTF_8) : Base64.getEncoder().withoutPadding().encodeToString((byte[])o);
+          value = convertBinaryArrayToString ? new String((byte[]) o, StandardCharsets.UTF_8) : Base64.getEncoder().withoutPadding().encodeToString((byte[]) o);
         } else {
           value = rs.getString(i + 1);
         }

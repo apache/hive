@@ -43,4 +43,4 @@ default	authorization_fail			user2	USER	SELECT	false	-1	user1
 PREHOOK: query: GRANT SELECT ON authorization_fail TO USER user3
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@authorization_fail
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation GRANT_PRIVILEGE [[SELECT with grant] on Object [type=TABLE_OR_VIEW, name=default.authorization_fail]]
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation GRANT_PRIVILEGE [[SELECT with grant] on Object [type=TABLE_OR_VIEW, name=hive.default.authorization_fail]]

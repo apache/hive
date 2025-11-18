@@ -18,27 +18,78 @@
 
 package org.apache.hadoop.hive.metastore.leader;
 
-import java.io.IOException;
+import com.google.common.annotations.VisibleForTesting;
 
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang3.EnumUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 
 /**
  * Simple factory for creating the elector
  */
 public class LeaderElectionFactory {
+  public enum Method {
+    HOST, LOCK
+  }
 
-  public static LeaderElection create(Configuration conf) throws IOException  {
+  private static final Map<Method, ElectionCreator> ELECTION_CREATOR_MAP = new ConcurrentHashMap<>();
+  static {
+    addElectionCreator(Method.HOST, conf -> new StaticLeaderElection());
+    addElectionCreator(Method.LOCK, conf -> new LeaseLeaderElection());
+  }
+
+  private LeaderElectionFactory() {
+    throw new AssertionError("The constructor shouldn't be called");
+  }
+
+  public static LeaderElection create(Configuration conf) throws IOException {
     String method =
         MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION);
-    switch (method.toLowerCase()) {
-      case "host":
-        return new StaticLeaderElection();
-      case "lock":
-        return new LeaseLeaderElection();
-      default:
-        throw new UnsupportedOperationException(method + " is not supported for electing the leader");
+    Method m = EnumUtils.getEnum(Method.class, method.toUpperCase());
+    ElectionCreator creator = null;
+    if (m != null) {
+      creator = ELECTION_CREATOR_MAP.get(m);
     }
+    if (creator == null) {
+      throw new UnsupportedOperationException(method + " not supported for electing the leader");
+    }
+    return creator.createElector(conf);
+  }
+
+  public static Object getMutex(Configuration conf, LeaderElectionContext.TTYPE ttype, String servHost) {
+    String method =
+        MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_ELECTION);
+    Method m = EnumUtils.getEnum(Method.class, method.toUpperCase());
+    if (m != null) {
+      switch (m) {
+      case HOST:
+        return servHost;
+      case LOCK:
+        TableName mutex = ttype.getTableName();
+        String namespace =
+            MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_HOUSEKEEPING_LEADER_LOCK_NAMESPACE);
+        if (StringUtils.isNotEmpty(namespace)) {
+          return new TableName(mutex.getCat(), namespace, mutex.getTable());
+        }
+        return mutex;
+      }
+    }
+    throw new UnsupportedOperationException(method + " not supported for leader election");
+  }
+
+  @VisibleForTesting
+  public static void addElectionCreator(Method method, ElectionCreator creator) {
+    ELECTION_CREATOR_MAP.put(method, creator);
+  }
+
+  public interface ElectionCreator {
+    LeaderElection createElector(Configuration conf) throws IOException;
   }
 
 }

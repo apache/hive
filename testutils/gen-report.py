@@ -86,14 +86,14 @@ def plot_testsuite_time(json_data, top_k=TOP_K, ascii_graph=False, report_file=N
 	for k,v in take(d_descending.iteritems(), top_k):
 		gdata.append((k, v))
 
-	print '\nTop ' + str(top_k) + ' testsuite in terms of execution time (in seconds).. [Total time: ' + str(overall_time) + ' seconds]'
+	print('\nTop ' + str(top_k) + ' testsuite in terms of execution time (in seconds).. [Total time: ' + str(overall_time) + ' seconds]')
 	if ascii_graph:
 		graph = Pyasciigraph()
 		for line in  graph.graph('', gdata):
-			print line
+			print(line)
 	else:
 		for line in gdata:
-			print line[0] + "\t" + str(line[1])
+			print(line[0] + "\t" + str(line[1]))
 
 		if report_file != None:
 			with open(report_file, "w") as f:
@@ -119,7 +119,7 @@ def plot_testcase_time(json_data, top_k=TOP_K, ascii_graph=False, report_file=No
 					else:
 						testcase_time[name] = time
 		if int(suite['testsuite']['@tests']) == 0:
-			print "Empty batch detected for testsuite: " + suite['testsuite']['@name'] + " which took " + suite['testsuite']['@time'] + "s"
+			print("Empty batch detected for testsuite: " + suite['testsuite']['@name'] + " which took " + suite['testsuite']['@time'] + "s")
 				
 	d_descending = OrderedDict(sorted(testcase_time.items(), 
                                   key=lambda kv: kv[1], reverse=True))
@@ -129,14 +129,14 @@ def plot_testcase_time(json_data, top_k=TOP_K, ascii_graph=False, report_file=No
 		gdata.append((k, v))
 
 
-	print '\nTop ' + str(top_k) + ' testcases in terms of execution time (in seconds).. [Total time: ' + str(overall_time) + ' seconds]'
+	print('\nTop ' + str(top_k) + ' testcases in terms of execution time (in seconds).. [Total time: ' + str(overall_time) + ' seconds]')
 	if ascii_graph:
 		graph = Pyasciigraph()
 		for line in  graph.graph('', gdata):
-			print line
+			print(line)
 	else:
 		for line in gdata:
-			print line[0] + "\t" + str(line[1])
+			print(line[0] + "\t" + str(line[1]))
 
 		if report_file != None:
 			with open(report_file, "a") as f:
@@ -175,7 +175,7 @@ def print_report(reportUrl, json_dump, top_k, ascii_graph, report_file=None):
 	links = get_links(reportUrl)
 	# Create a queue to communicate with the worker threads
 	q = Queue.Queue()
-	print "\nProcessing " + str(len(links)) + " test xml reports from " + reportUrl + ".."
+	print("\nProcessing " + str(len(links)) + " test xml reports from " + reportUrl + "..")
 	# Create 8 worker threads
 	for x in range(8):
  		worker = ReportDownloader(q)

@@ -152,4 +152,8 @@ public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectI
     return new IcebergRecordObjectInspector(structType, fieldObjectInspectors);
   }
 
+  @Override
+  public ObjectInspector variant(Types.VariantType variantType) {
+    return IcebergVariantObjectInspector.get();
+  }
 }

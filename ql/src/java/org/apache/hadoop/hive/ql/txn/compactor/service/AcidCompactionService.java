@@ -105,7 +105,7 @@ public class AcidCompactionService extends CompactionService {
   public void cleanupResultDirs(CompactionInfo ci) {
     // result directory for compactor to write new files
     Path resultDir = QueryCompactor.Util.getCompactionResultDir(sd, tblValidWriteIds, conf,
-        ci.type == CompactionType.MAJOR, false, false, dir);
+        ci.type == CompactionType.MAJOR, false, dir);
     LOG.info("Deleting result directories created by the compactor:\n");
     try {
       FileSystem fs = resultDir.getFileSystem(conf);
@@ -114,7 +114,7 @@ public class AcidCompactionService extends CompactionService {
 
       if (ci.type == CompactionType.MINOR) {
         Path deleteDeltaDir = QueryCompactor.Util.getCompactionResultDir(sd, tblValidWriteIds, conf,
-            false, true, false, dir);
+            false, true, dir);
 
         LOG.info(deleteDeltaDir.toString());
         fs.delete(deleteDeltaDir, true);

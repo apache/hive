@@ -38,7 +38,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@acid_vectorized_n1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT SUM(`$f0`) AS `$f0`
+OPTIMIZED SQL: SELECT SUM(`$f0`) AS `_c0`
 FROM (SELECT *
 FROM (SELECT NULL AS `$f0`) AS `t`
 WHERE 1 = 0) AS `t`

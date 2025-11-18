@@ -59,7 +59,7 @@ public class TestDagUtilsSecurityEnabled {
   @Test
   public void testAddCredentialsWithCredentialSupplierNewTokenAdded() {
     IncrementalIntDagCredentialSupplier supplier = new IncrementalIntDagCredentialSupplier();
-    DagUtils dagUtils = new DagUtils(Collections.singletonList(supplier));
+    DagUtils dagUtils = new DagUtils(() -> Collections.singletonList(supplier));
     DAG dag = DAG.create("test_credentials_dag");
 
     dagUtils.addCredentials(mock(MapWork.class), dag, null);
@@ -70,7 +70,7 @@ public class TestDagUtilsSecurityEnabled {
   @Test
   public void testAddCredentialsWithCredentialSupplierTokenExistsNothingAdded() {
     IncrementalIntDagCredentialSupplier supplier = new IncrementalIntDagCredentialSupplier();
-    DagUtils dagUtils = new DagUtils(Collections.singletonList(supplier));
+    DagUtils dagUtils = new DagUtils(() -> Collections.singletonList(supplier));
     DAG dag = DAG.create("test_credentials_dag");
     Token<TokenIdentifier> oldToken = new Token<>();
     // Add explicitly the token in the DAG before calling addCredentials simulating the use-case where the DAG has already the token

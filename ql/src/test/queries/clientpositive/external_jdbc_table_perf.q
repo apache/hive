@@ -1,11 +1,11 @@
---! qt:disabled:HIVE-25379
+--!qt:database:derby:qdb
 --! qt:dataset:src
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
 
 FROM src
 SELECT
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE CATALOG_SALES ("cs_sold_date_sk" INTEGER, "cs_sold_time_sk" INTEGER, "cs_ship_date_sk" INTEGER, "cs_bill_customer_sk" INTEGER,
   "cs_bill_cdemo_sk" INTEGER, "cs_bill_hdemo_sk" INTEGER, "cs_bill_addr_sk" INTEGER, "cs_ship_customer_sk" INTEGER, "cs_ship_cdemo_sk" INTEGER,
   "cs_ship_hdemo_sk" INTEGER, "cs_ship_addr_sk" INTEGER, "cs_call_center_sk" INTEGER, "cs_catalog_page_sk" INTEGER, "cs_ship_mode_sk" INTEGER,
@@ -14,7 +14,7 @@ dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;creat
   "cs_ext_wholesale_cost" DECIMAL(7,2), "cs_ext_list_price" DECIMAL(7,2), "cs_ext_tax" DECIMAL(7,2), "cs_coupon_amt" DECIMAL(7,2),
   "cs_ext_ship_cost" DECIMAL(7,2), "cs_net_paid" DECIMAL(7,2), "cs_net_paid_inc_tax" DECIMAL(7,2), "cs_net_paid_inc_ship" DECIMAL(7,2),
   "cs_net_paid_inc_ship_tax" DECIMAL(7,2), "cs_net_profit" DECIMAL(7,2))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE CATALOG_RETURNS ("cr_returned_date_sk" INTEGER, "cr_returned_time_sk" INTEGER, "cr_item_sk" INTEGER, "cr_refunded_customer_sk" INTEGER,
   "cr_refunded_cdemo_sk" INTEGER, "cr_refunded_hdemo_sk" INTEGER, "cr_refunded_addr_sk" INTEGER, "cr_returning_customer_sk" INTEGER,
   "cr_returning_cdemo_sk" INTEGER, "cr_returning_hdemo_sk" INTEGER, "cr_returning_addr_sk" INTEGER, "cr_call_center_sk" INTEGER,
@@ -22,19 +22,19 @@ dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;creat
   "cr_return_quantity" INTEGER, "cr_return_amount" DECIMAL(7,2), "cr_return_tax" DECIMAL(7,2), "cr_return_amt_inc_tax" DECIMAL(7,2),
   "cr_fee" DECIMAL(7,2), "cr_return_ship_cost" DECIMAL(7,2), "cr_refunded_cash" DECIMAL(7,2), "cr_reversed_charge" DECIMAL(7,2),
   "cr_store_credit" DECIMAL(7,2), "cr_net_loss" DECIMAL(7,2))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE STORE_SALES ("ss_sold_date_sk" INTEGER, "ss_sold_time_sk" INTEGER, "ss_item_sk" INTEGER, "ss_customer_sk" INTEGER, "ss_cdemo_sk" INTEGER,
   "ss_hdemo_sk" INTEGER, "ss_addr_sk" INTEGER, "ss_store_sk" INTEGER, "ss_promo_sk" INTEGER, "ss_ticket_number" INTEGER, "ss_quantity" INTEGER,
   "ss_wholesale_cost" DECIMAL(7,2), "ss_list_price" DECIMAL(7,2), "ss_sales_price" DECIMAL(7,2), "ss_ext_discount_amt" DECIMAL(7,2),
   "ss_ext_sales_price" DECIMAL(7,2), "ss_ext_wholesale_cost" DECIMAL(7,2), "ss_ext_list_price" DECIMAL(7,2), "ss_ext_tax" DECIMAL(7,2),
   "ss_coupon_amt" DECIMAL(7,2), "ss_net_paid" DECIMAL(7,2), "ss_net_paid_inc_tax" DECIMAL(7,2), "ss_net_profit" DECIMAL(7,2))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE STORE_RETURNS ("sr_returned_date_sk" INTEGER, "sr_return_time_sk" INTEGER, "sr_item_sk" INTEGER, "sr_customer_sk" INTEGER,
   "sr_cdemo_sk" INTEGER, "sr_hdemo_sk" INTEGER, "sr_addr_sk" INTEGER, "sr_store_sk" INTEGER, "sr_reason_sk" INTEGER, "sr_ticket_number" INTEGER,
   "sr_return_quantity" INTEGER, "sr_return_amt" DECIMAL(7,2), "sr_return_tax" DECIMAL(7,2), "sr_return_amt_inc_tax" DECIMAL(7,2),
   "sr_fee" DECIMAL(7,2), "sr_return_ship_cost" DECIMAL(7,2), "sr_refunded_cash" DECIMAL(7,2), "sr_reversed_charge" DECIMAL(7,2),
   "sr_store_credit" DECIMAL(7,2), "sr_net_loss" DECIMAL(7,2))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE WEB_SALES ("ws_sold_date_sk" INTEGER, "ws_sold_time_sk" INTEGER, "ws_ship_date_sk" INTEGER, "ws_item_sk" INTEGER,
   "ws_bill_customer_sk" INTEGER, "ws_bill_cdemo_sk" INTEGER, "ws_bill_hdemo_sk" INTEGER, "ws_bill_addr_sk" INTEGER, "ws_ship_customer_sk" INTEGER,
   "ws_ship_cdemo_sk" INTEGER, "ws_ship_hdemo_sk" INTEGER, "ws_ship_addr_sk" INTEGER, "ws_web_page_sk" INTEGER, "ws_web_site_sk" INTEGER,
@@ -43,47 +43,47 @@ dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;creat
   "ws_ext_sales_price" DECIMAL(7,2), "ws_ext_wholesale_cost" DECIMAL(7,2), "ws_ext_list_price" DECIMAL(7,2), "ws_ext_tax" DECIMAL(7,2),
   "ws_coupon_amt" DECIMAL(7,2), "ws_ext_ship_cost" DECIMAL(7,2), "ws_net_paid" DECIMAL(7,2), "ws_net_paid_inc_tax" DECIMAL(7,2),
   "ws_net_paid_inc_ship" DECIMAL(7,2), "ws_net_paid_inc_ship_tax" DECIMAL(7,2), "ws_net_profit" DECIMAL(7,2))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE WEB_RETURNS ("wr_returned_date_sk" INTEGER, "wr_returned_time_sk" INTEGER, "wr_item_sk" INTEGER, "wr_refunded_customer_sk" INTEGER,
   "wr_refunded_cdemo_sk" INTEGER, "wr_refunded_hdemo_sk" INTEGER, "wr_refunded_addr_sk" INTEGER, "wr_returning_customer_sk" INTEGER,
   "wr_returning_cdemo_sk" INTEGER, "wr_returning_hdemo_sk" INTEGER, "wr_returning_addr_sk" INTEGER, "wr_web_page_sk" INTEGER,
   "wr_reason_sk" INTEGER, "wr_order_number" INTEGER, "wr_return_quantity" INTEGER, "wr_return_amt" DECIMAL(7,2), "wr_return_tax" DECIMAL(7,2),
   "wr_return_amt_inc_tax" DECIMAL(7,2), "wr_fee" DECIMAL(7,2), "wr_return_ship_cost" DECIMAL(7,2), "wr_refunded_cash" DECIMAL(7,2),
   "wr_reversed_charge" DECIMAL(7,2), "wr_account_credit" DECIMAL(7,2), "wr_net_loss" DECIMAL(7,2))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE CUSTOMER ("c_customer_sk" INTEGER, "c_customer_id" CHAR(16), "c_current_cdemo_sk" INTEGER, "c_current_hdemo_sk" INTEGER,
   "c_current_addr_sk" INTEGER, "c_first_shipto_date_sk" INTEGER, "c_first_sales_date_sk" INTEGER, "c_salutation" CHAR(10),
   "c_first_name" CHAR(20), "c_last_name" CHAR(30), "c_preferred_cust_flag" CHAR(1), "c_birth_day" INTEGER, "c_birth_month" INTEGER,
   "c_birth_year" INTEGER, "c_birth_country" VARCHAR(20), "c_login" CHAR(13), "c_email_address" CHAR(50), "c_last_review_date" CHAR(10))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE CUSTOMER_ADDRESS ("ca_address_sk" INTEGER, "ca_address_id" CHAR(16), "ca_street_number" CHAR(10), "ca_street_name" VARCHAR(60),
   "ca_street_type" CHAR(15), "ca_suite_number" CHAR(10), "ca_city" VARCHAR(60), "ca_county" VARCHAR(30), "ca_state" CHAR(2),
   "ca_zip" CHAR(10), "ca_country" VARCHAR(20), "ca_gmt_offset" DECIMAL(5,2), "ca_location_type" CHAR(20))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE CUSTOMER_DEMOGRAPHICS ("cd_demo_sk" INTEGER, "cd_gender" CHAR(1), "cd_marital_status" CHAR(1), "cd_education_status" CHAR(20),
   "cd_purchase_estimate" INTEGER, "cd_credit_rating" CHAR(10), "cd_dep_count" INTEGER, "cd_dep_employed_count" INTEGER,
   "cd_dep_college_count" INTEGER)' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE INVENTORY ("inv_date_sk" INTEGER, "inv_item_sk" INTEGER, "inv_warehouse_sk" INTEGER, "inv_quantity_on_hand" INTEGER)' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE ITEM ("i_item_sk" INTEGER, "i_item_id" CHAR(16), "i_rec_start_date" DATE, "i_rec_end_date" DATE,
   "i_item_desc" VARCHAR(200), "i_current_price" DECIMAL(7,2), "i_wholesale_cost" DECIMAL(7,2), "i_brand_id" INTEGER,
   "i_brand" CHAR(50), "i_class_id" INTEGER, "i_class" CHAR(50), "i_category_id" INTEGER, "i_category" CHAR(50),
   "i_manufact_id" INTEGER, "i_manufact" CHAR(50), "i_size" CHAR(20), "i_formulation" CHAR(20), "i_color" CHAR(20),
   "i_units" CHAR(10), "i_container" CHAR(10), "i_manager_id" INTEGER, "i_product_name" CHAR(50))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE WAREHOUSE ("w_warehouse_sk" INTEGER, "w_warehouse_id" CHAR(16), "w_warehouse_name" VARCHAR(20),
   "w_warehouse_sq_ft" INTEGER, "w_street_number" CHAR(10), "w_street_name" VARCHAR(60), "w_street_type" CHAR(15),
   "w_suite_number" CHAR(10), "w_city" VARCHAR(60), "w_county" VARCHAR(30), "w_state" CHAR(2), "w_zip" CHAR(10),
   "w_country" VARCHAR(20), "w_gmt_offset" DECIMAL(5,2))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE DATE_DIM ("d_date_sk" INTEGER, "d_date_id" CHAR(16), "d_date" DATE, "d_month_seq" INTEGER, "d_week_seq" INTEGER,
   "d_quarter_seq" INTEGER, "d_year" INTEGER, "d_dow" INTEGER, "d_moy" INTEGER, "d_dom" INTEGER, "d_qoy" INTEGER,
   "d_fy_year" INTEGER, "d_fy_quarter_seq" INTEGER, "d_fy_week_seq" INTEGER, "d_day_name" CHAR(9), "d_quarter_name" CHAR(6),
   "d_holiday" CHAR(1), "d_weekend" CHAR(1), "d_following_holiday" CHAR(1), "d_first_dom" INTEGER, "d_last_dom" INTEGER,
   "d_same_day_ly" INTEGER, "d_same_day_lq" INTEGER, "d_current_day" CHAR(1), "d_current_week" CHAR(1), "d_current_month" CHAR(1),
   "d_current_quarter" CHAR(1), "d_current_year" CHAR(1))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE STORE ("s_store_sk" INTEGER, "s_store_id" CHAR(16), "s_rec_start_date" DATE, "s_rec_end_date" DATE,
   "s_closed_date_sk" INTEGER, "s_store_name" VARCHAR(50), "s_number_employees" INTEGER, "s_floor_space" INTEGER,
   "s_hours" CHAR(20), "s_manager" VARCHAR(40), "s_market_id" INTEGER, "s_geography_class" VARCHAR(100),
@@ -91,14 +91,14 @@ dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;creat
   "s_company_id" INTEGER, "s_company_name" VARCHAR(50), "s_street_number" VARCHAR(10), "s_street_name" VARCHAR(60),
   "s_street_type" CHAR(15), "s_suite_number" CHAR(10), "s_city" VARCHAR(60), "s_county" VARCHAR(30),
   "s_state" CHAR(2), "s_zip" CHAR(10), "s_country" VARCHAR(20), "s_gmt_offset" DECIMAL(5,2), "s_tax_precentage" DECIMAL(5,2))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE HOUSEHOLD_DEMOGRAPHICS ("hd_demo_sk" INTEGER, "hd_income_band_sk" INTEGER, "hd_buy_potential" CHAR(15),
   "hd_dep_count" INTEGER, "hd_vehicle_count" INTEGER)' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE TIME_DIM ("t_time_sk" INTEGER, "t_time_id" CHAR(16), "t_time" INTEGER, "t_hour" INTEGER,
   "t_minute" INTEGER, "t_second" INTEGER, "t_am_pm" CHAR(2), "t_shift" CHAR(20), "t_sub_shift" CHAR(20),
   "t_meal_time" CHAR(20))' ),
-dboutput ('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;create=true','user1','passwd1',
+dboutput ('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'CREATE TABLE REASON ("r_reason_sk" INTEGER, "r_reason_id" CHAR(16), "r_reason_desc" CHAR(100))' )
 limit 1;
 
@@ -143,8 +143,8 @@ CREATE EXTERNAL TABLE catalog_sales
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "CATALOG_SALES",
@@ -184,8 +184,8 @@ CREATE EXTERNAL TABLE catalog_returns
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "CATALOG_RETURNS",
@@ -221,8 +221,8 @@ CREATE EXTERNAL TABLE store_sales
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "STORE_SALES",
@@ -255,8 +255,8 @@ CREATE EXTERNAL TABLE store_returns
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "STORE_RETURNS",
@@ -303,8 +303,8 @@ CREATE EXTERNAL TABLE web_sales
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "WEB_SALES",
@@ -341,8 +341,8 @@ CREATE EXTERNAL TABLE web_returns
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "WEB_RETURNS",
@@ -373,8 +373,8 @@ CREATE EXTERNAL TABLE customer
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "CUSTOMER",
@@ -400,8 +400,8 @@ CREATE EXTERNAL TABLE customer_address
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "CUSTOMER_ADDRESS",
@@ -423,8 +423,8 @@ CREATE EXTERNAL TABLE customer_demographics
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "CUSTOMER_DEMOGRAPHICS",
@@ -441,8 +441,8 @@ CREATE EXTERNAL TABLE inventory
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "INVENTORY",
@@ -477,8 +477,8 @@ CREATE EXTERNAL TABLE item
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "ITEM",
@@ -505,8 +505,8 @@ CREATE EXTERNAL TABLE warehouse
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "WAREHOUSE",
@@ -547,8 +547,8 @@ CREATE EXTERNAL TABLE date_dim
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "DATE_DIM",
@@ -590,8 +590,8 @@ CREATE EXTERNAL TABLE store
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "STORE",
@@ -609,8 +609,8 @@ CREATE EXTERNAL TABLE household_demographics
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "HOUSEHOLD_DEMOGRAPHICS",
@@ -633,8 +633,8 @@ CREATE EXTERNAL TABLE time_dim
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "TIME_DIM",
@@ -650,8 +650,8 @@ CREATE EXTERNAL TABLE reason
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
                 "hive.sql.database.type" = "DERBY",
-                "hive.sql.jdbc.driver" = "org.apache.derby.jdbc.EmbeddedDriver",
-                "hive.sql.jdbc.url" = "jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf;collation=TERRITORY_BASED:PRIMARY",
+                "hive.sql.jdbc.driver" = "org.apache.derby.iapi.jdbc.AutoloadedDriver",
+                "hive.sql.jdbc.url" = "${system:hive.test.database.qdb.jdbc.url};collation=TERRITORY_BASED:PRIMARY",
                 "hive.sql.dbcp.username" = "user1",
                 "hive.sql.dbcp.password" = "passwd1",
                 "hive.sql.table" = "REASON",
@@ -1981,38 +1981,38 @@ DROP TABLE reason;
 
 FROM src
 SELECT
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE CATALOG_SALES' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE CATALOG_RETURNS' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE STORE_SALES' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE STORE_RETURNS' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE WEB_SALES' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE WEB_RETURNS' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE CUSTOMER' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE CUSTOMER_ADDRESS' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE CUSTOMER_DEMOGRAPHICS' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE INVENTORY' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE ITEM' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE WAREHOUSE' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE DATE_DIM' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE STORE' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE HOUSEHOLD_DEMOGRAPHICS' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE TIME_DIM' ),
-dboutput('jdbc:derby:;databaseName=${system:test.tmp.dir}/test_derby_perf','user1','passwd1',
+dboutput('${system:hive.test.database.qdb.jdbc.url}','user1','passwd1',
 'DROP TABLE REASON' )
 limit 1;

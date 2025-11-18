@@ -447,8 +447,9 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[percentile_disc($0, $1)], agg#1=[percentile_disc($1) WITHIN GROUP ([0])])
-  HiveValues(tuples=[[]])
+HiveProject(_c0=[$0], _c1=[$1])
+  HiveAggregate(group=[{}], agg#0=[percentile_disc($0, $1)], agg#1=[percentile_disc($1) WITHIN GROUP ([0])])
+    HiveValues(tuples=[[]])
 
 PREHOOK: query: select percentile_disc(cast(key as bigint), 0.5),
        percentile_disc(0.5) within group (order by cast(key as bigint))

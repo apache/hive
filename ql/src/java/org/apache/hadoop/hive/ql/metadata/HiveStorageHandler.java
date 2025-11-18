@@ -76,7 +76,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.OutputFormat;
-import org.apache.hadoop.mapred.TaskAttemptContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -182,16 +181,14 @@ public interface HiveStorageHandler extends Configurable {
   void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties);
 
   /**
-   * Deprecated use configureInputJobProperties/configureOutputJobProperties
-   * methods instead.
-   *
    * Configures properties for a job based on the definition of the
    * source or target table it accesses.
    *
    * @param tableDesc descriptor for the table being accessed
+   * @param jobProperties receives properties copied or transformed from the table properties
    *
-   * @param jobProperties receives properties copied or transformed
-   * from the table properties
+   * @deprecated since 4.0.1, will be removed in 5.0.0,
+   * use {@link #configureInputJobProperties} and {@link #configureOutputJobProperties} instead.
    */
   @Deprecated
   void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties);
@@ -286,10 +283,24 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Returns column statistics (upper/lower bounds, number of Null/NaN values, NDVs, histogram).
    * @param table table object
+   * @param colNames list of column names            
    * @return list of ColumnStatisticsObj objects
    */
-  default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+  default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table, 
+        List<String> colNames) {
     return null;
+  }
+
+  /**
+   * Returns column statistics (upper/lower bounds, number of Null/NaN values, NDVs, histogram).
+   * @param table table object
+   *
+   * @deprecated since 4.1.0, will be removed in 5.0.0,
+   * use {@link #getColStatistics(org.apache.hadoop.hive.ql.metadata.Table, List<String>)} instead.
+   */
+  @Deprecated
+  default List<ColumnStatisticsObj> getColStatistics(org.apache.hadoop.hive.ql.metadata.Table table) {
+    return getColStatistics(table, null);
   }
 
   /**
@@ -340,7 +351,14 @@ public interface HiveStorageHandler extends Configurable {
   default boolean canComputeQueryUsingStats(Partish partish) {
     return false;
   }
-  
+
+  /**
+   * Check if the storage handler can answer a few queries like count(1) purely using statistics.
+   * @param table table wrapper object
+   *
+   * @deprecated since 4.0.1, will be removed in 5.0.0,
+   * use {@link #canComputeQueryUsingStats(Partish)} instead.
+   */
   @Deprecated
   default boolean canComputeQueryUsingStats(org.apache.hadoop.hive.ql.metadata.Table table) {
     return canComputeQueryUsingStats(Partish.buildFor(table));
@@ -657,6 +675,13 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Commits the inserts for the non-native tables.
+   * @param commitProperties Commit properties which are needed for the handler based commit
+   *
+   * @deprecated since 4.0.1, will be removed in 5.0.0,
+   * use {@link #storageHandlerCommit(Properties, Operation)} instead.
+   */
   @Deprecated
   default void storageHandlerCommit(Properties commitProperties, boolean overwrite) throws HiveException {
     storageHandlerCommit(commitProperties, overwrite ? Operation.IOW : Operation.OTHER);
@@ -700,7 +725,9 @@ public interface HiveStorageHandler extends Configurable {
   /**
    * Introduced by HIVE-25457 for iceberg to query metadata table.
    * @return true if the storage handler can support it
-   * @deprecated Use {@link #isTableMetaRefSupported()}
+   *
+   * @deprecated since 4.0.1, will be removed in 5.0.0,
+   * use {@link #isTableMetaRefSupported()} instead.
    */
   @Deprecated
   default boolean isMetadataTableSupported() {
@@ -788,7 +815,6 @@ public interface HiveStorageHandler extends Configurable {
     return Collections.emptyList();
   }
 
-
   /**
    * Alter table operations can rely on this to customize the EnvironmentContext to be used during the alter table
    * invocation (both on client and server side of HMS)
@@ -801,20 +827,28 @@ public interface HiveStorageHandler extends Configurable {
 
   /**
    * Check the operation type of all snapshots which are newer than the specified. The specified snapshot is excluded.
-   * @deprecated
-   * <br>Use {@link HiveStorageHandler#getSnapshotContexts(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since)}
-   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()}).
    *
    * @param hmsTable table metadata stored in Hive Metastore
    * @param since the snapshot preceding the oldest snapshot which should be checked.
    *              The value null means all should be checked.
-   * @return null if table is empty, true if all snapshots are {@link SnapshotContext.WriteOperationType#APPEND}s, false otherwise.
+   * @return null if table is empty, true if all snapshots are {@link SnapshotContext.WriteOperationType#APPEND}s,
+   * false otherwise.
+   *
+   * @deprecated since 4.0.1, will be removed in 5.0.0,
+   * use {@link HiveStorageHandler#getSnapshotContexts(org.apache.hadoop.hive.ql.metadata.Table, SnapshotContext)} instead
+   * and check {@link SnapshotContext.WriteOperationType#APPEND}.equals({@link SnapshotContext#getOperation()})
    */
   @Deprecated
   default Boolean hasAppendsOnly(org.apache.hadoop.hive.ql.metadata.Table hmsTable, SnapshotContext since) {
     return null;
   }
 
+  /**
+   * Returns partitions names for the table.
+   *
+   * @deprecated since 4.0.1, will be removed in 5.0.0,
+   * use {@link #getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table)} instead.
+   */
   @Deprecated
   default List<String> showPartitions(DDLOperationContext context,
       org.apache.hadoop.hive.ql.metadata.Table tbl) throws UnsupportedOperationException, HiveException {
@@ -858,6 +892,11 @@ public interface HiveStorageHandler extends Configurable {
     throw new UnsupportedOperationException("Storage handler does not support getting partition names");
   }
 
+  /**
+   * Returns partitions names for the current table spec.
+   * @param table {@link org.apache.hadoop.hive.ql.metadata.Table} table metadata stored in Hive Metastore
+   * @return List of partition names
+   */
   default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table table) throws SemanticException {
     return getPartitionNames(table, Maps.newHashMap());
   }
@@ -979,5 +1018,9 @@ public interface HiveStorageHandler extends Configurable {
 
   default void setMergeTaskDeleteProperties(TableDesc tableDesc) {
     throw new UnsupportedOperationException("Storage handler does not support getting custom delete merge schema.");
+  }
+
+  default boolean supportsDefaultColumnValues(Map<String, String> tblProps) {
+    return false;
   }
 }

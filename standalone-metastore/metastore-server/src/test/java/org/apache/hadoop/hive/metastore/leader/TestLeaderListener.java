@@ -91,7 +91,7 @@ public class TestLeaderListener {
       Assert.assertTrue(fileStatuses.size() == 1);
       Assert.assertTrue(fileStatuses.get(0).getPath().getName().equals("leader_testAuditLeaderListener.json"));
     } finally {
-      FileUtils.moveToTrash(fileSystem, location, conf, true);
+      FileUtils.deleteDir(fileSystem, location, false, conf);
     }
   }
 

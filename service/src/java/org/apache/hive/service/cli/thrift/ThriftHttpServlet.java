@@ -60,7 +60,10 @@ import org.apache.hive.service.auth.HttpAuthenticationException;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.jwt.JWTValidator;
+import org.apache.hive.service.auth.ldap.DirSearchFactory;
 import org.apache.hive.service.auth.ldap.HttpEmptyAuthenticationException;
+import org.apache.hive.service.auth.ldap.KerberosLdapFilterEnforcer;
+import org.apache.hive.service.auth.ldap.LdapSearchFactory;
 import org.apache.hive.service.auth.HttpAuthService;
 import org.apache.hive.service.auth.saml.HiveSaml2Client;
 import org.apache.hive.service.auth.saml.HiveSamlRelayStateStore;
@@ -290,7 +293,7 @@ public class ThriftHttpServlet extends TServlet {
           LOG.error("Login attempt is failed for user : " +
               httpAuthService.getUsername(request) + ". Error Message :" + e.getMessage());
         } catch (Exception ex) {
-          // Failed logging an exception message, ignoring exception, but response status is set to 401/unauthorized  
+          // Failed logging an exception message, ignoring exception, but response status is set to 401/unauthorized
         }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
@@ -473,6 +476,9 @@ public class ThriftHttpServlet extends TServlet {
   class HttpKerberosServerAction implements PrivilegedExceptionAction<String> {
     HttpServletRequest request;
     UserGroupInformation serviceUGI;
+    private final DirSearchFactory dirSearchFactory = new LdapSearchFactory();
+    private final KerberosLdapFilterEnforcer filterEnforcer =
+        new KerberosLdapFilterEnforcer(hiveConf, dirSearchFactory);
 
     HttpKerberosServerAction(HttpServletRequest request,
         UserGroupInformation serviceUGI) {
@@ -516,7 +522,19 @@ public class ThriftHttpServlet extends TServlet {
               "unable to establish context with the service ticket " +
               "provided by the client.");
         } else {
-          return getPrincipalWithoutRealmAndHost(gssContext.getSrcName().toString());
+          String principal = gssContext.getSrcName().toString();
+          String shortName = getPrincipalWithoutRealmAndHost(principal);
+          LOG.debug("Kerberos authentication successful");
+          if (hiveConf.getBoolVar(
+              HiveConf.ConfVars.HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS)) {
+            boolean authorized = filterEnforcer.applyLdapFilter(principal);
+            if (!authorized) {
+              LOG.warn("User {} failed LDAP filter", principal);
+              throw new HttpAuthenticationException("LDAP filter check failed for user " + principal);
+            }
+            LOG.debug("User {} passed LDAP filter validation", principal);
+          }
+          return shortName;
         }
       } catch (GSSException e) {
         if (gssContext != null) {
@@ -539,7 +557,6 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
     }
-
     private String getPrincipalWithoutRealm(String fullPrincipal)
         throws HttpAuthenticationException {
       KerberosNameShim fullKerberosName;
@@ -649,5 +666,3 @@ public class ThriftHttpServlet extends TServlet {
   }
 
 }
-
-

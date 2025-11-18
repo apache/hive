@@ -63,7 +63,6 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
@@ -686,28 +685,25 @@ public class MetaStoreServerUtils {
     return true;
   }
 
-  /*
+  /**
      * This method is to check if the new column list includes all the old columns with same name and
      * type. The column comment does not count.
+     *
+     * @return A list of columns that not appear in the new column list
      */
-  public static boolean columnsIncludedByNameType(List<FieldSchema> oldCols,
-                                                  List<FieldSchema> newCols) {
-    if (oldCols.size() > newCols.size()) {
-      return false;
-    }
-
+  public static List<String> findStaleColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     Map<String, String> columnNameTypePairMap = new HashMap<>(newCols.size());
     for (FieldSchema newCol : newCols) {
       columnNameTypePairMap.put(newCol.getName().toLowerCase(), newCol.getType());
     }
+    List<String> changedCols = new ArrayList<>();
     for (final FieldSchema oldCol : oldCols) {
       if (!columnNameTypePairMap.containsKey(oldCol.getName())
           || !columnNameTypePairMap.get(oldCol.getName()).equalsIgnoreCase(oldCol.getType())) {
-        return false;
+        changedCols.add(oldCol.getName());
       }
     }
-
-    return true;
+    return changedCols;
   }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
@@ -999,10 +995,6 @@ public class MetaStoreServerUtils {
         socket2.close();
       }
     }
-  }
-
-  public static String getIndexTableName(String dbName, String baseTblName, String indexName) {
-    return dbName + "__" + baseTblName + "_" + indexName + "__";
   }
 
   static public String validateTblColumns(List<FieldSchema> cols) {
@@ -1608,8 +1600,8 @@ public class MetaStoreServerUtils {
    * @return Partition name, for example partitiondate=2008-01-01
    */
   public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols,
-                                        Map<String, String> partitionColToTypeMap) {
-    String result = null;
+                                        Map<String, String> partitionColToTypeMap, Configuration conf) {
+    StringBuilder result = null;
     Path currPath = partitionPath;
     LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
 
@@ -1620,7 +1612,7 @@ public class MetaStoreServerUtils {
       if (parts.length > 0) {
         if (parts.length != 2) {
           LOG.warn(currPath.getName() + " is not a valid partition name");
-          return result;
+          return result.toString();
         }
 
         // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
@@ -1629,43 +1621,68 @@ public class MetaStoreServerUtils {
         // Do not convert the partitionValue to lowercase
         String partitionValue = parts[1];
         if (partCols.contains(partitionName)) {
+          String normalisedPartitionValue = getNormalisedPartitionValue(partitionValue,
+                  partitionColToTypeMap.get(partitionName), conf);
+          if (normalisedPartitionValue == null) {
+            return null;
+          }
           if (result == null) {
-            result = partitionName + "="
-                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName));
+            result = new StringBuilder(partitionName + "=" + normalisedPartitionValue);
           } else {
-            result = partitionName + "="
-                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName))
-                    + Path.SEPARATOR + result;
+            result.insert(0, partitionName + "=" + normalisedPartitionValue + Path.SEPARATOR);
           }
         }
       }
       currPath = currPath.getParent();
       LOG.debug("currPath=" + currPath);
     }
-    return result;
+    return (result == null) ? null : result.toString();
   }
 
-  public static String getNormalisedPartitionValue(String partitionValue, String type) {
-
-    if (!NumberUtils.isParsable(partitionValue)) {
+  public static String getNormalisedPartitionValue(String partitionValue, String type, Configuration conf) {
+    // 1. Handle simple exit cases first.
+    if (type == null) {
       return partitionValue;
     }
-
-    LOG.debug("Converting '" + partitionValue + "' to type: '" + type + "'.");
-
-    if (type.equalsIgnoreCase("tinyint")
-    || type.equalsIgnoreCase("smallint")
-    || type.equalsIgnoreCase("int")){
-      return Integer.toString(Integer.parseInt(partitionValue));
-    } else if (type.equalsIgnoreCase("bigint")){
-      return Long.toString(Long.parseLong(partitionValue));
-    } else if (type.equalsIgnoreCase("float")){
-      return Float.toString(Float.parseFloat(partitionValue));
-    } else if (type.equalsIgnoreCase("double")){
-      return Double.toString(Double.parseDouble(partitionValue));
-    } else if (type.startsWith("decimal")){
-      // Decimal datatypes are stored like decimal(10,10)
-      return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
+    if (Objects.equals(partitionValue, MetastoreConf.getVar(conf,
+            MetastoreConf.ConfVars.DEFAULTPARTITIONNAME))) {
+      // This is the special partition name for NULL values. It should never be parsed.
+      return partitionValue;
+    }
+    // 2. If the type is not numeric, no normalization is needed.
+    String colType = ColumnType.getTypeName(type);
+    if (!ColumnType.NumericTypes.contains(colType)) {
+      return partitionValue;
+    }
+    // 3. At this point, we have a numeric type that needs normalization.
+    LOG.debug("Normalizing partition value '{}' for type '{}'.", partitionValue, type);
+    try {
+      switch (colType) {
+        case ColumnType.TINYINT_TYPE_NAME:
+        case ColumnType.SMALLINT_TYPE_NAME:
+        case ColumnType.INT_TYPE_NAME:
+          return Integer.toString(Integer.parseInt(partitionValue));
+        case ColumnType.BIGINT_TYPE_NAME:
+          return Long.toString(Long.parseLong(partitionValue));
+        case ColumnType.FLOAT_TYPE_NAME:
+          return Float.toString(Float.parseFloat(partitionValue));
+        case ColumnType.DOUBLE_TYPE_NAME:
+          return Double.toString(Double.parseDouble(partitionValue));
+        case ColumnType.DECIMAL_TYPE_NAME:
+          return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
+      }
+    } catch (NumberFormatException e) {
+      // 4. Handle cases where the value cannot be parsed as the expected number type.
+      String validationMode = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION);
+      if ("throw".equals(validationMode)) {
+        LOG.error("Invalid partition value: Cannot parse '{}' as type '{}'. Failing MSCK. "
+                + "Set hive.msck.path.validation=skip to ignore invalid partitions.", partitionValue, type);
+        throw e;
+      } else if ("skip".equals(validationMode)) {
+        LOG.warn("Skipping invalid partition value '{}' for type '{}' due to parsing error.", partitionValue, type);
+        // Signals the caller to skip this partition.
+        return null;
+      }
     }
     return partitionValue;
   }

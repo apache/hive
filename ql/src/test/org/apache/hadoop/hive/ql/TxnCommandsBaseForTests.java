@@ -387,7 +387,7 @@ public abstract class TxnCommandsBaseForTests {
     //verify data and layout
     for(int i = 0; i < expected.length; i++) {
       Assert.assertTrue("Actual line (data) " + i + " data: " + rs.get(i) + "; expected " + expected[i][0], rs.get(i).startsWith(expected[i][0]));
-      if (expected.length == 2) {
+      if (expected[i].length == 2) {
         Assert.assertTrue("Actual line(file) " + i + " file: " + rs.get(i),
                 rs.get(i).endsWith(expected[i][1]) || rs.get(i).matches(expected[i][1]));
       }

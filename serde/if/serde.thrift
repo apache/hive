@@ -70,6 +70,7 @@ const string LIST_TYPE_NAME = "array";
 const string MAP_TYPE_NAME  = "map";
 const string STRUCT_TYPE_NAME  = "struct";
 const string UNION_TYPE_NAME  = "uniontype";
+const string VARIANT_TYPE_NAME  = "variant";
 
 const string LIST_COLUMNS = "columns";
 const string LIST_COLUMN_TYPES = "columns.types";

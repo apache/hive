@@ -246,7 +246,7 @@ class DriverTxnHandler {
       String errorMessage;
       if (driverState.isDestroyed() || driverState.isAborted() || driverState.isClosed()) {
         errorMessage = String.format("Ignore lock acquisition related exception in terminal state (%s): %s",
-            driverState.toString(), e.getMessage());
+            driverState, e.getMessage());
         CONSOLE.printInfo(errorMessage);
       } else {
         errorMessage = String.format("FAILED: Error in acquiring locks: %s", e.getMessage());

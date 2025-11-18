@@ -165,3 +165,4 @@ PREHOOK: Output: database:default
 POSTHOOK: query: DROP TABLE IF EXISTS encrypted_ext_table_n0 PURGE
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: database:default
+Encryption key deleted: 'key_128'

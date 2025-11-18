@@ -262,6 +262,9 @@ public class TestMetaStoreEventListener {
     // Test adding multiple partitions in a single partition-set, atomically.
     int currentTime = (int)System.currentTimeMillis();
     HiveMetaStoreClient hmsClient = new HiveMetaStoreClient(conf);
+    // A ConfigChangeEvent will be triggered on new Client creation because of
+    // org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient#overlaySessionModifiedMetaConf()
+    ++listSize;
     table = hmsClient.getTable(dbName, "tmptbl");
     Partition partition1 = new Partition(Arrays.asList("20110101"), dbName, "tmptbl", currentTime,
                                         currentTime, table.getSd(), table.getParameters());

@@ -18,7 +18,7 @@
 
 package org.apache.hive.hcatalog;
 
-import org.apache.derby.security.SystemPermission;
+import org.apache.derby.shared.common.security.SystemPermission;
 
 import java.security.CodeSource;
 import java.security.Permission;

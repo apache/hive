@@ -24,4 +24,4 @@ PREHOOK: Input: database:default
 POSTHOOK: query: use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROPTABLE [[OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=db1.t1]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation DROPTABLE [[OBJECT OWNERSHIP] on Object [type=TABLE_OR_VIEW, name=hive.db1.t1]]

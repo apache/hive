@@ -785,6 +785,11 @@ public final class FunctionRegistry {
     system.registerFunction("ST_Y", ST_Y.class);
     system.registerFunction("ST_Z", ST_Z.class);
 
+    // Iceberg UDFs
+    system.registerGenericUDF("parse_json", GenericUDFParseJson.class);
+    system.registerGenericUDF("to_json", GenericUDFToJson.class);
+    system.registerGenericUDF("variant_get", GenericUDFVariantGet.class);
+    system.registerGenericUDF("try_variant_get", GenericUDFTryVariantGet.class);
 
     try {
       system.registerGenericUDF("iceberg_bucket",
@@ -799,6 +804,8 @@ public final class FunctionRegistry {
           (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergDay"));
       system.registerGenericUDF("iceberg_hour",
           (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergHour"));
+      system.registerGenericUDF("iceberg_zorder",
+          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder"));
     } catch (ClassNotFoundException e) {
       LOG.warn("iceberg_bucket function could not be registered");
     }

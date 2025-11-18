@@ -46,16 +46,6 @@ class ForeignKeysRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
-        6 => array(
-            'var' => 'validWriteIdList',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        7 => array(
-            'var' => 'tableId',
-            'isRequired' => false,
-            'type' => TType::I64,
-        ),
     );
 
     /**
@@ -78,14 +68,6 @@ class ForeignKeysRequest
      * @var string
      */
     public $catName = null;
-    /**
-     * @var string
-     */
-    public $validWriteIdList = null;
-    /**
-     * @var int
-     */
-    public $tableId = -1;
 
     public function __construct($vals = null)
     {
@@ -104,12 +86,6 @@ class ForeignKeysRequest
             }
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
-            }
-            if (isset($vals['validWriteIdList'])) {
-                $this->validWriteIdList = $vals['validWriteIdList'];
-            }
-            if (isset($vals['tableId'])) {
-                $this->tableId = $vals['tableId'];
             }
         }
     }
@@ -168,20 +144,6 @@ class ForeignKeysRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case 6:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->validWriteIdList);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 7:
-                    if ($ftype == TType::I64) {
-                        $xfer += $input->readI64($this->tableId);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -219,16 +181,6 @@ class ForeignKeysRequest
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 5);
             $xfer += $output->writeString($this->catName);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->validWriteIdList !== null) {
-            $xfer += $output->writeFieldBegin('validWriteIdList', TType::STRING, 6);
-            $xfer += $output->writeString($this->validWriteIdList);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->tableId !== null) {
-            $xfer += $output->writeFieldBegin('tableId', TType::I64, 7);
-            $xfer += $output->writeI64($this->tableId);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

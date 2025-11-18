@@ -41,7 +41,7 @@ public class JSONReloadMessage extends ReloadMessage {
     private Long timestamp;
 
     @JsonProperty
-    private String server, servicePrincipal, db, table, tableObjJson, refreshEvent;
+    private String server, servicePrincipal, db, table, tableObjJson, ptnObjJson, refreshEvent;
 
     @JsonProperty
     List<String> partitionListJson;
@@ -52,8 +52,8 @@ public class JSONReloadMessage extends ReloadMessage {
     public JSONReloadMessage() {
     }
 
-    public JSONReloadMessage(String server, String servicePrincipal, Table tableObj, List<Partition> ptns,
-                             boolean refreshEvent, Long timestamp) {
+    public JSONReloadMessage(String server, String servicePrincipal, Table tableObj, Partition ptnObj,
+                             List<Partition> ptns, boolean refreshEvent, Long timestamp) {
         this.server = server;
         this.servicePrincipal = servicePrincipal;
 
@@ -66,6 +66,11 @@ public class JSONReloadMessage extends ReloadMessage {
 
         try {
             this.tableObjJson = MessageBuilder.createTableObjJson(tableObj);
+            if (null != ptnObj) {
+                this.ptnObjJson = MessageBuilder.createPartitionObjJson(ptnObj);
+            } else {
+                this.ptnObjJson = null;
+            }
             if (null != ptns) {
                 this.partitionListJson = new ArrayList<>();
                 Iterator<Partition> iterator = ptns.iterator();
@@ -131,6 +136,11 @@ public class JSONReloadMessage extends ReloadMessage {
                     return (Partition) input;
                 }
             });
+    }
+
+    @Override
+    public Partition getPtnObj() throws Exception {
+        return ((null == ptnObjJson) ? null : (Partition) MessageBuilder.getTObj(ptnObjJson, Partition.class));
     }
 
     @Override

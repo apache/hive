@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-accumulo-handler</artifactId>
@@ -31,6 +31,10 @@
       <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-core</artifactId>
       <exclusions>
+        <exclusion>
+          <groupId>jline</groupId>
+          <artifactId>jline</artifactId>
+        </exclusion>
         <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils-core</artifactId>

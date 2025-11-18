@@ -150,7 +150,7 @@ POSTHOOK: Input: default@t1_new_n0
 POSTHOOK: Input: default@t1_old
 POSTHOOK: Input: default@t1_old@ds=2011-10-13
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, CAST('2011-10-13' AS STRING) AS `ds`
+OPTIMIZED SQL: SELECT `key` AS `t1_n113.key`, `value` AS `t1_n113.value`, CAST('2011-10-13' AS STRING) AS `t1_n113.ds`
 FROM (SELECT `key`, `value`
 FROM `default`.`t1_new_n0`
 WHERE `ds` = '2011-10-13'
@@ -476,7 +476,7 @@ POSTHOOK: Input: default@t1_new_n0
 POSTHOOK: Input: default@t1_new_n0@ds=2011-10-15
 POSTHOOK: Input: default@t1_old
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, CAST('2011-10-15' AS STRING) AS `ds`
+OPTIMIZED SQL: SELECT `key` AS `t1_n113.key`, `value` AS `t1_n113.value`, CAST('2011-10-15' AS STRING) AS `t1_n113.ds`
 FROM (SELECT `key`, `value`
 FROM `default`.`t1_new_n0`
 WHERE `ds` = '2011-10-15'

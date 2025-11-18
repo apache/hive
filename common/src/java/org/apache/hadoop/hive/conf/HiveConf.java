@@ -49,8 +49,6 @@ import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.security.auth.login.LoginException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -1554,7 +1552,7 @@ public class HiveConf extends Configuration {
      * @deprecated Use MetastoreConf.CONNECTION_DRIVER
      */
     @Deprecated
-    METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName", "org.apache.derby.jdbc.EmbeddedDriver",
+    METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName", "org.apache.derby.iapi.jdbc.AutoloadedDriver",
         "Driver class name for a JDBC metastore"),
     /**
      * @deprecated Use MetastoreConf.MANAGER_FACTORY_CLASS
@@ -1738,11 +1736,6 @@ public class HiveConf extends Configuration {
     CLI_PROMPT("hive.cli.prompt", "hive",
         "Command line prompt configuration value. Other hiveconf can be used in this configuration value. \n" +
         "Variable substitution will only be invoked at the Hive CLI startup."),
-    /**
-     * @deprecated Use MetastoreConf.FS_HANDLER_CLS
-     */
-    @Deprecated
-    HIVE_METASTORE_FS_HANDLER_CLS("hive.metastore.fs.handler.class", "org.apache.hadoop.hive.metastore.HiveMetaStoreFsImpl", ""),
 
     // Things we log in the jobconf
 
@@ -3736,10 +3729,6 @@ public class HiveConf extends Configuration {
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
         "This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time."),
-    HIVE_IO_EXCEPTION_HANDLERS("hive.io.exception.handlers", "",
-        "A list of io exception handler class names. This is used\n" +
-        "to construct a list exception handlers to handle exceptions thrown\n" +
-        "by record readers"),
 
     // logging configuration
     HIVE_LOG4J_FILE("hive.log4j.file", "",
@@ -4357,6 +4346,13 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PLAIN_LDAP_BIND_PASSWORD("hive.server2.authentication.ldap.bindpw", null,
         "The password for the bind user, to be used to search for the full name of the user being authenticated.\n" +
         "If the username is specified, this parameter must also be specified."),
+    HIVE_SERVER2_LDAP_ENABLE_GROUP_CHECK_AFTER_KERBEROS(
+        "hive.server2.authentication.ldap.enableGroupCheckAfterKerberos", false,
+        "If set to true, LDAP user and group filters are applied to Kerberos-authenticated users.\n" +
+            "Uses the same filter resolution as LDAP authentication (userSearchFilter, groupSearchFilter,\n" +
+            "customLDAPQuery, userFilter, groupFilter). Filters are not applied to authorized proxy users.\n" +
+            "Requires valid LDAP bind credentials to be configured.\n" +
+            "Default value is false."),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null,
         "Custom authentication class. Used when property\n" +
         "'hive.server2.authentication' is set to 'CUSTOM'. Provided class\n" +
@@ -7054,12 +7050,8 @@ public class HiveConf extends Configuration {
    * @throws IOException
    */
   public String getUser() throws IOException {
-    try {
-      UserGroupInformation ugi = Utils.getUGI();
-      return ugi.getUserName();
-    } catch (LoginException le) {
-      throw new IOException(le);
-    }
+    UserGroupInformation ugi = Utils.getUGI();
+    return ugi.getUserName();
   }
 
   public static String getColumnInternalName(int pos) {
