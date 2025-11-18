@@ -339,7 +339,7 @@ where ws1.ws_order_number in (select ws2.ws_order_number from web_sales ws2 orde
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain cbo
 select * from web_sales ws1
 where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls last limit 1)
@@ -373,7 +373,7 @@ HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
                 HiveProject(ws_order_number=[$0])
                   HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from web_sales ws1
 where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls last limit 1)
 PREHOOK: type: QUERY
@@ -386,7 +386,7 @@ POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
 2	1
 2	2
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain cbo
 select * from web_sales ws1
 where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls first limit 1)
@@ -420,7 +420,7 @@ HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
                 HiveProject(ws_order_number=[$0])
                   HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
-Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from web_sales ws1
 where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls first limit 1)
 PREHOOK: type: QUERY
@@ -431,7 +431,7 @@ where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
-Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select * from web_sales ws1
 where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls last limit 1 offset 2)
@@ -464,7 +464,7 @@ HiveProject(ws1.ws_order_number=[$0], ws1.ws_warehouse_sk=[$1])
               HiveProject(ws_order_number=[$0])
                 HiveTableScan(table=[[default, web_sales]], table:alias=[ws2])
 
-Warning: Shuffle Join MERGEJOIN[34][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[32][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select * from web_sales ws1
 where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 order by ws2.ws_order_number nulls last limit 1 offset 2)
 PREHOOK: type: QUERY

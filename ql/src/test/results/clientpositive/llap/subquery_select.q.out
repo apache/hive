@@ -2908,7 +2908,7 @@ POSTHOOK: Input: default@part
 6	false
 6	false
 7	false
-Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
@@ -2945,21 +2945,16 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 26 Data size: 2704 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string)
-                  Top N Key Operator
-                    sort order: +
-                    keys: p_size (type: int)
-                    null sort order: z
+                  Select Operator
+                    expressions: p_size (type: int)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 1
-                    Select Operator
-                      expressions: p_size (type: int)
-                      outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int)
+                      null sort order: z
+                      sort order: +
                       Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: int)
-                        null sort order: z
-                        sort order: +
-                        Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -3019,7 +3014,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[15][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select p_type, (select p_size from part order by p_size limit 1) = 1 from part order by p_type
 PREHOOK: type: QUERY
 PREHOOK: Input: default@part
