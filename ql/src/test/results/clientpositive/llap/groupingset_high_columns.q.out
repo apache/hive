@@ -1187,3 +1187,271 @@ NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NUL
 NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	7516192767	7516192767
 NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	6442450943	6442450943
 a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967295	4294967295
+PREHOOK: query: create view groupingsetview as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+,count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32)
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+)
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@facts
+PREHOOK: Output: database:default
+PREHOOK: Output: default@groupingsetview
+POSTHOOK: query: create view groupingsetview as
+select
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+,count(*) as n,
+grouping__id,
+grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32)
+from (
+select
+substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+from facts ) x
+group by
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+grouping sets (
+c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+c30,c31,c32
+)
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@facts
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@groupingsetview
+POSTHOOK: Lineage: groupingsetview._c35 EXPRESSION []
+POSTHOOK: Lineage: groupingsetview.c00 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c01 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c02 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c03 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c04 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c05 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c06 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c07 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c08 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c09 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c10 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c11 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c12 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c13 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c14 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c15 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c16 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c17 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c18 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c19 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c20 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c21 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c22 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c23 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c24 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c25 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c26 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c27 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c28 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c29 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c30 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c31 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.c32 EXPRESSION [(facts)facts.FieldSchema(name:val, type:string, comment:null), ]
+POSTHOOK: Lineage: groupingsetview.grouping__id SIMPLE []
+POSTHOOK: Lineage: groupingsetview.n EXPRESSION [(facts)facts.null, ]
+PREHOOK: query: select * from groupingsetview
+PREHOOK: type: QUERY
+PREHOOK: Input: default@facts
+PREHOOK: Input: default@groupingsetview
+#### A masked pattern was here ####
+POSTHOOK: query: select * from groupingsetview
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@facts
+POSTHOOK: Input: default@groupingsetview
+#### A masked pattern was here ####
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934527	8589934527
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	NULL	NULL	NULL	NULL	NULL	1	8589934559	8589934559
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	2	NULL	NULL	NULL	NULL	1	8589934575	8589934575
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	3	NULL	NULL	NULL	1	8589934583	8589934583
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	4	NULL	NULL	1	8589934587	8589934587
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	5	NULL	1	8589934589	8589934589
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	6	1	8589934590	8589934590
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	z	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934463	8589934463
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	y	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934335	8589934335
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	x	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589934079	8589934079
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	w	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589933567	8589933567
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	v	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589932543	8589932543
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	u	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589930495	8589930495
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	t	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589926399	8589926399
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	s	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589918207	8589918207
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	r	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589901823	8589901823
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	q	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589869055	8589869055
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	p	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589803519	8589803519
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	o	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589672447	8589672447
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	n	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8589410303	8589410303
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	m	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8588886015	8588886015
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	l	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8587837439	8587837439
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	k	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8585740287	8585740287
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	j	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8581545983	8581545983
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	i	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8573157375	8573157375
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	h	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8556380159	8556380159
+NULL	NULL	NULL	NULL	NULL	NULL	g	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8522825727	8522825727
+NULL	NULL	NULL	NULL	NULL	f	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8455716863	8455716863
+NULL	NULL	NULL	NULL	e	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8321499135	8321499135
+NULL	NULL	NULL	d	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	8053063679	8053063679
+NULL	NULL	c	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	7516192767	7516192767
+NULL	b	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	6442450943	6442450943
+a	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	1	4294967295	4294967295
+PREHOOK: query: describe formatted groupingsetview
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@groupingsetview
+POSTHOOK: query: describe formatted groupingsetview
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@groupingsetview
+# col_name            	data_type           	comment             
+c00                 	string              	                    
+c01                 	string              	                    
+c02                 	string              	                    
+c03                 	string              	                    
+c04                 	string              	                    
+c05                 	string              	                    
+c06                 	string              	                    
+c07                 	string              	                    
+c08                 	string              	                    
+c09                 	string              	                    
+c10                 	string              	                    
+c11                 	string              	                    
+c12                 	string              	                    
+c13                 	string              	                    
+c14                 	string              	                    
+c15                 	string              	                    
+c16                 	string              	                    
+c17                 	string              	                    
+c18                 	string              	                    
+c19                 	string              	                    
+c20                 	string              	                    
+c21                 	string              	                    
+c22                 	string              	                    
+c23                 	string              	                    
+c24                 	string              	                    
+c25                 	string              	                    
+c26                 	string              	                    
+c27                 	string              	                    
+c28                 	string              	                    
+c29                 	string              	                    
+c30                 	string              	                    
+c31                 	string              	                    
+c32                 	string              	                    
+n                   	bigint              	                    
+grouping__id        	bigint              	                    
+_c35                	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	select              	 
+	                    	c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+	                    	c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+	                    	c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+	                    	c30,c31,c32         
+	                    	,count(*) as n,     
+	                    	grouping__id,       
+	                    	grouping(c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+	                    	c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+	                    	c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+	                    	c30,c31,c32)        
+	                    	from (              
+	                    	select              
+	                    	substring(val,01,1) as c00, substring(val,02,1) as c01, substring(val,03,1) as c02,substring(val,04,1) as c03,substring(val,05,1) as c04,substring(val,06,1) as c05,substring(val,07,1) as c06, substring(val,08,1) as c07,substring(val,09,1) as c08,substring(val,10,1) as c09,
+	                    	substring(val,11,1) as c10, substring(val,12,1) as c11, substring(val,13,1) as c12,substring(val,14,1) as c13,substring(val,15,1) as c14,substring(val,16,1) as c15,substring(val,17,1) as c16, substring(val,18,1) as c17,substring(val,19,1) as c18,substring(val,20,1) as c19,
+	                    	substring(val,21,1) as c20, substring(val,22,1) as c21, substring(val,23,1) as c22,substring(val,24,1) as c23,substring(val,25,1) as c24,substring(val,26,1) as c25,substring(val,27,1) as c26, substring(val,28,1) as c27,substring(val,29,1) as c28,substring(val,30,1) as c29,
+	                    	substring(val,31,1) as c30,substring(val,32,1) as c31,substring(val,33,1) as c32
+	                    	from facts ) x      
+	                    	group by            
+	                    	c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+	                    	c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+	                    	c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+	                    	c30,c31,c32         
+	                    	grouping sets (     
+	                    	c00,c01,c02,c03,c04,c05,c06,c07,c08,c09,
+	                    	c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,
+	                    	c20,c21,c22,c23,c24,c25,c26,c27,c28,c29,
+	                    	c30,c31,c32         
+	                    	)                   
+Expanded Query:     	select              	 
+	                    	`x`.`c00`,`x`.`c01`,`x`.`c02`,`x`.`c03`,`x`.`c04`,`x`.`c05`,`x`.`c06`,`x`.`c07`,`x`.`c08`,`x`.`c09`,
+	                    	`x`.`c10`,`x`.`c11`,`x`.`c12`,`x`.`c13`,`x`.`c14`,`x`.`c15`,`x`.`c16`,`x`.`c17`,`x`.`c18`,`x`.`c19`,
+	                    	`x`.`c20`,`x`.`c21`,`x`.`c22`,`x`.`c23`,`x`.`c24`,`x`.`c25`,`x`.`c26`,`x`.`c27`,`x`.`c28`,`x`.`c29`,
+	                    	`x`.`c30`,`x`.`c31`,`x`.`c32`
+	                    	,count(*) as `n`,   
+	                    	grouping__id,       
+	                    	grouping(`x`.`c00`,`x`.`c01`,`x`.`c02`,`x`.`c03`,`x`.`c04`,`x`.`c05`,`x`.`c06`,`x`.`c07`,`x`.`c08`,`x`.`c09`,
+	                    	`x`.`c10`,`x`.`c11`,`x`.`c12`,`x`.`c13`,`x`.`c14`,`x`.`c15`,`x`.`c16`,`x`.`c17`,`x`.`c18`,`x`.`c19`,
+	                    	`x`.`c20`,`x`.`c21`,`x`.`c22`,`x`.`c23`,`x`.`c24`,`x`.`c25`,`x`.`c26`,`x`.`c27`,`x`.`c28`,`x`.`c29`,
+	                    	`x`.`c30`,`x`.`c31`,`x`.`c32`)
+	                    	from (              
+	                    	select              
+	                    	substring(`facts`.`val`,01,1) as `c00`, substring(`facts`.`val`,02,1) as `c01`, substring(`facts`.`val`,03,1) as `c02`,substring(`facts`.`val`,04,1) as `c03`,substring(`facts`.`val`,05,1) as `c04`,substring(`facts`.`val`,06,1) as `c05`,substring(`facts`.`val`,07,1) as `c06`, substring(`facts`.`val`,08,1) as `c07`,substring(`facts`.`val`,09,1) as `c08`,substring(`facts`.`val`,10,1) as `c09`,
+	                    	substring(`facts`.`val`,11,1) as `c10`, substring(`facts`.`val`,12,1) as `c11`, substring(`facts`.`val`,13,1) as `c12`,substring(`facts`.`val`,14,1) as `c13`,substring(`facts`.`val`,15,1) as `c14`,substring(`facts`.`val`,16,1) as `c15`,substring(`facts`.`val`,17,1) as `c16`, substring(`facts`.`val`,18,1) as `c17`,substring(`facts`.`val`,19,1) as `c18`,substring(`facts`.`val`,20,1) as `c19`,
+	                    	substring(`facts`.`val`,21,1) as `c20`, substring(`facts`.`val`,22,1) as `c21`, substring(`facts`.`val`,23,1) as `c22`,substring(`facts`.`val`,24,1) as `c23`,substring(`facts`.`val`,25,1) as `c24`,substring(`facts`.`val`,26,1) as `c25`,substring(`facts`.`val`,27,1) as `c26`, substring(`facts`.`val`,28,1) as `c27`,substring(`facts`.`val`,29,1) as `c28`,substring(`facts`.`val`,30,1) as `c29`,
+	                    	substring(`facts`.`val`,31,1) as `c30`,substring(`facts`.`val`,32,1) as `c31`,substring(`facts`.`val`,33,1) as `c32`
+	                    	from `default`.`facts` ) `x`
+	                    	group by            
+	                    	`x`.`c00`,`x`.`c01`,`x`.`c02`,`x`.`c03`,`x`.`c04`,`x`.`c05`,`x`.`c06`,`x`.`c07`,`x`.`c08`,`x`.`c09`,
+	                    	`x`.`c10`,`x`.`c11`,`x`.`c12`,`x`.`c13`,`x`.`c14`,`x`.`c15`,`x`.`c16`,`x`.`c17`,`x`.`c18`,`x`.`c19`,
+	                    	`x`.`c20`,`x`.`c21`,`x`.`c22`,`x`.`c23`,`x`.`c24`,`x`.`c25`,`x`.`c26`,`x`.`c27`,`x`.`c28`,`x`.`c29`,
+	                    	`x`.`c30`,`x`.`c31`,`x`.`c32`
+	                    	grouping sets (     
+	                    	`x`.`c00`,`x`.`c01`,`x`.`c02`,`x`.`c03`,`x`.`c04`,`x`.`c05`,`x`.`c06`,`x`.`c07`,`x`.`c08`,`x`.`c09`,
+	                    	`x`.`c10`,`x`.`c11`,`x`.`c12`,`x`.`c13`,`x`.`c14`,`x`.`c15`,`x`.`c16`,`x`.`c17`,`x`.`c18`,`x`.`c19`,
+	                    	`x`.`c20`,`x`.`c21`,`x`.`c22`,`x`.`c23`,`x`.`c24`,`x`.`c25`,`x`.`c26`,`x`.`c27`,`x`.`c28`,`x`.`c29`,
+	                    	`x`.`c30`,`x`.`c31`,`x`.`c32`
+	                    	)                   
