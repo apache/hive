@@ -108,7 +108,7 @@ public class RetryingExecutor<T> {
     }
     if (retryPolicy != null && !retryPolicy.test(cause)) {
       String message = "See a fatal exception, avoid to retry the command:" + commandName;
-      LOG.info(message, cause);
+      LOG.error(message, cause);
       String errorMessage = ExceptionUtils.getMessage(cause);
       Throwable rootCause = ExceptionUtils.getRootCause(e);
       errorMessage += (rootCause == null ? "" : ("\nRoot cause: " + rootCause));

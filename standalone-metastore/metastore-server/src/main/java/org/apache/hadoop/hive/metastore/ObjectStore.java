@@ -9207,7 +9207,6 @@ public class ObjectStore implements RawStore, Configurable {
           // There is no need to add colname again, otherwise we will get duplicate colNames.
         }
 
-        // TODO: (HIVE-20109) ideally the col stats stats should be in colstats, not in the table!
         // Set the table properties
         // No need to check again if it exists.
         String dbname = table.getDbName();
@@ -9239,7 +9238,6 @@ public class ObjectStore implements RawStore, Configurable {
         .commandName("updateTableColumnStatistics").sleepInterval(sleepInterval, interval ->
               ThreadLocalRandom.current().nextLong(sleepInterval) + 30).run();
       committed = commitTransaction();
-      // TODO: similar to update...Part, this used to do "return committed;"; makes little sense.
       return committed ? result : null;
     } finally {
       LOG.debug("{} updateTableColumnStatistics took {}ms, success: {}",
@@ -9303,7 +9301,6 @@ public class ObjectStore implements RawStore, Configurable {
           writeMPartitionColumnStatistics(table, partition, mStatsObj, oldStats.get(statsObj.getColName()));
         }
 
-        // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
         Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
         StatsSetupConst.setColumnStatsState(newParams, colNames);
         boolean isTxn = TxnUtils.isTransactionalTable(table);
@@ -9332,7 +9329,6 @@ public class ObjectStore implements RawStore, Configurable {
           .commandName("updatePartitionColumnStatistics").sleepInterval(sleepInterval, interval ->
               ThreadLocalRandom.current().nextLong(sleepInterval) + 30).run();
       committed = commitTransaction();
-      // TODO: what is the "return committed;" about? would it ever return false without throwing?
       return committed ? result : null;
     } finally {
       LOG.debug("{} updatePartitionColumnStatistics took {}ms, success: {}",
@@ -11094,7 +11090,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void executePlainSQL(String sql,
-      boolean atLeastOnRecord,
+      boolean atLeastOneRecord,
       Consumer<Exception> exceptionConsumer)
       throws SQLException, MetaException {
     String s = dbType.getPrepareTxnStmt();
@@ -11109,7 +11105,7 @@ public class ObjectStore implements RawStore, Configurable {
         statement.execute(sql);
         try (ResultSet rs = statement.getResultSet()) {
           // sqlserver needs rs.next for validating the s4u nowait
-          if (atLeastOnRecord && !rs.next()) {
+          if (atLeastOneRecord && !rs.next()) {
             throw new MetaException("At least one record but none is returned from the query: " + sql);
           }
         }
