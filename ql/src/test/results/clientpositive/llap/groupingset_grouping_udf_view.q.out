@@ -1,303 +1,3 @@
-PREHOOK: query: CREATE DATABASE IF NOT EXISTS test_grouping_set
-PREHOOK: type: CREATEDATABASE
-PREHOOK: Output: database:test_grouping_set
-POSTHOOK: query: CREATE DATABASE IF NOT EXISTS test_grouping_set
-POSTHOOK: type: CREATEDATABASE
-POSTHOOK: Output: database:test_grouping_set
-PREHOOK: query: CREATE TABLE test_grouping_set.test_grouping(
-id string,
-s_outlook string,
-m_outlook string,
-f_outlook string,
-s_rating string,
-m_rating string,
-f_rating string)
-CLUSTERED BY (
-id)
-INTO 2 BUCKETS
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: database:test_grouping_set
-PREHOOK: Output: test_grouping_set@test_grouping
-POSTHOOK: query: CREATE TABLE test_grouping_set.test_grouping(
-id string,
-s_outlook string,
-m_outlook string,
-f_outlook string,
-s_rating string,
-m_rating string,
-f_rating string)
-CLUSTERED BY (
-id)
-INTO 2 BUCKETS
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: database:test_grouping_set
-POSTHOOK: Output: test_grouping_set@test_grouping
-PREHOOK: query: SELECT
-id,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN 'outlook'
-WHEN grouping(id, m_outlook)= 0 THEN 'outlook'
-WHEN grouping(id, f_outlook)= 0 THEN 'outlook'
-WHEN grouping(id, s_rating)= 0 THEN 'rating'
-WHEN grouping(id, m_rating)= 0 THEN 'rating'
-WHEN grouping(id, f_rating)= 0 THEN 'rating'
-ELSE NULL
-END type,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN 'S'
-WHEN grouping(id, m_outlook)= 0 THEN 'M'
-WHEN grouping(id, f_outlook)= 0 THEN 'F'
-WHEN grouping(id, s_rating)= 0 THEN 'S'
-WHEN grouping(id, m_rating)= 0 THEN 'M'
-WHEN grouping(id, f_rating)= 0 THEN 'F'
-ELSE NULL
-END agency,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN s_outlook
-WHEN grouping(id, m_outlook)= 0 THEN m_outlook
-WHEN grouping(id, f_outlook)= 0 THEN f_outlook
-WHEN grouping(id, s_rating)= 0 THEN s_rating
-WHEN grouping(id, m_rating)= 0 THEN m_rating
-WHEN grouping(id, f_rating)= 0 THEN f_rating
-ELSE NULL
-END value
-FROM test_grouping_set.test_grouping
-GROUP BY
-id,
-s_outlook,
-m_outlook,
-f_outlook,
-s_rating,
-m_rating,
-f_rating
-GROUPING SETS (
-(id, s_outlook),
-(id, m_outlook),
-(id, f_outlook),
-(id, s_rating),
-(id, m_rating),
-(id, f_rating)
-)
-PREHOOK: type: QUERY
-PREHOOK: Input: test_grouping_set@test_grouping
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT
-id,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN 'outlook'
-WHEN grouping(id, m_outlook)= 0 THEN 'outlook'
-WHEN grouping(id, f_outlook)= 0 THEN 'outlook'
-WHEN grouping(id, s_rating)= 0 THEN 'rating'
-WHEN grouping(id, m_rating)= 0 THEN 'rating'
-WHEN grouping(id, f_rating)= 0 THEN 'rating'
-ELSE NULL
-END type,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN 'S'
-WHEN grouping(id, m_outlook)= 0 THEN 'M'
-WHEN grouping(id, f_outlook)= 0 THEN 'F'
-WHEN grouping(id, s_rating)= 0 THEN 'S'
-WHEN grouping(id, m_rating)= 0 THEN 'M'
-WHEN grouping(id, f_rating)= 0 THEN 'F'
-ELSE NULL
-END agency,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN s_outlook
-WHEN grouping(id, m_outlook)= 0 THEN m_outlook
-WHEN grouping(id, f_outlook)= 0 THEN f_outlook
-WHEN grouping(id, s_rating)= 0 THEN s_rating
-WHEN grouping(id, m_rating)= 0 THEN m_rating
-WHEN grouping(id, f_rating)= 0 THEN f_rating
-ELSE NULL
-END value
-FROM test_grouping_set.test_grouping
-GROUP BY
-id,
-s_outlook,
-m_outlook,
-f_outlook,
-s_rating,
-m_rating,
-f_rating
-GROUPING SETS (
-(id, s_outlook),
-(id, m_outlook),
-(id, f_outlook),
-(id, s_rating),
-(id, m_rating),
-(id, f_rating)
-)
-POSTHOOK: type: QUERY
-POSTHOOK: Input: test_grouping_set@test_grouping
-#### A masked pattern was here ####
-PREHOOK: query: CREATE OR REPLACE VIEW test_view AS
-SELECT
-id,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN 'outlook'
-WHEN grouping(id, m_outlook)= 0 THEN 'outlook'
-WHEN grouping(id, f_outlook)= 0 THEN 'outlook'
-WHEN grouping(id, s_rating)= 0 THEN 'rating'
-WHEN grouping(id, m_rating)= 0 THEN 'rating'
-WHEN grouping(id, f_rating)= 0 THEN 'rating'
-ELSE NULL
-END type,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN 'S'
-WHEN grouping(id, m_outlook)= 0 THEN 'M'
-WHEN grouping(id, f_outlook)= 0 THEN 'F'
-WHEN grouping(id, s_rating)= 0 THEN 'S'
-WHEN grouping(id, m_rating)= 0 THEN 'M'
-WHEN grouping(id, f_rating)= 0 THEN 'F'
-ELSE NULL
-END agency,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN s_outlook
-WHEN grouping(id, m_outlook)= 0 THEN m_outlook
-WHEN grouping(id, f_outlook)= 0 THEN f_outlook
-WHEN grouping(id, s_rating)= 0 THEN s_rating
-WHEN grouping(id, m_rating)= 0 THEN m_rating
-WHEN grouping(id, f_rating)= 0 THEN f_rating
-ELSE NULL
-END value
-FROM test_grouping_set.test_grouping
-GROUP BY
-id,
-s_outlook,
-m_outlook,
-f_outlook,
-s_rating,
-m_rating,
-f_rating
-GROUPING SETS (
-(id, s_outlook),
-(id, m_outlook),
-(id, f_outlook),
-(id, s_rating),
-(id, m_rating),
-(id, f_rating)
-)
-PREHOOK: type: CREATEVIEW
-PREHOOK: Input: test_grouping_set@test_grouping
-PREHOOK: Output: database:default
-PREHOOK: Output: default@test_view
-POSTHOOK: query: CREATE OR REPLACE VIEW test_view AS
-SELECT
-id,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN 'outlook'
-WHEN grouping(id, m_outlook)= 0 THEN 'outlook'
-WHEN grouping(id, f_outlook)= 0 THEN 'outlook'
-WHEN grouping(id, s_rating)= 0 THEN 'rating'
-WHEN grouping(id, m_rating)= 0 THEN 'rating'
-WHEN grouping(id, f_rating)= 0 THEN 'rating'
-ELSE NULL
-END type,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN 'S'
-WHEN grouping(id, m_outlook)= 0 THEN 'M'
-WHEN grouping(id, f_outlook)= 0 THEN 'F'
-WHEN grouping(id, s_rating)= 0 THEN 'S'
-WHEN grouping(id, m_rating)= 0 THEN 'M'
-WHEN grouping(id, f_rating)= 0 THEN 'F'
-ELSE NULL
-END agency,
-CASE
-WHEN grouping(id, s_outlook) = 0 THEN s_outlook
-WHEN grouping(id, m_outlook)= 0 THEN m_outlook
-WHEN grouping(id, f_outlook)= 0 THEN f_outlook
-WHEN grouping(id, s_rating)= 0 THEN s_rating
-WHEN grouping(id, m_rating)= 0 THEN m_rating
-WHEN grouping(id, f_rating)= 0 THEN f_rating
-ELSE NULL
-END value
-FROM test_grouping_set.test_grouping
-GROUP BY
-id,
-s_outlook,
-m_outlook,
-f_outlook,
-s_rating,
-m_rating,
-f_rating
-GROUPING SETS (
-(id, s_outlook),
-(id, m_outlook),
-(id, f_outlook),
-(id, s_rating),
-(id, m_rating),
-(id, f_rating)
-)
-POSTHOOK: type: CREATEVIEW
-POSTHOOK: Input: test_grouping_set@test_grouping
-POSTHOOK: Output: database:default
-POSTHOOK: Output: default@test_view
-POSTHOOK: Lineage: test_view.agency EXPRESSION []
-POSTHOOK: Lineage: test_view.id SIMPLE [(test_grouping)test_grouping.FieldSchema(name:id, type:string, comment:null), ]
-POSTHOOK: Lineage: test_view.type EXPRESSION []
-POSTHOOK: Lineage: test_view.value EXPRESSION [(test_grouping)test_grouping.FieldSchema(name:s_outlook, type:string, comment:null), (test_grouping)test_grouping.FieldSchema(name:m_outlook, type:string, comment:null), (test_grouping)test_grouping.FieldSchema(name:f_outlook, type:string, comment:null), (test_grouping)test_grouping.FieldSchema(name:s_rating, type:string, comment:null), (test_grouping)test_grouping.FieldSchema(name:m_rating, type:string, comment:null), (test_grouping)test_grouping.FieldSchema(name:f_rating, type:string, comment:null), ]
-PREHOOK: query: show create table test_view
-PREHOOK: type: SHOW_CREATETABLE
-PREHOOK: Input: default@test_view
-POSTHOOK: query: show create table test_view
-POSTHOOK: type: SHOW_CREATETABLE
-POSTHOOK: Input: default@test_view
-CREATE VIEW `test_view` AS SELECT
-`test_grouping`.`id`,
-CASE
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`s_outlook`) = 0 THEN 'outlook'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`m_outlook`)= 0 THEN 'outlook'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`f_outlook`)= 0 THEN 'outlook'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`s_rating`)= 0 THEN 'rating'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`m_rating`)= 0 THEN 'rating'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`f_rating`)= 0 THEN 'rating'
-ELSE NULL
-END `type`,
-CASE
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`s_outlook`) = 0 THEN 'S'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`m_outlook`)= 0 THEN 'M'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`f_outlook`)= 0 THEN 'F'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`s_rating`)= 0 THEN 'S'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`m_rating`)= 0 THEN 'M'
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`f_rating`)= 0 THEN 'F'
-ELSE NULL
-END `agency`,
-CASE
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`s_outlook`) = 0 THEN `test_grouping`.`s_outlook`
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`m_outlook`)= 0 THEN `test_grouping`.`m_outlook`
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`f_outlook`)= 0 THEN `test_grouping`.`f_outlook`
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`s_rating`)= 0 THEN `test_grouping`.`s_rating`
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`m_rating`)= 0 THEN `test_grouping`.`m_rating`
-WHEN grouping(`test_grouping`.`id`, `test_grouping`.`f_rating`)= 0 THEN `test_grouping`.`f_rating`
-ELSE NULL
-END `value`
-FROM `test_grouping_set`.`test_grouping`
-GROUP BY
-`test_grouping`.`id`,
-`test_grouping`.`s_outlook`,
-`test_grouping`.`m_outlook`,
-`test_grouping`.`f_outlook`,
-`test_grouping`.`s_rating`,
-`test_grouping`.`m_rating`,
-`test_grouping`.`f_rating`
-GROUPING SETS (
-(`test_grouping`.`id`, `test_grouping`.`s_outlook`),
-(`test_grouping`.`id`, `test_grouping`.`m_outlook`),
-(`test_grouping`.`id`, `test_grouping`.`f_outlook`),
-(`test_grouping`.`id`, `test_grouping`.`s_rating`),
-(`test_grouping`.`id`, `test_grouping`.`m_rating`),
-(`test_grouping`.`id`, `test_grouping`.`f_rating`)
-)
-PREHOOK: query: select * from test_view
-PREHOOK: type: QUERY
-PREHOOK: Input: default@test_view
-PREHOOK: Input: test_grouping_set@test_grouping
-#### A masked pattern was here ####
-POSTHOOK: query: select * from test_view
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@test_view
-POSTHOOK: Input: test_grouping_set@test_grouping
-#### A masked pattern was here ####
 PREHOOK: query: CREATE TABLE your_table(col1 int, col2 int, col3 int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -354,6 +54,57 @@ FROM
 GROUP BY
     `your_table`.`col1`, `your_table`.`col2`
 WITH CUBE
+PREHOOK: query: describe formatted your_view
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@your_view
+POSTHOOK: query: describe formatted your_view
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@your_view
+# col_name            	data_type           	comment             
+col1                	int                 	                    
+col2                	int                 	                    
+_c2                 	bigint              	                    
+is_col1_grouped     	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+Original Query:     	SELECT              	 
+	                    	    col1,           
+	                    	    col2,           
+	                    	    SUM(col3),      
+	                    	    GROUPING(col1) AS is_col1_grouped
+	                    	FROM                
+	                    	    your_table      
+	                    	GROUP BY            
+	                    	    col1, col2      
+	                    	WITH CUBE           
+Expanded Query:     	SELECT              	 
+	                    	    `your_table`.`col1`,
+	                    	    `your_table`.`col2`,
+	                    	    SUM(`your_table`.`col3`),
+	                    	    GROUPING(`your_table`.`col1`) AS `is_col1_grouped`
+	                    	FROM                
+	                    	    `default`.`your_table`
+	                    	GROUP BY            
+	                    	    `your_table`.`col1`, `your_table`.`col2`
+	                    	WITH CUBE           
 PREHOOK: query: select * from your_view
 PREHOOK: type: QUERY
 PREHOOK: Input: default@your_table
