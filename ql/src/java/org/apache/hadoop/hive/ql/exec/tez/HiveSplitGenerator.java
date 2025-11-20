@@ -303,17 +303,14 @@ public class HiveSplitGenerator extends InputInitializer {
 
         int availableSlots = getAvailableSlotsCalculator().getAvailableSlots();
 
-        if (HiveConf.getLongVar(conf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, 1) <= 1) {
-          // broken configuration from mapred-default.xml
-          final long blockSize = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY,
-            DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
-          final long minGrouping = conf.getLong(
-            TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE,
-            TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE_DEFAULT);
-          final long preferredSplitSize = Math.min(blockSize / 2, minGrouping);
-          HiveConf.setLongVar(jobConf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, preferredSplitSize);
-          LOG.info("The preferred split size is " + preferredSplitSize);
-        }
+        final long blockSize = conf.getLongBytes(DFSConfigKeys.DFS_BLOCK_SIZE_KEY,
+          DFSConfigKeys.DFS_BLOCK_SIZE_DEFAULT);
+        final long minGrouping = conf.getLong(
+          TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE,
+          TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_MIN_SIZE_DEFAULT);
+        final long preferredSplitSize = Math.min(blockSize / 2, minGrouping);
+        HiveConf.setLongVar(jobConf, HiveConf.ConfVars.MAPRED_MIN_SPLIT_SIZE, preferredSplitSize);
+        LOG.info("The preferred split size is " + preferredSplitSize);
 
         float waves;
         // Create the un-grouped splits
