@@ -50,16 +50,15 @@ public class VectorizedDummyColumnReader extends BaseVectorizedColumnReader {
   @Override
   public void readBatch(int total, ColumnVector col, TypeInfo typeInfo) throws IOException {
 
+    col.isRepeating = true;
     // Case 1: No default → (all nulls)
     if (defaultValue == null) {
       Arrays.fill(col.isNull, true);
       col.noNulls = false;
-      col.isRepeating = true;
       return;
     }
 
     // Case 2: We have a default → fill with constant value
-    col.isRepeating = true;
     col.noNulls = true;
     col.isNull[0] = false;
 
@@ -70,58 +69,62 @@ public class VectorizedDummyColumnReader extends BaseVectorizedColumnReader {
     }
   }
 
-  /* -------------------------
-     Primitive/leaf-type filler
-     ------------------------- */
+  /**
+   * Fill the column with the given value.
+   * @param col   the column to fill
+   * @param ti    the type info of the column
+   * @param value value to fill the column with
+   * @throws IOException in case of error
+   */
   private void fillPrimitive(ColumnVector col, PrimitiveTypeInfo ti, Object value) throws IOException {
 
     switch (ti.getPrimitiveCategory()) {
 
-    case BOOLEAN:
-      ((LongColumnVector) col).vector[0] = ((Boolean) value) ? 1 : 0;
-      return;
+      case BOOLEAN:
+        ((LongColumnVector) col).vector[0] = ((Boolean) value) ? 1 : 0;
+        return;
 
-    case BYTE:
-    case SHORT:
-    case INT:
-    case LONG:
-      ((LongColumnVector) col).vector[0] = ((Number) value).longValue();
-      return;
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+        ((LongColumnVector) col).vector[0] = ((Number) value).longValue();
+        return;
 
-    case FLOAT:
-    case DOUBLE:
-      ((DoubleColumnVector) col).vector[0] = ((Number) value).doubleValue();
-      return;
+      case FLOAT:
+      case DOUBLE:
+        ((DoubleColumnVector) col).vector[0] = ((Number) value).doubleValue();
+        return;
 
-    case STRING:
-    case VARCHAR:
-    case CHAR:
-      byte[] bytes = value.toString().getBytes(StandardCharsets.UTF_8);
-      ((BytesColumnVector) col).setRef(0, bytes, 0, bytes.length);
-      return;
+      case STRING:
+      case VARCHAR:
+      case CHAR:
+        byte[] bytes = value.toString().getBytes(StandardCharsets.UTF_8);
+        ((BytesColumnVector) col).setRef(0, bytes, 0, bytes.length);
+        return;
 
-    case DECIMAL:
-      DecimalColumnVector dcv = (DecimalColumnVector) col;
-      dcv.set(0, HiveDecimal.create(value.toString()));
-      return;
+      case DECIMAL:
+        DecimalColumnVector dcv = (DecimalColumnVector) col;
+        dcv.set(0, HiveDecimal.create(value.toString()));
+        return;
 
-    case TIMESTAMP: {
-      TimestampColumnVector tcv = (TimestampColumnVector) col;
+      case TIMESTAMP: {
+        TimestampColumnVector tcv = (TimestampColumnVector) col;
 
-      long micros = (Long) value;
-      long seconds = micros / 1_000_000L;
-      long nanos = (micros % 1_000_000L) * 1000L;
-      tcv.time[0] = seconds * 1000L;
-      tcv.nanos[0] = (int) nanos;
+        long micros = (Long) value;
+        long seconds = micros / 1_000_000L;
+        long nanos = (micros % 1_000_000L) * 1000L;
+        tcv.time[0] = seconds * 1000L;
+        tcv.nanos[0] = (int) nanos;
 
-      return;
-    }
+        return;
+      }
 
-    case DATE: {
-      LongColumnVector lcv = (LongColumnVector) col;
-      lcv.vector[0] = ((Number) value).intValue();
-      return;
-    }
+      case DATE: {
+        LongColumnVector lcv = (LongColumnVector) col;
+        lcv.vector[0] = ((Number) value).intValue();
+        return;
+      }
       default:
         throw new IOException("Unsupported primitive type in DummyColumnReader: " + ti.getPrimitiveCategory());
     }
