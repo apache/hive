@@ -506,15 +506,15 @@
       </field>
     </class>
 
-    <class name="MPartition" table="PARTITIONS" identity-type="datastore" detachable="true">
+    <class name="MPartition" table="PARTITIONS" identity-type="application" detachable="true">
       <foreign-key name="PARTITIONS_FK1" delete-action="cascade"/>
       <index name="UniquePartition" unique="true">
         <column name="PART_NAME"/>
         <column name="TBL_ID"/>
       </index>
-      <datastore-identity>
-        <column name="PART_ID"/>
-      </datastore-identity>
+      <field name="id" primary-key="true" value-strategy="native">
+         <column name="PART_ID" jdbc-type="BIGINT" />
+      </field>
       <field name="partitionName">
         <column name="PART_NAME" length="767" jdbc-type="VARCHAR"/>
       </field>
