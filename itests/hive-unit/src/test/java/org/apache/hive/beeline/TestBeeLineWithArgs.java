@@ -107,10 +107,9 @@ import org.junit.Test;
 
   /**
    * Create table for use by tests
-   * @throws ClassNotFoundException
    * @throws SQLException
    */
-  private static void createTable() throws ClassNotFoundException, SQLException {
+  private static void createTable() throws SQLException {
     Connection con = DriverManager.getConnection(miniHS2.getBaseJdbcURL(),
         userName , "");
 

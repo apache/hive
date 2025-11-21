@@ -113,9 +113,8 @@ public class HiveBurnInClient {
   /**
    * @param args
    * @throws SQLException
-   * @throws ClassNotFoundException
    */
-  public static void main(String[] args) throws SQLException, ClassNotFoundException {
+  public static void main(String[] args) throws SQLException {
     // Ensure hive-jdbc jar is in the classpath
     int numberOfQueryIterations = NUM_QUERY_ITERATIONS;
 

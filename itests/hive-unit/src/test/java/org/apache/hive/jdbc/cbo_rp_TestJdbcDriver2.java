@@ -106,7 +106,7 @@ public class cbo_rp_TestJdbcDriver2 {
   }
 
   @BeforeClass
-  public static void setUpBeforeClass() throws SQLException, ClassNotFoundException{
+  public static void setUpBeforeClass() throws SQLException {
     Connection con1 = getConnection("default");
     System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
 

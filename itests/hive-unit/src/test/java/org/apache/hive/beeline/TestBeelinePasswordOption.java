@@ -292,10 +292,9 @@ public class TestBeelinePasswordOption {
   /**
    * Create table for use by tests
    *
-   * @throws ClassNotFoundException
    * @throws SQLException
    */
-  private static void createTable() throws ClassNotFoundException, SQLException {
+  private static void createTable() throws SQLException {
     Connection con = DriverManager.getConnection(miniHS2.getBaseJdbcURL(), "", "");
 
     assertNotNull("Connection is null", con);

@@ -49,7 +49,6 @@ class DatabaseConnection {
   private final BeeLine beeLine;
   private Connection connection;
   private DatabaseMetaData meta;
-  private final String driver;
   private final String url;
   private final Properties info;
   private Schema schema = null;
@@ -62,7 +61,6 @@ class DatabaseConnection {
   public DatabaseConnection(BeeLine beeLine, String driver, String url,
        Properties info) throws SQLException {
     this.beeLine = beeLine;
-    this.driver = driver;
     this.url = url;
     this.info = info;
   }

@@ -38,11 +38,6 @@ public class TestMiniHS2 {
 
   private MiniHS2 miniHS2;
 
-  @BeforeClass
-  public static void beforeTest() throws Exception {
-    
-  }
-
   @After
   public void tearDown() throws Exception {
     miniHS2.stop();

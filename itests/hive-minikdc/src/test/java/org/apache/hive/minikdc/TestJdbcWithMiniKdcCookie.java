@@ -62,11 +62,6 @@ public class TestJdbcWithMiniKdcCookie {
     return Arrays.asList(new Object[][]{{MiniHS2.HS2_ALL_MODE}, {MiniHS2.HS2_HTTP_MODE}});
   }
 
-  @BeforeClass
-  public static void beforeTest() throws Exception {
-    
-  }
-
   @Before
   public void setUp() throws Exception {
     miniHiveKdc = new MiniHiveKdc();

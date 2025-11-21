@@ -30,7 +30,6 @@ import javax.security.sasl.AuthenticationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.HiveConnection;
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
