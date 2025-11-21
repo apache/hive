@@ -95,7 +95,7 @@ public class TestDFSErrorHandling
     assertTrue("Test setup failed. MiniHS2 is not initialized",
         miniHS2 != null && miniHS2.isStarted());
 
-    Class.forName(MiniHS2.getJdbcDriverName());
+    
     Path scratchDir = new Path(HiveConf.getVar(hiveConf, HiveConf.ConfVars.SCRATCH_DIR));
 
     MiniDFSShim dfs = miniHS2.getDfs();

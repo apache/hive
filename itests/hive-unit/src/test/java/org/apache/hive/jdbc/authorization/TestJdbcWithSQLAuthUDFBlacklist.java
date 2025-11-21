@@ -44,7 +44,7 @@ public class TestJdbcWithSQLAuthUDFBlacklist {
   private MiniHS2 miniHS2 = null;
 
   public void startHS2(HiveConf conf) throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
+    
 
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, SQLStdHiveAuthorizerFactory.class.getName());
     conf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER, SessionStateUserAuthenticator.class.getName());

@@ -296,7 +296,6 @@ public class TestBeelinePasswordOption {
    * @throws SQLException
    */
   private static void createTable() throws ClassNotFoundException, SQLException {
-    Class.forName(BeeLine.BEELINE_DEFAULT_JDBC_DRIVER);
     Connection con = DriverManager.getConnection(miniHS2.getBaseJdbcURL(), "", "");
 
     assertNotNull("Connection is null", con);

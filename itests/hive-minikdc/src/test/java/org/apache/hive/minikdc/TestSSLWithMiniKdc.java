@@ -51,7 +51,7 @@ public class TestSSLWithMiniKdc {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
+    
 
     miniHiveKdc = new MiniHiveKdc();
 

@@ -167,7 +167,6 @@ public abstract class AbstractExternalDB {
 
     public void execute(String script) throws IOException, SQLException, ClassNotFoundException {
         // Test we can connect to database
-        Class.forName(getJdbcDriver());
         try (Connection ignored = DriverManager.getConnection(getJdbcUrl(), getRootUser(), getRootPassword())) {
             LOG.info("Successfully connected to {} with user {} and password {}", getJdbcUrl(), getRootUser(), getRootPassword());
         }

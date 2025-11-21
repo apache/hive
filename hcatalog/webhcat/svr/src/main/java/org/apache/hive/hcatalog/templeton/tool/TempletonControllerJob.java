@@ -218,11 +218,6 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
     return real.doAs(new PrivilegedExceptionAction<String>() {
       @Override
       public String run() throws IOException, TException, InterruptedException {
-        try {
-          Class.forName("org.apache.hive.jdbc.HiveDriver");
-        } catch (ClassNotFoundException e) {
-          throw new IOException(e);
-        }
         String hs2Url = appConf.get(AppConfig.HIVE_SERVER2_URL);
         final HiveConnection con;
         try {

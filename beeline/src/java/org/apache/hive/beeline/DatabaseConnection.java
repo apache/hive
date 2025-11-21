@@ -85,14 +85,6 @@ class DatabaseConnection {
    * Connection to the specified data source.
    */
   boolean connect() throws SQLException {
-    try {
-      if (driver != null && driver.length() != 0) {
-        Class.forName(driver);
-      }
-    } catch (ClassNotFoundException cnfe) {
-      return beeLine.error(cnfe);
-    }
-
     boolean isDriverRegistered = false;
     try {
       isDriverRegistered = DriverManager.getDriver(getUrl()) != null;

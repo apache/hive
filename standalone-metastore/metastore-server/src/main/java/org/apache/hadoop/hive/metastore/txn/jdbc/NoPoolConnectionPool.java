@@ -28,6 +28,7 @@ import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
@@ -71,20 +72,6 @@ public class NoPoolConnectionPool implements DataSource {
         LOG.error(msg);
         throw new RuntimeException(msg);
       }
-      try {
-        LOG.info("Going to load JDBC driver {}", driverName);
-        driver = (Driver) Class.forName(driverName).newInstance();
-      } catch (InstantiationException e) {
-        throw new RuntimeException("Unable to instantiate driver " + driverName + ", " +
-            e.getMessage(), e);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(
-            "Unable to access driver " + driverName + ", " + e.getMessage(),
-            e);
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException("Unable to find driver " + driverName + ", " + e.getMessage(),
-            e);
-      }
       connString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
     }
 
@@ -93,7 +80,7 @@ public class NoPoolConnectionPool implements DataSource {
       Properties connectionProps = new Properties();
       connectionProps.setProperty("user", username);
       connectionProps.setProperty("password", password);
-      Connection conn = driver.connect(connString, connectionProps);
+      Connection conn = DriverManager.getConnection(connString, connectionProps);
       String prepareStmt = dbProduct != null ? dbProduct.getPrepareTxnStmt() : null;
       if (prepareStmt != null) {
         try (Statement stmt = conn.createStatement()) {

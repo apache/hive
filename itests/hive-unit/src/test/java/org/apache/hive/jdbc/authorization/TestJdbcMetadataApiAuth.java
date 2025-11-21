@@ -101,7 +101,7 @@ public class TestJdbcMetadataApiAuth {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
+    
     HiveConf conf = new HiveConf();
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, TestAuthorizerFactory.class.getName());
     conf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER, SessionStateUserAuthenticator.class.getName());

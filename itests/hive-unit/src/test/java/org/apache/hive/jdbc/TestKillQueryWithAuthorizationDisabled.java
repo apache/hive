@@ -108,7 +108,7 @@ public class TestKillQueryWithAuthorizationDisabled {
     // Disable Hive Authorization
     conf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED, false);
     MiniHS2.cleanupLocalDir();
-    Class.forName(MiniHS2.getJdbcDriverName());
+    
     miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
     Map<String, String> confOverlay = new HashMap<String, String>();
     miniHS2.start(confOverlay);

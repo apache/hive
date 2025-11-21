@@ -64,7 +64,7 @@ public class TestJdbcWithMiniKdcCookie {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
+    
   }
 
   @Before

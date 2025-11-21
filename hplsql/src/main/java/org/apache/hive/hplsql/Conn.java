@@ -146,15 +146,11 @@ public class Conn {
    * @throws Exception 
    */
   Connection openConnection(String connStr) throws Exception {
-    String driver = "org.apache.hadoop.hive.jdbc.HiveDriver";
     StringBuilder url = new StringBuilder();
     String usr = "";
     String pwd = "";
     if (connStr != null) {
       String[] c = connStr.split(";");
-      if (c.length >= 1) {
-        driver = c[0];
-      }
       if (c.length >= 2) {
         url.append(c[1]);
       }
@@ -174,7 +170,6 @@ public class Conn {
         }
       }
     }
-    Class.forName(driver);
     timer.start();
     Connection conn = DriverManager.getConnection(url.toString().trim(), usr, pwd);
     timer.stop();

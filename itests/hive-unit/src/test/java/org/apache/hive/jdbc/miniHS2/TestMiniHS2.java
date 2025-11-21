@@ -40,7 +40,7 @@ public class TestMiniHS2 {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
+    
   }
 
   @After

@@ -71,7 +71,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -309,12 +308,6 @@ public class BeeLine implements Closeable {
   };
 
   private final Completer beeLineCommandCompleter = new BeeLineCommandCompleter(Arrays.asList(commandHandlers));
-
-  static final SortedSet<String> KNOWN_DRIVERS = new TreeSet<String>(Arrays.asList(
-      new String[] {
-          "org.apache.hive.jdbc.HiveDriver",
-          "org.apache.hadoop.hive.jdbc.HiveDriver",
-      }));
 
   static {
     try {
