@@ -80,7 +80,6 @@ public class TestJdbcWithServiceDiscovery {
     miniHS2server1 = new MiniHS2.Builder().withConf(hiveConf1).withMiniMR().build();
     miniHS2server2 = new MiniHS2.Builder().withConf(hiveConf2).cleanupLocalDirOnStartup(false).build();
 
-    
     String instanceId1 = UUID.randomUUID().toString();
     miniHS2server1.start(getConfOverlay(instanceId1));
     miniHS2directUrl1 =

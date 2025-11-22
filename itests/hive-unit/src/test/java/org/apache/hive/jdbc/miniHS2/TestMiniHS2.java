@@ -31,7 +31,6 @@ import java.util.HashMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.junit.After;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestMiniHS2 {

@@ -1670,7 +1670,7 @@ public class Commands {
 
     try {
       beeLine.getDatabaseConnections().setConnection(
-          new DatabaseConnection(beeLine, driver, url, props));
+          new DatabaseConnection(beeLine, url, props));
       beeLine.getDatabaseConnection().getConnection();
 
       if (!beeLine.isBeeLine()) {

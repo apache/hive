@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -42,8 +41,6 @@ public class NoPoolConnectionPool implements DataSource {
   // implement them.
   private final Configuration conf;
   private final DatabaseProduct dbProduct;
-  private Driver driver;
-  private String connString;
   private String user;
   private String passwd;  
 
@@ -63,17 +60,16 @@ public class NoPoolConnectionPool implements DataSource {
 
   @Override
   public Connection getConnection(String username, String password) throws SQLException {
-    // Find the JDBC driver
-    if (driver == null) {
-      String driverName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER);
-      if (driverName == null || driverName.equals("")) {
-        String msg = "JDBC driver for transaction db not set in configuration " +
-            "file, need to set " + MetastoreConf.ConfVars.CONNECTION_DRIVER.getVarname();
-        LOG.error(msg);
-        throw new RuntimeException(msg);
-      }
-      connString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
+    String driverName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER);
+    if (driverName == null || driverName.isEmpty()) {
+      String msg =
+          "JDBC driver for transaction db not set in configuration "
+              + "file, need to set "
+              + MetastoreConf.ConfVars.CONNECTION_DRIVER.getVarname();
+      LOG.error(msg);
+      throw new RuntimeException(msg);
     }
+    String connString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
 
     try {
       LOG.info("Connecting to transaction db with connection string {}", connString);

@@ -46,8 +46,6 @@ public class TestRestrictedList {
 
   @BeforeClass
   public static void startServices() throws Exception {
-    
-
     oldHiveSiteURL = HiveConf.getHiveSiteLocation();
     oldHiveMetastoreSiteURL = HiveConf.getMetastoreSiteLocation();
     String confDir = "../../data/conf/rlist/";

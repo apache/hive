@@ -87,7 +87,6 @@ public class TestHS2AuthMechsWithMiniKdc extends AbstractLdapTestUnit {
   @Before
   public void setUpBefore() throws Exception {
     if (miniHS2 == null) {
-      
       miniHiveKdc = new MiniHiveKdc();
       HiveConf hiveConf = new HiveConf();
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);

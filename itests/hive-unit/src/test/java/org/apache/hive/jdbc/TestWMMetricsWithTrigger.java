@@ -102,7 +102,6 @@ public class TestWMMetricsWithTrigger {
   public static void beforeTest() throws Exception {
     HiveConf conf = defaultConf();
 
-    
     miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
     Map<String, String> confOverlay = new HashMap<>();
     miniHS2.start(confOverlay);

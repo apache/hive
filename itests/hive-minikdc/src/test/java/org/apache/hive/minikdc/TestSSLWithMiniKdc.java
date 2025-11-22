@@ -51,8 +51,6 @@ public class TestSSLWithMiniKdc {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    
-
     miniHiveKdc = new MiniHiveKdc();
 
     HiveConf hiveConf = new HiveConf();

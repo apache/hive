@@ -64,7 +64,6 @@ public class TestMetaStoreLimitPartitionRequest {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    
     conf = new HiveConfForTest(TestMetaStoreLimitPartitionRequest.class);
     DriverManager.setLoginTimeout(0);
 

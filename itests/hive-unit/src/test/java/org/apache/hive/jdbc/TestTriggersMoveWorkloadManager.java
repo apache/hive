@@ -64,8 +64,6 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    
-
     String confDir = "../../data/conf/llap/";
     HiveConf.setHiveSiteLocation(new URL("file://" + new File(confDir).toURI().getPath() + "/hive-site.xml"));
     System.out.println("Setting hive-site: " + HiveConf.getHiveSiteLocation());

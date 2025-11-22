@@ -74,8 +74,6 @@ public class TestHS2ImpersonationWithRemoteMS {
     assertTrue("Test setup failed. MiniHS2 is not initialized",
         miniHS2 != null && miniHS2.isStarted());
 
-    
-
     // Create two tables one as user "foo" and other as user "bar"
     Connection hs2Conn = DriverManager.getConnection(miniHS2.getJdbcURL()+";retries=3", "foo", null);
     Statement stmt = hs2Conn.createStatement();
