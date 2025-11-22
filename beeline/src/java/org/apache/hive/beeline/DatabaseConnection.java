@@ -152,18 +152,19 @@ class DatabaseConnection {
 
   public Connection getConnectionFromLocalDriver(String url, Properties properties) {
     Collection<Driver> drivers = beeLine.getDrivers();
-    for (Driver d : drivers) {
+    for (Driver driver : drivers) {
       try {
-        if (d.acceptsURL(url) && beeLine.isSupportedLocalDriver(d)) {
-          String clazzName = d.getClass().getName();
-          beeLine.debug("Driver name is " + clazzName);
-          Driver driver =
-            (Driver) Class.forName(clazzName, true, Thread.currentThread().getContextClassLoader())
-              .newInstance();
+        if (driver.acceptsURL(url) && beeLine.isSupportedLocalDriver(driver)) {
+          beeLine.debug("Driver name is " + driver.getClass().getName());
+          // The 'driver' is already an instance from the ServiceLoader, so we can use it directly.
           return driver.connect(url, properties);
         }
-      } catch (Exception e) {
-        beeLine.error("Fail to connect with a local driver due to the exception:" + e);
+      } catch (SQLException e) {
+        beeLine.error(
+            "Failed to connect with local driver "
+                + driver.getClass().getName()
+                + " due to exception: "
+                + e);
         beeLine.error(e);
       }
     }

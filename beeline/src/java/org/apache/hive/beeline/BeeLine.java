@@ -2363,23 +2363,17 @@ public class BeeLine implements Closeable {
     return null;
   }
 
-  public Driver findLocalDriver(String url) throws Exception {
+  public Driver findLocalDriver(String url) throws SQLException {
     Objects.requireNonNull(url);
 
     Collection<Driver> currentDrivers = drivers == null ? Collections.emptyList() : drivers;
-    for (Driver d : currentDrivers) {
-      try {
-        String clazzName = d.getClass().getName();
-        Driver driver = (Driver) Class.forName(clazzName, true,
-          Thread.currentThread().getContextClassLoader()).newInstance();
-        if (driver.acceptsURL(url) && isSupportedLocalDriver(driver)) {
-          return driver;
-        }
-      } catch (SQLException e) {
-        throw e;
+    for (Driver driver : currentDrivers) {
+      // The 'driver' is already an instance from the ServiceLoader.
+      // We can use it directly without creating a new one via reflection.
+      if (driver.acceptsURL(url) && isSupportedLocalDriver(driver)) {
+        return driver;
       }
     }
-
     return null;
   }
 
