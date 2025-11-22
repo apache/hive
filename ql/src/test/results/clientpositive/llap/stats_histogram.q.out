@@ -361,7 +361,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_stats
 col_name            	e                   
 data_type           	decimal(5,2)        
-min                 	-10.2               
+min                 	-123.2              
 max                 	12.2                
 num_nulls           	1                   
 distinct_count      	11                  
