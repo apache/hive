@@ -225,11 +225,14 @@ public final class ConstraintsUtils {
     TypeInfo colTypeInfo = null;
     TypeInfo defaultValueType = null;
     String checkOrDefaultValue = null;
+    boolean isNegativeConstant = false;
     int childType = child.getToken().getType();
     for (int i = 0; i < child.getChildCount(); i++) {
       ASTNode grandChild = (ASTNode) child.getChild(i);
       int type = grandChild.getToken().getType();
-      if (type == HiveParser.TOK_CONSTRAINT_NAME) {
+      if (type == HiveParser.MINUS) {
+        isNegativeConstant = true;
+      } else if (type == HiveParser.TOK_CONSTRAINT_NAME) {
         constraintName = BaseSemanticAnalyzer.unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
       } else if (type == HiveParser.TOK_ENABLE) {
         enable = true;
@@ -253,7 +256,7 @@ public final class ConstraintsUtils {
       } else if (childType == HiveParser.TOK_DEFAULT_VALUE) {
         // try to get default value only if this is DEFAULT constraint
         colTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(BaseSemanticAnalyzer.getTypeStringFromAST(typeChildForDefault));
-        Pair<TypeInfo, String> defaultValueTypeAndValue = getDefaultValueAndType(grandChild, tokenRewriteStream);
+        Pair<TypeInfo, String> defaultValueTypeAndValue = getDefaultValueAndType(grandChild, tokenRewriteStream, isNegativeConstant);
         defaultValueType = defaultValueTypeAndValue.getKey();
         checkOrDefaultValue = defaultValueTypeAndValue.getValue();
       } else if (childType == HiveParser.TOK_CHECK_CONSTRAINT) {
@@ -309,8 +312,8 @@ public final class ConstraintsUtils {
    * @param node AST node corresponding to default value
    * @return retrieve the default value and return it as string
    */
-  private static Pair<TypeInfo, String> getDefaultValueAndType(ASTNode node, TokenRewriteStream tokenStream)
-      throws SemanticException{
+  private static Pair<TypeInfo, String> getDefaultValueAndType(ASTNode node, TokenRewriteStream tokenStream,
+      boolean isNegativeConstant) throws SemanticException {
     // first create expression from defaultValueAST
     TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
     ExprNodeDesc defaultValExpr = ExprNodeTypeCheck.genExprNode(node, typeCheckCtx).get(node);
@@ -321,6 +324,9 @@ public final class ConstraintsUtils {
 
     //get default value to be be stored in metastore
     String defaultValueText  = tokenStream.toOriginalString(node.getTokenStartIndex(), node.getTokenStopIndex());
+    if (isNegativeConstant) {
+      defaultValueText = "-" + defaultValueText;
+    }
 
     if (defaultValueText.length() > DEFAULT_MAX_LEN) {
       throw new SemanticException(ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid Default value:  " + defaultValueText +

@@ -2363,7 +2363,8 @@ columnConstraintType
     ;
 
 defaultVal
-    : constant
+    : (PLUS | MINUS) unsignedNumericLiterals
+    | constant
     | function
     | castExpression
     ;
