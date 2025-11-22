@@ -189,7 +189,9 @@ public final class ShowUtils {
           }
         } else if (statsData.isSetDoubleStats()) {
           DoubleColumnStatsData doubleStats = statsData.getDoubleStats();
-          values.addAll(Lists.newArrayList("" + doubleStats.getLowValue(), "" + doubleStats.getHighValue(),
+          String lowVal = doubleStats.isSetLowValue() ? "" + doubleStats.getLowValue() : "";
+          String highVal = doubleStats.isSetHighValue() ? "" + doubleStats.getHighValue() : "";
+          values.addAll(Lists.newArrayList(lowVal, highVal,
               "" + doubleStats.getNumNulls(), "" + doubleStats.getNumDVs(), "", "", "", "",
               convertToString(doubleStats.getBitVectors())));
           if (histogramEnabled) {
@@ -197,7 +199,9 @@ public final class ShowUtils {
           }
         } else if (statsData.isSetLongStats()) {
           LongColumnStatsData longStats = statsData.getLongStats();
-          values.addAll(Lists.newArrayList("" + longStats.getLowValue(), "" + longStats.getHighValue(),
+          String lowVal = longStats.isSetLowValue() ? "" + longStats.getLowValue() : "";
+          String highVal = longStats.isSetHighValue() ? "" + longStats.getHighValue() : "";
+          values.addAll(Lists.newArrayList(lowVal, highVal,
               "" + longStats.getNumNulls(), "" + longStats.getNumDVs(), "", "", "", "",
               convertToString(longStats.getBitVectors())));
           if (histogramEnabled) {
