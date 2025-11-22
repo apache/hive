@@ -26,8 +26,6 @@ import java.sql.DriverManager;
 
 
 public class HiveBurnInClient {
-  private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
-
   //default 80k (runs slightly over 1 day long)
   private static final int NUM_QUERY_ITERATIONS = 80000;
 
@@ -115,10 +113,9 @@ public class HiveBurnInClient {
   /**
    * @param args
    * @throws SQLException
-   * @throws ClassNotFoundException
    */
-  public static void main(String[] args) throws SQLException, ClassNotFoundException {
-    Class.forName(driverName);
+  public static void main(String[] args) throws SQLException {
+    // Ensure hive-jdbc jar is in the classpath
     int numberOfQueryIterations = NUM_QUERY_ITERATIONS;
 
     if (args.length > 0) {

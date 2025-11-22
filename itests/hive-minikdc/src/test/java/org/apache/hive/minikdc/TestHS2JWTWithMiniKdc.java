@@ -73,7 +73,6 @@ public class TestHS2JWTWithMiniKdc {
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
     MOCK_JWKS_SERVER.stubFor(get("/jwks")
         .willReturn(ok()
             .withBody(Files.readAllBytes(jwtVerificationJWKSFile.toPath()))));

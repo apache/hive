@@ -82,7 +82,6 @@ public class TestXSRFFilter {
   // This is not modeled as a @Before, because it needs to be parameterized per-test.
   // If there is a better way to do this, we should do it.
   private void initHS2(boolean enableXSRFFilter) throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
     HiveConf conf = new HiveConf();
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     miniHS2 = new MiniHS2.Builder().withConf(conf).cleanupLocalDirOnStartup(false).build();

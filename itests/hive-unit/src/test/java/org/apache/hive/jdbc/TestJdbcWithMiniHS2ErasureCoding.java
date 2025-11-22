@@ -67,7 +67,6 @@ public class TestJdbcWithMiniHS2ErasureCoding {
      */
   @BeforeClass
   public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
     conf = new HiveConfForTest(TestJdbcWithMiniHS2ErasureCoding.class);
     //TODO: HIVE-28284: TestJdbcWithMiniHS2/TestJdbcWithMiniHS2ErasureCoding to run on Tez
     conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
