@@ -7254,6 +7254,10 @@ public class HiveConf extends Configuration {
         + "versions. Please adjust DDL towards the new semantics.";
   }
 
+  public static String generateRemovedWarning() {
+    return "This config does not exist in the current version of Hive. Consider removing this config.";
+  }
+
   private static final Object reverseMapLock = new Object();
   private static HashMap<String, ConfVars> reverseMap = null;
 
