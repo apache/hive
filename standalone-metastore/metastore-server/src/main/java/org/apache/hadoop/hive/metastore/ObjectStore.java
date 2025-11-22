@@ -9963,7 +9963,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        return directSql.deletePartitionColumnStats(catName, dbName, tableName, partNames, colNames, engine);
+        if (directSql.deletePartitionColumnStats(catName, dbName, tableName, partNames, colNames, engine)){
+          directSql.updateColumnStatsAccurateForPartitions(catName, dbName, getTable(), partNames, colNames);
+          return true;
+        }
+        return false;
       }
       @Override
       protected Boolean getJdoResult(GetHelper<Boolean> ctx)
@@ -10034,6 +10038,9 @@ public class ObjectStore implements RawStore, Configurable {
       } finally {
         b.closeAllQueries();
       }
+      // Update COLUMN_STATS_ACCURATE after stats are dropped
+      Table tbl = getTable(catName, dbName, tableName);
+      directSql.updateColumnStatsAccurateForPartitions(catName, dbName, tbl, partNames, colNames);
       ret = commitTransaction();
     } finally {
       rollbackAndCleanup(ret, null);
@@ -10056,7 +10063,18 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        return directSql.deleteTableColumnStatistics(getTable().getId(), colNames, engine);
+        MetaStoreDirectSql d = directSql;                // snapshot the directSql
+        if (d.deleteTableColumnStatistics(getTable().getId(), colNames, engine)) {
+          if (d == null) {
+            // Initialize the directSql again in case it became null in-between
+            String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
+            schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
+            d = new MetaStoreDirectSql(pm, conf, schema);
+          }
+          d.updateColumnStatsAccurateForTable(getTable(), colNames);
+          return true;
+        }
+        return false;
       }
       @Override
       protected Boolean getJdoResult(GetHelper<Boolean> ctx)
@@ -10089,14 +10107,14 @@ public class ObjectStore implements RawStore, Configurable {
       query.setFilter(filter);
       query.declareParameters(parameters);
       List<Object> params = new ArrayList<>();
-      params.add(normalizeIdentifier(tableName));
-      params.add(normalizeIdentifier(dbName));
-      params.add(normalizeIdentifier(catName));
+      params.add(tableName == null ? null : normalizeIdentifier(tableName));
+      params.add(dbName == null ? null : normalizeIdentifier(dbName));
+      params.add(catName == null ? null : normalizeIdentifier(catName));
       if (colNames != null && !colNames.isEmpty()) {
         List<String> normalizedColNames = new ArrayList<>();
         for (String colName : colNames){
           // trim the extra spaces, and change to lowercase
-          normalizedColNames.add(normalizeIdentifier(colName));
+          normalizedColNames.add(colName == null ? null : normalizeIdentifier(colName));
         }
         params.add(normalizedColNames);
       }
@@ -10110,6 +10128,19 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
             + tableName + " col=" + String.join(", ", colNames));
+      }
+      if (mStatsObjColl != null) {
+        pm.deletePersistentAll(mStatsObjColl);
+        // Update COLUMN_STATS_ACCURATE to reflect the deletion
+        Table tbl = getTable(catName, dbName, tableName);
+        // Initialize the directSql again in case it became null in-between
+        String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
+        schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
+        directSql = new MetaStoreDirectSql(pm, conf, schema); // Use the original colNames (can be null or empty)
+        directSql.updateColumnStatsAccurateForTable(tbl, colNames);
+      } else {
+        throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
+                " table=" + tableName + " col=" + (colNames != null ? String.join(", ", colNames) : "ALL"));
       }
       ret = commitTransaction();
     } finally {
