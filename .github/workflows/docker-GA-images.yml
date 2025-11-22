@@ -43,6 +43,21 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        run: |
+          echo '===== Before ====='
+          df -h
+          sudo rm -rf /opt/hostedtoolcache/go
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          sudo rm -rf /usr/local/julia*
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/share/dotnet
+          sudo apt-get clean
+          echo '===== After ====='
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -123,3 +138,9 @@ jobs:
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
             BUILD_ENV=${{ env.BUILD_ENV }}
+
+      - name: Dump disk usage on failure
+        if: failure()
+        run: |
+          df -h
+          du -xh / --max-depth=3 2>/dev/null | sort -h | tail -50
