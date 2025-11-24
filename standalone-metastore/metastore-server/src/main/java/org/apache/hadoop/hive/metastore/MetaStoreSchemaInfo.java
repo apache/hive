@@ -56,12 +56,14 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
   // a version
   // that has a corresponding schema. eg "0.13.1" is equivalent to "0.13.0"
   private static final Map<String, String> EQUIVALENT_VERSIONS =
-      ImmutableMap.of("0.13.1", "0.13.0",
-          "1.0.0", "0.14.0",
-          "1.0.1", "1.0.0",
-          "1.1.1", "1.1.0",
-          "1.2.1", "1.2.0"
-      );
+      new ImmutableMap.Builder<String, String>()
+        .put("0.13.1", "0.13.0")
+        .put("1.0.0", "0.14.0")
+        .put("1.0.1", "1.0.0")
+        .put("1.1.1", "1.1.0")
+        .put("1.2.1", "1.2.0")
+        .put("4.2.1", "4.2.0")
+      .build();
 
   public MetaStoreSchemaInfo(String metastoreHome, String dbType) throws HiveMetaException {
     this.metastoreHome = metastoreHome;
