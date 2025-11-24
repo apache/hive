@@ -23,13 +23,13 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
-import org.apache.hadoop.hive.metastore.api.utils.DecimalUtils;
 import org.apache.hadoop.hive.metastore.columnstats.ColStatsBuilder;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DecimalColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.nio.ByteBuffer;
 import java.util.Objects;
 
 import static org.apache.hadoop.hive.metastore.columnstats.merge.ColumnStatsMergerTest.createColumnStatisticsObj;
@@ -61,7 +61,9 @@ public class DecimalColumnStatsMergerTest {
    * Creates a decimal and checks its string representation.
    */
   private static Decimal getDecimal(String expected, int number, int scale) {
-    Decimal d = DecimalUtils.getDecimal(number, scale);
+    ByteBuffer bb = ByteBuffer.allocate(4);
+    bb.asIntBuffer().put(number);
+    Decimal d = new Decimal((short) scale, bb);
     assertEquals(expected, MetaStoreServerUtils.decimalToString(d));
     return d;
   }
@@ -203,17 +205,11 @@ public class DecimalColumnStatsMergerTest {
     Objects.requireNonNull(low);
     Objects.requireNonNull(high);
     assertTrue(MetaStoreServerUtils.decimalToDouble(low) < MetaStoreServerUtils.decimalToDouble(high));
-    var data1 = new DecimalColumnStatsDataInspector();
-    data1.setLowValue(low);
-    data1.setHighValue(low);
-    var data2 = new DecimalColumnStatsDataInspector();
-    data2.setLowValue(high);
-    data2.setHighValue(high);
 
-    assertEquals(low, merger.mergeLowValue(data1.getLowValue(), data2.getLowValue()));
-    assertEquals(low, merger.mergeLowValue(data2.getLowValue(), data1.getLowValue()));
-    assertEquals(high, merger.mergeHighValue(data1.getHighValue(), data2.getHighValue()));
-    assertEquals(high, merger.mergeHighValue(data2.getHighValue(), data1.getHighValue()));
+    assertEquals(low, merger.mergeLowValue(low, high));
+    assertEquals(low, merger.mergeLowValue(high, low));
+    assertEquals(high, merger.mergeHighValue(low, high));
+    assertEquals(high, merger.mergeHighValue(high, low));
   }
 
   @Test

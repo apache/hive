@@ -30,12 +30,6 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
  */
 public class DecimalUtils {
 
-  public static Decimal getDecimal(int number, int scale) {
-    ByteBuffer bb = ByteBuffer.allocate(4);
-    bb.asIntBuffer().put(number);
-    return new Decimal((short) scale, bb);
-  }
-
   public static Decimal getDecimal(ByteBuffer unscaled, short scale) {
     return new Decimal((short) scale, unscaled);
   }
