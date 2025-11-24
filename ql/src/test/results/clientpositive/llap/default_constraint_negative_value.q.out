@@ -36,3 +36,155 @@ POSTHOOK: Input: default@tab_default_cons
 #### A masked pattern was here ####
 true	-15
 false	10
+PREHOOK: query: CREATE TABLE tab_default_cons1(c0 boolean, c1 double DEFAULT -log2(16))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_default_cons1
+POSTHOOK: query: CREATE TABLE tab_default_cons1(c0 boolean, c1 double DEFAULT -log2(16))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_default_cons1
+PREHOOK: query: insert into tab_default_cons1 values(true, default)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab_default_cons1
+POSTHOOK: query: insert into tab_default_cons1 values(true, default)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab_default_cons1
+POSTHOOK: Lineage: tab_default_cons1.c0 SCRIPT []
+POSTHOOK: Lineage: tab_default_cons1.c1 SCRIPT []
+PREHOOK: query: insert into tab_default_cons1 values(false, 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab_default_cons1
+POSTHOOK: query: insert into tab_default_cons1 values(false, 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab_default_cons1
+POSTHOOK: Lineage: tab_default_cons1.c0 SCRIPT []
+POSTHOOK: Lineage: tab_default_cons1.c1 SCRIPT []
+PREHOOK: query: select * from tab_default_cons1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_default_cons1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tab_default_cons1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_default_cons1
+#### A masked pattern was here ####
+true	-4.0
+false	20.0
+PREHOOK: query: CREATE TABLE tab_default_cons2(c0 boolean, c1 int DEFAULT -cast(-trim(' 12 ') as int))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_default_cons2
+POSTHOOK: query: CREATE TABLE tab_default_cons2(c0 boolean, c1 int DEFAULT -cast(-trim(' 12 ') as int))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_default_cons2
+PREHOOK: query: insert into tab_default_cons2 values(true, default)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab_default_cons2
+POSTHOOK: query: insert into tab_default_cons2 values(true, default)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab_default_cons2
+POSTHOOK: Lineage: tab_default_cons2.c0 SCRIPT []
+POSTHOOK: Lineage: tab_default_cons2.c1 SCRIPT []
+PREHOOK: query: insert into tab_default_cons2 values(false, 30)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab_default_cons2
+POSTHOOK: query: insert into tab_default_cons2 values(false, 30)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab_default_cons2
+POSTHOOK: Lineage: tab_default_cons2.c0 SCRIPT []
+POSTHOOK: Lineage: tab_default_cons2.c1 SCRIPT []
+PREHOOK: query: select * from tab_default_cons2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_default_cons2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tab_default_cons2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_default_cons2
+#### A masked pattern was here ####
+true	12
+false	30
+PREHOOK: query: CREATE TABLE tab_default_cons3(c0 boolean, c1 int DEFAULT +25)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_default_cons3
+POSTHOOK: query: CREATE TABLE tab_default_cons3(c0 boolean, c1 int DEFAULT +25)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_default_cons3
+PREHOOK: query: insert into tab_default_cons3 values(true, default)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab_default_cons3
+POSTHOOK: query: insert into tab_default_cons3 values(true, default)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab_default_cons3
+POSTHOOK: Lineage: tab_default_cons3.c0 SCRIPT []
+POSTHOOK: Lineage: tab_default_cons3.c1 SCRIPT []
+PREHOOK: query: insert into tab_default_cons3 values(false, 40)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab_default_cons3
+POSTHOOK: query: insert into tab_default_cons3 values(false, 40)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab_default_cons3
+POSTHOOK: Lineage: tab_default_cons3.c0 SCRIPT []
+POSTHOOK: Lineage: tab_default_cons3.c1 SCRIPT []
+PREHOOK: query: select * from tab_default_cons3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_default_cons3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tab_default_cons3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_default_cons3
+#### A masked pattern was here ####
+true	25
+false	40
+PREHOOK: query: CREATE TABLE tab_default_cons4(c0 boolean, c1 double DEFAULT cast(121 as double))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_default_cons4
+POSTHOOK: query: CREATE TABLE tab_default_cons4(c0 boolean, c1 double DEFAULT cast(121 as double))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_default_cons4
+PREHOOK: query: insert into tab_default_cons4 values(false, default)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab_default_cons4
+POSTHOOK: query: insert into tab_default_cons4 values(false, default)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab_default_cons4
+POSTHOOK: Lineage: tab_default_cons4.c0 SCRIPT []
+POSTHOOK: Lineage: tab_default_cons4.c1 SCRIPT []
+PREHOOK: query: insert into tab_default_cons4 values(true, 50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tab_default_cons4
+POSTHOOK: query: insert into tab_default_cons4 values(true, 50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tab_default_cons4
+POSTHOOK: Lineage: tab_default_cons4.c0 SCRIPT []
+POSTHOOK: Lineage: tab_default_cons4.c1 SCRIPT []
+PREHOOK: query: select * from tab_default_cons4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_default_cons4
+#### A masked pattern was here ####
+POSTHOOK: query: select * from tab_default_cons4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_default_cons4
+#### A masked pattern was here ####
+false	121.0
+true	50.0

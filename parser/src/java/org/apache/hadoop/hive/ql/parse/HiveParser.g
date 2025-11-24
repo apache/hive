@@ -2365,8 +2365,8 @@ columnConstraintType
 defaultVal
     : ((PLUS | MINUS)^) unsignedNumericLiterals
     | constant
-    | function
-    | castExpression
+    | ((PLUS | MINUS)^)? function
+    | ((PLUS | MINUS)^)? castExpression
     ;
 
 tableConstraintType
