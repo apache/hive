@@ -22,15 +22,15 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
+import org.apache.calcite.sql.SqlSyntax;
 import org.apache.calcite.sql.type.SqlOperandTypeChecker;
 import org.apache.calcite.sql.type.SqlOperandTypeInference;
 import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.util.Optionality;
 
-public class HiveSqlAverageAggFunction extends SqlAggFunction implements CanAggregateDistinct {
-  private final boolean isDistinct;
+public class HiveSqlAverageAggFunction extends SqlAggFunction {
 
-  public HiveSqlAverageAggFunction(boolean isDistinct, SqlReturnTypeInference returnTypeInference,
+  public HiveSqlAverageAggFunction(SqlReturnTypeInference returnTypeInference,
       SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
     super(
         "avg",
@@ -43,7 +43,6 @@ public class HiveSqlAverageAggFunction extends SqlAggFunction implements CanAggr
         false,
         false,
         Optionality.FORBIDDEN);
-    this.isDistinct = isDistinct;
   }
 
   @Override
@@ -55,7 +54,7 @@ public class HiveSqlAverageAggFunction extends SqlAggFunction implements CanAggr
   }
 
   @Override
-  public boolean isDistinct() {
-    return isDistinct;
+  public SqlSyntax getSyntax() {
+    return SqlSyntax.FUNCTION_STAR;
   }
 }
