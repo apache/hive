@@ -21,7 +21,7 @@
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-storage-api</artifactId>
-  <version>4.2.0</version>
+  <version>4.2.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Hive Storage API</name>
   <inceptionYear>2008</inceptionYear>
@@ -42,7 +42,7 @@
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
-    <project.build.outputTimestamp>2025-11-11T17:01:10Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-11-24T17:50:17Z</project.build.outputTimestamp>
   </properties>
   <dependencyManagement>
     <dependencies>
