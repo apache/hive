@@ -32,4 +32,15 @@
     <name>metastore.catalog.servlet.auth</name>
     <value>none</value>
   </property>
+
+  <!--
+    <property>
+      <name>fs.s3a.access.key</name>
+      <value>YOUR_AWS_ACCESS_KEY</value>
+    </property>
+    <property>
+      <name>fs.s3a.secret.key</name>
+      <value>YOUR_AWS_SECRET_KEY</value>
+    </property>
+    -->
 </configuration>

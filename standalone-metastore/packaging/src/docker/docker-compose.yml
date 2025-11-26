@@ -54,6 +54,8 @@ services:
         - type: bind
           source: ${POSTGRES_LOCAL_PATH}
           target: /opt/hive/lib/postgres.jar
+        # Mount local jars to a temporary staging area (Read-Only)
+        - ./jars:/tmp/ext-jars:ro
     networks:
       - hive
 

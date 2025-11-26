@@ -131,6 +131,13 @@ export POSTGRES_LOCAL_PATH=`mvn help:evaluate -Dexpression=settings.localReposit
 If you don't install maven or have problem in resolving the postgres driver, you can always download this jar yourself,
 change the `POSTGRES_LOCAL_PATH` to the path of the downloaded jar.
 
+- Metastore with S3 support
+
+Download aws-java-sdk-bundle-xxx.jar and place it under the jars directory:
+wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.770/aws-java-sdk-bundle-1.12.770.jar -P jars/
+
+Add the `fs.s3a.access.key` and `fs.s3a.secret.key` properties in `metastore-site.xml` under the conf directory.
+
 Then,
 ```shell
 docker compose up -d
