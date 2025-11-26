@@ -63,7 +63,7 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catalogName);
     }
     String databaseName = catDbNamePair.getRight();
-    Database database = getDatabase(catDbNamePair.getLeft(), catDbNamePair.getRight(), !ifExists);
+    Database database = getDatabase(catalogName, databaseName, !ifExists);
     if (database == null) {
       return;
     }

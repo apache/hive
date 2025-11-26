@@ -1948,16 +1948,7 @@ public abstract class BaseSemanticAnalyzer {
    * @return the database if existed.
    */
   protected Database getDatabase(String dbName, boolean throwException) throws SemanticException {
-    Database database;
-    try {
-      database = db.getDatabase(dbName);
-    } catch (Exception e) {
-      throw new SemanticException(e.getMessage(), e);
-    }
-    if (database == null && throwException) {
-      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(dbName));
-    }
-    return database;
+    return getDatabase(null, dbName, throwException);
   }
 
   protected Database getDatabase(String catalogName, String dbName, boolean throwException) throws SemanticException {

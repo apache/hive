@@ -51,4 +51,4 @@ DESC CATALOG EXTENDED test_cat;
 ALTER CATALOG test_cat SET PROPERTIES ('key2'='value2');
 
 -- DROP catalog at the end
-DROP CATALOG  test_cat;
+DROP CATALOG test_cat;
