@@ -35,6 +35,10 @@
 
   <!--
     <property>
+      <name>fs.s3a.endpoint</name>
+      <value>s3.us-west-2.amazonaws.com</value>
+    </property>
+    <property>
       <name>fs.s3a.access.key</name>
       <value>YOUR_AWS_ACCESS_KEY</value>
     </property>

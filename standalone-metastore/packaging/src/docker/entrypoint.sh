@@ -25,16 +25,15 @@ set -x
 STAGING_DIR="/tmp/ext-jars"
 
 TOOLS_LIB="${HADOOP_HOME}/share/hadoop/tools/lib"
-COMMON_LIB="${HADOOP_HOME}/share/hadoop/common/lib"
+HIVE_LIB="${HIVE_HOME}/lib/"
 
 # Checks if /tmp/ext-jars is mounted (via Docker volume).
 if [ -d "$STAGING_DIR" ]; then
-  # Check for aws-java-sdk-bundle (Wildcard handles versions)
-  if ls "$STAGING_DIR"/aws-java-sdk-bundle-*.jar 1> /dev/null 2>&1; then
-    echo "--> Installing AWS SDK Bundle..."
-    cp "$STAGING_DIR"/aws-java-sdk-bundle-*.jar "$COMMON_LIB/"
-    echo "--> activating hadoop-aws from tools..."
-    cp "$TOOLS_LIB"/hadoop-aws-*.jar "$COMMON_LIB/"
+  if ls "$STAGING_DIR"/*.jar 1> /dev/null 2>&1; then
+    echo "--> Copying custom jars from volume to Hive..."
+    cp -vf "$STAGING_DIR"/*.jar "$HIVE_LIB/"
+  else
+    echo "--> Volume mounted at $STAGING_DIR, but no jars found."
   fi
 fi
 

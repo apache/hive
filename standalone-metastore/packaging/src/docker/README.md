@@ -133,10 +133,16 @@ change the `POSTGRES_LOCAL_PATH` to the path of the downloaded jar.
 
 - Metastore with S3 support
 
-Download aws-java-sdk-bundle-xxx.jar and place it under the jars directory:
-wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.770/aws-java-sdk-bundle-1.12.770.jar -P jars/
+Download AWS SDK bundle and place it under the jars directory:
 
-Add the `fs.s3a.access.key` and `fs.s3a.secret.key` properties in `metastore-site.xml` under the conf directory.
+Note: Hadoop 3.4.1 requires both AWS SDK V1 and V2 for its S3A connector:
+wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.770/aws-java-sdk-bundle-1.12.770.jar -P jars/
+wget https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.26.19/bundle-2.26.19.jar -P jars/
+
+Then add the following configs to the `metastore-site.xml` under the conf directory:
+- fs.s3a.endpoint
+- fs.s3a.access.key
+- fs.s3a.secret.key
 
 Then,
 ```shell
