@@ -6532,16 +6532,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  /**
+   * @param dbName
+   * @param pattern
+   * @return
+   * @throws HiveException
+   *
+   * @deprecated since 4.2.0, will be removed in 5.0.0
+   * use {@link #getFunctionsInDb(String catName, String dbName, String pattern)} instead.
+   */
   public List<Function> getFunctionsInDb(String dbName, String pattern) throws HiveException {
-    try {
-      GetFunctionsRequest request = new GetFunctionsRequest(dbName);
-      request.setPattern(pattern);
-      request.setCatalogName(getDefaultCatalog(conf));
-      request.setReturnNames(false);
-      return getMSC().getFunctionsRequest(request).getFunctions();
-    } catch (TException te) {
-      throw new HiveException(te);
-    }
+    return getFunctionsInDb(null, dbName, pattern);
   }
 
   public List<Function> getFunctionsInDb(String catName, String dbName, String pattern) throws HiveException {
