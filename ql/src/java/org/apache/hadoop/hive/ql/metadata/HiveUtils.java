@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import java.util.Optional;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -548,8 +549,8 @@ public final class HiveUtils {
   }
 
   public static String getCurrentCatalogOrDefault(Configuration conf) {
-    return SessionState.get() != null ?
-            SessionState.get().getCurrentCatalog() :
-            getDefaultCatalog(conf);
+    return Optional.ofNullable(SessionState.get())
+            .map(SessionState::getCurrentCatalog)
+            .orElseGet(() -> getDefaultCatalog(conf));
   }
 }

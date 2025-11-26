@@ -32,8 +32,8 @@ public class SwitchCatalogDesc implements DDLDesc, Serializable {
 
     private final String catalogName;
 
-    public SwitchCatalogDesc(String databaseName) {
-        this.catalogName = databaseName;
+    public SwitchCatalogDesc(String catalogName) {
+        this.catalogName = catalogName;
     }
 
     @Explain(displayName = "name", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })

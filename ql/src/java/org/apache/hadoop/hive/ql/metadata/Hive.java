@@ -725,6 +725,9 @@ public class Hive implements AutoCloseable {
    *                        will fail if table still exists.
    * @throws HiveException
    * @throws NoSuchObjectException
+   *
+   * @deprecated since 4.2.0, will be removed in 5.0.0
+   * use {@link #dropDatabase(DropDatabaseDesc desc)} instead.
    */
   @Deprecated
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
@@ -2002,37 +2005,14 @@ public class Hive implements AutoCloseable {
    * @param type The type of tables to return. VIRTUAL_VIEWS for views. If null, returns all tables and views.
    * @return list of table names that match the pattern.
    * @throws HiveException
+   *
+   * @deprecated since 4.2.0, will be removed in 5.0.0
+   * use {@link #getTablesByType(String catName, String dbName, String pattern, TableType type)} instead.
    */
+  @Deprecated
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
-
-    if (dbName == null) {
-      dbName = SessionState.get().getCurrentDatabase();
-    }
-
-    try {
-      List<String> result;
-      if (type != null) {
-        if (pattern != null) {
-          result = getMSC().getTables(dbName, pattern, type);
-        } else {
-          result = getMSC().getTables(dbName, ".*", type);
-        }
-      } else {
-        if (pattern != null) {
-          result = getMSC().getTables(dbName, pattern);
-        } else {
-          result = getMSC().getTables(dbName, ".*");
-        }
-      }
-      return result;
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE, "HS2-cache");
-    }
+    return getTablesByType(null, dbName, pattern, type);
   }
 
   /**
