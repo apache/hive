@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>23</version>
+    <version>35</version>
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
@@ -97,8 +97,6 @@
     <maven.build-helper.plugin.version>3.4.0</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
     <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
-    <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
-    <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
     <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
@@ -1609,13 +1607,11 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>${maven.compiler.plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>${maven.javadoc.plugin.version}</version>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <outputDirectory>${project.build.directory}/site</outputDirectory>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>com.github.os72</groupId>

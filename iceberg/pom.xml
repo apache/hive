@@ -51,6 +51,12 @@
       <artifactId>mockito-inline</artifactId>
       <version>${iceberg.mockito-core.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>error_prone_annotations</artifactId>
+      <version>${google.errorprone.version}</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <dependencyManagement>
     <dependencies>
@@ -324,11 +330,11 @@
                   <artifactId>error_prone_core</artifactId>
                   <version>${google.errorprone.version}</version>
                 </path>
-                <dependency>
+                <path>
                   <groupId>org.immutables</groupId>
                   <artifactId>value</artifactId>
                   <version>${immutables.value.version}</version>
-                </dependency>
+                </path>
               </annotationProcessorPaths>
             </configuration>
           </plugin>

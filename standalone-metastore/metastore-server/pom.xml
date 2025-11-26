@@ -609,16 +609,6 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>${maven.exec.plugin.version}</version>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <compilerArgs>
-              <arg>--add-exports</arg>
-              <arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
-            </compilerArgs>
-          </configuration>
-        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
