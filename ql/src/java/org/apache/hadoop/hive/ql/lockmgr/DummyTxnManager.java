@@ -397,7 +397,8 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
     if (db != null) {
       String catName = Objects.requireNonNullElse(db.getCatalogName(),
               HiveUtils.getCurrentCatalogOrDefault(conf));
-      locks.add(new HiveLockObj(new HiveLockObject(catName + "@" + db.getName(), lockData),
+      db.setCatalogName(catName);
+      locks.add(new HiveLockObj(new HiveLockObject(db, lockData),
           mode));
       return locks;
     }

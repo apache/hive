@@ -167,8 +167,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
             String.valueOf(System.currentTimeMillis()),
             "EXPLICIT", lockDb.getQueryStr(), conf);
 
-    // Using the catalogName@databaseName format to uniquely identify a database.
-    HiveLock lck = lockMgr.lock(new HiveLockObject(catName + "@" +dbObj.getName(), lockData), mode, true);
+    HiveLock lck = lockMgr.lock(new HiveLockObject(dbObj, lockData), mode, true);
     if (lck == null) {
       return 1;
     }
@@ -187,8 +186,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
     if (dbObj == null) {
       throw new HiveException("Database " + dbName + " does not exist ");
     }
-    HiveLockObject obj = new HiveLockObject(catName + "@" +dbObj.getName(), null);
-
+    HiveLockObject obj =  new HiveLockObject(dbObj, null);
     List<HiveLock> locks = lockMgr.getLocks(obj, false, false);
     if ((locks == null) || (locks.isEmpty())) {
       throw new HiveException("Database " + dbName + " is not locked ");
