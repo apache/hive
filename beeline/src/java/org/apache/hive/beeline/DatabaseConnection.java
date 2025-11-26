@@ -58,7 +58,7 @@ class DatabaseConnection {
     return (null == connection);
   }
 
-  public DatabaseConnection(BeeLine beeLine, String url, Properties info) throws SQLException {
+  DatabaseConnection(BeeLine beeLine, String url, Properties info) {
     this.beeLine = beeLine;
     this.url = url;
     this.info = info;

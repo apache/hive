@@ -60,15 +60,6 @@ public class NoPoolConnectionPool implements DataSource {
 
   @Override
   public Connection getConnection(String username, String password) throws SQLException {
-    String driverName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER);
-    if (driverName == null || driverName.isEmpty()) {
-      String msg =
-          "JDBC driver for transaction db not set in configuration "
-              + "file, need to set "
-              + MetastoreConf.ConfVars.CONNECTION_DRIVER.getVarname();
-      LOG.error(msg);
-      throw new RuntimeException(msg);
-    }
     String connString = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
 
     try {
