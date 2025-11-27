@@ -24,8 +24,8 @@ FROM ubuntu as archive
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
-ONBUILD RUN wget https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz && \
- wget https://downloads.apache.org/hive/hive-standalone-metastore-$HIVE_VERSION/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz
+ONBUILD RUN wget --no-verbose https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz && \
+ wget --no-verbose https://downloads.apache.org/hive/hive-standalone-metastore-$HIVE_VERSION/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz
 ONBUILD RUN mv hadoop-$HADOOP_VERSION.tar.gz /opt && \
  mv hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz /opt
 
@@ -33,7 +33,7 @@ FROM ubuntu as buildarchive
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ONBUILD RUN apt-get update && apt-get -y install wget
-ONBUILD RUN wget https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
+ONBUILD RUN wget --no-verbose https://archive.apache.org/dist/hadoop/core/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
 ONBUILD COPY ./hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz /opt
 ONBUILD RUN mv hadoop-$HADOOP_VERSION.tar.gz /opt
 
