@@ -247,7 +247,6 @@
         <version>${spotless.maven.plugin.version}</version>
         <configuration>
           <skip>${validate.skip}</skip>
-          <argLine>--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</argLine>
           <java>
             <removeUnusedImports/>
             <importOrder>
