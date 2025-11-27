@@ -79,7 +79,7 @@ ARG HIVE_VERSION
 # Install dependencies
 RUN set -ex; \
     microdnf update -y; \
-    microdnf -y install procps; \
+    microdnf -y install procps gettext; \
     microdnf clean all; \
     useradd --no-create-home -s /sbin/nologin -c "" --uid $UID hive
 

@@ -139,14 +139,19 @@ Note: Hadoop 3.4.1 requires both AWS SDK V1 and V2 for its S3A connector:
 wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.770/aws-java-sdk-bundle-1.12.770.jar -P jars/
 wget https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.26.19/bundle-2.26.19.jar -P jars/
 
-Then add the following configs to the `metastore-site.xml` under the conf directory:
-- fs.s3a.endpoint
-- fs.s3a.access.key
-- fs.s3a.secret.key
+Add the following ENV variables:
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- DEFAULT_FS
+- HIVE_WAREHOUSE_PATH
+- S3_ENDPOINT_URL
 
 Then,
 ```shell
-docker compose up -d
+DEFAULT_FS="s3a://dw-team-bucket" \
+HIVE_WAREHOUSE_PATH="/data/warehouse/tablespace/managed/hive" \
+S3_ENDPOINT_URL="s3.us-west-2.amazonaws.com" \
+docker-compose up
 ```
 Metastore and Postgres services will be started as a consequence.
 

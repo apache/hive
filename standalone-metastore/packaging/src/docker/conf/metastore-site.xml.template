@@ -18,7 +18,7 @@
 <configuration>
   <property>
     <name>metastore.warehouse.dir</name>
-    <value>/opt/hive/data/warehouse</value>
+    <value>${DEFAULT_FS}${HIVE_WAREHOUSE_PATH}</value>
   </property>
   <property>
     <name>metastore.event.db.notification.api.auth</name>
@@ -32,19 +32,4 @@
     <name>metastore.catalog.servlet.auth</name>
     <value>none</value>
   </property>
-
-  <!--
-    <property>
-      <name>fs.s3a.endpoint</name>
-      <value>s3.us-west-2.amazonaws.com</value>
-    </property>
-    <property>
-      <name>fs.s3a.access.key</name>
-      <value>YOUR_AWS_ACCESS_KEY</value>
-    </property>
-    <property>
-      <name>fs.s3a.secret.key</name>
-      <value>YOUR_AWS_SECRET_KEY</value>
-    </property>
-    -->
 </configuration>

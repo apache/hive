@@ -59,18 +59,17 @@ RUN tar -xzvf /opt/hadoop-$HADOOP_VERSION.tar.gz -C /opt/ && \
 
 FROM eclipse-temurin:21.0.3_9-jre-ubi9-minimal AS run
 
+ARG UID=1000
 ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
-COPY --from=env /opt/hadoop-$HADOOP_VERSION /opt/hadoop
-COPY --from=env /opt/apache-hive-$HIVE_VERSION-bin /opt/hive
-COPY --from=env /opt/apache-tez-$TEZ_VERSION-bin /opt/tez
 
 # Install dependencies
 RUN set -ex; \
     microdnf update -y; \
-    microdnf -y install procps; \
-    rm -rf /var/lib/apt/lists/*
+    microdnf -y install procps gettext; \
+    microdnf clean all; \
+    useradd --no-create-home -s /sbin/nologin -c "" --uid $UID hive
 
 # Set necessary environment variables.
 ENV HADOOP_HOME=/opt/hadoop \
@@ -80,23 +79,21 @@ ENV HADOOP_HOME=/opt/hadoop \
 
 ENV PATH=$HIVE_HOME/bin:$HADOOP_HOME/bin:$PATH
 
-COPY entrypoint.sh /
-COPY conf $HIVE_HOME/conf
-RUN chmod +x /entrypoint.sh
+COPY --from=env --chown=hive /opt/hadoop-$HADOOP_VERSION $HADOOP_HOME
+COPY --from=env --chown=hive /opt/apache-hive-$HIVE_VERSION-bin $HIVE_HOME
+COPY --from=env --chown=hive /opt/apache-tez-$TEZ_VERSION-bin $TEZ_HOME
 
+COPY --chown=hive entrypoint.sh /
+COPY --chown=hive conf $HIVE_HOME/conf
 
-ARG UID=1000
-RUN useradd --no-create-home -s /sbin/nologin -c "" --uid $UID hive && \
-    chown hive /opt/tez && \
-    chown hive /opt/hive && \
-    chown hive /opt/hadoop && \
-    chown hive /opt/hive/conf && \
-    mkdir -p /opt/hive/data/warehouse && \
-    chown hive /opt/hive/data/warehouse && \
+RUN chmod +x /entrypoint.sh && \
+    mkdir -p $HIVE_HOME/data/warehouse && \
+    chown hive $HIVE_HOME/data/warehouse && \
     mkdir -p /home/hive/.beeline && \
     chown hive /home/hive/.beeline
 
 USER hive
-WORKDIR /opt/hive
+WORKDIR $HIVE_HOME
 EXPOSE 10000 10002 9083
+
 ENTRYPOINT ["sh", "-c", "/entrypoint.sh"]

@@ -24,18 +24,25 @@ set -x
 # =========================================================================
 STAGING_DIR="/tmp/ext-jars"
 
-TOOLS_LIB="${HADOOP_HOME}/share/hadoop/tools/lib"
-HIVE_LIB="${HIVE_HOME}/lib/"
-
 # Checks if /tmp/ext-jars is mounted (via Docker volume).
 if [ -d "$STAGING_DIR" ]; then
   if ls "$STAGING_DIR"/*.jar 1> /dev/null 2>&1; then
     echo "--> Copying custom jars from volume to Hive..."
-    cp -vf "$STAGING_DIR"/*.jar "$HIVE_LIB/"
+    cp -vf "$STAGING_DIR"/*.jar "${HIVE_HOME}/lib/"
   else
     echo "--> Volume mounted at $STAGING_DIR, but no jars found."
   fi
 fi
+
+# =========================================================================
+# REPLACE ${VARS} in the template
+# =========================================================================
+: "${HIVE_WAREHOUSE_PATH:=/opt/hive/data/warehouse}"
+export HIVE_WAREHOUSE_PATH
+
+envsubst < $HIVE_HOME/conf/core-site.xml.template > $HIVE_HOME/conf/core-site.xml
+envsubst < $HIVE_HOME/conf/metastore-site.xml.template > $HIVE_HOME/conf/metastore-site.xml
+# =========================================================================
 
 : "${DB_DRIVER:=derby}"
 
@@ -44,11 +51,9 @@ SKIP_SCHEMA_INIT="${IS_RESUME:-false}"
 
 function initialize_hive {
   COMMAND="-initOrUpgradeSchema"
-  # Check Hive version. If < 4.0.0, use older initSchema command
   if [ "$(echo "$HIVE_VER" | cut -d '.' -f1)" -lt "4" ]; then
      COMMAND="-${SCHEMA_COMMAND:-initSchema}"
   fi
-
   "$HIVE_HOME/bin/schematool" -dbType "$DB_DRIVER" "$COMMAND" "$VERBOSE_MODE"
   if [ $? -eq 0 ]; then
     echo "Initialized Hive Metastore Server schema successfully.."
@@ -59,7 +64,6 @@ function initialize_hive {
 }
 
 export HIVE_CONF_DIR=$HIVE_HOME/conf
-
 if [ -d "${HIVE_CUSTOM_CONF_DIR:-}" ]; then
   find "${HIVE_CUSTOM_CONF_DIR}" -type f -exec \
     ln -sfn {} "${HIVE_CONF_DIR}"/ \;
@@ -67,13 +71,10 @@ if [ -d "${HIVE_CUSTOM_CONF_DIR:-}" ]; then
 fi
 
 export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xmx1G $SERVICE_OPTS"
-
 if [[ "${SKIP_SCHEMA_INIT}" == "false" ]]; then
   # handles schema initialization
   initialize_hive
 fi
 
 export METASTORE_PORT=${METASTORE_PORT:-9083}
-
-echo "Starting Hive Metastore on port $METASTORE_PORT..."
 exec "$HIVE_HOME/bin/start-metastore"
