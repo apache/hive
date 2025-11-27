@@ -90,7 +90,7 @@ jobs:
       - name: Build Hive project
         if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
         run: |
-          mvn clean package -DskipTests -Pdist
+          mvn --batch-mode clean package -DskipTests -Pdist
           ls ./packaging/target/
           mv ./packaging/target/apache-hive-*-bin.tar.gz ./packaging/src/docker/
           rm -rf ./packaging/target
