@@ -46,7 +46,6 @@ RUN apt-get update && \
     apt-get install -y wget
 
 RUN tar -xzv \
-      --exclude="hadoop-$HADOOP_VERSION/include" \
       --exclude="hadoop-$HADOOP_VERSION/lib/native" \
       --exclude="hadoop-$HADOOP_VERSION/share/doc" \
       --exclude="hadoop-$HADOOP_VERSION/share/hadoop/client" \
@@ -68,7 +67,9 @@ RUN tar -xzv \
       -C /opt/ \
       --wildcards "hadoop-$HADOOP_VERSION/share/hadoop/tools/lib/hadoop-*.jar" && \
     # INSTALL HIVE
-    tar -xzvf /opt/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz -C /opt/
+    tar -xzv  \
+      -f /opt/hive-standalone-metastore-$HIVE_VERSION-bin.tar.gz \
+      -C /opt/
 
 FROM eclipse-temurin:21.0.3_9-jre-ubi9-minimal AS run
 

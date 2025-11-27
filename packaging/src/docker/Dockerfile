@@ -50,12 +50,24 @@ ARG HADOOP_VERSION
 ARG HIVE_VERSION
 ARG TEZ_VERSION
 
-RUN tar -xzvf /opt/hadoop-$HADOOP_VERSION.tar.gz -C /opt/ && \
-    rm -rf /opt/hadoop-$HADOOP_VERSION/share/doc/* && \
-    tar -xzvf /opt/apache-hive-$HIVE_VERSION-bin.tar.gz -C /opt/ && \
-    rm -rf /opt/apache-hive-$HIVE_VERSION-bin/jdbc/* && \
-    tar -xzvf /opt/apache-tez-$TEZ_VERSION-bin.tar.gz -C /opt && \
-    rm -rf /opt/apache-tez-$TEZ_VERSION-bin/share/*
+RUN tar -xzv \
+      --exclude="hadoop-$HADOOP_VERSION/share/doc" \
+      --exclude="*/jdiff" \
+      --exclude="*/sources" \
+      --exclude="*tests.jar" \
+      --exclude="*/webapps" \
+      -f /opt/hadoop-$HADOOP_VERSION.tar.gz \
+      -C /opt/ && \
+    # INSTALL HIVE
+    tar -xzv \
+      --exclude="apache-hive-$HIVE_VERSION-bin/jdbc" \
+      -f /opt/apache-hive-$HIVE_VERSION-bin.tar.gz \
+      -C /opt/ && \
+    # INSTALL TEZ
+    tar -xzv \
+      --exclude="apache-tez-$TEZ_VERSION-bin/share" \
+      -f /opt/apache-tez-$TEZ_VERSION-bin.tar.gz \
+      -C /opt
 
 FROM eclipse-temurin:21.0.3_9-jre-ubi9-minimal AS run
 
