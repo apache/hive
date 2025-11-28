@@ -45,8 +45,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@all_nulls
 col_name	a
 data_type	bigint
-min	0
-max	0
+min	
+max	
 num_nulls	5
 distinct_count	1
 avg_col_len	
@@ -64,8 +64,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@all_nulls
 col_name	b
 data_type	double
-min	0.0
-max	0.0
+min	
+max	
 num_nulls	5
 distinct_count	1
 avg_col_len	

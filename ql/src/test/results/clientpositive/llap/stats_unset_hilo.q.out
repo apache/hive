@@ -1,0 +1,2916 @@
+PREHOOK: query: CREATE TABLE stats_both_unset (
+  col_tinyint TINYINT,
+  col_smallint SMALLINT,
+  col_int INT,
+  col_bigint BIGINT,
+  col_float FLOAT,
+  col_double DOUBLE
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_both_unset
+POSTHOOK: query: CREATE TABLE stats_both_unset (
+  col_tinyint TINYINT,
+  col_smallint SMALLINT,
+  col_int INT,
+  col_bigint BIGINT,
+  col_float FLOAT,
+  col_double DOUBLE
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_both_unset
+PREHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS SET('numRows'='10000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_both_unset
+PREHOOK: Output: default@stats_both_unset
+POSTHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS SET('numRows'='10000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_both_unset
+POSTHOOK: Output: default@stats_both_unset
+PREHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_tinyint SET('numDVs'='100','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_both_unset
+PREHOOK: Output: default@stats_both_unset
+POSTHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_tinyint SET('numDVs'='100','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_both_unset
+POSTHOOK: Output: default@stats_both_unset
+PREHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_smallint SET('numDVs'='100','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_both_unset
+PREHOOK: Output: default@stats_both_unset
+POSTHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_smallint SET('numDVs'='100','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_both_unset
+POSTHOOK: Output: default@stats_both_unset
+PREHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_int SET('numDVs'='100','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_both_unset
+PREHOOK: Output: default@stats_both_unset
+POSTHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_int SET('numDVs'='100','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_both_unset
+POSTHOOK: Output: default@stats_both_unset
+PREHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_bigint SET('numDVs'='100','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_both_unset
+PREHOOK: Output: default@stats_both_unset
+POSTHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_bigint SET('numDVs'='100','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_both_unset
+POSTHOOK: Output: default@stats_both_unset
+PREHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_float SET('numDVs'='100','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_both_unset
+PREHOOK: Output: default@stats_both_unset
+POSTHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_float SET('numDVs'='100','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_both_unset
+POSTHOOK: Output: default@stats_both_unset
+PREHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_double SET('numDVs'='100','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_both_unset
+PREHOOK: Output: default@stats_both_unset
+POSTHOOK: query: ALTER TABLE stats_both_unset UPDATE STATISTICS FOR COLUMN col_double SET('numDVs'='100','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_both_unset
+POSTHOOK: Output: default@stats_both_unset
+PREHOOK: query: CREATE TABLE stats_min_only (
+  col_tinyint TINYINT,
+  col_smallint SMALLINT,
+  col_int INT,
+  col_bigint BIGINT,
+  col_float FLOAT,
+  col_double DOUBLE
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_min_only
+POSTHOOK: query: CREATE TABLE stats_min_only (
+  col_tinyint TINYINT,
+  col_smallint SMALLINT,
+  col_int INT,
+  col_bigint BIGINT,
+  col_float FLOAT,
+  col_double DOUBLE
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_min_only
+PREHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS SET('numRows'='10000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_min_only
+PREHOOK: Output: default@stats_min_only
+POSTHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS SET('numRows'='10000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_min_only
+POSTHOOK: Output: default@stats_min_only
+PREHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_tinyint SET('numDVs'='100','numNulls'='0','lowValue'='-10')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_min_only
+PREHOOK: Output: default@stats_min_only
+POSTHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_tinyint SET('numDVs'='100','numNulls'='0','lowValue'='-10')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_min_only
+POSTHOOK: Output: default@stats_min_only
+PREHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_smallint SET('numDVs'='100','numNulls'='0','lowValue'='100')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_min_only
+PREHOOK: Output: default@stats_min_only
+POSTHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_smallint SET('numDVs'='100','numNulls'='0','lowValue'='100')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_min_only
+POSTHOOK: Output: default@stats_min_only
+PREHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_int SET('numDVs'='100','numNulls'='0','lowValue'='-1000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_min_only
+PREHOOK: Output: default@stats_min_only
+POSTHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_int SET('numDVs'='100','numNulls'='0','lowValue'='-1000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_min_only
+POSTHOOK: Output: default@stats_min_only
+PREHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_bigint SET('numDVs'='100','numNulls'='0','lowValue'='10000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_min_only
+PREHOOK: Output: default@stats_min_only
+POSTHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_bigint SET('numDVs'='100','numNulls'='0','lowValue'='10000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_min_only
+POSTHOOK: Output: default@stats_min_only
+PREHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_float SET('numDVs'='100','numNulls'='0','lowValue'='-10.5')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_min_only
+PREHOOK: Output: default@stats_min_only
+POSTHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_float SET('numDVs'='100','numNulls'='0','lowValue'='-10.5')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_min_only
+POSTHOOK: Output: default@stats_min_only
+PREHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_double SET('numDVs'='100','numNulls'='0','lowValue'='100.5')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_min_only
+PREHOOK: Output: default@stats_min_only
+POSTHOOK: query: ALTER TABLE stats_min_only UPDATE STATISTICS FOR COLUMN col_double SET('numDVs'='100','numNulls'='0','lowValue'='100.5')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_min_only
+POSTHOOK: Output: default@stats_min_only
+PREHOOK: query: CREATE TABLE stats_max_only (
+  col_tinyint TINYINT,
+  col_smallint SMALLINT,
+  col_int INT,
+  col_bigint BIGINT,
+  col_float FLOAT,
+  col_double DOUBLE
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats_max_only
+POSTHOOK: query: CREATE TABLE stats_max_only (
+  col_tinyint TINYINT,
+  col_smallint SMALLINT,
+  col_int INT,
+  col_bigint BIGINT,
+  col_float FLOAT,
+  col_double DOUBLE
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats_max_only
+PREHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS SET('numRows'='10000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_max_only
+PREHOOK: Output: default@stats_max_only
+POSTHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS SET('numRows'='10000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_max_only
+POSTHOOK: Output: default@stats_max_only
+PREHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_tinyint SET('numDVs'='100','numNulls'='0','highValue'='-5')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_max_only
+PREHOOK: Output: default@stats_max_only
+POSTHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_tinyint SET('numDVs'='100','numNulls'='0','highValue'='-5')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_max_only
+POSTHOOK: Output: default@stats_max_only
+PREHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_smallint SET('numDVs'='100','numNulls'='0','highValue'='1000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_max_only
+PREHOOK: Output: default@stats_max_only
+POSTHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_smallint SET('numDVs'='100','numNulls'='0','highValue'='1000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_max_only
+POSTHOOK: Output: default@stats_max_only
+PREHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_int SET('numDVs'='100','numNulls'='0','highValue'='-500')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_max_only
+PREHOOK: Output: default@stats_max_only
+POSTHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_int SET('numDVs'='100','numNulls'='0','highValue'='-500')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_max_only
+POSTHOOK: Output: default@stats_max_only
+PREHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_bigint SET('numDVs'='100','numNulls'='0','highValue'='100000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_max_only
+PREHOOK: Output: default@stats_max_only
+POSTHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_bigint SET('numDVs'='100','numNulls'='0','highValue'='100000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_max_only
+POSTHOOK: Output: default@stats_max_only
+PREHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_float SET('numDVs'='100','numNulls'='0','highValue'='-25.5')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_max_only
+PREHOOK: Output: default@stats_max_only
+POSTHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_float SET('numDVs'='100','numNulls'='0','highValue'='-25.5')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_max_only
+POSTHOOK: Output: default@stats_max_only
+PREHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_double SET('numDVs'='100','numNulls'='0','highValue'='1000.5')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@stats_max_only
+PREHOOK: Output: default@stats_max_only
+POSTHOOK: query: ALTER TABLE stats_max_only UPDATE STATISTICS FOR COLUMN col_double SET('numDVs'='100','numNulls'='0','highValue'='1000.5')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@stats_max_only
+POSTHOOK: Output: default@stats_max_only
+PREHOOK: query: DESCRIBE FORMATTED stats_both_unset col_tinyint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_both_unset
+POSTHOOK: query: DESCRIBE FORMATTED stats_both_unset col_tinyint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_both_unset
+col_name            	col_tinyint         
+data_type           	tinyint             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_tinyint > 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_tinyint > 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_both_unset`
+WHERE `col_tinyint` > 50
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_both_unset
+                  filterExpr: (col_tinyint > 50Y) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_tinyint > 50Y) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_both_unset
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_both_unset
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_both_unset
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_both_unset
+                  name: default.stats_both_unset
+            Truncated Path -> Alias:
+              /stats_both_unset [stats_both_unset]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_both_unset col_smallint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_both_unset
+POSTHOOK: query: DESCRIBE FORMATTED stats_both_unset col_smallint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_both_unset
+col_name            	col_smallint        
+data_type           	smallint            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_smallint < 500
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_smallint < 500
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_both_unset`
+WHERE `col_smallint` < 500
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_both_unset
+                  filterExpr: (col_smallint < 500S) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_smallint < 500S) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_both_unset
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_both_unset
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_both_unset
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_both_unset
+                  name: default.stats_both_unset
+            Truncated Path -> Alias:
+              /stats_both_unset [stats_both_unset]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_both_unset col_int
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_both_unset
+POSTHOOK: query: DESCRIBE FORMATTED stats_both_unset col_int
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_both_unset
+col_name            	col_int             
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_int BETWEEN 100 AND 500
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_int BETWEEN 100 AND 500
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_both_unset`
+WHERE `col_int` BETWEEN 100 AND 500
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_both_unset
+                  filterExpr: col_int BETWEEN 100 AND 500 (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: col_int BETWEEN 100 AND 500 (type: boolean)
+                    Statistics: Num rows: 1111 Data size: 4444 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1111 Data size: 4444 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_both_unset
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_both_unset
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_both_unset
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_both_unset
+                  name: default.stats_both_unset
+            Truncated Path -> Alias:
+              /stats_both_unset [stats_both_unset]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_both_unset col_bigint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_both_unset
+POSTHOOK: query: DESCRIBE FORMATTED stats_both_unset col_bigint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_both_unset
+col_name            	col_bigint          
+data_type           	bigint              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_bigint = 999
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_bigint = 999
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_both_unset`
+WHERE `col_bigint` = 999
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_both_unset
+                  filterExpr: (col_bigint = 999L) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 80000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_bigint = 999L) (type: boolean)
+                    Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_both_unset
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_both_unset
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_both_unset
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_both_unset
+                  name: default.stats_both_unset
+            Truncated Path -> Alias:
+              /stats_both_unset [stats_both_unset]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_both_unset col_float
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_both_unset
+POSTHOOK: query: DESCRIBE FORMATTED stats_both_unset col_float
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_both_unset
+col_name            	col_float           
+data_type           	float               
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_float > 50.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_float > 50.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_both_unset`
+WHERE `col_float` > 50
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_both_unset
+                  filterExpr: (col_float > 50.0) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_float > 50.0) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_both_unset
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_both_unset
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_both_unset
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_both_unset
+                  name: default.stats_both_unset
+            Truncated Path -> Alias:
+              /stats_both_unset [stats_both_unset]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_both_unset col_double
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_both_unset
+POSTHOOK: query: DESCRIBE FORMATTED stats_both_unset col_double
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_both_unset
+col_name            	col_double          
+data_type           	double              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_double < 500.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_both_unset WHERE col_double < 500.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_both_unset
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_both_unset`
+WHERE `col_double` < 500
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_both_unset
+                  filterExpr: (col_double < 500.0D) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 80000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_double < 500.0D) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_both_unset
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_both_unset
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_both_unset
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_both_unset
+                  name: default.stats_both_unset
+            Truncated Path -> Alias:
+              /stats_both_unset [stats_both_unset]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_min_only col_tinyint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_min_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_min_only col_tinyint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_min_only
+col_name            	col_tinyint         
+data_type           	tinyint             
+min                 	-10                 
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_tinyint > 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_tinyint > 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_min_only`
+WHERE `col_tinyint` > 50
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_min_only
+                  filterExpr: (col_tinyint > 50Y) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_tinyint > 50Y) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_min_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_min_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_min_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_min_only
+                  name: default.stats_min_only
+            Truncated Path -> Alias:
+              /stats_min_only [stats_min_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_min_only col_smallint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_min_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_min_only col_smallint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_min_only
+col_name            	col_smallint        
+data_type           	smallint            
+min                 	100                 
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_smallint > 200
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_smallint > 200
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_min_only`
+WHERE `col_smallint` > 200
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_min_only
+                  filterExpr: (col_smallint > 200S) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_smallint > 200S) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_min_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_min_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_min_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_min_only
+                  name: default.stats_min_only
+            Truncated Path -> Alias:
+              /stats_min_only [stats_min_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_min_only col_int
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_min_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_min_only col_int
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_min_only
+col_name            	col_int             
+data_type           	int                 
+min                 	-1000               
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_int > 2000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_int > 2000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_min_only`
+WHERE `col_int` > 2000
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_min_only
+                  filterExpr: (col_int > 2000) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_int > 2000) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_min_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_min_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_min_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_min_only
+                  name: default.stats_min_only
+            Truncated Path -> Alias:
+              /stats_min_only [stats_min_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_min_only col_bigint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_min_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_min_only col_bigint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_min_only
+col_name            	col_bigint          
+data_type           	bigint              
+min                 	10000               
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_bigint > 20000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_bigint > 20000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_min_only`
+WHERE `col_bigint` > 20000
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_min_only
+                  filterExpr: (col_bigint > 20000L) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 80000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_bigint > 20000L) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_min_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_min_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_min_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_min_only
+                  name: default.stats_min_only
+            Truncated Path -> Alias:
+              /stats_min_only [stats_min_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_min_only col_float
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_min_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_min_only col_float
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_min_only
+col_name            	col_float           
+data_type           	float               
+min                 	-10.5               
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_float > 50.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_float > 50.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_min_only`
+WHERE `col_float` > 50
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_min_only
+                  filterExpr: (col_float > 50.0) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_float > 50.0) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_min_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_min_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_min_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_min_only
+                  name: default.stats_min_only
+            Truncated Path -> Alias:
+              /stats_min_only [stats_min_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_min_only col_double
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_min_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_min_only col_double
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_min_only
+col_name            	col_double          
+data_type           	double              
+min                 	100.5               
+max                 	                    
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_double > 200.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_min_only WHERE col_double > 200.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_min_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_min_only`
+WHERE `col_double` > 200
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_min_only
+                  filterExpr: (col_double > 200.0D) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 80000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_double > 200.0D) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_min_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_min_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_min_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_min_only
+                  name: default.stats_min_only
+            Truncated Path -> Alias:
+              /stats_min_only [stats_min_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_max_only col_tinyint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_max_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_max_only col_tinyint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_max_only
+col_name            	col_tinyint         
+data_type           	tinyint             
+min                 	                    
+max                 	-5                  
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_tinyint < 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_tinyint < 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_max_only`
+WHERE `col_tinyint` < 50
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_max_only
+                  filterExpr: (col_tinyint < 50Y) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_tinyint < 50Y) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_max_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_max_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_max_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_max_only
+                  name: default.stats_max_only
+            Truncated Path -> Alias:
+              /stats_max_only [stats_max_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_max_only col_smallint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_max_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_max_only col_smallint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_max_only
+col_name            	col_smallint        
+data_type           	smallint            
+min                 	                    
+max                 	1000                
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_smallint < 500
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_smallint < 500
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_max_only`
+WHERE `col_smallint` < 500
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_max_only
+                  filterExpr: (col_smallint < 500S) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_smallint < 500S) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_max_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_max_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_max_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_max_only
+                  name: default.stats_max_only
+            Truncated Path -> Alias:
+              /stats_max_only [stats_max_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_max_only col_int
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_max_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_max_only col_int
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_max_only
+col_name            	col_int             
+data_type           	int                 
+min                 	                    
+max                 	-500                
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_int < 5000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_int < 5000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_max_only`
+WHERE `col_int` < 5000
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_max_only
+                  filterExpr: (col_int < 5000) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_int < 5000) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_max_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_max_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_max_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_max_only
+                  name: default.stats_max_only
+            Truncated Path -> Alias:
+              /stats_max_only [stats_max_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_max_only col_bigint
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_max_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_max_only col_bigint
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_max_only
+col_name            	col_bigint          
+data_type           	bigint              
+min                 	                    
+max                 	100000              
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_bigint < 50000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_bigint < 50000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_max_only`
+WHERE `col_bigint` < 50000
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_max_only
+                  filterExpr: (col_bigint < 50000L) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 80000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_bigint < 50000L) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_max_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_max_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_max_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_max_only
+                  name: default.stats_max_only
+            Truncated Path -> Alias:
+              /stats_max_only [stats_max_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_max_only col_float
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_max_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_max_only col_float
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_max_only
+col_name            	col_float           
+data_type           	float               
+min                 	                    
+max                 	-25.5               
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_float < 50.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_float < 50.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_max_only`
+WHERE `col_float` < 50
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_max_only
+                  filterExpr: (col_float < 50.0) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_float < 50.0) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 13332 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_max_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_max_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_max_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_max_only
+                  name: default.stats_max_only
+            Truncated Path -> Alias:
+              /stats_max_only [stats_max_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DESCRIBE FORMATTED stats_max_only col_double
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats_max_only
+POSTHOOK: query: DESCRIBE FORMATTED stats_max_only col_double
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats_max_only
+col_name            	col_double          
+data_type           	double              
+min                 	                    
+max                 	1000.5              
+num_nulls           	0                   
+distinct_count      	100                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"col_bigint\":\"true\",\"col_double\":\"true\",\"col_float\":\"true\",\"col_int\":\"true\",\"col_smallint\":\"true\",\"col_tinyint\":\"true\"}}
+PREHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_double < 500.0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT count(1) FROM stats_max_only WHERE col_double < 500.0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats_max_only
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
+FROM `default`.`stats_max_only`
+WHERE `col_double` < 500
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: stats_max_only
+                  filterExpr: (col_double < 500.0D) (type: boolean)
+                  Statistics: Num rows: 10000 Data size: 80000 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (col_double < 500.0D) (type: boolean)
+                    Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 3333 Data size: 26664 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          null sort order: 
+                          numBuckets: -1
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col0 (type: bigint)
+                          auto parallelism: false
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: stats_max_only
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                    columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                    name default.stats_max_only
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns col_tinyint,col_smallint,col_int,col_bigint,col_float,col_double
+                      columns.comments 
+                      columns.types tinyint:smallint:int:bigint:float:double
+#### A masked pattern was here ####
+                      name default.stats_max_only
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.stats_max_only
+                  name: default.stats_max_only
+            Truncated Path -> Alias:
+              /stats_max_only [stats_max_only]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  bucketingVersion: 2
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      properties:
+                        bucketing_version -1
+                        columns _col0
+                        columns.types bigint
+                        escape.delim \
+                        hive.serialization.extend.additional.nesting.levels true
+                        serialization.escape.crlf true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

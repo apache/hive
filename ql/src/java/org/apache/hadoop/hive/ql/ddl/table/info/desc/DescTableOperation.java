@@ -249,7 +249,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     ColStatistics.Range r = cs.getRange();
     StatObjectConverter.fillColumnStatisticsData(partCol.getType(), data, r == null ? null : r.minValue,
         r == null ? null : r.maxValue, r == null ? null : r.minValue, r == null ? null : r.maxValue,
-        r == null ? null : r.minValue.toString(), r == null ? null : r.maxValue.toString(),
+        r == null || r.minValue == null ? null : r.minValue.toString(), r == null || r.maxValue == null ? null : r.maxValue.toString(),
         cs.getNumNulls(), cs.getCountDistint(), null, null, cs.getAvgColLen(),
         cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
     ColumnStatisticsObj cso = new ColumnStatisticsObj(partCol.getName(), partCol.getType(), data);

@@ -799,33 +799,13 @@ public class StatsUtils {
     if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getLongStats().getNumDVs());
-      cs.setNumNulls(csd.getLongStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive1());
-      cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
-      cs.setBitVectors(csd.getLongStats().getBitVectors());
-      cs.setHistogram(csd.getLongStats().getHistogram());
+      populateColStatisticsFromLongStats(csd.getLongStats(), cs, JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getLongStats().getNumDVs());
-      cs.setNumNulls(csd.getLongStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive2());
-      cs.setRange(csd.getLongStats().getLowValue(), csd.getLongStats().getHighValue());
-      cs.setBitVectors(csd.getLongStats().getBitVectors());
-      cs.setHistogram(csd.getLongStats().getHistogram());
+      populateColStatisticsFromLongStats(csd.getLongStats(), cs, JavaDataModel.get().primitive2());
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-      cs.setCountDistint(csd.getDoubleStats().getNumDVs());
-      cs.setNumNulls(csd.getDoubleStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive1());
-      cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
-      cs.setBitVectors(csd.getDoubleStats().getBitVectors());
-      cs.setHistogram(csd.getDoubleStats().getHistogram());
+      populateColStatisticsFromDoubleStats(csd.getDoubleStats(), cs, JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
-      cs.setCountDistint(csd.getDoubleStats().getNumDVs());
-      cs.setNumNulls(csd.getDoubleStats().getNumNulls());
-      cs.setAvgColLen(JavaDataModel.get().primitive2());
-      cs.setRange(csd.getDoubleStats().getLowValue(), csd.getDoubleStats().getHighValue());
-      cs.setBitVectors(csd.getDoubleStats().getBitVectors());
-      cs.setHistogram(csd.getDoubleStats().getHistogram());
+      populateColStatisticsFromDoubleStats(csd.getDoubleStats(), cs, JavaDataModel.get().primitive2());
     } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
@@ -892,6 +872,34 @@ public class StatsUtils {
     }
 
     return cs;
+  }
+
+  // Populate ColStatistics from LongColumnStatsData, checking isSet for optional i64 fields
+  private static void populateColStatisticsFromLongStats(
+      org.apache.hadoop.hive.metastore.api.LongColumnStatsData longStats,
+      ColStatistics cs, double avgColLen) {
+    cs.setCountDistint(longStats.getNumDVs());
+    cs.setNumNulls(longStats.getNumNulls());
+    cs.setAvgColLen(avgColLen);
+    Long lowVal = longStats.isSetLowValue() ? longStats.getLowValue() : null;
+    Long highVal = longStats.isSetHighValue() ? longStats.getHighValue() : null;
+    cs.setRange(lowVal, highVal);
+    cs.setBitVectors(longStats.getBitVectors());
+    cs.setHistogram(longStats.getHistogram());
+  }
+
+  // Populate ColStatistics from DoubleColumnStatsData, checking isSet for optional double fields
+  private static void populateColStatisticsFromDoubleStats(
+      org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData doubleStats,
+      ColStatistics cs, double avgColLen) {
+    cs.setCountDistint(doubleStats.getNumDVs());
+    cs.setNumNulls(doubleStats.getNumNulls());
+    cs.setAvgColLen(avgColLen);
+    Double lowVal = doubleStats.isSetLowValue() ? doubleStats.getLowValue() : null;
+    Double highVal = doubleStats.isSetHighValue() ? doubleStats.getHighValue() : null;
+    cs.setRange(lowVal, highVal);
+    cs.setBitVectors(doubleStats.getBitVectors());
+    cs.setHistogram(doubleStats.getHistogram());
   }
 
   private static ColStatistics estimateColStats(long numRows, String colName, HiveConf conf,
