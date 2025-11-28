@@ -66,6 +66,7 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.SqlSyntax;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -1000,7 +1001,18 @@ public class ASTConverter {
       }
 
       // 1. Translate the UDAF
-      final ASTNode wUDAFAst = visitCall(over);
+      ASTNode wUDAFAst = ASTBuilder.createAST(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+      if (over.getOperands().isEmpty() && over.op.getSyntax() == SqlSyntax.FUNCTION_STAR) {
+        wUDAFAst = ASTBuilder.createAST(HiveParser.TOK_FUNCTIONSTAR, "TOK_FUNCTIONSTAR");
+      }
+      if (over.isDistinct()) {
+        wUDAFAst = ASTBuilder.createAST(HiveParser.TOK_FUNCTIONDI, "TOK_FUNCTIONDI");
+      }
+      wUDAFAst.addChild(ASTBuilder.createAST(HiveParser.Identifier, over.op.getName()));
+      wUDAFAst.setTypeInfo(TypeConverter.convert(over.type));
+      for (RexNode operand : over.getOperands()) {
+        wUDAFAst.addChild(operand.accept(this));
+      }
 
       // 2. Add TOK_WINDOW as child of UDAF
       ASTNode wSpec = ASTBuilder.createAST(HiveParser.TOK_WINDOWSPEC, "TOK_WINDOWSPEC");
