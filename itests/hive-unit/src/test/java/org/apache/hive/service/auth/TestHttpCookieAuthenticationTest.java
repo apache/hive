@@ -34,7 +34,6 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.HiveConnection;
-import org.apache.hive.jdbc.HiveDriver;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
@@ -75,8 +74,6 @@ public class TestHttpCookieAuthenticationTest {
   @Test
   public void testHttpJdbcCookies() throws Exception {
     String sqlQuery = "show tables";
-
-    Class.forName(HiveDriver.class.getCanonicalName());
 
     String username = System.getProperty("user.name");
     try(Connection connection = DriverManager.getConnection(miniHS2.getJdbcURL(), username, "bar")) {

@@ -51,7 +51,6 @@ public abstract class JdbcWithMiniKdcSQLAuthTest {
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, transportMode);
     System.err.println("Testing using HS2 mode:" + transportMode);
 
-    Class.forName(MiniHS2.getJdbcDriverName());
     hiveConf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER,
         SQLStdHiveAuthorizerFactory.class.getName());
     hiveConf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER,

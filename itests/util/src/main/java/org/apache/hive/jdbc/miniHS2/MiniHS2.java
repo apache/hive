@@ -66,7 +66,6 @@ public class MiniHS2 extends AbstractHiveService {
   public static final String HS2_BINARY_MODE = "binary";
   public static final String HS2_HTTP_MODE = "http";
   public static final String HS2_ALL_MODE = "all";
-  private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final FsPermission FULL_PERM = new FsPermission((short)00777);
   private static final FsPermission WRITE_ALL_PERM = new FsPermission((short)00733);
   private static final String tmpDir = System.getProperty("test.tmp.dir");
@@ -716,10 +715,6 @@ public class MiniHS2 extends AbstractHiveService {
       return true;
     }
     return false;
-  }
-
-  public static String getJdbcDriverName() {
-    return driverName;
   }
 
   public MiniMrShim getMR() {
