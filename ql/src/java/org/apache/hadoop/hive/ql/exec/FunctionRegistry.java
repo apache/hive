@@ -806,7 +806,7 @@ public final class FunctionRegistry {
           (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergHour"));
       system.registerGenericUDF("iceberg_zorder",
           (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder"));
-    } catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException | NoClassDefFoundError e) {
       LOG.warn("iceberg_bucket function could not be registered");
     }
   }
