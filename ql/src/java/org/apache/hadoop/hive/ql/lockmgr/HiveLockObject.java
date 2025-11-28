@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -196,6 +197,10 @@ public class HiveLockObject {
   public HiveLockObject(String[] paths, HiveLockObjectData lockData) {
     this.pathNames = StringInternUtils.internStringsInArray(paths);
     this.data = lockData;
+  }
+
+  public HiveLockObject(Database db, HiveLockObjectData lockData) {
+    this(new String[] {db.getCatalogName(), FileUtils.escapePathName(db.getName()).toLowerCase()}, lockData);
   }
 
   public HiveLockObject(Table tbl, HiveLockObjectData lockData) {
