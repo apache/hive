@@ -66,8 +66,10 @@ public class TopNKeyProcessor implements SemanticNodeProcessor {
     ReduceSinkOperator reduceSinkOperator = (ReduceSinkOperator) nd;
     ReduceSinkDesc reduceSinkDesc = reduceSinkOperator.getConf();
 
-    // Check whether the reduce sink operator contains top n
-    if (reduceSinkDesc.getTopN() < 0 || !reduceSinkDesc.isOrdering()) {
+    // HIVE-29322: Skip creating TopNKeyOperator when LIMIT pushdown has already applied (topN >= -1)
+    // and the query uses a single reducer with no partition columns. In this scenario,
+    // TopNKey offers no extra pruning benefit and only adds unnecessary processing overhead.
+    if (reduceSinkDesc.getTopN() >= -1 || !reduceSinkDesc.isOrdering()) {
       return null;
     }
 
