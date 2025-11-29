@@ -1,0 +1,1 @@
+explain select * from srcpart sc1, srcpart sc2 where sc1.key = sc2.key ;
