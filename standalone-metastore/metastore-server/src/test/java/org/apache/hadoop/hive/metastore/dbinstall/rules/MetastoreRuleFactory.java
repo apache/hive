@@ -37,6 +37,7 @@ public final class MetastoreRuleFactory {
       case "mysql" -> new Mysql();
       case "postgres" -> new Postgres();
       case "postgres.tpcds" -> new PostgresTPCDS();
+      case "postgres.ministats" -> new PostgresMiniStats();
       case "mariadb" -> new Mariadb();
       case "derby" -> new Derby();
       case "derby.clean" -> new Derby(true);
