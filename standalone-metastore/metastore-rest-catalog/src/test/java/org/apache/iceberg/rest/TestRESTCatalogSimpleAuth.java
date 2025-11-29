@@ -20,9 +20,11 @@
 package org.apache.iceberg.rest;
 
 import java.util.Map;
+import java.util.Optional;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
+import org.apache.iceberg.rest.extension.MockHiveAuthorizer;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
 import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.Assertions;
@@ -41,6 +43,14 @@ class TestRESTCatalogSimpleAuth extends BaseRESTCatalogTests {
         "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
         "header.x-actor-username", "USER_1"
     );
+  }
+
+  @Override
+  protected Optional<Map<String, String>> getPermissionTestClientConfiguration() {
+    return Optional.of(Map.of(
+        "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
+        "header.x-actor-username", MockHiveAuthorizer.PERMISSION_TEST_USER
+    ));
   }
 
   @Test

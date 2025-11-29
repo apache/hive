@@ -20,9 +20,11 @@
 package org.apache.iceberg.rest;
 
 import java.util.Map;
+import java.util.Optional;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
+import org.apache.iceberg.rest.extension.MockHiveAuthorizer;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
 import org.apache.iceberg.rest.extension.JwksServer;
 import org.junit.experimental.categories.Category;
@@ -42,6 +44,14 @@ class TestRESTCatalogJwtAuth extends BaseRESTCatalogTests {
         "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
         "token", JwksServer.generateValidJWT("USER_1")
     );
+  }
+
+  @Override
+  protected Optional<Map<String, String>> getPermissionTestClientConfiguration() throws Exception {
+    return Optional.of(Map.of(
+        "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
+        "token", JwksServer.generateValidJWT(MockHiveAuthorizer.PERMISSION_TEST_USER)
+    ));
   }
 
   @Test
