@@ -44,6 +44,8 @@ import java.util.Properties;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static org.apache.hadoop.hive.ql.exec.Utilities.unescapeHiveJdbcIdentifier;
+
 public class JdbcStorageHandler implements HiveStorageHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcStorageHandler.class);
@@ -101,12 +103,12 @@ public class JdbcStorageHandler implements HiveStorageHandler {
   @Override
   public URI getURIForAuth(Table table) throws URISyntaxException {
     Map<String, String> tableProperties = HiveCustomStorageHandlerUtils.getTableProperties(table);
-    DatabaseType dbType = DatabaseType.valueOf(
+    DatabaseType dbType = DatabaseType.from(
       tableProperties.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
-    String host_url = DatabaseType.METASTORE == dbType ?
+    String hostUrl = DatabaseType.METASTORE == dbType ?
       "jdbc:metastore://" : tableProperties.get(Constants.JDBC_URL);
-    String table_name = tableProperties.get(Constants.JDBC_TABLE);
-    return new URI(host_url+"/"+table_name);
+    String tableName = unescapeHiveJdbcIdentifier(tableProperties.get(Constants.JDBC_TABLE));
+    return new URI(hostUrl+"/" + tableName);
   }
 
   @Override
