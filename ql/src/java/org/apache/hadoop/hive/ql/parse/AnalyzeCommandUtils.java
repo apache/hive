@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -47,9 +48,8 @@ public final class AnalyzeCommandUtils {
 
   public static Table getTable(ASTNode tree, BaseSemanticAnalyzer sa) throws SemanticException {
     String tableName = ColumnStatsSemanticAnalyzer.getUnescapedName((ASTNode) tree.getChild(0).getChild(0));
-    String currentDb = SessionState.get().getCurrentDatabase();
-    String [] names = Utilities.getDbTableName(currentDb, tableName);
-    return sa.getTable(names[0], names[1], true);
+    TableName tName = HiveTableName.of(tableName);
+    return sa.getTable(tName);
   }
 
   public static Map<String,String> getPartKeyValuePairsFromAST(Table tbl, ASTNode tree,
