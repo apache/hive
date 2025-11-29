@@ -90,6 +90,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.CteSuggesterType;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
@@ -13062,7 +13063,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // Resolve Parse Tree and Get Metadata
     // Materialization is allowed if it is not a view definition
-    getMetaData(qb, createVwDesc == null && !forViewCreation);
+    getMetaData(qb, createVwDesc == null && !forViewCreation && CteSuggesterType.AST.enabled(conf));
     LOG.info("Completed getting MetaData in Semantic Analysis");
 
     return true;
