@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.cli;
 
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
-import org.apache.hadoop.hive.cli.control.SplitSupport;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +26,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.model.Statement;
 
 import java.io.File;
 import java.util.List;

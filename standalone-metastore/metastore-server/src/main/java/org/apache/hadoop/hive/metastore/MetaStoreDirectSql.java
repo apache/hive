@@ -169,6 +169,25 @@ class MetaStoreDirectSql {
   private DirectSqlUpdatePart directSqlUpdatePart;
   private DirectSqlInsertPart directSqlInsertPart;
 
+  private static final int COLNAME = 0;
+  private static final int COLTYPE = 1;
+  private static final int LLOW = 2;
+  private static final int LHIGH = 3;
+  private static final int DLOW = 4;
+  private static final int DHIGH = 5;
+  private static final int DECLOW = 6;
+  private static final int DECHIGH = 7;
+  private static final int NULLS = 8;
+  private static final int DIST = 9;
+  private static final int AVGLEN = 10;
+  private static final int MAXLEN = 11;
+  private static final int TRUES = 12;
+  private static final int FALSES = 13;
+  private static final int AVGLONG = 14;
+  private static final int AVGDOUBLE = 15;
+  private static final int AVGDECIMAL = 16;
+  private static final int SUMDIST = 17;
+
   /**
    * This method returns a comma separated string consisting of String values of a given list.
    * This is used for preparing "SOMETHING_ID in (...)" to use in SQL queries.
@@ -1940,13 +1959,15 @@ class MetaStoreDirectSql {
     }
   }
 
-  private Batchable<String, Object[]> jobsBatching(final String queryText0, final String catName, final String dbName,
-      final String tableName, final List<String> partNames, final String engine, final boolean doTrace) {
+  private Batchable<String, Object[]> columnWisePartitionBatcher(
+          final String queryText0, final String catName, final String dbName,
+          final String tableName, final List<String> partNames, final String engine,
+          final boolean doTrace) {
     return new Batchable<String, Object[]>() {
       @Override
       public List<Object[]> run(final List<String> inputColNames)
           throws MetaException {
-        Batchable<String, Object[]> b2 = new Batchable<String, Object[]>() {
+        Batchable<String, Object[]> partitionBatchesFetcher = new Batchable<String, Object[]>() {
           @Override
           public List<Object[]> run(List<String> inputPartNames)
               throws MetaException {
@@ -1969,9 +1990,9 @@ class MetaStoreDirectSql {
           }
         };
         try {
-          return Batchable.runBatched(batchSize, partNames, b2);
+          return Batchable.runBatched(batchSize, partNames, partitionBatchesFetcher);
         } finally {
-          addQueryAfterUse(b2);
+          addQueryAfterUse(partitionBatchesFetcher);
         }
       }
     };
@@ -1989,7 +2010,7 @@ class MetaStoreDirectSql {
         areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner);
   }
 
-  private Map<String, List<Object[]>> columnWiseSubList (List<Object[]> list){
+  private Map<String, List<Object[]>> columnWiseSubList(List<Object[]> list) {
     Map<String, List<Object[]>> colSubList = new HashMap<>();
     for (Object[] row : list) {
       String colName = (String) row[0];
@@ -2029,31 +2050,32 @@ class MetaStoreDirectSql {
         + "count((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
         + "sum((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
         + "count((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
-        + "sum(\"NUM_DISTINCTS\")" + " from " + PART_COL_STATS + "" + " inner join " + PARTITIONS + " on "
-        + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\"" + " inner join " + TBLS + " on " + PARTITIONS
-        + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\"" + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS
-        + ".\"DB_ID\"" + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS
-        + ".\"TBL_NAME\" = ? ";
-    String queryText = null;
+        + "sum(\"NUM_DISTINCTS\")" + " from " + PART_COL_STATS + ""
+        + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+        + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+        + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+        + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? ";
+    String queryText;
 
     boolean doTrace = LOG.isDebugEnabled();
-    ForwardQueryResult<?> fqr = null;
     // Check if the status of all the columns of all the partitions exists
     // Extrapolation is not needed.
     if (areAllPartsFound) {
       queryText = commonPrefix + " and \"COLUMN_NAME\" in (%1$s)" + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
           + " and \"ENGINE\" = ? " + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
-      Batchable<String, Object[]> b = jobsBatching(queryText, catName, dbName, tableName, partNames, engine, doTrace);
+      Batchable<String, Object[]> columnWisePartitionBatches =
+              columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
       List<ColumnStatisticsObj> colStats = new ArrayList<>(colNames.size());
       try {
-        List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
+        List<Object[]> list = Batchable.runBatched(batchSize, colNames, columnWisePartitionBatches);
         Map<String, List<Object[]>> colSubList = columnWiseSubList(list);
         for (Map.Entry<String, List<Object[]>> entry : colSubList.entrySet()) {
-          colStats.add(columnStatisticsObjWithAdjustedNDV(entry.getValue(), 0, useDensityFunctionForNDVEstimation, ndvTuner));
+          colStats.add(
+                  columnStatisticsObjWithAdjustedNDV(entry.getValue(), useDensityFunctionForNDVEstimation, ndvTuner));
           Deadline.checkTimeout();
         }
       } finally {
-        b.closeAllQueries();
+        columnWisePartitionBatches.closeAllQueries();
       }
       return colStats;
     } else {
@@ -2061,21 +2083,23 @@ class MetaStoreDirectSql {
       // In this case, at least a column status for a partition is missing.
       // We need to extrapolate this partition based on the other partitions
       List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(colNames.size());
-      queryText =
-          "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(\"PART_COL_STATS\".\"PART_ID\") " + " from " + PART_COL_STATS
-              + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
-              + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\"" + " inner join "
-              + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\"" + " where " + DBS + ".\"CTLG_NAME\" = ? and "
-              + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? " + " and " + PART_COL_STATS
-              + ".\"COLUMN_NAME\" in (%1$s)" + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)" + " and "
-              + PART_COL_STATS + ".\"ENGINE\" = ? " + " group by " + PART_COL_STATS + ".\"COLUMN_NAME\", "
-              + PART_COL_STATS + ".\"COLUMN_TYPE\"";
+      queryText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(\"PART_COL_STATS\".\"PART_ID\") "
+          + " from " + PART_COL_STATS
+          + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+          + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+          + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+          + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+          + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
+          + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
+          + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
+          + " group by " + PART_COL_STATS + ".\"COLUMN_NAME\", " + PART_COL_STATS + ".\"COLUMN_TYPE\"";
 
-      Batchable<String, Object[]> b = jobsBatching(queryText, catName, dbName, tableName, partNames, engine, doTrace);
+      Batchable<String, Object[]> columnWisePartitionBatches =
+              columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
       List<String> noExtraColumnNames = new ArrayList<String>();
       Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
       try {
-        List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
+        List<Object[]> list = Batchable.runBatched(batchSize, colNames, columnWisePartitionBatches);
         Map<String, List<Object[]>> colSubList = columnWiseSubList(list);
         for (Map.Entry<String, List<Object[]>> entry : colSubList.entrySet()) {
           String colName = entry.getKey();
@@ -2094,7 +2118,7 @@ class MetaStoreDirectSql {
           Deadline.checkTimeout();
         }
       } finally {
-        b.closeAllQueries();
+        columnWisePartitionBatches.closeAllQueries();
       }
       // Extrapolation is not needed for columns noExtraColumnNames
       List<Object[]> list;
@@ -2102,17 +2126,18 @@ class MetaStoreDirectSql {
         queryText = commonPrefix + " and \"COLUMN_NAME\" in (%1$s)" + " and \"PARTITION_NAME\" in (%2$s)"
             + " and \"ENGINE\" = ? " + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
 
-        b = jobsBatching(queryText, catName, dbName, tableName, partNames, engine, doTrace);
+        columnWisePartitionBatches =
+                columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
         try {
-          list = Batchable.runBatched(batchSize, noExtraColumnNames, b);
+          list = Batchable.runBatched(batchSize, noExtraColumnNames, columnWisePartitionBatches);
           Map<String, List<Object[]>> colSubList = columnWiseSubList(list);
           for (Map.Entry<String, List<Object[]>> entry : colSubList.entrySet()) {
             colStats.add(
-                    columnStatisticsObjWithAdjustedNDV(entry.getValue(), 0, useDensityFunctionForNDVEstimation, ndvTuner));
+                    columnStatisticsObjWithAdjustedNDV(entry.getValue(), useDensityFunctionForNDVEstimation, ndvTuner));
             Deadline.checkTimeout();
           }
         } finally {
-          b.closeAllQueries();
+          columnWisePartitionBatches.closeAllQueries();
         }
       }
       // Extrapolation is needed for extraColumnNames.
@@ -2124,21 +2149,23 @@ class MetaStoreDirectSql {
         }
         // get sum for all columns to reduce the number of queries
         Map<String, Map<Integer, Object>> sumMap = new HashMap<String, Map<Integer, Object>>();
-        queryText =
-            "select \"COLUMN_NAME\", sum(\"NUM_NULLS\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\"), sum(\"NUM_DISTINCTS\")"
-                + " from " + PART_COL_STATS + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = "
-                + PARTITIONS + ".\"PART_ID\"" + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS
-                + ".\"TBL_ID\"" + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
-                + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
-                + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (" + makeParams(extraColumnNameTypeParts.size()) + ")"
-                + " and " + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")" + " and "
-                + PART_COL_STATS + ".\"ENGINE\" = ? " + " group by " + PART_COL_STATS + ".\"COLUMN_NAME\"";
+        queryText = "select \"COLUMN_NAME\", sum(\"NUM_NULLS\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\"), sum(\"NUM_DISTINCTS\")"
+            + " from " + PART_COL_STATS
+            + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+            + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+            + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+            + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+            + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (" + makeParams(extraColumnNameTypeParts.size()) + ")"
+            + " and " + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")"
+            + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
+            + " group by " + PART_COL_STATS + ".\"COLUMN_NAME\"";
 
-        b = jobsBatching(queryText, catName, dbName, tableName, partNames, engine, doTrace);
+        columnWisePartitionBatches =
+                columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
         try {
-          List<String> extraColumnNames = new ArrayList<String>();
+          List<String> extraColumnNames = new ArrayList<>();
           extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
-          List<Object[]> unmergedList = Batchable.runBatched(batchSize, extraColumnNames, b);
+          List<Object[]> unmergedList = Batchable.runBatched(batchSize, extraColumnNames, columnWisePartitionBatches);
           Map<String, List<Object[]>> colSubList = columnWiseSubList(unmergedList);
           List<Object[]> mergedList = new ArrayList<>();
           for (Map.Entry<String, List<Object[]>> entry : colSubList.entrySet()) {
@@ -2167,7 +2194,7 @@ class MetaStoreDirectSql {
             Deadline.checkTimeout();
           }
         } finally {
-          b.closeAllQueries();
+          columnWisePartitionBatches.closeAllQueries();
         }
 
         for (Map.Entry<String, String[]> entry : extraColumnNameTypeParts.entrySet()) {
@@ -2204,18 +2231,21 @@ class MetaStoreDirectSql {
               + "count((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
               + "sum((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
               + "count((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
-              + " from " + PART_COL_STATS + "" + " inner join " + PARTITIONS + " on " + PART_COL_STATS
-              + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\"" + " inner join " + TBLS + " on " + PARTITIONS
-              + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\"" + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS
-              + ".\"DB_ID\"" + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS
-              + ".\"TBL_NAME\" = ? " + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)" + " and " + PARTITIONS
-              + ".\"PART_NAME\" in (%2$s)" + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
+              + " from " + PART_COL_STATS + ""
+              + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+              + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+              + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+              + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+              + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
+              + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
+              + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
               + " group by \"COLUMN_NAME\"";
 
-          b = jobsBatching(queryText, catName, dbName, tableName, partNames, engine, doTrace);
+          columnWisePartitionBatches =
+                  columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
           Object[] avg = new Object[3];
           try {
-            list = Batchable.runBatched(batchSize, Arrays.asList(colName), b);
+            list = Batchable.runBatched(batchSize, Arrays.asList(colName), columnWisePartitionBatches);
             for (int i = 0; i < 6; i += 2) {
               Object sum = null;
               Object count = null;
@@ -2226,7 +2256,7 @@ class MetaStoreDirectSql {
               avg[i / 2] = MetastoreDirectSqlUtils.divide(sum, count);
             }
           } finally {
-            b.closeAllQueries();
+            columnWisePartitionBatches.closeAllQueries();
           }
           for (int colStatIndex : index) {
             String colStatName = IExtrapolatePartStatus.colStatNames[colStatIndex];
@@ -2245,19 +2275,20 @@ class MetaStoreDirectSql {
               // left/right borders
               String orderByExpr = decimal ? "cast(\"" + colStatName + "\" as decimal)" : "\"" + colStatName + "\"";
 
-              queryText =
-                  "select \"" + colStatName + "\",\"PART_NAME\" from " + PART_COL_STATS + " inner join " + PARTITIONS
-                      + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\"" + " inner join "
-                      + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\"" + " inner join " + DBS
-                      + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\"" + " where " + DBS
-                      + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? " + " and "
-                      + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)" + " and " + PARTITIONS
-                      + ".\"PART_NAME\" in (%2$s)" + " and " + PART_COL_STATS + ".\"ENGINE\" = ? " + " order by "
-                      + orderByExpr;
+              queryText = "select \"" + colStatName + "\",\"PART_NAME\" from " + PART_COL_STATS
+                  + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+                  + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+                  + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+                  + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+                  + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
+                  + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
+                  + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
+                  + " order by " + orderByExpr;
 
-              b = jobsBatching(queryText, catName, dbName, tableName, partNames, engine, doTrace);
+              columnWisePartitionBatches =
+                      columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
               try {
-                list = Batchable.runBatched(batchSize, Arrays.asList(colName), b);
+                list = Batchable.runBatched(batchSize, Arrays.asList(colName), columnWisePartitionBatches);
                 Object[] min = list.getFirst();
                 Object[] max = list.getLast();
                 for (int i = Math.min(batchSize - 1, list.size() - 1); i < list.size(); i += batchSize) {
@@ -2279,7 +2310,7 @@ class MetaStoreDirectSql {
                   row[2 + colStatIndex] = extrapolateMethod.extrapolate(min, max, colStatIndex, indexMap);
                 }
               } finally {
-                b.closeAllQueries();
+                columnWisePartitionBatches.closeAllQueries();
               }
             } else {
               // colStatIndex=12,13,14 respond to "AVG_LONG", "AVG_DOUBLE",
@@ -2287,7 +2318,8 @@ class MetaStoreDirectSql {
               row[2 + colStatIndex] = avg[colStatIndex - 12];
             }
           }
-          colStats.add(prepareCSObjWithAdjustedNDV(row, 0, useDensityFunctionForNDVEstimation, ndvTuner));
+          colStats.add(columnStatisticsObjWithAdjustedNDV
+                  (Collections.singletonList(row), useDensityFunctionForNDVEstimation, ndvTuner));
           Deadline.checkTimeout();
         }
       }
@@ -2295,63 +2327,72 @@ class MetaStoreDirectSql {
     }
   }
 
-  private ColumnStatisticsObj columnStatisticsObjWithAdjustedNDV(List<Object[]> list, int i,
-                                                                 boolean useDensityFunctionForNDVEstimation, double ndvTuner)
+  private ColumnStatisticsObj columnStatisticsObjWithAdjustedNDV(
+          List<Object[]> columnBatchesOutput,
+          boolean useDensityFunctionForNDVEstimation, double ndvTuner)
           throws MetaException {
-    if (list.isEmpty()) {
+    if (columnBatchesOutput.isEmpty()) {
       return null;
     }
     ColumnStatisticsData data = new ColumnStatisticsData();
-    int j = i;
-    Object[] row = list.getFirst();
-    String colName = (String) row[j++];
-    String colType = (String) row[j++];
+    Object[] row = columnBatchesOutput.getFirst();
+    String colName = (String) row[COLNAME];
+    String colType = (String) row[COLTYPE];
     ColumnStatisticsObj cso = new ColumnStatisticsObj(colName, colType, data);
-    Object llow = row[j++];
-    Object lhigh = row[j++];
-    Object dlow = row[j++];
-    Object dhigh = row[j++];
-    Object declow = row[j++];
-    Object dechigh = row[j++];
-    Object nulls = row[j++];
-    Object dist = row[j++];
-    Object avglen = row[j++];
-    Object maxlen = row[j++];
-    Object trues = row[j++];
-    Object falses = row[j++];
-    Object sumLong = row[j++];
-    Object countLong = row[j++];
-    Object sumDouble = row[j++];
-    Object countDouble = row[j++];
-    Object sumDecimal = row[j++];
-    Object countDecimal = row[j++];
-    Object sumDist = row[j];
-    for (int k = 1; k < list.size(); k++) {
-      j = i + 2;
-      row = list.get(k);
-      llow = MetastoreDirectSqlUtils.min(llow, row[j++]);
-      lhigh = MetastoreDirectSqlUtils.max(lhigh, row[j++]);
-      dlow = MetastoreDirectSqlUtils.min(dlow, row[j++]);
-      dhigh = MetastoreDirectSqlUtils.max(dhigh, row[j++]);
-      declow = MetastoreDirectSqlUtils.min(declow, row[j++]);
-      dechigh = MetastoreDirectSqlUtils.max(dechigh, row[j++]);
-      nulls = MetastoreDirectSqlUtils.sum(nulls, row[j++]);
-      dist = MetastoreDirectSqlUtils.max(dist, row[j++]);
-      avglen = MetastoreDirectSqlUtils.max(avglen, row[j++]);
-      maxlen = MetastoreDirectSqlUtils.max(maxlen, row[j++]);
-      trues = MetastoreDirectSqlUtils.sum(trues, row[j++]);
-      falses = MetastoreDirectSqlUtils.sum(falses, row[j++]);
-      sumLong = MetastoreDirectSqlUtils.sum(sumLong, row[j++]);
-      countLong = MetastoreDirectSqlUtils.sum(countLong, row[j++]);
-      sumDouble = MetastoreDirectSqlUtils.sum(sumDouble, row[j++]);
-      countDouble = MetastoreDirectSqlUtils.sum(countDouble, row[j++]);
-      sumDecimal = MetastoreDirectSqlUtils.sum(sumDecimal, row[j++]);
-      countDecimal = MetastoreDirectSqlUtils.sum(countDecimal, row[j++]);
-      sumDist = MetastoreDirectSqlUtils.sum(sumDist, row[j]);
+    Object llow = row[LLOW];
+    Object lhigh = row[LHIGH];
+    Object dlow = row[DLOW];
+    Object dhigh = row[DHIGH];
+    Object declow = row[DECLOW];
+    Object dechigh = row[DECHIGH];
+    Object nulls = row[NULLS];
+    Object dist = row[DIST];
+    Object avglen = row[AVGLEN];
+    Object maxlen = row[MAXLEN];
+    Object trues = row[TRUES];
+    Object falses = row[FALSES];
+    Object avgLong = row[AVGLONG];
+    Object avgDouble = row[AVGDOUBLE];
+    Object avgDecimal = row[AVGDECIMAL];
+    Object sumDist = row[SUMDIST];
+    if (row.length == 18) {
+      StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, llow, lhigh, dlow, dhigh, declow, dechigh,
+              nulls, dist, avglen, maxlen, trues, falses, avgLong, avgDouble, avgDecimal, sumDist,
+              useDensityFunctionForNDVEstimation, ndvTuner);
+      return cso;
     }
-    Object avgLong = MetastoreDirectSqlUtils.divide(sumLong, countLong);
-    Object avgDouble = MetastoreDirectSqlUtils.divide(sumDouble, countDouble);
-    Object avgDecimal = MetastoreDirectSqlUtils.divide(sumDecimal, countDecimal);
+    Object sumLong = row[AVGLONG];
+    Object countLong = row[AVGLONG + 1];
+    Object sumDouble = row[AVGDOUBLE + 1];
+    Object countDouble = row[AVGDOUBLE + 2];
+    Object sumDecimal = row[AVGDECIMAL + 2];
+    Object countDecimal = row[AVGDECIMAL + 3];
+    sumDist = row[SUMDIST + 3];
+    for (int k = 1; k < columnBatchesOutput.size(); k++) {
+      row = columnBatchesOutput.get(k);
+      llow = MetastoreDirectSqlUtils.min(llow, row[LLOW]);
+      lhigh = MetastoreDirectSqlUtils.max(lhigh, row[LHIGH]);
+      dlow = MetastoreDirectSqlUtils.min(dlow, row[DLOW]);
+      dhigh = MetastoreDirectSqlUtils.max(dhigh, row[DHIGH]);
+      declow = MetastoreDirectSqlUtils.min(declow, row[DECLOW]);
+      dechigh = MetastoreDirectSqlUtils.max(dechigh, row[DECHIGH]);
+      nulls = MetastoreDirectSqlUtils.sum(nulls, row[NULLS]);
+      dist = MetastoreDirectSqlUtils.max(dist, row[DIST]);
+      avglen = MetastoreDirectSqlUtils.max(avglen, row[AVGLEN]);
+      maxlen = MetastoreDirectSqlUtils.max(maxlen, row[MAXLEN]);
+      trues = MetastoreDirectSqlUtils.sum(trues, row[TRUES]);
+      falses = MetastoreDirectSqlUtils.sum(falses, row[FALSES]);
+      sumLong = MetastoreDirectSqlUtils.sum(sumLong, row[AVGLONG]);
+      countLong = MetastoreDirectSqlUtils.sum(countLong, row[AVGLONG + 1]);
+      sumDouble = MetastoreDirectSqlUtils.sum(sumDouble, row[AVGDOUBLE + 1]);
+      countDouble = MetastoreDirectSqlUtils.sum(countDouble, row[AVGDOUBLE + 2]);
+      sumDecimal = MetastoreDirectSqlUtils.sum(sumDecimal, row[AVGDECIMAL + 2]);
+      countDecimal = MetastoreDirectSqlUtils.sum(countDecimal, row[AVGDECIMAL + 3]);
+      sumDist = MetastoreDirectSqlUtils.sum(sumDist, row[SUMDIST + 3]);
+    }
+    avgLong = MetastoreDirectSqlUtils.divide(sumLong, countLong);
+    avgDouble = MetastoreDirectSqlUtils.divide(sumDouble, countDouble);
+    avgDecimal = MetastoreDirectSqlUtils.divide(sumDecimal, countDecimal);
     StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, llow, lhigh, dlow, dhigh, declow, dechigh,
             nulls, dist, avglen, maxlen, trues, falses, avgLong, avgDouble, avgDecimal, sumDist,
             useDensityFunctionForNDVEstimation, ndvTuner);
@@ -2366,20 +2407,6 @@ class MetaStoreDirectSql {
         histogram = row[i++], avglen = row[i++], maxlen = row[i++], trues = row[i++], falses = row[i];
     StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data,
         llow, lhigh, dlow, dhigh, declow, dechigh, nulls, dist, bitVector, histogram, avglen, maxlen, trues, falses);
-    return cso;
-  }
-
-  private ColumnStatisticsObj prepareCSObjWithAdjustedNDV(Object[] row, int i,
-      boolean useDensityFunctionForNDVEstimation, double ndvTuner) throws MetaException {
-    ColumnStatisticsData data = new ColumnStatisticsData();
-    ColumnStatisticsObj cso = new ColumnStatisticsObj((String) row[i++], (String) row[i++], data);
-    Object llow = row[i++], lhigh = row[i++], dlow = row[i++], dhigh = row[i++], declow = row[i++],
-        dechigh = row[i++], nulls = row[i++], dist = row[i++], avglen = row[i++], maxlen = row[i++],
-        trues = row[i++], falses = row[i++], avgLong = row[i++], avgDouble = row[i++],
-        avgDecimal = row[i++], sumDist = row[i++];
-    StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, llow, lhigh, dlow, dhigh,
-        declow, dechigh, nulls, dist, avglen, maxlen, trues, falses, avgLong, avgDouble,
-        avgDecimal, sumDist, useDensityFunctionForNDVEstimation, ndvTuner);
     return cso;
   }
 
@@ -2418,7 +2445,8 @@ class MetaStoreDirectSql {
         + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
         + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
         + " order by " + PARTITIONS +  ".\"PART_NAME\"";
-    Batchable<String, Object[]> b = jobsBatching(queryText0, catName, dbName, tableName, partNames, engine, doTrace);
+    Batchable<String, Object[]> b =
+            columnWisePartitionBatcher(queryText0, catName, dbName, tableName, partNames, engine, doTrace);
     List<ColumnStatistics> result = new ArrayList<ColumnStatistics>(partNames.size());
     String lastPartName = null;
     int from = 0;

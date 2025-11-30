@@ -325,10 +325,10 @@ public class CliConfigs {
     public TezBatchedStatsCliConfig() {
       super(CorePerfCliDriver.class);
       try {
-        setQueryDir("ql/src/test/queries/clientpositive/batched/stats");
-        setLogDir("itests/qtest/target/qfile-results/clientpositive/batched/tez/stats");
-        setResultsDir("ql/src/test/results/clientpositive/batched/stats");
-        setHiveConfDir("data/conf/batched/tez/batched");
+        setQueryDir("ql/src/test/queries/clientpositive/batched/tez");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive/batched/tez");
+        setResultsDir("ql/src/test/results/clientpositive/batched/tez");
+        setHiveConfDir("data/conf/batched/tez");
         setClusterType(MiniClusterType.LLAP_LOCAL);
         setMetastoreType("postgres.ministats");
       } catch (Exception e) {
