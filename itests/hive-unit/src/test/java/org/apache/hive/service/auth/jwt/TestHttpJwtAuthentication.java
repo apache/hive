@@ -133,7 +133,6 @@ public class TestHttpJwtAuthentication {
     if (jwt != null) {
       url += "jwt=" + jwt;
     }
-    Class.forName("org.apache.hive.jdbc.HiveDriver");
     Connection connection = DriverManager.getConnection(url, null, null);
     return (HiveConnection) connection;
   }

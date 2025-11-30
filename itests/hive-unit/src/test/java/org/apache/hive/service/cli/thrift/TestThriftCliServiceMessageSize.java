@@ -81,7 +81,6 @@ public class TestThriftCliServiceMessageSize extends AbstractThriftCLITest {
 
     hiveServer2 = new HiveServer2();
     String url = "jdbc:hive2://localhost:" + port + "/default";
-    Class.forName("org.apache.hive.jdbc.HiveDriver");
 
     try {
       // First start HS2 with high message size limit. This should allow connections

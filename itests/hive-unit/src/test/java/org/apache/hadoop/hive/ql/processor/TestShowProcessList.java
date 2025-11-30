@@ -78,7 +78,6 @@ public class TestShowProcessList {
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.prepDb(conf);
     MiniHS2.cleanupLocalDir();
-    Class.forName(MiniHS2.getJdbcDriverName());
     miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
     Map<String, String> confOverlay = new HashMap<>();
     miniHS2.start(confOverlay);
