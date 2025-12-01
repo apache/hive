@@ -35,8 +35,8 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
-import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HiveCatalog;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.types.Types;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -210,7 +210,7 @@ public class TestCatalogs {
   @Test
   public void testLoadCatalogHive() {
     String catalogName = "barCatalog";
-    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
+    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
         CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE);
     Optional<Catalog> hiveCatalog = Catalogs.loadCatalog(conf, catalogName);
     Assert.assertTrue(hiveCatalog.isPresent());
@@ -223,9 +223,9 @@ public class TestCatalogs {
   @Test
   public void testLoadCatalogHadoop() {
     String catalogName = "barCatalog";
-    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
+    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
         CatalogUtil.ICEBERG_CATALOG_TYPE_HADOOP);
-    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
+    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
         "/tmp/mylocation");
     Optional<Catalog> hadoopCatalog = Catalogs.loadCatalog(conf, catalogName);
     Assert.assertTrue(hadoopCatalog.isPresent());
@@ -239,9 +239,9 @@ public class TestCatalogs {
   @Test
   public void testLoadCatalogCustom() {
     String catalogName = "barCatalog";
-    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.CATALOG_IMPL),
+    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, CatalogProperties.CATALOG_IMPL),
         CustomHadoopCatalog.class.getName());
-    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
+    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
         "/tmp/mylocation");
     Optional<Catalog> customHadoopCatalog = Catalogs.loadCatalog(conf, catalogName);
     Assert.assertTrue(customHadoopCatalog.isPresent());
@@ -259,7 +259,8 @@ public class TestCatalogs {
   @Test
   public void testLoadCatalogUnknown() {
     String catalogName = "barCatalog";
-    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE), "fooType");
+    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, CatalogUtil.ICEBERG_CATALOG_TYPE),
+        "fooType");
 
     Assertions.assertThatThrownBy(() -> Catalogs.loadCatalog(conf, catalogName))
         .isInstanceOf(UnsupportedOperationException.class)
@@ -270,7 +271,7 @@ public class TestCatalogs {
   public void testDefaultCatalogProperties() {
     String catalogProperty = "io.manifest.cache-enabled";
     // Set global property
-    final String defaultCatalogProperty = CatalogUtils.CATALOG_DEFAULT_CONFIG_PREFIX + catalogProperty;
+    final String defaultCatalogProperty = IcebergCatalogProperties.CATALOG_DEFAULT_CONFIG_PREFIX + catalogProperty;
     conf.setBoolean(defaultCatalogProperty, true);
     HiveCatalog defaultCatalog = (HiveCatalog) Catalogs.loadCatalog(conf, null).get();
     Assert.assertEquals("true", defaultCatalog.properties().get(catalogProperty));
@@ -302,9 +303,9 @@ public class TestCatalogs {
   }
 
   private void setCustomCatalogProperties(String catalogName, String warehouseLocation) {
-    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
+    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, CatalogProperties.WAREHOUSE_LOCATION),
         warehouseLocation);
-    conf.set(CatalogUtils.catalogPropertyConfigKey(catalogName, CatalogProperties.CATALOG_IMPL),
+    conf.set(IcebergCatalogProperties.catalogPropertyConfigKey(catalogName, CatalogProperties.CATALOG_IMPL),
         CustomHadoopCatalog.class.getName());
     conf.set(InputFormatConfig.CATALOG_NAME, catalogName);
   }

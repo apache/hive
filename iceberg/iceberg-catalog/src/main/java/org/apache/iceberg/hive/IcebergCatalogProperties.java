@@ -22,21 +22,14 @@ package org.apache.iceberg.hive;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.CatalogUtil;
-import org.apache.iceberg.catalog.TableIdentifier;
-import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 
-public class CatalogUtils {
-  public static final String NAME = "name";
-  public static final String LOCATION = "location";
+public class IcebergCatalogProperties {
   public static final String CATALOG_NAME = "iceberg.catalog";
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
   public static final String CATALOG_WAREHOUSE_TEMPLATE = "iceberg.catalog.%s.warehouse";
@@ -45,63 +38,14 @@ public class CatalogUtils {
   public static final String ICEBERG_HADOOP_TABLE_NAME = "location_based_table";
   public static final String ICEBERG_DEFAULT_CATALOG_NAME = "default_iceberg";
   public static final String NO_CATALOG_TYPE = "no catalog";
-  public static final Set<String> PROPERTIES_TO_REMOVE = ImmutableSet.of(
-      // We don't want to push down the metadata location props to Iceberg from HMS,
-      // since the snapshot pointer in HMS would always be one step ahead
-      BaseMetastoreTableOperations.METADATA_LOCATION_PROP,
-      BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP);
 
-  private CatalogUtils() {
+  private IcebergCatalogProperties() {
 
   }
 
-  /**
-   * Calculates the properties we would like to send to the catalog.
-   * <ul>
-   * <li>The base of the properties is the properties stored at the Hive Metastore for the given table
-   * <li>We add the {@link CatalogUtils#LOCATION} as the table location
-   * <li>We add the {@link CatalogUtils#NAME} as
-   * TableIdentifier defined by the database name and table name
-   * <li>We add the serdeProperties of the HMS table
-   * <li>We remove some parameters that we don't want to push down to the Iceberg table props
-   * </ul>
-   * @param hmsTable Table for which we are calculating the properties
-   * @return The properties we can provide for Iceberg functions
-   */
-  public static Properties getCatalogProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    Properties properties = new Properties();
-    properties.putAll(toIcebergProperties(hmsTable.getParameters()));
-
-    if (properties.get(LOCATION) == null && hmsTable.getSd() != null &&
-        hmsTable.getSd().getLocation() != null) {
-      properties.put(LOCATION, hmsTable.getSd().getLocation());
-    }
-
-    if (properties.get(NAME) == null) {
-      properties.put(NAME, TableIdentifier.of(hmsTable.getDbName(),
-          hmsTable.getTableName()).toString());
-    }
-
-    SerDeInfo serdeInfo = hmsTable.getSd().getSerdeInfo();
-    if (serdeInfo != null) {
-      properties.putAll(toIcebergProperties(serdeInfo.getParameters()));
-    }
-
-    // Remove HMS table parameters we don't want to propagate to Iceberg
-    PROPERTIES_TO_REMOVE.forEach(properties::remove);
-
-    return properties;
-  }
-
-  private static Properties toIcebergProperties(Map<String, String> parameters) {
-    Properties properties = new Properties();
-    parameters.entrySet().stream()
-        .filter(e -> e.getKey() != null && e.getValue() != null)
-        .forEach(e -> {
-          String icebergKey = HMSTablePropertyHelper.translateToIcebergProp(e.getKey());
-          properties.put(icebergKey, e.getValue());
-        });
-    return properties;
+  public static Map<String, String> getCatalogProperties(Configuration conf) {
+    String catalogName = getCatalogName(conf);
+    return getCatalogProperties(conf, catalogName);
   }
 
   /**
@@ -112,15 +56,18 @@ public class CatalogUtils {
    */
   public static Map<String, String> getCatalogProperties(Configuration conf, String catalogName) {
     Map<String, String> catalogProperties = Maps.newHashMap();
-    String keyPrefix = CATALOG_CONFIG_PREFIX + catalogName;
+    String namedCatalogPrefix = CATALOG_CONFIG_PREFIX + catalogName + ".";
+    String namedCatalogTablePrefix = CATALOG_CONFIG_PREFIX + catalogName + ".table-default.";
+
     conf.forEach(config -> {
-      if (config.getKey().startsWith(CatalogUtils.CATALOG_DEFAULT_CONFIG_PREFIX)) {
+      if (config.getKey().startsWith(IcebergCatalogProperties.CATALOG_DEFAULT_CONFIG_PREFIX)) {
         catalogProperties.putIfAbsent(
-            config.getKey().substring(CatalogUtils.CATALOG_DEFAULT_CONFIG_PREFIX.length()),
+            config.getKey().substring(IcebergCatalogProperties.CATALOG_DEFAULT_CONFIG_PREFIX.length()),
             config.getValue());
-      } else if (config.getKey().startsWith(keyPrefix)) {
+      } else if (config.getKey().startsWith(namedCatalogPrefix) &&
+          !config.getKey().startsWith(namedCatalogTablePrefix)) {
         catalogProperties.put(
-            config.getKey().substring(keyPrefix.length() + 1),
+            config.getKey().substring(namedCatalogPrefix.length()),
             config.getValue());
       }
     });
@@ -133,7 +80,7 @@ public class CatalogUtils {
   }
 
   public static String getCatalogType(Configuration conf) {
-    return getCatalogType(conf, CatalogUtils.getCatalogName(conf));
+    return getCatalogType(conf, IcebergCatalogProperties.getCatalogName(conf));
   }
 
   public static boolean isHadoopTable(Configuration conf, Properties catalogProperties) {
@@ -177,7 +124,7 @@ public class CatalogUtils {
       }
     } else {
       String catalogType = conf.get(CatalogUtil.ICEBERG_CATALOG_TYPE);
-      if (catalogType != null && catalogType.equals(LOCATION)) {
+      if (catalogType != null && catalogType.equals(IcebergTableProperties.LOCATION)) {
         return NO_CATALOG_TYPE;
       } else {
         return catalogType;
@@ -188,7 +135,7 @@ public class CatalogUtils {
   public static String getCatalogImpl(Configuration conf, String catalogName) {
     return Optional.ofNullable(catalogName)
         .filter(StringUtils::isNotEmpty)
-        .map(name -> String.format(CatalogUtils.CATALOG_IMPL_TEMPLATE, name))
+        .map(name -> String.format(IcebergCatalogProperties.CATALOG_IMPL_TEMPLATE, name))
         .map(conf::get)
         .orElse(null);
   }
@@ -196,14 +143,15 @@ public class CatalogUtils {
   public static boolean assertCatalogType(Configuration conf, Properties props, String expectedType,
       String expectedImpl) {
     String catalogName = props.getProperty(CATALOG_NAME);
-    String catalogType = Optional.ofNullable(CatalogUtils.getCatalogType(conf, catalogName))
-        .orElseGet(() -> CatalogUtils.getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME));
+    String catalogType = Optional.ofNullable(IcebergCatalogProperties.getCatalogType(conf, catalogName))
+        .orElseGet(() -> IcebergCatalogProperties.getCatalogType(conf, ICEBERG_DEFAULT_CATALOG_NAME));
 
     if (catalogType != null) {
       return expectedType.equalsIgnoreCase(catalogType);
     }
 
-    String actualImpl = CatalogUtils.getCatalogProperties(conf, catalogName).get(CatalogProperties.CATALOG_IMPL);
+    String actualImpl = IcebergCatalogProperties.getCatalogProperties(conf, catalogName)
+        .get(CatalogProperties.CATALOG_IMPL);
 
     // Return true immediately if the strings are equal (this also handles both being null).
     if (StringUtils.equals(expectedImpl, actualImpl)) {

@@ -90,7 +90,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
-import org.apache.iceberg.hive.CatalogUtils;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -664,7 +664,7 @@ public class IcebergTableUtil {
       Configuration conf, Properties catalogProperties) {
     StringBuilder sb = new StringBuilder();
     String warehouseLocation = conf.get(String.format(
-        CatalogUtils.CATALOG_WAREHOUSE_TEMPLATE, catalogProperties.getProperty(CATALOG_NAME))
+        IcebergCatalogProperties.CATALOG_WAREHOUSE_TEMPLATE, catalogProperties.getProperty(CATALOG_NAME))
     );
     sb.append(warehouseLocation).append('/');
     for (String level : tableIdentifier.namespace().levels()) {
