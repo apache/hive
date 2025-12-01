@@ -38,6 +38,7 @@ TBLPROPERTIES (
   'write.delete.mode'='merge-on-read', 
   'write.format.default'='orc', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: insert into ice01 values (1),(2),(3),(4)
 PREHOOK: type: QUERY

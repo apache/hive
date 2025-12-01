@@ -366,6 +366,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ds\",\"required\":false,\"type\":\"string\"}]}
 	format-version      	1                   
+	iceberg.disable.vectorization.test1.shtb_test1	true                
+	iceberg.mr.case.sensitive	false               
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
@@ -379,6 +381,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -418,6 +421,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ds\",\"required\":false,\"type\":\"string\"}]}
 	format-version      	1                   
+	iceberg.disable.vectorization.test1.shtb_test1	true                
+	iceberg.mr.case.sensitive	false               
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
@@ -430,6 +435,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -469,6 +475,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"key\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"value\",\"required\":false,\"type\":\"string\"},{\"id\":3,\"name\":\"ds\",\"required\":false,\"type\":\"string\"}]}
 	format-version      	1                   
+	iceberg.disable.vectorization.test1.shtb_test1	true                
+	iceberg.mr.case.sensitive	false               
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
@@ -482,6 +490,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -574,6 +583,8 @@ Table Parameters:
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"a\",\"required\":false,\"type\":\"int\"}]}
 	format-version      	1                   
+	iceberg.disable.vectorization.database.foo_n0	true                
+	iceberg.mr.case.sensitive	false               
 	iceberg.orc.files.only	true                
 	metadata_location   	hdfs://### HDFS PATH ###
 	numFiles            	0                   
@@ -587,6 +598,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
