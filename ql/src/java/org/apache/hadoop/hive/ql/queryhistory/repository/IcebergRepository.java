@@ -62,6 +62,7 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
   private static final Logger LOG = LoggerFactory.getLogger(IcebergRepository.class);
   private static final String ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
   private static final String ICEBERG_WORKER_THREAD_NAME_FORMAT = "query-history-iceberg-worker-pool-%d";
+  private static final String ICEBERG_METADATA_CLEANUP_CONFIG = "write.metadata.delete-after-commit.enabled";
 
   private HiveOutputFormat<?, ?> outputFormat;
   private Serializer serializer;
@@ -95,6 +96,7 @@ public class IcebergRepository extends AbstractRepository implements QueryHistor
     table.setProperty(hive_metastoreConstants.META_TABLE_NAME, QUERY_HISTORY_DB_TABLE_NAME);
 
     table.setFields(schema.getFields());
+    table.setProperty(ICEBERG_METADATA_CLEANUP_CONFIG, "false");
 
     hive.createTable(table, false);
 
