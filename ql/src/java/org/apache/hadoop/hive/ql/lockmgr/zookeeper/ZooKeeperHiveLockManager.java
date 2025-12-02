@@ -766,7 +766,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
       String[] names = objName.split("/");
 
       if (names.length < 2) {
-        return null;
+        return new HiveLockObject(names[0], data);
       }
 
       if (!verifyTablePartition) {

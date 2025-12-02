@@ -129,7 +129,7 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
     HiveLockManager lockMgr = getAndCheckLockManager();
 
     String tabName = unlockTbl.getTableName();
-    HiveLockObject obj = HiveLockObject.createFrom(hiveDB, tabName,
+    HiveLockObject obj = HiveLockObject.createFrom(hiveDB, null, tabName,
         unlockTbl.getPartSpec());
 
     List<HiveLock> locks = lockMgr.getLocks(obj, false, false);

@@ -89,11 +89,12 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
 
   private List<HiveLock> getLocksForOldFormat(HiveLockManager lockMgr) throws LockException, HiveException {
     List<HiveLock> locks = null;
-    if (desc.getTableName() == null) {
+    if (desc.getTableName() == null && desc.getDbName() == null) {
       // TODO should be doing security check here. Users should not be able to see each other's locks.
       locks = lockMgr.getLocks(false, desc.isExt());
     } else {
-      HiveLockObject lockObject = HiveLockObject.createFrom(context.getDb(), desc.getTableName(), desc.getPartSpec());
+      HiveLockObject lockObject = HiveLockObject.createFrom(context.getDb(), desc.getDbName(), 
+              desc.getTableName(), desc.getPartSpec());
       locks = lockMgr.getLocks(lockObject, true, desc.isExt());
     }
     Collections.sort(locks, new Comparator<HiveLock>() {
