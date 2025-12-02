@@ -54,6 +54,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.variant.VariantFilterRewriter;
 import org.apache.iceberg.mr.mapred.AbstractMapredIcebergRecordReader;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
@@ -91,65 +92,130 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
   }
 
   /**
-   * Converts the Hive filter found in the job conf to an Iceberg filter expression.
-   * @param conf - job conf
-   * @return - Iceberg data filter expression
+   * Encapsulates planning-time and reader-time Iceberg filter expressions derived from Hive predicates.
    */
-  static Expression icebergDataFilterFromHiveConf(Configuration conf) {
-    Expression icebergFilter = SerializationUtil.deserializeFromBase64(conf.get(InputFormatConfig.FILTER_EXPRESSION));
-    if (icebergFilter != null) {
-      // in case we already have it prepared..
-      return icebergFilter;
+  private record FilterExpressions(
+      Expression planningFilter, Expression readerFilter,
+      boolean caseSensitive) {
+
+    public static FilterExpressions get(Configuration conf) {
+      // Planning-safe filter (extract removed) may already be serialized for reuse.
+      Expression planningFilter = SerializationUtil.deserializeFromBase64(
+          conf.get(InputFormatConfig.FILTER_EXPRESSION));
+
+      // Reader filter should retain extract(...) for row-group pruning. Rebuild from Hive predicate to avoid losing
+      // variant rewrites when planningFilter was stripped.
+      Expression readerFilter = getFilterExpr(conf);
+
+      if (planningFilter == null && readerFilter != null) {
+        planningFilter = VariantFilterRewriter.stripVariantExtractPredicates(readerFilter);
+      }
+
+      boolean caseSensitive = conf.getBoolean(
+          InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT);
+
+      return new FilterExpressions(planningFilter, readerFilter, caseSensitive);
     }
-    String hiveFilter = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
-    if (hiveFilter != null) {
-      ExprNodeGenericFuncDesc exprNodeDesc = SerializationUtilities
-          .deserializeObject(hiveFilter, ExprNodeGenericFuncDesc.class);
-      return getFilterExpr(conf, exprNodeDesc);
+
+    private static Expression getFilterExpr(Configuration conf) {
+      // Build an Iceberg filter from Hive's serialized predicate so we can preserve extract(...) terms for
+      // reader-level pruning (e.g. Parquet shredded VARIANT row-group pruning).
+      //
+      // This intentionally does NOT consult FILTER_EXPRESSION, because FILTER_EXPRESSION must remain safe for
+      // Iceberg planning-time utilities (some of which cannot stringify extract(...) terms).
+      String hiveFilter = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
+      if (hiveFilter == null) {
+        return null;
+      }
+      ExprNodeGenericFuncDesc exprNodeDesc =
+          SerializationUtilities.deserializeObject(hiveFilter, ExprNodeGenericFuncDesc.class);
+      return HiveIcebergInputFormat.getFilterExpr(conf, exprNodeDesc);
     }
-    return null;
+
+    public Expression planningResidual(FileScanTask task) {
+      if (planningFilter == null) {
+        return Expressions.alwaysTrue();
+      }
+      return ResidualEvaluator.of(task.spec(), planningFilter, caseSensitive)
+          .residualFor(task.file().partition());
+    }
+
+    public Expression readerResidual(FileScanTask task) {
+      if (readerFilter == null) {
+        return Expressions.alwaysTrue();
+      }
+      return ResidualEvaluator.of(task.spec(), readerFilter, caseSensitive)
+          .residualFor(task.file().partition());
+    }
   }
 
   /**
-   * getFilterExpr extracts search argument from ExprNodeGenericFuncDesc and returns Iceberg Filter Expression
+   * Builds an Iceberg filter expression from a Hive predicate expression node.
    * @param conf - job conf
    * @param exprNodeDesc - Describes a GenericFunc node
    * @return Iceberg Filter Expression
    */
   static Expression getFilterExpr(Configuration conf, ExprNodeGenericFuncDesc exprNodeDesc) {
-    if (exprNodeDesc != null) {
-      SearchArgument sarg = ConvertAstToSearchArg.create(conf, exprNodeDesc);
-      try {
-        return HiveIcebergFilterFactory.generateFilterExpression(sarg);
-      } catch (UnsupportedOperationException e) {
-        LOG.warn("Unable to create Iceberg filter, proceeding without it (will be applied by Hive later): ", e);
+    if (exprNodeDesc == null) {
+      return null;
+    }
+
+    ExprNodeGenericFuncDesc exprForSarg = exprNodeDesc;
+    if (Boolean.parseBoolean(conf.get(InputFormatConfig.VARIANT_SHREDDING_ENABLED))) {
+      ExprNodeGenericFuncDesc rewritten = VariantFilterRewriter.rewriteForShredding(exprNodeDesc);
+      if (rewritten != null) {
+        exprForSarg = rewritten;
       }
     }
-    return null;
+
+    SearchArgument sarg = ConvertAstToSearchArg.create(conf, exprForSarg);
+    if (sarg == null) {
+      return null;
+    }
+
+    try {
+      return HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    } catch (UnsupportedOperationException e) {
+      LOG.warn(
+          "Unable to create Iceberg filter, proceeding without it (will be applied by Hive later): ",
+          e);
+      return null;
+    }
   }
 
   /**
-   * Converts Hive filter found in the passed job conf to an Iceberg filter expression. Then evaluates this
-   * against the task's partition value producing a residual filter expression.
+   * Returns a residual expression that is safe to apply as a record-level filter.
+   *
+   * <p>This residual is derived from the task-level Iceberg planning filter (already extract-free) after
+   * evaluating it against the task's partition value.
    * @param task - file scan task to evaluate the expression against
    * @param conf - job conf
    * @return - Iceberg residual filter expression
    */
   public static Expression residualForTask(FileScanTask task, Configuration conf) {
-    Expression dataFilter = icebergDataFilterFromHiveConf(conf);
-    if (dataFilter == null) {
-      return Expressions.alwaysTrue();
-    }
-    return ResidualEvaluator.of(
-        task.spec(), dataFilter,
-        conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT)
-    ).residualFor(task.file().partition());
+    return FilterExpressions.get(conf).planningResidual(task);
+  }
+
+  /**
+   * Returns a residual expression intended only for reader-level pruning (best-effort).
+   *
+   * <p>This residual is derived from the task-level Iceberg filter after evaluating it against the task's
+   * partition value. It may include {@code extract(...)} predicates and is suitable for formats/readers that
+   * can leverage such terms for pruning (e.g. Parquet row-group pruning using shredded VARIANT columns).
+   *
+   * <p><strong>Do not</strong> use this for record-level residual filtering, as {@code extract} cannot be
+   * evaluated at record level in Iceberg readers.
+   */
+  public static Expression residualForReaderPruning(FileScanTask task, Configuration conf) {
+    return FilterExpressions.get(conf).readerResidual(task);
   }
 
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-    Expression filter = icebergDataFilterFromHiveConf(job);
+    Expression filter = FilterExpressions.get(job).planningFilter();
     if (filter != null) {
+      // Iceberg planning-time utilities may attempt to stringify the filter. Ensure the planning filter never
+      // contains extract(...) or shredded typed_value references.
       job.set(InputFormatConfig.FILTER_EXPRESSION, SerializationUtil.serializeToBase64(filter));
     }
 
