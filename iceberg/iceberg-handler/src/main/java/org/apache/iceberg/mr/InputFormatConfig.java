@@ -39,6 +39,7 @@ public class InputFormatConfig {
   public static final String SKIP_RESIDUAL_FILTERING = "skip.residual.filtering";
   public static final String AS_OF_TIMESTAMP = "iceberg.mr.as.of.time";
   public static final String FILTER_EXPRESSION = "iceberg.mr.filter.expression";
+  public static final String VARIANT_FILTER_EXPRESSION = "iceberg.mr.variant.filter.expression";
   public static final String GROUPING_PARTITION_COLUMNS = "iceberg.mr.grouping.partition.columns";
   public static final String IN_MEMORY_DATA_MODEL = "iceberg.mr.in.memory.data.model";
   public static final String READ_SCHEMA = "iceberg.mr.read.schema";
@@ -214,4 +215,16 @@ public class InputFormatConfig {
     return json == null ? null : SchemaParser.fromJson(json);
   }
 
+  public static Expression variantFilter(Configuration conf) {
+    String serialized = conf.get(VARIANT_FILTER_EXPRESSION);
+    return serialized == null ? null : SerializationUtil.deserializeFromBase64(serialized);
+  }
+
+  public static void setVariantFilter(Configuration conf, Expression expression) {
+    if (expression == null) {
+      conf.unset(VARIANT_FILTER_EXPRESSION);
+    } else {
+      conf.set(VARIANT_FILTER_EXPRESSION, SerializationUtil.serializeToBase64(expression));
+    }
+  }
 }

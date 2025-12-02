@@ -194,6 +194,21 @@ public class TestHiveIcebergFilterFactory {
   }
 
   @Test
+  public void testShreddedVariantPredicate() {
+    SearchArgument.Builder builder = SearchArgumentFactory.newBuilder();
+    SearchArgument arg = builder
+        .startAnd()
+        .equals("payload.typed_value.age", PredicateLeaf.Type.LONG, 30L)
+        .end()
+        .build();
+
+    UnboundPredicate expected = Expressions.equal("payload.typed_value.age", 30L);
+    UnboundPredicate actual = (UnboundPredicate) HiveIcebergFilterFactory.generateFilterExpression(arg);
+
+    assertPredicatesMatch(expected, actual);
+  }
+
+  @Test
   public void testFloatType() {
     SearchArgument.Builder builder = SearchArgumentFactory.newBuilder();
     SearchArgument arg = builder.startAnd().equals("float", PredicateLeaf.Type.FLOAT, 1200D).end().build();

@@ -38,6 +38,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -281,6 +282,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     return null;
   }
 
+  private static final String VARIANT_SHREDDING_ENABLED = "variant.shredding.enabled";
+
   @Override
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> map) {
     overlayTableProperties(conf, tableDesc, map);
@@ -293,6 +296,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
     map.put(ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY.varname,
         String.valueOf(allowDataFilesWithinTableLocationOnly));
+    propagateVariantShreddingProperty(tableDesc, map::put);
   }
 
   @Override
@@ -311,7 +315,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
     SessionStateUtil.getResource(conf, SessionStateUtil.MISSING_COLUMNS)
         .ifPresent(cols -> map.put(SessionStateUtil.MISSING_COLUMNS, String.join(",", (HashSet<String>) cols)));
-
+    propagateVariantShreddingProperty(tableDesc, map::put);
   }
 
   /**
@@ -356,6 +360,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         jobConf.set(InputFormatConfig.TABLE_CATALOG_PREFIX + tableName, catalogName);
       }
     }
+    propagateVariantShreddingProperty(tableDesc, jobConf::set);
+
     try {
       if (!jobConf.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
         // For running unit test this won't work as maven surefire CP is different than what we have on a cluster:
@@ -1521,6 +1527,17 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   private static void setCommonJobConf(JobConf jobConf) {
     jobConf.set("tez.mrreader.config.update.properties", "hive.io.file.readcolumn.names,hive.io.file.readcolumn.ids");
+  }
+
+  private static void propagateVariantShreddingProperty(
+      TableDesc tableDesc, BiConsumer<String, String> setter) {
+    if (tableDesc == null || tableDesc.getProperties() == null || setter == null) {
+      return;
+    }
+    String value = tableDesc.getProperties().getProperty(VARIANT_SHREDDING_ENABLED);
+    if (value != null) {
+      setter.accept(VARIANT_SHREDDING_ENABLED, value);
+    }
   }
 
   public StorageHandlerTypes getType() {

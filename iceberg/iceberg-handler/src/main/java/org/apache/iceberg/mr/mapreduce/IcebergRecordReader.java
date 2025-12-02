@@ -60,6 +60,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mapping.NameMappingParser;
+import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.orc.ORC;
@@ -225,6 +226,12 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
         .caseSensitive(isCaseSensitive())
         .split(task.start(), task.length());
 
+    Expression variantFilterExpr =
+        InputFormatConfig.variantFilter(getContext().getConfiguration());
+    if (variantFilterExpr != null) {
+      parquetReadBuilder.variantFilter(variantFilterExpr);
+    }
+
     if (isReuseContainers()) {
       parquetReadBuilder.reuseContainers();
     }
@@ -290,4 +297,5 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
 
     return TypeUtil.selectNot(readSchema, collect);
   }
+
 }

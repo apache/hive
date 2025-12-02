@@ -86,8 +86,8 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
     builder.createWriterFunc(GenericParquetWriter::create);
     // Configure variant shredding function if conditions are met:
     if (hasVariantColumns(dataSchema()) && isVariantShreddingEnabled(properties)) {
-      builder.variantShreddingFunc(
-          Parquet.constructVariantShreddingFunction(sampleRecord, dataSchema()));
+      var shreddingFunction = Parquet.constructVariantShreddingFunction(sampleRecord, dataSchema());
+      builder.variantShreddingFunc(shreddingFunction);
     }
   }
 
@@ -182,7 +182,7 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
    * Should be called before the Parquet writer is created.
    */
   public void initialize(Record record) {
-    if (this.sampleRecord != null) {
+    if (this.sampleRecord == null) {
       this.sampleRecord = record;
     }
   }

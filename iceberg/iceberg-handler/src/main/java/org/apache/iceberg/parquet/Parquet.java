@@ -84,6 +84,9 @@ import org.apache.parquet.column.ParquetProperties.WriterVersion;
 import org.apache.parquet.conf.PlainParquetConfiguration;
 import org.apache.parquet.crypto.FileDecryptionProperties;
 import org.apache.parquet.crypto.FileEncryptionProperties;
+import org.apache.parquet.filter2.compat.FilterCompat;
+import org.apache.parquet.filter2.predicate.FilterApi;
+import org.apache.parquet.filter2.predicate.FilterPredicate;
 import org.apache.parquet.hadoop.ParquetFileReader;
 import org.apache.parquet.hadoop.ParquetFileWriter;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
@@ -1135,6 +1138,7 @@ public class Parquet {
     private NameMapping nameMapping = null;
     private ByteBuffer fileEncryptionKey = null;
     private ByteBuffer fileAADPrefix = null;
+    private Expression variantFilterExpression = null;
 
     private ReadBuilder(InputFile file) {
       this.file = file;
@@ -1176,6 +1180,11 @@ public class Parquet {
 
     public ReadBuilder filter(Expression newFilter) {
       this.filter = newFilter;
+      return this;
+    }
+
+    public ReadBuilder variantFilter(Expression expression) {
+      this.variantFilterExpression = expression;
       return this;
     }
 
@@ -1367,9 +1376,9 @@ public class Parquet {
         builder.set(entry.getKey(), entry.getValue());
       }
 
-      if (filter != null) {
-        // TODO: should not need to get the schema to push down before opening the file.
-        // Parquet should allow setting a filter inside its read support
+      FilterCompat.Filter icebergFilter = null;
+      FilterCompat.Filter variantFilter = null;
+      if (filter != null || variantFilterExpression != null) {
         ParquetReadOptions decryptOptions =
             ParquetReadOptions.builder(new PlainParquetConfiguration())
                 .withDecryption(fileDecryptionProperties)
@@ -1382,14 +1391,24 @@ public class Parquet {
           throw new RuntimeIOException(e);
         }
         Schema fileSchema = ParquetSchemaUtil.convert(type);
+        if (filter != null) {
+          icebergFilter = ParquetFilters.convert(fileSchema, filter, caseSensitive);
+        }
+        if (variantFilterExpression != null) {
+          variantFilter = VariantParquetFilters.convert(type, variantFilterExpression);
+        }
+      }
+
+      FilterCompat.Filter combinedFilter = combineFilters(icebergFilter, variantFilter);
+
+      if (combinedFilter != null) {
         builder
             .useStatsFilter()
             .useDictionaryFilter()
             .useRecordFilter(filterRecords)
             .useBloomFilter()
-            .withFilter(ParquetFilters.convert(fileSchema, filter, caseSensitive));
+            .withFilter(combinedFilter);
       } else {
-        // turn off filtering
         builder
             .useStatsFilter(false)
             .useDictionaryFilter(false)
@@ -1451,6 +1470,25 @@ public class Parquet {
     protected ReadSupport<T> getReadSupport() {
       return new ParquetReadSupport<>(schema, readSupport, callInit, nameMapping);
     }
+  }
+
+  private static FilterCompat.Filter combineFilters(
+      FilterCompat.Filter base, FilterCompat.Filter extra) {
+    if (base == null) {
+      return extra;
+    }
+    if (extra == null) {
+      return base;
+    }
+    if (base instanceof FilterCompat.FilterPredicateCompat &&
+          extra instanceof FilterCompat.FilterPredicateCompat) {
+      FilterPredicate basePredicate =
+          ((FilterCompat.FilterPredicateCompat) base).getFilterPredicate();
+      FilterPredicate extraPredicate =
+          ((FilterCompat.FilterPredicateCompat) extra).getFilterPredicate();
+      return FilterCompat.get(FilterApi.and(basePredicate, extraPredicate));
+    }
+    return base;
   }
 
   /**
