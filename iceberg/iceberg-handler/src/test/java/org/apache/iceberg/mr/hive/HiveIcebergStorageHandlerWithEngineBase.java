@@ -114,7 +114,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
     // Run tests with every FileFormat for a single Catalog (HiveCatalog)
     for (FileFormat fileFormat : HiveIcebergStorageHandlerTestUtils.FILE_FORMATS) {
-      IntStream.of(2, 1).forEach(formatVersion -> {
+      IntStream.rangeClosed(1, 3).forEach(formatVersion -> {
         testParams.add(new Object[]{fileFormat, HIVE_CATALOG, false, formatVersion});
         // test for vectorization=ON in case of ORC and PARQUET format
         if (fileFormat != FileFormat.METADATA) {
