@@ -248,6 +248,1332 @@ left outer join small_alltypesorc_a_n1 hd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "small_alltypesorc_a_n1"
+        ],
+        "table:alias": "c",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 10,
+        "rowType": {
+          "fields": [
+            {
+              "type": "TINYINT",
+              "nullable": true,
+              "name": "ctinyint"
+            },
+            {
+              "type": "SMALLINT",
+              "nullable": true,
+              "name": "csmallint"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cint"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cbigint"
+            },
+            {
+              "type": "FLOAT",
+              "nullable": true,
+              "name": "cfloat"
+            },
+            {
+              "type": "DOUBLE",
+              "nullable": true,
+              "name": "cdouble"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring1"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring2"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp1"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp2"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean1"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean2"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cint",
+            "ndv": 8,
+            "minValue": -738306196,
+            "maxValue": 626923679
+          },
+          {
+            "name": "cstring1",
+            "ndv": 8
+          },
+          {
+            "name": "ctinyint",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "csmallint",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cbigint",
+            "ndv": 15,
+            "minValue": -1970551565,
+            "maxValue": 1086455747
+          },
+          {
+            "name": "cfloat",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "cdouble",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cstring2",
+            "ndv": 15
+          },
+          {
+            "name": "ctimestamp1",
+            "ndv": 0,
+            "minValue": -28810,
+            "maxValue": -28789
+          },
+          {
+            "name": "ctimestamp2",
+            "ndv": 0,
+            "minValue": -28812,
+            "maxValue": -28786
+          },
+          {
+            "name": "cboolean1",
+            "ndv": 2
+          },
+          {
+            "name": "cboolean2",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cint",
+          "cstring1"
+        ],
+        "exprs": [
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          }
+        ],
+        "rowCount": 20
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "small_alltypesorc_a_n1"
+        ],
+        "table:alias": "cd",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 4,
+        "rowType": {
+          "fields": [
+            {
+              "type": "TINYINT",
+              "nullable": true,
+              "name": "ctinyint"
+            },
+            {
+              "type": "SMALLINT",
+              "nullable": true,
+              "name": "csmallint"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cint"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cbigint"
+            },
+            {
+              "type": "FLOAT",
+              "nullable": true,
+              "name": "cfloat"
+            },
+            {
+              "type": "DOUBLE",
+              "nullable": true,
+              "name": "cdouble"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring1"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring2"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp1"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp2"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean1"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean2"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cint",
+            "ndv": 8,
+            "minValue": -738306196,
+            "maxValue": 626923679
+          },
+          {
+            "name": "ctinyint",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "csmallint",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cbigint",
+            "ndv": 15,
+            "minValue": -1970551565,
+            "maxValue": 1086455747
+          },
+          {
+            "name": "cfloat",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "cdouble",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cstring1",
+            "ndv": 8
+          },
+          {
+            "name": "cstring2",
+            "ndv": 15
+          },
+          {
+            "name": "ctimestamp1",
+            "ndv": 0,
+            "minValue": -28810,
+            "maxValue": -28789
+          },
+          {
+            "name": "ctimestamp2",
+            "ndv": 0,
+            "minValue": -28812,
+            "maxValue": -28786
+          },
+          {
+            "name": "cboolean1",
+            "ndv": 2
+          },
+          {
+            "name": "cboolean2",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IS NOT NULL",
+            "kind": "IS_NOT_NULL",
+            "syntax": "POSTFIX"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            }
+          ]
+        },
+        "rowCount": 10
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cint"
+        ],
+        "exprs": [
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 10
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 0,
+              "name": "$0"
+            }
+          ]
+        },
+        "joinType": "left",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "1",
+          "4"
+        ],
+        "rowCount": 42.5
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "small_alltypesorc_a_n1"
+        ],
+        "table:alias": "hd",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 6,
+        "rowType": {
+          "fields": [
+            {
+              "type": "TINYINT",
+              "nullable": true,
+              "name": "ctinyint"
+            },
+            {
+              "type": "SMALLINT",
+              "nullable": true,
+              "name": "csmallint"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cint"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cbigint"
+            },
+            {
+              "type": "FLOAT",
+              "nullable": true,
+              "name": "cfloat"
+            },
+            {
+              "type": "DOUBLE",
+              "nullable": true,
+              "name": "cdouble"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring1"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring2"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp1"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp2"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean1"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean2"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cstring1",
+            "ndv": 8
+          },
+          {
+            "name": "ctinyint",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "csmallint",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cint",
+            "ndv": 8,
+            "minValue": -738306196,
+            "maxValue": 626923679
+          },
+          {
+            "name": "cbigint",
+            "ndv": 15,
+            "minValue": -1970551565,
+            "maxValue": 1086455747
+          },
+          {
+            "name": "cfloat",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "cdouble",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cstring2",
+            "ndv": 15
+          },
+          {
+            "name": "ctimestamp1",
+            "ndv": 0,
+            "minValue": -28810,
+            "maxValue": -28789
+          },
+          {
+            "name": "ctimestamp2",
+            "ndv": 0,
+            "minValue": -28812,
+            "maxValue": -28786
+          },
+          {
+            "name": "cboolean1",
+            "ndv": 2
+          },
+          {
+            "name": "cboolean2",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IS NOT NULL",
+            "kind": "IS_NOT_NULL",
+            "syntax": "POSTFIX"
+          },
+          "operands": [
+            {
+              "input": 6,
+              "name": "$6"
+            }
+          ]
+        },
+        "rowCount": 10
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cstring1"
+        ],
+        "exprs": [
+          {
+            "input": 6,
+            "name": "$6"
+          }
+        ],
+        "rowCount": 10
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 3,
+              "name": "$3"
+            },
+            {
+              "input": 1,
+              "name": "$1"
+            }
+          ]
+        },
+        "joinType": "left",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "5",
+          "8"
+        ],
+        "rowCount": 90.3125
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "11",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "_c0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT COUNT(*) AS `_c0`\nFROM (SELECT `cint`, `cstring1`\nFROM `default`.`small_alltypesorc_a_n1`) AS `t`\nLEFT JOIN (SELECT `cint`\nFROM `default`.`small_alltypesorc_a_n1`\nWHERE `cint` IS NOT NULL) AS `t1` ON `t`.`cint` = `t1`.`cint`\nLEFT JOIN (SELECT `cstring1`\nFROM `default`.`small_alltypesorc_a_n1`\nWHERE `cstring1` IS NOT NULL) AS `t3` ON `t`.`cstring1` = `t3`.`cstring1`",
+  "PLAN VECTORIZATION": {
+    "enabled": true,
+    "enabledConditionsMet": [
+      "hive.vectorized.execution.enabled IS true"
+    ]
+  },
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-1": {
+      "ROOT STAGE": "TRUE"
+    },
+    "Stage-0": {
+      "DEPENDENT STAGES": "Stage-1"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-1": {
+      "Tez": {
+#### A masked pattern was here ####
+        "Edges:": {
+          "Map 1": [
+            {
+              "parent": "Map 3",
+              "type": "BROADCAST_EDGE"
+            },
+            {
+              "parent": "Reducer 4",
+              "type": "BROADCAST_EDGE"
+            }
+          ],
+          "Reducer 2": {
+            "parent": "Map 1",
+            "type": "CUSTOM_SIMPLE_EDGE"
+          },
+          "Reducer 4": {
+            "parent": "Map 3",
+            "type": "SIMPLE_EDGE"
+          }
+        },
+#### A masked pattern was here ####
+        "Vertices:": {
+          "Map 1": {
+            "Map Operator Tree:": [
+              {
+                "TableScan": {
+                  "alias:": "c",
+                  "columns:": [
+                    "cint",
+                    "cstring1"
+                  ],
+                  "database:": "default",
+                  "Statistics:": "Num rows: 20 Data size: 1034 Basic stats: COMPLETE Column stats: COMPLETE",
+                  "table:": "small_alltypesorc_a_n1",
+                  "TableScan Vectorization:": {
+                    "native:": "true",
+                    "vectorizationSchemaColumns:": "[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]"
+                  },
+                  "isTempTable:": "false",
+                  "OperatorId:": "TS_0",
+                  "children": {
+                    "Select Operator": {
+                      "expressions:": "cint (type: int), cstring1 (type: string)",
+                      "columnExprMap:": {
+                        "_col0": "cint",
+                        "_col1": "cstring1"
+                      },
+                      "outputColumnNames:": [
+                        "_col0",
+                        "_col1"
+                      ],
+                      "Select Vectorization:": {
+                        "className:": "VectorSelectOperator",
+                        "native:": "true",
+                        "projectedOutputColumnNums:": "[2, 6]"
+                      },
+                      "Statistics:": "Num rows: 20 Data size: 1034 Basic stats: COMPLETE Column stats: COMPLETE",
+                      "OperatorId:": "SEL_48",
+                      "children": {
+                        "Map Join Operator": {
+                          "columnExprMap:": {
+                            "_col1": "0:_col1"
+                          },
+                          "condition map:": [
+                            {
+                              "": "Left Outer Join 0 to 1"
+                            }
+                          ],
+                          "keys:": {
+                            "0": "_col0 (type: int)",
+                            "1": "_col0 (type: int)"
+                          },
+                          "Map Join Vectorization:": {
+                            "bigTableKeyColumns:": [
+                              "2:int"
+                            ],
+                            "bigTableRetainColumnNums:": "[6]",
+                            "bigTableValueColumns:": [
+                              "6:string"
+                            ],
+                            "className:": "VectorMapJoinOuterLongOperator",
+                            "native:": "true",
+                            "nativeConditionsMet:": [
+                              "hive.mapjoin.optimized.hashtable IS true",
+                              "hive.vectorized.execution.mapjoin.native.enabled IS true",
+                              "hive.execution.engine tez IN [tez] IS true",
+                              "One MapJoin Condition IS true",
+                              "No nullsafe IS true",
+                              "Small table vectorizes IS true",
+                              "Outer Join has keys IS true",
+                              "Optimized Table and Supports Key Types IS true"
+                            ],
+                            "projectedOutput:": [
+                              "6:string"
+                            ],
+                            "hashTableImplementationType:": "OPTIMIZED"
+                          },
+                          "outputColumnNames:": [
+                            "_col1"
+                          ],
+                          "input vertices:": {
+                            "1": "Map 3"
+                          },
+                          "Statistics:": "Num rows: 25 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE",
+                          "OperatorId:": "MAPJOIN_49",
+                          "children": {
+                            "Map Join Operator": {
+                              "condition map:": [
+                                {
+                                  "": "Left Outer Join 0 to 1"
+                                }
+                              ],
+                              "keys:": {
+                                "0": "_col1 (type: string)",
+                                "1": "_col0 (type: string)"
+                              },
+                              "Map Join Vectorization:": {
+                                "bigTableKeyColumns:": [
+                                  "6:string"
+                                ],
+                                "bigTableRetainColumnNums:": "[]",
+                                "className:": "VectorMapJoinOuterStringOperator",
+                                "native:": "true",
+                                "nativeConditionsMet:": [
+                                  "hive.mapjoin.optimized.hashtable IS true",
+                                  "hive.vectorized.execution.mapjoin.native.enabled IS true",
+                                  "hive.execution.engine tez IN [tez] IS true",
+                                  "One MapJoin Condition IS true",
+                                  "No nullsafe IS true",
+                                  "Small table vectorizes IS true",
+                                  "Outer Join has keys IS true",
+                                  "Optimized Table and Supports Key Types IS true"
+                                ],
+                                "hashTableImplementationType:": "OPTIMIZED"
+                              },
+                              "input vertices:": {
+                                "1": "Reducer 4"
+                              },
+                              "Statistics:": "Num rows: 31 Data size: 248 Basic stats: COMPLETE Column stats: COMPLETE",
+                              "OperatorId:": "MAPJOIN_50",
+                              "children": {
+                                "Group By Operator": {
+                                  "aggregations:": [
+                                    "count()"
+                                  ],
+                                  "Group By Vectorization:": {
+                                    "aggregators:": [
+                                      "VectorUDAFCountStar(*) -> bigint"
+                                    ],
+                                    "className:": "VectorGroupByOperator",
+                                    "groupByMode:": "HASH",
+                                    "native:": "false",
+                                    "vectorProcessingMode:": "HASH",
+                                    "projectedOutputColumnNums:": "[0]"
+                                  },
+                                  "minReductionHashAggr:": "0.96774197",
+                                  "mode:": "hash",
+                                  "outputColumnNames:": [
+                                    "_col0"
+                                  ],
+                                  "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                                  "OperatorId:": "GBY_51",
+                                  "children": {
+                                    "Reduce Output Operator": {
+                                      "columnExprMap:": {
+                                        "VALUE._col0": "_col0"
+                                      },
+                                      "null sort order:": "",
+                                      "sort order:": "",
+                                      "Reduce Sink Vectorization:": {
+                                        "className:": "VectorReduceSinkEmptyKeyOperator",
+                                        "native:": "true",
+                                        "nativeConditionsMet:": [
+                                          "hive.vectorized.execution.reducesink.new.enabled IS true",
+                                          "hive.execution.engine tez IN [tez] IS true",
+                                          "No PTF TopN IS true",
+                                          "No DISTINCT columns IS true",
+                                          "BinarySortableSerDe for keys IS true",
+                                          "LazyBinarySerDe for values IS true"
+                                        ],
+                                        "valueColumns:": [
+                                          "0:bigint"
+                                        ]
+                                      },
+                                      "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                                      "value expressions:": "_col0 (type: bigint)",
+                                      "OperatorId:": "RS_52",
+                                      "outputname:": "Reducer 2",
+                                      "outputOperator:": [
+                                        "GBY_53"
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "Execution mode:": "vectorized, llap",
+            "LLAP IO:": "all inputs",
+            "Map Vectorization:": {
+              "enabled:": "true",
+              "enabledConditionsMet:": [
+                "hive.vectorized.use.vectorized.input.format IS true"
+              ],
+              "inputFormatFeatureSupport:": "[DECIMAL_64]",
+              "featureSupportInUse:": "[DECIMAL_64]",
+              "inputFileFormats:": [
+                "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"
+              ],
+              "allNative:": "false",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "12",
+                "includeColumns:": "[2, 6]",
+                "dataColumns:": [
+                  "ctinyint:tinyint",
+                  "csmallint:smallint",
+                  "cint:int",
+                  "cbigint:bigint",
+                  "cfloat:float",
+                  "cdouble:double",
+                  "cstring1:string",
+                  "cstring2:string",
+                  "ctimestamp1:timestamp",
+                  "ctimestamp2:timestamp",
+                  "cboolean1:boolean",
+                  "cboolean2:boolean"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            }
+          },
+          "Map 3": {
+            "Map Operator Tree:": [
+              {
+                "TableScan": {
+                  "alias:": "cd",
+                  "columns:": [
+                    "cint",
+                    "cstring1"
+                  ],
+                  "database:": "default",
+                  "filterExpr:": "(cint is not null or cstring1 is not null) (type: boolean)",
+                  "Statistics:": "Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE",
+                  "table:": "small_alltypesorc_a_n1",
+                  "TableScan Vectorization:": {
+                    "native:": "true",
+                    "vectorizationSchemaColumns:": "[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]"
+                  },
+                  "isTempTable:": "false",
+                  "OperatorId:": "TS_2",
+                  "children": [
+                    {
+                      "Filter Operator": {
+                        "Filter Vectorization:": {
+                          "className:": "VectorFilterOperator",
+                          "native:": "true",
+                          "predicateExpression:": "SelectColumnIsNotNull(col 2:int)"
+                        },
+                        "predicate:": "cint is not null (type: boolean)",
+                        "Statistics:": "Num rows: 10 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE",
+                        "OperatorId:": "FIL_40",
+                        "children": {
+                          "Select Operator": {
+                            "expressions:": "cint (type: int)",
+                            "columnExprMap:": {
+                              "_col0": "cint"
+                            },
+                            "outputColumnNames:": [
+                              "_col0"
+                            ],
+                            "Select Vectorization:": {
+                              "className:": "VectorSelectOperator",
+                              "native:": "true",
+                              "projectedOutputColumnNums:": "[2]"
+                            },
+                            "Statistics:": "Num rows: 10 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE",
+                            "OperatorId:": "SEL_42",
+                            "children": {
+                              "Reduce Output Operator": {
+                                "columnExprMap:": {
+                                  "KEY.reducesinkkey0": "_col0"
+                                },
+                                "key expressions:": "_col0 (type: int)",
+                                "null sort order:": "z",
+                                "sort order:": "+",
+                                "Map-reduce partition columns:": "_col0 (type: int)",
+                                "Reduce Sink Vectorization:": {
+                                  "className:": "VectorReduceSinkLongOperator",
+                                  "keyColumns:": [
+                                    "2:int"
+                                  ],
+                                  "native:": "true",
+                                  "nativeConditionsMet:": [
+                                    "hive.vectorized.execution.reducesink.new.enabled IS true",
+                                    "hive.execution.engine tez IN [tez] IS true",
+                                    "No PTF TopN IS true",
+                                    "No DISTINCT columns IS true",
+                                    "BinarySortableSerDe for keys IS true",
+                                    "LazyBinarySerDe for values IS true"
+                                  ]
+                                },
+                                "Statistics:": "Num rows: 10 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE",
+                                "OperatorId:": "RS_44",
+                                "outputname:": "Map 1",
+                                "outputOperator:": [
+                                  "TS_0"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Filter Operator": {
+                        "Filter Vectorization:": {
+                          "className:": "VectorFilterOperator",
+                          "native:": "true",
+                          "predicateExpression:": "SelectColumnIsNotNull(col 6:string)"
+                        },
+                        "predicate:": "cstring1 is not null (type: boolean)",
+                        "Statistics:": "Num rows: 10 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE",
+                        "OperatorId:": "FIL_41",
+                        "children": {
+                          "Select Operator": {
+                            "expressions:": "cstring1 (type: string)",
+                            "columnExprMap:": {
+                              "_col0": "cstring1"
+                            },
+                            "outputColumnNames:": [
+                              "_col0"
+                            ],
+                            "Select Vectorization:": {
+                              "className:": "VectorSelectOperator",
+                              "native:": "true",
+                              "projectedOutputColumnNums:": "[6]"
+                            },
+                            "Statistics:": "Num rows: 10 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE",
+                            "OperatorId:": "SEL_43",
+                            "children": {
+                              "Reduce Output Operator": {
+                                "columnExprMap:": {
+                                  "KEY.reducesinkkey0": "_col0"
+                                },
+                                "key expressions:": "_col0 (type: string)",
+                                "null sort order:": "z",
+                                "sort order:": "+",
+                                "Map-reduce partition columns:": "_col0 (type: string)",
+                                "Reduce Sink Vectorization:": {
+                                  "className:": "VectorReduceSinkStringOperator",
+                                  "keyColumns:": [
+                                    "6:string"
+                                  ],
+                                  "native:": "true",
+                                  "nativeConditionsMet:": [
+                                    "hive.vectorized.execution.reducesink.new.enabled IS true",
+                                    "hive.execution.engine tez IN [tez] IS true",
+                                    "No PTF TopN IS true",
+                                    "No DISTINCT columns IS true",
+                                    "BinarySortableSerDe for keys IS true",
+                                    "LazyBinarySerDe for values IS true"
+                                  ]
+                                },
+                                "Statistics:": "Num rows: 10 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE",
+                                "OperatorId:": "RS_45",
+                                "outputname:": "Reducer 4",
+                                "outputOperator:": [
+                                  "SEL_46"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "Execution mode:": "vectorized, llap",
+            "LLAP IO:": "all inputs",
+            "Map Vectorization:": {
+              "enabled:": "true",
+              "enabledConditionsMet:": [
+                "hive.vectorized.use.vectorized.input.format IS true"
+              ],
+              "inputFormatFeatureSupport:": "[DECIMAL_64]",
+              "featureSupportInUse:": "[DECIMAL_64]",
+              "inputFileFormats:": [
+                "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"
+              ],
+              "allNative:": "true",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "12",
+                "includeColumns:": "[2, 6]",
+                "dataColumns:": [
+                  "ctinyint:tinyint",
+                  "csmallint:smallint",
+                  "cint:int",
+                  "cbigint:bigint",
+                  "cfloat:float",
+                  "cdouble:double",
+                  "cstring1:string",
+                  "cstring2:string",
+                  "ctimestamp1:timestamp",
+                  "ctimestamp2:timestamp",
+                  "cboolean1:boolean",
+                  "cboolean2:boolean"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            }
+          },
+          "Reducer 2": {
+            "Execution mode:": "vectorized, llap",
+            "Reduce Vectorization:": {
+              "enabled:": "true",
+              "enableConditionsMet:": [
+                "hive.vectorized.execution.reduce.enabled IS true",
+                "hive.execution.engine tez IN [tez] IS true"
+              ],
+              "reduceColumnNullOrder:": "",
+              "reduceColumnSortOrder:": "",
+              "allNative:": "false",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "1",
+                "dataColumns:": [
+                  "VALUE._col0:bigint"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            },
+            "Reduce Operator Tree:": {
+              "Group By Operator": {
+                "aggregations:": [
+                  "count(VALUE._col0)"
+                ],
+                "Group By Vectorization:": {
+                  "aggregators:": [
+                    "VectorUDAFCountMerge(col 0:bigint) -> bigint"
+                  ],
+                  "className:": "VectorGroupByOperator",
+                  "groupByMode:": "MERGEPARTIAL",
+                  "native:": "false",
+                  "vectorProcessingMode:": "GLOBAL",
+                  "projectedOutputColumnNums:": "[0]"
+                },
+                "mode:": "mergepartial",
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                "OperatorId:": "GBY_53",
+                "children": {
+                  "File Output Operator": {
+                    "compressed:": "false",
+                    "File Sink Vectorization:": {
+                      "className:": "VectorFileSinkOperator",
+                      "native:": "false"
+                    },
+                    "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                    "table:": {
+                      "input format:": "org.apache.hadoop.mapred.SequenceFileInputFormat",
+                      "output format:": "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat",
+                      "serde:": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+                    },
+                    "OperatorId:": "FS_54"
+                  }
+                }
+              }
+            }
+          },
+          "Reducer 4": {
+            "Execution mode:": "vectorized, llap",
+            "Reduce Vectorization:": {
+              "enabled:": "true",
+              "enableConditionsMet:": [
+                "hive.vectorized.execution.reduce.enabled IS true",
+                "hive.execution.engine tez IN [tez] IS true"
+              ],
+              "reduceColumnNullOrder:": "z",
+              "reduceColumnSortOrder:": "+",
+              "allNative:": "true",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "1",
+                "dataColumns:": [
+                  "KEY.reducesinkkey0:string"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            },
+            "Reduce Operator Tree:": {
+              "Select Operator": {
+                "expressions:": "KEY.reducesinkkey0 (type: string)",
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "Select Vectorization:": {
+                  "className:": "VectorSelectOperator",
+                  "native:": "true",
+                  "projectedOutputColumnNums:": "[0]"
+                },
+                "OperatorId:": "SEL_46",
+                "children": {
+                  "Reduce Output Operator": {
+                    "columnExprMap:": {
+                      "KEY.reducesinkkey0": "_col0"
+                    },
+                    "key expressions:": "_col0 (type: string)",
+                    "null sort order:": "z",
+                    "sort order:": "+",
+                    "Map-reduce partition columns:": "_col0 (type: string)",
+                    "Reduce Sink Vectorization:": {
+                      "className:": "VectorReduceSinkStringOperator",
+                      "keyColumns:": [
+                        "0:string"
+                      ],
+                      "native:": "true",
+                      "nativeConditionsMet:": [
+                        "hive.vectorized.execution.reducesink.new.enabled IS true",
+                        "hive.execution.engine tez IN [tez] IS true",
+                        "No PTF TopN IS true",
+                        "No DISTINCT columns IS true",
+                        "BinarySortableSerDe for keys IS true",
+                        "LazyBinarySerDe for values IS true"
+                      ]
+                    },
+                    "Statistics:": "Num rows: 10 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE",
+                    "OperatorId:": "RS_47",
+                    "outputname:": "Map 1",
+                    "outputOperator:": [
+                      "TS_0"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "ListSink": {
+            "OperatorId:": "LIST_SINK_55"
+          }
+        }
+      }
+    }
+  }
+}
 PREHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a_n1 c
 left outer join small_alltypesorc_a_n1 cd
@@ -291,6 +1617,1332 @@ left outer join small_alltypesorc_a_n1 hd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "small_alltypesorc_a_n1"
+        ],
+        "table:alias": "c",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 14.75,
+        "rowType": {
+          "fields": [
+            {
+              "type": "TINYINT",
+              "nullable": true,
+              "name": "ctinyint"
+            },
+            {
+              "type": "SMALLINT",
+              "nullable": true,
+              "name": "csmallint"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cint"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cbigint"
+            },
+            {
+              "type": "FLOAT",
+              "nullable": true,
+              "name": "cfloat"
+            },
+            {
+              "type": "DOUBLE",
+              "nullable": true,
+              "name": "cdouble"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring1"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring2"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp1"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp2"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean1"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean2"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cstring1",
+            "ndv": 8
+          },
+          {
+            "name": "cstring2",
+            "ndv": 15
+          },
+          {
+            "name": "ctinyint",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "csmallint",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cint",
+            "ndv": 8,
+            "minValue": -738306196,
+            "maxValue": 626923679
+          },
+          {
+            "name": "cbigint",
+            "ndv": 15,
+            "minValue": -1970551565,
+            "maxValue": 1086455747
+          },
+          {
+            "name": "cfloat",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "cdouble",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "ctimestamp1",
+            "ndv": 0,
+            "minValue": -28810,
+            "maxValue": -28789
+          },
+          {
+            "name": "ctimestamp2",
+            "ndv": 0,
+            "minValue": -28812,
+            "maxValue": -28786
+          },
+          {
+            "name": "cboolean1",
+            "ndv": 2
+          },
+          {
+            "name": "cboolean2",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cstring1",
+          "cstring2"
+        ],
+        "exprs": [
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          }
+        ],
+        "rowCount": 20
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "small_alltypesorc_a_n1"
+        ],
+        "table:alias": "cd",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 8.75,
+        "rowType": {
+          "fields": [
+            {
+              "type": "TINYINT",
+              "nullable": true,
+              "name": "ctinyint"
+            },
+            {
+              "type": "SMALLINT",
+              "nullable": true,
+              "name": "csmallint"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cint"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cbigint"
+            },
+            {
+              "type": "FLOAT",
+              "nullable": true,
+              "name": "cfloat"
+            },
+            {
+              "type": "DOUBLE",
+              "nullable": true,
+              "name": "cdouble"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring1"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring2"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp1"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp2"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean1"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean2"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cstring2",
+            "ndv": 15
+          },
+          {
+            "name": "ctinyint",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "csmallint",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cint",
+            "ndv": 8,
+            "minValue": -738306196,
+            "maxValue": 626923679
+          },
+          {
+            "name": "cbigint",
+            "ndv": 15,
+            "minValue": -1970551565,
+            "maxValue": 1086455747
+          },
+          {
+            "name": "cfloat",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "cdouble",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cstring1",
+            "ndv": 8
+          },
+          {
+            "name": "ctimestamp1",
+            "ndv": 0,
+            "minValue": -28810,
+            "maxValue": -28789
+          },
+          {
+            "name": "ctimestamp2",
+            "ndv": 0,
+            "minValue": -28812,
+            "maxValue": -28786
+          },
+          {
+            "name": "cboolean1",
+            "ndv": 2
+          },
+          {
+            "name": "cboolean2",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IS NOT NULL",
+            "kind": "IS_NOT_NULL",
+            "syntax": "POSTFIX"
+          },
+          "operands": [
+            {
+              "input": 7,
+              "name": "$7"
+            }
+          ]
+        },
+        "rowCount": 15
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cstring2"
+        ],
+        "exprs": [
+          {
+            "input": 7,
+            "name": "$7"
+          }
+        ],
+        "rowCount": 15
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 1,
+              "name": "$1"
+            }
+          ]
+        },
+        "joinType": "left",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "1",
+          "4"
+        ],
+        "rowCount": 38.66666666666667
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "small_alltypesorc_a_n1"
+        ],
+        "table:alias": "hd",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 6,
+        "rowType": {
+          "fields": [
+            {
+              "type": "TINYINT",
+              "nullable": true,
+              "name": "ctinyint"
+            },
+            {
+              "type": "SMALLINT",
+              "nullable": true,
+              "name": "csmallint"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cint"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cbigint"
+            },
+            {
+              "type": "FLOAT",
+              "nullable": true,
+              "name": "cfloat"
+            },
+            {
+              "type": "DOUBLE",
+              "nullable": true,
+              "name": "cdouble"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring1"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring2"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp1"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp2"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean1"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean2"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cstring1",
+            "ndv": 8
+          },
+          {
+            "name": "ctinyint",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "csmallint",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cint",
+            "ndv": 8,
+            "minValue": -738306196,
+            "maxValue": 626923679
+          },
+          {
+            "name": "cbigint",
+            "ndv": 15,
+            "minValue": -1970551565,
+            "maxValue": 1086455747
+          },
+          {
+            "name": "cfloat",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "cdouble",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cstring2",
+            "ndv": 15
+          },
+          {
+            "name": "ctimestamp1",
+            "ndv": 0,
+            "minValue": -28810,
+            "maxValue": -28789
+          },
+          {
+            "name": "ctimestamp2",
+            "ndv": 0,
+            "minValue": -28812,
+            "maxValue": -28786
+          },
+          {
+            "name": "cboolean1",
+            "ndv": 2
+          },
+          {
+            "name": "cboolean2",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IS NOT NULL",
+            "kind": "IS_NOT_NULL",
+            "syntax": "POSTFIX"
+          },
+          "operands": [
+            {
+              "input": 6,
+              "name": "$6"
+            }
+          ]
+        },
+        "rowCount": 10
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cstring1"
+        ],
+        "exprs": [
+          {
+            "input": 6,
+            "name": "$6"
+          }
+        ],
+        "rowCount": 10
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 3,
+              "name": "$3"
+            },
+            {
+              "input": 0,
+              "name": "$0"
+            }
+          ]
+        },
+        "joinType": "left",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "5",
+          "8"
+        ],
+        "rowCount": 82.16666666666669
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "11",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "_c0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT COUNT(*) AS `_c0`\nFROM (SELECT `cstring1`, `cstring2`\nFROM `default`.`small_alltypesorc_a_n1`) AS `t`\nLEFT JOIN (SELECT `cstring2`\nFROM `default`.`small_alltypesorc_a_n1`\nWHERE `cstring2` IS NOT NULL) AS `t1` ON `t`.`cstring2` = `t1`.`cstring2`\nLEFT JOIN (SELECT `cstring1`\nFROM `default`.`small_alltypesorc_a_n1`\nWHERE `cstring1` IS NOT NULL) AS `t3` ON `t`.`cstring1` = `t3`.`cstring1`",
+  "PLAN VECTORIZATION": {
+    "enabled": true,
+    "enabledConditionsMet": [
+      "hive.vectorized.execution.enabled IS true"
+    ]
+  },
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-1": {
+      "ROOT STAGE": "TRUE"
+    },
+    "Stage-0": {
+      "DEPENDENT STAGES": "Stage-1"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-1": {
+      "Tez": {
+#### A masked pattern was here ####
+        "Edges:": {
+          "Map 1": [
+            {
+              "parent": "Map 3",
+              "type": "BROADCAST_EDGE"
+            },
+            {
+              "parent": "Reducer 4",
+              "type": "BROADCAST_EDGE"
+            }
+          ],
+          "Reducer 2": {
+            "parent": "Map 1",
+            "type": "CUSTOM_SIMPLE_EDGE"
+          },
+          "Reducer 4": {
+            "parent": "Map 3",
+            "type": "SIMPLE_EDGE"
+          }
+        },
+#### A masked pattern was here ####
+        "Vertices:": {
+          "Map 1": {
+            "Map Operator Tree:": [
+              {
+                "TableScan": {
+                  "alias:": "c",
+                  "columns:": [
+                    "cstring1",
+                    "cstring2"
+                  ],
+                  "database:": "default",
+                  "Statistics:": "Num rows: 20 Data size: 2478 Basic stats: COMPLETE Column stats: COMPLETE",
+                  "table:": "small_alltypesorc_a_n1",
+                  "TableScan Vectorization:": {
+                    "native:": "true",
+                    "vectorizationSchemaColumns:": "[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]"
+                  },
+                  "isTempTable:": "false",
+                  "OperatorId:": "TS_0",
+                  "children": {
+                    "Select Operator": {
+                      "expressions:": "cstring1 (type: string), cstring2 (type: string)",
+                      "columnExprMap:": {
+                        "_col0": "cstring1",
+                        "_col1": "cstring2"
+                      },
+                      "outputColumnNames:": [
+                        "_col0",
+                        "_col1"
+                      ],
+                      "Select Vectorization:": {
+                        "className:": "VectorSelectOperator",
+                        "native:": "true",
+                        "projectedOutputColumnNums:": "[6, 7]"
+                      },
+                      "Statistics:": "Num rows: 20 Data size: 2478 Basic stats: COMPLETE Column stats: COMPLETE",
+                      "OperatorId:": "SEL_48",
+                      "children": {
+                        "Map Join Operator": {
+                          "columnExprMap:": {
+                            "_col0": "0:_col0"
+                          },
+                          "condition map:": [
+                            {
+                              "": "Left Outer Join 0 to 1"
+                            }
+                          ],
+                          "keys:": {
+                            "0": "_col1 (type: string)",
+                            "1": "_col0 (type: string)"
+                          },
+                          "Map Join Vectorization:": {
+                            "bigTableKeyColumns:": [
+                              "7:string"
+                            ],
+                            "bigTableRetainColumnNums:": "[6]",
+                            "bigTableValueColumns:": [
+                              "6:string"
+                            ],
+                            "className:": "VectorMapJoinOuterStringOperator",
+                            "native:": "true",
+                            "nativeConditionsMet:": [
+                              "hive.mapjoin.optimized.hashtable IS true",
+                              "hive.vectorized.execution.mapjoin.native.enabled IS true",
+                              "hive.execution.engine tez IN [tez] IS true",
+                              "One MapJoin Condition IS true",
+                              "No nullsafe IS true",
+                              "Small table vectorizes IS true",
+                              "Outer Join has keys IS true",
+                              "Optimized Table and Supports Key Types IS true"
+                            ],
+                            "projectedOutput:": [
+                              "6:string"
+                            ],
+                            "hashTableImplementationType:": "OPTIMIZED"
+                          },
+                          "outputColumnNames:": [
+                            "_col0"
+                          ],
+                          "input vertices:": {
+                            "1": "Map 3"
+                          },
+                          "Statistics:": "Num rows: 20 Data size: 990 Basic stats: COMPLETE Column stats: COMPLETE",
+                          "OperatorId:": "MAPJOIN_49",
+                          "children": {
+                            "Map Join Operator": {
+                              "condition map:": [
+                                {
+                                  "": "Left Outer Join 0 to 1"
+                                }
+                              ],
+                              "keys:": {
+                                "0": "_col0 (type: string)",
+                                "1": "_col0 (type: string)"
+                              },
+                              "Map Join Vectorization:": {
+                                "bigTableKeyColumns:": [
+                                  "6:string"
+                                ],
+                                "bigTableRetainColumnNums:": "[]",
+                                "className:": "VectorMapJoinOuterStringOperator",
+                                "native:": "true",
+                                "nativeConditionsMet:": [
+                                  "hive.mapjoin.optimized.hashtable IS true",
+                                  "hive.vectorized.execution.mapjoin.native.enabled IS true",
+                                  "hive.execution.engine tez IN [tez] IS true",
+                                  "One MapJoin Condition IS true",
+                                  "No nullsafe IS true",
+                                  "Small table vectorizes IS true",
+                                  "Outer Join has keys IS true",
+                                  "Optimized Table and Supports Key Types IS true"
+                                ],
+                                "hashTableImplementationType:": "OPTIMIZED"
+                              },
+                              "input vertices:": {
+                                "1": "Reducer 4"
+                              },
+                              "Statistics:": "Num rows: 25 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE",
+                              "OperatorId:": "MAPJOIN_50",
+                              "children": {
+                                "Group By Operator": {
+                                  "aggregations:": [
+                                    "count()"
+                                  ],
+                                  "Group By Vectorization:": {
+                                    "aggregators:": [
+                                      "VectorUDAFCountStar(*) -> bigint"
+                                    ],
+                                    "className:": "VectorGroupByOperator",
+                                    "groupByMode:": "HASH",
+                                    "native:": "false",
+                                    "vectorProcessingMode:": "HASH",
+                                    "projectedOutputColumnNums:": "[0]"
+                                  },
+                                  "minReductionHashAggr:": "0.96",
+                                  "mode:": "hash",
+                                  "outputColumnNames:": [
+                                    "_col0"
+                                  ],
+                                  "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                                  "OperatorId:": "GBY_51",
+                                  "children": {
+                                    "Reduce Output Operator": {
+                                      "columnExprMap:": {
+                                        "VALUE._col0": "_col0"
+                                      },
+                                      "null sort order:": "",
+                                      "sort order:": "",
+                                      "Reduce Sink Vectorization:": {
+                                        "className:": "VectorReduceSinkEmptyKeyOperator",
+                                        "native:": "true",
+                                        "nativeConditionsMet:": [
+                                          "hive.vectorized.execution.reducesink.new.enabled IS true",
+                                          "hive.execution.engine tez IN [tez] IS true",
+                                          "No PTF TopN IS true",
+                                          "No DISTINCT columns IS true",
+                                          "BinarySortableSerDe for keys IS true",
+                                          "LazyBinarySerDe for values IS true"
+                                        ],
+                                        "valueColumns:": [
+                                          "0:bigint"
+                                        ]
+                                      },
+                                      "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                                      "value expressions:": "_col0 (type: bigint)",
+                                      "OperatorId:": "RS_52",
+                                      "outputname:": "Reducer 2",
+                                      "outputOperator:": [
+                                        "GBY_53"
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "Execution mode:": "vectorized, llap",
+            "LLAP IO:": "all inputs",
+            "Map Vectorization:": {
+              "enabled:": "true",
+              "enabledConditionsMet:": [
+                "hive.vectorized.use.vectorized.input.format IS true"
+              ],
+              "inputFormatFeatureSupport:": "[DECIMAL_64]",
+              "featureSupportInUse:": "[DECIMAL_64]",
+              "inputFileFormats:": [
+                "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"
+              ],
+              "allNative:": "false",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "12",
+                "includeColumns:": "[6, 7]",
+                "dataColumns:": [
+                  "ctinyint:tinyint",
+                  "csmallint:smallint",
+                  "cint:int",
+                  "cbigint:bigint",
+                  "cfloat:float",
+                  "cdouble:double",
+                  "cstring1:string",
+                  "cstring2:string",
+                  "ctimestamp1:timestamp",
+                  "ctimestamp2:timestamp",
+                  "cboolean1:boolean",
+                  "cboolean2:boolean"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            }
+          },
+          "Map 3": {
+            "Map Operator Tree:": [
+              {
+                "TableScan": {
+                  "alias:": "cd",
+                  "columns:": [
+                    "cstring2",
+                    "cstring1"
+                  ],
+                  "database:": "default",
+                  "filterExpr:": "(cstring2 is not null or cstring1 is not null) (type: boolean)",
+                  "Statistics:": "Num rows: 20 Data size: 1488 Basic stats: COMPLETE Column stats: COMPLETE",
+                  "table:": "small_alltypesorc_a_n1",
+                  "TableScan Vectorization:": {
+                    "native:": "true",
+                    "vectorizationSchemaColumns:": "[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]"
+                  },
+                  "isTempTable:": "false",
+                  "OperatorId:": "TS_2",
+                  "children": [
+                    {
+                      "Filter Operator": {
+                        "Filter Vectorization:": {
+                          "className:": "VectorFilterOperator",
+                          "native:": "true",
+                          "predicateExpression:": "SelectColumnIsNotNull(col 7:string)"
+                        },
+                        "predicate:": "cstring2 is not null (type: boolean)",
+                        "Statistics:": "Num rows: 15 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE",
+                        "OperatorId:": "FIL_40",
+                        "children": {
+                          "Select Operator": {
+                            "expressions:": "cstring2 (type: string)",
+                            "columnExprMap:": {
+                              "_col0": "cstring2"
+                            },
+                            "outputColumnNames:": [
+                              "_col0"
+                            ],
+                            "Select Vectorization:": {
+                              "className:": "VectorSelectOperator",
+                              "native:": "true",
+                              "projectedOutputColumnNums:": "[7]"
+                            },
+                            "Statistics:": "Num rows: 15 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE",
+                            "OperatorId:": "SEL_42",
+                            "children": {
+                              "Reduce Output Operator": {
+                                "columnExprMap:": {
+                                  "KEY.reducesinkkey0": "_col0"
+                                },
+                                "key expressions:": "_col0 (type: string)",
+                                "null sort order:": "z",
+                                "sort order:": "+",
+                                "Map-reduce partition columns:": "_col0 (type: string)",
+                                "Reduce Sink Vectorization:": {
+                                  "className:": "VectorReduceSinkStringOperator",
+                                  "keyColumns:": [
+                                    "7:string"
+                                  ],
+                                  "native:": "true",
+                                  "nativeConditionsMet:": [
+                                    "hive.vectorized.execution.reducesink.new.enabled IS true",
+                                    "hive.execution.engine tez IN [tez] IS true",
+                                    "No PTF TopN IS true",
+                                    "No DISTINCT columns IS true",
+                                    "BinarySortableSerDe for keys IS true",
+                                    "LazyBinarySerDe for values IS true"
+                                  ]
+                                },
+                                "Statistics:": "Num rows: 15 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE",
+                                "OperatorId:": "RS_44",
+                                "outputname:": "Map 1",
+                                "outputOperator:": [
+                                  "TS_0"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Filter Operator": {
+                        "Filter Vectorization:": {
+                          "className:": "VectorFilterOperator",
+                          "native:": "true",
+                          "predicateExpression:": "SelectColumnIsNotNull(col 6:string)"
+                        },
+                        "predicate:": "cstring1 is not null (type: boolean)",
+                        "Statistics:": "Num rows: 10 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE",
+                        "OperatorId:": "FIL_41",
+                        "children": {
+                          "Select Operator": {
+                            "expressions:": "cstring1 (type: string)",
+                            "columnExprMap:": {
+                              "_col0": "cstring1"
+                            },
+                            "outputColumnNames:": [
+                              "_col0"
+                            ],
+                            "Select Vectorization:": {
+                              "className:": "VectorSelectOperator",
+                              "native:": "true",
+                              "projectedOutputColumnNums:": "[6]"
+                            },
+                            "Statistics:": "Num rows: 10 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE",
+                            "OperatorId:": "SEL_43",
+                            "children": {
+                              "Reduce Output Operator": {
+                                "columnExprMap:": {
+                                  "KEY.reducesinkkey0": "_col0"
+                                },
+                                "key expressions:": "_col0 (type: string)",
+                                "null sort order:": "z",
+                                "sort order:": "+",
+                                "Map-reduce partition columns:": "_col0 (type: string)",
+                                "Reduce Sink Vectorization:": {
+                                  "className:": "VectorReduceSinkStringOperator",
+                                  "keyColumns:": [
+                                    "6:string"
+                                  ],
+                                  "native:": "true",
+                                  "nativeConditionsMet:": [
+                                    "hive.vectorized.execution.reducesink.new.enabled IS true",
+                                    "hive.execution.engine tez IN [tez] IS true",
+                                    "No PTF TopN IS true",
+                                    "No DISTINCT columns IS true",
+                                    "BinarySortableSerDe for keys IS true",
+                                    "LazyBinarySerDe for values IS true"
+                                  ]
+                                },
+                                "Statistics:": "Num rows: 10 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE",
+                                "OperatorId:": "RS_45",
+                                "outputname:": "Reducer 4",
+                                "outputOperator:": [
+                                  "SEL_46"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "Execution mode:": "vectorized, llap",
+            "LLAP IO:": "all inputs",
+            "Map Vectorization:": {
+              "enabled:": "true",
+              "enabledConditionsMet:": [
+                "hive.vectorized.use.vectorized.input.format IS true"
+              ],
+              "inputFormatFeatureSupport:": "[DECIMAL_64]",
+              "featureSupportInUse:": "[DECIMAL_64]",
+              "inputFileFormats:": [
+                "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"
+              ],
+              "allNative:": "true",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "12",
+                "includeColumns:": "[6, 7]",
+                "dataColumns:": [
+                  "ctinyint:tinyint",
+                  "csmallint:smallint",
+                  "cint:int",
+                  "cbigint:bigint",
+                  "cfloat:float",
+                  "cdouble:double",
+                  "cstring1:string",
+                  "cstring2:string",
+                  "ctimestamp1:timestamp",
+                  "ctimestamp2:timestamp",
+                  "cboolean1:boolean",
+                  "cboolean2:boolean"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            }
+          },
+          "Reducer 2": {
+            "Execution mode:": "vectorized, llap",
+            "Reduce Vectorization:": {
+              "enabled:": "true",
+              "enableConditionsMet:": [
+                "hive.vectorized.execution.reduce.enabled IS true",
+                "hive.execution.engine tez IN [tez] IS true"
+              ],
+              "reduceColumnNullOrder:": "",
+              "reduceColumnSortOrder:": "",
+              "allNative:": "false",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "1",
+                "dataColumns:": [
+                  "VALUE._col0:bigint"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            },
+            "Reduce Operator Tree:": {
+              "Group By Operator": {
+                "aggregations:": [
+                  "count(VALUE._col0)"
+                ],
+                "Group By Vectorization:": {
+                  "aggregators:": [
+                    "VectorUDAFCountMerge(col 0:bigint) -> bigint"
+                  ],
+                  "className:": "VectorGroupByOperator",
+                  "groupByMode:": "MERGEPARTIAL",
+                  "native:": "false",
+                  "vectorProcessingMode:": "GLOBAL",
+                  "projectedOutputColumnNums:": "[0]"
+                },
+                "mode:": "mergepartial",
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                "OperatorId:": "GBY_53",
+                "children": {
+                  "File Output Operator": {
+                    "compressed:": "false",
+                    "File Sink Vectorization:": {
+                      "className:": "VectorFileSinkOperator",
+                      "native:": "false"
+                    },
+                    "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                    "table:": {
+                      "input format:": "org.apache.hadoop.mapred.SequenceFileInputFormat",
+                      "output format:": "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat",
+                      "serde:": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+                    },
+                    "OperatorId:": "FS_54"
+                  }
+                }
+              }
+            }
+          },
+          "Reducer 4": {
+            "Execution mode:": "vectorized, llap",
+            "Reduce Vectorization:": {
+              "enabled:": "true",
+              "enableConditionsMet:": [
+                "hive.vectorized.execution.reduce.enabled IS true",
+                "hive.execution.engine tez IN [tez] IS true"
+              ],
+              "reduceColumnNullOrder:": "z",
+              "reduceColumnSortOrder:": "+",
+              "allNative:": "true",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "1",
+                "dataColumns:": [
+                  "KEY.reducesinkkey0:string"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            },
+            "Reduce Operator Tree:": {
+              "Select Operator": {
+                "expressions:": "KEY.reducesinkkey0 (type: string)",
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "Select Vectorization:": {
+                  "className:": "VectorSelectOperator",
+                  "native:": "true",
+                  "projectedOutputColumnNums:": "[0]"
+                },
+                "OperatorId:": "SEL_46",
+                "children": {
+                  "Reduce Output Operator": {
+                    "columnExprMap:": {
+                      "KEY.reducesinkkey0": "_col0"
+                    },
+                    "key expressions:": "_col0 (type: string)",
+                    "null sort order:": "z",
+                    "sort order:": "+",
+                    "Map-reduce partition columns:": "_col0 (type: string)",
+                    "Reduce Sink Vectorization:": {
+                      "className:": "VectorReduceSinkStringOperator",
+                      "keyColumns:": [
+                        "0:string"
+                      ],
+                      "native:": "true",
+                      "nativeConditionsMet:": [
+                        "hive.vectorized.execution.reducesink.new.enabled IS true",
+                        "hive.execution.engine tez IN [tez] IS true",
+                        "No PTF TopN IS true",
+                        "No DISTINCT columns IS true",
+                        "BinarySortableSerDe for keys IS true",
+                        "LazyBinarySerDe for values IS true"
+                      ]
+                    },
+                    "Statistics:": "Num rows: 10 Data size: 540 Basic stats: COMPLETE Column stats: COMPLETE",
+                    "OperatorId:": "RS_47",
+                    "outputname:": "Map 1",
+                    "outputOperator:": [
+                      "TS_0"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "ListSink": {
+            "OperatorId:": "LIST_SINK_55"
+          }
+        }
+      }
+    }
+  }
+}
 PREHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a_n1 c
 left outer join small_alltypesorc_a_n1 cd
@@ -334,6 +2986,1474 @@ left outer join small_alltypesorc_a_n1 hd
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a_n1
 #### A masked pattern was here ####
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "small_alltypesorc_a_n1"
+        ],
+        "table:alias": "c",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 26.75,
+        "rowType": {
+          "fields": [
+            {
+              "type": "TINYINT",
+              "nullable": true,
+              "name": "ctinyint"
+            },
+            {
+              "type": "SMALLINT",
+              "nullable": true,
+              "name": "csmallint"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cint"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cbigint"
+            },
+            {
+              "type": "FLOAT",
+              "nullable": true,
+              "name": "cfloat"
+            },
+            {
+              "type": "DOUBLE",
+              "nullable": true,
+              "name": "cdouble"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring1"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring2"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp1"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp2"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean1"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean2"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cint",
+            "ndv": 8,
+            "minValue": -738306196,
+            "maxValue": 626923679
+          },
+          {
+            "name": "cbigint",
+            "ndv": 15,
+            "minValue": -1970551565,
+            "maxValue": 1086455747
+          },
+          {
+            "name": "cstring1",
+            "ndv": 8
+          },
+          {
+            "name": "cstring2",
+            "ndv": 15
+          },
+          {
+            "name": "ctinyint",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "csmallint",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cfloat",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "cdouble",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "ctimestamp1",
+            "ndv": 0,
+            "minValue": -28810,
+            "maxValue": -28789
+          },
+          {
+            "name": "ctimestamp2",
+            "ndv": 0,
+            "minValue": -28812,
+            "maxValue": -28786
+          },
+          {
+            "name": "cboolean1",
+            "ndv": 2
+          },
+          {
+            "name": "cboolean2",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cint",
+          "cbigint",
+          "cstring1",
+          "cstring2"
+        ],
+        "exprs": [
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          }
+        ],
+        "rowCount": 20
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "small_alltypesorc_a_n1"
+        ],
+        "table:alias": "cd",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 16.75,
+        "rowType": {
+          "fields": [
+            {
+              "type": "TINYINT",
+              "nullable": true,
+              "name": "ctinyint"
+            },
+            {
+              "type": "SMALLINT",
+              "nullable": true,
+              "name": "csmallint"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cint"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cbigint"
+            },
+            {
+              "type": "FLOAT",
+              "nullable": true,
+              "name": "cfloat"
+            },
+            {
+              "type": "DOUBLE",
+              "nullable": true,
+              "name": "cdouble"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring1"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring2"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp1"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp2"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean1"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean2"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cbigint",
+            "ndv": 15,
+            "minValue": -1970551565,
+            "maxValue": 1086455747
+          },
+          {
+            "name": "cstring2",
+            "ndv": 15
+          },
+          {
+            "name": "ctinyint",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "csmallint",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cint",
+            "ndv": 8,
+            "minValue": -738306196,
+            "maxValue": 626923679
+          },
+          {
+            "name": "cfloat",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "cdouble",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cstring1",
+            "ndv": 8
+          },
+          {
+            "name": "ctimestamp1",
+            "ndv": 0,
+            "minValue": -28810,
+            "maxValue": -28789
+          },
+          {
+            "name": "ctimestamp2",
+            "ndv": 0,
+            "minValue": -28812,
+            "maxValue": -28786
+          },
+          {
+            "name": "cboolean1",
+            "ndv": 2
+          },
+          {
+            "name": "cboolean2",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 3,
+                  "name": "$3"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 7,
+                  "name": "$7"
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 11.25
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cbigint",
+          "cstring2"
+        ],
+        "exprs": [
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          }
+        ],
+        "rowCount": 11.25
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "input": 1,
+                  "name": "$1"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 5,
+                  "name": "$5"
+                },
+                {
+                  "input": 3,
+                  "name": "$3"
+                }
+              ]
+            }
+          ]
+        },
+        "joinType": "left",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "1",
+          "4"
+        ],
+        "rowCount": 38.22222222222222
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "small_alltypesorc_a_n1"
+        ],
+        "table:alias": "hd",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 10,
+        "rowType": {
+          "fields": [
+            {
+              "type": "TINYINT",
+              "nullable": true,
+              "name": "ctinyint"
+            },
+            {
+              "type": "SMALLINT",
+              "nullable": true,
+              "name": "csmallint"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cint"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cbigint"
+            },
+            {
+              "type": "FLOAT",
+              "nullable": true,
+              "name": "cfloat"
+            },
+            {
+              "type": "DOUBLE",
+              "nullable": true,
+              "name": "cdouble"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring1"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "cstring2"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp1"
+            },
+            {
+              "type": "TIMESTAMP",
+              "nullable": true,
+              "precision": 9,
+              "name": "ctimestamp2"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean1"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "cboolean2"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "cint",
+            "ndv": 8,
+            "minValue": -738306196,
+            "maxValue": 626923679
+          },
+          {
+            "name": "cstring1",
+            "ndv": 8
+          },
+          {
+            "name": "ctinyint",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "csmallint",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cbigint",
+            "ndv": 15,
+            "minValue": -1970551565,
+            "maxValue": 1086455747
+          },
+          {
+            "name": "cfloat",
+            "ndv": 2,
+            "minValue": -64,
+            "maxValue": -51
+          },
+          {
+            "name": "cdouble",
+            "ndv": 6,
+            "minValue": -15920,
+            "maxValue": -6907
+          },
+          {
+            "name": "cstring2",
+            "ndv": 15
+          },
+          {
+            "name": "ctimestamp1",
+            "ndv": 0,
+            "minValue": -28810,
+            "maxValue": -28789
+          },
+          {
+            "name": "ctimestamp2",
+            "ndv": 0,
+            "minValue": -28812,
+            "maxValue": -28786
+          },
+          {
+            "name": "cboolean1",
+            "ndv": 2
+          },
+          {
+            "name": "cboolean2",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 2,
+                  "name": "$2"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "$6"
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 5
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cint",
+          "cstring1"
+        ],
+        "exprs": [
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          }
+        ],
+        "rowCount": 5
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "$6"
+                },
+                {
+                  "input": 0,
+                  "name": "$0"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 7,
+                  "name": "$7"
+                },
+                {
+                  "input": 2,
+                  "name": "$2"
+                }
+              ]
+            }
+          ]
+        },
+        "joinType": "left",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "5",
+          "8"
+        ],
+        "rowCount": 68.8
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "11",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "_c0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT COUNT(*) AS `_c0`\nFROM (SELECT `cint`, `cbigint`, `cstring1`, `cstring2`\nFROM `default`.`small_alltypesorc_a_n1`) AS `t`\nLEFT JOIN (SELECT `cbigint`, `cstring2`\nFROM `default`.`small_alltypesorc_a_n1`\nWHERE `cbigint` IS NOT NULL AND `cstring2` IS NOT NULL) AS `t1` ON `t`.`cbigint` = `t1`.`cbigint` AND `t`.`cstring2` = `t1`.`cstring2`\nLEFT JOIN (SELECT `cint`, `cstring1`\nFROM `default`.`small_alltypesorc_a_n1`\nWHERE `cint` IS NOT NULL AND `cstring1` IS NOT NULL) AS `t3` ON `t`.`cint` = `t3`.`cint` AND `t`.`cstring1` = `t3`.`cstring1`",
+  "PLAN VECTORIZATION": {
+    "enabled": true,
+    "enabledConditionsMet": [
+      "hive.vectorized.execution.enabled IS true"
+    ]
+  },
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-1": {
+      "ROOT STAGE": "TRUE"
+    },
+    "Stage-0": {
+      "DEPENDENT STAGES": "Stage-1"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-1": {
+      "Tez": {
+#### A masked pattern was here ####
+        "Edges:": {
+          "Map 1": [
+            {
+              "parent": "Map 3",
+              "type": "BROADCAST_EDGE"
+            },
+            {
+              "parent": "Reducer 4",
+              "type": "BROADCAST_EDGE"
+            }
+          ],
+          "Reducer 2": {
+            "parent": "Map 1",
+            "type": "CUSTOM_SIMPLE_EDGE"
+          },
+          "Reducer 4": {
+            "parent": "Map 3",
+            "type": "SIMPLE_EDGE"
+          }
+        },
+#### A masked pattern was here ####
+        "Vertices:": {
+          "Map 1": {
+            "Map Operator Tree:": [
+              {
+                "TableScan": {
+                  "alias:": "c",
+                  "columns:": [
+                    "cint",
+                    "cbigint",
+                    "cstring1",
+                    "cstring2"
+                  ],
+                  "database:": "default",
+                  "Statistics:": "Num rows: 20 Data size: 2650 Basic stats: COMPLETE Column stats: COMPLETE",
+                  "table:": "small_alltypesorc_a_n1",
+                  "TableScan Vectorization:": {
+                    "native:": "true",
+                    "vectorizationSchemaColumns:": "[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]"
+                  },
+                  "isTempTable:": "false",
+                  "OperatorId:": "TS_0",
+                  "children": {
+                    "Select Operator": {
+                      "expressions:": "cint (type: int), cbigint (type: bigint), cstring1 (type: string), cstring2 (type: string)",
+                      "columnExprMap:": {
+                        "_col0": "cint",
+                        "_col1": "cbigint",
+                        "_col2": "cstring1",
+                        "_col3": "cstring2"
+                      },
+                      "outputColumnNames:": [
+                        "_col0",
+                        "_col1",
+                        "_col2",
+                        "_col3"
+                      ],
+                      "Select Vectorization:": {
+                        "className:": "VectorSelectOperator",
+                        "native:": "true",
+                        "projectedOutputColumnNums:": "[2, 3, 6, 7]"
+                      },
+                      "Statistics:": "Num rows: 20 Data size: 2650 Basic stats: COMPLETE Column stats: COMPLETE",
+                      "OperatorId:": "SEL_68",
+                      "children": {
+                        "Map Join Operator": {
+                          "columnExprMap:": {
+                            "_col0": "0:_col0",
+                            "_col2": "0:_col2"
+                          },
+                          "condition map:": [
+                            {
+                              "": "Left Outer Join 0 to 1"
+                            }
+                          ],
+                          "keys:": {
+                            "0": "_col1 (type: bigint), _col3 (type: string)",
+                            "1": "_col0 (type: bigint), _col1 (type: string)"
+                          },
+                          "Map Join Vectorization:": {
+                            "bigTableKeyColumns:": [
+                              "3:bigint",
+                              "7:string"
+                            ],
+                            "bigTableRetainColumnNums:": "[2, 6]",
+                            "bigTableValueColumns:": [
+                              "2:int",
+                              "6:string"
+                            ],
+                            "className:": "VectorMapJoinOuterMultiKeyOperator",
+                            "native:": "true",
+                            "nativeConditionsMet:": [
+                              "hive.mapjoin.optimized.hashtable IS true",
+                              "hive.vectorized.execution.mapjoin.native.enabled IS true",
+                              "hive.execution.engine tez IN [tez] IS true",
+                              "One MapJoin Condition IS true",
+                              "No nullsafe IS true",
+                              "Small table vectorizes IS true",
+                              "Outer Join has keys IS true",
+                              "Optimized Table and Supports Key Types IS true"
+                            ],
+                            "projectedOutput:": [
+                              "2:int",
+                              "6:string"
+                            ],
+                            "hashTableImplementationType:": "OPTIMIZED"
+                          },
+                          "outputColumnNames:": [
+                            "_col0",
+                            "_col2"
+                          ],
+                          "input vertices:": {
+                            "1": "Map 3"
+                          },
+                          "Statistics:": "Num rows: 20 Data size: 1034 Basic stats: COMPLETE Column stats: COMPLETE",
+                          "OperatorId:": "MAPJOIN_69",
+                          "children": {
+                            "Map Join Operator": {
+                              "condition map:": [
+                                {
+                                  "": "Left Outer Join 0 to 1"
+                                }
+                              ],
+                              "keys:": {
+                                "0": "_col0 (type: int), _col2 (type: string)",
+                                "1": "_col0 (type: int), _col1 (type: string)"
+                              },
+                              "Map Join Vectorization:": {
+                                "bigTableKeyColumns:": [
+                                  "2:int",
+                                  "6:string"
+                                ],
+                                "bigTableRetainColumnNums:": "[]",
+                                "className:": "VectorMapJoinOuterMultiKeyOperator",
+                                "native:": "true",
+                                "nativeConditionsMet:": [
+                                  "hive.mapjoin.optimized.hashtable IS true",
+                                  "hive.vectorized.execution.mapjoin.native.enabled IS true",
+                                  "hive.execution.engine tez IN [tez] IS true",
+                                  "One MapJoin Condition IS true",
+                                  "No nullsafe IS true",
+                                  "Small table vectorizes IS true",
+                                  "Outer Join has keys IS true",
+                                  "Optimized Table and Supports Key Types IS true"
+                                ],
+                                "hashTableImplementationType:": "OPTIMIZED"
+                              },
+                              "input vertices:": {
+                                "1": "Reducer 4"
+                              },
+                              "Statistics:": "Num rows: 24 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE",
+                              "OperatorId:": "MAPJOIN_70",
+                              "children": {
+                                "Group By Operator": {
+                                  "aggregations:": [
+                                    "count()"
+                                  ],
+                                  "Group By Vectorization:": {
+                                    "aggregators:": [
+                                      "VectorUDAFCountStar(*) -> bigint"
+                                    ],
+                                    "className:": "VectorGroupByOperator",
+                                    "groupByMode:": "HASH",
+                                    "native:": "false",
+                                    "vectorProcessingMode:": "HASH",
+                                    "projectedOutputColumnNums:": "[0]"
+                                  },
+                                  "minReductionHashAggr:": "0.9583333",
+                                  "mode:": "hash",
+                                  "outputColumnNames:": [
+                                    "_col0"
+                                  ],
+                                  "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                                  "OperatorId:": "GBY_71",
+                                  "children": {
+                                    "Reduce Output Operator": {
+                                      "columnExprMap:": {
+                                        "VALUE._col0": "_col0"
+                                      },
+                                      "null sort order:": "",
+                                      "sort order:": "",
+                                      "Reduce Sink Vectorization:": {
+                                        "className:": "VectorReduceSinkEmptyKeyOperator",
+                                        "native:": "true",
+                                        "nativeConditionsMet:": [
+                                          "hive.vectorized.execution.reducesink.new.enabled IS true",
+                                          "hive.execution.engine tez IN [tez] IS true",
+                                          "No PTF TopN IS true",
+                                          "No DISTINCT columns IS true",
+                                          "BinarySortableSerDe for keys IS true",
+                                          "LazyBinarySerDe for values IS true"
+                                        ],
+                                        "valueColumns:": [
+                                          "0:bigint"
+                                        ]
+                                      },
+                                      "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                                      "value expressions:": "_col0 (type: bigint)",
+                                      "OperatorId:": "RS_72",
+                                      "outputname:": "Reducer 2",
+                                      "outputOperator:": [
+                                        "GBY_73"
+                                      ]
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ],
+            "Execution mode:": "vectorized, llap",
+            "LLAP IO:": "all inputs",
+            "Map Vectorization:": {
+              "enabled:": "true",
+              "enabledConditionsMet:": [
+                "hive.vectorized.use.vectorized.input.format IS true"
+              ],
+              "inputFormatFeatureSupport:": "[DECIMAL_64]",
+              "featureSupportInUse:": "[DECIMAL_64]",
+              "inputFileFormats:": [
+                "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"
+              ],
+              "allNative:": "false",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "12",
+                "includeColumns:": "[2, 3, 6, 7]",
+                "dataColumns:": [
+                  "ctinyint:tinyint",
+                  "csmallint:smallint",
+                  "cint:int",
+                  "cbigint:bigint",
+                  "cfloat:float",
+                  "cdouble:double",
+                  "cstring1:string",
+                  "cstring2:string",
+                  "ctimestamp1:timestamp",
+                  "ctimestamp2:timestamp",
+                  "cboolean1:boolean",
+                  "cboolean2:boolean"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            }
+          },
+          "Map 3": {
+            "Map Operator Tree:": [
+              {
+                "TableScan": {
+                  "alias:": "cd",
+                  "columns:": [
+                    "cbigint",
+                    "cstring2",
+                    "cint",
+                    "cstring1"
+                  ],
+                  "database:": "default",
+                  "filterExpr:": "((cbigint is not null and cstring2 is not null) or (cint is not null and cstring1 is not null)) (type: boolean)",
+                  "Statistics:": "Num rows: 20 Data size: 1616 Basic stats: COMPLETE Column stats: COMPLETE",
+                  "table:": "small_alltypesorc_a_n1",
+                  "TableScan Vectorization:": {
+                    "native:": "true",
+                    "vectorizationSchemaColumns:": "[0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>, 13:ROW__IS__DELETED:boolean]"
+                  },
+                  "isTempTable:": "false",
+                  "OperatorId:": "TS_2",
+                  "children": [
+                    {
+                      "Filter Operator": {
+                        "Filter Vectorization:": {
+                          "className:": "VectorFilterOperator",
+                          "native:": "true",
+                          "predicateExpression:": "FilterExprAndExpr(children: SelectColumnIsNotNull(col 3:bigint), SelectColumnIsNotNull(col 7:string))"
+                        },
+                        "predicate:": "(cbigint is not null and cstring2 is not null) (type: boolean)",
+                        "Statistics:": "Num rows: 11 Data size: 909 Basic stats: COMPLETE Column stats: COMPLETE",
+                        "OperatorId:": "FIL_60",
+                        "children": {
+                          "Select Operator": {
+                            "expressions:": "cbigint (type: bigint), cstring2 (type: string)",
+                            "columnExprMap:": {
+                              "_col0": "cbigint",
+                              "_col1": "cstring2"
+                            },
+                            "outputColumnNames:": [
+                              "_col0",
+                              "_col1"
+                            ],
+                            "Select Vectorization:": {
+                              "className:": "VectorSelectOperator",
+                              "native:": "true",
+                              "projectedOutputColumnNums:": "[3, 7]"
+                            },
+                            "Statistics:": "Num rows: 11 Data size: 909 Basic stats: COMPLETE Column stats: COMPLETE",
+                            "OperatorId:": "SEL_62",
+                            "children": {
+                              "Reduce Output Operator": {
+                                "columnExprMap:": {
+                                  "KEY.reducesinkkey0": "_col0",
+                                  "KEY.reducesinkkey1": "_col1"
+                                },
+                                "key expressions:": "_col0 (type: bigint), _col1 (type: string)",
+                                "null sort order:": "zz",
+                                "sort order:": "++",
+                                "Map-reduce partition columns:": "_col0 (type: bigint), _col1 (type: string)",
+                                "Reduce Sink Vectorization:": {
+                                  "className:": "VectorReduceSinkMultiKeyOperator",
+                                  "keyColumns:": [
+                                    "3:bigint",
+                                    "7:string"
+                                  ],
+                                  "native:": "true",
+                                  "nativeConditionsMet:": [
+                                    "hive.vectorized.execution.reducesink.new.enabled IS true",
+                                    "hive.execution.engine tez IN [tez] IS true",
+                                    "No PTF TopN IS true",
+                                    "No DISTINCT columns IS true",
+                                    "BinarySortableSerDe for keys IS true",
+                                    "LazyBinarySerDe for values IS true"
+                                  ]
+                                },
+                                "Statistics:": "Num rows: 11 Data size: 909 Basic stats: COMPLETE Column stats: COMPLETE",
+                                "OperatorId:": "RS_64",
+                                "outputname:": "Map 1",
+                                "outputOperator:": [
+                                  "TS_0"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "Filter Operator": {
+                        "Filter Vectorization:": {
+                          "className:": "VectorFilterOperator",
+                          "native:": "true",
+                          "predicateExpression:": "FilterExprAndExpr(children: SelectColumnIsNotNull(col 2:int), SelectColumnIsNotNull(col 6:string))"
+                        },
+                        "predicate:": "(cint is not null and cstring1 is not null) (type: boolean)",
+                        "Statistics:": "Num rows: 5 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE",
+                        "OperatorId:": "FIL_61",
+                        "children": {
+                          "Select Operator": {
+                            "expressions:": "cint (type: int), cstring1 (type: string)",
+                            "columnExprMap:": {
+                              "_col0": "cint",
+                              "_col1": "cstring1"
+                            },
+                            "outputColumnNames:": [
+                              "_col0",
+                              "_col1"
+                            ],
+                            "Select Vectorization:": {
+                              "className:": "VectorSelectOperator",
+                              "native:": "true",
+                              "projectedOutputColumnNums:": "[2, 6]"
+                            },
+                            "Statistics:": "Num rows: 5 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE",
+                            "OperatorId:": "SEL_63",
+                            "children": {
+                              "Reduce Output Operator": {
+                                "columnExprMap:": {
+                                  "KEY.reducesinkkey0": "_col0",
+                                  "KEY.reducesinkkey1": "_col1"
+                                },
+                                "key expressions:": "_col0 (type: int), _col1 (type: string)",
+                                "null sort order:": "zz",
+                                "sort order:": "++",
+                                "Map-reduce partition columns:": "_col0 (type: int), _col1 (type: string)",
+                                "Reduce Sink Vectorization:": {
+                                  "className:": "VectorReduceSinkMultiKeyOperator",
+                                  "keyColumns:": [
+                                    "2:int",
+                                    "6:string"
+                                  ],
+                                  "native:": "true",
+                                  "nativeConditionsMet:": [
+                                    "hive.vectorized.execution.reducesink.new.enabled IS true",
+                                    "hive.execution.engine tez IN [tez] IS true",
+                                    "No PTF TopN IS true",
+                                    "No DISTINCT columns IS true",
+                                    "BinarySortableSerDe for keys IS true",
+                                    "LazyBinarySerDe for values IS true"
+                                  ]
+                                },
+                                "Statistics:": "Num rows: 5 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE",
+                                "OperatorId:": "RS_65",
+                                "outputname:": "Reducer 4",
+                                "outputOperator:": [
+                                  "SEL_66"
+                                ]
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "Execution mode:": "vectorized, llap",
+            "LLAP IO:": "all inputs",
+            "Map Vectorization:": {
+              "enabled:": "true",
+              "enabledConditionsMet:": [
+                "hive.vectorized.use.vectorized.input.format IS true"
+              ],
+              "inputFormatFeatureSupport:": "[DECIMAL_64]",
+              "featureSupportInUse:": "[DECIMAL_64]",
+              "inputFileFormats:": [
+                "org.apache.hadoop.hive.ql.io.orc.OrcInputFormat"
+              ],
+              "allNative:": "true",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "12",
+                "includeColumns:": "[2, 3, 6, 7]",
+                "dataColumns:": [
+                  "ctinyint:tinyint",
+                  "csmallint:smallint",
+                  "cint:int",
+                  "cbigint:bigint",
+                  "cfloat:float",
+                  "cdouble:double",
+                  "cstring1:string",
+                  "cstring2:string",
+                  "ctimestamp1:timestamp",
+                  "ctimestamp2:timestamp",
+                  "cboolean1:boolean",
+                  "cboolean2:boolean"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            }
+          },
+          "Reducer 2": {
+            "Execution mode:": "vectorized, llap",
+            "Reduce Vectorization:": {
+              "enabled:": "true",
+              "enableConditionsMet:": [
+                "hive.vectorized.execution.reduce.enabled IS true",
+                "hive.execution.engine tez IN [tez] IS true"
+              ],
+              "reduceColumnNullOrder:": "",
+              "reduceColumnSortOrder:": "",
+              "allNative:": "false",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "1",
+                "dataColumns:": [
+                  "VALUE._col0:bigint"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            },
+            "Reduce Operator Tree:": {
+              "Group By Operator": {
+                "aggregations:": [
+                  "count(VALUE._col0)"
+                ],
+                "Group By Vectorization:": {
+                  "aggregators:": [
+                    "VectorUDAFCountMerge(col 0:bigint) -> bigint"
+                  ],
+                  "className:": "VectorGroupByOperator",
+                  "groupByMode:": "MERGEPARTIAL",
+                  "native:": "false",
+                  "vectorProcessingMode:": "GLOBAL",
+                  "projectedOutputColumnNums:": "[0]"
+                },
+                "mode:": "mergepartial",
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                "OperatorId:": "GBY_73",
+                "children": {
+                  "File Output Operator": {
+                    "compressed:": "false",
+                    "File Sink Vectorization:": {
+                      "className:": "VectorFileSinkOperator",
+                      "native:": "false"
+                    },
+                    "Statistics:": "Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE",
+                    "table:": {
+                      "input format:": "org.apache.hadoop.mapred.SequenceFileInputFormat",
+                      "output format:": "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat",
+                      "serde:": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+                    },
+                    "OperatorId:": "FS_74"
+                  }
+                }
+              }
+            }
+          },
+          "Reducer 4": {
+            "Execution mode:": "vectorized, llap",
+            "Reduce Vectorization:": {
+              "enabled:": "true",
+              "enableConditionsMet:": [
+                "hive.vectorized.execution.reduce.enabled IS true",
+                "hive.execution.engine tez IN [tez] IS true"
+              ],
+              "reduceColumnNullOrder:": "zz",
+              "reduceColumnSortOrder:": "++",
+              "allNative:": "true",
+              "usesVectorUDFAdaptor:": "false",
+              "vectorized:": "true",
+              "rowBatchContext:": {
+                "dataColumnCount:": "2",
+                "dataColumns:": [
+                  "KEY.reducesinkkey0:int",
+                  "KEY.reducesinkkey1:string"
+                ],
+                "partitionColumnCount:": "0",
+                "scratchColumnTypeNames:": "[]"
+              }
+            },
+            "Reduce Operator Tree:": {
+              "Select Operator": {
+                "expressions:": "KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: string)",
+                "outputColumnNames:": [
+                  "_col0",
+                  "_col1"
+                ],
+                "Select Vectorization:": {
+                  "className:": "VectorSelectOperator",
+                  "native:": "true",
+                  "projectedOutputColumnNums:": "[0, 1]"
+                },
+                "OperatorId:": "SEL_66",
+                "children": {
+                  "Reduce Output Operator": {
+                    "columnExprMap:": {
+                      "KEY.reducesinkkey0": "_col0",
+                      "KEY.reducesinkkey1": "_col1"
+                    },
+                    "key expressions:": "_col0 (type: int), _col1 (type: string)",
+                    "null sort order:": "zz",
+                    "sort order:": "++",
+                    "Map-reduce partition columns:": "_col0 (type: int), _col1 (type: string)",
+                    "Reduce Sink Vectorization:": {
+                      "className:": "VectorReduceSinkMultiKeyOperator",
+                      "keyColumns:": [
+                        "0:int",
+                        "1:string"
+                      ],
+                      "native:": "true",
+                      "nativeConditionsMet:": [
+                        "hive.vectorized.execution.reducesink.new.enabled IS true",
+                        "hive.execution.engine tez IN [tez] IS true",
+                        "No PTF TopN IS true",
+                        "No DISTINCT columns IS true",
+                        "BinarySortableSerDe for keys IS true",
+                        "LazyBinarySerDe for values IS true"
+                      ]
+                    },
+                    "Statistics:": "Num rows: 5 Data size: 282 Basic stats: COMPLETE Column stats: COMPLETE",
+                    "OperatorId:": "RS_67",
+                    "outputname:": "Map 1",
+                    "outputOperator:": [
+                      "TS_0"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "ListSink": {
+            "OperatorId:": "LIST_SINK_75"
+          }
+        }
+      }
+    }
+  }
+}
 PREHOOK: query: select count(*) from (select c.cstring1
 from small_alltypesorc_a_n1 c
 left outer join small_alltypesorc_a_n1 cd

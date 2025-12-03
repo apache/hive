@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.jsonexplain.JsonParser;
-import org.apache.hadoop.hive.common.jsonexplain.JsonParserFactory;
+import org.apache.hadoop.hive.common.jsonexplain.tez.TezJsonParser;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -549,31 +549,32 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       Path resFile = work.getResFile();
       OutputStream outS = resFile.getFileSystem(conf).create(resFile);
       out = new PrintStream(outS, false, StandardCharsets.UTF_8.name());
+      JsonParser jsonParser = createParser();
 
       if(work.isDDL()){
         getDDLPlan(out);
       } else if (work.isCbo()) {
         JSONObject jsonCBOPlan = getJSONCBOPlan(out, work);
         if (work.isFormatted()) {
-          out.print(jsonCBOPlan);
+          jsonParser.print(jsonCBOPlan, out);
         }
       } else if (work.isLogical()) {
         JSONObject jsonLogicalPlan = getJSONLogicalPlan(out, work);
         if (work.isFormatted()) {
-          out.print(jsonLogicalPlan);
+          jsonParser.print(jsonLogicalPlan, out);
         }
       } else if (work.isAuthorize()) {
         JSONObject jsonAuth = collectAuthRelatedEntities(out, work);
         if (work.isFormatted()) {
-          out.print(jsonAuth);
+          jsonParser.print(jsonAuth, out);
         }
       } else if (work.getDependency()) {
         JSONObject jsonDependencies = getJSONDependencies(work);
-        out.print(jsonDependencies);
+        jsonParser.print(jsonDependencies, out);
       } else if (work.isLocks()) {
         JSONObject jsonLocks = getLocks(out, work);
         if(work.isFormatted()) {
-          out.print(jsonLocks);
+          jsonParser.print(jsonLocks, out);
         }
       } else if (work.isAst()) {
         // Print out the parse AST
@@ -582,9 +583,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         }
       } else {
         if (work.isUserLevelExplain()) {
-          // Because of the implementation of the JsonParserFactory, we are sure
-          // that we can get a TezJsonParser.
-          JsonParser jsonParser = JsonParserFactory.getParser(conf);
           work.getConfig().setFormatted(true);
           JSONObject jsonPlan = getJSONPlan(out, work);
           if (work.getCboInfo() != null) {
@@ -603,13 +601,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         } else {
           JSONObject jsonPlan = getJSONPlan(out, work);
           if (work.isFormatted()) {
-            // use the parser to get the output operators of RS
-            JsonParser jsonParser = JsonParserFactory.getParser(conf);
-            if (jsonParser != null) {
-              jsonParser.print(jsonPlan, null);
-              LOG.info("JsonPlan is augmented to {}", jsonPlan);
-            }
-            out.print(jsonPlan);
+            augmentJSONWithRSOutputs(jsonPlan);
+            jsonParser.print(jsonPlan, out);
           }
         }
       }
@@ -626,6 +619,42 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     finally {
       IOUtils.closeStream(out);
     }
+  }
+
+  /**
+   * Augments the JSON plan with the outputs names of ReduceSink operators.
+   * @param jsonPlan the JSON plan object that is augmented
+   */
+  private void augmentJSONWithRSOutputs(JSONObject jsonPlan) throws Exception {
+    if ("tez".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
+      // The JSON object is augmented via side effect of TezJsonParser.print()
+      new TezJsonParser().print(jsonPlan, null);
+    }
+  }
+
+  /**
+   * Creates the appropriate JsonParser based on the ExplainWork configuration.
+   * @return a JsonParser
+   */
+  private JsonParser createParser() {
+    final JsonParser defaultParser;
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_EXPLAIN_FORMATTED_INDENT)) {
+      defaultParser = (json, out) -> out.print(json.toString(2));
+    } else {
+      defaultParser = (json, out) -> out.print(json.toString());
+    }
+    if (work.isCbo() || work.isLogical() || work.isAuthorize() || work.getDependency() || work.isLocks()) {
+      return defaultParser;
+    } else if (work.isUserLevelExplain()) {
+      if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+        return new TezJsonParser();
+      } else {
+        LOG.error("Running explain user level is only supported for Tez engine.");
+        return (obj, out) -> {
+        };
+      }
+    }
+    return defaultParser;
   }
 
   @VisibleForTesting

@@ -292,7 +292,159 @@ POSTHOOK: query: explain formatted select key || value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"CBOPlan":{"rels":[{"id":"0","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan","table":["default","src"],"table:alias":"src","inputs":[],"rowCount":500,"avgRowSize":9.624,"rowType":{"fields":[{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"key"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"value"},{"type":"BIGINT","nullable":true,"name":"BLOCK__OFFSET__INSIDE__FILE"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"INPUT__FILE__NAME"},{"fields":[{"type":"BIGINT","nullable":true,"name":"writeid"},{"type":"INTEGER","nullable":true,"name":"bucketid"},{"type":"BIGINT","nullable":true,"name":"rowid"}],"nullable":true,"name":"ROW__ID"},{"type":"BOOLEAN","nullable":true,"name":"ROW__IS__DELETED"}],"nullable":false},"colStats":[{"name":"key","ndv":316},{"name":"value","ndv":307}]},{"id":"1","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["_c0"],"exprs":[{"op":{"name":"||","kind":"OTHER_FUNCTION","syntax":"SPECIAL"},"operands":[{"input":0,"name":"$0"},{"input":1,"name":"$1"}]}],"rowCount":500}]},"optimizedSQL":"SELECT `key` || `value` AS `_c0`\nFROM `default`.`src`","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"src","columns:":["key","value"],"database:":"default","table:":"src","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"concat(key, value) (type: string)","columnExprMap:":{"_col0":"concat(key, value)"},"outputColumnNames:":["_col0"],"OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "src"
+        ],
+        "table:alias": "src",
+        "inputs": [],
+        "rowCount": 500,
+        "avgRowSize": 9.624,
+        "rowType": {
+          "fields": [
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "key"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "value"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "key",
+            "ndv": 316
+          },
+          {
+            "name": "value",
+            "ndv": 307
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "_c0"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "||",
+              "kind": "OTHER_FUNCTION",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 0,
+                "name": "$0"
+              },
+              {
+                "input": 1,
+                "name": "$1"
+              }
+            ]
+          }
+        ],
+        "rowCount": 500
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT `key` || `value` AS `_c0`\nFROM `default`.`src`",
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-0": {
+      "ROOT STAGE": "TRUE"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "TableScan": {
+            "alias:": "src",
+            "columns:": [
+              "key",
+              "value"
+            ],
+            "database:": "default",
+            "table:": "src",
+            "isTempTable:": "false",
+            "OperatorId:": "TS_0",
+            "children": {
+              "Select Operator": {
+                "expressions:": "concat(key, value) (type: string)",
+                "columnExprMap:": {
+                  "_col0": "concat(key, value)"
+                },
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "OperatorId:": "SEL_1",
+                "children": {
+                  "ListSink": {
+                    "OperatorId:": "LIST_SINK_3"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
 PREHOOK: query: explain formatted select key || value || key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -301,7 +453,172 @@ POSTHOOK: query: explain formatted select key || value || key from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"CBOPlan":{"rels":[{"id":"0","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan","table":["default","src"],"table:alias":"src","inputs":[],"rowCount":500,"avgRowSize":9.624,"rowType":{"fields":[{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"key"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"value"},{"type":"BIGINT","nullable":true,"name":"BLOCK__OFFSET__INSIDE__FILE"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"INPUT__FILE__NAME"},{"fields":[{"type":"BIGINT","nullable":true,"name":"writeid"},{"type":"INTEGER","nullable":true,"name":"bucketid"},{"type":"BIGINT","nullable":true,"name":"rowid"}],"nullable":true,"name":"ROW__ID"},{"type":"BOOLEAN","nullable":true,"name":"ROW__IS__DELETED"}],"nullable":false},"colStats":[{"name":"key","ndv":316},{"name":"value","ndv":307}]},{"id":"1","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["_c0"],"exprs":[{"op":{"name":"||","kind":"OTHER_FUNCTION","syntax":"SPECIAL"},"operands":[{"op":{"name":"||","kind":"OTHER_FUNCTION","syntax":"SPECIAL"},"operands":[{"input":0,"name":"$0"},{"input":1,"name":"$1"}]},{"input":0,"name":"$0"}]}],"rowCount":500}]},"optimizedSQL":"SELECT `key` || `value` || `key` AS `_c0`\nFROM `default`.`src`","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"src","columns:":["key","value"],"database:":"default","table:":"src","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"concat(concat(key, value), key) (type: string)","columnExprMap:":{"_col0":"concat(concat(key, value), key)"},"outputColumnNames:":["_col0"],"OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "src"
+        ],
+        "table:alias": "src",
+        "inputs": [],
+        "rowCount": 500,
+        "avgRowSize": 9.624,
+        "rowType": {
+          "fields": [
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "key"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "value"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "key",
+            "ndv": 316
+          },
+          {
+            "name": "value",
+            "ndv": 307
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "_c0"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "||",
+              "kind": "OTHER_FUNCTION",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "||",
+                  "kind": "OTHER_FUNCTION",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 0,
+                    "name": "$0"
+                  },
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ]
+              },
+              {
+                "input": 0,
+                "name": "$0"
+              }
+            ]
+          }
+        ],
+        "rowCount": 500
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT `key` || `value` || `key` AS `_c0`\nFROM `default`.`src`",
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-0": {
+      "ROOT STAGE": "TRUE"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "TableScan": {
+            "alias:": "src",
+            "columns:": [
+              "key",
+              "value"
+            ],
+            "database:": "default",
+            "table:": "src",
+            "isTempTable:": "false",
+            "OperatorId:": "TS_0",
+            "children": {
+              "Select Operator": {
+                "expressions:": "concat(concat(key, value), key) (type: string)",
+                "columnExprMap:": {
+                  "_col0": "concat(concat(key, value), key)"
+                },
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "OperatorId:": "SEL_1",
+                "children": {
+                  "ListSink": {
+                    "OperatorId:": "LIST_SINK_3"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
 PREHOOK: query: explain formatted select key || value || key || value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -310,4 +627,182 @@ POSTHOOK: query: explain formatted select key || value || key || value from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"CBOPlan":{"rels":[{"id":"0","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan","table":["default","src"],"table:alias":"src","inputs":[],"rowCount":500,"avgRowSize":9.624,"rowType":{"fields":[{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"key"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"value"},{"type":"BIGINT","nullable":true,"name":"BLOCK__OFFSET__INSIDE__FILE"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"INPUT__FILE__NAME"},{"fields":[{"type":"BIGINT","nullable":true,"name":"writeid"},{"type":"INTEGER","nullable":true,"name":"bucketid"},{"type":"BIGINT","nullable":true,"name":"rowid"}],"nullable":true,"name":"ROW__ID"},{"type":"BOOLEAN","nullable":true,"name":"ROW__IS__DELETED"}],"nullable":false},"colStats":[{"name":"key","ndv":316},{"name":"value","ndv":307}]},{"id":"1","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["_c0"],"exprs":[{"op":{"name":"||","kind":"OTHER_FUNCTION","syntax":"SPECIAL"},"operands":[{"op":{"name":"||","kind":"OTHER_FUNCTION","syntax":"SPECIAL"},"operands":[{"op":{"name":"||","kind":"OTHER_FUNCTION","syntax":"SPECIAL"},"operands":[{"input":0,"name":"$0"},{"input":1,"name":"$1"}]},{"input":0,"name":"$0"}]},{"input":1,"name":"$1"}]}],"rowCount":500}]},"optimizedSQL":"SELECT `key` || `value` || `key` || `value` AS `_c0`\nFROM `default`.`src`","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"src","columns:":["key","value"],"database:":"default","table:":"src","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"concat(concat(concat(key, value), key), value) (type: string)","columnExprMap:":{"_col0":"concat(concat(concat(key, value), key), value)"},"outputColumnNames:":["_col0"],"OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "src"
+        ],
+        "table:alias": "src",
+        "inputs": [],
+        "rowCount": 500,
+        "avgRowSize": 9.624,
+        "rowType": {
+          "fields": [
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "key"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "value"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "key",
+            "ndv": 316
+          },
+          {
+            "name": "value",
+            "ndv": 307
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "_c0"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "||",
+              "kind": "OTHER_FUNCTION",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "||",
+                  "kind": "OTHER_FUNCTION",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "op": {
+                      "name": "||",
+                      "kind": "OTHER_FUNCTION",
+                      "syntax": "SPECIAL"
+                    },
+                    "operands": [
+                      {
+                        "input": 0,
+                        "name": "$0"
+                      },
+                      {
+                        "input": 1,
+                        "name": "$1"
+                      }
+                    ]
+                  },
+                  {
+                    "input": 0,
+                    "name": "$0"
+                  }
+                ]
+              },
+              {
+                "input": 1,
+                "name": "$1"
+              }
+            ]
+          }
+        ],
+        "rowCount": 500
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT `key` || `value` || `key` || `value` AS `_c0`\nFROM `default`.`src`",
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-0": {
+      "ROOT STAGE": "TRUE"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "TableScan": {
+            "alias:": "src",
+            "columns:": [
+              "key",
+              "value"
+            ],
+            "database:": "default",
+            "table:": "src",
+            "isTempTable:": "false",
+            "OperatorId:": "TS_0",
+            "children": {
+              "Select Operator": {
+                "expressions:": "concat(concat(concat(key, value), key), value) (type: string)",
+                "columnExprMap:": {
+                  "_col0": "concat(concat(concat(key, value), key), value)"
+                },
+                "outputColumnNames:": [
+                  "_col0"
+                ],
+                "OperatorId:": "SEL_1",
+                "children": {
+                  "ListSink": {
+                    "OperatorId:": "LIST_SINK_3"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

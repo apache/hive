@@ -3765,6 +3765,10 @@ public class HiveConf extends Configuration {
             + "prints) the same node multiple times. The number of visits can become exponential and make the server "
             + "crash or become unresponsive so this limit acts as a safety net to fail-fast the problematic query and "
             + "avoid bringing down the entire server."),
+    @InterfaceAudience.Private
+    HIVE_EXPLAIN_FORMATTED_INDENT("hive.explain.formatted.indent", false,
+        "Whether to indent the JSON output of EXPLAIN FORMATTED for better readability. " +
+        "The property is private to be used in tests only."),
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
