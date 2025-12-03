@@ -1,0 +1,2242 @@
+Warning: Map Join MAPJOIN[101][bigTable=?] in task 'Reducer 9' is a cross product
+Warning: Map Join MAPJOIN[105][bigTable=?] in task 'Reducer 7' is a cross product
+Warning: Map Join MAPJOIN[104][bigTable=?] in task 'Reducer 7' is a cross product
+Warning: Map Join MAPJOIN[103][bigTable=?] in task 'Reducer 7' is a cross product
+Warning: Map Join MAPJOIN[102][bigTable=?] in task 'Reducer 7' is a cross product
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "store_sales"
+        ],
+        "table:alias": "store_sales",
+        "inputs": [],
+        "rowCount": 86404891377,
+        "avgRowSize": 261,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_sold_time_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ss_item_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_customer_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_cdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_hdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_addr_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_store_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_promo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ss_ticket_number"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "ss_quantity"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_discount_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_coupon_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_net_paid"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_net_paid_inc_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_net_profit"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_sold_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "partitionColumns": [
+          "ss_sold_date_sk"
+        ],
+        "colStats": [
+          {
+            "name": "ss_quantity",
+            "ndv": 101,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "ss_wholesale_cost",
+            "ndv": 9382,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "ss_list_price",
+            "ndv": 20258,
+            "minValue": 1,
+            "maxValue": 200
+          },
+          {
+            "name": "ss_coupon_amt",
+            "ndv": 1219691,
+            "minValue": 0,
+            "maxValue": 19778
+          },
+          {
+            "name": "ss_sold_time_sk",
+            "ndv": 45279,
+            "minValue": 28800,
+            "maxValue": 75599
+          },
+          {
+            "name": "ss_item_sk",
+            "ndv": 462000,
+            "minValue": 1,
+            "maxValue": 462000
+          },
+          {
+            "name": "ss_customer_sk",
+            "ndv": 78525965,
+            "minValue": 1,
+            "maxValue": 80000000
+          },
+          {
+            "name": "ss_cdemo_sk",
+            "ndv": 1920801,
+            "minValue": 1,
+            "maxValue": 1920800
+          },
+          {
+            "name": "ss_hdemo_sk",
+            "ndv": 7201,
+            "minValue": 1,
+            "maxValue": 7200
+          },
+          {
+            "name": "ss_addr_sk",
+            "ndv": 40000001,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "ss_store_sk",
+            "ndv": 870,
+            "minValue": 1,
+            "maxValue": 1702
+          },
+          {
+            "name": "ss_promo_sk",
+            "ndv": 2301,
+            "minValue": 1,
+            "maxValue": 2300
+          },
+          {
+            "name": "ss_ticket_number",
+            "ndv": 7200000000,
+            "minValue": 1,
+            "maxValue": 7200000000
+          },
+          {
+            "name": "ss_sales_price",
+            "ndv": 20315,
+            "minValue": 0,
+            "maxValue": 200
+          },
+          {
+            "name": "ss_ext_discount_amt",
+            "ndv": 1219691,
+            "minValue": 0,
+            "maxValue": 19778
+          },
+          {
+            "name": "ss_ext_sales_price",
+            "ndv": 738605,
+            "minValue": 0,
+            "maxValue": 19972
+          },
+          {
+            "name": "ss_ext_wholesale_cost",
+            "ndv": 381232,
+            "minValue": 1,
+            "maxValue": 10000
+          },
+          {
+            "name": "ss_ext_list_price",
+            "ndv": 759913,
+            "minValue": 1,
+            "maxValue": 20000
+          },
+          {
+            "name": "ss_ext_tax",
+            "ndv": 159044,
+            "minValue": 0,
+            "maxValue": 1797.48
+          },
+          {
+            "name": "ss_net_paid",
+            "ndv": 1334023,
+            "minValue": 0,
+            "maxValue": 19972
+          },
+          {
+            "name": "ss_net_paid_inc_tax",
+            "ndv": 1755573,
+            "minValue": 0,
+            "maxValue": 21769.48
+          },
+          {
+            "name": "ss_net_profit",
+            "ndv": 1468124,
+            "minValue": -10000,
+            "maxValue": 9986
+          },
+          {
+            "name": "ss_sold_date_sk",
+            "ndv": 1824,
+            "minValue": 2450816,
+            "maxValue": 2452642
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "BETWEEN",
+                "kind": "BETWEEN",
+                "syntax": "SPECIAL"
+              },
+              "operands": [
+                {
+                  "literal": false,
+                  "type": {
+                    "type": "BOOLEAN",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 9,
+                  "name": "$9"
+                },
+                {
+                  "literal": 0,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "OR",
+                "kind": "OR",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 11,
+                      "name": "$11"
+                    },
+                    {
+                      "literal": 11,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 21,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 18,
+                      "name": "$18"
+                    },
+                    {
+                      "literal": 460,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 1460,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 10,
+                      "name": "$10"
+                    },
+                    {
+                      "literal": 14,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 34,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 5.4003057110625E9
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": true,
+            "operands": [
+              11
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "b1_lp",
+          "b1_cnt",
+          "b1_cntd"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "input": 0,
+                    "name": "$0"
+                  },
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ]
+              }
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 11,
+              "scale": 6
+            }
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "BETWEEN",
+                "kind": "BETWEEN",
+                "syntax": "SPECIAL"
+              },
+              "operands": [
+                {
+                  "literal": false,
+                  "type": {
+                    "type": "BOOLEAN",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 9,
+                  "name": "$9"
+                },
+                {
+                  "literal": 26,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                },
+                {
+                  "literal": 30,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "OR",
+                "kind": "OR",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 11,
+                      "name": "$11"
+                    },
+                    {
+                      "literal": 28,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 38,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 18,
+                      "name": "$18"
+                    },
+                    {
+                      "literal": 2513,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 3513,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 10,
+                      "name": "$10"
+                    },
+                    {
+                      "literal": 42,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 62,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "inputs": [
+          "0"
+        ],
+        "rowCount": 5.4003057110625E9
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": true,
+            "operands": [
+              11
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "b6_lp",
+          "b6_cnt",
+          "b6_cntd"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "input": 0,
+                    "name": "$0"
+                  },
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ]
+              }
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 11,
+              "scale": 6
+            }
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "literal": true,
+          "type": {
+            "type": "BOOLEAN",
+            "nullable": false
+          }
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "3",
+          "6"
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "BETWEEN",
+                "kind": "BETWEEN",
+                "syntax": "SPECIAL"
+              },
+              "operands": [
+                {
+                  "literal": false,
+                  "type": {
+                    "type": "BOOLEAN",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 9,
+                  "name": "$9"
+                },
+                {
+                  "literal": 21,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                },
+                {
+                  "literal": 25,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "OR",
+                "kind": "OR",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 11,
+                      "name": "$11"
+                    },
+                    {
+                      "literal": 135,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 145,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 18,
+                      "name": "$18"
+                    },
+                    {
+                      "literal": 14180,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 15180,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 10,
+                      "name": "$10"
+                    },
+                    {
+                      "literal": 38,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 58,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "inputs": [
+          "0"
+        ],
+        "rowCount": 5.4003057110625E9
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": true,
+            "operands": [
+              11
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "b5_lp",
+          "b5_cnt",
+          "b5_cntd"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "input": 0,
+                    "name": "$0"
+                  },
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ]
+              }
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 11,
+              "scale": 6
+            }
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "11",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "literal": true,
+          "type": {
+            "type": "BOOLEAN",
+            "nullable": false
+          }
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "7",
+          "10"
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "12",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "BETWEEN",
+                "kind": "BETWEEN",
+                "syntax": "SPECIAL"
+              },
+              "operands": [
+                {
+                  "literal": false,
+                  "type": {
+                    "type": "BOOLEAN",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 9,
+                  "name": "$9"
+                },
+                {
+                  "literal": 16,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                },
+                {
+                  "literal": 20,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "OR",
+                "kind": "OR",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 11,
+                      "name": "$11"
+                    },
+                    {
+                      "literal": 142,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 152,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 18,
+                      "name": "$18"
+                    },
+                    {
+                      "literal": 3054,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 4054,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 10,
+                      "name": "$10"
+                    },
+                    {
+                      "literal": 80,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 100,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "inputs": [
+          "0"
+        ],
+        "rowCount": 5.4003057110625E9
+      },
+      {
+        "id": "13",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": true,
+            "operands": [
+              11
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "14",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "b4_lp",
+          "b4_cnt",
+          "b4_cntd"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "input": 0,
+                    "name": "$0"
+                  },
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ]
+              }
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 11,
+              "scale": 6
+            }
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "15",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "literal": true,
+          "type": {
+            "type": "BOOLEAN",
+            "nullable": false
+          }
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "11",
+          "14"
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "16",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "BETWEEN",
+                "kind": "BETWEEN",
+                "syntax": "SPECIAL"
+              },
+              "operands": [
+                {
+                  "literal": false,
+                  "type": {
+                    "type": "BOOLEAN",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 9,
+                  "name": "$9"
+                },
+                {
+                  "literal": 11,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                },
+                {
+                  "literal": 15,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "OR",
+                "kind": "OR",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 11,
+                      "name": "$11"
+                    },
+                    {
+                      "literal": 66,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 76,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 18,
+                      "name": "$18"
+                    },
+                    {
+                      "literal": 920,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 1920,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 10,
+                      "name": "$10"
+                    },
+                    {
+                      "literal": 4,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 24,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "inputs": [
+          "0"
+        ],
+        "rowCount": 5.4003057110625E9
+      },
+      {
+        "id": "17",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": true,
+            "operands": [
+              11
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "18",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "b3_lp",
+          "b3_cnt",
+          "b3_cntd"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "input": 0,
+                    "name": "$0"
+                  },
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ]
+              }
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 11,
+              "scale": 6
+            }
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "19",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "literal": true,
+          "type": {
+            "type": "BOOLEAN",
+            "nullable": false
+          }
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "15",
+          "18"
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "20",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "BETWEEN",
+                "kind": "BETWEEN",
+                "syntax": "SPECIAL"
+              },
+              "operands": [
+                {
+                  "literal": false,
+                  "type": {
+                    "type": "BOOLEAN",
+                    "nullable": false
+                  }
+                },
+                {
+                  "input": 9,
+                  "name": "$9"
+                },
+                {
+                  "literal": 6,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                },
+                {
+                  "literal": 10,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "OR",
+                "kind": "OR",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 11,
+                      "name": "$11"
+                    },
+                    {
+                      "literal": 91,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 101,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 18,
+                      "name": "$18"
+                    },
+                    {
+                      "literal": 1430,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 2430,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                },
+                {
+                  "op": {
+                    "name": "BETWEEN",
+                    "kind": "BETWEEN",
+                    "syntax": "SPECIAL"
+                  },
+                  "operands": [
+                    {
+                      "literal": false,
+                      "type": {
+                        "type": "BOOLEAN",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "input": 10,
+                      "name": "$10"
+                    },
+                    {
+                      "literal": 32,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    },
+                    {
+                      "literal": 52,
+                      "type": {
+                        "type": "DECIMAL",
+                        "nullable": false,
+                        "precision": 12,
+                        "scale": 2
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "inputs": [
+          "0"
+        ],
+        "rowCount": 5.4003057110625E9
+      },
+      {
+        "id": "21",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": true,
+            "operands": [
+              11
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "22",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "b2_lp",
+          "b2_cnt",
+          "b2_cntd"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "input": 0,
+                    "name": "$0"
+                  },
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ]
+              }
+            ],
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 11,
+              "scale": 6
+            }
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "23",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "literal": true,
+          "type": {
+            "type": "BOOLEAN",
+            "nullable": false
+          }
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "19",
+          "22"
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "24",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "b1.b1_lp",
+          "b1.b1_cnt",
+          "b1.b1_cntd",
+          "b2.b2_lp",
+          "b2.b2_cnt",
+          "b2.b2_cntd",
+          "b3.b3_lp",
+          "b3.b3_cnt",
+          "b3.b3_cntd",
+          "b4.b4_lp",
+          "b4.b4_cnt",
+          "b4.b4_cntd",
+          "b5.b5_lp",
+          "b5.b5_cnt",
+          "b5.b5_cntd",
+          "b6.b6_lp",
+          "b6.b6_cnt",
+          "b6.b6_cntd"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 15,
+            "name": "$15"
+          },
+          {
+            "input": 16,
+            "name": "$16"
+          },
+          {
+            "input": 17,
+            "name": "$17"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          },
+          {
+            "input": 13,
+            "name": "$13"
+          },
+          {
+            "input": 14,
+            "name": "$14"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 11,
+            "name": "$11"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  }
+}

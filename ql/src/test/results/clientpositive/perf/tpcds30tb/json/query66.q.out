@@ -1,0 +1,7517 @@
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "web_sales"
+        ],
+        "table:alias": "web_sales",
+        "inputs": [],
+        "rowCount": 21594638446,
+        "avgRowSize": 337,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_sold_time_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_ship_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ws_item_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_bill_customer_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_bill_cdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_bill_hdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_bill_addr_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_ship_customer_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_ship_cdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_ship_hdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_ship_addr_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_web_page_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_web_site_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_ship_mode_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_warehouse_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_promo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ws_order_number"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "ws_quantity"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_ext_discount_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_ext_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_ext_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_ext_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_ext_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_coupon_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_ext_ship_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_net_paid"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_net_paid_inc_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_net_paid_inc_ship"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_net_paid_inc_ship_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ws_net_profit"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ws_sold_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "partitionColumns": [
+          "ws_sold_date_sk"
+        ],
+        "colStats": [
+          {
+            "name": "ws_sold_time_sk",
+            "ndv": 85503,
+            "minValue": 0,
+            "maxValue": 86399
+          },
+          {
+            "name": "ws_ship_mode_sk",
+            "ndv": 20,
+            "minValue": 1,
+            "maxValue": 20
+          },
+          {
+            "name": "ws_warehouse_sk",
+            "ndv": 27,
+            "minValue": 1,
+            "maxValue": 27
+          },
+          {
+            "name": "ws_quantity",
+            "ndv": 101,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "ws_sales_price",
+            "ndv": 31054,
+            "minValue": 0,
+            "maxValue": 300
+          },
+          {
+            "name": "ws_net_paid_inc_tax",
+            "ndv": 2521035,
+            "minValue": 0,
+            "maxValue": 32492.9
+          },
+          {
+            "name": "ws_sold_date_sk",
+            "ndv": 1823,
+            "minValue": 2450816,
+            "maxValue": 2452642
+          },
+          {
+            "name": "ws_ship_date_sk",
+            "ndv": 1902,
+            "minValue": 2450817,
+            "maxValue": 2452762
+          },
+          {
+            "name": "ws_item_sk",
+            "ndv": 462000,
+            "minValue": 1,
+            "maxValue": 462000
+          },
+          {
+            "name": "ws_bill_customer_sk",
+            "ndv": 78525965,
+            "minValue": 1,
+            "maxValue": 80000000
+          },
+          {
+            "name": "ws_bill_cdemo_sk",
+            "ndv": 1920801,
+            "minValue": 1,
+            "maxValue": 1920800
+          },
+          {
+            "name": "ws_bill_hdemo_sk",
+            "ndv": 7201,
+            "minValue": 1,
+            "maxValue": 7200
+          },
+          {
+            "name": "ws_bill_addr_sk",
+            "ndv": 40000001,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "ws_ship_customer_sk",
+            "ndv": 78525965,
+            "minValue": 1,
+            "maxValue": 80000000
+          },
+          {
+            "name": "ws_ship_cdemo_sk",
+            "ndv": 1920801,
+            "minValue": 1,
+            "maxValue": 1920800
+          },
+          {
+            "name": "ws_ship_hdemo_sk",
+            "ndv": 7201,
+            "minValue": 1,
+            "maxValue": 7200
+          },
+          {
+            "name": "ws_ship_addr_sk",
+            "ndv": 40000001,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "ws_web_page_sk",
+            "ndv": 4556,
+            "minValue": 1,
+            "maxValue": 4602
+          },
+          {
+            "name": "ws_web_site_sk",
+            "ndv": 85,
+            "minValue": 1,
+            "maxValue": 84
+          },
+          {
+            "name": "ws_promo_sk",
+            "ndv": 2301,
+            "minValue": 1,
+            "maxValue": 2300
+          },
+          {
+            "name": "ws_order_number",
+            "ndv": 1800000000,
+            "minValue": 1,
+            "maxValue": 1800000000
+          },
+          {
+            "name": "ws_wholesale_cost",
+            "ndv": 9382,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "ws_list_price",
+            "ndv": 31080,
+            "minValue": 1,
+            "maxValue": 300
+          },
+          {
+            "name": "ws_ext_discount_amt",
+            "ndv": 1141615,
+            "minValue": 0,
+            "maxValue": 29982
+          },
+          {
+            "name": "ws_ext_sales_price",
+            "ndv": 1155428,
+            "minValue": 0,
+            "maxValue": 29970
+          },
+          {
+            "name": "ws_ext_wholesale_cost",
+            "ndv": 381232,
+            "minValue": 1,
+            "maxValue": 10000
+          },
+          {
+            "name": "ws_ext_list_price",
+            "ndv": 1208442,
+            "minValue": 1,
+            "maxValue": 30000
+          },
+          {
+            "name": "ws_ext_tax",
+            "ndv": 233719,
+            "minValue": 0,
+            "maxValue": 2682.9
+          },
+          {
+            "name": "ws_coupon_amt",
+            "ndv": 1659025,
+            "minValue": 0,
+            "maxValue": 28824
+          },
+          {
+            "name": "ws_ext_ship_cost",
+            "ndv": 564319,
+            "minValue": 0,
+            "maxValue": 14950
+          },
+          {
+            "name": "ws_net_paid",
+            "ndv": 1870760,
+            "minValue": 0,
+            "maxValue": 29970
+          },
+          {
+            "name": "ws_net_paid_inc_ship",
+            "ndv": 2577850,
+            "minValue": 0,
+            "maxValue": 44263
+          },
+          {
+            "name": "ws_net_paid_inc_ship_tax",
+            "ndv": 3413793,
+            "minValue": 0,
+            "maxValue": 46389.84
+          },
+          {
+            "name": "ws_net_profit",
+            "ndv": 2074138,
+            "minValue": -10000,
+            "maxValue": 19980
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 0,
+                  "name": "$0"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 13,
+                  "name": "$13"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 14,
+                  "name": "$14"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 33,
+                  "name": "$33"
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 1.4168242284420603E10
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "ws_sold_time_sk",
+          "ws_ship_mode_sk",
+          "ws_warehouse_sk",
+          "ws_sold_date_sk",
+          "EXPR$0",
+          "EXPR$1"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 13,
+            "name": "$13"
+          },
+          {
+            "input": 14,
+            "name": "$14"
+          },
+          {
+            "input": 33,
+            "name": "$33"
+          },
+          {
+            "op": {
+              "name": "*",
+              "kind": "TIMES",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 20,
+                "name": "$20"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 17,
+                    "name": "$17"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "*",
+              "kind": "TIMES",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 29,
+                "name": "$29"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 17,
+                    "name": "$17"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 1.4168242284420603E10
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "time_dim"
+        ],
+        "table:alias": "time_dim",
+        "inputs": [],
+        "rowCount": 86400,
+        "avgRowSize": 377,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "t_time_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "t_time_id"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "t_time"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "t_hour"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "t_minute"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "t_second"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 2,
+              "name": "t_am_pm"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "t_shift"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "t_sub_shift"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "t_meal_time"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "t_time_sk",
+            "ndv": 85503,
+            "minValue": 0,
+            "maxValue": 86399
+          },
+          {
+            "name": "t_time",
+            "ndv": 85503,
+            "minValue": 0,
+            "maxValue": 86399
+          },
+          {
+            "name": "t_time_id",
+            "ndv": 87002
+          },
+          {
+            "name": "t_hour",
+            "ndv": 24,
+            "minValue": 0,
+            "maxValue": 23
+          },
+          {
+            "name": "t_minute",
+            "ndv": 62,
+            "minValue": 0,
+            "maxValue": 59
+          },
+          {
+            "name": "t_second",
+            "ndv": 62,
+            "minValue": 0,
+            "maxValue": 59
+          },
+          {
+            "name": "t_am_pm",
+            "ndv": 2
+          },
+          {
+            "name": "t_shift",
+            "ndv": 3
+          },
+          {
+            "name": "t_sub_shift",
+            "ndv": 4
+          },
+          {
+            "name": "t_meal_time",
+            "ndv": 4
+          }
+        ]
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "BETWEEN",
+            "kind": "BETWEEN",
+            "syntax": "SPECIAL"
+          },
+          "operands": [
+            {
+              "literal": false,
+              "type": {
+                "type": "BOOLEAN",
+                "nullable": false
+              }
+            },
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "literal": 49530,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            },
+            {
+              "literal": 78330,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            }
+          ]
+        },
+        "rowCount": 21600
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "t_time_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 21600
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 6,
+              "name": "$6"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "2",
+          "5"
+        ],
+        "rowCount": 4.590510500152275E13
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "date_dim"
+        ],
+        "table:alias": "date_dim",
+        "inputs": [],
+        "rowCount": 73049,
+        "avgRowSize": 347,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "d_date_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "d_date_id"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "d_date"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_month_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_week_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dow"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_moy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_qoy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_week_seq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 9,
+              "name": "d_day_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 6,
+              "name": "d_quarter_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_holiday"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_weekend"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_following_holiday"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_first_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_last_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_ly"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_lq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_day"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_week"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_month"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_quarter"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_year"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "d_date_sk",
+            "ndv": 67850,
+            "minValue": 2415022,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_moy",
+            "ndv": 12,
+            "minValue": 1,
+            "maxValue": 12
+          },
+          {
+            "name": "d_date_id",
+            "ndv": 71022
+          },
+          {
+            "name": "d_date",
+            "ndv": 0,
+            "minValue": -25566,
+            "maxValue": 47482
+          },
+          {
+            "name": "d_month_seq",
+            "ndv": 2439,
+            "minValue": 0,
+            "maxValue": 2400
+          },
+          {
+            "name": "d_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_dow",
+            "ndv": 7,
+            "minValue": 0,
+            "maxValue": 6
+          },
+          {
+            "name": "d_dom",
+            "ndv": 31,
+            "minValue": 1,
+            "maxValue": 31
+          },
+          {
+            "name": "d_qoy",
+            "ndv": 4,
+            "minValue": 1,
+            "maxValue": 4
+          },
+          {
+            "name": "d_fy_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_fy_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_fy_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_day_name",
+            "ndv": 7
+          },
+          {
+            "name": "d_quarter_name",
+            "ndv": 800
+          },
+          {
+            "name": "d_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_weekend",
+            "ndv": 2
+          },
+          {
+            "name": "d_following_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_first_dom",
+            "ndv": 2332,
+            "minValue": 2415021,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_last_dom",
+            "ndv": 2401,
+            "minValue": 2415020,
+            "maxValue": 2488372
+          },
+          {
+            "name": "d_same_day_ly",
+            "ndv": 67791,
+            "minValue": 2414657,
+            "maxValue": 2487705
+          },
+          {
+            "name": "d_same_day_lq",
+            "ndv": 67904,
+            "minValue": 2414930,
+            "maxValue": 2487978
+          },
+          {
+            "name": "d_current_day",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_week",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_month",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_quarter",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_year",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 6,
+              "name": "$6"
+            },
+            {
+              "literal": 2002,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            }
+          ]
+        },
+        "rowCount": 10957.35
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "d_date_sk",
+          "EXPR$0",
+          "EXPR$1",
+          "EXPR$2",
+          "EXPR$3",
+          "EXPR$4",
+          "EXPR$5",
+          "EXPR$6",
+          "EXPR$7",
+          "EXPR$8",
+          "EXPR$9",
+          "EXPR$10",
+          "EXPR$11"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 2,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 3,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 4,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 5,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 6,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 7,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 8,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 9,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 10,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 11,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 12,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 10957.35
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 3,
+              "name": "$3"
+            },
+            {
+              "input": 7,
+              "name": "$7"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "6",
+          "9"
+        ],
+        "rowCount": 75449745343265296
+      },
+      {
+        "id": "11",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "ship_mode"
+        ],
+        "table:alias": "ship_mode",
+        "inputs": [],
+        "rowCount": 20,
+        "avgRowSize": 397,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "sm_ship_mode_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "sm_ship_mode_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 30,
+              "name": "sm_type"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "sm_code"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "sm_carrier"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "sm_contract"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "sm_ship_mode_sk",
+            "ndv": 20,
+            "minValue": 1,
+            "maxValue": 20
+          },
+          {
+            "name": "sm_carrier",
+            "ndv": 20
+          },
+          {
+            "name": "sm_ship_mode_id",
+            "ndv": 20
+          },
+          {
+            "name": "sm_type",
+            "ndv": 6
+          },
+          {
+            "name": "sm_code",
+            "ndv": 4
+          },
+          {
+            "name": "sm_contract",
+            "ndv": 20
+          }
+        ]
+      },
+      {
+        "id": "12",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IN",
+            "kind": "OTHER_FUNCTION",
+            "syntax": "SPECIAL"
+          },
+          "operands": [
+            {
+              "input": 4,
+              "name": "$4"
+            },
+            {
+              "literal": "AIRBORNE",
+              "type": {
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 8
+              }
+            },
+            {
+              "literal": "DIAMOND",
+              "type": {
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 7
+              }
+            }
+          ]
+        },
+        "rowCount": 5
+      },
+      {
+        "id": "13",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "sm_ship_mode_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 5
+      },
+      {
+        "id": "14",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 20,
+              "name": "$20"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "10",
+          "13"
+        ],
+        "rowCount": 56587309007448968
+      },
+      {
+        "id": "15",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "warehouse"
+        ],
+        "table:alias": "warehouse",
+        "inputs": [],
+        "rowCount": 27,
+        "avgRowSize": 679,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "w_warehouse_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "w_warehouse_id"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "w_warehouse_name"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "w_warehouse_sq_ft"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "w_street_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "w_street_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 15,
+              "name": "w_street_type"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "w_suite_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "w_city"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 30,
+              "name": "w_county"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 2,
+              "name": "w_state"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "w_zip"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "w_country"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 5,
+              "scale": 2,
+              "name": "w_gmt_offset"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "w_warehouse_sk",
+            "ndv": 27,
+            "minValue": 1,
+            "maxValue": 27
+          },
+          {
+            "name": "w_warehouse_name",
+            "ndv": 27
+          },
+          {
+            "name": "w_warehouse_sq_ft",
+            "ndv": 26,
+            "minValue": 73065,
+            "maxValue": 977787
+          },
+          {
+            "name": "w_city",
+            "ndv": 18
+          },
+          {
+            "name": "w_county",
+            "ndv": 14
+          },
+          {
+            "name": "w_state",
+            "ndv": 12
+          },
+          {
+            "name": "w_country",
+            "ndv": 1
+          },
+          {
+            "name": "w_warehouse_id",
+            "ndv": 27
+          },
+          {
+            "name": "w_street_number",
+            "ndv": 26
+          },
+          {
+            "name": "w_street_name",
+            "ndv": 27
+          },
+          {
+            "name": "w_street_type",
+            "ndv": 16
+          },
+          {
+            "name": "w_suite_number",
+            "ndv": 21
+          },
+          {
+            "name": "w_zip",
+            "ndv": 24
+          },
+          {
+            "name": "w_gmt_offset",
+            "ndv": 4,
+            "minValue": -8,
+            "maxValue": -5
+          }
+        ]
+      },
+      {
+        "id": "16",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "w_warehouse_sk",
+          "w_warehouse_name",
+          "w_warehouse_sq_ft",
+          "w_city",
+          "w_county",
+          "w_state",
+          "w_country"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          }
+        ],
+        "rowCount": 27
+      },
+      {
+        "id": "17",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 21,
+              "name": "$21"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "14",
+          "16"
+        ],
+        "rowCount": 229178601480168288
+      },
+      {
+        "id": "18",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1",
+          "$f2",
+          "$f3",
+          "$f4",
+          "$f5",
+          "$f7",
+          "$f8",
+          "$f9",
+          "$f10",
+          "$f11",
+          "$f12",
+          "$f13",
+          "$f14",
+          "$f15",
+          "$f16",
+          "$f17",
+          "$f18",
+          "$f19",
+          "$f20",
+          "$f21",
+          "$f22",
+          "$f23",
+          "$f24",
+          "$f25",
+          "$f26",
+          "$f27",
+          "$f28",
+          "$f29",
+          "$f30"
+        ],
+        "exprs": [
+          {
+            "input": 22,
+            "name": "$22"
+          },
+          {
+            "input": 23,
+            "name": "$23"
+          },
+          {
+            "input": 24,
+            "name": "$24"
+          },
+          {
+            "input": 25,
+            "name": "$25"
+          },
+          {
+            "input": 26,
+            "name": "$26"
+          },
+          {
+            "input": 27,
+            "name": "$27"
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 9,
+                "name": "$9"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 10,
+                "name": "$10"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 11,
+                "name": "$11"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 12,
+                "name": "$12"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 13,
+                "name": "$13"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 14,
+                "name": "$14"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 15,
+                "name": "$15"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 16,
+                "name": "$16"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 17,
+                "name": "$17"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 18,
+                "name": "$18"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 19,
+                "name": "$19"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 9,
+                "name": "$9"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 10,
+                "name": "$10"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 11,
+                "name": "$11"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 12,
+                "name": "$12"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 13,
+                "name": "$13"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 14,
+                "name": "$14"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 15,
+                "name": "$15"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 16,
+                "name": "$16"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 17,
+                "name": "$17"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 18,
+                "name": "$18"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 19,
+                "name": "$19"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 229178601480168288
+      },
+      {
+        "id": "19",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              6
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              7
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              8
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              9
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              10
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              12
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              13
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              14
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              15
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              16
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              17
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              18
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              19
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              20
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              21
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              22
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              23
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              24
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              25
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              26
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              27
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              28
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              29
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 22917860148016828
+      },
+      {
+        "id": "20",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1",
+          "$f2",
+          "$f3",
+          "$f4",
+          "$f5",
+          "$f6",
+          "$f7",
+          "$f8",
+          "$f9",
+          "$f10",
+          "$f11",
+          "$f12",
+          "$f13",
+          "$f14",
+          "$f15",
+          "$f16",
+          "$f17",
+          "$f18",
+          "$f19",
+          "$f20",
+          "$f21",
+          "$f22",
+          "$f23",
+          "$f24",
+          "$f25",
+          "$f26",
+          "$f27",
+          "$f28",
+          "$f29"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 11,
+            "name": "$11"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          },
+          {
+            "input": 13,
+            "name": "$13"
+          },
+          {
+            "input": 14,
+            "name": "$14"
+          },
+          {
+            "input": 15,
+            "name": "$15"
+          },
+          {
+            "input": 16,
+            "name": "$16"
+          },
+          {
+            "input": 17,
+            "name": "$17"
+          },
+          {
+            "input": 18,
+            "name": "$18"
+          },
+          {
+            "input": 19,
+            "name": "$19"
+          },
+          {
+            "input": 20,
+            "name": "$20"
+          },
+          {
+            "input": 21,
+            "name": "$21"
+          },
+          {
+            "input": 22,
+            "name": "$22"
+          },
+          {
+            "input": 23,
+            "name": "$23"
+          },
+          {
+            "input": 24,
+            "name": "$24"
+          },
+          {
+            "input": 25,
+            "name": "$25"
+          },
+          {
+            "input": 26,
+            "name": "$26"
+          },
+          {
+            "input": 27,
+            "name": "$27"
+          },
+          {
+            "input": 28,
+            "name": "$28"
+          },
+          {
+            "input": 29,
+            "name": "$29"
+          }
+        ],
+        "rowCount": 22917860148016828
+      },
+      {
+        "id": "21",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "catalog_sales"
+        ],
+        "table:alias": "catalog_sales",
+        "inputs": [],
+        "rowCount": 43005109025,
+        "avgRowSize": 337,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_sold_time_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_ship_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_bill_customer_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_bill_cdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_bill_hdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_bill_addr_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_ship_customer_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_ship_cdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_ship_hdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_ship_addr_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_call_center_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_catalog_page_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_ship_mode_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_warehouse_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "cs_item_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_promo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "cs_order_number"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "cs_quantity"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_ext_discount_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_ext_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_ext_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_ext_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_ext_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_coupon_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_ext_ship_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_net_paid"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_net_paid_inc_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_net_paid_inc_ship"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_net_paid_inc_ship_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "cs_net_profit"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "cs_sold_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "partitionColumns": [
+          "cs_sold_date_sk"
+        ],
+        "colStats": [
+          {
+            "name": "cs_sold_time_sk",
+            "ndv": 85503,
+            "minValue": 0,
+            "maxValue": 86399
+          },
+          {
+            "name": "cs_ship_mode_sk",
+            "ndv": 20,
+            "minValue": 1,
+            "maxValue": 20
+          },
+          {
+            "name": "cs_warehouse_sk",
+            "ndv": 27,
+            "minValue": 1,
+            "maxValue": 27
+          },
+          {
+            "name": "cs_quantity",
+            "ndv": 101,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "cs_ext_sales_price",
+            "ndv": 1151692,
+            "minValue": 0,
+            "maxValue": 29943
+          },
+          {
+            "name": "cs_net_paid_inc_ship_tax",
+            "ndv": 3397311,
+            "minValue": 0,
+            "maxValue": 46593.36
+          },
+          {
+            "name": "cs_sold_date_sk",
+            "ndv": 1836,
+            "minValue": 2450815,
+            "maxValue": 2452654
+          },
+          {
+            "name": "cs_ship_date_sk",
+            "ndv": 1880,
+            "minValue": 2450817,
+            "maxValue": 2452744
+          },
+          {
+            "name": "cs_bill_customer_sk",
+            "ndv": 78525965,
+            "minValue": 1,
+            "maxValue": 80000000
+          },
+          {
+            "name": "cs_bill_cdemo_sk",
+            "ndv": 1920801,
+            "minValue": 1,
+            "maxValue": 1920800
+          },
+          {
+            "name": "cs_bill_hdemo_sk",
+            "ndv": 7201,
+            "minValue": 1,
+            "maxValue": 7200
+          },
+          {
+            "name": "cs_bill_addr_sk",
+            "ndv": 40000001,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "cs_ship_customer_sk",
+            "ndv": 78525965,
+            "minValue": 1,
+            "maxValue": 80000000
+          },
+          {
+            "name": "cs_ship_cdemo_sk",
+            "ndv": 1920801,
+            "minValue": 1,
+            "maxValue": 1920800
+          },
+          {
+            "name": "cs_ship_hdemo_sk",
+            "ndv": 7201,
+            "minValue": 1,
+            "maxValue": 7200
+          },
+          {
+            "name": "cs_ship_addr_sk",
+            "ndv": 40000001,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "cs_call_center_sk",
+            "ndv": 61,
+            "minValue": 1,
+            "maxValue": 60
+          },
+          {
+            "name": "cs_catalog_page_sk",
+            "ndv": 27932,
+            "minValue": 1,
+            "maxValue": 38675
+          },
+          {
+            "name": "cs_item_sk",
+            "ndv": 462000,
+            "minValue": 1,
+            "maxValue": 462000
+          },
+          {
+            "name": "cs_promo_sk",
+            "ndv": 2301,
+            "minValue": 1,
+            "maxValue": 2300
+          },
+          {
+            "name": "cs_order_number",
+            "ndv": 4459647885,
+            "minValue": 1,
+            "maxValue": 4800000000
+          },
+          {
+            "name": "cs_wholesale_cost",
+            "ndv": 9382,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "cs_list_price",
+            "ndv": 31080,
+            "minValue": 1,
+            "maxValue": 300
+          },
+          {
+            "name": "cs_sales_price",
+            "ndv": 31054,
+            "minValue": 0,
+            "maxValue": 300
+          },
+          {
+            "name": "cs_ext_discount_amt",
+            "ndv": 1138649,
+            "minValue": 0,
+            "maxValue": 29982
+          },
+          {
+            "name": "cs_ext_wholesale_cost",
+            "ndv": 381232,
+            "minValue": 1,
+            "maxValue": 10000
+          },
+          {
+            "name": "cs_ext_list_price",
+            "ndv": 1208442,
+            "minValue": 1,
+            "maxValue": 30000
+          },
+          {
+            "name": "cs_ext_tax",
+            "ndv": 228881,
+            "minValue": 0,
+            "maxValue": 2673.27
+          },
+          {
+            "name": "cs_coupon_amt",
+            "ndv": 1643867,
+            "minValue": 0,
+            "maxValue": 28730
+          },
+          {
+            "name": "cs_ext_ship_cost",
+            "ndv": 571510,
+            "minValue": 0,
+            "maxValue": 14994
+          },
+          {
+            "name": "cs_net_paid",
+            "ndv": 1883946,
+            "minValue": 0,
+            "maxValue": 29943
+          },
+          {
+            "name": "cs_net_paid_inc_tax",
+            "ndv": 2551581,
+            "minValue": 0,
+            "maxValue": 32376.27
+          },
+          {
+            "name": "cs_net_paid_inc_ship",
+            "ndv": 2600391,
+            "minValue": 0,
+            "maxValue": 43956
+          },
+          {
+            "name": "cs_net_profit",
+            "ndv": 2083412,
+            "minValue": -10000,
+            "maxValue": 19962
+          }
+        ]
+      },
+      {
+        "id": "22",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 13,
+                  "name": "$13"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 12,
+                  "name": "$12"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 0,
+                  "name": "$0"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 33,
+                  "name": "$33"
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 2.8215652031302505E10
+      },
+      {
+        "id": "23",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "cs_sold_time_sk",
+          "cs_ship_mode_sk",
+          "cs_warehouse_sk",
+          "cs_sold_date_sk",
+          "EXPR$0",
+          "EXPR$1"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          },
+          {
+            "input": 13,
+            "name": "$13"
+          },
+          {
+            "input": 33,
+            "name": "$33"
+          },
+          {
+            "op": {
+              "name": "*",
+              "kind": "TIMES",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 22,
+                "name": "$22"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 17,
+                    "name": "$17"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "*",
+              "kind": "TIMES",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 31,
+                "name": "$31"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 17,
+                    "name": "$17"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 2.8215652031302505E10
+      },
+      {
+        "id": "24",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "BETWEEN",
+            "kind": "BETWEEN",
+            "syntax": "SPECIAL"
+          },
+          "operands": [
+            {
+              "literal": false,
+              "type": {
+                "type": "BOOLEAN",
+                "nullable": false
+              }
+            },
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "literal": 49530,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            },
+            {
+              "literal": 78330,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            }
+          ]
+        },
+        "inputs": [
+          "3"
+        ],
+        "rowCount": 21600
+      },
+      {
+        "id": "25",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "t_time_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 21600
+      },
+      {
+        "id": "26",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 6,
+              "name": "$6"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "23",
+          "25"
+        ],
+        "rowCount": 9.141871258142011E13
+      },
+      {
+        "id": "27",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 6,
+              "name": "$6"
+            },
+            {
+              "literal": 2002,
+              "type": {
+                "type": "INTEGER",
+                "nullable": false
+              }
+            }
+          ]
+        },
+        "inputs": [
+          "7"
+        ],
+        "rowCount": 10957.35
+      },
+      {
+        "id": "28",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "d_date_sk",
+          "EXPR$0",
+          "EXPR$1",
+          "EXPR$2",
+          "EXPR$3",
+          "EXPR$4",
+          "EXPR$5",
+          "EXPR$6",
+          "EXPR$7",
+          "EXPR$8",
+          "EXPR$9",
+          "EXPR$10",
+          "EXPR$11"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 2,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 3,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 4,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 5,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 6,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 7,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 8,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 9,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 10,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 11,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "=",
+              "kind": "EQUALS",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "literal": 12,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 10957.35
+      },
+      {
+        "id": "29",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 3,
+              "name": "$3"
+            },
+            {
+              "input": 7,
+              "name": "$7"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "26",
+          "28"
+        ],
+        "rowCount": 150256024545603552
+      },
+      {
+        "id": "30",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IN",
+            "kind": "OTHER_FUNCTION",
+            "syntax": "SPECIAL"
+          },
+          "operands": [
+            {
+              "input": 4,
+              "name": "$4"
+            },
+            {
+              "literal": "AIRBORNE",
+              "type": {
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 8
+              }
+            },
+            {
+              "literal": "DIAMOND",
+              "type": {
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 7
+              }
+            }
+          ]
+        },
+        "inputs": [
+          "11"
+        ],
+        "rowCount": 5
+      },
+      {
+        "id": "31",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "sm_ship_mode_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 5
+      },
+      {
+        "id": "32",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 20,
+              "name": "$20"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "29",
+          "31"
+        ],
+        "rowCount": 112692018409202672
+      },
+      {
+        "id": "33",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "w_warehouse_sk",
+          "w_warehouse_name",
+          "w_warehouse_sq_ft",
+          "w_city",
+          "w_county",
+          "w_state",
+          "w_country"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          }
+        ],
+        "inputs": [
+          "15"
+        ],
+        "rowCount": 27
+      },
+      {
+        "id": "34",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 21,
+              "name": "$21"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "32",
+          "33"
+        ],
+        "rowCount": 456402674557270784
+      },
+      {
+        "id": "35",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1",
+          "$f2",
+          "$f3",
+          "$f4",
+          "$f5",
+          "$f7",
+          "$f8",
+          "$f9",
+          "$f10",
+          "$f11",
+          "$f12",
+          "$f13",
+          "$f14",
+          "$f15",
+          "$f16",
+          "$f17",
+          "$f18",
+          "$f19",
+          "$f20",
+          "$f21",
+          "$f22",
+          "$f23",
+          "$f24",
+          "$f25",
+          "$f26",
+          "$f27",
+          "$f28",
+          "$f29",
+          "$f30"
+        ],
+        "exprs": [
+          {
+            "input": 22,
+            "name": "$22"
+          },
+          {
+            "input": 23,
+            "name": "$23"
+          },
+          {
+            "input": 24,
+            "name": "$24"
+          },
+          {
+            "input": 25,
+            "name": "$25"
+          },
+          {
+            "input": 26,
+            "name": "$26"
+          },
+          {
+            "input": 27,
+            "name": "$27"
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 9,
+                "name": "$9"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 10,
+                "name": "$10"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 11,
+                "name": "$11"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 12,
+                "name": "$12"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 13,
+                "name": "$13"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 14,
+                "name": "$14"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 15,
+                "name": "$15"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 16,
+                "name": "$16"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 17,
+                "name": "$17"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 18,
+                "name": "$18"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 19,
+                "name": "$19"
+              },
+              {
+                "input": 4,
+                "name": "$4"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 9,
+                "name": "$9"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 10,
+                "name": "$10"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 11,
+                "name": "$11"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 12,
+                "name": "$12"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 13,
+                "name": "$13"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 14,
+                "name": "$14"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 15,
+                "name": "$15"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 16,
+                "name": "$16"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 17,
+                "name": "$17"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 18,
+                "name": "$18"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 19,
+                "name": "$19"
+              },
+              {
+                "input": 5,
+                "name": "$5"
+              },
+              {
+                "literal": 0,
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": false,
+                  "precision": 18,
+                  "scale": 2
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 456402674557270784
+      },
+      {
+        "id": "36",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              6
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              7
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              8
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              9
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              10
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              12
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              13
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              14
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              15
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              16
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              17
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              18
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              19
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              20
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              21
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              22
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              23
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              24
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              25
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              26
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              27
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              28
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 28,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              29
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 45640267455727080
+      },
+      {
+        "id": "37",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1",
+          "$f2",
+          "$f3",
+          "$f4",
+          "$f5",
+          "$f6",
+          "$f7",
+          "$f8",
+          "$f9",
+          "$f10",
+          "$f11",
+          "$f12",
+          "$f13",
+          "$f14",
+          "$f15",
+          "$f16",
+          "$f17",
+          "$f18",
+          "$f19",
+          "$f20",
+          "$f21",
+          "$f22",
+          "$f23",
+          "$f24",
+          "$f25",
+          "$f26",
+          "$f27",
+          "$f28",
+          "$f29"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 11,
+            "name": "$11"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          },
+          {
+            "input": 13,
+            "name": "$13"
+          },
+          {
+            "input": 14,
+            "name": "$14"
+          },
+          {
+            "input": 15,
+            "name": "$15"
+          },
+          {
+            "input": 16,
+            "name": "$16"
+          },
+          {
+            "input": 17,
+            "name": "$17"
+          },
+          {
+            "input": 18,
+            "name": "$18"
+          },
+          {
+            "input": 19,
+            "name": "$19"
+          },
+          {
+            "input": 20,
+            "name": "$20"
+          },
+          {
+            "input": 21,
+            "name": "$21"
+          },
+          {
+            "input": 22,
+            "name": "$22"
+          },
+          {
+            "input": 23,
+            "name": "$23"
+          },
+          {
+            "input": 24,
+            "name": "$24"
+          },
+          {
+            "input": 25,
+            "name": "$25"
+          },
+          {
+            "input": 26,
+            "name": "$26"
+          },
+          {
+            "input": 27,
+            "name": "$27"
+          },
+          {
+            "input": 28,
+            "name": "$28"
+          },
+          {
+            "input": 29,
+            "name": "$29"
+          }
+        ],
+        "rowCount": 45640267455727080
+      },
+      {
+        "id": "38",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion",
+        "all": true,
+        "inputs": [
+          "20",
+          "37"
+        ],
+        "rowCount": 68558127603743904
+      },
+      {
+        "id": "39",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1",
+          "$f2",
+          "$f3",
+          "$f4",
+          "$f5",
+          "$f8",
+          "$f9",
+          "$f10",
+          "$f11",
+          "$f12",
+          "$f13",
+          "$f14",
+          "$f15",
+          "$f16",
+          "$f17",
+          "$f18",
+          "$f19",
+          "$f20",
+          "$f21",
+          "$f22",
+          "$f23",
+          "$f24",
+          "$f25",
+          "$f26",
+          "$f27",
+          "$f28",
+          "$f29",
+          "$f30",
+          "$f31",
+          "$f32",
+          "$f33",
+          "$f34",
+          "$f35",
+          "$f36",
+          "$f37",
+          "$f38",
+          "$f39",
+          "$f40",
+          "$f41",
+          "$f42",
+          "$f43"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 11,
+            "name": "$11"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          },
+          {
+            "input": 13,
+            "name": "$13"
+          },
+          {
+            "input": 14,
+            "name": "$14"
+          },
+          {
+            "input": 15,
+            "name": "$15"
+          },
+          {
+            "input": 16,
+            "name": "$16"
+          },
+          {
+            "input": 17,
+            "name": "$17"
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 6,
+                "name": "$6"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 7,
+                "name": "$7"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 8,
+                "name": "$8"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 9,
+                "name": "$9"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 10,
+                "name": "$10"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 11,
+                "name": "$11"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 12,
+                "name": "$12"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 13,
+                "name": "$13"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 14,
+                "name": "$14"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 15,
+                "name": "$15"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 16,
+                "name": "$16"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "input": 17,
+                "name": "$17"
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 1,
+                    "name": "$1"
+                  }
+                ],
+                "type": {
+                  "type": "DECIMAL",
+                  "nullable": true,
+                  "precision": 10,
+                  "scale": 0
+                }
+              }
+            ]
+          },
+          {
+            "input": 18,
+            "name": "$18"
+          },
+          {
+            "input": 19,
+            "name": "$19"
+          },
+          {
+            "input": 20,
+            "name": "$20"
+          },
+          {
+            "input": 21,
+            "name": "$21"
+          },
+          {
+            "input": 22,
+            "name": "$22"
+          },
+          {
+            "input": 23,
+            "name": "$23"
+          },
+          {
+            "input": 24,
+            "name": "$24"
+          },
+          {
+            "input": 25,
+            "name": "$25"
+          },
+          {
+            "input": 26,
+            "name": "$26"
+          },
+          {
+            "input": 27,
+            "name": "$27"
+          },
+          {
+            "input": 28,
+            "name": "$28"
+          },
+          {
+            "input": 29,
+            "name": "$29"
+          }
+        ],
+        "rowCount": 68558127603743904
+      },
+      {
+        "id": "40",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              6
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              7
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              8
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              9
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              10
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              11
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              12
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              13
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              14
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              15
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              16
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              17
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              18
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              19
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              20
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              21
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              22
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              23
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              24
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              25
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              26
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              27
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              28
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 12
+            },
+            "distinct": false,
+            "operands": [
+              29
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              30
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              31
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              32
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              33
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              34
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              35
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              36
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              37
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              38
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              39
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              40
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 38,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              41
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 6855812760374390
+      },
+      {
+        "id": "41",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1",
+          "$f2",
+          "$f3",
+          "$f4",
+          "$f5",
+          "$f6",
+          "$f7",
+          "$f8",
+          "$f9",
+          "$f10",
+          "$f11",
+          "$f12",
+          "$f13",
+          "$f14",
+          "$f15",
+          "$f16",
+          "$f17",
+          "$f18",
+          "$f19",
+          "$f20",
+          "$f21",
+          "$f22",
+          "$f23",
+          "$f24",
+          "$f25",
+          "$f26",
+          "$f27",
+          "$f28",
+          "$f29",
+          "$f30",
+          "$f31",
+          "$f32",
+          "$f33",
+          "$f34",
+          "$f35",
+          "$f36",
+          "$f37",
+          "$f38",
+          "$f39",
+          "$f40",
+          "$f41"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 11,
+            "name": "$11"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          },
+          {
+            "input": 13,
+            "name": "$13"
+          },
+          {
+            "input": 14,
+            "name": "$14"
+          },
+          {
+            "input": 15,
+            "name": "$15"
+          },
+          {
+            "input": 16,
+            "name": "$16"
+          },
+          {
+            "input": 17,
+            "name": "$17"
+          },
+          {
+            "input": 18,
+            "name": "$18"
+          },
+          {
+            "input": 19,
+            "name": "$19"
+          },
+          {
+            "input": 20,
+            "name": "$20"
+          },
+          {
+            "input": 21,
+            "name": "$21"
+          },
+          {
+            "input": 22,
+            "name": "$22"
+          },
+          {
+            "input": 23,
+            "name": "$23"
+          },
+          {
+            "input": 24,
+            "name": "$24"
+          },
+          {
+            "input": 25,
+            "name": "$25"
+          },
+          {
+            "input": 26,
+            "name": "$26"
+          },
+          {
+            "input": 27,
+            "name": "$27"
+          },
+          {
+            "input": 28,
+            "name": "$28"
+          },
+          {
+            "input": 29,
+            "name": "$29"
+          },
+          {
+            "input": 30,
+            "name": "$30"
+          },
+          {
+            "input": 31,
+            "name": "$31"
+          },
+          {
+            "input": 32,
+            "name": "$32"
+          },
+          {
+            "input": 33,
+            "name": "$33"
+          },
+          {
+            "input": 34,
+            "name": "$34"
+          },
+          {
+            "input": 35,
+            "name": "$35"
+          },
+          {
+            "input": 36,
+            "name": "$36"
+          },
+          {
+            "input": 37,
+            "name": "$37"
+          },
+          {
+            "input": 38,
+            "name": "$38"
+          },
+          {
+            "input": 39,
+            "name": "$39"
+          },
+          {
+            "input": 40,
+            "name": "$40"
+          },
+          {
+            "input": 41,
+            "name": "$41"
+          }
+        ],
+        "rowCount": 6855812760374390
+      },
+      {
+        "id": "42",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit",
+        "collation": [
+          {
+            "field": 0,
+            "direction": "ASCENDING",
+            "nulls": "LAST"
+          }
+        ],
+        "fetch": {
+          "literal": 100,
+          "type": {
+            "type": "INTEGER",
+            "nullable": false
+          }
+        },
+        "rowCount": 100
+      },
+      {
+        "id": "43",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "w_warehouse_name",
+          "w_warehouse_sq_ft",
+          "w_city",
+          "w_county",
+          "w_state",
+          "w_country",
+          "ship_carriers",
+          "year",
+          "jan_sales",
+          "feb_sales",
+          "mar_sales",
+          "apr_sales",
+          "may_sales",
+          "jun_sales",
+          "jul_sales",
+          "aug_sales",
+          "sep_sales",
+          "oct_sales",
+          "nov_sales",
+          "dec_sales",
+          "jan_sales_per_sq_foot",
+          "feb_sales_per_sq_foot",
+          "mar_sales_per_sq_foot",
+          "apr_sales_per_sq_foot",
+          "may_sales_per_sq_foot",
+          "jun_sales_per_sq_foot",
+          "jul_sales_per_sq_foot",
+          "aug_sales_per_sq_foot",
+          "sep_sales_per_sq_foot",
+          "oct_sales_per_sq_foot",
+          "nov_sales_per_sq_foot",
+          "dec_sales_per_sq_foot",
+          "jan_net",
+          "feb_net",
+          "mar_net",
+          "apr_net",
+          "may_net",
+          "jun_net",
+          "jul_net",
+          "aug_net",
+          "sep_net",
+          "oct_net",
+          "nov_net",
+          "dec_net"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "literal": "DIAMOND,AIRBORNE",
+                "type": {
+                  "type": "VARCHAR",
+                  "nullable": false,
+                  "precision": 2147483647
+                }
+              }
+            ],
+            "type": {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647
+            }
+          },
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "literal": 2002,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 8,
+            "name": "$8"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 11,
+            "name": "$11"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          },
+          {
+            "input": 13,
+            "name": "$13"
+          },
+          {
+            "input": 14,
+            "name": "$14"
+          },
+          {
+            "input": 15,
+            "name": "$15"
+          },
+          {
+            "input": 16,
+            "name": "$16"
+          },
+          {
+            "input": 17,
+            "name": "$17"
+          },
+          {
+            "input": 18,
+            "name": "$18"
+          },
+          {
+            "input": 19,
+            "name": "$19"
+          },
+          {
+            "input": 20,
+            "name": "$20"
+          },
+          {
+            "input": 21,
+            "name": "$21"
+          },
+          {
+            "input": 22,
+            "name": "$22"
+          },
+          {
+            "input": 23,
+            "name": "$23"
+          },
+          {
+            "input": 24,
+            "name": "$24"
+          },
+          {
+            "input": 25,
+            "name": "$25"
+          },
+          {
+            "input": 26,
+            "name": "$26"
+          },
+          {
+            "input": 27,
+            "name": "$27"
+          },
+          {
+            "input": 28,
+            "name": "$28"
+          },
+          {
+            "input": 29,
+            "name": "$29"
+          },
+          {
+            "input": 30,
+            "name": "$30"
+          },
+          {
+            "input": 31,
+            "name": "$31"
+          },
+          {
+            "input": 32,
+            "name": "$32"
+          },
+          {
+            "input": 33,
+            "name": "$33"
+          },
+          {
+            "input": 34,
+            "name": "$34"
+          },
+          {
+            "input": 35,
+            "name": "$35"
+          },
+          {
+            "input": 36,
+            "name": "$36"
+          },
+          {
+            "input": 37,
+            "name": "$37"
+          },
+          {
+            "input": 38,
+            "name": "$38"
+          },
+          {
+            "input": 39,
+            "name": "$39"
+          },
+          {
+            "input": 40,
+            "name": "$40"
+          },
+          {
+            "input": 41,
+            "name": "$41"
+          }
+        ],
+        "rowCount": 100
+      }
+    ]
+  }
+}

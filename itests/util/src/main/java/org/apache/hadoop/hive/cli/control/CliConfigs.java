@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.cli.control;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.MiniClusterType;
+import org.apache.hadoop.hive.ql.hooks.ExplainFormattedCBOHook;
 import org.apache.hadoop.hive.ql.parse.CoreParseNegative;
 
 public class CliConfigs {
@@ -351,6 +353,25 @@ public class CliConfigs {
       // At the moment only makes sense to check CBO plans
       for (int i = 1; i < 100; i++) {
         includeQuery("cbo_query" + i + ".q");
+      }
+    }
+  }
+
+  public static class TPCDSFormattedCBOConfig extends AbstractCliConfig {
+    public TPCDSFormattedCBOConfig() {
+      super(CorePerfCliDriver.class);
+      setQueryDir("ql/src/test/queries/clientpositive/perf");
+      setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds30tb/json");
+      setResultsDir("ql/src/test/results/clientpositive/perf/tpcds30tb/json");
+      setHiveConfDir("data/conf/perf/tpcds30tb/tez");
+      Map<HiveConf.ConfVars, String> conf = new EnumMap<>(HiveConf.ConfVars.class);
+      conf.put(HiveConf.ConfVars.HIVE_EXPLAIN_FORMATTED_INDENT, "true");
+      conf.put(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK, ExplainFormattedCBOHook.class.getCanonicalName());
+      setCustomConfigValueMap(conf);
+      setClusterType(MiniClusterType.LLAP_LOCAL);
+      setMetastoreType("postgres.tpcds");
+      for (int i = 1; i < 100; i++) {
+        includeQuery("query" + i + ".q");
       }
     }
   }
