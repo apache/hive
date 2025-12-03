@@ -50,7 +50,7 @@ public class ShowDbLocksAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(desc.getDbLocksSchema()));
+    setFetchTask(createFetchTask(desc.getDbSchema()));
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);

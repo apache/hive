@@ -102,7 +102,7 @@ public class ShowLocksDesc implements DDLDesc, Serializable {
     return isNewFormat ? NEW_FORMAT_SCHEMA : OLD_TBL_FORMAT_SCHEMA;
   }
 
-  public String getDbLocksSchema() {
+  public String getDbSchema() {
     return isNewFormat ? NEW_FORMAT_SCHEMA : OLD_DB_FORMAT_SCHEMA;
   }
 }
