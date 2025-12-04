@@ -18,37 +18,18 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.TimeValidator;
-import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
-import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -56,28 +37,17 @@ import javax.jdo.Query;
 /**
  * Statistics management task is primarily responsible for auto deletion of table column stats based on a certain frequency
  *
- * If some table column statistics are older than the period time, they should be deleted automatically
- * Statistics Retention - If "partition.retention.period" table property is set with retention interval, when this
- * metastore task runs periodically, it will drop partitions with age (creation time) greater than retention period.
- * Dropping partitions after retention period will also delete the data in that partition.
- *
+ * If some table or partition column statistics are older than the configured retention interval
+ * (MetastoreConf.ConfVars.STATISTICS_RETENTION_PERIOD), they are deleted when this metastore task runs periodically.
  */
 public class StatisticsManagementTask implements MetastoreTaskThread {
     private static final Logger LOG = LoggerFactory.getLogger(StatisticsManagementTask.class);
-
-    // global
-    public static final String STATISTICS_AUTO_DELETION = "statistics.auto.deletion";
-    public static final String STATISTICS_RETENTION_PERIOD = "statistics.retention.period";
 
     // The 2 configs for users to set in the conf
     // this is an optional table property, if this property does not exist for a table, then it is not excluded
     public static final String STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY = "statistics.auto.deletion.exclude";
 
     private static final Lock lock = new ReentrantLock();
-
-    // these are just for testing
-    private static int completedAttempts;
-    private static int skippedAttempts;
 
     private Configuration conf;
 
@@ -111,21 +81,24 @@ public class StatisticsManagementTask implements MetastoreTaskThread {
             return;
         }
         if (lock.tryLock()) {
-            skippedAttempts = 0;
-            String qualifiedTableName = null;
-            IMetaStoreClient msc = null;
+            IMetaStoreClient msc;
             try {
                 // Get retention period in conf in milliseconds; default is 365 days.
                 long now = System.currentTimeMillis();
                 long lastAnalyzedThreshold = (now - retentionMillis) / 1000;
+                String filter = "lastAnalyzed < threshold";
+                String paramStr = "long threshold";
 
                 // Get all databases from metastore
-                List<String> databases = msc.getAllDatabases();
+                msc = new HiveMetaStoreClient(conf);
                 RawStore ms = HMSHandler.getMSForConf(conf);
                 PersistenceManager pm = ((ObjectStore) ms).getPersistenceManager();
-                Query q = pm.newQuery("SELECT FROM org.apache.hadoop.hive.metastore.model.MTableColumnStatistics");
-                q.setFilter("lastAnalyzed < " + lastAnalyzedThreshold);
-                List<MTableColumnStatistics> results = (List<MTableColumnStatistics>) q.execute();
+                Query q = pm.newQuery(MTableColumnStatistics.class);
+                q.setFilter(filter);
+                q.declareParameters(paramStr);
+                @SuppressWarnings("unchecked")
+                List<MTableColumnStatistics> results =
+                        (List<MTableColumnStatistics>) q.execute(lastAnalyzedThreshold);
 
                 for (MTableColumnStatistics stat : results) {
                     String dbName = stat.getTable().getDatabase().getName();
@@ -136,12 +109,11 @@ public class StatisticsManagementTask implements MetastoreTaskThread {
                         continue;
                     }
                     /**
-                    // if this table contains "lastAnalyzed" in table property, we process the auto stats deletion
-                    long lastAnalyzed = stat.getLastAnalyzed();
-                    // lastAnalyzed is in unit seconds, switch it to milliseconds
-                    lastAnalyzed *= 1000;
+                    * if this table contains "lastAnalyzed" in table property, we process the auto stats deletion
+                    * long lastAnalyzed = stat.getLastAnalyzed();
+                    * lastAnalyzed is in unit seconds, switch it to milliseconds
+                    * lastAnalyzed *= 1000;
                     **/
-
                     DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tblName);
                     request.setEngine("hive");
                     boolean isPartitioned = stat.getTable().getPartitionKeys() != null && !stat.getTable().getPartitionKeys().isEmpty();
