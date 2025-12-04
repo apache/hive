@@ -323,16 +323,12 @@
                 <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
                 <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
               </compilerArgs>
-              <annotationProcessorPaths>
+              <proc combine.self="override">full</proc>
+              <annotationProcessorPaths combine.children="append">
                 <path>
                   <groupId>com.google.errorprone</groupId>
                   <artifactId>error_prone_core</artifactId>
                   <version>${google.errorprone.version}</version>
-                </path>
-                <path>
-                  <groupId>org.immutables</groupId>
-                  <artifactId>value</artifactId>
-                  <version>${immutables.value.version}</version>
                 </path>
               </annotationProcessorPaths>
             </configuration>
