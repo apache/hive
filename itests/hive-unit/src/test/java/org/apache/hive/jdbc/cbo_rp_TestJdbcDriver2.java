@@ -77,7 +77,6 @@ import org.junit.Test;
  */
 public class cbo_rp_TestJdbcDriver2 {
   private static final Logger LOG = LoggerFactory.getLogger(cbo_rp_TestJdbcDriver2.class);
-  private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String tableName = "testHiveJdbcDriver_Table";
   private static final String tableComment = "Simple table";
   private static final String viewName = "testHiveJdbcDriverView";
@@ -107,8 +106,7 @@ public class cbo_rp_TestJdbcDriver2 {
   }
 
   @BeforeClass
-  public static void setUpBeforeClass() throws SQLException, ClassNotFoundException{
-    Class.forName(driverName);
+  public static void setUpBeforeClass() throws SQLException {
     Connection con1 = getConnection("default");
     System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
 

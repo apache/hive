@@ -58,7 +58,7 @@
     </property>
     <property>
         <name>hive.metastore.warehouse.dir</name>
-        <value>/opt/hive/data/warehouse</value>
+        <value>${DEFAULT_FS}${HIVE_WAREHOUSE_PATH}</value>
     </property>
     <property>
         <name>hive.metastore.event.db.notification.api.auth</name>

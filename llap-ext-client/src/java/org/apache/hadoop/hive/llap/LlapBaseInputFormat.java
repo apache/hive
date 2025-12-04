@@ -92,7 +92,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   private static final Logger LOG = LoggerFactory.getLogger(LlapBaseInputFormat.class);
 
-  private static String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final Object lock = new Object();
   private static final Map<String, List<Connection>> connectionMap = new HashMap<String, List<Connection>>();
 
@@ -220,12 +219,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     if (handleId == null) {
       handleId = UUID.randomUUID().toString();
       LOG.info("Handle ID not specified - generated handle ID {}", handleId);
-    }
-
-    try {
-      Class.forName(driverName);
-    } catch (ClassNotFoundException e) {
-      throw new IOException(e);
     }
 
     LOG.info("Handle ID {}: query={}", handleId, query);

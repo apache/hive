@@ -416,18 +416,6 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <compilerArgs>
-            <arg>--add-opens</arg>
-            <arg>org.apache.hadoop/org.apache.hadoop.fs=ALL-UNNAMED</arg>
-            <arg>--add-opens</arg>
-            <arg>java.base/java.net=ALL-UNNAMED</arg>
-          </compilerArgs>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>

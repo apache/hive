@@ -35,7 +35,7 @@ public class RetryingExecutor<T> {
   private final int maxRetries;
   private long sleepInterval = 1000;
   private final Callable<T> command;
-  private Predicate<Exception> retryPolicy;
+  private Predicate<Throwable> retryPolicy;
   private int currentRetries = 0;
   private String commandName;
   private Function<Long, Long> sleepIntervalFunc;
@@ -51,7 +51,7 @@ public class RetryingExecutor<T> {
             .map(StackWalker.StackFrame::getMethodName)).get();
   }
 
-  public RetryingExecutor<T> onRetry(Predicate<Exception> retryPolicy) {
+  public RetryingExecutor<T> onRetry(Predicate<Throwable> retryPolicy) {
     this.retryPolicy = retryPolicy;
     return this;
   }
@@ -77,9 +77,9 @@ public class RetryingExecutor<T> {
       try {
         return command.call();
       } catch (Exception e) {
-        checkException(e);
-        LOG.info("Attempting to retry the command:{} in {} out of {} retries",
-            commandName, currentRetries, maxRetries, e);
+        Throwable t = checkException(e);
+        LOG.info("Attempting to retry the command:{} in {} out of {} retries, error message: {}",
+            commandName, currentRetries, maxRetries, t.getMessage());
         if (currentRetries >= maxRetries) {
           String message = "Couldn't finish the command: " + commandName +
               " because we reached the maximum of retries: " + maxRetries;
@@ -95,22 +95,26 @@ public class RetryingExecutor<T> {
           LOG.error(msg, e1);
           throw new MetaException(msg + e1.getMessage());
         }
+        LOG.debug("Exception occurred in running: {}", commandName, t);
       }
     }
   }
 
-  private void checkException(Exception e) throws MetaException {
-    if (retryPolicy != null && !retryPolicy.test(e)) {
+  private Throwable checkException(Throwable e) throws MetaException {
+    Throwable cause = e;
+    if (e instanceof InvocationTargetException ||
+        e instanceof UndeclaredThrowableException) {
+      cause = e.getCause();
+    }
+    if (retryPolicy != null && !retryPolicy.test(cause)) {
       String message = "See a fatal exception, avoid to retry the command:" + commandName;
-      LOG.info(message, e);
-      String errorMessage = ExceptionUtils.getMessage(e);
-      if (e instanceof InvocationTargetException || e instanceof UndeclaredThrowableException) {
-        errorMessage = ExceptionUtils.getMessage(e.getCause());
-      }
+      LOG.error(message, cause);
+      String errorMessage = ExceptionUtils.getMessage(cause);
       Throwable rootCause = ExceptionUtils.getRootCause(e);
       errorMessage += (rootCause == null ? "" : ("\nRoot cause: " + rootCause));
       throw new MetaException(message + " :: " + errorMessage);
     }
+    return cause;
   }
 
   public static class RetryException extends Exception {

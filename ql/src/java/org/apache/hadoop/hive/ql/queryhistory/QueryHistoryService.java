@@ -127,7 +127,8 @@ public class QueryHistoryService {
 
   public static QueryHistoryService getInstance() {
     if (instance == null) {
-      throw new RuntimeException("QueryHistoryService is not present when asked for the singleton instance");
+      throw new RuntimeException("QueryHistoryService is not present when asked for the singleton instance. " +
+              "This is not expected to happen if 'hive.query.history.enabled' is properly set in the HS2 config. ");
     }
     return instance;
   }

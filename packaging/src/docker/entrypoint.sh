@@ -19,6 +19,31 @@
 
 set -x
 
+# =========================================================================
+# DYNAMIC JAR LOADER (AWS/S3 Support)
+# =========================================================================
+STAGING_DIR="/tmp/ext-jars"
+
+# Checks if /tmp/ext-jars is mounted (via Docker volume).
+if [ -d "$STAGING_DIR" ]; then
+  if ls "$STAGING_DIR"/*.jar 1> /dev/null 2>&1; then
+    echo "--> Copying custom jars from volume to Hive..."
+    cp -vf "$STAGING_DIR"/*.jar "${HIVE_HOME}/lib/"
+  else
+    echo "--> Volume mounted at $STAGING_DIR, but no jars found."
+  fi
+fi
+
+# =========================================================================
+# REPLACE ${VARS} in the template
+# =========================================================================
+: "${HIVE_WAREHOUSE_PATH:=/opt/hive/data/warehouse}"
+export HIVE_WAREHOUSE_PATH
+
+envsubst < $HIVE_HOME/conf/core-site.xml.template > $HIVE_HOME/conf/core-site.xml
+envsubst < $HIVE_HOME/conf/hive-site.xml.template > $HIVE_HOME/conf/hive-site.xml
+# =========================================================================
+
 : "${DB_DRIVER:=derby}"
 
 SKIP_SCHEMA_INIT="${IS_RESUME:-false}"

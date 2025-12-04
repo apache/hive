@@ -379,7 +379,7 @@ where id = 14
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@geom_binary
 #### A masked pattern was here ####
-MULTIPOLYGON (((5 6, 0 1, 1 1, 5 6)))
+POLYGON ((5 6, 0 1, 1 1, 5 6))
 PREHOOK: query: select ST_IsClosed(geom)
 from geom_binary
 where id = 16 OR id = 17 OR id =18
@@ -469,3 +469,50 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@geom_binary
 #### A masked pattern was here ####
 true	false
+PREHOOK: query: select ST_AsText(ST_ConvexHull(ST_GeomFromText('multipoint ((0 0), (2 0), (2 2), (0 2), (1 1))')))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select ST_AsText(ST_ConvexHull(ST_GeomFromText('multipoint ((0 0), (2 0), (2 2), (0 2), (1 1))')))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POLYGON ((0 0, 2 0, 2 2, 0 2, 0 0))
+PREHOOK: query: SELECT ST_AsText(
+  ST_Union(
+    ST_GeomFromText('polygon ((0 0, 2 0, 2 2, 0 2, 0 0))'),
+    ST_GeomFromText('polygon ((10 10, 12 10, 12 12, 10 12, 10 10))')
+  )
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ST_AsText(
+  ST_Union(
+    ST_GeomFromText('polygon ((0 0, 2 0, 2 2, 0 2, 0 0))'),
+    ST_GeomFromText('polygon ((10 10, 12 10, 12 12, 10 12, 10 10))')
+  )
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+MULTIPOLYGON (((0 0, 2 0, 2 2, 0 2, 0 0)), ((10 10, 12 10, 12 12, 10 12, 10 10)))
+PREHOOK: query: SELECT ST_AsText(
+  ST_Union(
+    ST_GeomFromText('polygon ((0 0, 5 0, 5 5, 0 5, 0 0))'),
+    ST_GeomFromText('point (2 2)')
+  )
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ST_AsText(
+  ST_Union(
+    ST_GeomFromText('polygon ((0 0, 5 0, 5 5, 0 5, 0 0))'),
+    ST_GeomFromText('point (2 2)')
+  )
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POLYGON ((0 0, 5 0, 5 5, 0 5, 0 0))

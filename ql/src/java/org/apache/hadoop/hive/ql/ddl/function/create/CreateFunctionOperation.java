@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;

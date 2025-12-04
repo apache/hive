@@ -116,7 +116,6 @@ public abstract class TrustDomainAuthenticationTest {
     }
 
     String url = "jdbc:hive2://localhost:" + port + "/default" + urlExtra;
-    Class.forName("org.apache.hive.jdbc.HiveDriver");
 
     if (properTrustedDomain) {
       testProperTrustedDomainAuthentication(url);

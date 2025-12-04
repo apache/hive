@@ -71,7 +71,7 @@ import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runCleaner;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.collections.CollectionUtils.isEqualCollection;
+import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
 
 /**
  * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}

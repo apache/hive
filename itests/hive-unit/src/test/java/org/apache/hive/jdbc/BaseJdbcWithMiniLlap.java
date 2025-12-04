@@ -83,7 +83,6 @@ public abstract class BaseJdbcWithMiniLlap {
   // This method should be called by sub-classes in a @BeforeClass initializer
   public static MiniHS2 beforeTest(HiveConf inputConf) throws Exception {
     conf = inputConf;
-    Class.forName(MiniHS2.getJdbcDriverName());
     miniHS2 = new MiniHS2(conf, MiniClusterType.LLAP);
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     kvDataFilePath = new Path(dataFileDir, "kv1.txt");

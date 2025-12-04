@@ -104,7 +104,6 @@ import static org.junit.Assert.fail;
 public class TestJdbcDriver2 {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestJdbcDriver2.class);
-  private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final String testDbName = "testjdbcdriver";
   private static final String defaultDbName = "default";
   private static final String tableName = "testjdbcdrivertbl";
@@ -208,7 +207,6 @@ public class TestJdbcDriver2 {
     dataFileRowCount = 500;
     dataTypeDataFilePath = new Path(dataFileDir, "datatypes.txt");
     // Create test database and base tables once for all the test
-    Class.forName(driverName);
     System.setProperty(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
     System.setProperty(ConfVars.HIVE_MAPRED_MODE.varname, "nonstrict");
     System.setProperty(ConfVars.HIVE_AUTHORIZATION_MANAGER.varname,

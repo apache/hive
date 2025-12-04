@@ -37,7 +37,6 @@ import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -60,11 +59,6 @@ public class TestJdbcWithMiniKdcCookie {
   @Parameterized.Parameters(name = "{index}: tranportMode={0}")
   public static Collection<Object[]> transportModes() {
     return Arrays.asList(new Object[][]{{MiniHS2.HS2_ALL_MODE}, {MiniHS2.HS2_HTTP_MODE}});
-  }
-
-  @BeforeClass
-  public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
   }
 
   @Before

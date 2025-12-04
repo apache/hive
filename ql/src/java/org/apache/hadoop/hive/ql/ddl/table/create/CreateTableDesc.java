@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Iterables;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
