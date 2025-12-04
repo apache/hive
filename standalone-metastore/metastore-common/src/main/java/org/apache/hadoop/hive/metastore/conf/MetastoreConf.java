@@ -1294,7 +1294,7 @@ public class MetastoreConf {
 
     STATISTICS_MANAGEMENT_TASK_FREQUENCY("metastore.statistics.management.task.frequency",
             "metastore.statistics.management.task.frequency",
-            365, TimeUnit.DAYS, "Frequency at which timer task runs to do automatic statistics management for tables\n" +
+            7, TimeUnit.DAYS, "Frequency at which timer task runs to do automatic statistics management for tables\n" +
             "with table property 'statistics.auto.deletion'='true'. Statistics management include 2 configs. \n" +
             "One is 'statistics.auto.deletion', and the other is 'statistics.retention.period'. \n" +
             "When 'statistics.auto.deletion'='true' is set, statistics management will look for tables which their\n " +
@@ -1541,7 +1541,8 @@ public class MetastoreConf {
             ACID_METRICS_TASK_CLASS + "," + ACID_METRICS_LOGGER_CLASS + "," +
             "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask" + ","
             + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask" + ","
-            + "org.apache.hadoop.hive.metastore.ReplicationMetricsMaintTask",
+            + "org.apache.hadoop.hive.metastore.ReplicationMetricsMaintTask" + ","
+            + "org.apache.hadoop.hive.metastore.StatisticsManagementTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
