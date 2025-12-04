@@ -109,7 +109,6 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
         HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
         checkPrivileges(authzContext, hiveAuthorizer);
       }
-
     } catch (Exception e) {
       LOG.error("HiveMetaStoreAuthorizer.onEvent(): failed", e);
       MetaStoreUtils.throwMetaException(e);
@@ -606,7 +605,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   HiveAuthorizer createHiveMetaStoreAuthorizer() throws Exception {
     HiveAuthorizer ret = null;
     // If it's insides the HMS, getConf() should have all properties in hive-site.xml,
-    // otherwise it at least contains all information to talk with the HMS,
+    // otherwise it at least contains the information to talk with the HMS,
     // as the call is triggered from client as a filter hook.
     HiveConf hiveConf = HiveConf.cloneConf(getConf());
 

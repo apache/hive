@@ -7302,7 +7302,6 @@ public class HiveConf extends Configuration {
     return ret;
   }
 
-
   public static boolean shouldComputeLineage(HiveConf conf) {
     Collection<String> lineageFilter =
       conf.getTrimmedStringCollection(HiveConf.ConfVars.HIVE_LINEAGE_STATEMENT_FILTER.varname);
