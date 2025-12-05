@@ -996,6 +996,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
   public void testIcebergAndHmsTableProperties() throws Exception {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
+    shell.getHiveConf().setBoolean(TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED, false);
     shell.executeStatement(String.format("CREATE EXTERNAL TABLE default.customers " +
         "STORED BY ICEBERG %s" +
         "TBLPROPERTIES ('%s'='%s', '%s'='%s', '%s'='%s', '%s'='%s')",
