@@ -2235,11 +2235,6 @@ public class HiveConf extends Configuration {
         "If this is set to true the URI for auth will have the default location masked with DEFAULT_TABLE_LOCATION"),
     HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY("hive.iceberg.allow.datafiles.in.table.location.only", false,
         "If this is set to true, then all the data files being read should be withing the table location"),
-    HIVE_ICEBERG_WRITE_METADATA_DELETE_AFTER_COMMIT_ENABLED("hive.iceberg.write.metadata.delete-after-commit.enabled",
-        true, "If this is set to true the old metadata files will be deleted after a successful commit"),
-    HIVE_ICEBERG_WRITE_METADATA_PREVIOUS_VERSIONS_MAX("hive.iceberg.write.metadata.previous-versions-max", 100,
-        "If 'hive.iceberg.write.metadata.delete-after-commit.enabled' is true, " +
-            "this config controls the maximum number of previous metadata versions to retain"),
     HIVE_USE_EXPLICIT_RCFILE_HEADER("hive.exec.rcfile.use.explicit.header", true,
         "If this is set the header for RCFiles will simply be RCF.  If this is not\n" +
         "set the header will be that borrowed from sequence files, e.g. SEQ- followed\n" +

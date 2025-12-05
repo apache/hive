@@ -105,9 +105,8 @@ public class TestHiveIcebergWriteMetadataCleanup {
   public void testWriteMetadataCleanupEnabled() {
 
     // Enable write metadata cleanup on session level
-    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_DELETE_AFTER_COMMIT_ENABLED,
-        true);
-    HiveConf.setIntVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_PREVIOUS_VERSIONS_MAX, 4);
+    shell.getHiveConf().setBoolean(TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED, true);
+    shell.getHiveConf().setInt(TableProperties.METADATA_PREVIOUS_VERSIONS_MAX, 4);
 
     Table table = testTables.createTable(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, PartitionSpec.unpartitioned(), FileFormat.ORC, null, 2);
@@ -127,8 +126,7 @@ public class TestHiveIcebergWriteMetadataCleanup {
   public void testWriteMetadataCleanupDisabled() {
 
     // Disable write metadata cleanup on session level
-    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_DELETE_AFTER_COMMIT_ENABLED,
-        false);
+    shell.getHiveConf().setBoolean(TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED, false);
 
     Table table = testTables.createTable(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, PartitionSpec.unpartitioned(), FileFormat.ORC, null, 2);
@@ -143,9 +141,8 @@ public class TestHiveIcebergWriteMetadataCleanup {
   public void testWriteMetadataCleanupEnabledOnSessionLevelDisabledOnTableLevel() {
 
     // Enable metadata cleanup configs on session level
-    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_DELETE_AFTER_COMMIT_ENABLED,
-        true);
-    HiveConf.setIntVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_PREVIOUS_VERSIONS_MAX, 4);
+    shell.getHiveConf().setBoolean(TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED, true);
+    shell.getHiveConf().setInt(TableProperties.METADATA_PREVIOUS_VERSIONS_MAX, 4);
 
     Table table = testTables.createTable(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, PartitionSpec.unpartitioned(), FileFormat.ORC, null, 2);
@@ -164,8 +161,7 @@ public class TestHiveIcebergWriteMetadataCleanup {
   public void testWriteMetadataCleanupDisabledOnSessionLevelEnabledOnTableLevel() {
 
     // Enable metadata cleanup configs on session level
-    HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_DELETE_AFTER_COMMIT_ENABLED,
-        false);
+    shell.getHiveConf().setBoolean(TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED, false);
 
     Table table = testTables.createTable(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, PartitionSpec.unpartitioned(), FileFormat.ORC, null, 2);

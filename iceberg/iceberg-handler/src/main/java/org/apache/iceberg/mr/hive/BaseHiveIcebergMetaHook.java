@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -92,6 +91,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
       .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME, InputFormatConfig.PARTITION_SPEC);
   static final String ORC_FILES_ONLY = "iceberg.orc.files.only";
   private static final String ZORDER_FIELDS_JSON_KEY = "zorderFields";
+  private static final boolean HIVE_ICEBERG_METADATA_DELETE_AFTER_COMMIT_ENABLED_DEFAULT = false;
 
   protected final Configuration conf;
   protected Table icebergTable = null;
@@ -203,26 +203,26 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
     setSortOrder(hmsTable, schema, catalogProperties);
+    setWriteMetadataCleanupProperties(hmsTable.getParameters());
+  }
 
-    setWriteMetadataCleanupConfig(hmsTable.getParameters(), TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED,
-        HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_DELETE_AFTER_COMMIT_ENABLED.varname,
-        HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_DELETE_AFTER_COMMIT_ENABLED.getDefaultValue()
-    );
+  private void setWriteMetadataCleanupProperties(Map<String, String> hmsParams) {
+    setWriteMetadataCleanupProperty(hmsParams, TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED,
+        TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED,
+        Boolean.toString(HIVE_ICEBERG_METADATA_DELETE_AFTER_COMMIT_ENABLED_DEFAULT));
 
-    setWriteMetadataCleanupConfig(hmsTable.getParameters(), TableProperties.METADATA_PREVIOUS_VERSIONS_MAX,
-        HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_PREVIOUS_VERSIONS_MAX.varname,
-        HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_PREVIOUS_VERSIONS_MAX.getDefaultValue()
-    );
+    setWriteMetadataCleanupProperty(hmsParams, TableProperties.METADATA_PREVIOUS_VERSIONS_MAX,
+        TableProperties.METADATA_PREVIOUS_VERSIONS_MAX,
+        Integer.toString(TableProperties.METADATA_PREVIOUS_VERSIONS_MAX_DEFAULT));
   }
 
   /*
    * Sets a write metadata cleanup configuration property for a table.
-   * If the table property exists in HMS parameters, it is always used.
-   * If the table property is missing, the method will use the value from Hive configuration only if write metadata
-   * cleanup is enabled in the Hive configuration.
-   * The resolved value is stored in `catalogProperties`.
+   * If the table property exists in HMS parameters, it has precedence.
+   * If the table property is missing in HMS parameters, the method will use the value from the session,
+   * only if the write metadata cleanup is enabled. The resolved value is stored in `catalogProperties`.
    */
-  private void setWriteMetadataCleanupConfig(Map<String, String> hmsParams, String key, String confKey,
+  private void setWriteMetadataCleanupProperty(Map<String, String> hmsParams, String key, String confKey,
       String defaultValue) {
 
     // If table property exists — always use it
@@ -232,8 +232,8 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
 
     boolean isWriteMetadataCleanupEnabledInConf = conf.getBoolean(
-        HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_DELETE_AFTER_COMMIT_ENABLED.varname,
-        HiveConf.ConfVars.HIVE_ICEBERG_WRITE_METADATA_DELETE_AFTER_COMMIT_ENABLED.defaultBoolVal);
+        TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED,
+        HIVE_ICEBERG_METADATA_DELETE_AFTER_COMMIT_ENABLED_DEFAULT);
 
     // If table property is missing — use Hive conf only if the write metadata cleanup is enabled in it
     if (isWriteMetadataCleanupEnabledInConf) {
