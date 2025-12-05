@@ -48,7 +48,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class TestHiveCommits extends HiveTableBaseTest {
+public class TestHiveCommits extends HiveTableTestBase {
 
   @Test
   public void testSuppressUnlockExceptions() {

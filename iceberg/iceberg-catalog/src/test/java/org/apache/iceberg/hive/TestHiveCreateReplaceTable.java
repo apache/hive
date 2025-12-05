@@ -52,7 +52,7 @@ import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class HiveCreateReplaceTableTest {
+public class TestHiveCreateReplaceTable {
 
   private static final String DB_NAME = "hivedb";
   private static final String TABLE_NAME = "tbl";
