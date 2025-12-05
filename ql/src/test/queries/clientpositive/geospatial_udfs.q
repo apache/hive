@@ -163,3 +163,6 @@ SELECT ST_AsText(
     ST_GeomFromText('point (2 2)')
   )
 );
+
+-- Budapest - Honolulu distance (12356871.78163278 in PostGis 3.2.1)
+SELECT ST_DistanceSphere(ST_Point(19.04125, 47.496603), ST_Point(-157.924656, 21.321329));

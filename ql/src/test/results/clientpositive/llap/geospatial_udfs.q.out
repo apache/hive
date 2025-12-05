@@ -516,3 +516,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 POLYGON ((0 0, 5 0, 5 5, 0 5, 0 0))
+PREHOOK: query: SELECT ST_DistanceSphere(ST_Point(19.04125, 47.496603), ST_Point(-157.924656, 21.321329))
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT ST_DistanceSphere(ST_Point(19.04125, 47.496603), ST_Point(-157.924656, 21.321329))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1.2356870285436917E7
