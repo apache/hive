@@ -163,7 +163,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (cboPlan != null) {
       String ruleExclusionRegex = getRuleExcludedRegex();
       if (jsonOutput) {
-        outJSONObject.put(CBO_PLAN_JSON_LABEL, cboPlan);
+        outJSONObject.put(CBO_PLAN_JSON_LABEL, new JSONObject(cboPlan));
         if (!ruleExclusionRegex.isEmpty()) {
           outJSONObject.put(CBO_INFO_JSON_LABEL, EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
         }
@@ -295,7 +295,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
     if (cboPlan != null) {
       if (jsonOutput) {
-        outJSONObject.put(CBO_PLAN_JSON_LABEL, cboPlan);
+        outJSONObject.put(CBO_PLAN_JSON_LABEL, new JSONObject(cboPlan));
         if (!ruleExclusionRegex.isEmpty()) {
           outJSONObject.put(CBO_INFO_JSON_LABEL, EXCLUDED_RULES_PREFIX + ruleExclusionRegex);
         }
