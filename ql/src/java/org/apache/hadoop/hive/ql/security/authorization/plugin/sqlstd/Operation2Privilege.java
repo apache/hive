@@ -254,6 +254,8 @@ public class Operation2Privilege {
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_DROPTAG,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_SET_WRITE_ORDER,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
     // require view ownership for alter/drop view
     op2Priv.put(HiveOperationType.ALTERVIEW_PROPERTIES,
