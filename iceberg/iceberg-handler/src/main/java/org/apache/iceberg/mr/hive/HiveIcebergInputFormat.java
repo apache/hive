@@ -90,6 +90,8 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
     }
   }
 
+  private static final String VARIANT_SHREDDING_ENABLED = "variant.shredding.enabled";
+
   /**
    * Converts the Hive filter found in the job conf to an Iceberg filter expression.
    * @param conf - job conf
@@ -117,15 +119,21 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
    * @return Iceberg Filter Expression
    */
   static Expression getFilterExpr(Configuration conf, ExprNodeGenericFuncDesc exprNodeDesc) {
-    if (exprNodeDesc != null) {
-      SearchArgument sarg = ConvertAstToSearchArg.create(conf, exprNodeDesc);
-      try {
-        return HiveIcebergFilterFactory.generateFilterExpression(sarg);
-      } catch (UnsupportedOperationException e) {
-        LOG.warn("Unable to create Iceberg filter, proceeding without it (will be applied by Hive later): ", e);
-      }
+    if (exprNodeDesc == null) {
+      InputFormatConfig.setVariantFilter(conf, null);
+      return null;
     }
-    return null;
+
+    Expression icebergFilter = buildFilterExpression(conf, exprNodeDesc, "Iceberg");
+
+    if (Boolean.parseBoolean(conf.get(VARIANT_SHREDDING_ENABLED))) {
+      Expression variantFilter = buildVariantFilter(conf, exprNodeDesc);
+      InputFormatConfig.setVariantFilter(conf, variantFilter);
+    } else {
+      InputFormatConfig.setVariantFilter(conf, null);
+    }
+
+    return icebergFilter;
   }
 
   /**
@@ -144,6 +152,28 @@ public class HiveIcebergInputFormat extends MapredIcebergInputFormat<Record>
         task.spec(), dataFilter,
         conf.getBoolean(InputFormatConfig.CASE_SENSITIVE, InputFormatConfig.CASE_SENSITIVE_DEFAULT)
     ).residualFor(task.file().partition());
+  }
+
+  private static Expression buildFilterExpression(
+      Configuration conf, ExprNodeGenericFuncDesc expression, String filterLabel) {
+    try {
+      SearchArgument sarg = ConvertAstToSearchArg.create(conf, expression);
+      return HiveIcebergFilterFactory.generateFilterExpression(sarg);
+    } catch (UnsupportedOperationException e) {
+      LOG.warn("Unable to create {} filter, proceeding without it: ", filterLabel, e);
+      return null;
+    }
+  }
+
+  private static Expression buildVariantFilter(
+      Configuration conf, ExprNodeGenericFuncDesc exprNodeDesc) {
+    VariantFilterRewriter.RewriteResult rewriteResult =
+        VariantFilterRewriter.rewriteForShredding(exprNodeDesc);
+    if (rewriteResult.expression() == null || !rewriteResult.hasVariantRewrite()) {
+      return null;
+    }
+
+    return buildFilterExpression(conf, rewriteResult.expression(), "variant");
   }
 
   @Override
