@@ -601,17 +601,17 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (d_year) IN (1985, 2004) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Top N Key Operator
                       sort order: ++
                       keys: d_datekey (type: bigint), d_sellingseason (type: string)
                       null sort order: zz
-                      Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                       top n: 10
                       Select Operator
                         expressions: d_datekey (type: bigint), d_sellingseason (type: string)
                         outputColumnNames: d_datekey, d_sellingseason
-                        Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: d_datekey (type: bigint), d_sellingseason (type: string)
                           minReductionHashAggr: 0.4

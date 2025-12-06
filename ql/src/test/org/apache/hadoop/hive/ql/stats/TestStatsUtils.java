@@ -18,19 +18,29 @@
 
 package org.apache.hadoop.hive.ql.stats;
 
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.google.common.collect.Sets;
 
@@ -100,8 +110,138 @@ public class TestStatsUtils {
       }
       int maxVarLen = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_MAX_VARIABLE_LENGTH);
       long siz = StatsUtils.getSizeOfPrimitiveTypeArraysFromType(typeName, 3, maxVarLen);
-      assertNotEquals(field.toString(), 0, siz);
+      assertNotEquals(0, siz, field.toString());
     }
+  }
+
+  @ParameterizedTest(name = "{0} - {1}")
+  @MethodSource("integerStatisticsTestData")
+  public void testGetColStatistics_IntegerTypes(String typeName, String scenarioName,
+      Long lowValue, Long highValue, Long expectedMin, Long expectedMax) {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("test_col");
+    cso.setColType(typeName);
+
+    LongColumnStatsData longStats = new LongColumnStatsData();
+    longStats.setNumDVs(100);
+    longStats.setNumNulls(10);
+    if (lowValue != null) {
+      longStats.setLowValue(lowValue);
+    }
+    if (highValue != null) {
+      longStats.setHighValue(highValue);
+    }
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setLongStats(longStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "test_col");
+
+    assertNotNull(cs, "ColStatistics should not be null");
+    assertEquals(100, cs.getCountDistint(), "NumDVs mismatch");
+    assertEquals(10, cs.getNumNulls(), "NumNulls mismatch");
+
+    Range range = cs.getRange();
+    assertNotNull(range, "Range should be created");
+
+    if (expectedMin == null) {
+      assertNull(range.minValue, "minValue should be null when lowValue is not set");
+    } else {
+      assertEquals(expectedMin.longValue(), range.minValue.longValue(), "minValue mismatch");
+    }
+
+    if (expectedMax == null) {
+      assertNull(range.maxValue, "maxValue should be null when highValue is not set");
+    } else {
+      assertEquals(expectedMax.longValue(), range.maxValue.longValue(), "maxValue mismatch");
+    }
+  }
+
+  @ParameterizedTest(name = "{0} - {1}")
+  @MethodSource("floatingPointStatisticsTestData")
+  public void testGetColStatistics_FloatingPointTypes(String typeName, String scenarioName,
+      Double lowValue, Double highValue, Double expectedMin, Double expectedMax) {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("test_col");
+    cso.setColType(typeName);
+
+    DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
+    doubleStats.setNumDVs(100);
+    doubleStats.setNumNulls(10);
+    if (lowValue != null) {
+      doubleStats.setLowValue(lowValue);
+    }
+    if (highValue != null) {
+      doubleStats.setHighValue(highValue);
+    }
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setDoubleStats(doubleStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "test_col");
+
+    assertNotNull(cs, "ColStatistics should not be null");
+    assertEquals(100, cs.getCountDistint(), "NumDVs mismatch");
+    assertEquals(10, cs.getNumNulls(), "NumNulls mismatch");
+
+    Range range = cs.getRange();
+    assertNotNull(range, "Range should be created");
+
+    if (expectedMin == null) {
+      assertNull(range.minValue, "minValue should be null when lowValue is not set");
+    } else {
+      assertEquals(expectedMin, range.minValue.doubleValue(), 0.0001, "minValue mismatch");
+    }
+
+    if (expectedMax == null) {
+      assertNull(range.maxValue, "maxValue should be null when highValue is not set");
+    } else {
+      assertEquals(expectedMax, range.maxValue.doubleValue(), 0.0001, "maxValue mismatch");
+    }
+  }
+
+  static Stream<Arguments> integerStatisticsTestData() {
+    return Stream.of(
+      // {typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax}
+      Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "BothValuesSet", 1L, 1000L, 1L, 1000L),
+      Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "NoValuesSet", null, null, null, null),
+      Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "OnlyLowValueSet", 100L, null, 100L, null),
+      Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "OnlyHighValueSet", null, 1000L, null, 1000L),
+      Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "NegativeHighValueOnly", null, -5L, null, -5L),
+      Arguments.of(serdeConstants.SMALLINT_TYPE_NAME, "BothValuesSet", 1L, 1000L, 1L, 1000L),
+      Arguments.of(serdeConstants.SMALLINT_TYPE_NAME, "NoValuesSet", null, null, null, null),
+      Arguments.of(serdeConstants.SMALLINT_TYPE_NAME, "OnlyLowValueSet", 100L, null, 100L, null),
+      Arguments.of(serdeConstants.SMALLINT_TYPE_NAME, "OnlyHighValueSet", null, 1000L, null, 1000L),
+      Arguments.of(serdeConstants.SMALLINT_TYPE_NAME, "NegativeHighValueOnly", null, -5L, null, -5L),
+      Arguments.of(serdeConstants.INT_TYPE_NAME, "BothValuesSet", 1L, 1000L, 1L, 1000L),
+      Arguments.of(serdeConstants.INT_TYPE_NAME, "NoValuesSet", null, null, null, null),
+      Arguments.of(serdeConstants.INT_TYPE_NAME, "OnlyLowValueSet", 100L, null, 100L, null),
+      Arguments.of(serdeConstants.INT_TYPE_NAME, "OnlyHighValueSet", null, 1000L, null, 1000L),
+      Arguments.of(serdeConstants.INT_TYPE_NAME, "NegativeHighValueOnly", null, -5L, null, -5L),
+      Arguments.of(serdeConstants.BIGINT_TYPE_NAME, "BothValuesSet", 1L, 1000L, 1L, 1000L),
+      Arguments.of(serdeConstants.BIGINT_TYPE_NAME, "NoValuesSet", null, null, null, null),
+      Arguments.of(serdeConstants.BIGINT_TYPE_NAME, "OnlyLowValueSet", 100L, null, 100L, null),
+      Arguments.of(serdeConstants.BIGINT_TYPE_NAME, "OnlyHighValueSet", null, 1000L, null, 1000L),
+      Arguments.of(serdeConstants.BIGINT_TYPE_NAME, "NegativeHighValueOnly", null, -5L, null, -5L)
+    );
+  }
+
+  static Stream<Arguments> floatingPointStatisticsTestData() {
+    return Stream.of(
+      // {typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax}
+      Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "BothValuesSet", 1.5, 1000.5, 1.5, 1000.5),
+      Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "NoValuesSet", null, null, null, null),
+      Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "OnlyLowValueSet", 100.5, null, 100.5, null),
+      Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "OnlyHighValueSet", null, 1000.5, null, 1000.5),
+      Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "NegativeHighValueOnly", null, -5.5, null, -5.5),
+      Arguments.of(serdeConstants.DOUBLE_TYPE_NAME, "BothValuesSet", 1.5, 1000.5, 1.5, 1000.5),
+      Arguments.of(serdeConstants.DOUBLE_TYPE_NAME, "NoValuesSet", null, null, null, null),
+      Arguments.of(serdeConstants.DOUBLE_TYPE_NAME, "OnlyLowValueSet", 100.5, null, 100.5, null),
+      Arguments.of(serdeConstants.DOUBLE_TYPE_NAME, "OnlyHighValueSet", null, 1000.5, null, 1000.5),
+      Arguments.of(serdeConstants.DOUBLE_TYPE_NAME, "NegativeHighValueOnly", null, -5.5, null, -5.5)
+    );
   }
 
 }
