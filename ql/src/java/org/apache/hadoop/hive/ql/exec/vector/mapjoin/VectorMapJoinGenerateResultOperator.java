@@ -214,16 +214,36 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
             batch, batchIndex);
       }
 
-      if (smallTableValueVectorDeserializeRow != null) {
-        doSmallTableValueDeserializeRow(batch, batchIndex,
-            byteSegmentRef, hashMapResult);
-      }
+      updateBatchWithSmallTableValue(batch, hashMapResult, batchIndex, byteSegmentRef);
 
       // Use the big table row as output.
       batch.selected[numSel++] = batchIndex;
     }
 
     return numSel;
+  }
+
+  private void updateBatchWithSmallTableValue(
+      VectorizedRowBatch batch, VectorMapJoinHashMapResult hashMapResult, int batchIndex, ByteSegmentRef byteSegmentRef)
+      throws HiveException {
+
+    // Check if the small table value is empty.
+    boolean isSmallTableValueEmpty = byteSegmentRef.getLength() == 0;
+    
+    // INNER join where only the small table key is projected.
+    // The hash map value for that key is empty, and deserializing it would produce NULLs.
+    // Instead, copy the big table key into the small table value position.
+    // This preserves the joining key in the output without introducing NULLs.
+    // (Applied only when bigTableKeyToSmallTableValueCopy is available.)
+    if (isSmallTableValueEmpty && bigTableKeyToSmallTableValueCopy != null) {
+      bigTableKeyToSmallTableValueCopy.copyByValue(
+          batch, batchIndex, // from big table key area
+          batch, batchIndex  // to small table value area
+      );
+    } else if (smallTableValueVectorDeserializeRow != null) {
+      doSmallTableValueDeserializeRow(batch, batchIndex,
+          byteSegmentRef, hashMapResult);
+    }
   }
 
   /**
@@ -295,11 +315,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
               overflowBatch, overflowBatch.size);
         }
 
-        if (smallTableValueVectorDeserializeRow != null) {
-
-          doSmallTableValueDeserializeRow(overflowBatch, overflowBatch.size,
-              byteSegmentRef, hashMapResult);
-        }
+        updateBatchWithSmallTableValue(overflowBatch, hashMapResult, overflowBatch.size, byteSegmentRef);
 
         overflowBatch.size++;
         if (overflowBatch.size == overflowBatch.DEFAULT_SIZE) {
@@ -339,12 +355,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
 
       // Fill up as much of the overflow batch as possible with small table values.
       while (byteSegmentRef != null) {
-
-        if (smallTableValueVectorDeserializeRow != null) {
-          doSmallTableValueDeserializeRow(overflowBatch, overflowBatch.size,
-              byteSegmentRef, hashMapResult);
-        }
-
+        updateBatchWithSmallTableValue(overflowBatch, hashMapResult, overflowBatch.size, byteSegmentRef);
         overflowBatch.size++;
         if (overflowBatch.size == overflowBatch.DEFAULT_SIZE) {
           break;
