@@ -4136,7 +4136,7 @@ public final class Utilities {
   }
 
   /**
-   * Returns the full path to the Jar containing the class. It always return a JAR.
+   * Returns the full path to the Jar containing the class. It always returns a JAR.
    *
    * @param klass
    *          class.
@@ -4147,11 +4147,25 @@ public final class Utilities {
   public static String jarFinderGetJar(Class klass) {
     Preconditions.checkNotNull(klass, "klass");
     ClassLoader loader = klass.getClassLoader();
+    return jarFinderGetJar(loader, klass.getName());
+  }
+
+  /**
+   * Returns the full path to the Jar containing the class.
+   *
+   * @param loader
+   *          the classloader instance to scan for jars.
+   * @param className
+   *          the name of the class to look for.
+   *
+   * @return path to the Jar containing the class.
+   */
+  public static String jarFinderGetJar(ClassLoader loader, String className) {
     if (loader != null) {
-      String class_file = klass.getName().replaceAll("\\.", "/") + ".class";
+      String classFilePath = className.replace('.', '/') + ".class";
       try {
-        for (Enumeration itr = loader.getResources(class_file); itr.hasMoreElements();) {
-          URL url = (URL) itr.nextElement();
+        for (Enumeration<URL> itr = loader.getResources(classFilePath); itr.hasMoreElements();) {
+          URL url = itr.nextElement();
           String path = url.getPath();
           if (path.startsWith("file:")) {
             path = path.substring("file:".length());
