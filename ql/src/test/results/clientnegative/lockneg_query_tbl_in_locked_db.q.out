@@ -44,6 +44,7 @@ PREHOOK: query: show locks database lockneg1
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks database lockneg1
 POSTHOOK: type: SHOWLOCKS
+lockneg1	SHARED
 PREHOOK: query: select count(1) from tstsrcpart where ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: lockneg1@tstsrcpart
@@ -59,4 +60,26 @@ PREHOOK: query: unlock database lockneg1
 PREHOOK: type: UNLOCKDATABASE
 PREHOOK: Input: database:lockneg1
 PREHOOK: Output: database:lockneg1
-FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Database lockneg1 is not locked 
+POSTHOOK: query: unlock database lockneg1
+POSTHOOK: type: UNLOCKDATABASE
+POSTHOOK: Input: database:lockneg1
+POSTHOOK: Output: database:lockneg1
+PREHOOK: query: show locks database lockneg1
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: show locks database lockneg1
+POSTHOOK: type: SHOWLOCKS
+PREHOOK: query: lock database lockneg1 exclusive
+PREHOOK: type: LOCKDATABASE
+PREHOOK: Input: database:lockneg1
+PREHOOK: Output: database:lockneg1
+POSTHOOK: query: lock database lockneg1 exclusive
+POSTHOOK: type: LOCKDATABASE
+POSTHOOK: Input: database:lockneg1
+POSTHOOK: Output: database:lockneg1
+PREHOOK: query: show locks database lockneg1
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: show locks database lockneg1
+POSTHOOK: type: SHOWLOCKS
+lockneg1	EXCLUSIVE
+Unable to acquire IMPLICIT, SHARED lock lockneg1 after 1 attempts.
+FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired, retry after some time.

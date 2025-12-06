@@ -212,7 +212,7 @@ public class HiveLockObject {
   }
 
   /**
-   * Creates a locking object for a table (when partition spec is not provided)
+   * Creates a locking object for a database or table (when partition spec is not provided)
    * or a table partition
    * @param hiveDB    an object to communicate with the metastore
    * @param tableName the table to create the locking object on
@@ -220,27 +220,28 @@ public class HiveLockObject {
    * @return  the locking object
    * @throws HiveException
    */
-  public static HiveLockObject createFrom(Hive hiveDB, String tableName,
+  public static HiveLockObject createFrom(Hive hiveDB, String dbName, String tableName,
       Map<String, String> partSpec) throws HiveException {
-    Table  tbl = hiveDB.getTable(tableName);
-    if (tbl == null) {
-      throw new HiveException("Table " + tableName + " does not exist ");
-    }
+    if (tableName != null) {
+      Table tbl = hiveDB.getTable(tableName);
+      if (tbl == null) {
+        throw new HiveException("Table " + tableName + " does not exist");
+      }
 
-    HiveLockObject obj = null;
+      if (partSpec == null) {
+        return new HiveLockObject(tbl, null);
+      }
 
-    if  (partSpec == null) {
-      obj = new HiveLockObject(tbl, null);
-    }
-    else {
       Partition par = hiveDB.getPartition(tbl, partSpec, false);
       if (par == null) {
-        throw new HiveException("Partition " + partSpec + " for table " +
-            tableName + " does not exist");
+        throw new HiveException("Partition " + partSpec + " for table " + tableName + " does not exist");
       }
-      obj = new HiveLockObject(par, null);
+      return new HiveLockObject(par, null);
+    } else if (dbName != null) {
+      return new HiveLockObject(dbName, null);
     }
-    return obj;
+
+    return null;
   }
 
   public String[] getPaths() {
