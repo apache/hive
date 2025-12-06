@@ -59,7 +59,7 @@ HAVING AVG(e.salary) < 100000;
 
 set hive.optimize.cte.materialize.threshold=1;
 set hive.optimize.cte.materialize.full.aggregate.only=false;
-set hive.optimize.cte.suggester.class=org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester;
+set hive.optimize.cte.suggester.type=CBO;
 
 SELECT d.name, 'HIGH'
 FROM emps e
