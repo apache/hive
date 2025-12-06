@@ -45,7 +45,7 @@ import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
 
-public class HiveTableBaseTest {
+public class HiveTableTestBase {
 
   static final String TABLE_NAME =  "tbl";
   static final String DB_NAME = "hivedb";

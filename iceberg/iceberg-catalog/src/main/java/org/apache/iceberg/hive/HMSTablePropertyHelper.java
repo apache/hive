@@ -45,6 +45,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableBiMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.util.JsonUtil;
+import org.apache.iceberg.view.ViewMetadata;
 import org.apache.parquet.Strings;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 import org.slf4j.Logger;
@@ -54,34 +55,34 @@ import static org.apache.iceberg.TableProperties.GC_ENABLED;
 
 public class HMSTablePropertyHelper {
   private static final Logger LOG = LoggerFactory.getLogger(HMSTablePropertyHelper.class);
-  public static final String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+  public static final String HIVE_ICEBERG_STORAGE_HANDLER =
+      "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
   public static final String PARTITION_SPEC = "iceberg.mr.table.partition.spec";
 
+  /**
+   * Provides key translation where necessary between Iceberg and HMS props. This translation is
+   * needed because some properties control the same behaviour but are named differently in Iceberg
+   * and Hive. Therefore changes to these property pairs should be synchronized.
+   *
+   * <p>Example: Deleting data files upon DROP TABLE is enabled using gc.enabled=true in Iceberg and
+   * external.table.purge=true in Hive. Hive and Iceberg users are unaware of each other's control
+   * flags, therefore inconsistent behaviour can occur from e.g. a Hive user's point of view if
+   * external.table.purge=true is set on the HMS table but gc.enabled=false is set on the Iceberg
+   * table, resulting in no data file deletion.
+   */
   private static final BiMap<String, String> ICEBERG_TO_HMS_TRANSLATION = ImmutableBiMap.of(
-      // gc.enabled in Iceberg and external.table.purge in Hive are meant to do the same things
-      // but with different names
-      GC_ENABLED, "external.table.purge", TableProperties.PARQUET_COMPRESSION, ParquetOutputFormat.COMPRESSION,
-      TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, ParquetOutputFormat.BLOCK_SIZE);
+      GC_ENABLED, "external.table.purge",
+      TableProperties.PARQUET_COMPRESSION, ParquetOutputFormat.COMPRESSION,
+      TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES, ParquetOutputFormat.BLOCK_SIZE
+  );
 
   private HMSTablePropertyHelper() {
   }
 
-  /**
-   * Provides key translation where necessary between Iceberg and HMS props. This translation is needed because some
-   * properties control the same behaviour but are named differently in Iceberg and Hive. Therefore, changes to these
-   * property pairs should be synchronized.
-   *
-   * Example: Deleting data files upon DROP TABLE is enabled using gc.enabled=true in Iceberg and
-   * external.table.purge=true in Hive. Hive and Iceberg users are unaware of each other's control flags, therefore
-   * inconsistent behaviour can occur from e.g. a Hive user's point of view if external.table.purge=true is set on the
-   * HMS table but gc.enabled=false is set on the Iceberg table, resulting in no data file deletion.
-   *
-   * @param hmsProp The HMS property that should be translated to Iceberg property
-   * @return Iceberg property equivalent to the hmsProp. If no such translation exists, the original hmsProp is returned
-   */
-  public static String translateToIcebergProp(String hmsProp) {
+  static String translateToIcebergProp(String hmsProp) {
     return ICEBERG_TO_HMS_TRANSLATION.inverse().getOrDefault(hmsProp, hmsProp);
   }
+
   /** Updates the HMS Table properties based on the Iceberg Table metadata. */
   public static void updateHmsTableForIcebergTable(
       String newMetadataLocation,
@@ -136,6 +137,33 @@ public class HMSTablePropertyHelper {
     tbl.setParameters(parameters);
   }
 
+  /** Updates the HMS Table properties based on the Iceberg View metadata. */
+  public static void updateHmsTableForIcebergView(
+      String newMetadataLocation,
+      Table tbl,
+      ViewMetadata metadata,
+      Set<String> obsoleteProps,
+      long maxHiveTablePropertySize,
+      String currentLocation) {
+    Map<String, String> parameters =
+        Optional.ofNullable(tbl.getParameters()).orElseGet(Maps::newHashMap);
+
+    // push all Iceberg view properties into HMS
+    metadata.properties().entrySet().stream()
+        .filter(entry -> !entry.getKey().equalsIgnoreCase(HiveCatalog.HMS_TABLE_OWNER))
+        .forEach(entry -> parameters.put(entry.getKey(), entry.getValue()));
+    setCommonParameters(
+        newMetadataLocation,
+        metadata.uuid(),
+        obsoleteProps,
+        currentLocation,
+        parameters,
+        HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase(Locale.ENGLISH),
+        metadata.schema(),
+        maxHiveTablePropertySize);
+    tbl.setParameters(parameters);
+  }
+
   public static SortOrder getSortOrder(Properties props, Schema schema) {
     String sortOrderJsonString = props.getProperty(TableProperties.DEFAULT_SORT_ORDER);
     return Strings.isNullOrEmpty(sortOrderJsonString) ? SortOrder.unsorted() : SortOrderParser.fromJson(schema,
@@ -168,8 +196,7 @@ public class HMSTablePropertyHelper {
     setSchema(schema, parameters, maxHiveTablePropertySize);
   }
 
-  @VisibleForTesting
-  static void setStorageHandler(Map<String, String> parameters, boolean hiveEngineEnabled) {
+  private static void setStorageHandler(Map<String, String> parameters, boolean hiveEngineEnabled) {
     // If needed, set the 'storage_handler' property to enable query from Hive
     if (hiveEngineEnabled) {
       parameters.put(hive_metastoreConstants.META_TABLE_STORAGE, HIVE_ICEBERG_STORAGE_HANDLER);
@@ -179,7 +206,8 @@ public class HMSTablePropertyHelper {
   }
 
   @VisibleForTesting
-  static void setSnapshotStats(TableMetadata metadata, Map<String, String> parameters, long maxHiveTablePropertySize) {
+  static void setSnapshotStats(
+      TableMetadata metadata, Map<String, String> parameters, long maxHiveTablePropertySize) {
     parameters.remove(TableProperties.CURRENT_SNAPSHOT_ID);
     parameters.remove(TableProperties.CURRENT_SNAPSHOT_TIMESTAMP);
     parameters.remove(TableProperties.CURRENT_SNAPSHOT_SUMMARY);
@@ -188,17 +216,15 @@ public class HMSTablePropertyHelper {
     if (exposeInHmsProperties(maxHiveTablePropertySize) && currentSnapshot != null) {
       parameters.put(TableProperties.CURRENT_SNAPSHOT_ID, String.valueOf(currentSnapshot.snapshotId()));
       parameters.put(TableProperties.CURRENT_SNAPSHOT_TIMESTAMP, String.valueOf(currentSnapshot.timestampMillis()));
+
       setSnapshotSummary(parameters, currentSnapshot, maxHiveTablePropertySize);
     }
-
     parameters.put(TableProperties.SNAPSHOT_COUNT, String.valueOf(metadata.snapshots().size()));
   }
 
   @VisibleForTesting
   static void setSnapshotSummary(
-      Map<String, String> parameters,
-      Snapshot currentSnapshot,
-      long maxHiveTablePropertySize) {
+      Map<String, String> parameters, Snapshot currentSnapshot, long maxHiveTablePropertySize) {
     try {
       String summary = JsonUtil.mapper().writeValueAsString(currentSnapshot.summary());
       if (summary.length() <= maxHiveTablePropertySize) {
@@ -208,14 +234,17 @@ public class HMSTablePropertyHelper {
             currentSnapshot.snapshotId(), maxHiveTablePropertySize);
       }
     } catch (JsonProcessingException e) {
-      LOG.warn("Failed to convert current snapshot({}) summary to a json string", currentSnapshot.snapshotId(), e);
+      LOG.warn("Failed to convert current snapshot({}) summary to a json string",
+          currentSnapshot.snapshotId(), e);
     }
   }
 
   @VisibleForTesting
-  static void setPartitionSpec(TableMetadata metadata, Map<String, String> parameters, long maxHiveTablePropertySize) {
+  static void setPartitionSpec(
+      TableMetadata metadata, Map<String, String> parameters, long maxHiveTablePropertySize) {
     parameters.remove(TableProperties.DEFAULT_PARTITION_SPEC);
-    if (exposeInHmsProperties(maxHiveTablePropertySize) && metadata.spec() != null && metadata.spec().isPartitioned()) {
+    if (exposeInHmsProperties(maxHiveTablePropertySize) &&
+        metadata.spec() != null && metadata.spec().isPartitioned()) {
       String spec = PartitionSpecParser.toJson(metadata.spec());
       setField(parameters, TableProperties.DEFAULT_PARTITION_SPEC, spec, maxHiveTablePropertySize);
     }
@@ -232,17 +261,19 @@ public class HMSTablePropertyHelper {
   }
 
   @VisibleForTesting
-  static void setSortOrder(TableMetadata metadata, Map<String, String> parameters, long maxHiveTablePropertySize) {
+  static void setSortOrder(
+      TableMetadata metadata, Map<String, String> parameters, long maxHiveTablePropertySize) {
     parameters.remove(TableProperties.DEFAULT_SORT_ORDER);
     if (exposeInHmsProperties(maxHiveTablePropertySize) &&
-        metadata.sortOrder() != null &&
-        metadata.sortOrder().isSorted()) {
+        metadata.sortOrder() != null && metadata.sortOrder().isSorted()) {
       String sortOrder = SortOrderParser.toJson(metadata.sortOrder());
       setField(parameters, TableProperties.DEFAULT_SORT_ORDER, sortOrder, maxHiveTablePropertySize);
     }
   }
 
-  public static void setSchema(Schema schema, Map<String, String> parameters, long maxHiveTablePropertySize) {
+  @VisibleForTesting
+  static void setSchema(
+      Schema schema, Map<String, String> parameters, long maxHiveTablePropertySize) {
     parameters.remove(TableProperties.CURRENT_SCHEMA);
     if (exposeInHmsProperties(maxHiveTablePropertySize) && schema != null) {
       String jsonSchema = SchemaParser.toJson(schema);
@@ -251,13 +282,12 @@ public class HMSTablePropertyHelper {
   }
 
   private static void setField(
-      Map<String, String> parameters,
-      String key, String value,
-      long maxHiveTablePropertySize) {
+      Map<String, String> parameters, String key, String value, long maxHiveTablePropertySize) {
     if (value.length() <= maxHiveTablePropertySize) {
       parameters.put(key, value);
     } else {
-      LOG.warn("Not exposing {} in HMS since it exceeds {} characters", key, maxHiveTablePropertySize);
+      LOG.warn("Not exposing {} in HMS since it exceeds {} characters",
+          key, maxHiveTablePropertySize);
     }
   }
 
