@@ -26,12 +26,14 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Condition;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
-import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
-import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
-import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
-import static org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
+import static org.apache.hadoop.hive.metastore.PartFilterExprUtil.buildTreeFromNodes;
 
 public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
 
@@ -72,20 +74,6 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
     return buildTreeFromNodes(nodes, LogicalOperator.AND);
   }
 
-  private TreeNode buildTreeFromNodes(List<? extends TreeNode> nodes, LogicalOperator operator) {
-    // The 'nodes' list is expected to have at least one element.
-    // If the list if empty, the lexer parse would have failed.
-    if (nodes.size() == 1) {
-      return nodes.get(0);
-    }
-    TreeNode root = new TreeNode(nodes.get(0), operator, nodes.get(1));
-    for (int i = 2; i < nodes.size(); ++i) {
-      TreeNode tmp = new TreeNode(root, operator, nodes.get(i));
-      root = tmp;
-    }
-    return root;
-  }
-
   @Override
   public TreeNode visitExpression(PartitionFilterParser.ExpressionContext ctx) {
     if (ctx.orExpression() != null) {
@@ -96,38 +84,34 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
 
   @Override
   public TreeNode visitComparison(PartitionFilterParser.ComparisonContext ctx) {
-    LeafNode leafNode = new LeafNode();
-    leafNode.keyName = (String) visit(ctx.key);
-    leafNode.value = visit(ctx.value);
-    leafNode.operator = visitComparisonOperator(ctx.comparisonOperator());
-    return leafNode;
+    String keyName = (String) visit(ctx.key);
+    Object value = visit(ctx.value);
+    Operator operator = visitComparisonOperator(ctx.comparisonOperator());
+    return new LeafNode(new Condition(keyName, operator, value));
   }
 
   @Override
   public Object visitReverseComparison(PartitionFilterParser.ReverseComparisonContext ctx) {
-    LeafNode leafNode = new LeafNode();
-    leafNode.keyName = (String) visit(ctx.key);
-    leafNode.value = visit(ctx.value);
-    leafNode.operator = visitComparisonOperator(ctx.comparisonOperator());
-    leafNode.isReverseOrder = true;
-    return leafNode;
+    String keyName = (String) visit(ctx.key);
+    Object value = visit(ctx.value);
+    Operator operator = visitComparisonOperator(ctx.comparisonOperator());
+    return new LeafNode(new Condition(keyName, operator, value, true));
   }
 
   @Override
   public TreeNode visitBetweenCondition(PartitionFilterParser.BetweenConditionContext ctx) {
-    LeafNode left = new LeafNode();
-    LeafNode right = new LeafNode();
-    left.keyName = right.keyName = (String) visit(ctx.key);
-    left.value = visit(ctx.lower);
-    right.value = visit(ctx.upper);
+    String keyName = (String) visit(ctx.key);
+    Object leftValue = visit(ctx.lower);
+    Object rightValue = visit(ctx.upper);
 
     boolean isPositive = ctx.NOT() == null;
-    left.operator = isPositive ? Operator.GREATERTHANOREQUALTO : Operator.LESSTHAN;
-    right.operator = isPositive ? Operator.LESSTHANOREQUALTO : Operator.GREATERTHAN;
+    Operator leftOperator = isPositive ? Operator.GREATERTHANOREQUALTO : Operator.LESSTHAN;
+    Operator rightOperator = isPositive ? Operator.LESSTHANOREQUALTO : Operator.GREATERTHAN;
     LogicalOperator rootOperator = isPositive ? LogicalOperator.AND : LogicalOperator.OR;
 
-    TreeNode treeNode = new TreeNode(left, rootOperator, right);
-    return treeNode;
+    LeafNode left = new LeafNode(new Condition(keyName, leftOperator, leftValue));
+    LeafNode right = new LeafNode(new Condition(keyName, rightOperator, rightValue));
+    return new TreeNode(left, rootOperator, right);
   }
 
   @Override
@@ -141,11 +125,9 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
   private TreeNode buildInCondition(String keyName, List<Object> values, boolean isPositive) {
     List<LeafNode> nodes = values.stream()
         .map(value -> {
-          LeafNode leafNode = new LeafNode();
-          leafNode.keyName = keyName;
-          leafNode.value = value;
-          leafNode.operator = isPositive ? Operator.EQUALS : Operator.NOTEQUALS2;
-          return leafNode; })
+          Operator operator = isPositive ? Operator.EQUALS : Operator.NOTEQUALS2;
+          Condition condition = new Condition(keyName, operator, value);
+          return new LeafNode(condition); })
         .collect(Collectors.toList());
     return buildTreeFromNodes(nodes, isPositive ? LogicalOperator.OR : LogicalOperator.AND);
   }
@@ -164,10 +146,10 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
       }
       List<LeafNode> nodes = new ArrayList<>(struct.size());
       for (int j = 0; j < struct.size(); ++j) {
-        LeafNode leafNode = new LeafNode();
-        leafNode.keyName = keyNames.get(j);
-        leafNode.value = struct.get(j);
-        leafNode.operator = isPositive ? Operator.EQUALS : Operator.NOTEQUALS2;
+        String keyName = keyNames.get(j);
+        Object value = struct.get(j);
+        Operator operator = isPositive ? Operator.EQUALS : Operator.NOTEQUALS2;
+        LeafNode leafNode = new LeafNode(new Condition(keyName, operator, value));
         nodes.add(leafNode);
       }
       treeNodes.add(buildTreeFromNodes(nodes, isPositive ? LogicalOperator.AND : LogicalOperator.OR));
@@ -327,13 +309,10 @@ public class PartFilterVisitor extends PartitionFilterBaseVisitor<Object> {
   }
 
   private LeafNode negateLeafNode(LeafNode leaf) {
-    LeafNode negatedLeaf = new LeafNode();
-    negatedLeaf.keyName = leaf.keyName;
-
-    // Invert the operator for the leaf node
-    negatedLeaf.operator = invertOperator(leaf.operator);
-    negatedLeaf.value = leaf.value;
-    return negatedLeaf;
+    Condition condition = leaf.getCondition();
+    Operator invertedOperator = invertOperator(condition.getOperator());
+    Condition negatedCondition = new Condition(condition.getKeyName(), invertedOperator, condition.getValue());
+    return new LeafNode(negatedCondition);
   }
 
   @Override
