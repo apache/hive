@@ -88,22 +88,17 @@ STAGE PLANS:
                 TableScan
                   alias: decimal_1_n1
                   Statistics: Num rows: 500 Data size: 112112 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: +
-                    keys: t (type: decimal(4,2))
-                    null sort order: z
+                  Select Operator
+                    expressions: t (type: decimal(4,2)), u (type: decimal(5,0)), v (type: decimal(10,0))
+                    outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 112112 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 100
-                    Select Operator
-                      expressions: t (type: decimal(4,2)), u (type: decimal(5,0)), v (type: decimal(10,0))
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 500 Data size: 56112 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: decimal(4,2))
-                        null sort order: z
-                        sort order: +
-                        Statistics: Num rows: 500 Data size: 56112 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: decimal(5,0)), _col2 (type: decimal(10,0))
+                    Reduce Output Operator
+                      key expressions: _col0 (type: decimal(4,2))
+                      null sort order: z
+                      sort order: +
+                      Statistics: Num rows: 500 Data size: 112112 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col1 (type: decimal(5,0)), _col2 (type: decimal(10,0))
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -112,7 +107,7 @@ STAGE PLANS:
               Select Operator
                 expressions: KEY.reducesinkkey0 (type: decimal(4,2)), VALUE._col0 (type: decimal(5,0)), VALUE._col1 (type: decimal(10,0))
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 500 Data size: 56112 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 112112 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 100
                   Statistics: Num rows: 100 Data size: 22512 Basic stats: COMPLETE Column stats: COMPLETE

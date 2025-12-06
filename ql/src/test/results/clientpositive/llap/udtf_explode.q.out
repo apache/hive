@@ -275,21 +275,16 @@ STAGE PLANS:
                     UDTF Operator
                       Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: explode
-                      Top N Key Operator
-                        sort order: ++
-                        keys: key (type: int), value (type: string)
-                        null sort order: zz
-                        Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
-                        top n: 3
-                        Select Operator
-                          expressions: key (type: int), value (type: string)
-                          outputColumnNames: _col0, _col1
+                      Select Operator
+                        expressions: key (type: int), value (type: string)
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int), _col1 (type: string)
+                          null sort order: zz
+                          sort order: ++
                           Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                          Reduce Output Operator
-                            key expressions: _col0 (type: int), _col1 (type: string)
-                            null sort order: zz
-                            sort order: ++
-                            Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                          TopN Hash Memory Usage: 0.1
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
