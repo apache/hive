@@ -16,5 +16,5 @@ PREHOOK: query: LOCK TABLE insert_into1_neg EXCLUSIVE
 PREHOOK: type: LOCKTABLE
 POSTHOOK: query: LOCK TABLE insert_into1_neg EXCLUSIVE
 POSTHOOK: type: LOCKTABLE
-Unable to acquire IMPLICIT, EXCLUSIVE lock default@insert_into1_neg after 5 attempts.
+Unable to acquire IMPLICIT, EXCLUSIVE lock hive@default@insert_into1_neg after 5 attempts.
 FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired, retry after some time.

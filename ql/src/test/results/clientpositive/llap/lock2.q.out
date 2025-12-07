@@ -66,24 +66,24 @@ PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS
 POSTHOOK: type: SHOWLOCKS
-default@tstsrc	SHARED
-default@tstsrcpart_n0	SHARED
-default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+hive@default@tstsrc	SHARED
+hive@default@tstsrcpart_n0	SHARED
+hive@default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
 PREHOOK: query: SHOW LOCKS tstsrcpart_n0
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrcpart_n0
 POSTHOOK: type: SHOWLOCKS
-default@tstsrcpart_n0	SHARED
+hive@default@tstsrcpart_n0	SHARED
 PREHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
 POSTHOOK: type: SHOWLOCKS
-default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+hive@default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
 PREHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11') extended
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11') extended
 POSTHOOK: type: SHOWLOCKS
-default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+hive@default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
 #### A masked pattern was here ####
 LOCK_MODE:EXPLICIT	 
 LOCK_QUERYSTRING:LOCK TABLE tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11') EXCLUSIVE	 
@@ -95,18 +95,18 @@ PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS
 POSTHOOK: type: SHOWLOCKS
-default@tstsrcpart_n0	SHARED
-default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+hive@default@tstsrcpart_n0	SHARED
+hive@default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
 PREHOOK: query: SHOW LOCKS tstsrcpart_n0
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrcpart_n0
 POSTHOOK: type: SHOWLOCKS
-default@tstsrcpart_n0	SHARED
+hive@default@tstsrcpart_n0	SHARED
 PREHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
 POSTHOOK: type: SHOWLOCKS
-default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+hive@default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
 PREHOOK: query: UNLOCK TABLE tstsrcpart_n0
 PREHOOK: type: UNLOCKTABLE
 POSTHOOK: query: UNLOCK TABLE tstsrcpart_n0
@@ -115,7 +115,7 @@ PREHOOK: query: SHOW LOCKS
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS
 POSTHOOK: type: SHOWLOCKS
-default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+hive@default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
 PREHOOK: query: SHOW LOCKS tstsrcpart_n0
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrcpart_n0
@@ -124,7 +124,7 @@ PREHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: SHOW LOCKS tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
 POSTHOOK: type: SHOWLOCKS
-default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
+hive@default@tstsrcpart_n0@ds=2008-04-08/hr=11	EXCLUSIVE
 PREHOOK: query: UNLOCK TABLE tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')
 PREHOOK: type: UNLOCKTABLE
 POSTHOOK: query: UNLOCK TABLE tstsrcpart_n0 PARTITION(ds='2008-04-08', hr='11')

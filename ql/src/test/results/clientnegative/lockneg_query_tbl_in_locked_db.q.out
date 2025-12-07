@@ -44,7 +44,7 @@ PREHOOK: query: show locks database lockneg1
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks database lockneg1
 POSTHOOK: type: SHOWLOCKS
-lockneg1	SHARED
+hive@lockneg1	SHARED
 PREHOOK: query: select count(1) from tstsrcpart where ds='2008-04-08' and hr='11'
 PREHOOK: type: QUERY
 PREHOOK: Input: lockneg1@tstsrcpart
@@ -80,6 +80,6 @@ PREHOOK: query: show locks database lockneg1
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks database lockneg1
 POSTHOOK: type: SHOWLOCKS
-lockneg1	EXCLUSIVE
-Unable to acquire IMPLICIT, SHARED lock lockneg1 after 1 attempts.
+hive@lockneg1	EXCLUSIVE
+Unable to acquire IMPLICIT, SHARED lock hive@lockneg1 after 1 attempts.
 FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired, retry after some time.

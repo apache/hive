@@ -19,10 +19,12 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,14 +187,17 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
         continue;
       }
       LOG.debug("Adding " + input.getName() + " to list of lock inputs");
-      if (input.getType() == ReadEntity.Type.DATABASE) {
-        lockObjects.addAll(getLockObjects(plan, input.getDatabase(), null,
+      if (input.getType() == ReadEntity.Type.CATALOG) {
+        lockObjects.addAll(getLockObjects(plan, input.getCatalog(), null, null,
+                null, HiveLockMode.SHARED));
+      } else if (input.getType() == ReadEntity.Type.DATABASE) {
+        lockObjects.addAll(getLockObjects(plan, null, input.getDatabase(), null,
             null, HiveLockMode.SHARED));
       } else  if (input.getType() == ReadEntity.Type.TABLE) {
-        lockObjects.addAll(getLockObjects(plan, null, input.getTable(), null,
+        lockObjects.addAll(getLockObjects(plan, null, null,  input.getTable(), null,
             HiveLockMode.SHARED));
       } else {
-        lockObjects.addAll(getLockObjects(plan, null, null,
+        lockObjects.addAll(getLockObjects(plan, null, null, null,
             input.getPartition(),
             HiveLockMode.SHARED));
       }
@@ -205,16 +210,19 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
       }
       LOG.debug("Adding " + output.getName() + " to list of lock outputs");
       List<HiveLockObj> lockObj = null;
-      if (output.getType() == WriteEntity.Type.DATABASE) {
-        lockObjects.addAll(getLockObjects(plan, output.getDatabase(), null, null, lockMode));
+      if (output.getType() == WriteEntity.Type.CATALOG) {
+        lockObjects.addAll(getLockObjects(plan, output.getCatalog(), null, null, null, lockMode));
+      }
+      else if (output.getType() == WriteEntity.Type.DATABASE) {
+        lockObjects.addAll(getLockObjects(plan, null, output.getDatabase(), null, null, lockMode));
       } else if (output.getTyp() == WriteEntity.Type.TABLE) {
-        lockObj = getLockObjects(plan, null, output.getTable(), null,lockMode);
+        lockObj = getLockObjects(plan, null, null,  output.getTable(), null,lockMode);
       } else if (output.getTyp() == WriteEntity.Type.PARTITION) {
-        lockObj = getLockObjects(plan, null, null, output.getPartition(), lockMode);
+        lockObj = getLockObjects(plan, null, null, null, output.getPartition(), lockMode);
       }
       // In case of dynamic queries, it is possible to have incomplete dummy partitions
       else if (output.getTyp() == WriteEntity.Type.DUMMYPARTITION) {
-        lockObj = getLockObjects(plan, null, null, output.getPartition(),
+        lockObj = getLockObjects(plan, null, null, null, output.getPartition(),
             HiveLockMode.SHARED);
       }
 
@@ -381,7 +389,7 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
     }
   }
 
-  private List<HiveLockObj> getLockObjects(QueryPlan plan, Database db,
+  private List<HiveLockObj> getLockObjects(QueryPlan plan, Catalog catalog, Database db,
                                            Table t, Partition p,
                                            HiveLockMode mode)
       throws LockException {
@@ -394,9 +402,15 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
                              plan.getQueryStr(),
                              conf);
 
+    if (catalog != null) {
+      locks.add(new HiveLockObj(new HiveLockObject(catalog.getName(), lockData), mode));
+      return locks;
+    }
+
     if (db != null) {
       String catName = Objects.requireNonNullElse(db.getCatalogName(),
               HiveUtils.getCurrentCatalogOrDefault(conf));
+      locks.add(new HiveLockObj(new HiveLockObject(catName, lockData), mode));
       db.setCatalogName(catName);
       locks.add(new HiveLockObj(new HiveLockObject(db, lockData),
           mode));
@@ -406,7 +420,11 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
     if (t != null) {
       locks.add(new HiveLockObj(new HiveLockObject(t, lockData), mode));
       mode = HiveLockMode.SHARED;
-      locks.add(new HiveLockObj(new HiveLockObject(t.getDbName(), lockData), mode));
+      db = new Database();
+      db.setName(t.getDbName());
+      db.setCatalogName(t.getCatalogName());
+      locks.add(new HiveLockObj(new HiveLockObject(db, lockData), mode));
+      locks.add(new HiveLockObj(new HiveLockObject(t.getCatalogName(), lockData), mode));
       return locks;
     }
 
@@ -435,8 +453,8 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
         String[] nameValue = partn.split("=");
         assert(nameValue.length == 2);
         partialSpec.put(nameValue[0], nameValue[1]);
-        DummyPartition par = new DummyPartition(p.getTable(), 
-          p.getTable().getDbName() 
+        DummyPartition par = new DummyPartition(p.getTable(),
+                p.getTable().getCatalogName() + "/" +p.getTable().getDbName()
             + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase() 
             + "/" + partialName,
           partialSpec);
@@ -445,7 +463,11 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
       }
 
       locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData), mode));
-      locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getDbName(), lockData), mode));
+      db = new Database();
+      db.setName(p.getTable().getDbName());
+      db.setCatalogName(p.getTable().getCatalogName());
+      locks.add(new HiveLockObj(new HiveLockObject(db, lockData), mode));
+      locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getCatalogName(), lockData), mode));
     }
     return locks;
   }
