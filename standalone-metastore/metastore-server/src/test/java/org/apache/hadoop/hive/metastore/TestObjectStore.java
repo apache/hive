@@ -1036,12 +1036,12 @@ public class TestObjectStore {
     }
   }
 
-  private void assertAggrStats(AggrStats aggrStats, ColumnStatisticsData ColStatsData) {
+  private void assertAggrStats(AggrStats aggrStats, ColumnStatisticsData computedStats) {
     Assert.assertEquals(1, aggrStats.getColStats().size());
     Assert.assertEquals(3, aggrStats.getPartsFound());
     ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(2)
             .low(3L).high(4L).build();
-    assertEqualStatistics(expectedStats, ColStatsData);
+    assertEqualStatistics(expectedStats, computedStats);
   }
 
   @Test
