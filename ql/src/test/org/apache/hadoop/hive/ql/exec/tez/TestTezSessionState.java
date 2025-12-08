@@ -77,12 +77,11 @@ public class TestTezSessionState {
       }
     };
 
-    SessionState.LogHelper console = new SessionState.LogHelper(LoggerFactory.getLogger("TestTezSessionState"));
     TezSessionState.HiveResources resources =
         new TezSessionState.HiveResources(new org.apache.hadoop.fs.Path("/tmp"));
 
     try {
-      sessionState.openInternal(null, false, console, resources);
+      sessionState.open(resources);
       Assert.fail("An exception should have been thrown while calling openInternal");
     } catch (Exception e) {
       Assert.assertTrue(e.getMessage().equalsIgnoreCase("fake exception in openInternalUnsafe"));
