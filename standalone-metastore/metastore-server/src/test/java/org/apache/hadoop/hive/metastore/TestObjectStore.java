@@ -1020,30 +1020,61 @@ public class TestObjectStore {
             List.of("test_part_col=a2"), null, "special '");
   }
 
+  private void setAggrConf(boolean enableBitVector, boolean enableKll, int batchSize) {
+    Configuration conf2 = MetastoreConf.newMetastoreConf(conf);
+    MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_BITVECTOR, enableBitVector);
+    MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_KLL, enableKll);
+    MetastoreConf.setLongVar(conf2, ConfVars.DIRECT_SQL_PARTITION_BATCH_SIZE, batchSize);
+    objectStore.setConf(conf2);
+  }
+
+  private AggrStats runStatsAggregation() throws Exception {
+    try (AutoCloseable c = deadline()) {
+      return objectStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+              Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
+              Collections.singletonList("test_part_col"), ENGINE);
+    }
+  }
+
+  private void assertAggrStats(AggrStats aggrStats, ColumnStatisticsData ColStatsData) {
+    Assert.assertEquals(1, aggrStats.getColStats().size());
+    Assert.assertEquals(3, aggrStats.getPartsFound());
+    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(2)
+            .low(3L).high(4L).build();
+    assertEqualStatistics(expectedStats, ColStatsData);
+  }
 
   @Test
-  public void testAggrStatsUseDB() throws Exception {
-    Configuration conf2 = MetastoreConf.newMetastoreConf(conf);
-    MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_BITVECTOR, false);
-    MetastoreConf.setBoolVar(conf2, ConfVars.STATS_FETCH_KLL, false);
-    objectStore.setConf(conf2);
-
+  public void testStatsAggrWithKll() throws Exception {
+    setAggrConf(false, true, 2);
     createPartitionedTable(true, true);
-
-    AggrStats aggrStats;
-    try (AutoCloseable c = deadline()) {
-      aggrStats = objectStore.get_aggr_stats_for(DEFAULT_CATALOG_NAME, DB1, TABLE1,
-          Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"),
-          Collections.singletonList("test_part_col"), ENGINE);
-    }
-    List<ColumnStatisticsObj> stats = aggrStats.getColStats();
-    Assert.assertEquals(1, stats.size());
-    Assert.assertEquals(3, aggrStats.getPartsFound());
-
+    AggrStats aggrStats = runStatsAggregation();
     ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
-    ColumnStatisticsData expectedStats = new ColStatsBuilder<>(long.class).numNulls(3).numDVs(2)
-        .low(3L).high(4L).build();
-    assertEqualStatistics(expectedStats, computedStats);
+    computedStats = new ColStatsBuilder<>(long.class)
+            .numNulls(computedStats.getLongStats().getNumNulls()).numDVs(computedStats.getLongStats().getNumDVs())
+            .low(computedStats.getLongStats().getLowValue()).high(computedStats.getLongStats().getHighValue()).build();
+    assertAggrStats(aggrStats, computedStats);
+  }
+
+  @Test
+  public void testStatsAggrWithBitVector() throws Exception {
+    setAggrConf(true, false, 2);
+    createPartitionedTable(true, true);
+    AggrStats aggrStats = runStatsAggregation();
+    ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
+    computedStats = new ColStatsBuilder<>(long.class)
+            .numNulls(computedStats.getLongStats().getNumNulls()).numDVs(computedStats.getLongStats().getNumDVs())
+            .low(computedStats.getLongStats().getLowValue()).high(computedStats.getLongStats().getHighValue()).build();
+    assertAggrStats(aggrStats, computedStats);
+  }
+
+  @Test
+  public void testStatsAggrWithBackendDB() throws Exception {
+    setAggrConf(false, false, 2);
+    createPartitionedTable(true, true);
+    AggrStats aggrStats = runStatsAggregation();
+    ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
+    assertAggrStats(aggrStats, computedStats);
   }
 
   /**
