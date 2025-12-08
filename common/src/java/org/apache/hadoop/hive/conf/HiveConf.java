@@ -6551,8 +6551,17 @@ public class HiveConf extends Configuration {
     initialize(cls);
   }
 
+  /**
+   * For internal use only, assumed the "other" has loaded all properties that intend to use
+   * and want to cast it to a HiveConf without extra re-loading the source file.
+   * @param other The Configuration whose properties are to be wrapped by this HiveConf.
+   */
   private HiveConf(Configuration other) {
     super(other);
+    setupRestrictList();
+    hiddenSet.addAll(HiveConfUtil.getHiddenSet(other));
+    lockedSet.addAll(HiveConfUtil.getLockedSet(other));
+    origProp = getProperties(other);
   }
 
   /**
@@ -7326,7 +7335,10 @@ public class HiveConf extends Configuration {
    * @return A HiveConf wrapping on the original configuration
    */
   public static HiveConf cloneConf(Configuration configuration) {
-    return new HiveConf(configuration);
+    if (configuration instanceof HiveConf config) {
+      return new HiveConf(config);
+    } else {
+      return new HiveConf(configuration);
+    }
   }
-
 }

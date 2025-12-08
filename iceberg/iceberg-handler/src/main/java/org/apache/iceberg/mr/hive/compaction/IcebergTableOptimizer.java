@@ -128,7 +128,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
   }
 
   public void init() throws MetaException {
-    client = new HiveMetaStoreClient(conf);
+    client = new HiveMetaStoreClient(new HiveConf());
     snapshotTimeMilCache = Maps.newConcurrentMap();
   }
 
