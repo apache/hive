@@ -16,8 +16,6 @@ PREHOOK: Input: catalog:test_cat
 POSTHOOK: query: DESC CATALOG test_cat
 POSTHOOK: type: DESCCATALOG
 POSTHOOK: Input: catalog:test_cat
-Catalog Name	test_cat	 
-Comment	Hive test catalog	 
 #### A masked pattern was here ####
 PREHOOK: type: CREATECATALOG
 PREHOOK: Output: catalog:test_cat
@@ -113,8 +111,6 @@ PREHOOK: Input: catalog:test_cat
 POSTHOOK: query: DESC CATALOG EXTENDED test_cat
 POSTHOOK: type: DESCCATALOG
 POSTHOOK: Input: catalog:test_cat
-Catalog Name	test_cat	 	 
-Comment	Hive test catalog	 	 
 #### A masked pattern was here ####
 PREHOOK: query: ALTER CATALOG test_cat SET PROPERTIES ('key2'='value2')
 PREHOOK: type: ALTERCATALOG_PROPERTIES
