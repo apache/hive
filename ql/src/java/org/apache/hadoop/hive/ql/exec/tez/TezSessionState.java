@@ -261,8 +261,7 @@ public class TezSessionState {
     openInternal(additionalFiles, true, console, null);
   }
 
-  @VisibleForTesting
-  void openInternal(String[] additionalFilesNotFromConf,
+  protected void openInternal(String[] additionalFilesNotFromConf,
       boolean isAsync, LogHelper console, HiveResources resources)
           throws IOException, URISyntaxException, TezException {
     // TODO Why is the queue name set again. It has already been setup via setQueueName. Do only one of the two.
