@@ -321,22 +321,6 @@ public class CliConfigs {
     }
   }
 
-  public static class TezBatchedStatsCliConfig extends AbstractCliConfig {
-    public TezBatchedStatsCliConfig() {
-      super(CorePerfCliDriver.class);
-      try {
-        setQueryDir("ql/src/test/queries/clientpositive/batched/tez");
-        setLogDir("itests/qtest/target/qfile-results/clientpositive/batched/tez");
-        setResultsDir("ql/src/test/results/clientpositive/batched/tez");
-        setHiveConfDir("data/conf/batched/tez");
-        setClusterType(MiniClusterType.LLAP_LOCAL);
-        setMetastoreType("postgres.ministats");
-      } catch (Exception e) {
-        throw new RuntimeException("can't construct cliconfig", e);
-      }
-    }
-  }
-
   public static class TezTPCDS30TBCliConfig extends AbstractCliConfig {
     public TezTPCDS30TBCliConfig() {
       super(CorePerfCliDriver.class);
