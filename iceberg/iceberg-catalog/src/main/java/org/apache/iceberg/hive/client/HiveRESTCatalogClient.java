@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.BaseMetaStoreClient;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SortOrder;
@@ -82,6 +83,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     String catName = MetaStoreUtils.getDefaultCatalog(conf);
     Map<String, String> properties = CatalogUtils.getCatalogProperties(conf, CatalogUtils.getCatalogName(conf));
     restCatalog = (RESTCatalog) CatalogUtil.buildIcebergCatalog(catName, properties, null);
+    SessionState.get().addCleanupItem(restCatalog);
   }
 
   @Override
