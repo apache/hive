@@ -1044,6 +1044,16 @@ public class TestObjectStore {
     assertEqualStatistics(expectedStats, computedStats);
   }
 
+  private void statsAggrResourceCleanup()
+          throws Exception {
+    try (AutoCloseable c = deadline()) {
+      objectStore.dropPartitionsInternal(DEFAULT_CATALOG_NAME, DB1, TABLE1,
+              Arrays.asList("test_part_col=a0", "test_part_col=a1", "test_part_col=a2"), true, true);
+      objectStore.dropTable(DEFAULT_CATALOG_NAME, DB1, TABLE1);
+      objectStore.dropDatabase(DEFAULT_CATALOG_NAME, DB1);
+    }
+  }
+
   @Test
   public void testStatsAggrWithKll() throws Exception {
     setAggrConf(false, true, 2);
@@ -1054,6 +1064,7 @@ public class TestObjectStore {
             .numNulls(computedStats.getLongStats().getNumNulls()).numDVs(computedStats.getLongStats().getNumDVs())
             .low(computedStats.getLongStats().getLowValue()).high(computedStats.getLongStats().getHighValue()).build();
     assertAggrStats(aggrStats, computedStats);
+    statsAggrResourceCleanup();
   }
 
   @Test
@@ -1066,6 +1077,7 @@ public class TestObjectStore {
             .numNulls(computedStats.getLongStats().getNumNulls()).numDVs(computedStats.getLongStats().getNumDVs())
             .low(computedStats.getLongStats().getLowValue()).high(computedStats.getLongStats().getHighValue()).build();
     assertAggrStats(aggrStats, computedStats);
+    statsAggrResourceCleanup();
   }
 
   @Test
@@ -1075,6 +1087,7 @@ public class TestObjectStore {
     AggrStats aggrStats = runStatsAggregation();
     ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
     assertAggrStats(aggrStats, computedStats);
+    statsAggrResourceCleanup();
   }
 
   /**
