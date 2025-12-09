@@ -89,7 +89,7 @@ public class LeaseLeaderElection implements LeaderElection<TableName> {
   private volatile boolean stopped = false;
 
   // Leadership change listeners
-  private final List<LeadershipStateListener> listeners = new ArrayList<>();
+  protected final List<LeadershipStateListener> listeners = new ArrayList<>();
 
   protected String name;
   private final String userName;
