@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.serde2.SerDeSpec;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -147,8 +148,13 @@ public class ParquetHiveSerDe extends AbstractSerDe implements SchemaInference {
 
     parquetRow.value = obj;
     // The 'objInspector' coming from Operator may have different type infos than table column type infos which will lead to the issues like HIVE-26877
-    // so using the object inspector created during initialize phase of this SerDe class while writing the data.
-    parquetRow.inspector = (StructObjectInspector) writableObjectInspector;
+    // so comparing the object inspector created during initialize phase of this SerDe class and the object inspector coming from Operator
+    // if they are different then using the object inspector created during initialize phase which is proper
+    if (!ObjectInspectorUtils.compareTypes(writableObjectInspector, objInspector)) {
+      parquetRow.inspector = (StructObjectInspector) writableObjectInspector;
+    } else {
+      parquetRow.inspector = (StructObjectInspector) objInspector;
+    }
     return parquetRow;
   }
 
