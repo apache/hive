@@ -296,7 +296,7 @@ public class TezSessionState {
     try {
       openInternalUnsafe(isAsync, console);
     } catch (Exception e) {
-      LOG.info("Failed to open session, deleting scratch dir to prevent resource leak...", e);
+      LOG.warn("Failed to open session, deleting scratch dir to prevent resource leak...", e);
       cleanupScratchDir();
       throw e;
     }
