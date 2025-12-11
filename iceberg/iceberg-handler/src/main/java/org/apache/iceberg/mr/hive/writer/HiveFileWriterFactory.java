@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive.writer;
 
 import java.util.Map;
+import java.util.function.Supplier;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SortOrder;
@@ -32,12 +33,12 @@ import org.apache.iceberg.data.orc.GenericOrcWriter;
 import org.apache.iceberg.data.parquet.GenericParquetWriter;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
-import org.apache.iceberg.types.Types;
+import org.apache.iceberg.parquet.VariantUtil;
 
 class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
 
   private final Map<String, String> properties;
-  private Record sampleRecord = null;
+  private Supplier<Record> sampleRecord = null;
 
   HiveFileWriterFactory(
       Table table,
@@ -85,10 +86,8 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
   protected void configureDataWrite(Parquet.DataWriteBuilder builder) {
     builder.createWriterFunc(GenericParquetWriter::create);
     // Configure variant shredding function if conditions are met:
-    if (hasVariantColumns(dataSchema()) && isVariantShreddingEnabled(properties)) {
-      var shreddingFunction = Parquet.constructVariantShreddingFunction(sampleRecord, dataSchema());
-      builder.variantShreddingFunc(shreddingFunction);
-    }
+    VariantUtil.variantShreddingFunc(dataSchema(), sampleRecord, properties)
+        .ifPresent(builder::variantShreddingFunc);
   }
 
   @Override
@@ -162,28 +161,12 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
   }
 
   /**
-   * Check if the schema contains any variant columns.
-   */
-  private static boolean hasVariantColumns(Schema schema) {
-    return schema.columns().stream()
-        .anyMatch(field -> field.type() instanceof Types.VariantType);
-  }
-
-  /**
-   * Check if variant shredding is enabled via table properties.
-   */
-  private static boolean isVariantShreddingEnabled(Map<String, String> properties) {
-    String shreddingEnabled = properties.get("variant.shredding.enabled");
-    return "true".equalsIgnoreCase(shreddingEnabled);
-  }
-
-  /**
    * Set a sample record to use for data-driven variant shredding schema generation.
    * Should be called before the Parquet writer is created.
    */
-  public void initialize(Record record) {
-    if (this.sampleRecord == null) {
-      this.sampleRecord = record;
+  public void initialize(Supplier<Record> record) {
+    if (sampleRecord == null) {
+      sampleRecord = record;
     }
   }
 }

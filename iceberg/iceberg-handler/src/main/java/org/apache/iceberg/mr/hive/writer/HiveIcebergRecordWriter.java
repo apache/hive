@@ -49,7 +49,8 @@ class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
     this.currentSpecId = table.spec().specId();
     this.missingColumns = context.missingColumns();
     this.missingOrStructFields = specs.get(currentSpecId).schema().asStruct().fields().stream()
-        .filter(field -> missingColumns.contains(field.name()) || field.type().isStructType()).toList();
+        .filter(field -> missingColumns.contains(field.name()) || field.type().isStructType())
+        .toList();
     this.fileWriterFactory = fileWriterFactory;
   }
 
@@ -57,8 +58,7 @@ class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
     HiveSchemaUtil.setDefaultValues(record, missingOrStructFields, missingColumns);
-    fileWriterFactory.initialize(record);
-
+    fileWriterFactory.initialize(() -> record);
     writer.write(record, specs.get(currentSpecId), partition(record, currentSpecId));
   }
 
