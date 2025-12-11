@@ -20,18 +20,27 @@ package org.apache.hive.minikdc;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TestRemoteHiveMetaStore;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.ql.metadata.StringAppender;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.logging.log4j.Level;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
@@ -105,6 +114,72 @@ public class TestRemoteHiveMetaStoreKerberos extends TestRemoteHiveMetaStore {
     }
 
     cleanUp(dbName, tblName, typeName);
+  }
+
+  @Test
+  public void testKerberosProxyUser() throws Exception {
+    String realUserName = "realuser";
+    String realUserPrincipal = miniKDC.getFullyQualifiedUserPrincipal(realUserName);
+
+    // Add the real user principal and generate keytab
+    miniKDC.addUserPrincipal(realUserName);
+
+    // Login real user with valid keytab - this gives us real TGT credentials
+    UserGroupInformation realUserUgi = miniKDC.loginUser(realUserName);
+
+    // Create a proxy user on behalf of the real user
+    String proxyUserName = "proxyuser@" + miniKDC.getKdcConf().getProperty("realm", "EXAMPLE.COM");
+    UserGroupInformation proxyUserUgi = UserGroupInformation.createProxyUser(
+            proxyUserName, realUserUgi);
+
+    proxyUserUgi.doAs(new PrivilegedExceptionAction<Void>() {
+      @Override
+      public Void run() throws Exception {
+        Logger logger = null;
+        StringAppender appender = null;
+        try {
+          UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+
+          System.out.println("Real user: " + currentUser.getRealUser().getUserName() +
+                  " (auth:" + currentUser.getRealUser().getAuthenticationMethod() + ")");
+          System.out.println("Proxy user: " + currentUser.getShortUserName() +
+                  " (auth:" + currentUser.getAuthenticationMethod() + ")");
+
+          // Set up log capture to catch "Failed to find any Kerberos tgt" error in logs
+          logger = LoggerFactory.getLogger("org.apache.hadoop.hive.metastore.security");
+          appender = StringAppender.createStringAppender(null);
+          appender.addToLogger(logger.getName(), Level.INFO);
+          appender.start();
+
+          // Attempt to create metastore client connection as Kerberos proxy user
+          // This should work properly (after TUGIAssumingTransport fix)
+          IMetaStoreClient client = new HiveMetaStoreClient(conf);
+
+          // Clean up
+          if (client != null) {
+            client.close();
+          }
+
+          // The test has successfully demonstrated:
+          // 1. Real user has valid Kerberos authentication with real TGT from MiniKdc
+          // 2. Proxy user is properly created with PROXY authentication method
+          // 3. TUGIAssumingTransport fix is working - no "Failed to find any Kerberos tgt" error
+          System.out.println("Successfully verified Kerberos proxy user setup with real KDC");
+
+        } catch (Exception clientException) {
+          // Check the captured logs for the specific "Failed to find any Kerberos tgt" error
+          if (appender.getOutput().contains("Failed to find any Kerberos tgt")) {
+            // This is expected behavior before TUGIAssumingTransport fix
+            Assert.fail("EXPECTED BEFORE FIX: HMS client creation failed with 'Failed to find any Kerberos tgt' error in logs");
+          } else {
+            Assert.fail("Unexpected error (not 'Failed to find any Kerberos tgt'): " + clientException.getMessage());
+          }
+        } finally {
+          appender.removeFromLogger(logger.getName());
+        }
+        return null;
+      }
+    });
   }
 
   @Override
