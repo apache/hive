@@ -171,25 +171,25 @@ class MetaStoreDirectSql {
 
   private static final int COLNAME = 0;
   private static final int COLTYPE = 1;
-  private static final int LLOW = 2;
-  private static final int LHIGH = 3;
-  private static final int DLOW = 4;
-  private static final int DHIGH = 5;
-  private static final int DECLOW = 6;
-  private static final int DECHIGH = 7;
-  private static final int NULLS = 8;
-  private static final int DIST = 9;
-  private static final int AVGLEN = 10;
-  private static final int MAXLEN = 11;
-  private static final int TRUES = 12;
-  private static final int FALSES = 13;
-  private static final int SUMNDVLONG = 14;
-  private static final int COUNTNDVLONG = 15;
-  private static final int SUMNDVDOUBLE = 16;
-  private static final int COUNTNDVDOUBLE = 17;
-  private static final int SUMNDVDECIMAL = 18;
-  private static final int COUNTNDVDECIMAL = 19;
-  private static final int SUMDIST = 20;
+  private static final int LONG_LOW_VALUE = 2;
+  private static final int LONG_HIGH_VALUE = 3;
+  private static final int DOUBLE_LOW_VALUE = 4;
+  private static final int DOUBLE_HIGH_VALUE = 5;
+  private static final int BIG_DECIMAL_LOW_VALUE = 6;
+  private static final int BIG_DECIMAL_HIGH_VALUE = 7;
+  private static final int NUM_NULLS = 8;
+  private static final int NUM_DISTINCTS = 9;
+  private static final int AVG_COL_LEN = 10;
+  private static final int MAX_COL_LEN = 11;
+  private static final int NUM_TRUES = 12;
+  private static final int NUM_FALSES = 13;
+  private static final int SUM_NDV_LONG = 14;
+  private static final int COUNT_NDV_LONG = 15;
+  private static final int SUM_NDV_DOUBLE = 16;
+  private static final int COUNT_NDV_DOUBLE = 17;
+  private static final int SUM_NDV_DECIMAL = 18;
+  private static final int COUNT_NDV_DECIMAL = 19;
+  private static final int SUM_NUM_DISTINCTS = 20;
 
   /**
    * This method returns a comma separated string consisting of String values of a given list.
@@ -2165,6 +2165,7 @@ class MetaStoreDirectSql {
         }
 
         for (Map.Entry<String, String[]> entry : extraColumnNameTypeParts.entrySet()) {
+          // +5 => 3 extra indices for sum,count used in place of avg + 2 for colname and coltype
           Object[] row = new Object[IExtrapolatePartStatus.colStatNames.length + 5];
           String colName = entry.getKey();
           String colType = entry.getValue()[0];
@@ -2220,6 +2221,7 @@ class MetaStoreDirectSql {
                 sum[i / 2] = MetastoreDirectSqlUtils.sum(sum[i / 2], batch[i]);
                 count[i / 2] = MetastoreDirectSqlUtils.sum(count[i / 2], batch[i + 1]);
               }
+              // filling in sum and count in row for avg calculation later on
               row[avgIndex[i / 2] + i / 2] = sum[i / 2];
               row[avgIndex[i / 2] + i / 2 + 1] = count[i / 2];
             }
@@ -2231,6 +2233,7 @@ class MetaStoreDirectSql {
             // if the aggregation type is sum, we do a scale-up
             if (IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Sum) {
               Object o = sumMap.get(colName).get(colStatIndex);
+              // +5 only for the case of SUM_NUM_DISTINCTS which is after avg indices
               int rowIndex = (colStatIndex == 15) ? colStatIndex + 5 : colStatIndex + 2;
               if (o == null) {
                 row[rowIndex] = null;
@@ -2325,25 +2328,25 @@ class MetaStoreDirectSql {
       row1[COLNAME] = row2[COLNAME];
       row1[COLTYPE] = row2[COLTYPE];
     }
-    row1[LLOW] = MetastoreDirectSqlUtils.min(row1[LLOW], row2[LLOW]);
-    row1[LHIGH] = MetastoreDirectSqlUtils.max(row1[LHIGH], row2[LHIGH]);
-    row1[DLOW] = MetastoreDirectSqlUtils.min(row1[DLOW], row2[DLOW]);
-    row1[DHIGH] = MetastoreDirectSqlUtils.max(row1[DHIGH], row2[DHIGH]);
-    row1[DECLOW] = MetastoreDirectSqlUtils.min(row1[DECLOW], row2[DECLOW]);
-    row1[DECHIGH] = MetastoreDirectSqlUtils.max(row1[DECHIGH], row2[DECHIGH]);
-    row1[NULLS] = MetastoreDirectSqlUtils.sum(row1[NULLS], row2[NULLS]);
-    row1[DIST] = MetastoreDirectSqlUtils.max(row1[DIST], row2[DIST]);
-    row1[AVGLEN] = MetastoreDirectSqlUtils.max(row1[AVGLEN], row2[AVGLEN]);
-    row1[MAXLEN] = MetastoreDirectSqlUtils.max(row1[MAXLEN], row2[MAXLEN]);
-    row1[TRUES] = MetastoreDirectSqlUtils.sum(row1[TRUES], row2[TRUES]);
-    row1[FALSES] = MetastoreDirectSqlUtils.sum(row1[FALSES], row2[FALSES]);
-    row1[SUMNDVLONG] = MetastoreDirectSqlUtils.sum(row1[SUMNDVLONG], row2[SUMNDVLONG]);
-    row1[COUNTNDVLONG] = MetastoreDirectSqlUtils.sum(row1[COUNTNDVLONG], row2[COUNTNDVLONG]);
-    row1[SUMNDVDOUBLE] = MetastoreDirectSqlUtils.sum(row1[SUMNDVDOUBLE], row2[SUMNDVDOUBLE]);
-    row1[COUNTNDVDOUBLE] = MetastoreDirectSqlUtils.sum(row1[COUNTNDVDOUBLE], row2[COUNTNDVDOUBLE]);
-    row1[SUMNDVDECIMAL] = MetastoreDirectSqlUtils.sum(row1[SUMNDVDECIMAL], row2[SUMNDVDECIMAL]);
-    row1[COUNTNDVDECIMAL] = MetastoreDirectSqlUtils.sum(row1[COUNTNDVDECIMAL], row2[COUNTNDVDECIMAL]);
-    row1[SUMDIST] = MetastoreDirectSqlUtils.sum(row1[SUMDIST], row2[SUMDIST]);
+    row1[LONG_LOW_VALUE] = MetastoreDirectSqlUtils.min(row1[LONG_LOW_VALUE], row2[LONG_LOW_VALUE]);
+    row1[LONG_HIGH_VALUE] = MetastoreDirectSqlUtils.max(row1[LONG_HIGH_VALUE], row2[LONG_HIGH_VALUE]);
+    row1[DOUBLE_LOW_VALUE] = MetastoreDirectSqlUtils.min(row1[DOUBLE_LOW_VALUE], row2[DOUBLE_LOW_VALUE]);
+    row1[DOUBLE_HIGH_VALUE] = MetastoreDirectSqlUtils.max(row1[DOUBLE_HIGH_VALUE], row2[DOUBLE_HIGH_VALUE]);
+    row1[BIG_DECIMAL_LOW_VALUE] = MetastoreDirectSqlUtils.min(row1[BIG_DECIMAL_LOW_VALUE], row2[BIG_DECIMAL_LOW_VALUE]);
+    row1[BIG_DECIMAL_HIGH_VALUE] = MetastoreDirectSqlUtils.max(row1[BIG_DECIMAL_HIGH_VALUE], row2[BIG_DECIMAL_HIGH_VALUE]);
+    row1[NUM_NULLS] = MetastoreDirectSqlUtils.sum(row1[NUM_NULLS], row2[NUM_NULLS]);
+    row1[NUM_DISTINCTS] = MetastoreDirectSqlUtils.max(row1[NUM_DISTINCTS], row2[NUM_DISTINCTS]);
+    row1[AVG_COL_LEN] = MetastoreDirectSqlUtils.max(row1[AVG_COL_LEN], row2[AVG_COL_LEN]);
+    row1[MAX_COL_LEN] = MetastoreDirectSqlUtils.max(row1[MAX_COL_LEN], row2[MAX_COL_LEN]);
+    row1[NUM_TRUES] = MetastoreDirectSqlUtils.sum(row1[NUM_TRUES], row2[NUM_TRUES]);
+    row1[NUM_FALSES] = MetastoreDirectSqlUtils.sum(row1[NUM_FALSES], row2[NUM_FALSES]);
+    row1[SUM_NDV_LONG] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_LONG], row2[SUM_NDV_LONG]);
+    row1[COUNT_NDV_LONG] = MetastoreDirectSqlUtils.sum(row1[COUNT_NDV_LONG], row2[COUNT_NDV_LONG]);
+    row1[SUM_NDV_DOUBLE] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_DOUBLE], row2[SUM_NDV_DOUBLE]);
+    row1[COUNT_NDV_DOUBLE] = MetastoreDirectSqlUtils.sum(row1[COUNT_NDV_DOUBLE], row2[COUNT_NDV_DOUBLE]);
+    row1[SUM_NDV_DECIMAL] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_DECIMAL], row2[SUM_NDV_DECIMAL]);
+    row1[COUNT_NDV_DECIMAL] = MetastoreDirectSqlUtils.sum(row1[COUNT_NDV_DECIMAL], row2[COUNT_NDV_DECIMAL]);
+    row1[SUM_NUM_DISTINCTS] = MetastoreDirectSqlUtils.sum(row1[SUM_NUM_DISTINCTS], row2[SUM_NUM_DISTINCTS]);
   }
 
   private ColumnStatisticsObj prepareCSObjWithAdjustedNDV(
@@ -2355,13 +2358,13 @@ class MetaStoreDirectSql {
     }
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj cso = new ColumnStatisticsObj((String) row[COLNAME], (String) row[COLTYPE], data);
-    Object avgLong = MetastoreDirectSqlUtils.divide(row[SUMNDVLONG], row[COUNTNDVLONG]);
-    Object avgDouble = MetastoreDirectSqlUtils.divide(row[SUMNDVDOUBLE], row[COUNTNDVDOUBLE]);
-    Object avgDecimal = MetastoreDirectSqlUtils.divide(row[SUMNDVDECIMAL], row[COUNTNDVDECIMAL]);
-    StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, row[LLOW],
-            row[LHIGH], row[DLOW], row[DHIGH], row[DECLOW], row[DECHIGH],
-            row[NULLS], row[DIST], row[AVGLEN], row[MAXLEN], row[TRUES], row[FALSES],
-            avgLong, avgDouble, avgDecimal, row[SUMDIST],
+    Object avgLong = MetastoreDirectSqlUtils.divide(row[SUM_NDV_LONG], row[COUNT_NDV_LONG]);
+    Object avgDouble = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DOUBLE], row[COUNT_NDV_DOUBLE]);
+    Object avgDecimal = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DECIMAL], row[COUNT_NDV_DECIMAL]);
+    StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, row[LONG_LOW_VALUE],
+            row[LONG_HIGH_VALUE], row[DOUBLE_LOW_VALUE], row[DOUBLE_HIGH_VALUE], row[BIG_DECIMAL_LOW_VALUE], row[BIG_DECIMAL_HIGH_VALUE],
+            row[NUM_NULLS], row[NUM_DISTINCTS], row[AVG_COL_LEN], row[MAX_COL_LEN], row[NUM_TRUES], row[NUM_FALSES],
+            avgLong, avgDouble, avgDecimal, row[SUM_NUM_DISTINCTS],
             useDensityFunctionForNDVEstimation, ndvTuner);
     return cso;
   }
@@ -2995,7 +2998,7 @@ class MetaStoreDirectSql {
    *
    * @param partitionIdList The partition identifiers to drop
    * @throws MetaException If there is an SQL exception during the execution it converted to
-   *                       MetaException
+   * MetaException
    */
   private void dropPartitionsByPartitionIds(List<Long> partitionIdList) throws MetaException {
     String queryText;
@@ -3080,7 +3083,7 @@ class MetaStoreDirectSql {
    *
    * @param storageDescriptorIdList The storage descriptor identifiers to drop
    * @throws MetaException If there is an SQL exception during the execution it converted to
-   *                       MetaException
+   * MetaException
    */
   private void dropStorageDescriptors(List<Object> storageDescriptorIdList) throws MetaException {
     if (storageDescriptorIdList.isEmpty()) {
@@ -3169,7 +3172,7 @@ class MetaStoreDirectSql {
    *
    * @param serdeIdList The serde identifiers to drop
    * @throws MetaException If there is an SQL exception during the execution it converted to
-   *                       MetaException
+   * MetaException
    */
   private void dropSerdes(List<Object> serdeIdList) throws MetaException {
     String queryText;
@@ -3199,7 +3202,7 @@ class MetaStoreDirectSql {
    *
    * @param columnDescriptorIdList The column identifiers
    * @throws MetaException If there is an SQL exception during the execution it converted to
-   *                       MetaException
+   * MetaException
    */
   private void dropDanglingColumnDescriptors(List<Long> columnDescriptorIdList)
       throws MetaException {
