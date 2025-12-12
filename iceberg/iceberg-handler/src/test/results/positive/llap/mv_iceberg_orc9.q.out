@@ -1,0 +1,144 @@
+PREHOOK: query: drop materialized view if exists mat1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: query: drop materialized view if exists mat1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: query: drop table if exists tbl_ice
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists tbl_ice
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create table tbl_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='1')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: create table tbl_ice(a int, b string, c int) stored by iceberg stored as orc tblproperties ('format-version'='1')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 51), (3, 'three', 52), (4, 'four', 53), (5, 'five', 54)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 51), (3, 'three', 52), (4, 'four', 53), (5, 'five', 54)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1
+#### A masked pattern was here ####
+POSTHOOK: query: create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: mat1.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat1.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: select * from mat1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mat1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1
+#### A masked pattern was here ####
+five	54
+four	53
+PREHOOK: query: show tables
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:default
+POSTHOOK: query: show tables
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:default
+mat1
+mat1_storage_table
+tbl_ice
+PREHOOK: query: show materialized views
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: show materialized views
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+PREHOOK: query: show create table mat1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@mat1
+POSTHOOK: query: show create table mat1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@mat1
+CREATE TABLE `mat1`(
+  `b` string, 
+  `c` int)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'format-version'='1', 
+  'iceberg.materialized.view'='true', 
+  'iceberg.materialized.view.storage.table'='default.mat1_storage_table', 
+  'iceberg.orc.files.only'='true', 
+#### A masked pattern was here ####
+  'table_type'='ICEBERG-VIEW', 
+#### A masked pattern was here ####
+  'uuid'='722864f2-ddb0-4e3a-820f-8c49a304af4b')
+PREHOOK: query: describe formatted mat1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mat1
+POSTHOOK: query: describe formatted mat1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mat1
+# col_name            	data_type           	comment             
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_MATERIALIZED_VIEW	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	format-version      	1                   
+	iceberg.materialized.view	true                
+	iceberg.materialized.view.storage.table	default.mat1_storage_table
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG-VIEW        
+#### A masked pattern was here ####
+	uuid                	722864f2-ddb0-4e3a-820f-8c49a304af4b
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	null                	 
+Expanded Query:     	select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+default.tbl_ice     	SnapshotContext{snapshotId=95233344338622506}	 
+PREHOOK: query: select 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1

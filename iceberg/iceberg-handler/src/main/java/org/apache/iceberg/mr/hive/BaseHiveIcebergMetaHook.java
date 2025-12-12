@@ -141,6 +141,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
         break;
       case VIRTUAL_VIEW:
       case MATERIALIZED_VIEW:
+      case EXTERNAL_MATERIALIZED_VIEW:
         hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
                 HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.toUpperCase());
         break;
@@ -530,8 +531,11 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
             break;
 
           case MATERIALIZED_VIEW:
+          case EXTERNAL_MATERIALIZED_VIEW:
             Catalogs.MaterializedView mv = IcebergTableUtil.getMaterializedView(conf, hmsTable, false);
             formatVersion = String.valueOf(((BaseTable) mv.getStotageTable()).operations().current().formatVersion());
+
+            hmsTable.setViewExpandedText(mv.getView().sqlFor("hive").sql());
             break;
 
           default:
