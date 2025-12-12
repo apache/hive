@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.StatObjectConverter;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -62,8 +62,7 @@ public class TestDescTableOperation {
 
     // minimally possible mocking to pass (DDLOperationContext context, DescTableDesc desc) to the constructor
     try (MockedStatic<SessionState> sessionState = mockStatic(SessionState.class);
-         MockedStatic<StatsUtils> statsUtils = mockStatic(StatsUtils.class);
-         MockedStatic<StatObjectConverter> statConverter = mockStatic(StatObjectConverter.class)) {
+         MockedStatic<StatsUtils> statsUtils = mockStatic(StatsUtils.class)) {
       DDLOperationContext mockContext = mock(DDLOperationContext.class);
       DescTableDesc mockDesc = mock(DescTableDesc.class);
       Hive mockDb = mock(Hive.class);
@@ -100,13 +99,10 @@ public class TestDescTableOperation {
       statsUtils.when(() -> StatsUtils.checkCanProvidePartitionStats(any())).thenReturn(true);
       statsUtils.when(() -> StatsUtils.getColStatsForPartCol(any(), any(), any())).thenReturn(colStats);
 
-      ArgumentCaptor<Object> minValueArgCaptor = ArgumentCaptor.forClass(Object.class);
-      ArgumentCaptor<Object> maxnValueArgCaptor = ArgumentCaptor.forClass(Object.class);
-      statConverter.when(() -> StatObjectConverter.fillColumnStatisticsData(
-          any(), any(), any(), any(), any(), any(),
-          minValueArgCaptor.capture(), maxnValueArgCaptor.capture(),
-          any(), any(), any(), any(), any(), any(), any(), any()))
-          .thenCallRealMethod();
+      // Capture the ColStatistics passed to fillColumnStatisticsData
+      ArgumentCaptor<ColStatistics> colStatsCaptor = ArgumentCaptor.forClass(ColStatistics.class);
+      statsUtils.when(() -> StatsUtils.fillColumnStatisticsData(any(ColumnStatisticsData.class),
+          colStatsCaptor.capture(), any(String.class))).thenCallRealMethod();
 
       DescTableOperation operation = new DescTableOperation(mockContext, mockDesc);
 
@@ -114,11 +110,15 @@ public class TestDescTableOperation {
       assertDoesNotThrow(() -> operation.execute(),
           "Should handle Range with null minValue and maxValue without NPE");
 
-      // Verify the String arguments (6 & 7) passed to fillColumnStatisticsData
-      assertEquals(expectedMinValue, minValueArgCaptor.getValue(),
-          "declow (arg 6) should be " + (expectedMinValue == null ? "null" : expectedMinValue));
-      assertEquals(expectedMaxValue, maxnValueArgCaptor.getValue(),
-          "dechigh (arg 7) should be " + (expectedMaxValue == null ? "null" : expectedMaxValue));
+      // Verify that the ColStatistics.Range values were correctly passed
+      ColStatistics capturedCs = colStatsCaptor.getValue();
+      ColStatistics.Range capturedRange = capturedCs.getRange();
+      String actualMin = capturedRange != null && capturedRange.minValue != null
+          ? capturedRange.minValue.toString() : null;
+      String actualMax = capturedRange != null && capturedRange.maxValue != null
+          ? capturedRange.maxValue.toString() : null;
+      assertEquals(expectedMinValue, actualMin, "minValue should be " + expectedMinValue);
+      assertEquals(expectedMaxValue, actualMax, "maxValue should be " + expectedMaxValue);
     }
   }
 

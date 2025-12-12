@@ -46,10 +46,14 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Decimal;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -799,13 +803,13 @@ public class StatsUtils {
     if (colTypeLowerCase.equals(serdeConstants.TINYINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.SMALLINT_TYPE_NAME)
         || colTypeLowerCase.equals(serdeConstants.INT_TYPE_NAME)) {
-      populateColStatisticsFromLongStats(csd.getLongStats(), cs, JavaDataModel.get().primitive1());
+      fillColStatisticsFromLongStatsData(cs, csd.getLongStats(), JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-      populateColStatisticsFromLongStats(csd.getLongStats(), cs, JavaDataModel.get().primitive2());
+      fillColStatisticsFromLongStatsData(cs, csd.getLongStats(), JavaDataModel.get().primitive2());
     } else if (colTypeLowerCase.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-      populateColStatisticsFromDoubleStats(csd.getDoubleStats(), cs, JavaDataModel.get().primitive1());
+      fillColStatisticsFromDoubleStatsData(cs, csd.getDoubleStats(), JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
-      populateColStatisticsFromDoubleStats(csd.getDoubleStats(), cs, JavaDataModel.get().primitive2());
+      fillColStatisticsFromDoubleStatsData(cs, csd.getDoubleStats(), JavaDataModel.get().primitive2());
     } else if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.CHAR_TYPE_NAME)
         || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)) {
@@ -874,10 +878,18 @@ public class StatsUtils {
     return cs;
   }
 
-  // Populate ColStatistics from LongColumnStatsData, checking isSet for optional i64 fields
-  private static void populateColStatisticsFromLongStats(
-      org.apache.hadoop.hive.metastore.api.LongColumnStatsData longStats,
-      ColStatistics cs, double avgColLen) {
+  public static void fillColumnStatisticsData(ColumnStatisticsData data, ColStatistics cs,
+      String colType) throws MetaException {
+    ColStatistics.Range r = cs.getRange();
+    Object lowValue = r != null ? r.minValue : null;
+    Object highValue = r != null ? r.maxValue : null;
+    StatObjectConverter.fillColumnStatisticsData(colType, data, lowValue, highValue,
+        cs.getNumNulls(), cs.getCountDistint(), cs.getBitVectors(), cs.getHistogram(),
+        cs.getAvgColLen(), cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
+  }
+
+  private static void fillColStatisticsFromLongStatsData(ColStatistics cs, LongColumnStatsData longStats,
+      double avgColLen) {
     cs.setCountDistint(longStats.getNumDVs());
     cs.setNumNulls(longStats.getNumNulls());
     cs.setAvgColLen(avgColLen);
@@ -888,10 +900,8 @@ public class StatsUtils {
     cs.setHistogram(longStats.getHistogram());
   }
 
-  // Populate ColStatistics from DoubleColumnStatsData, checking isSet for optional double fields
-  private static void populateColStatisticsFromDoubleStats(
-      org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData doubleStats,
-      ColStatistics cs, double avgColLen) {
+  private static void fillColStatisticsFromDoubleStatsData(ColStatistics cs, DoubleColumnStatsData doubleStats,
+      double avgColLen) {
     cs.setCountDistint(doubleStats.getNumDVs());
     cs.setNumNulls(doubleStats.getNumNulls());
     cs.setAvgColLen(avgColLen);
