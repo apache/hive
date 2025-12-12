@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Objects;
 
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
@@ -683,8 +684,8 @@ public class StatObjectConverter {
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
       Object lowValue, Object highValue, Object nulls, Object dist, Object bitVector,
       Object histogram, Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
-    String decLowStr = lowValue != null ? lowValue.toString() : null;
-    String decHighStr = highValue != null ? highValue.toString() : null;
+    String decLowStr = Objects.toString(lowValue, null);
+    String decHighStr = Objects.toString(highValue, null);
     fillColumnStatisticsData(colType, data, lowValue, highValue, lowValue, highValue, decLowStr, decHighStr,
         nulls, dist, bitVector, histogram, avglen, maxlen, trues, falses);
   }

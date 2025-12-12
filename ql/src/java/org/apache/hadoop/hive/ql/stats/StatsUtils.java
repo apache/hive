@@ -881,8 +881,8 @@ public class StatsUtils {
   public static void fillColumnStatisticsData(ColumnStatisticsData data, ColStatistics cs,
       String colType) throws MetaException {
     ColStatistics.Range r = cs.getRange();
-    Object lowValue = r != null ? r.minValue : null;
-    Object highValue = r != null ? r.maxValue : null;
+    Object lowValue = (r != null) ? r.minValue : null;
+    Object highValue = (r != null) ? r.maxValue : null;
     StatObjectConverter.fillColumnStatisticsData(colType, data, lowValue, highValue,
         cs.getNumNulls(), cs.getCountDistint(), cs.getBitVectors(), cs.getHistogram(),
         cs.getAvgColLen(), cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
