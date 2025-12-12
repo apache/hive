@@ -84,7 +84,7 @@ public class TestTezSessionState {
       sessionState.open(resources);
       Assert.fail("An exception should have been thrown while calling openInternal");
     } catch (Exception e) {
-      Assert.assertTrue(e.getMessage().equalsIgnoreCase("fake exception in openInternalUnsafe"));
+      Assert.assertEquals("fake exception in openInternalUnsafe", e.getMessage());
     }
     LOG.info("Checking if scratch dir exists: {}", scratchDirPath.get());
     Assert.assertFalse("Scratch dir is not supposed to exist after cleanup: " + scratchDirPath.get(),
