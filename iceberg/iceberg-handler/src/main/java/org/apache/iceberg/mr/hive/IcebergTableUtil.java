@@ -153,7 +153,8 @@ public class IcebergTableUtil {
               return v;
             });
 
-    if (TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(hmsTable.getTableType())) {
+    if (TableType.EXTERNAL_MATERIALIZED_VIEW.name().equalsIgnoreCase(hmsTable.getTableType()) ||
+            TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(hmsTable.getTableType())) {
       return getMaterializedView(configuration, hmsTable, skipCache).getStotageTable();
     }
 

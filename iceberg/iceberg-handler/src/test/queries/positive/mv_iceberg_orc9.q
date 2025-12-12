@@ -27,4 +27,7 @@ show tables;
 
 show materialized views;
 
+show create table mat1;
+describe formatted mat1;
+
 select 1;
