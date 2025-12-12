@@ -260,7 +260,9 @@ public abstract class RewriteSemanticAnalyzer<T> extends CalcitePlanner {
    * Assert it supports Acid write.
    */
   protected void validateTargetTable(Table mTable) throws SemanticException {
-    if (mTable.getTableType() == TableType.VIRTUAL_VIEW || mTable.getTableType() == TableType.MATERIALIZED_VIEW) {
+    if (mTable.getTableType() == TableType.VIRTUAL_VIEW || mTable.getTableType() == TableType.MATERIALIZED_VIEW ||
+            mTable.getTableType() == TableType.EXTERNAL_MATERIALIZED_VIEW
+    ) {
       LOG.error("Table " + mTable.getFullyQualifiedName() + " is a view or materialized view");
       throw new SemanticException(ErrorMsg.UPDATE_DELETE_VIEW.getMsg());
     }

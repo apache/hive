@@ -28,5 +28,6 @@ public enum TableType {
   // @deprecated
   // INDEX_TABLE enum is deprecated
   INDEX_TABLE,
-  MATERIALIZED_VIEW
+  MATERIALIZED_VIEW,
+  EXTERNAL_MATERIALIZED_VIEW
 }
