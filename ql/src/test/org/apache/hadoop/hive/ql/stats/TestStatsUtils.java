@@ -44,10 +44,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.google.common.collect.Sets;
 
-public class TestStatsUtils {
+class TestStatsUtils {
 
   @Test
-  public void testCombinedRange1() {
+  void testCombinedRange1() {
     Range r1 = new Range(0, 1);
     Range r2 = new Range(1, 11);
     Range r3 = StatsUtils.combineRange(r1, r2);
@@ -58,7 +58,7 @@ public class TestStatsUtils {
   }
 
   @Test
-  public void testCombinedRange2() {
+  void testCombinedRange2() {
     checkCombinedRange(false, new Range(-2, -1), new Range(0, 10));
     checkCombinedRange(true, new Range(-2, 1), new Range(0, 10));
     checkCombinedRange(true, new Range(-2, 11), new Range(0, 10));
@@ -87,7 +87,7 @@ public class TestStatsUtils {
   }
 
   @Test
-  public void testPrimitiveSizeEstimations() throws Exception {
+  void testPrimitiveSizeEstimations() throws Exception {
     HiveConf conf = new HiveConf();
     Set<String> exclusions = Sets.newHashSet();
     exclusions.add(serdeConstants.VOID_TYPE_NAME);
@@ -116,7 +116,7 @@ public class TestStatsUtils {
 
   @ParameterizedTest(name = "{0} - {1}")
   @MethodSource("integerStatisticsTestData")
-  public void testGetColStatistics_IntegerTypes(String typeName, String scenarioName,
+  void testGetColStatisticsIntegerTypes(String typeName, String scenarioName,
       Long lowValue, Long highValue, Long expectedMin, Long expectedMax) {
     ColumnStatisticsObj cso = new ColumnStatisticsObj();
     cso.setColName("test_col");
@@ -160,7 +160,7 @@ public class TestStatsUtils {
 
   @ParameterizedTest(name = "{0} - {1}")
   @MethodSource("floatingPointStatisticsTestData")
-  public void testGetColStatistics_FloatingPointTypes(String typeName, String scenarioName,
+  void testGetColStatisticsFloatingPointTypes(String typeName, String scenarioName,
       Double lowValue, Double highValue, Double expectedMin, Double expectedMax) {
     ColumnStatisticsObj cso = new ColumnStatisticsObj();
     cso.setColName("test_col");
@@ -204,7 +204,7 @@ public class TestStatsUtils {
 
   static Stream<Arguments> integerStatisticsTestData() {
     return Stream.of(
-      // {typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax}
+      // Test arguments: typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax
       Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "BothValuesSet", 1L, 1000L, 1L, 1000L),
       Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "NoValuesSet", null, null, null, null),
       Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "OnlyLowValueSet", 100L, null, 100L, null),
@@ -230,7 +230,7 @@ public class TestStatsUtils {
 
   static Stream<Arguments> floatingPointStatisticsTestData() {
     return Stream.of(
-      // {typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax}
+      // Test arguments: typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax
       Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "BothValuesSet", 1.5, 1000.5, 1.5, 1000.5),
       Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "NoValuesSet", null, null, null, null),
       Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "OnlyLowValueSet", 100.5, null, 100.5, null),

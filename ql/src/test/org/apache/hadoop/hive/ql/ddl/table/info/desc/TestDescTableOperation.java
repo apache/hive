@@ -49,11 +49,11 @@ import org.mockito.MockedStatic;
  * Tests for DescTableOperation with minimal mocking to reach line 252
  * where null Range values are handled.
  */
-public class TestDescTableOperation {
+class TestDescTableOperation {
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("rangeTestCases")
-  public void testGetColumnDataForPartitionKeyColumnDifferentRanges(
+  void testGetColumnDataForPartitionKeyColumnDifferentRanges(
       String testName,
       Number minValue,
       Number maxValue,

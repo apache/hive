@@ -33,11 +33,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class TestShowUtils {
+class TestShowUtils {
 
   @ParameterizedTest(name = "{0} - {1}")
   @MethodSource("longStatsTestData")
-  public void testExtractColumnValues_LongStats(String typeName, String scenarioName,
+  void testExtractColumnValuesLongStats(String typeName, String scenarioName,
       Long lowValue, Long highValue, String expectedMin, String expectedMax) {
     FieldSchema column = new FieldSchema("test_col", typeName, null);
 
@@ -72,7 +72,7 @@ public class TestShowUtils {
 
   @ParameterizedTest(name = "{0} - {1}")
   @MethodSource("doubleStatsTestData")
-  public void testExtractColumnValues_DoubleStats(String typeName, String scenarioName,
+  void testExtractColumnValuesDoubleStats(String typeName, String scenarioName,
       Double lowValue, Double highValue, String expectedMin, String expectedMax) {
     FieldSchema column = new FieldSchema("test_col", typeName, null);
 
@@ -107,7 +107,7 @@ public class TestShowUtils {
 
   static Stream<Arguments> longStatsTestData() {
     return Stream.of(
-      // {typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax}
+      // Test arguments: typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax
       Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "BothValuesSet", 1L, 1000L, "1", "1000"),
       Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "NoValuesSet", null, null, "", ""),
       Arguments.of(serdeConstants.TINYINT_TYPE_NAME, "OnlyLowValueSet", 100L, null, "100", ""),
@@ -133,7 +133,7 @@ public class TestShowUtils {
 
   static Stream<Arguments> doubleStatsTestData() {
     return Stream.of(
-      // {typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax}
+      // Test arguments: typeName, scenarioName, lowValue, highValue, expectedMin, expectedMax
       Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "BothValuesSet", 1.5, 1000.5, "1.5", "1000.5"),
       Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "NoValuesSet", null, null, "", ""),
       Arguments.of(serdeConstants.FLOAT_TYPE_NAME, "OnlyLowValueSet", 100.5, null, "100.5", ""),
