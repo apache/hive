@@ -19,5 +19,5 @@ POSTHOOK: query: lock database testcat.lockneg9 shared
 POSTHOOK: type: LOCKDATABASE
 POSTHOOK: Input: database:lockneg9
 POSTHOOK: Output: database:lockneg9
-Unable to acquire IMPLICIT, EXCLUSIVE lock testcat@lockneg9 after 1 attempts.
+Unable to acquire IMPLICIT, EXCLUSIVE lock lockneg9 after 1 attempts.
 FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired, retry after some time.

@@ -30,5 +30,5 @@ PREHOOK: query: LOCK TABLE insert_into3_neg PARTITION (ds='1') SHARED
 PREHOOK: type: LOCKTABLE
 POSTHOOK: query: LOCK TABLE insert_into3_neg PARTITION (ds='1') SHARED
 POSTHOOK: type: LOCKTABLE
-Unable to acquire IMPLICIT, EXCLUSIVE lock hive@default@insert_into3_neg@ds=1 after 5 attempts.
+Unable to acquire IMPLICIT, EXCLUSIVE lock default@insert_into3_neg@ds=1 after 5 attempts.
 FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired, retry after some time.

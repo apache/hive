@@ -281,14 +281,14 @@ public class HiveLockObject {
     }
 
     if (pathNames.length == 2) {
-      return pathNames[0] + "@" + pathNames[1];
+      return pathNames[1];
     }
 
     else if (pathNames.length == 3) {
-      return pathNames[0] + "@" + pathNames[1] + "@" + pathNames[2];
+      return pathNames[1] + "@" + pathNames[2];
     }
 
-    String ret = pathNames[0] + "@" + pathNames[1] + "@" + pathNames[2] + "@";
+    String ret = pathNames[1] + "@" + pathNames[2] + "@";
     boolean first = true;
     for (int i = 3; i < pathNames.length; i++) {
       if (!first) {
