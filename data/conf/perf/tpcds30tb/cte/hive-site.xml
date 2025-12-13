@@ -44,7 +44,19 @@
     </property>
     <!-- Properties for configuring the CTE behavior -->
     <property>
+        <name>hive.optimize.cte.suggester.type</name>
+        <value>CBO</value>
+    </property>
+    <property>
         <name>hive.optimize.cte.suggester.class</name>
         <value>org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionPrintSuggester</value>
+    </property>
+    <property>
+        <name>hive.optimize.cte.materialize.threshold</name>
+        <value>1</value>
+    </property>
+    <property>
+        <name>hive.optimize.cte.materialize.full.aggregate.only</name>
+        <value>false</value>
     </property>
 </configuration>
