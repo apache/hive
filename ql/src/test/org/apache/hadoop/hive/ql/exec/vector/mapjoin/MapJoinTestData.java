@@ -297,14 +297,25 @@ public class MapJoinTestData {
 
   private static RowTestObjects generateRandomSmallTableValueRow(MapJoinTestDescription testDesc, Random random) {
 
+    final ValueOption valueOption = testDesc.getSmallTableGenerationParameters().getValueOption();
     final int columnCount = testDesc.smallTableValueTypeInfos.length;
     PrimitiveTypeInfo[] primitiveTypeInfos = new PrimitiveTypeInfo[columnCount];
     for (int i = 0; i < columnCount; i++) {
       primitiveTypeInfos[i] = (PrimitiveTypeInfo) testDesc.smallTableValueTypeInfos[i];
     }
-    Object[] smallTableValueRow =
-        VectorRandomRowSource.randomWritablePrimitiveRow(
-            columnCount, random, primitiveTypeInfos);
+    Object[] smallTableValueRow;
+    
+    // Generate empty value row if specified.
+    if (valueOption == ValueOption.EMPTY_VALUE) {
+      smallTableValueRow = new Object[columnCount];
+      for (int c = 0; c < columnCount; c++) {
+        smallTableValueRow[c] =
+            VectorizedBatchUtil.getPrimitiveWritable(primitiveTypeInfos[c].getPrimitiveCategory());
+      }
+    } else {
+      smallTableValueRow = VectorRandomRowSource.randomWritablePrimitiveRow(
+          columnCount, random, primitiveTypeInfos);
+    }
     for (int c = 0; c < smallTableValueRow.length; c++) {
       smallTableValueRow[c] = ((PrimitiveObjectInspector) testDesc.smallTableValueObjectInspectors[c]).copyObject(smallTableValueRow[c]);
     }
