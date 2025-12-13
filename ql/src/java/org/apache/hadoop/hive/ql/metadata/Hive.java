@@ -1316,8 +1316,6 @@ public class Hive implements AutoCloseable {
       throws HiveException {
     try {
       getMSC().alterDatabase(dbName, db);
-    } catch (MetaException e) {
-      throw new HiveException("Unable to alter database " + dbName + ". " + e.getMessage(), e);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Database " + dbName + " does not exists.", e);
     } catch (TException e) {
