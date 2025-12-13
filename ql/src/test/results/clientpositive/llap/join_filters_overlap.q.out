@@ -18,7 +18,7 @@ POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
+OPTIMIZED SQL: SELECT `t`.`key` AS `a_n4.key`, `t`.`value` AS `a_n4.value`, `t1`.`key` AS `b.key`, `t1`.`value` AS `b.value`, `t3`.`key` AS `c.key`, `t3`.`value` AS `c.value`
 FROM (SELECT `key`, `value`, `value` = 60 AS `EXPR$0`, `value` = 50 AS `EXPR$1`
 FROM `default`.`a_n4`) AS `t`
 LEFT JOIN (SELECT `key`, CAST(50 AS INT) AS `value`
@@ -296,7 +296,7 @@ POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a_n4.key`, `t0`.`value` AS `a_n4.value`, `t1`.`key` AS `b.key`, `t1`.`value` AS `b.value`, `t3`.`key` AS `c.key`, `t3`.`value` AS `c.value`
 FROM (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
@@ -574,7 +574,7 @@ POSTHOOK: query: explain extended select * from a_n4 right outer join a_n4 b on 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a_n4.key`, `t0`.`value` AS `a_n4.value`, `t1`.`key` AS `b.key`, `t1`.`value` AS `b.value`, `t3`.`key` AS `c.key`, `t3`.`value` AS `c.value`
 FROM (SELECT `key`, CAST(50 AS INT) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
@@ -852,7 +852,7 @@ POSTHOOK: query: explain extended select * from a_n4 full outer join a_n4 b on (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t0`.`key` AS `key1`, `t0`.`value` AS `value1`, `t2`.`key` AS `key2`, `t2`.`value` AS `value2`, `t4`.`key` AS `key3`, `t4`.`value` AS `value3`
+OPTIMIZED SQL: SELECT `t`.`key` AS `a_n4.key`, `t`.`value` AS `a_n4.value`, `t0`.`key` AS `b.key`, `t0`.`value` AS `b.value`, `t2`.`key` AS `c.key`, `t2`.`value` AS `c.value`, `t4`.`key` AS `d.key`, `t4`.`value` AS `d.value`
 FROM (SELECT `key`, `value`, `value` = 40 AS `EXPR$0`, `value` = 50 AS `EXPR$1`
 FROM `default`.`a_n4`) AS `t`
 FULL JOIN (SELECT `key`, `value`, `value` = 60 AS `EXPR$1`, `value` = 50 AS `EXPR$13`
@@ -1168,7 +1168,7 @@ POSTHOOK: query: explain extended select * from a_n4 left outer join a_n4 b on (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a_n4
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t1`.`key` AS `key1`, `t1`.`value` AS `value1`, `t3`.`key` AS `key2`, `t3`.`value` AS `value2`, `t5`.`key` AS `key3`, `t5`.`value` AS `value3`
+OPTIMIZED SQL: SELECT `t`.`key` AS `a_n4.key`, `t`.`value` AS `a_n4.value`, `t1`.`key` AS `b.key`, `t1`.`value` AS `b.value`, `t3`.`key` AS `c.key`, `t3`.`value` AS `c.value`, `t5`.`key` AS `d.key`, `t5`.`value` AS `d.value`
 FROM (SELECT `key`, `value`, `value` = 40 AS `EXPR$0`, `value` = 60 AS `EXPR$1`, `value` = 50 AS `EXPR$2`
 FROM `default`.`a_n4`) AS `t`
 LEFT JOIN (SELECT `key`, CAST(50 AS INT) AS `value`

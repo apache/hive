@@ -352,10 +352,10 @@ public class MessageBuilder {
     return new JSONCommitCompactionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), event);
   }
 
-  public ReloadMessage buildReloadMessage(Table tableObj, List<Partition> parts,
-                                          boolean refreshEvent) {
+  public ReloadMessage buildReloadMessage(Table tableObj, Partition partObj,
+      List<Partition> parts, boolean refreshEvent) {
     return new JSONReloadMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
-            tableObj, parts, refreshEvent, now());
+            tableObj, partObj, parts, refreshEvent, now());
   }
 
   private long now() {

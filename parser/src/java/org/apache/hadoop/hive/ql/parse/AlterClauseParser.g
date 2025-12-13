@@ -85,6 +85,7 @@ alterTableStatementSuffix
     | alterStatementSuffixRenameBranch
     | alterStatementSuffixReplaceBranch
     | alterStatementSuffixReplaceTag
+    | alterStatementSuffixSetWriteOrder
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -161,6 +162,14 @@ alterCatalogStatementSuffix
 @init { gParent.pushMsg("alter catalog statement", state); }
 @after { gParent.popMsg(state); }
     : alterCatalogSuffixSetLocation
+    | alterCatalogSuffixProperties
+    ;
+
+alterCatalogSuffixProperties
+@init { gParent.pushMsg("alter catalog properties statement", state); }
+@after { gParent.popMsg(state); }
+    : name=identifier KW_SET KW_PROPERTIES properties
+    -> ^(TOK_ALTERCATALOG_PROPERTIES $name properties)
     ;
 
 alterCatalogSuffixSetLocation
@@ -181,8 +190,8 @@ alterDatabaseStatementSuffix
 alterDatabaseSuffixProperties
 @init { gParent.pushMsg("alter database properties statement", state); }
 @after { gParent.popMsg(state); }
-    : name=identifier KW_SET KW_DBPROPERTIES dbProperties
-    -> ^(TOK_ALTERDATABASE_PROPERTIES $name dbProperties)
+    : name=identifier KW_SET KW_DBPROPERTIES properties
+    -> ^(TOK_ALTERDATABASE_PROPERTIES $name properties)
     ;
 
 alterDatabaseSuffixSetOwner
@@ -678,6 +687,13 @@ alterStatementSuffixCreateOrReplaceTag
      -> ^(TOK_ALTERTABLE_CREATE_TAG $tagName KW_REPLACE snapshotIdOfRef? refRetain?)
      ;
 
+alterStatementSuffixSetWriteOrder
+@init { gParent.pushMsg("alter table set write order", state); }
+@after { gParent.popMsg(state); }
+     : KW_SET tableWriteLocallyOrderedBy
+     -> ^(TOK_ALTERTABLE_SET_WRITE_ORDER tableWriteLocallyOrderedBy)
+     ;
+
 fileFormat
 @init { gParent.pushMsg("file format specification", state); }
 @after { gParent.popMsg(state); }
@@ -697,8 +713,8 @@ alterDataConnectorStatementSuffix
 alterDataConnectorSuffixProperties
 @init { gParent.pushMsg("alter connector set properties statement", state); }
 @after { gParent.popMsg(state); }
-    : name=identifier KW_SET KW_DCPROPERTIES dcProperties
-    -> ^(TOK_ALTERDATACONNECTOR_PROPERTIES $name dcProperties)
+    : name=identifier KW_SET KW_DCPROPERTIES properties
+    -> ^(TOK_ALTERDATACONNECTOR_PROPERTIES $name properties)
     ;
 
 alterDataConnectorSuffixSetOwner

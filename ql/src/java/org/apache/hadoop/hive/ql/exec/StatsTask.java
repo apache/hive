@@ -124,7 +124,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     return 0;
   }
 
-
   private Table getTable(Hive db) throws SemanticException, HiveException {
     return db.getTable(work.getFullTableName());
   }

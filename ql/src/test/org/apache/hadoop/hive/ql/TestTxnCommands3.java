@@ -110,7 +110,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TABLE='s'"));
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPACTION_QUEUE where CQ_TABLE='s'"));
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(2, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from WRITE_SET where WS_TABLE='s'"));
     Assert.assertEquals(3, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='s'"));
@@ -125,7 +125,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
             "select count(*) from COMPLETED_TXN_COMPONENTS where CTC_TABLE='bar'"));
     Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from COMPACTION_QUEUE where CQ_TABLE='bar'"));
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(hiveConf,
+    Assert.assertEquals(2, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from WRITE_SET where WS_TABLE='bar'"));
     Assert.assertEquals(4, TestTxnDbUtil.countQueryAgent(hiveConf,
         "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE='bar'"));

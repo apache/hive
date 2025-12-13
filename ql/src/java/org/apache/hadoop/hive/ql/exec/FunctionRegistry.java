@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.udf.esri.ST_Difference;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Dimension;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Disjoint;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Distance;
+import org.apache.hadoop.hive.ql.udf.esri.ST_DistanceSphere;
 import org.apache.hadoop.hive.ql.udf.esri.ST_EndPoint;
 import org.apache.hadoop.hive.ql.udf.esri.ST_EnvIntersects;
 import org.apache.hadoop.hive.ql.udf.esri.ST_Envelope;
@@ -723,6 +724,7 @@ public final class FunctionRegistry {
     system.registerFunction("ST_Dimension", ST_Dimension.class);
     system.registerFunction("ST_Disjoint", ST_Disjoint.class);
     system.registerFunction("ST_Distance", ST_Distance.class);
+    system.registerFunction("ST_DistanceSphere", ST_DistanceSphere.class);
     system.registerFunction("ST_EndPoint", ST_EndPoint.class);
     system.registerFunction("ST_Envelope", ST_Envelope.class);
     system.registerFunction("ST_EnvIntersects", ST_EnvIntersects.class);
@@ -804,6 +806,8 @@ public final class FunctionRegistry {
           (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergDay"));
       system.registerGenericUDF("iceberg_hour",
           (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergHour"));
+      system.registerGenericUDF("iceberg_zorder",
+          (Class<? extends GenericUDF>) Class.forName("org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder"));
     } catch (ClassNotFoundException e) {
       LOG.warn("iceberg_bucket function could not be registered");
     }

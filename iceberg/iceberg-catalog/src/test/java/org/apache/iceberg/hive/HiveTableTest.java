@@ -85,7 +85,7 @@ import static org.apache.iceberg.types.Types.NestedField.required;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class HiveTableTest extends HiveTableBaseTest {
+public class HiveTableTest extends HiveTableTestBase {
   static final String NON_DEFAULT_DATABASE =  "nondefault";
 
   @TempDir

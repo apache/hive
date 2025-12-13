@@ -33,9 +33,12 @@ import org.apache.hadoop.hive.metastore.HMSHandlerProxyFactory;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TSetIpAddressProcessor;
+import org.apache.hadoop.hive.metastore.TUGIBasedProcessor;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.iceberg.ClientPool;
 import org.apache.iceberg.catalog.TableIdentifier;
@@ -43,6 +46,7 @@ import org.apache.iceberg.common.DynConstructors;
 import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.thrift.TException;
+import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -244,9 +248,18 @@ public class TestHiveMetastore {
     baseHandler = HMS_HANDLER_CTOR.newInstance("new db based metaserver", serverConf);
     IHMSHandler handler = GET_BASE_HMS_HANDLER.invoke(serverConf, baseHandler, false);
 
+    TProcessor processor;
+    TTransportFactory transportFactory;
+    if (MetastoreConf.getBoolVar(conf, ConfVars.EXECUTE_SET_UGI)) {
+      processor = new TUGIBasedProcessor<>(handler);
+      transportFactory = new TUGIContainingTransport.Factory();
+    } else {
+      processor = new TSetIpAddressProcessor<>(handler);
+      transportFactory = new TTransportFactory();
+    }
     TThreadPoolServer.Args args = new TThreadPoolServer.Args(socket)
-        .processor(new TSetIpAddressProcessor<>(handler))
-        .transportFactory(new TTransportFactory())
+        .processor(processor)
+        .transportFactory(transportFactory)
         .protocolFactory(new TBinaryProtocol.Factory())
         .minWorkerThreads(poolSize)
         .maxWorkerThreads(poolSize);

@@ -30,6 +30,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -150,7 +151,7 @@ import java.util.Properties;
     LOG.trace("total read bytes [{}]", readBytes);
     if (consumer != null) {
       consumer.wakeup();
-      consumer.close();
+      consumer.close(Duration.ZERO);
     }
   }
 

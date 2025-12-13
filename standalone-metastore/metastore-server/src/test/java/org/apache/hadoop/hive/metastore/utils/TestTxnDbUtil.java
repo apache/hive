@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -408,15 +408,13 @@ public final class TestTxnDbUtil {
   }
 
   public static Connection getConnection(Configuration conf) throws Exception {
-    String jdbcDriver = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);
-    Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
     Properties prop = new Properties();
     String driverUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
     String user = MetastoreConf.getVar(conf, ConfVars.CONNECTION_USER_NAME);
     String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
     prop.setProperty("user", user);
     prop.setProperty("password", passwd);
-    Connection conn = driver.connect(driverUrl, prop);
+    Connection conn = DriverManager.getConnection(driverUrl, prop);
     conn.setAutoCommit(true);
 
     DatabaseProduct dbProduct = determineDatabaseProduct(conn.getMetaData().getDatabaseProductName(), conf);

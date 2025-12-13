@@ -96,7 +96,15 @@ public class TestHiveMetastoreHttpHeaders {
   public void testIllegalHttpHeaders() throws Exception {
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_ADDITIONAL_HEADERS,
         String.format("%s%s", testHeaderKey1, testHeaderVal1));
-    msc = new TestHiveMetaStoreClient(conf);
+    try {
+      msc = new TestHiveMetaStoreClient(conf);
+    } catch (Exception ignored) {
+      /*
+       * This try catch is added because of setMetaConf in
+       * org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient.overlaySessionModifiedMetaConf
+       * Because of wrong header (Negative Test) the exception is thrown during Client creation itself
+       */
+    }
     boolean exceptionThrown = false;
     try {
       Database db = new DatabaseBuilder().setName("testHttpHeader").create(msc, conf);

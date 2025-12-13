@@ -33,7 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -1235,8 +1235,7 @@ public class Table implements Serializable {
 
     if (!isTableConstraintsFetched) {
       try {
-        tableConstraintsInfo = Hive.get().getTableConstraints(this.getDbName(), this.getTableName(), true, true,
-            this.getTTable() != null ? this.getTTable().getId() : -1);
+        tableConstraintsInfo = Hive.get().getTableConstraints(this.getDbName(), this.getTableName(), true, true);
         this.isTableConstraintsFetched = true;
       } catch (HiveException e) {
         LOG.warn("Cannot retrieve Table Constraints info for table : " + this.getTableName() + " ignoring exception: " + e);

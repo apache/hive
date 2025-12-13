@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hive.common.util.HiveStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -39,6 +41,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 abstract class CompactionQueryBuilder {
+
+  private static final Logger LOG = LoggerFactory.getLogger(CompactionQueryBuilder.class.getName());
+
   // required fields, set in constructor
   protected Operation operation;
   protected String resultTableName;
@@ -317,15 +322,20 @@ abstract class CompactionQueryBuilder {
 
   private void buildAddClauseForAlter(StringBuilder query) {
     if (validWriteIdList == null || dir == null) {
+      LOG.warn("There is no delta to be added as partition to the temp external table used by the minor compaction. " +
+          "This may result an empty compaction directory.");
       query.setLength(0);
       return;  // avoid NPEs, don't throw an exception but return an empty query
     }
-    long minWriteID = validWriteIdList.getMinOpenWriteId() == null ? 1 : validWriteIdList.getMinOpenWriteId();
     long highWatermark = validWriteIdList.getHighWatermark();
     List<AcidUtils.ParsedDelta> deltas = dir.getCurrentDirectories().stream().filter(
-            delta -> delta.isDeleteDelta() == isDeleteDelta && delta.getMaxWriteId() <= highWatermark && delta.getMinWriteId() >= minWriteID)
+            delta -> delta.isDeleteDelta() == isDeleteDelta && delta.getMaxWriteId() <= highWatermark)
         .collect(Collectors.toList());
     if (deltas.isEmpty()) {
+      String warnMsg = String.format("No %s delta is found below the highWaterMark %s to be added as partition " +
+          "to the temp external table, used by the minor compaction. This may result an empty compaction directory.",
+          isDeleteDelta ? "delete" : "", highWatermark);
+      LOG.warn(warnMsg);
       query.setLength(0); // no alter query needed; clear StringBuilder
       return;
     }

@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(d_week_seq1=[$9], _o__c1=[round(/($10, $1), 2)], _o__c2=[round(/($11, $2), 2)], _o__c3=[round(/($12, $3), 2)], _o__c4=[round(/($13, $4), 2)], _o__c5=[round(/($14, $5), 2)], _o__c6=[round(/($15, $6), 2)], _o__c7=[round(/($16, $7), 2)])
+  HiveProject(d_week_seq1=[$9], _c1=[round(/($10, $1), 2)], _c2=[round(/($11, $2), 2)], _c3=[round(/($12, $3), 2)], _c4=[round(/($13, $4), 2)], _c5=[round(/($14, $5), 2)], _c6=[round(/($15, $6), 2)], _c7=[round(/($16, $7), 2)])
     HiveJoin(condition=[=($9, -($0, 53))], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[=($8, $0)], joinType=[inner], algorithm=[none], cost=[not available])
         HiveProject($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7])

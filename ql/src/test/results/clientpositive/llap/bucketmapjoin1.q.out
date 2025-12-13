@@ -38,7 +38,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`value` AS `a.value`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_n1`
 WHERE `key` IS NOT NULL) AS `t0`
@@ -191,7 +191,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_part_2_n1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`value` AS `a.value`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_part_n1`
 WHERE `key` IS NOT NULL) AS `t0`
@@ -438,7 +438,7 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n1@ds=2008-04-08
 POSTHOOK: Output: default@bucketmapjoin_tmp_result_n0
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`value` AS `a.value`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_n1`
 WHERE `key` IS NOT NULL) AS `t0`
@@ -856,7 +856,7 @@ POSTHOOK: Input: default@srcbucket_mapjoin_n1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n1
 POSTHOOK: Input: default@srcbucket_mapjoin_part_n1@ds=2008-04-08
 POSTHOOK: Output: default@bucketmapjoin_tmp_result_n0
-OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t0`.`value` AS `a.value`, `t2`.`value` AS `b.value`
 FROM (SELECT `key`, `value`
 FROM `default`.`srcbucket_mapjoin_n1`
 WHERE `key` IS NOT NULL) AS `t0`

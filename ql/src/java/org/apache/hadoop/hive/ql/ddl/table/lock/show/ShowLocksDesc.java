@@ -33,7 +33,9 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class ShowLocksDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private static final String OLD_FORMAT_SCHEMA = "tab_name,mode#string:string";
+  private static final String OLD_FORMAT_SCHEMA = "name,mode#string:string";
+  private static final String OLD_TBL_FORMAT_SCHEMA = "tab_name,mode#string:string";
+  private static final String OLD_DB_FORMAT_SCHEMA = "db_name,mode#string:string";
   private static final String NEW_FORMAT_SCHEMA = "lockid,database,table,partition,lock_state," +
       "blocked_by,lock_type,transaction_id,last_heartbeat,acquired_at,user,hostname,agent_info#" +
       "string:string:string:string:string:string:string:string:string:string:string:string:string";
@@ -94,5 +96,13 @@ public class ShowLocksDesc implements DDLDesc, Serializable {
 
   public String getSchema() {
     return isNewFormat ? NEW_FORMAT_SCHEMA : OLD_FORMAT_SCHEMA;
+  }
+
+  public String getTblSchema() {
+    return isNewFormat ? NEW_FORMAT_SCHEMA : OLD_TBL_FORMAT_SCHEMA;
+  }
+
+  public String getDbSchema() {
+    return isNewFormat ? NEW_FORMAT_SCHEMA : OLD_DB_FORMAT_SCHEMA;
   }
 }

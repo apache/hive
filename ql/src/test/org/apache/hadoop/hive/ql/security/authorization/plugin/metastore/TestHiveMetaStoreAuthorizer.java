@@ -204,7 +204,9 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.create_database(db);
     } catch (Exception e) {
       String err = e.getMessage();
-      String expected = "Operation type " + HiveOperationType.CREATEDATABASE + " not allowed for user:" + unAuthorizedUser;
+      String expected = "Got exception: "
+          + "org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException Operation type "
+          + HiveOperationType.CREATEDATABASE + " not allowed for user:" + unAuthorizedUser;
       assertEquals(expected, err);
     }
   }
@@ -221,7 +223,9 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.create_table(table);
     } catch (Exception e) {
       String err = e.getMessage();
-      String expected = "Operation type " + HiveOperationType.CREATETABLE + " not allowed for user:" + unAuthorizedUser;
+      String expected = "Got exception: "
+          + "org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException Operation type "
+          + HiveOperationType.CREATETABLE + " not allowed for user:" + unAuthorizedUser;
       assertEquals(expected, err);
     }
   }
@@ -297,7 +301,8 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.create_role(role);
     } catch (Exception e) {
       String err = e.getMessage();
-      String expected = "Operation type " + PreEventContext.PreEventType.AUTHORIZATION_API_CALL.name() + " not allowed for user:" + authorizedUser;
+      String expected = "Got exception: org.apache.hadoop.hive.metastore.api.MetaException Operation type "
+          + PreEventContext.PreEventType.AUTHORIZATION_API_CALL.name() + " not allowed for user:" + authorizedUser;
       assertEquals(expected, err);
     }
   }
@@ -313,7 +318,8 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.create_catalog(new CreateCatalogRequest(catalog));
     } catch (Exception e) {
       String err = e.getMessage();
-      String expected = "Operation type " + PreEventContext.PreEventType.CREATE_CATALOG.name() + " not allowed for user:" + authorizedUser;
+      String expected = "Got exception: org.apache.hadoop.hive.metastore.api.MetaException Operation type "
+          + PreEventContext.PreEventType.CREATE_CATALOG.name() + " not allowed for user:" + authorizedUser;
       assertEquals(expected, err);
     }
   }
@@ -658,7 +664,9 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.create_dataconnector_req(connectorReq);
     } catch (Exception e) {
       String err = e.getMessage();
-      String expected = "Operation type " + HiveOperationType.CREATEDATACONNECTOR + " not allowed for user:" + unAuthorizedUser;
+      String expected = "Got exception: "
+          + "org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException Operation type "
+          + HiveOperationType.CREATEDATACONNECTOR + " not allowed for user:" + unAuthorizedUser;
       assertEquals(expected, err);
     }
   }

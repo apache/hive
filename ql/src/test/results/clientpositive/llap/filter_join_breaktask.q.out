@@ -34,7 +34,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@filter_join_breaktask
 POSTHOOK: Input: default@filter_join_breaktask@ds=2008-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t2`.`key`, `t0`.`value`
+OPTIMIZED SQL: SELECT `t2`.`key` AS `f.key`, `t0`.`value` AS `g.value`
 FROM (SELECT `value`
 FROM `default`.`filter_join_breaktask`
 WHERE `value` <> '' AND `ds` = '2008-04-08') AS `t0`

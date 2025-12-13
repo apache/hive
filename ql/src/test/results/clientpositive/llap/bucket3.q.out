@@ -18,7 +18,7 @@ select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@bucket3_1@ds=1
-OPTIMIZED SQL: SELECT `key`, `value`
+OPTIMIZED SQL: SELECT `key` AS `src.key`, `value` AS `src.value`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage

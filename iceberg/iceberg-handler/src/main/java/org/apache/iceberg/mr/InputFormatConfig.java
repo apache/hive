@@ -54,6 +54,7 @@ public class InputFormatConfig {
   public static final String TABLE_CATALOG_PREFIX = "iceberg.mr.table.catalog.";
   public static final String LOCALITY = "iceberg.mr.locality";
   public static final String WRITE_FANOUT_ENABLED = "write.fanout.enabled";
+  public static final String VARIANT_SHREDDING_ENABLED = "variant.shredding.enabled";
 
   public static final String CTAS_TABLE_NAME = "iceberg.mr.ctas.table.name";
   public static final String SELECTED_COLUMNS = "iceberg.mr.selected.columns";
@@ -77,6 +78,10 @@ public class InputFormatConfig {
   public static final String HIVE_CATALOG = "hive.catalog";
 
   public static final String CATALOG_CONFIG_PREFIX = "iceberg.catalog.";
+
+  public static final String SORT_ORDER = "sort.order";
+  public static final String SORT_COLUMNS = "sort.columns";
+  public static final String ZORDER = "ZORDER";
 
   public enum InMemoryDataModel {
     HIVE,

@@ -221,7 +221,7 @@ POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0, 1]])
-  HiveProject(key=[$0], value=[$1])
+  HiveProject(a.key=[$0], a.value=[$1])
     HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
       HiveProject(key=[$0], value=[$1])
         HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
@@ -347,12 +347,13 @@ POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
-  HiveProject(key=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, t2_n33]], table:alias=[b])
+HiveProject(a.key=[$0], a.value=[$1])
+  HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
+    HiveProject(key=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, t2_n33]], table:alias=[b])
 
 PREHOOK: query: select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
 PREHOOK: type: QUERY
@@ -534,7 +535,7 @@ POSTHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0, 1]])
-  HiveProject(key=[$1], value=[$2])
+  HiveProject(a.key=[$1], a.value=[$2])
     HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(key=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])
@@ -679,7 +680,7 @@ POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0, 1]])
-  HiveProject(key=[$0], value=[$1])
+  HiveProject(a.key=[$0], a.value=[$1])
     HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
       HiveProject(key=[$0], value=[$1])
         HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
@@ -797,12 +798,13 @@ POSTHOOK: Input: default@t1_n55
 POSTHOOK: Input: default@t2_n33
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
-  HiveProject(key=[$0], value=[$1])
-    HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
-  HiveProject(key=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, t2_n33]], table:alias=[b])
+HiveProject(a.key=[$0], a.value=[$1])
+  HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
+    HiveProject(key=[$0], value=[$1])
+      HiveTableScan(table=[[default, t1_n55]], table:alias=[a])
+    HiveProject(key=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, t2_n33]], table:alias=[b])
 
 PREHOOK: query: select a.key, a.value from t1_n55 a left join t2_n33 b on a.key=b.key where b.key is null
 PREHOOK: type: QUERY
@@ -970,7 +972,7 @@ POSTHOOK: Input: default@t3_n12
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0, 1]])
-  HiveProject(key=[$1], value=[$2])
+  HiveProject(a.key=[$1], a.value=[$2])
     HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(key=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])

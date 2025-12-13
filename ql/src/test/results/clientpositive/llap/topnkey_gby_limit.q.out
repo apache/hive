@@ -29,7 +29,7 @@ POSTHOOK: Input: default@test
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC], fetch=[2])
-  HiveProject(id=[$0], $f1=[$1])
+  HiveProject(id=[$0], _c1=[$1])
     HiveAggregate(group=[{0}], agg#0=[count()])
       HiveTableScan(table=[[default, test]], table:alias=[test])
 
@@ -43,7 +43,7 @@ select id, count(1) from test group by id limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `id`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `id`, COUNT(*) AS `_c1`
 FROM `default`.`test`
 GROUP BY `id`
 ORDER BY `id`
@@ -214,7 +214,7 @@ select id, count(1) from test group by id limit 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `id`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `id`, COUNT(*) AS `_c1`
 FROM `default`.`test`
 GROUP BY `id`
 ORDER BY `id`

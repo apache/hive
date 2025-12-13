@@ -6,7 +6,7 @@ Warning: Map Join MAPJOIN[601][bigTable=?] in task 'Reducer 5' is a cross produc
 Warning: Map Join MAPJOIN[600][bigTable=?] in task 'Reducer 5' is a cross product
 Warning: Map Join MAPJOIN[599][bigTable=?] in task 'Reducer 5' is a cross product
 CBO PLAN:
-HiveProject($f0=[$0], $f00=[$7], $f01=[$6], $f02=[$5], $f03=[$4], $f04=[$3], $f05=[$2], $f06=[$1])
+HiveProject(s1.h8_30_to_9=[$0], s2.h9_to_9_30=[$7], s3.h9_30_to_10=[$6], s4.h10_to_10_30=[$5], s5.h10_30_to_11=[$4], s6.h11_to_11_30=[$3], s7.h11_30_to_12=[$2], s8.h12_to_12_30=[$1])
   HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])

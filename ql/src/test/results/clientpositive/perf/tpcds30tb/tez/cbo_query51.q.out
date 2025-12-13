@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
-  HiveProject(item_sk=[$0], d_date=[$1], web_sales=[$2], store_sales=[$3], max_window_0=[$4], max_window_1=[$5])
+  HiveProject(y.item_sk=[$0], y.d_date=[$1], y.web_sales=[$2], y.store_sales=[$3], y.web_cumulative=[$4], y.store_cumulative=[$5])
     HiveFilter(condition=[>($4, $5)])
       HiveProject(item_sk=[CASE(IS NOT NULL($3), $3, $0)], d_date=[CASE(IS NOT NULL($4), $4, $1)], web_sales=[$5], store_sales=[$2], max_window_0=[max($5) OVER (PARTITION BY CASE(IS NOT NULL($3), $3, $0) ORDER BY CASE(IS NOT NULL($4), $4, $1) NULLS LAST ROWS UNBOUNDED PRECEDING)], max_window_1=[max($2) OVER (PARTITION BY CASE(IS NOT NULL($3), $3, $0) ORDER BY CASE(IS NOT NULL($4), $4, $1) NULLS LAST ROWS UNBOUNDED PRECEDING)])
         HiveJoin(condition=[AND(=($3, $0), =($4, $1))], joinType=[full], algorithm=[none], cost=[not available])

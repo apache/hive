@@ -141,7 +141,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT CAST(484 AS INT) AS `$f0`
+OPTIMIZED SQL: SELECT CAST(484 AS INT) AS `x`
 FROM `default`.`fact_daily_n5`
 WHERE `ds` = '1' AND `x` = 484
 STAGE DEPENDENCIES:
@@ -301,7 +301,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily_n5
 POSTHOOK: Input: default@fact_daily_n5@ds=1
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `y`, COUNT(*) AS `$f1`
+OPTIMIZED SQL: SELECT `y`, COUNT(*) AS `_c1`
 FROM `default`.`fact_daily_n5`
 WHERE `ds` = '1' AND `x` = 484
 GROUP BY `y`

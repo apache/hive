@@ -254,6 +254,8 @@ public class Operation2Privilege {
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_DROPTAG,
         PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_SET_WRITE_ORDER,
+        PrivRequirement.newIOPrivRequirement(OWNER_PRIV_AR, OWNER_PRIV_AR));
 
     // require view ownership for alter/drop view
     op2Priv.put(HiveOperationType.ALTERVIEW_PROPERTIES,
@@ -479,6 +481,7 @@ public class Operation2Privilege {
         new PrivRequirement(ADMIN_PRIV_AR, IOType.OUTPUT)));
     op2Priv.put(HiveOperationType.DROPCATALOG, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERCATALOG_LOCATION, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERCATALOG_PROPERTIES, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DESCCATALOG, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOWCATALOGS, PrivRequirement.newIOPrivRequirement(null, null));
   }

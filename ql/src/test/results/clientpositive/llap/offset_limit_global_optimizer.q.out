@@ -16,7 +16,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+OPTIMIZED SQL: SELECT `key` AS `srcpart.key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
 FROM `default`.`srcpart`
 ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
 LIMIT 10
@@ -299,7 +299,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+OPTIMIZED SQL: SELECT `key` AS `srcpart.key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
 FROM `default`.`srcpart`
 ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
 LIMIT 10
@@ -582,7 +582,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+OPTIMIZED SQL: SELECT `key` AS `srcpart.key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
 FROM `default`.`srcpart`
 ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
 LIMIT 20
@@ -875,7 +875,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
+OPTIMIZED SQL: SELECT `key` AS `srcpart.key`, SUBSTR(`value`, 5) AS `csubstr`, `ds`, `hr`
 FROM `default`.`srcpart`
 ORDER BY `key`, SUBSTR(`value`, 5), `ds`, `hr`
 LIMIT 600

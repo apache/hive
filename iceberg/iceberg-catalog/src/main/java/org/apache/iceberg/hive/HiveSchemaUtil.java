@@ -502,8 +502,4 @@ public final class HiveSchemaUtil {
       default -> Conversions.fromPartitionString(type, stripQuotes(defaultValue));
     };
   }
-
-  public static Type getStructType(TypeInfo typeInfo, String defaultValue) {
-    return HiveSchemaConverter.convert(typeInfo, false, defaultValue);
-  }
 }

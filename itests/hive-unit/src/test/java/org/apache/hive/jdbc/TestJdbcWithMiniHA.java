@@ -67,7 +67,6 @@ public class TestJdbcWithMiniHA {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
     conf = new HiveConfForTest(TestJdbcWithMiniHA.class);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     String dataFileDir = conf.get("test.data.files").replace('\\', '/')

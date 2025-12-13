@@ -43,13 +43,30 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
     runs-on: ubuntu-latest
     steps:
+      - name: Free disk space
+        run: |
+          echo '===== Before ====='
+          df -h
+          sudo rm -rf /opt/hostedtoolcache/go
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          sudo rm -rf /usr/local/julia*
+          sudo rm -rf /usr/local/.ghcup
+          sudo rm -rf /usr/share/swift
+          sudo rm -rf /usr/share/dotnet
+          sudo apt-get clean
+          echo '===== After ====='
+          df -h
+
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: 'Set up JDK 21'
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v5
         with:
-          java-version: 21
+          java-version: '21'
+          distribution: temurin
+          cache: maven
 
       - name: Prepare environment variables for Workflow Dispatch
         if: github.event_name == 'workflow_dispatch'
@@ -75,7 +92,7 @@ jobs:
       - name: Build Hive project
         if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
         run: |
-          mvn clean package -DskipTests -Pdist
+          mvn --batch-mode clean package -DskipTests -Pdist
           ls ./packaging/target/
           mv ./packaging/target/apache-hive-*-bin.tar.gz ./packaging/src/docker/
           rm -rf ./packaging/target
@@ -123,3 +140,9 @@ jobs:
             HIVE_VERSION=${{ env.HIVE_VERSION }}
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
             BUILD_ENV=${{ env.BUILD_ENV }}
+
+      - name: Dump disk usage on failure
+        if: failure()
+        run: |
+          df -h
+          du -xh / --max-depth=3 2>/dev/null | sort -h | tail -50

@@ -1,4 +1,4 @@
-  /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -96,7 +96,7 @@ public class TestReplDumpTask {
     }
 
     @Override
-    void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot, Hive hiveDb, long tableId) {
+    void dumpConstraintMetadata(String dbName, String tblName, Path dbRoot, Hive hiveDb) {
     }
   }
 

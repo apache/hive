@@ -16,7 +16,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`, `value`, `ds`, `hr`
+OPTIMIZED SQL: SELECT `key` AS `srcpart.key`, `value` AS `srcpart.value`, `ds` AS `srcpart.ds`, `hr` AS `srcpart.hr`
 FROM `default`.`srcpart`
 WHERE `BLOCK__OFFSET__INSIDE__FILE` < 100
 STAGE DEPENDENCIES:
@@ -256,7 +256,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t2`.`key`, `t2`.`value`, `t2`.`ds`, `t2`.`hr`, `t2`.`BLOCK__OFFSET__INSIDE__FILE` AS `block__offset__inside__file`
+OPTIMIZED SQL: SELECT `t2`.`key` AS `b.key`, `t2`.`value` AS `b.value`, `t2`.`ds` AS `b.ds`, `t2`.`hr` AS `b.hr`, `t2`.`BLOCK__OFFSET__INSIDE__FILE` AS `b.block__offset__inside__file`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`

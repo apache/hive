@@ -438,19 +438,23 @@ timeUnitQualifiers
     | KW_MINUTE -> Identifier["minutes"]
     ;
 
+unsignedNumericLiterals
+    : Number
+    | IntegralLiteral
+    | NumberLiteral
+    ;
+
 constant
 @init { gParent.pushMsg("constant", state); }
 @after { gParent.popMsg(state); }
     : 
     (intervalLiteral) => intervalLiteral
-    | Number
+    | unsignedNumericLiterals
     | dateLiteral
     | timestampLiteral
     | timestampLocalTZLiteral
     | StringLiteral
     | stringLiteralSequence
-    | IntegralLiteral
-    | NumberLiteral
     | charSetStringLiteral
     | booleanValue
     | KW_NULL -> TOK_NULL
@@ -974,7 +978,7 @@ nonReserved
     KW_ABORT | KW_ADD | KW_ADMIN | KW_AFTER | KW_ANALYZE | KW_ARCHIVE | KW_ASC | KW_BEFORE | KW_BUCKET | KW_BUCKETS
     | KW_CASCADE | KW_CBO | KW_CHANGE | KW_CHECK | KW_CLUSTER | KW_CLUSTERED | KW_CLUSTERSTATUS | KW_COLLECTION | KW_COLUMNS
     | KW_COMMENT | KW_COMPACT | KW_COMPACTIONS | KW_COMPUTE | KW_CONCATENATE | KW_CONTINUE | KW_COST | KW_DATA | KW_DAY | KW_CATALOG | KW_CATALOGS
-    | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DCPROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY
+    | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DCPROPERTIES | KW_PROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY
     | KW_DESC | KW_DIRECTORIES | KW_DIRECTORY | KW_DISABLE | KW_DISTRIBUTE | KW_DISTRIBUTED | KW_DOW | KW_ELEM_TYPE
     | KW_ENABLE | KW_ENFORCED | KW_ESCAPED | KW_EXCLUSIVE | KW_EXPLAIN | KW_EXPORT | KW_FIELDS | KW_FILE | KW_FILEFORMAT
     | KW_FIRST | KW_FORMAT | KW_FORMATTED | KW_FUNCTIONS | KW_HOUR | KW_IDXPROPERTIES | KW_RESPECT | KW_IGNORE
@@ -1040,6 +1044,7 @@ nonReserved
     | KW_TIMESTAMPLOCALTZ
     | KW_ORDERED
     | KW_LOCALLY
+    | KW_ZORDER
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

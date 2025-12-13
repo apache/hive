@@ -18,44 +18,24 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import org.junit.Assert;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 /**
  * Test for specifying a valid hostname as HMS leader.
  */
 public class TestMetastoreHousekeepingLeader extends MetastoreHousekeepingLeaderTestBase {
-  private static final Logger LOG = LoggerFactory.getLogger(TestMetastoreHousekeepingLeader.class);
 
   @Before
   public void setUp() throws Exception {
-    internalSetup("localhost", true);
+    setup("localhost", MetastoreConf.newMetastoreConf());
   }
 
   @Test
   public void testHouseKeepingThreadExistence() throws Exception {
-    searchHousekeepingThreads();
-
-    // Verify existence of threads
-    for (Map.Entry<String, Boolean> entry : threadNames.entrySet()) {
-      if (entry.getValue()) {
-        LOG.info("Found thread with name " + entry.getKey());
-      }
-      Assert.assertTrue("No thread with name " + entry.getKey() + " found.", entry.getValue());
-    }
-
-    for (Map.Entry<Class<? extends Thread>, Boolean> entry : threadClasses.entrySet()) {
-      if (entry.getValue()) {
-        LOG.info("Found thread for " + entry.getKey().getSimpleName());
-      }
-      Assert.assertTrue("No thread found for class " + entry.getKey().getSimpleName(),
-              entry.getValue());
-    }
+    checkHouseKeepingThreadExistence(true);
   }
+
 }
 

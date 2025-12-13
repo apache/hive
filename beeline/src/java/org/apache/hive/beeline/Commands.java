@@ -44,6 +44,7 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -340,47 +341,47 @@ public class Commands {
     return true;
   }
 
-
   public boolean scan(String line) throws IOException {
-    TreeSet<String> names = new TreeSet<String>();
-
     if (beeLine.getDrivers() == null) {
       beeLine.setDrivers(beeLine.scanDrivers());
     }
 
-    beeLine.info(beeLine.loc("drivers-found-count", beeLine.getDrivers().size()));
+    // Use a TreeSet to get a unique, sorted list of drivers by class name.
+    Set<Driver> drivers =
+        new TreeSet<>(Comparator.comparing(d -> d.getClass().getName()));
+    drivers.addAll(beeLine.getDrivers());
 
-    // unique the list
-    for (Iterator<Driver> i = beeLine.getDrivers().iterator(); i.hasNext();) {
-      names.add(i.next().getClass().getName());
-    }
+    // Get count of the unique driver in classpath
+    beeLine.info(beeLine.loc("drivers-found-count", drivers.size()));
 
-    beeLine.output(beeLine.getColorBuffer()
-        .bold(beeLine.getColorBuffer().pad(beeLine.loc("compliant"), 10).getMono())
-        .bold(beeLine.getColorBuffer().pad(beeLine.loc("jdbc-version"), 8).getMono())
-        .bold(beeLine.getColorBuffer(beeLine.loc("driver-class")).getMono()));
+    beeLine.output(
+        beeLine
+            .getColorBuffer()
+            .bold(beeLine.getColorBuffer().pad(beeLine.loc("compliant"), 10).getMono())
+            .bold(beeLine.getColorBuffer().pad(beeLine.loc("jdbc-version"), 8).getMono())
+            .bold(beeLine.getColorBuffer(beeLine.loc("driver-class")).getMono()));
 
-    for (Iterator<String> i = names.iterator(); i.hasNext();) {
-      String name = i.next().toString();
+    for (Driver driver : drivers) {
+      String name = driver.getClass().getName();
       try {
-        Driver driver = (Driver) Class.forName(name).newInstance();
-        ColorBuffer msg = beeLine.getColorBuffer()
-            .pad(driver.jdbcCompliant() ? "yes" : "no", 10)
-            .pad(driver.getMajorVersion() + "."
-                + driver.getMinorVersion(), 8)
-            .append(name);
+        // Use the driver instance that ServiceLoader already created for us.
+        ColorBuffer msg =
+            beeLine
+                .getColorBuffer()
+                .pad(driver.jdbcCompliant() ? "yes" : "no", 10)
+                .pad(driver.getMajorVersion() + "." + driver.getMinorVersion(), 8)
+                .append(name);
         if (driver.jdbcCompliant()) {
           beeLine.output(msg);
         } else {
           beeLine.output(beeLine.getColorBuffer().red(msg.getMono()));
         }
       } catch (Throwable t) {
-        beeLine.output(beeLine.getColorBuffer().red(name)); // error with driver
+        beeLine.error("Error processing driver " + name);
       }
     }
     return true;
   }
-
 
   public boolean save(String line) throws IOException {
     beeLine.info(beeLine.loc("saving-options", beeLine.getOpts().getPropertiesFile()));
@@ -1670,7 +1671,7 @@ public class Commands {
 
     try {
       beeLine.getDatabaseConnections().setConnection(
-          new DatabaseConnection(beeLine, driver, url, props));
+          new DatabaseConnection(beeLine, url, props));
       beeLine.getDatabaseConnection().getConnection();
 
       if (!beeLine.isBeeLine()) {

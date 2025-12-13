@@ -361,7 +361,7 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@test_stats
 col_name            	e                   
 data_type           	decimal(5,2)        
-min                 	-10.2               
+min                 	-123.2              
 max                 	12.2                
 num_nulls           	1                   
 distinct_count      	11                  
@@ -714,12 +714,12 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 1732 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (((d < 3.0) or (d > 7.0)) and (e > 0)) (type: boolean)
-                    Statistics: Num rows: 10 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 8 Data size: 924 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      Statistics: Num rows: 10 Data size: 1156 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 8 Data size: 924 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        minReductionHashAggr: 0.9
+                        minReductionHashAggr: 0.875
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

@@ -116,3 +116,9 @@ POSTHOOK: Input: catalog:test_cat
 Catalog Name	test_cat	 	 
 Comment	Hive test catalog	 	 
 #### A masked pattern was here ####
+PREHOOK: query: ALTER CATALOG test_cat SET PROPERTIES ('key2'='value2')
+PREHOOK: type: ALTERCATALOG_PROPERTIES
+PREHOOK: Output: catalog:test_cat
+POSTHOOK: query: ALTER CATALOG test_cat SET PROPERTIES ('key2'='value2')
+POSTHOOK: type: ALTERCATALOG_PROPERTIES
+POSTHOOK: Output: catalog:test_cat

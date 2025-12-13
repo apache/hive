@@ -990,7 +990,13 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         } else {
           if (!alw.hasRows()) {
             hasEmpty = true;
-            alw.addRow(dummyObj[i]);
+            if (!isRightOfAntiJoin) {
+              alw.addRow(dummyObj[i]);
+            }
+          } else if (isRightOfAntiJoin && !needsPostEvaluation)  {
+            // For anti join the right side should be empty. For needsPostEvaluation case we will
+            // wait till evaluation is done. For other cases we can directly return from here.
+            return;
           } else if (!hasEmpty && alw.isSingleRow()) {
             if (hasAnyFiltered(alias, alw.rowIter().first())) {
               hasEmpty = true;

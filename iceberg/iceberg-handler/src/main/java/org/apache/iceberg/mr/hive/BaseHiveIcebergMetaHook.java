@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,6 +42,8 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
@@ -74,6 +77,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.iceberg.RowLevelOperationMode.MERGE_ON_READ;
+import static org.apache.iceberg.mr.InputFormatConfig.SORT_COLUMNS;
+import static org.apache.iceberg.mr.InputFormatConfig.SORT_ORDER;
+import static org.apache.iceberg.mr.InputFormatConfig.ZORDER;
 
 public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   private static final Logger LOG = LoggerFactory.getLogger(BaseHiveIcebergMetaHook.class);
@@ -84,6 +90,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   private static final Set<String> PARAMETERS_TO_REMOVE = ImmutableSet
       .of(InputFormatConfig.TABLE_SCHEMA, Catalogs.LOCATION, Catalogs.NAME, InputFormatConfig.PARTITION_SPEC);
   static final String ORC_FILES_ONLY = "iceberg.orc.files.only";
+  private static final String ZORDER_FIELDS_JSON_KEY = "zorderFields";
 
   protected final Configuration conf;
   protected Table icebergTable = null;
@@ -217,28 +224,82 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
   }
 
+  /**
+   *  Persists the table's write sort order based on the HMS property 'default-sort-order'
+   *  that is populated by the DDL layer.
+   * <p>
+   * Behaviour:
+   * - If the JSON represents Z-order, we remove DEFAULT_SORT_ORDER
+   *   as Iceberg does not have Z-order support in its spec.
+   *   So, we persist Z-order metadata in {@link org.apache.iceberg.mr.InputFormatConfig#SORT_ORDER}
+   *   and {@link org.apache.iceberg.mr.InputFormatConfig#SORT_COLUMNS} to be used by Hive Writer.
+   * <p>
+   * - Otherwise, the JSON is a list of SortFields; we convert it to Iceberg
+   *   SortOrder JSON and keep it in DEFAULT_SORT_ORDER for Iceberg to use it.
+   */
   private void setSortOrder(org.apache.hadoop.hive.metastore.api.Table hmsTable, Schema schema,
       Properties properties) {
-    String sortOderJSONString = hmsTable.getParameters().get(TableProperties.DEFAULT_SORT_ORDER);
-    SortFields sortFields = null;
-    if (!Strings.isNullOrEmpty(sortOderJSONString)) {
-      try {
-        sortFields = JSON_OBJECT_MAPPER.reader().readValue(sortOderJSONString, SortFields.class);
-      } catch (Exception e) {
-        LOG.warn("Can not read write order json: {}", sortOderJSONString, e);
-        return;
-      }
+    String sortOrderJSONString = hmsTable.getParameters().get(TableProperties.DEFAULT_SORT_ORDER);
+    if (Strings.isNullOrEmpty(sortOrderJSONString)) {
+      return;
+    }
+
+    if (isZOrderJSON(sortOrderJSONString)) {
+      properties.remove(TableProperties.DEFAULT_SORT_ORDER);
+      setZOrderSortOrder(sortOrderJSONString, properties, hmsTable.getTableName());
+      return;
+    }
+
+    try {
+      SortFields sortFields = JSON_OBJECT_MAPPER.reader().readValue(sortOrderJSONString, SortFields.class);
       if (sortFields != null && !sortFields.getSortFields().isEmpty()) {
-        SortOrder.Builder sortOderBuilder = SortOrder.builderFor(schema);
+        SortOrder.Builder sortOrderBuilder = SortOrder.builderFor(schema);
         sortFields.getSortFields().forEach(fieldDesc -> {
           NullOrder nullOrder = fieldDesc.getNullOrdering() == NullOrdering.NULLS_FIRST ?
               NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
           SortDirection sortDirection = fieldDesc.getDirection() == SortFieldDesc.SortDirection.ASC ?
               SortDirection.ASC : SortDirection.DESC;
-          sortOderBuilder.sortBy(fieldDesc.getColumnName(), sortDirection, nullOrder);
+          sortOrderBuilder.sortBy(fieldDesc.getColumnName(), sortDirection, nullOrder);
         });
-        properties.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(sortOderBuilder.build()));
+        properties.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(sortOrderBuilder.build()));
       }
+    } catch (Exception e) {
+      LOG.warn("Can not read write order json: {}", sortOrderJSONString);
+    }
+  }
+
+  /**
+   * Configures the Z-order sort order metadata in the given properties
+   * based on the specified Z-order fields.
+   *
+   * @param jsonString the JSON string representing sort orders
+   * @param properties the Properties object to store sort order metadata
+   * @param tableName name of the table
+   */
+  private void setZOrderSortOrder(String jsonString, Properties properties, String tableName) {
+    try {
+      ZOrderFields zorderFields = JSON_OBJECT_MAPPER.reader().readValue(jsonString, ZOrderFields.class);
+      if (zorderFields != null && !zorderFields.getZOrderFields().isEmpty()) {
+        List<String> columnNames = zorderFields.getZOrderFields().stream()
+            .map(ZOrderFieldDesc::getColumnName)
+            .collect(Collectors.toList());
+
+        properties.put(SORT_ORDER, ZORDER);
+        properties.put(SORT_COLUMNS, String.join(",", columnNames));
+
+        LOG.debug("Applying Z-ordering for Iceberg Table {} with Columns: {}", tableName, columnNames);
+      }
+    } catch (Exception e) {
+      LOG.warn("Failed to parse Z-order sort order", e);
+    }
+  }
+
+  private boolean isZOrderJSON(String jsonString) {
+    try {
+      JsonNode node = JSON_OBJECT_MAPPER.readTree(jsonString);
+      return node.has(ZORDER_FIELDS_JSON_KEY);
+    } catch (Exception e) {
+      return false;
     }
   }
 
@@ -367,14 +428,15 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) &&
-        (hmsTable.getSd().getInputFormat() != null &&
-            hmsTable.getSd().getInputFormat().toUpperCase().contains(org.apache.iceberg.FileFormat.ORC.name()) ||
-            org.apache.iceberg.FileFormat.ORC.name()
-                .equalsIgnoreCase(hmsTable.getSd().getSerdeInfo().getParameters()
-                    .get(TableProperties.DEFAULT_FILE_FORMAT)) ||
-            org.apache.iceberg.FileFormat.ORC.name()
-                .equalsIgnoreCase(hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT)));
+    return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) && isOrcFileFormat(hmsTable);
+  }
+
+  static boolean isOrcFileFormat(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    return hmsTable.getSd().getInputFormat() != null && hmsTable.getSd().getInputFormat().toUpperCase()
+        .contains(org.apache.iceberg.FileFormat.ORC.name()) || org.apache.iceberg.FileFormat.ORC.name()
+        .equalsIgnoreCase(hmsTable.getSd().getSerdeInfo().getParameters().get(TableProperties.DEFAULT_FILE_FORMAT)) ||
+        org.apache.iceberg.FileFormat.ORC.name()
+        .equalsIgnoreCase(hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
   }
 
   protected void setWriteModeDefaults(Table icebergTbl, Map<String, String> newProps, EnvironmentContext context) {

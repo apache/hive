@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.UpdateTransactionalStatsRequest;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.SmallFilesWarningUtil;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -55,6 +56,7 @@ import org.apache.hadoop.hive.ql.plan.BasicStatsWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -128,6 +130,8 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     private Map<String, String> providedBasicStats;
     private boolean skipStatsUpdate = false;
 
+    private HiveConf conf;
+
     public BasicStatsProcessor(Partish partish, BasicStatsWork work, boolean followedColStats2) {
       this.partish = partish;
       this.work = work;
@@ -182,6 +186,22 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         parameters.putAll(providedBasicStats);
       }
 
+
+      final long threshold = (conf != null)
+              ? conf.getLongVar(HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE)
+              : HiveConf.ConfVars.HIVE_MERGE_MAP_FILES_AVG_SIZE.defaultLongVal;
+      final String who = (p.getPartition() == null)
+              ? "table " + p.getTable().getFullyQualifiedName()
+              : "partition " + p.getPartition().getName();
+      SmallFilesWarningUtil.smallFilesWarnings(parameters, 100L, threshold, who, "[ANALYZE]")
+              .ifPresent(msg -> {
+                LOG.warn(msg);
+                SessionState ss = SessionState.get();
+                if (ss != null && ss.getConsole() != null) {
+                  ss.getConsole().printInfo(msg);
+                }
+              });
+
       if (statsAggregator != null && !skipStatsUpdate) {
         // Update stats for transactional tables (MM, or full ACID with overwrite), even
         // though we are marking stats as not being accurate.
@@ -195,6 +215,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
     }
 
     public void collectFileStatus(Warehouse wh, HiveConf conf) throws MetaException, IOException {
+      this.conf = conf;
       if (providedBasicStats == null) {
         if (!partish.isTransactionalTable()) {
           partfileStatus = wh.getFileStatusesForSD(partish.getPartSd());

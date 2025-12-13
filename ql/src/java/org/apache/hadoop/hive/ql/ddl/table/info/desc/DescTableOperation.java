@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.StatObjectConverter;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -246,12 +245,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         TypeInfoUtils.getTypeInfoFromTypeString(partCol.getType()), null, false);
     ColStatistics cs = StatsUtils.getColStatsForPartCol(ci, parts, context.getConf());
     ColumnStatisticsData data = new ColumnStatisticsData();
-    ColStatistics.Range r = cs.getRange();
-    StatObjectConverter.fillColumnStatisticsData(partCol.getType(), data, r == null ? null : r.minValue,
-        r == null ? null : r.maxValue, r == null ? null : r.minValue, r == null ? null : r.maxValue,
-        r == null ? null : r.minValue.toString(), r == null ? null : r.maxValue.toString(),
-        cs.getNumNulls(), cs.getCountDistint(), null, null, cs.getAvgColLen(),
-        cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
+    StatsUtils.fillColumnStatisticsData(data, cs, partCol.getType());
     ColumnStatisticsObj cso = new ColumnStatisticsObj(partCol.getName(), partCol.getType(), data);
     colStats.add(cso);
     StatsSetupConst.setColumnStatsState(tableProps, colNames);
@@ -291,9 +285,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private void setConstraintsAndStorageHandlerInfo(Table table) throws HiveException {
     if (desc.isExtended() || desc.isFormatted()) {
-      TableConstraintsInfo tableConstraintsInfo = context.getDb()
-          .getTableConstraints(table.getDbName(), table.getTableName(), false, false,
-              table.getTTable() != null ? table.getTTable().getId() : -1);
+      TableConstraintsInfo tableConstraintsInfo = context.getDb().getTableConstraints(
+          table.getDbName(), table.getTableName(), false, false);
       table.setTableConstraintsInfo(tableConstraintsInfo);
       table.setStorageHandlerInfo(context.getDb().getStorageHandlerInfo(table));
     }

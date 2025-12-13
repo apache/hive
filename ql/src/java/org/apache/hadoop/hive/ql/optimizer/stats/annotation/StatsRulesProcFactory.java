@@ -1285,15 +1285,21 @@ public class StatsRulesProcFactory {
       try {
         final float value = extractFloatFromLiteralValue(colTypeLowerCase, boundValue);
 
-        // kll ignores null values (i.e., kll.getN() + numNulls = currNumRows), we therefore need to use kll.getN()
-        // instead of currNumRows since the CDF is expressed as a fraction of kll.getN(), not currNumRows
+        double rawSelectivity;
         if (upperBound) {
-          return Math.round(kll.getN() * (closedBound ?
-              lessThanOrEqualSelectivity(kll, value) : lessThanSelectivity(kll, value)));
+          rawSelectivity = closedBound ?
+              lessThanOrEqualSelectivity(kll, value) : lessThanSelectivity(kll, value);
         } else {
-          return Math.round(kll.getN() * (closedBound ?
-              greaterThanOrEqualSelectivity(kll, value) : greaterThanSelectivity(kll, value)));
+          rawSelectivity = closedBound ?
+              greaterThanOrEqualSelectivity(kll, value) : greaterThanSelectivity(kll, value);
         }
+
+        // kll ignores null values, i.e., kll.getN() + numNulls = total number of rows,
+        // so the above rawSelectivity = count/kll.getN().
+        // What we need is the selectivity count/(total number of rows).
+        // With count = kll.getN() * rawSelectivity we get:
+        double totalSelectivity = (kll.getN() * rawSelectivity) / (kll.getN() + cs.getNumNulls());
+        return Math.round(currNumRows * totalSelectivity);
       } catch (RuntimeException e) {
         LOG.debug("Selectivity computation using histogram failed to parse the boundary value ({}), "
             + ", using the generic computation strategy", boundValue, e);

@@ -179,7 +179,7 @@ EXPLAIN CBO select  * FROM db1.v1_n17;
 
 
 EXPLAIN VECTORIZED select  * FROM db1.v1_n17;
-CBO PLAN:HiveProject(key=[$0], value=[$1])
+CBO PLAN:HiveProject(v1_n17.key=[$0], v1_n17.value=[$1])
   HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
 
 PLAN VECTORIZATION:
@@ -237,7 +237,7 @@ EXPLAIN select  * FROM db1.v2_n10;
 EXPLAIN CBO select  * FROM db1.v2_n10;
 
 EXPLAIN VECTORIZED select  * FROM db1.v2_n10;
-CBO PLAN:HiveProject(key=[$0], value=[$1])
+CBO PLAN:HiveProject(v2_n10.key=[$0], v2_n10.value=[$1])
   HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
 
 PLAN VECTORIZATION:
@@ -312,13 +312,14 @@ EXPLAIN select  * FROM db1.v3_n3;
 EXPLAIN CBO select  * FROM db1.v3_n3;
 
 EXPLAIN VECTORIZED select  * FROM db1.v3_n3;
-CBO PLAN:HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-  HiveProject(key=[$0], value=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
-  HiveProject(key=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[db1, table2_n13]], table:alias=[t2])
+CBO PLAN:HiveProject(v3_n3.key=[$0], v3_n3.value=[$1], v3_n3.k=[$2])
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0], value=[$1])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+    HiveProject(key=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[db1, table2_n13]], table:alias=[t2])
 
 PLAN VECTORIZATION:
   enabled: true
@@ -463,7 +464,7 @@ EXPLAIN select  * FROM db1.v4_n3;
 EXPLAIN CBO select  * FROM db1.v4_n3;
 
 EXPLAIN VECTORIZED select  * FROM db1.v4_n3;
-CBO PLAN:HiveProject(key=[$0], value=[$1])
+CBO PLAN:HiveProject(v4_n3.key=[$0], v4_n3.value=[$1])
   HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
 
 PLAN VECTORIZATION:
@@ -521,7 +522,7 @@ EXPLAIN select  * FROM db1.v5_n1;
 EXPLAIN CBO select  * FROM db1.v5_n1;
 
 EXPLAIN VECTORIZED select  * FROM db1.v5_n1;
-CBO PLAN:HiveProject(key=[$0], value=[$1])
+CBO PLAN:HiveProject(v5_n1.key=[$0], v5_n1.value=[$1])
   HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
 
 PLAN VECTORIZATION:
@@ -596,13 +597,14 @@ EXPLAIN select  * FROM db1.v6;
 EXPLAIN CBO select  * FROM db1.v6;
 
 EXPLAIN VECTORIZED select  * FROM db1.v6;
-CBO PLAN:HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-  HiveProject(key=[$0], value=[$1])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
-  HiveProject(key=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[db1, table2_n13]], table:alias=[t2])
+CBO PLAN:HiveProject(v6.key=[$0], v6.value=[$1], v6.k=[$2])
+  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0], value=[$1])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[db1, table1_n19]], table:alias=[t1])
+    HiveProject(key=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[db1, table2_n13]], table:alias=[t2])
 
 PLAN VECTORIZATION:
   enabled: true
@@ -747,7 +749,7 @@ EXPLAIN select  * FROM db1.v7;
 EXPLAIN CBO select  * FROM db1.v7;
 
 EXPLAIN VECTORIZED select  * FROM db1.v7;
-CBO PLAN:HiveProject(key=[$0])
+CBO PLAN:HiveProject(v7.key=[$0])
   HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
 
 PLAN VECTORIZATION:
@@ -805,7 +807,7 @@ EXPLAIN select  * FROM db1.v8;
 EXPLAIN CBO select  * FROM db1.v8;
 
 EXPLAIN VECTORIZED select  * FROM db1.v8;
-CBO PLAN:HiveProject(key=[$0])
+CBO PLAN:HiveProject(v8.key=[$0])
   HiveTableScan(table=[[db1, table1_n19]], table:alias=[table1_n19])
 
 PLAN VECTORIZATION:

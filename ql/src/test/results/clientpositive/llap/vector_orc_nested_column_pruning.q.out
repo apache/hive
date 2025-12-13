@@ -2803,7 +2803,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@nested_tbl_1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(_o__c0=[$1], f19=[$0])
+HiveProject(_c0=[$1], f19=[$0])
   HiveAggregate(group=[{0}], agg#0=[count($1)])
     HiveProject($f0=[COMPONENT_ACCESS($5.f16).f18.f19], $f1=[$1.f6])
       HiveTableScan(table=[[default, nested_tbl_1]], table:alias=[nested_tbl_1])

@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive.serde.objectinspector;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.List;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -61,11 +62,13 @@ public final class IcebergVariantObjectInspector extends VariantObjectInspector 
 
     switch (field.getFieldID()) {
       case 0: // "metadata" field (binary)
-        ByteBuffer metadata = ByteBuffer.allocate(variant.metadata().sizeInBytes());
+        ByteBuffer metadata = ByteBuffer.allocate(variant.metadata().sizeInBytes())
+            .order(ByteOrder.LITTLE_ENDIAN);
         variant.metadata().writeTo(metadata, 0);
         return metadata.array();
       case 1: // "value" field (binary)
-        ByteBuffer value = ByteBuffer.allocate(variant.value().sizeInBytes());
+        ByteBuffer value = ByteBuffer.allocate(variant.value().sizeInBytes())
+            .order(ByteOrder.LITTLE_ENDIAN);
         variant.value().writeTo(value, 0);
         return value.array();
       default:
@@ -79,10 +82,12 @@ public final class IcebergVariantObjectInspector extends VariantObjectInspector 
       return null;
     }
     Variant variant = (Variant) data;
-    ByteBuffer metadata = ByteBuffer.allocate(variant.metadata().sizeInBytes());
+    ByteBuffer metadata = ByteBuffer.allocate(variant.metadata().sizeInBytes())
+        .order(ByteOrder.LITTLE_ENDIAN);
     variant.metadata().writeTo(metadata, 0);
 
-    ByteBuffer value = ByteBuffer.allocate(variant.value().sizeInBytes());
+    ByteBuffer value = ByteBuffer.allocate(variant.value().sizeInBytes())
+        .order(ByteOrder.LITTLE_ENDIAN);
     variant.value().writeTo(value, 0);
 
     // Return the data for our fields in the correct order: metadata, value

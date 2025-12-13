@@ -264,7 +264,7 @@ public class ProfileServlet extends HttpServlet {
             // set response and set refresh header to output location
             setResponseHeader(resp);
             resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            String relativeUrl = "/prof-output/" + outputFile.getName();
+            String relativeUrl = "/prof-output";
             resp.getWriter().write(
               "Started [" + event.getInternalName() + "] profiling. This page will automatically redirect to " +
                 relativeUrl + " after " + duration + " seconds.\n\ncommand:\n" + Joiner.on(" ").join(cmd));
@@ -273,7 +273,8 @@ public class ProfileServlet extends HttpServlet {
             int refreshDelay = getInteger(req, "refreshDelay", 0);
 
             // instead of sending redirect, set auto-refresh so that browsers will refresh with redirected url
-            resp.setHeader("Refresh", (duration + refreshDelay) + ";" + relativeUrl);
+            resp.setHeader("Refresh", (duration + refreshDelay) + "; URL=" + relativeUrl + '?'
+                + ProfileOutputServlet.FILE_QUERY_PARAM + '=' + outputFile.getName());
             resp.getWriter().flush();
           } finally {
             profilerLock.unlock();

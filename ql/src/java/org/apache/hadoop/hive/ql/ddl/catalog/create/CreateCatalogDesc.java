@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * DDL task description for CREATE CATALOG commands.
@@ -34,12 +35,14 @@ public class CreateCatalogDesc implements DDLDesc, Serializable {
   private final String comment;
   private final String locationUri;
   private final boolean ifNotExists;
+  private final Map<String, String> catProperties;
 
-  public CreateCatalogDesc(String catalogName, String comment, String locationUri, boolean ifNotExists) {
+  public CreateCatalogDesc(String catalogName, String comment, String locationUri, boolean ifNotExists, Map<String, String> catProperties) {
     this.catalogName = catalogName;
     this.comment = comment;
     this.locationUri = locationUri;
     this.ifNotExists = ifNotExists;
+    this.catProperties = catProperties;
   }
 
   @Explain(displayName="name", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
@@ -60,5 +63,9 @@ public class CreateCatalogDesc implements DDLDesc, Serializable {
   @Explain(displayName="if not exists", displayOnlyOnTrue = true)
   public boolean isIfNotExists() {
     return ifNotExists;
+  }
+
+  public Map<String, String> getCatlogProperties() {
+    return catProperties;
   }
 }

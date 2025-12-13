@@ -44,7 +44,7 @@ public class AlterDatabaseSetPropertiesAnalyzer extends AbstractAlterDatabaseAna
     for (int i = 1; i < root.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) root.getChild(i);
       switch (childNode.getToken().getType()) {
-      case HiveParser.TOK_DATABASEPROPERTIES:
+      case HiveParser.TOK_PROPERTIES:
         dbProps = getProps((ASTNode) childNode.getChild(0));
         break;
       default:

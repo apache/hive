@@ -101,6 +101,18 @@
         <!-- allows null is true to keep backwards compatibility with old releases -->
         <column name="CREATE_TIME" jdbc-type="integer" allows-null="true"/>
       </field>
+      <field name="parameters" table="CATALOG_PARAMS">
+        <map key-type="java.lang.String" value-type="java.lang.String"/>
+         <join>
+           <column name="CTLG_ID"/>
+         </join>
+         <key>
+           <column name="PARAM_KEY" length="180" jdbc-type="VARCHAR"/>
+         </key>
+         <value>
+          <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
+         </value>
+      </field>
     </class>
 
     <class name="MFieldSchema" embedded-only="true" table="TYPE_FIELDS" detachable="true">
@@ -494,15 +506,15 @@
       </field>
     </class>
 
-    <class name="MPartition" table="PARTITIONS" identity-type="datastore" detachable="true">
+    <class name="MPartition" table="PARTITIONS" identity-type="application" detachable="true">
       <foreign-key name="PARTITIONS_FK1" delete-action="cascade"/>
       <index name="UniquePartition" unique="true">
         <column name="PART_NAME"/>
         <column name="TBL_ID"/>
       </index>
-      <datastore-identity>
-        <column name="PART_ID"/>
-      </datastore-identity>
+      <field name="id" primary-key="true" value-strategy="native">
+         <column name="PART_ID" jdbc-type="BIGINT" />
+      </field>
       <field name="partitionName">
         <column name="PART_NAME" length="767" jdbc-type="VARCHAR"/>
       </field>
@@ -1608,7 +1620,7 @@
             <column name="PARAM_KEY" length="180" jdbc-type="VARCHAR"/>
           </key>
           <value>
-           <column name="PARAM_VALUE" length="32672" jdbc-type="VARCHAR"/>
+           <column name="PARAM_VALUE" length="4000" jdbc-type="VARCHAR"/>
           </value>
        </field>
     </class>

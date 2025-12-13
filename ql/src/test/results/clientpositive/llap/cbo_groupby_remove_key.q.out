@@ -33,8 +33,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@passenger
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}], agg#0=[count()])
-  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+HiveProject(id=[$0], _c1=[$1])
+  HiveAggregate(group=[{0}], agg#0=[count()])
+    HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
 
 PREHOOK: query: EXPLAIN CBO SELECT passport, COUNT(1) FROM passenger GROUP BY id, passport
 PREHOOK: type: QUERY
@@ -45,8 +46,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@passenger
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{3}], agg#0=[count()])
-  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+HiveProject(passport=[$0], _c1=[$1])
+  HiveAggregate(group=[{3}], agg#0=[count()])
+    HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
 
 PREHOOK: query: EXPLAIN CBO SELECT id, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
 PREHOOK: type: QUERY
@@ -57,8 +59,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@passenger
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}], agg#0=[count()])
-  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+HiveProject(id=[$0], _c1=[$1])
+  HiveAggregate(group=[{0}], agg#0=[count()])
+    HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
 
 PREHOOK: query: EXPLAIN CBO SELECT passport, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
 PREHOOK: type: QUERY
@@ -69,8 +72,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@passenger
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{3}], agg#0=[count()])
-  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+HiveProject(passport=[$0], _c1=[$1])
+  HiveAggregate(group=[{3}], agg#0=[count()])
+    HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
 
 PREHOOK: query: EXPLAIN CBO SELECT fname, COUNT(1) FROM passenger GROUP BY id, fname, lname, passport
 PREHOOK: type: QUERY
@@ -81,7 +85,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@passenger
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(fname=[$1], _o__c1=[$2])
+HiveProject(fname=[$1], _c1=[$2])
   HiveAggregate(group=[{0, 1}], agg#0=[count()])
     HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
 
@@ -94,7 +98,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@passenger
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(lname=[$1], _o__c1=[$2])
+HiveProject(lname=[$1], _c1=[$2])
   HiveAggregate(group=[{0, 2}], agg#0=[count()])
     HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
 
@@ -107,6 +111,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@passenger
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{1, 2}], agg#0=[count()])
-  HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
+HiveProject(fname=[$0], lname=[$1], _c2=[$2])
+  HiveAggregate(group=[{1, 2}], agg#0=[count()])
+    HiveTableScan(table=[[default, passenger]], table:alias=[passenger])
 

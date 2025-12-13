@@ -197,7 +197,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveProject(b=[$1], c=[$2])
+HiveProject(tbl_ice.b=[$1], tbl_ice.c=[$2])
   HiveFilter(condition=[>($2, 52)])
     HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice])
 
@@ -222,7 +222,8 @@ POSTHOOK: Input: default@mat1
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveProject(tbl_ice.b=[$0], tbl_ice.c=[$1])
+  HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: insert into tbl_ice values (10, 'ten', 60)
 PREHOOK: type: QUERY
@@ -243,7 +244,7 @@ POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: default@mat1
 CBO PLAN:
-HiveProject(b=[$1], c=[$2])
+HiveProject(tbl_ice.b=[$1], tbl_ice.c=[$2])
   HiveFilter(condition=[>($2, 52)])
     HiveTableScan(table=[[default, tbl_ice]], table:alias=[tbl_ice], fromVersion=[#Masked#])
 

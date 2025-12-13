@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], fetch=[100])
-  HiveProject(channel=[$0], col_name=[$1], d_year=[$2], d_qoy=[$3], i_category=[$4], $f5=[$5], $f6=[$6])
+  HiveProject(channel=[$0], col_name=[$1], d_year=[$2], d_qoy=[$3], i_category=[$4], sales_cnt=[$5], sales_amt=[$6])
     HiveAggregate(group=[{0, 1, 2, 3, 4}], agg#0=[count()], agg#1=[sum($5)])
       HiveProject(channel=[$0], col_name=[$1], d_year=[$2], d_qoy=[$3], i_category=[$4], ext_sales_price=[$5])
         HiveUnion(all=[true])

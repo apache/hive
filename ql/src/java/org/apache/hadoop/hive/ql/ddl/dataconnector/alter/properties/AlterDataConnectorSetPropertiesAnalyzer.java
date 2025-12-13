@@ -43,7 +43,7 @@ public class AlterDataConnectorSetPropertiesAnalyzer extends AbstractAlterDataCo
     Map<String, String> dbProps = null;
     for (int i = 1; i < root.getChildCount(); i++) {
       ASTNode childNode = (ASTNode) root.getChild(i);
-      if (childNode.getToken().getType() == HiveParser.TOK_DATACONNECTORPROPERTIES) {
+      if (childNode.getToken().getType() == HiveParser.TOK_PROPERTIES) {
         dbProps = getProps((ASTNode) childNode.getChild(0));
         break;
       } else {

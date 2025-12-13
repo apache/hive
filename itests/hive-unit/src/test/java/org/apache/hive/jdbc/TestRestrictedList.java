@@ -46,8 +46,6 @@ public class TestRestrictedList {
 
   @BeforeClass
   public static void startServices() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
-
     oldHiveSiteURL = HiveConf.getHiveSiteLocation();
     oldHiveMetastoreSiteURL = HiveConf.getMetastoreSiteLocation();
     String confDir = "../../data/conf/rlist/";
@@ -112,6 +110,7 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.iceberg.allow.datafiles.in.table.location.only");
     addToExpectedRestrictedMap("hive.hook.proto.base-directory");
     addToExpectedRestrictedMap("hive.rewrite.data.policy");
+    addToExpectedRestrictedMap("hive.query.history.enabled");
 
     checkRestrictedListMatch();
   }

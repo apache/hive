@@ -223,6 +223,7 @@ iceberg_hour
 iceberg_month
 iceberg_truncate
 iceberg_year
+iceberg_zorder
 if
 in
 in_bloom_filter
@@ -382,6 +383,7 @@ st_difference
 st_dimension
 st_disjoint
 st_distance
+st_distancesphere
 st_endpoint
 st_envelope
 st_envintersects
@@ -623,6 +625,7 @@ st_asshape
 st_binenvelope
 st_difference
 st_distance
+st_distancesphere
 st_envelope
 st_geometrytype
 st_geomfromshape
@@ -862,6 +865,7 @@ iceberg_hour
 iceberg_month
 iceberg_truncate
 iceberg_year
+iceberg_zorder
 if
 in
 in_bloom_filter
@@ -1021,6 +1025,7 @@ st_difference
 st_dimension
 st_disjoint
 st_distance
+st_distancesphere
 st_endpoint
 st_envelope
 st_envintersects

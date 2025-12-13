@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.AcidMetaDataFile.DataFormat;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -557,15 +557,6 @@ public class HiveAlterHandler implements AlterHandler {
   }
 
   @Override
-  public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
-    final String name, final List<String> part_vals, final Partition new_part,
-    EnvironmentContext environmentContext)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException, NoSuchObjectException {
-    return alterPartition(msdb, wh, MetaStoreUtils.getDefaultCatalog(conf), dbname, name, part_vals, new_part,
-        environmentContext, null, null);
-  }
-
-  @Override
   public Partition alterPartition(RawStore msdb, Warehouse wh, String catName, String dbname,
       String name, List<String> part_vals, final Partition new_part,
       EnvironmentContext environmentContext, IHMSHandler handler, String validWriteIds)
@@ -796,16 +787,6 @@ public class HiveAlterHandler implements AlterHandler {
       }
     }
     return oldPart;
-  }
-
-  @Deprecated
-  @Override
-  public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
-    final String name, final List<Partition> new_parts,
-    EnvironmentContext environmentContext)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
-    return alterPartitions(msdb, wh, MetaStoreUtils.getDefaultCatalog(conf), dbname, name, new_parts,
-        environmentContext, null, -1, null);
   }
 
   private Map<List<String>, Partition> getExistingPartitions(final RawStore msdb,

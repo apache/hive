@@ -25,7 +25,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], key0=[$12], value0=[$13], BLOCK__OFFSET__INSIDE__FILE0=[$14], INPUT__FILE__NAME0=[$15], ROW__ID0=[$16], ROW__IS__DELETED0=[$17], key1=[$6], value1=[$7], BLOCK__OFFSET__INSIDE__FILE1=[$8], INPUT__FILE__NAME1=[$9], ROW__ID1=[$10], ROW__IS__DELETED1=[$11])
+HiveProject(a.key=[$0], a.value=[$1], a.block__offset__inside__file=[$2], a.input__file__name=[$3], a.row__id=[$4], a.row__is__deleted=[$5], b.key=[$12], b.value=[$13], b.block__offset__inside__file=[$14], b.input__file__name=[$15], b.row__id=[$16], b.row__is__deleted=[$17], c.key=[$6], c.value=[$7], c.block__offset__inside__file=[$8], c.input__file__name=[$9], c.row__id=[$10], c.row__is__deleted=[$11])
   HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(key=[$0], value=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], key0=[$6], value0=[$7], BLOCK__OFFSET__INSIDE__FILE0=[$8], INPUT__FILE__NAME0=[$9], ROW__ID0=[$10], ROW__IS__DELETED0=[$11])
       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])

@@ -225,7 +225,6 @@ public class MetastoreConf {
       ConfVars.HMS_HANDLER_ATTEMPTS,
       ConfVars.HMS_HANDLER_INTERVAL,
       ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF,
-      ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
       ConfVars.ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS,
       ConfVars.USERS_IN_ADMIN_ROLE,
       ConfVars.HIVE_TXN_MANAGER,
@@ -244,18 +243,12 @@ public class MetastoreConf {
       ConfVars.AGGREGATE_STATS_CACHE_MAX_READER_WAIT,
       ConfVars.AGGREGATE_STATS_CACHE_MAX_FULL,
       ConfVars.AGGREGATE_STATS_CACHE_CLEAN_UNTIL,
-      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       ConfVars.FILE_METADATA_THREADS,
       ConfVars.METASTORE_CLIENT_FILTER_ENABLED,
       ConfVars.METASTORE_SERVER_FILTER_ENABLED,
       ConfVars.METASTORE_PARTITIONS_PARAMETERS_INCLUDE_PATTERN,
-      ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN
-  };
-
-  /**
-   * User configurable Metastore vars
-   */
-  private static final MetastoreConf.ConfVars[] metaConfVars = {
+      ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN,
+      // Add metaConfVars here as well
       ConfVars.TRY_DIRECT_SQL,
       ConfVars.TRY_DIRECT_SQL_DDL,
       ConfVars.CLIENT_SOCKET_TIMEOUT,
@@ -264,6 +257,22 @@ public class MetastoreConf {
       ConfVars.CAPABILITY_CHECK,
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       ConfVars.EXPRESSION_PROXY_CLASS
+  };
+
+  /**
+   * User configurable Metastore vars
+   */
+  public static final MetastoreConf.ConfVars[] metaConfVars = {
+      ConfVars.TRY_DIRECT_SQL,
+      ConfVars.TRY_DIRECT_SQL_DDL,
+      ConfVars.CLIENT_SOCKET_TIMEOUT,
+      ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
+      ConfVars.PARTITION_ORDER_EXPR,
+      ConfVars.CAPABILITY_CHECK,
+      ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
+      ConfVars.EXPRESSION_PROXY_CLASS,
+      ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES,
+      ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL
   };
 
   static {
@@ -1302,6 +1311,14 @@ public class MetastoreConf {
             + "  seqprefix: adds a 'N_' prefix to the table name to get a unique location (table,1_table,2_table,...)\n"
             + "  prohibit: do not consider alternate locations; throw error if the default is not available\n"
             + "  force: use the default location even in case the directory is already available"),
+    METASTORE_S4U_NOWAIT_MAX_RETRIES("metastore.s4u.nowait.max.retries",
+        "hive.metastore.s4u.nowait.max.retries", 100,
+        "Number of retries required to acquire a row lock immediately without waiting."),
+    METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL(
+        "metastore.s4u.nowait.retry.sleep.interval",
+        "hive.metastore.s4u.nowait.retry.sleep.interval", 300, TimeUnit.MILLISECONDS,
+        "Sleep interval between retries to acquire a row lock immediately described part of property "
+            + METASTORE_S4U_NOWAIT_MAX_RETRIES.name()),
 
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
         "Set this to true if multiple threads access metastore through JDO concurrently."),
@@ -1675,10 +1692,11 @@ public class MetastoreConf {
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
     TXN_OPENTXN_TIMEOUT("metastore.txn.opentxn.timeout", "hive.txn.opentxn.timeout", 1000, TimeUnit.MILLISECONDS,
         "Time before an open transaction operation should persist, otherwise it is considered invalid and rolled back"),
+    @Deprecated
     TXN_USE_MIN_HISTORY_LEVEL("metastore.txn.use.minhistorylevel", "hive.txn.use.minhistorylevel", true,
         "Set this to false, for the TxnHandler and Cleaner to not use MIN_HISTORY_LEVEL table and take advantage of openTxn optimisation.\n"
             + "If the table is dropped HMS will switch this flag to false, any other value changes need a restart to take effect."),
-    TXN_USE_MIN_HISTORY_WRITE_ID("metastore.txn.use.minhistorywriteid", "hive.txn.use.minhistorywriteid", false,
+    TXN_USE_MIN_HISTORY_WRITE_ID("metastore.txn.use.minhistorywriteid", "hive.txn.use.minhistorywriteid", true,
       "Set this to true, to avoid global minOpenTxn check in Cleaner.\n"
             + "If the table is dropped HMS will switch this flag to false."),
     LOCK_NUMRETRIES("metastore.lock.numretries", "hive.lock.numretries", 100,
@@ -1811,6 +1829,10 @@ public class MetastoreConf {
             "A ZooKeeper instance must be up and running when using zookeeper Hive lock manager "),
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
+    MSCK_SMALLFILES_AVG_SIZE("metastore.msck.smallfiles.avgsize", "metastore.msck.smallfiles.avgsize", (long) (16 * 1000 * 1000),
+            "When the average files size of a table/partition is less than this number, in msck command process, if total number\n" +
+                    "of files is greater than 100, the small files warnings will be shown to the end users in console, and\n" +
+                    "also recorded in the logs."),
 
     // External RDBMS support
     USE_CUSTOM_RDBMS("metastore.use.custom.database.product",

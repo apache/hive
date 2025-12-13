@@ -52,7 +52,7 @@ final class RebalanceQueryCompactor extends QueryCompactor {
 
     String tmpTableName = getTempTableName(table);
     Path tmpTablePath = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds,
-        conf, true, false, false, null);
+        conf, true, false, null);
     int numBuckets = context.getCompactionInfo().numberOfBuckets;
     if (numBuckets <= 0) {
       //TODO: This is quite expensive, a better way should be found to get the number of buckets for an implicitly bucketed table

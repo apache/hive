@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -205,7 +205,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     private boolean useMinHistoryWriteId;
 
     public boolean useMinHistoryLevel() {
-      return useMinHistoryLevel;
+      return useMinHistoryLevel && !useMinHistoryWriteId;
     }
 
     public void setUseMinHistoryLevel(boolean useMinHistoryLevel) {

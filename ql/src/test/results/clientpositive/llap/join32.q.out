@@ -28,7 +28,7 @@ POSTHOOK: Input: default@src1
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@dest_j1_n12
-OPTIMIZED SQL: SELECT `t4`.`key`, `t0`.`value`, `t2`.`value` AS `value1`
+OPTIMIZED SQL: SELECT `t4`.`key` AS `x.key`, `t0`.`value` AS `z.value`, `t2`.`value` AS `y.value`
 FROM (SELECT `value`
 FROM `default`.`srcpart`
 WHERE `ds` = '2008-04-08' AND `hr` = 11 AND `value` IS NOT NULL) AS `t0`
