@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -45,7 +46,7 @@ public class ShowCreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode root) throws SemanticException {
     ctx.setResFile(ctx.getLocalTmpPath());
 
-    Pair<String, String> catDbNamePair = getCatDbNamePair((ASTNode) root.getChild(0));
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
     String catalogName = catDbNamePair.getLeft();
     if (catalogName != null && getCatalog(catalogName) == null) {
       throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catalogName);

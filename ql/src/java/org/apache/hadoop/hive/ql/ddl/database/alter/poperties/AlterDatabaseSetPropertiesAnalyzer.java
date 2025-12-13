@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.database.alter.AbstractAlterDatabaseAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -39,7 +40,7 @@ public class AlterDatabaseSetPropertiesAnalyzer extends AbstractAlterDatabaseAna
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    Pair<String, String> catDbNamePair = getCatDbNamePair((ASTNode) root.getChild(0));
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
     String catalogName = catDbNamePair.getLeft();
     String databaseName = catDbNamePair.getRight();
 

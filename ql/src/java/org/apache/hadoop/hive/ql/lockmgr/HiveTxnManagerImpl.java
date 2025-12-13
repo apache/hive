@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.stringtemplate.v4.ST;
 
 /**
  * An implementation HiveTxnManager that includes internal methods that all

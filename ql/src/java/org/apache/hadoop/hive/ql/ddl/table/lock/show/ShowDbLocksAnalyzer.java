@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -43,7 +44,7 @@ public class ShowDbLocksAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode root) throws SemanticException {
     ctx.setResFile(ctx.getLocalTmpPath());
 
-    Pair<String, String> catDbNamePair = getCatDbNamePair((ASTNode) root.getChild(0));
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
     String catName = catDbNamePair.getLeft();
     if (catName != null && getCatalog(catName) == null) {
       throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catName);

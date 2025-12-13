@@ -422,33 +422,6 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   /**
-   *
-   * @param dbNameNode A root node that contains database fields
-   * @return Return a Pair object which includes catalogName and dbName
-   * @throws SemanticException
-   */
-  public static Pair<String, String> getCatDbNamePair(ASTNode dbNameNode) throws SemanticException {
-    String catName = null;
-    String dbName;
-
-    if (dbNameNode.getChildCount() == 2) {
-      catName = unescapeIdentifier(dbNameNode.getChild(0).getText());
-      dbName = unescapeIdentifier(dbNameNode.getChild(1).getText());
-    } else if (dbNameNode.getChildCount() == 1) {
-      dbName = unescapeIdentifier(dbNameNode.getChild(0).getText());
-    } else {
-      dbName = unescapeIdentifier(dbNameNode.getText());
-    }
-
-    if ((catName != null && catName.contains(".")) || dbName.contains(".")) {
-      throw new SemanticException(ASTErrorUtils.getMsg(
-              ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), dbNameNode));
-    }
-
-    return Pair.of(catName, dbName);
-  }
-
-  /**
    * Get dequoted name from a table/column node.
    * @param tableOrColumnNode the table or column node
    * @return for table node, db.tab or tab. for column node column.

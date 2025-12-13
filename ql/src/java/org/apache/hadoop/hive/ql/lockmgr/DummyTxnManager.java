@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
-import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +38,6 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -188,18 +186,13 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
       }
       LOG.debug("Adding " + input.getName() + " to list of lock inputs");
       if (input.getType() == ReadEntity.Type.CATALOG) {
-        lockObjects.addAll(getLockObjects(plan, input.getCatalog(), null, null,
-                null, HiveLockMode.SHARED));
+        lockObjects.addAll(getLockObjects(plan, input.getCatalog(), HiveLockMode.SHARED));
       } else if (input.getType() == ReadEntity.Type.DATABASE) {
-        lockObjects.addAll(getLockObjects(plan, null, input.getDatabase(), null,
-            null, HiveLockMode.SHARED));
+        lockObjects.addAll(getLockObjects(plan, input.getDatabase(), HiveLockMode.SHARED));
       } else  if (input.getType() == ReadEntity.Type.TABLE) {
-        lockObjects.addAll(getLockObjects(plan, null, null,  input.getTable(), null,
-            HiveLockMode.SHARED));
+        lockObjects.addAll(getLockObjects(plan, input.getTable(), HiveLockMode.SHARED));
       } else {
-        lockObjects.addAll(getLockObjects(plan, null, null, null,
-            input.getPartition(),
-            HiveLockMode.SHARED));
+        lockObjects.addAll(getLockObjects(plan, input.getPartition(), HiveLockMode.SHARED));
       }
     }
 
@@ -211,18 +204,18 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
       LOG.debug("Adding " + output.getName() + " to list of lock outputs");
       List<HiveLockObj> lockObj = null;
       if (output.getType() == WriteEntity.Type.CATALOG) {
-        lockObjects.addAll(getLockObjects(plan, output.getCatalog(), null, null, null, lockMode));
+        lockObjects.addAll(getLockObjects(plan, output.getCatalog(), lockMode));
       }
       else if (output.getType() == WriteEntity.Type.DATABASE) {
-        lockObjects.addAll(getLockObjects(plan, null, output.getDatabase(), null, null, lockMode));
+        lockObjects.addAll(getLockObjects(plan, output.getDatabase(), lockMode));
       } else if (output.getTyp() == WriteEntity.Type.TABLE) {
-        lockObj = getLockObjects(plan, null, null,  output.getTable(), null,lockMode);
+        lockObj = getLockObjects(plan, output.getTable(),lockMode);
       } else if (output.getTyp() == WriteEntity.Type.PARTITION) {
-        lockObj = getLockObjects(plan, null, null, null, output.getPartition(), lockMode);
+        lockObj = getLockObjects(plan, output.getPartition(), lockMode);
       }
       // In case of dynamic queries, it is possible to have incomplete dummy partitions
       else if (output.getTyp() == WriteEntity.Type.DUMMYPARTITION) {
-        lockObj = getLockObjects(plan, null, null, null, output.getPartition(),
+        lockObj = getLockObjects(plan, output.getPartition(),
             HiveLockMode.SHARED);
       }
 
@@ -389,86 +382,82 @@ public class DummyTxnManager extends HiveTxnManagerImpl {
     }
   }
 
-  private List<HiveLockObj> getLockObjects(QueryPlan plan, Catalog catalog, Database db,
-                                           Table t, Partition p,
-                                           HiveLockMode mode)
-      throws LockException {
-    List<HiveLockObj> locks = new LinkedList<HiveLockObj>();
+  private <T> List<HiveLockObj> getLockObjects(QueryPlan plan, T target, HiveLockMode mode) {
+    List<HiveLockObj> locks = new LinkedList<>();
 
     HiveLockObject.HiveLockObjectData lockData =
-      new HiveLockObject.HiveLockObjectData(plan.getQueryId(),
-                             String.valueOf(System.currentTimeMillis()),
-                             "IMPLICIT",
-                             plan.getQueryStr(),
-                             conf);
+            new HiveLockObject.HiveLockObjectData(plan.getQueryId(),
+                    String.valueOf(System.currentTimeMillis()),
+                    "IMPLICIT",
+                    plan.getQueryStr(),
+                    conf);
 
-    if (catalog != null) {
-      locks.add(new HiveLockObj(new HiveLockObject(catalog.getName(), lockData), mode));
-      return locks;
-    }
-
-    if (db != null) {
-      String catName = Objects.requireNonNullElse(db.getCatalogName(),
-              HiveUtils.getCurrentCatalogOrDefault(conf));
-      locks.add(new HiveLockObj(new HiveLockObject(catName, lockData), mode));
-      db.setCatalogName(catName);
-      locks.add(new HiveLockObj(new HiveLockObject(db, lockData),
-          mode));
-      return locks;
-    }
-
-    if (t != null) {
-      locks.add(new HiveLockObj(new HiveLockObject(t, lockData), mode));
-      mode = HiveLockMode.SHARED;
-      db = new Database();
-      db.setName(t.getDbName());
-      db.setCatalogName(t.getCatalogName());
-      locks.add(new HiveLockObj(new HiveLockObject(db, lockData), mode));
-      locks.add(new HiveLockObj(new HiveLockObject(t.getCatalogName(), lockData), mode));
-      return locks;
-    }
-
-    if (p != null) {
-      if (!(p instanceof DummyPartition)) {
-        locks.add(new HiveLockObj(new HiveLockObject(p, lockData), mode));
+    switch (target) {
+      case Catalog catalog -> {
+        locks.add(new HiveLockObj(new HiveLockObject(catalog.getName(), lockData), mode));
       }
-
-      // All the parents are locked in shared mode
-      mode = HiveLockMode.SHARED;
-
-      // For dummy partitions, only partition name is needed
-      String name = p.getName();
-
-      if (p instanceof DummyPartition) {
-        name = p.getName().split("@")[2];
+      case Database db -> {
+        String catName = Objects.requireNonNullElse(db.getCatalogName(),
+                HiveUtils.getCurrentCatalogOrDefault(conf));
+        locks.add(new HiveLockObj(new HiveLockObject(catName, lockData), mode));
+        db.setCatalogName(catName);
+        locks.add(new HiveLockObj(new HiveLockObject(db, lockData), mode));
       }
-
-      StringBuilder partialName = new StringBuilder();
-      String[] partns = name.split("/");
-      int len = p instanceof DummyPartition ? partns.length : partns.length - 1;
-      Map<String, String> partialSpec = new LinkedHashMap<String, String>();
-      for (int idx = 0; idx < len; idx++) {
-        String partn = partns[idx];
-        partialName.append(partn);
-        String[] nameValue = partn.split("=");
-        assert(nameValue.length == 2);
-        partialSpec.put(nameValue[0], nameValue[1]);
-        DummyPartition par = new DummyPartition(p.getTable(),
-                p.getTable().getCatalogName() + "/" +p.getTable().getDbName()
-            + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase() 
-            + "/" + partialName,
-          partialSpec);
-        locks.add(new HiveLockObj(new HiveLockObject(par, lockData), mode));
-        partialName.append("/");
+      case Table t -> {
+        locks.add(new HiveLockObj(new HiveLockObject(t, lockData), mode));
+        HiveLockMode sharedMode = HiveLockMode.SHARED;
+        Database db = new Database();
+        db.setName(t.getDbName());
+        db.setCatalogName(t.getCatalogName());
+        locks.add(new HiveLockObj(new HiveLockObject(db, lockData), sharedMode));
+        locks.add(new HiveLockObj(new HiveLockObject(t.getCatalogName(), lockData), sharedMode));
       }
+      case Partition p -> {
+        if (!(p instanceof DummyPartition)) {
+          locks.add(new HiveLockObj(new HiveLockObject(p, lockData), mode));
+        }
 
-      locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData), mode));
-      db = new Database();
-      db.setName(p.getTable().getDbName());
-      db.setCatalogName(p.getTable().getCatalogName());
-      locks.add(new HiveLockObj(new HiveLockObject(db, lockData), mode));
-      locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getCatalogName(), lockData), mode));
+        // All the parents are locked in shared mode
+        HiveLockMode sharedMode = HiveLockMode.SHARED;
+
+        // For dummy partitions, only partition name is needed
+        String name = p.getName();
+
+        if (p instanceof DummyPartition) {
+          name = p.getName().split("@")[2];
+        }
+
+        StringBuilder partialName = new StringBuilder();
+        String[] partns = name.split("/");
+        int len = p instanceof DummyPartition ? partns.length : partns.length - 1;
+        Map<String, String> partialSpec = new LinkedHashMap<>();
+        for (int idx = 0; idx < len; idx++) {
+          String partn = partns[idx];
+          partialName.append(partn);
+          String[] nameValue = partn.split("=");
+          assert(nameValue.length == 2);
+          partialSpec.put(nameValue[0], nameValue[1]);
+          DummyPartition par = new DummyPartition(p.getTable(),
+                  p.getTable().getCatalogName() + "/" + p.getTable().getDbName()
+                          + "/" + FileUtils.escapePathName(p.getTable().getTableName()).toLowerCase()
+                          + "/" + partialName,
+                  partialSpec);
+          locks.add(new HiveLockObj(new HiveLockObject(par, lockData), sharedMode));
+          partialName.append("/");
+        }
+
+        locks.add(new HiveLockObj(new HiveLockObject(p.getTable(), lockData), sharedMode));
+        Database db = new Database();
+        db.setName(p.getTable().getDbName());
+        db.setCatalogName(p.getTable().getCatalogName());
+        locks.add(new HiveLockObj(new HiveLockObject(db, lockData), sharedMode));
+        locks.add(new HiveLockObj(new HiveLockObject(p.getTable().getCatalogName(), lockData), sharedMode));
+      }
+      case null, default -> {
+        // no op
+      }
     }
+
     return locks;
   }
 
