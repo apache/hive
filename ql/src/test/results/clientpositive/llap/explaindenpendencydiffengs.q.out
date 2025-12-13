@@ -45,7 +45,24 @@ POSTHOOK: Input: default@dependtest
 POSTHOOK: Input: default@dependtest@b=1
 POSTHOOK: Input: default@viewtest
 #### A masked pattern was here ####
-{"input_tables":[{"tablename":"default@viewtest","tabletype":"VIRTUAL_VIEW"},{"tablename":"default@dependtest","tabletype":"MANAGED_TABLE","tableParents":"[default@viewtest]"}],"input_partitions":[{"partitionName":"default@dependtest@b=1"}]}
+{
+  "input_tables": [
+    {
+      "tablename": "default@viewtest",
+      "tabletype": "VIRTUAL_VIEW"
+    },
+    {
+      "tablename": "default@dependtest",
+      "tabletype": "MANAGED_TABLE",
+      "tableParents": "[default@viewtest]"
+    }
+  ],
+  "input_partitions": [
+    {
+      "partitionName": "default@dependtest@b=1"
+    }
+  ]
+}
 PREHOOK: query: drop view viewtest
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@viewtest

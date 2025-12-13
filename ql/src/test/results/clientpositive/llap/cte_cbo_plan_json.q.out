@@ -34,4 +34,264 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cte_suggestion_0
 POSTHOOK: Input: default@emps
 #### A masked pattern was here ####
-{"CBOPlan":{"rels":[{"id":"0","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan","table":["default","emps"],"table:alias":"e","inputs":[],"rowCount":1,"avgRowSize":161,"rowType":{"fields":[{"type":"INTEGER","nullable":true,"name":"empid"},{"type":"INTEGER","nullable":true,"name":"deptno"},{"type":"VARCHAR","nullable":true,"precision":10,"name":"name"},{"type":"DECIMAL","nullable":true,"precision":8,"scale":2,"name":"salary"},{"type":"BIGINT","nullable":true,"name":"BLOCK__OFFSET__INSIDE__FILE"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"INPUT__FILE__NAME"},{"fields":[{"type":"BIGINT","nullable":true,"name":"writeid"},{"type":"INTEGER","nullable":true,"name":"bucketid"},{"type":"BIGINT","nullable":true,"name":"rowid"}],"nullable":true,"name":"ROW__ID"},{"type":"BOOLEAN","nullable":true,"name":"ROW__IS__DELETED"}],"nullable":false},"colStats":[{"name":"name","ndv":1},{"name":"salary","ndv":1,"minValue":1.4E-45,"maxValue":3.4028235E38},{"name":"empid","ndv":1,"minValue":-2147483648,"maxValue":2147483647},{"name":"deptno","ndv":1,"minValue":-2147483648,"maxValue":2147483647}]},{"id":"1","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter","condition":{"op":{"name":">","kind":"GREATER_THAN","syntax":"BINARY"},"operands":[{"input":3,"name":"$3"},{"literal":50000,"type":{"type":"DECIMAL","nullable":false,"precision":5,"scale":0}}]},"rowCount":1},{"id":"2","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["name"],"exprs":[{"input":2,"name":"$2"}],"rowCount":1},{"id":"3","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableSpool","table":["cte","cte_suggestion_0"],"rowCount":1},{"id":"4","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["name"],"exprs":[{"input":0,"name":"$0"}],"rowCount":1},{"id":"5","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan","table":["cte","cte_suggestion_0"],"table:alias":"cte_suggestion_0","inputs":[],"rowCount":1,"avgRowSize":20,"rowType":{"fields":[{"type":"VARCHAR","nullable":true,"precision":10,"name":"name"}],"nullable":false},"colStats":[{"name":"name","ndv":1}]},{"id":"6","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["name"],"exprs":[{"input":0,"name":"$0"}],"rowCount":1},{"id":"7","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion","all":true,"inputs":["4","6"],"rowCount":2},{"id":"8","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["name"],"exprs":[{"input":0,"name":"$0"}],"rowCount":2},{"id":"9","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate","group":[0],"aggs":[],"rowCount":1},{"id":"10","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["name"],"exprs":[{"input":0,"name":"$0"}],"rowCount":1}]}}
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "emps"
+        ],
+        "table:alias": "e",
+        "inputs": [],
+        "rowCount": 1,
+        "avgRowSize": 161,
+        "rowType": {
+          "fields": [
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "empid"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "deptno"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "name"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 8,
+              "scale": 2,
+              "name": "salary"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "name",
+            "ndv": 1
+          },
+          {
+            "name": "salary",
+            "ndv": 1,
+            "minValue": 1.4E-45,
+            "maxValue": 3.4028235E38
+          },
+          {
+            "name": "empid",
+            "ndv": 1,
+            "minValue": -2147483648,
+            "maxValue": 2147483647
+          },
+          {
+            "name": "deptno",
+            "ndv": 1,
+            "minValue": -2147483648,
+            "maxValue": 2147483647
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": ">",
+            "kind": "GREATER_THAN",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 3,
+              "name": "$3"
+            },
+            {
+              "literal": 50000,
+              "type": {
+                "type": "DECIMAL",
+                "nullable": false,
+                "precision": 5,
+                "scale": 0
+              }
+            }
+          ]
+        },
+        "rowCount": 1
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "name"
+        ],
+        "exprs": [
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableSpool",
+        "table": [
+          "cte",
+          "cte_suggestion_0"
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "name"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "cte",
+          "cte_suggestion_0"
+        ],
+        "table:alias": "cte_suggestion_0",
+        "inputs": [],
+        "rowCount": 1,
+        "avgRowSize": 20,
+        "rowType": {
+          "fields": [
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "name"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "name",
+            "ndv": 1
+          }
+        ]
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "name"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion",
+        "all": true,
+        "inputs": [
+          "4",
+          "6"
+        ],
+        "rowCount": 2
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "name"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 2
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          0
+        ],
+        "aggs": [],
+        "rowCount": 1
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "name"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  }
+}
