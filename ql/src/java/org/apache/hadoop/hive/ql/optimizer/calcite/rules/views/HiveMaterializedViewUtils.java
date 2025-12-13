@@ -569,7 +569,7 @@ public class HiveMaterializedViewUtils {
     hiveTable.setMaterializedTable(true);
     RelOptHiveTable optTable =
         new RelOptHiveTable(null, cluster.getTypeFactory(), fullName, body.getRowType(), hiveTable, columns,
-            Collections.emptyList(), Collections.emptyList(), new HiveConf(), new QueryTables(true), new HashMap<>(),
+            Collections.emptyList(), Collections.emptyList(), conf, new QueryTables(true), new HashMap<>(),
             new HashMap<>(), new AtomicInteger());
     optTable.setRowCount(cluster.getMetadataQuery().getRowCount(body));
     final TableScan scan =
