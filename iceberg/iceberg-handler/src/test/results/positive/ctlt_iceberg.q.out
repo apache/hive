@@ -52,6 +52,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: select count(*) from target
 PREHOOK: type: QUERY
@@ -138,6 +139,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: create table emp_like1 like emp_iceberg stored by iceberg
 PREHOOK: type: CREATETABLE
@@ -181,6 +183,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: create table emp (id int) partitioned by (company string)
 PREHOOK: type: CREATETABLE
@@ -253,6 +256,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: create managed table man_table (id int) Stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE

@@ -99,6 +99,7 @@ Table Parameters:
 	current-snapshot-timestamp-ms	#Masked#       
 	external.table.purge	true                
 	format-version      	2                   
+	iceberg.mr.schema.auto.conversion	true                
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
@@ -116,6 +117,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

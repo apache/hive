@@ -1013,6 +1013,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     expectedIcebergProperties.put("custom_property", "initial_val");
     expectedIcebergProperties.put("EXTERNAL", "TRUE");
     expectedIcebergProperties.put("storage_handler", HiveIcebergStorageHandler.class.getName());
+    expectedIcebergProperties.put(TableProperties.METADATA_DELETE_AFTER_COMMIT_ENABLED, "true");
     expectedIcebergProperties.put(serdeConstants.SERIALIZATION_FORMAT, "1");
     expectedIcebergProperties.put(
         TableProperties.PARQUET_COMPRESSION,
