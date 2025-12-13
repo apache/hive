@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.drop;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -36,7 +39,6 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.session.SessionState;
 
 import java.util.List;
 
@@ -51,12 +53,17 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    String databaseName = unescapeIdentifier(root.getChild(0).getText());
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
     boolean ifExists = root.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null;
     boolean cascade = root.getFirstChildWithType(HiveParser.TOK_CASCADE) != null;
     boolean isSoftDelete = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_LOCKLESS_READS_ENABLED);
 
-    Database database = getDatabase(databaseName, !ifExists);
+    String catalogName = catDbNamePair.getLeft();
+    if (catalogName != null && getCatalog(catalogName) == null) {
+      throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catalogName);
+    }
+    String databaseName = catDbNamePair.getRight();
+    Database database = getDatabase(catalogName, databaseName, !ifExists);
     if (database == null) {
       return;
     }
@@ -72,7 +79,7 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
         HiveConf hiveConf = new HiveConf(conf);
         hiveConf.set("hive.metastore.client.filter.enabled", "false");
         newDb = Hive.get(hiveConf);
-        List<Table> tables = newDb.getAllTableObjects(databaseName);
+        List<Table> tables = newDb.getAllTableObjects(catalogName, databaseName);
         isDbLevelLock = !isSoftDelete || tables.stream().allMatch(
           table -> AcidUtils.isTableSoftDeleteEnabled(table, conf));
         for (Table table : tables) {
@@ -85,7 +92,7 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
           outputs.add(new WriteEntity(table, lockType));
         }
         // fetch all the functions in the database
-        List<Function> functions = db.getFunctionsInDb(databaseName, ".*");
+        List<Function> functions = db.getFunctionsInDb(catalogName, databaseName, ".*");
         for (Function func: functions) {
           outputs.add(new WriteEntity(func, WriteEntity.WriteType.DDL_NO_LOCK));
         }
@@ -111,7 +118,7 @@ public class DropDatabaseAnalyzer extends BaseSemanticAnalyzer {
         WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
       outputs.add(new WriteEntity(database, lockType));
     }
-    DropDatabaseDesc desc = new DropDatabaseDesc(databaseName, ifExists, cascade, new ReplicationSpec());
+    DropDatabaseDesc desc = new DropDatabaseDesc(catalogName, databaseName, ifExists, cascade, new ReplicationSpec());
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 

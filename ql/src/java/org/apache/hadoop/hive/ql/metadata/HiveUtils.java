@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import java.util.Optional;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +43,7 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.Quotation;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.UnparseTranslator;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -59,6 +61,8 @@ import org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHive
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * General collection of helper functions.
@@ -542,5 +546,11 @@ public final class HiveUtils {
       return (refParts[0] + "." + refParts[1]).toLowerCase() + "." + refParts[2];
     }
     return refName.toLowerCase();
+  }
+
+  public static String getCurrentCatalogOrDefault(Configuration conf) {
+    return Optional.ofNullable(SessionState.get())
+            .map(SessionState::getCurrentCatalog)
+            .orElseGet(() -> getDefaultCatalog(conf));
   }
 }

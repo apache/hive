@@ -1,0 +1,23 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATECATALOG
+PREHOOK: Output: catalog:testcat
+#### A masked pattern was here ####
+POSTHOOK: type: CREATECATALOG
+POSTHOOK: Output: catalog:testcat
+#### A masked pattern was here ####
+PREHOOK: query: create database testcat.lockneg9
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:lockneg9
+POSTHOOK: query: create database testcat.lockneg9
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:lockneg9
+PREHOOK: query: lock database testcat.lockneg9 shared
+PREHOOK: type: LOCKDATABASE
+PREHOOK: Input: database:lockneg9
+PREHOOK: Output: database:lockneg9
+POSTHOOK: query: lock database testcat.lockneg9 shared
+POSTHOOK: type: LOCKDATABASE
+POSTHOOK: Input: database:lockneg9
+POSTHOOK: Output: database:lockneg9
+Unable to acquire IMPLICIT, EXCLUSIVE lock lockneg9 after 1 attempts.
+FAILED: Error in acquiring locks: Locks on the underlying objects cannot be acquired, retry after some time.

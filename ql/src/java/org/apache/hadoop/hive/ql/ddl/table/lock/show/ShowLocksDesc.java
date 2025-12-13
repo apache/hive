@@ -41,14 +41,16 @@ public class ShowLocksDesc implements DDLDesc, Serializable {
       "string:string:string:string:string:string:string:string:string:string:string:string:string";
 
   private final String resFile;
+  private final String catName;
   private final String dbName;
   private final String tableName;
   private final Map<String, String> partSpec;
   private final boolean isExt;
   private final boolean isNewFormat;
 
-  public ShowLocksDesc(Path resFile, String dbName, boolean isExt, boolean isNewFormat) {
+  public ShowLocksDesc(Path resFile, String catName, String dbName, boolean isExt, boolean isNewFormat) {
     this.resFile = resFile.toString();
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = null;
     this.partSpec = null;
@@ -59,6 +61,7 @@ public class ShowLocksDesc implements DDLDesc, Serializable {
   public ShowLocksDesc(Path resFile, String tableName, Map<String, String> partSpec, boolean isExt,
       boolean isNewFormat) {
     this.resFile = resFile.toString();
+    this.catName = null;
     this.dbName = null;
     this.tableName = tableName;
     this.partSpec = partSpec;
@@ -69,6 +72,11 @@ public class ShowLocksDesc implements DDLDesc, Serializable {
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
   public String getResFile() {
     return resFile;
+  }
+
+  @Explain(displayName = "catName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatName() {
+    return catName;
   }
 
   @Explain(displayName = "dbName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

@@ -50,7 +50,7 @@ alterStatement
     : KW_ALTER KW_TABLE tableName alterTableStatementSuffix -> ^(TOK_ALTERTABLE tableName alterTableStatementSuffix)
     | KW_ALTER KW_VIEW tableName KW_AS? alterViewStatementSuffix -> ^(TOK_ALTERVIEW tableName alterViewStatementSuffix)
     | KW_ALTER KW_MATERIALIZED KW_VIEW tableNameTree=tableName alterMaterializedViewStatementSuffix[$tableNameTree.tree] -> alterMaterializedViewStatementSuffix
-    | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
+    | KW_ALTER (KW_DATABASE|KW_SCHEMA) databaseName alterDatabaseStatementSuffix -> ^(TOK_ALTERDATABASE databaseName alterDatabaseStatementSuffix)
     | KW_ALTER KW_DATACONNECTOR alterDataConnectorStatementSuffix -> alterDataConnectorStatementSuffix
     | KW_OPTIMIZE KW_TABLE tableName optimizeTableStatementSuffix -> ^(TOK_ALTERTABLE tableName optimizeTableStatementSuffix)
     | KW_ALTER KW_CATALOG alterCatalogStatementSuffix -> alterCatalogStatementSuffix
@@ -190,31 +190,31 @@ alterDatabaseStatementSuffix
 alterDatabaseSuffixProperties
 @init { gParent.pushMsg("alter database properties statement", state); }
 @after { gParent.popMsg(state); }
-    : name=identifier KW_SET KW_DBPROPERTIES properties
-    -> ^(TOK_ALTERDATABASE_PROPERTIES $name properties)
+    : KW_SET KW_DBPROPERTIES properties
+    -> ^(TOK_ALTERDATABASE_PROPERTIES properties)
     ;
 
 alterDatabaseSuffixSetOwner
 @init { gParent.pushMsg("alter database set owner", state); }
 @after { gParent.popMsg(state); }
-    : dbName=identifier KW_SET KW_OWNER principalName
-    -> ^(TOK_ALTERDATABASE_OWNER $dbName principalName)
+    : KW_SET KW_OWNER principalName
+    -> ^(TOK_ALTERDATABASE_OWNER principalName)
     ;
 
 alterDatabaseSuffixSetLocation
 @init { gParent.pushMsg("alter database set location", state); }
 @after { gParent.popMsg(state); }
-    : dbName=identifier KW_SET KW_LOCATION newLocation=StringLiteral
-    -> ^(TOK_ALTERDATABASE_LOCATION $dbName $newLocation)
-    | dbName=identifier KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
-    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $dbName $newLocation)
+    : KW_SET KW_LOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_LOCATION $newLocation)
+    | KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $newLocation)
     ;
 
 alterDatabaseSuffixSetManagedLocation
 @init { gParent.pushMsg("alter database set managed location", state); }
 @after { gParent.popMsg(state); }
-    : dbName=identifier KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
-    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $dbName $newLocation)
+    : KW_SET KW_MANAGEDLOCATION newLocation=StringLiteral
+    -> ^(TOK_ALTERDATABASE_MANAGEDLOCATION $newLocation)
     ;
 
 alterStatementSuffixRename[boolean table]
