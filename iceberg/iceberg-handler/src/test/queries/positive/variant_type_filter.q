@@ -12,7 +12,7 @@ set hive.fetch.task.conversion=none;
 CREATE EXTERNAL TABLE variant_filter_basic (
     id BIGINT,
     data VARIANT
-) STORED BY ICEBERG tblproperties('format-version'='3');
+) STORED BY ICEBERG tblproperties('format-version'='3', 'variant.shredding.enabled'='true');
 
 INSERT INTO variant_filter_basic VALUES
 (1, parse_json('{ "name": "Alice", "age": 30, "address": {"city": "Wonderland"} }')),

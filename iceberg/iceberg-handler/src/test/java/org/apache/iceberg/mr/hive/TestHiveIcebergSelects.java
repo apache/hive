@@ -258,6 +258,41 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
   }
 
   @Test
+  public void testVariantPredicateSelect() {
+    assumeTrue(fileFormat == FileFormat.PARQUET);
+    assumeTrue(!isVectorized);
+
+    TableIdentifier table = TableIdentifier.of("default", "variant_select");
+    shell.executeStatement(String.format("DROP TABLE IF EXISTS %s", table));
+
+    shell.executeStatement(
+        String.format(
+            "CREATE TABLE %s (id INT, payload VARIANT) STORED BY ICEBERG STORED AS %s %s %s",
+            table,
+            fileFormat,
+            testTables.locationForCreateTableSQL(table),
+            testTables.propertiesForCreateTableSQL(
+                ImmutableMap.of("format-version", "3", "variant.shredding.enabled", "true"))));
+
+    shell.executeStatement(
+        String.format(
+            "INSERT INTO %s VALUES " +
+                "(1, parse_json('{\"tier\":\"gold\",\"country\":\"US\"}'))," +
+                "(2, parse_json('{\"tier\":\"silver\",\"country\":\"DE\"}'))",
+            table));
+
+    List<Object[]> rows =
+        shell.executeStatement(
+            String.format(
+                "SELECT id FROM %s WHERE variant_get(payload, '$.tier') = 'gold' ORDER BY id", table));
+
+    Assert.assertEquals(1, rows.size());
+    Assert.assertEquals(1, ((Number) rows.get(0)[0]).intValue());
+
+    shell.executeStatement(String.format("DROP TABLE IF EXISTS %s", table));
+  }
+
+  @Test
   public void testScanTableCaseInsensitive() throws IOException {
     testTables.createTable(shell, "customers",
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA_WITH_UPPERCASE, fileFormat,
