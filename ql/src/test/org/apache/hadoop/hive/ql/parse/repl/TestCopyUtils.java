@@ -18,15 +18,21 @@
 
 package org.apache.hadoop.hive.ql.parse.repl;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.hive.common.DataCopyStatistics;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.TestFileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -34,6 +40,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,9 +66,28 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class TestCopyUtils {
+
+    private Path basePath;
+    private HiveConf hiveConf;
+    private FileSystem fileSystem;
+
+    @Before
+    public void setupTest() throws Exception {
+        hiveConf = new HiveConf(TestFileUtils.class);
+        basePath = new Path("/tmp/test-copy-utils-" + System.nanoTime());
+        fileSystem = FileSystem.get(basePath.toUri(), hiveConf);
+    }
+
+    @After
+    public void teardownTest() throws Exception {
+        // Clean up the entire temporary directory after each test.
+        if (fileSystem != null && basePath != null) {
+            fileSystem.delete(basePath, true);
+        }
+    }
   /*
   Distcp currently does not copy a single file in a distributed manner hence we dont care about
-  the size of file, if there is only file, we dont want to launch distcp.
+  the size of file, if there is only file, we don't want to launch distcp.
    */
   @Test
   public void distcpShouldNotBeCalledOnlyForOneFile() throws Exception {
@@ -242,6 +268,42 @@ public class TestCopyUtils {
       //File count is greater than 1 do thread pool invoked
       Mockito.verify(mockExecutorService,
         Mockito.times(1)).invokeAll(callableCapture.capture());
+    }
+  }
+
+  @Test
+  public void testCopyFilesBetweenFSWithDestDirNotExistFailure() throws IOException {
+    Path srcPath1 = new Path(basePath, "file1.txt");
+    Path srcPath2 = new Path(basePath, "file2.txt");
+    Path dstPath = new Path(basePath, "copyDst");
+
+    try {
+      // Create source files
+        try (FSDataOutputStream outStream1 = fileSystem.create(srcPath1)) {
+            outStream1.write("Content of file1".getBytes());
+        }
+
+        try (FSDataOutputStream outStream2 = fileSystem.create(srcPath2)) {
+            outStream2.write("Content of file2".getBytes());
+        }
+
+      // Prepare source paths array
+      Path[] srcPaths = {srcPath1, srcPath2};
+
+
+      CopyUtils copyUtils = new CopyUtils("hive", hiveConf, fileSystem);
+      DataCopyStatistics copyStatistics = new DataCopyStatistics();
+      IOException thrown =
+              Assert.assertThrows("'/tmp/copyDst': specified destination directory does not exist", IOException.class, () -> {
+                copyUtils.copyFilesBetweenFS(fileSystem, srcPaths, fileSystem, dstPath, false, true, copyStatistics);
+              });
+
+      Assert.assertEquals(FileNotFoundException.class, thrown.getCause().getCause().getClass());
+    } finally {
+      // Clean up
+      fileSystem.delete(srcPath1, false);
+      fileSystem.delete(srcPath2, false);
+      fileSystem.delete(dstPath, true);
     }
   }
 }
