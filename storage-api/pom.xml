@@ -31,7 +31,7 @@
     <maven.compiler.target>21</maven.compiler.target>
     <netty.version>4.1.127.Final</netty.version>
     <guava.version>22.0</guava.version>
-    <hadoop.version>3.4.1</hadoop.version>
+    <hadoop.version>3.4.2</hadoop.version>
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.13.3</junit.jupiter.version>
     <junit.vintage.version>5.13.3</junit.vintage.version>
