@@ -38,18 +38,17 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hive.iceberg.org.apache.avro.generic.GenericData;
 import org.apache.hive.iceberg.org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.Files;
-import org.apache.iceberg.HasTableOperations;
 import org.apache.iceberg.ManifestFile;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.avro.Avro;
 import org.apache.iceberg.avro.AvroSchemaUtil;
 import org.apache.iceberg.catalog.Namespace;
@@ -259,7 +258,7 @@ public class HiveTableTest extends HiveTableTestBase {
           .as("Table manifest files should not exist")
           .doesNotExist();
     }
-    assertThat(new File(((HasTableOperations) table).operations().current().metadataFileLocation()
+    assertThat(new File(TableUtil.metadataFileLocation(table)
         .replace("file:", "")))
         .as("Table metadata file should not exist")
         .doesNotExist();
@@ -552,7 +551,7 @@ public class HiveTableTest extends HiveTableTestBase {
         .hasMessage("Table does not exist: hivedb.table1");
 
     // register the table to hive catalog using the latest metadata file
-    String latestMetadataFile = ((BaseTable) table).operations().current().metadataFileLocation();
+    String latestMetadataFile = TableUtil.metadataFileLocation(table);
     catalog.registerTable(identifier, "file:" + latestMetadataFile);
     assertThat(HIVE_METASTORE_EXTENSION.metastoreClient().getTable(DB_NAME, "table1")).isNotNull();
 

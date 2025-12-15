@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
-import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -57,6 +56,7 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
@@ -440,7 +440,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected void setWriteModeDefaults(Table icebergTbl, Map<String, String> newProps, EnvironmentContext context) {
-    if ((icebergTbl == null || ((BaseTable) icebergTbl).operations().current().formatVersion() == 1) &&
+    if ((icebergTbl == null || TableUtil.formatVersion(icebergTbl) == 1) &&
         IcebergTableUtil.isV2TableOrAbove(newProps)) {
       List<String> writeModeList = ImmutableList.of(
           TableProperties.DELETE_MODE, TableProperties.UPDATE_MODE, TableProperties.MERGE_MODE);
@@ -472,7 +472,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable != null) {
       try {
         Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
-        String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+        String formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
         hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         // Set the serde info
         hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());
