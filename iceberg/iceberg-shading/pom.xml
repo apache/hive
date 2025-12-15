@@ -117,7 +117,6 @@
                     </excludes>
                   </artifactSet>
                   <filters>
-                    <!-- Global exclusions -->
                     <filter>
                       <artifact>*:*</artifact>
                       <excludes>
@@ -126,13 +125,6 @@
                         <exclude>META-INF/*.RSA</exclude>
                         <exclude>META-INF/versions/**</exclude>
                         <exclude>static/</exclude>
-                      </excludes>
-                    </filter>
-                    <!-- Exclude org.apache.iceberg.parquet.Parquet.class from iceberg-parquet -->
-                    <filter>
-                      <artifact>org.apache.iceberg:iceberg-parquet</artifact>
-                      <excludes>
-                        <exclude>org/apache/iceberg/parquet/Parquet.class</exclude>
                       </excludes>
                     </filter>
                   </filters>
