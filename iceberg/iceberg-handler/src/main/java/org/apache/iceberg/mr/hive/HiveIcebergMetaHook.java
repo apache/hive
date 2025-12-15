@@ -196,7 +196,11 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
               TableType.EXTERNAL_MATERIALIZED_VIEW.name().equals(hmsTable.getTableType())
       ) {
         Catalogs.MaterializedView mv =
-                Catalogs.createMaterializedView(conf, catalogProperties, hmsTable.getViewExpandedText());
+                Catalogs.createMaterializedView(
+                        conf,
+                        catalogProperties,
+                        hmsTable.getViewOriginalText(),
+                        hmsTable.getViewExpandedText());
 
         String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
         SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);

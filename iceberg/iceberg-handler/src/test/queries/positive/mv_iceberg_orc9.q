@@ -31,3 +31,11 @@ show create table mat1;
 describe formatted mat1;
 
 select 1;
+
+create materialized view mat1_orc stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
+
+select * from mat1_orc;
+
+show create table mat1_orc;
+describe formatted mat1_orc;

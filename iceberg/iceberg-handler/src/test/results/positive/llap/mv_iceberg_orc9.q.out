@@ -83,12 +83,13 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'format-version'='1', 
   'iceberg.materialized.view'='true', 
+  'iceberg.materialized.view.original.text'='select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52', 
   'iceberg.materialized.view.storage.table'='default.mat1_storage_table', 
   'iceberg.orc.files.only'='true', 
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
 #### A masked pattern was here ####
-  'uuid'='722864f2-ddb0-4e3a-820f-8c49a304af4b')
+  'uuid'='e925ecb8-f081-45a4-a7d9-ed0696fae3df')
 PREHOOK: query: describe formatted mat1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mat1
@@ -109,13 +110,14 @@ Table Parameters:
 	bucketing_version   	2                   
 	format-version      	1                   
 	iceberg.materialized.view	true                
+	iceberg.materialized.view.original.text	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 	iceberg.materialized.view.storage.table	default.mat1_storage_table
 	iceberg.orc.files.only	true                
 #### A masked pattern was here ####
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
-	uuid                	722864f2-ddb0-4e3a-820f-8c49a304af4b
+	uuid                	e925ecb8-f081-45a4-a7d9-ed0696fae3df
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -125,14 +127,14 @@ Compressed:         	No
 Sort Columns:       	[]                  	 
 	 	 
 # Materialized View Information	 	 
-Original Query:     	null                	 
+Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
 Expanded Query:     	select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52	 
 Rewrite Enabled:    	Yes                 	 
 Outdated for Rewriting:	No                  	 
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=95233344338622506}	 
+default.tbl_ice     	SnapshotContext{snapshotId=4760242717864999345}	 
 PREHOOK: query: select 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -142,3 +144,92 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 1
+PREHOOK: query: create materialized view mat1_orc stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1_orc
+POSTHOOK: query: create materialized view mat1_orc stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1_orc
+POSTHOOK: Lineage: mat1_orc.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat1_orc.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: select * from mat1_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mat1_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1_orc
+#### A masked pattern was here ####
+five	54
+four	53
+PREHOOK: query: show create table mat1_orc
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@mat1_orc
+POSTHOOK: query: show create table mat1_orc
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@mat1_orc
+CREATE TABLE `mat1_orc`(
+  `b` string, 
+  `c` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'format-version'='1', 
+#### A masked pattern was here ####
+PREHOOK: query: describe formatted mat1_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mat1_orc
+POSTHOOK: query: describe formatted mat1_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mat1_orc
+# col_name            	data_type           	comment             
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"c\":\"true\"}}
+	bucketing_version   	2                   
+	format-version      	1                   
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	184                 
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
+Expanded Query:     	select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+default.tbl_ice     	SnapshotContext{snapshotId=4760242717864999345}	 
