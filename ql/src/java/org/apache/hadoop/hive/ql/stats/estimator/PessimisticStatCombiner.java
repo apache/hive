@@ -19,49 +19,81 @@
 package org.apache.hadoop.hive.ql.stats.estimator;
 
 import java.util.Optional;
+import java.util.function.DoubleConsumer;
+import java.util.function.LongConsumer;
 
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
 /**
- * Combines {@link ColStatistics} objects to provide the most pessimistic estimate.
+ * Combines {@link ColStatistics} objects using MAX (pessimistic estimate).
+ *
+ * <p>Subclasses can override individual combine methods to change behavior for specific fields.
+ * For example, {@link NdvStatCombiner} overrides {@link #combineCountDistinct} to sum NDVs
+ * for mutually exclusive branches (IF/CASE/WHEN).</p>
  */
 public class PessimisticStatCombiner {
 
-  private boolean inited;
-  private ColStatistics result;
+  protected ColStatistics result;
 
   public void add(ColStatistics stat) {
-    if (!inited) {
-      inited = true;
-      result = stat.clone();
-      result.setRange(null);
-      result.setIsEstimated(true);
+    if (result == null) {
+      init(stat);
       return;
-    } else {
-      if (stat.getAvgColLen() > result.getAvgColLen()) {
-        result.setAvgColLen(stat.getAvgColLen());
-      }
-      if (stat.getCountDistint() > result.getCountDistint()) {
-        result.setCountDistint(stat.getCountDistint());
-      }
-      if (stat.getNumNulls() > result.getNumNulls()) {
-        result.setNumNulls(stat.getNumNulls());
-      }
-      if (stat.getNumTrues() > result.getNumTrues()) {
-        result.setNumTrues(stat.getNumTrues());
-      }
-      if (stat.getNumFalses() > result.getNumFalses()) {
-        result.setNumFalses(stat.getNumFalses());
-      }
-      if (stat.isFilteredColumn()) {
-        result.setFilterColumn();
-      }
-
     }
 
+    combineAvgColLen(stat);
+    combineCountDistinct(stat);
+    combineNumNulls(stat);
+    combineNumTrues(stat);
+    combineNumFalses(stat);
+    combineFiltered(stat);
   }
+
+  protected void init(ColStatistics stat) {
+    result = stat.clone();
+    result.setRange(null);
+    result.setIsEstimated(true);
+  }
+
+  protected void combineAvgColLen(ColStatistics stat) {
+    max(stat.getAvgColLen(), result.getAvgColLen(), result::setAvgColLen);
+  }
+
+  protected void combineCountDistinct(ColStatistics stat) {
+    max(stat.getCountDistint(), result.getCountDistint(), result::setCountDistint);
+  }
+
+  protected void combineNumNulls(ColStatistics stat) {
+    max(stat.getNumNulls(), result.getNumNulls(), result::setNumNulls);
+  }
+
+  protected void combineNumTrues(ColStatistics stat) {
+    max(stat.getNumTrues(), result.getNumTrues(), result::setNumTrues);
+  }
+
+  protected void combineNumFalses(ColStatistics stat) {
+    max(stat.getNumFalses(), result.getNumFalses(), result::setNumFalses);
+  }
+
+  protected void combineFiltered(ColStatistics stat) {
+    if (stat.isFilteredColumn()) {
+      result.setFilterColumn();
+    }
+  }
+
+  protected void max(long incoming, long current, LongConsumer setter) {
+    if (incoming > current) {
+      setter.accept(incoming);
+    }
+  }
+
+  protected void max(double incoming, double current, DoubleConsumer setter) {
+    if (incoming > current) {
+      setter.accept(incoming);
+    }
+  }
+
   public Optional<ColStatistics> getResult() {
     return Optional.of(result);
-
   }
 }

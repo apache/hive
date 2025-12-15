@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
+import org.apache.hadoop.hive.ql.stats.estimator.NdvStatCombiner;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -144,7 +144,7 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+      NdvStatCombiner combiner = new NdvStatCombiner();
       for (int i = 1; i < argStats.size(); i += 2) {
         combiner.add(argStats.get(i));
       }
