@@ -233,11 +233,13 @@ public class CreateMaterializedViewDesc extends DDLDescWithTableProperties imple
 
     HiveStorageHandler storageHandler = tbl.getStorageHandler();
 
-    tbl.setTableType(
-      storageHandler.getClass().equals(DefaultStorageHandler.class) ?
-              TableType.MATERIALIZED_VIEW :
-              TableType.EXTERNAL_MATERIALIZED_VIEW
-    );
+    if (storageHandler != null) {
+       tbl.setTableType(
+              storageHandler.getClass().equals(DefaultStorageHandler.class) ?
+                      TableType.MATERIALIZED_VIEW :
+                      TableType.EXTERNAL_MATERIALIZED_VIEW
+      );
+    }
 
     setColumnsAndStorePartitionTransformSpecOfTable(getCols(), getPartCols(), conf, tbl);
 
