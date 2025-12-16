@@ -184,12 +184,10 @@ class MetaStoreDirectSql {
   private static final int NUM_TRUES = 12;
   private static final int NUM_FALSES = 13;
   private static final int SUM_NDV_LONG = 14;
-  private static final int COUNT_NDV_LONG = 15;
-  private static final int SUM_NDV_DOUBLE = 16;
-  private static final int COUNT_NDV_DOUBLE = 17;
-  private static final int SUM_NDV_DECIMAL = 18;
-  private static final int COUNT_NDV_DECIMAL = 19;
-  private static final int SUM_NUM_DISTINCTS = 20;
+  private static final int SUM_NDV_DOUBLE = 15;
+  private static final int SUM_NDV_DECIMAL = 16;
+  private static final int COUNT_ROWS = 17;
+  private static final int SUM_NUM_DISTINCTS = 18;
 
   /**
    * This method returns a comma separated string consisting of String values of a given list.
@@ -2038,11 +2036,9 @@ class MetaStoreDirectSql {
         // UpperBound (calculated by "sum(\"NUM_DISTINCTS\")")
         // and LowerBound (calculated by "max(\"NUM_DISTINCTS\")")
         + "sum((\"LONG_HIGH_VALUE\"-\"LONG_LOW_VALUE\")/cast(\"NUM_DISTINCTS\" as decimal)),"
-        + "count((\"LONG_HIGH_VALUE\"-\"LONG_LOW_VALUE\")/cast(\"NUM_DISTINCTS\" as decimal)),"
         + "sum((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
-        + "count((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
         + "sum((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
-        + "count((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
+        + "count(1),"
         + "sum(\"NUM_DISTINCTS\")" + " from " + PART_COL_STATS + ""
         + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
         + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
@@ -2093,6 +2089,10 @@ class MetaStoreDirectSql {
         for (Map.Entry<String, Integer> entry : partsCountMap.entrySet()) {
           String colName = entry.getKey();
           Integer count = entry.getValue();
+          // Extrapolation is not needed for this column if
+          // count(\"PARTITION_NAME\")==partNames.size()
+          // Or, extrapolation is not possible for this column if
+          // count(\"PARTITION_NAME\")<2
           if (count == partNames.size() || count < 2) {
             noExtraColumnNames.add(colName);
             extraColumnNameTypeParts.remove(colName);
@@ -2194,11 +2194,9 @@ class MetaStoreDirectSql {
 
           //for avg calculation
           queryText = "select " + "sum((\"LONG_HIGH_VALUE\"-\"LONG_LOW_VALUE\")/cast(\"NUM_DISTINCTS\" as decimal)),"
-              + "count((\"LONG_HIGH_VALUE\"-\"LONG_LOW_VALUE\")/cast(\"NUM_DISTINCTS\" as decimal)),"
               + "sum((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
-              + "count((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
               + "sum((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
-              + "count((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
+              + "count(1)"
               + " from " + PART_COL_STATS + ""
               + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
               + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
@@ -2211,19 +2209,16 @@ class MetaStoreDirectSql {
 
           columnWisePartitionBatches =
                   columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
-          Object[] sum = new Object[3];
-          Object[] count = new Object[3];
-          Integer[] avgIndex = new Integer[]{14, 15, 16};
+          Integer[] sumNdvIndices = new Integer[]{14, 15, 16};
           try {
             list = Batchable.runBatched(batchSize, Collections.singletonList(colName), columnWisePartitionBatches);
-            for (int i = 0; i < 6; i += 2) {
-              for (Object[] batch : list) {
-                sum[i / 2] = MetastoreDirectSqlUtils.sum(sum[i / 2], batch[i]);
-                count[i / 2] = MetastoreDirectSqlUtils.sum(count[i / 2], batch[i + 1]);
+            for (Object[] batch : list) {
+              // filling in ndv sums for avg calculation
+              for (int i = 0; i < 3; i++) {
+                row[sumNdvIndices[i]] = MetastoreDirectSqlUtils.sum(row[sumNdvIndices[i]], batch[i]);
               }
-              // filling in sum and count in row for avg calculation later on
-              row[avgIndex[i / 2] + i / 2] = sum[i / 2];
-              row[avgIndex[i / 2] + i / 2 + 1] = count[i / 2];
+              // filling in count rows for avg calculation
+              row[17] = MetastoreDirectSqlUtils.sum(row[17], batch[3]);
             }
           } finally {
             columnWisePartitionBatches.closeAllQueries();
@@ -2233,8 +2228,8 @@ class MetaStoreDirectSql {
             // if the aggregation type is sum, we do a scale-up
             if (IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Sum) {
               Object o = sumMap.get(colName).get(colStatIndex);
-              // +5 only for the case of SUM_NUM_DISTINCTS which is after avg indices
-              int rowIndex = (colStatIndex == 15) ? colStatIndex + 5 : colStatIndex + 2;
+              // +3 only for the case of SUM_NUM_DISTINCTS which is after count rows index
+              int rowIndex = (colStatIndex == 15) ? colStatIndex + 3 : colStatIndex + 2;
               if (o == null) {
                 row[rowIndex] = null;
               } else {
@@ -2341,11 +2336,9 @@ class MetaStoreDirectSql {
     row1[NUM_TRUES] = MetastoreDirectSqlUtils.sum(row1[NUM_TRUES], row2[NUM_TRUES]);
     row1[NUM_FALSES] = MetastoreDirectSqlUtils.sum(row1[NUM_FALSES], row2[NUM_FALSES]);
     row1[SUM_NDV_LONG] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_LONG], row2[SUM_NDV_LONG]);
-    row1[COUNT_NDV_LONG] = MetastoreDirectSqlUtils.sum(row1[COUNT_NDV_LONG], row2[COUNT_NDV_LONG]);
     row1[SUM_NDV_DOUBLE] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_DOUBLE], row2[SUM_NDV_DOUBLE]);
-    row1[COUNT_NDV_DOUBLE] = MetastoreDirectSqlUtils.sum(row1[COUNT_NDV_DOUBLE], row2[COUNT_NDV_DOUBLE]);
     row1[SUM_NDV_DECIMAL] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_DECIMAL], row2[SUM_NDV_DECIMAL]);
-    row1[COUNT_NDV_DECIMAL] = MetastoreDirectSqlUtils.sum(row1[COUNT_NDV_DECIMAL], row2[COUNT_NDV_DECIMAL]);
+    row1[COUNT_ROWS] = MetastoreDirectSqlUtils.sum(row1[COUNT_ROWS], row2[COUNT_ROWS]);
     row1[SUM_NUM_DISTINCTS] = MetastoreDirectSqlUtils.sum(row1[SUM_NUM_DISTINCTS], row2[SUM_NUM_DISTINCTS]);
   }
 
@@ -2358,9 +2351,9 @@ class MetaStoreDirectSql {
     }
     ColumnStatisticsData data = new ColumnStatisticsData();
     ColumnStatisticsObj cso = new ColumnStatisticsObj((String) row[COLNAME], (String) row[COLTYPE], data);
-    Object avgLong = MetastoreDirectSqlUtils.divide(row[SUM_NDV_LONG], row[COUNT_NDV_LONG]);
-    Object avgDouble = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DOUBLE], row[COUNT_NDV_DOUBLE]);
-    Object avgDecimal = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DECIMAL], row[COUNT_NDV_DECIMAL]);
+    Object avgLong = MetastoreDirectSqlUtils.divide(row[SUM_NDV_LONG], row[COUNT_ROWS]);
+    Object avgDouble = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DOUBLE], row[COUNT_ROWS]);
+    Object avgDecimal = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DECIMAL], row[COUNT_ROWS]);
     StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, row[LONG_LOW_VALUE],
             row[LONG_HIGH_VALUE], row[DOUBLE_LOW_VALUE], row[DOUBLE_HIGH_VALUE], row[BIG_DECIMAL_LOW_VALUE], row[BIG_DECIMAL_HIGH_VALUE],
             row[NUM_NULLS], row[NUM_DISTINCTS], row[AVG_COL_LEN], row[MAX_COL_LEN], row[NUM_TRUES], row[NUM_FALSES],
