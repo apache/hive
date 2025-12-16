@@ -89,6 +89,9 @@ public class VectorMapJoinOptimizedLongHashMap
       case LONG:
         integerTypeInfo = TypeInfoFactory.longTypeInfo;
         break;
+      case DATE:
+          integerTypeInfo = TypeInfoFactory.dateTypeInfo;
+          break;
       default:
         throw new RuntimeException("Unexpected key type " + hashMap.hashTableKeyType);
       }
@@ -122,6 +125,9 @@ public class VectorMapJoinOptimizedLongHashMap
           break;
         case LONG:
           longValue = keyBinarySortableDeserializeRead.currentLong;
+          break;
+        case DATE:
+          longValue = keyBinarySortableDeserializeRead.currentDateWritable.getDays();
           break;
         default:
           throw new RuntimeException("Unexpected key type " + hashMap.hashTableKeyType);
