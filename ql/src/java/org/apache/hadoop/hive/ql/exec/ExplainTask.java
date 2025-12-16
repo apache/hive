@@ -646,7 +646,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (work.isCbo() || work.isLogical() || work.isAuthorize() || work.getDependency() || work.isLocks()) {
       return defaultParser;
     } else if (work.isUserLevelExplain()) {
-      if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
+      if ("tez".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
         return new TezJsonParser();
       } else {
         LOG.error("Running explain user level is only supported for Tez engine.");
