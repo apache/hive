@@ -637,14 +637,14 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
    * @return a JsonParser
    */
   private JsonParser createParser() {
-    final JsonParser defaultParser;
+    final JsonParser parser;
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_EXPLAIN_FORMATTED_INDENT)) {
-      defaultParser = (json, out) -> out.print(json.toString(2));
+      parser = (json, out) -> out.print(json.toString(2));
     } else {
-      defaultParser = (json, out) -> out.print(json.toString());
+      parser = (json, out) -> out.print(json.toString());
     }
     if (work.isCbo() || work.isLogical() || work.isAuthorize() || work.getDependency() || work.isLocks()) {
-      return defaultParser;
+      return parser;
     } else if (work.isUserLevelExplain()) {
       if ("tez".equals(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
         return new TezJsonParser();
@@ -654,7 +654,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         };
       }
     }
-    return defaultParser;
+    return parser;
   }
 
   @VisibleForTesting
