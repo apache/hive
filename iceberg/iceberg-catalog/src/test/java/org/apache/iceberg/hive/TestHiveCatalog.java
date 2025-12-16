@@ -1076,6 +1076,7 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
 
   @Test
   public void testSetSnapshotSummary() throws Exception {
+    final long maxHiveTablePropertySize = 4000;
     Snapshot snapshot = mock(Snapshot.class);
     Map<String, String> summary = Maps.newHashMap();
     when(snapshot.summary()).thenReturn(summary);
@@ -1086,7 +1087,6 @@ public class TestHiveCatalog extends CatalogTests<HiveCatalog> {
     }
     assertThat(JsonUtil.mapper().writeValueAsString(summary).length()).isLessThan(4000);
     Map<String, String> parameters = Maps.newHashMap();
-    final long maxHiveTablePropertySize = 4000;
     HMSTablePropertyHelper.setSnapshotSummary(parameters, snapshot, maxHiveTablePropertySize);
     assertThat(parameters).as("The snapshot summary must be in parameters").hasSize(1);
 
