@@ -30,8 +30,8 @@ public class TestShutdownHook {
     PrintStream ops = new PrintStream(os);
     BeeLine beeline = new BeeLine();
     DatabaseConnections dbConnections = beeline.getDatabaseConnections();
-    dbConnections.setConnection(new DatabaseConnection(beeline,null,null, null));
-    dbConnections.setConnection(new DatabaseConnection(beeline,null,null, null));
+    dbConnections.setConnection(new DatabaseConnection(beeline, null, null));
+    dbConnections.setConnection(new DatabaseConnection(beeline, null, null));
     Assert.assertEquals(2, dbConnections.size());
     beeline.setOutputStream(ops);
     beeline.getShutdownHook().run();

@@ -44,6 +44,7 @@ PREHOOK: query: show locks
 PREHOOK: type: SHOWLOCKS
 POSTHOOK: query: show locks
 POSTHOOK: type: SHOWLOCKS
+lockneg2	SHARED
 PREHOOK: query: lock database lockneg2 exclusive
 PREHOOK: type: LOCKDATABASE
 PREHOOK: Input: database:lockneg2

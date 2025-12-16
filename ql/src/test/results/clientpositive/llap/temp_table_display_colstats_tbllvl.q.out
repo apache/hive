@@ -610,8 +610,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@empty_tab
 col_name            	a                   
 data_type           	int                 
-min                 	0                   
-max                 	0                   
+min                 	                    
+max                 	                    
 num_nulls           	0                   
 distinct_count      	0                   
 avg_col_len         	                    
@@ -629,8 +629,8 @@ POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@empty_tab
 col_name            	b                   
 data_type           	double              
-min                 	0.0                 
-max                 	0.0                 
+min                 	                    
+max                 	                    
 num_nulls           	0                   
 distinct_count      	0                   
 avg_col_len         	                    

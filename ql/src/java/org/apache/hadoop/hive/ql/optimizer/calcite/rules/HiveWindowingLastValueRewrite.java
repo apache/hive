@@ -37,7 +37,7 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.fun.SqlBasicAggFunction;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 /**
  * Rule to rewrite a window function containing a last value clause.

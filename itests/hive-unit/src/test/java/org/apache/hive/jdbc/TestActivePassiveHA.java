@@ -88,7 +88,6 @@ public class TestActivePassiveHA {
   public static void beforeTest() throws Exception {
     MiniHS2.cleanupLocalDir();
     zkServer = new TestingServer();
-    Class.forName(MiniHS2.getJdbcDriverName());
   }
 
   @AfterClass

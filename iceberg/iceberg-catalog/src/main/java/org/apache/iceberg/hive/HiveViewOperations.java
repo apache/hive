@@ -20,10 +20,7 @@
 package org.apache.iceberg.hive;
 
 import java.util.Collections;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
@@ -71,11 +68,11 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
   private final String catalogName;
 
   HiveViewOperations(
-          Configuration conf,
-          ClientPool<IMetaStoreClient, TException> metaClients,
-          FileIO fileIO,
-          String catalogName,
-          TableIdentifier viewIdentifier) {
+      Configuration conf,
+      ClientPool<IMetaStoreClient, TException> metaClients,
+      FileIO fileIO,
+      String catalogName,
+      TableIdentifier viewIdentifier) {
     this.conf = conf;
     this.catalogName = catalogName;
     this.metaClients = metaClients;
@@ -84,7 +81,7 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
     this.database = viewIdentifier.namespace().level(0);
     this.viewName = viewIdentifier.name();
     this.maxHiveTablePropertySize =
-            conf.getLong(HIVE_TABLE_PROPERTY_MAX_SIZE, HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
+        conf.getLong(HIVE_TABLE_PROPERTY_MAX_SIZE, HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
   }
 
   @Override
@@ -94,10 +91,14 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
 
     try {
       table = metaClients.run(client -> client.getTable(database, viewName));
+
+      // Check if we are trying to load an Iceberg Table as a View
+      HiveOperationsBase.validateIcebergTableNotLoadedAsIcebergView(table, fullName);
+      // Check if it is a valid Iceberg View
       HiveOperationsBase.validateTableIsIcebergView(table, fullName);
 
       metadataLocation =
-              table.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+          table.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
 
     } catch (NoSuchObjectException e) {
       if (currentMetadataLocation() != null) {
@@ -105,7 +106,7 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
       }
     } catch (TException e) {
       String errMsg =
-              String.format("Failed to get view info from metastore %s.%s", database, viewName);
+          String.format("Failed to get view info from metastore %s.%s", database, viewName);
       throw new RuntimeException(errMsg, e);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -136,11 +137,11 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
         // concurrent commit
         if (newView && tbl.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP) != null) {
           throw new AlreadyExistsException(
-                  "%s already exists: %s.%s",
-                  TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(
-                          tbl.getTableType()) ? ContentType.VIEW.value() : ContentType.TABLE.value(),
-                  database,
-                  viewName);
+              "%s already exists: %s.%s",
+              TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(
+                  tbl.getTableType()) ? ContentType.VIEW.value() : ContentType.TABLE.value(),
+              database,
+              viewName);
         }
 
         updateHiveView = true;
@@ -151,32 +152,36 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
       }
 
       tbl.setSd(
-              HiveOperationsBase.storageDescriptor(
-                      metadata.schema(),
-                      metadata.location(),
-                      hiveEngineEnabled)); // set to pick up any schema changes
+          HiveOperationsBase.storageDescriptor(
+              metadata.schema(),
+              metadata.location(),
+              hiveEngineEnabled)); // set to pick up any schema changes
 
       String metadataLocation =
-              tbl.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
+          tbl.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
       String baseMetadataLocation = base != null ? base.metadataFileLocation() : null;
       if (!Objects.equals(baseMetadataLocation, metadataLocation)) {
         throw new CommitFailedException(
-                "Cannot commit: Base metadata location '%s' is not same as the current view metadata location " +
-                        "'%s' for %s.%s",
-                baseMetadataLocation, metadataLocation, database, viewName);
+            "Cannot commit: Base metadata location '%s' is not same as the current view metadata location " +
+                "'%s' for %s.%s",
+            baseMetadataLocation, metadataLocation, database, viewName);
       }
 
       // get Iceberg props that have been removed
       Set<String> removedProps = emptySet();
       if (base != null) {
         removedProps =
-                base.properties().keySet().stream()
-                        .filter(key -> !metadata.properties().containsKey(key))
-                        .collect(Collectors.toSet());
+            base.properties().keySet().stream()
+                .filter(key -> !metadata.properties().containsKey(key))
+                .collect(Collectors.toSet());
       }
-
-      setHmsTableParameters(newMetadataLocation, tbl, metadata, removedProps);
-
+      HMSTablePropertyHelper.updateHmsTableForIcebergView(
+          newMetadataLocation,
+          tbl,
+          metadata,
+          removedProps,
+          maxHiveTablePropertySize,
+          currentMetadataLocation());
       lock.ensureActive();
 
       try {
@@ -187,12 +192,12 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
       } catch (LockException le) {
         commitStatus = CommitStatus.UNKNOWN;
         throw new CommitStateUnknownException(
-                "Failed to heartbeat for hive lock while " +
-                        "committing changes. This can lead to a concurrent commit attempt be able to overwrite " +
-                        "this commit. " +
-                        "Please check the commit history. If you are running into this issue, try reducing " +
-                        "iceberg.hive.lock-heartbeat-interval-ms.",
-                le);
+            "Failed to heartbeat for hive lock while " +
+                "committing changes. This can lead to a concurrent commit attempt be able to overwrite " +
+                "this commit. " +
+                "Please check the commit history. If you are running into this issue, try reducing " +
+                "iceberg.hive.lock-heartbeat-interval-ms.",
+            le);
       } catch (org.apache.hadoop.hive.metastore.api.AlreadyExistsException e) {
         throw new AlreadyExistsException(e, "View already exists: %s.%s", database, viewName);
 
@@ -204,34 +209,34 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
 
       } catch (Throwable e) {
         if (e.getMessage() != null &&
-                e.getMessage().contains(
-                        "The table has been modified. The parameter value for key '" +
-                                BaseMetastoreTableOperations.METADATA_LOCATION_PROP +
-                                "' is")) {
+            e.getMessage().contains(
+                "The table has been modified. The parameter value for key '" +
+                    BaseMetastoreTableOperations.METADATA_LOCATION_PROP +
+                    "' is")) {
           throw new CommitFailedException(
-                  e, "The view %s.%s has been modified concurrently", database, viewName);
+              e, "The view %s.%s has been modified concurrently", database, viewName);
         }
 
         if (e.getMessage() != null && e.getMessage().contains("Table/View 'HIVE_LOCKS' does not exist")) {
           throw new RuntimeException(
-                  "Failed to acquire locks from metastore because the underlying metastore " +
-                          "view 'HIVE_LOCKS' does not exist. This can occur when using an embedded metastore " +
-                          "which does not support transactions. To fix this use an alternative metastore.",
-                  e);
+              "Failed to acquire locks from metastore because the underlying metastore " +
+                  "view 'HIVE_LOCKS' does not exist. This can occur when using an embedded metastore " +
+                  "which does not support transactions. To fix this use an alternative metastore.",
+              e);
         }
 
         LOG.error(
-                "Cannot tell if commit to {}.{} succeeded, attempting to reconnect and check.",
-                database,
-                viewName,
-                e);
+            "Cannot tell if commit to {}.{} succeeded, attempting to reconnect and check.",
+            database,
+            viewName,
+            e);
         commitStatus = BaseMetastoreOperations.CommitStatus.UNKNOWN;
         commitStatus =
-                checkCommitStatus(
-                        viewName,
-                        newMetadataLocation,
-                        metadata.properties(),
-                        () -> checkCurrentMetadataLocation(newMetadataLocation));
+            checkCommitStatus(
+                viewName,
+                newMetadataLocation,
+                metadata.properties(),
+                () -> checkCurrentMetadataLocation(newMetadataLocation));
         switch (commitStatus) {
           case SUCCESS:
             break;
@@ -243,7 +248,7 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
       }
     } catch (TException e) {
       throw new RuntimeException(
-              String.format("Metastore operation failed for %s.%s", database, viewName), e);
+          String.format("Metastore operation failed for %s.%s", database, viewName), e);
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -257,7 +262,7 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
     }
 
     LOG.info(
-            "Committed to view {} with the new metadata location {}", fullName, newMetadataLocation);
+        "Committed to view {} with the new metadata location {}", fullName, newMetadataLocation);
   }
 
   /**
@@ -271,36 +276,6 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
     return newMetadataLocation.equals(metadata.metadataFileLocation());
   }
 
-  private void setHmsTableParameters(
-          String newMetadataLocation, Table tbl, ViewMetadata metadata, Set<String> obsoleteProps) {
-    Map<String, String> parameters =
-            Optional.ofNullable(tbl.getParameters()).orElseGet(Maps::newHashMap);
-
-    // push all Iceberg view properties into HMS
-    metadata.properties().entrySet().stream()
-            .filter(entry -> !entry.getKey().equalsIgnoreCase(HiveCatalog.HMS_TABLE_OWNER))
-            .forEach(entry -> parameters.put(entry.getKey(), entry.getValue()));
-    if (metadata.uuid() != null) {
-      parameters.put("uuid", metadata.uuid());
-    }
-
-    // remove any props from HMS that are no longer present in Iceberg view props
-    obsoleteProps.forEach(parameters::remove);
-
-    parameters.put(
-            BaseMetastoreTableOperations.TABLE_TYPE_PROP,
-            ICEBERG_VIEW_TYPE_VALUE.toUpperCase(Locale.ENGLISH));
-    parameters.put(BaseMetastoreTableOperations.METADATA_LOCATION_PROP, newMetadataLocation);
-
-    if (currentMetadataLocation() != null && !currentMetadataLocation().isEmpty()) {
-      parameters.put(
-              BaseMetastoreTableOperations.PREVIOUS_METADATA_LOCATION_PROP, currentMetadataLocation());
-    }
-
-//    setSchema(metadata.schema(), parameters);
-    tbl.setParameters(parameters);
-  }
-
   private static boolean hiveLockEnabled(Configuration conf) {
     return conf.getBoolean(ConfigProperties.LOCK_HIVE_ENABLED, true);
   }
@@ -308,23 +283,23 @@ final class HiveViewOperations extends BaseViewOperations implements HiveOperati
   private Table newHMSView(ViewMetadata metadata) {
     final long currentTimeMillis = System.currentTimeMillis();
     String hmsTableOwner =
-            PropertyUtil.propertyAsString(
-                    metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser());
+        PropertyUtil.propertyAsString(
+            metadata.properties(), HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser());
     String sqlQuery = sqlFor(metadata);
 
     return new Table(
-            table(),
-            database(),
-            hmsTableOwner,
-            (int) currentTimeMillis / 1000,
-            (int) currentTimeMillis / 1000,
-            Integer.MAX_VALUE,
-            null,
-            Collections.emptyList(),
-            Maps.newHashMap(),
-            sqlQuery,
-            sqlQuery,
-            tableType().name());
+        table(),
+        database(),
+        hmsTableOwner,
+        (int) currentTimeMillis / 1000,
+        (int) currentTimeMillis / 1000,
+        Integer.MAX_VALUE,
+        null,
+        Collections.emptyList(),
+        Maps.newHashMap(),
+        sqlQuery,
+        sqlQuery,
+        tableType().name());
   }
 
   private String sqlFor(ViewMetadata metadata) {

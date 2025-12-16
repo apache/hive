@@ -72,8 +72,12 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
   private final ClientPool<IMetaStoreClient, TException> metaClients;
 
   protected HiveTableOperations(
-        Configuration conf, ClientPool<IMetaStoreClient, TException> metaClients, FileIO fileIO,
-        String catalogName, String database, String table) {
+      Configuration conf,
+      ClientPool<IMetaStoreClient, TException> metaClients,
+      FileIO fileIO,
+      String catalogName,
+      String database,
+      String table) {
     this.conf = conf;
     this.metaClients = metaClients;
     this.fileIO = fileIO;
@@ -104,6 +108,10 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     String metadataLocation = null;
     try {
       Table table = metaClients.run(client -> client.getTable(database, tableName));
+
+      // Check if we are trying to load an Iceberg View as a Table
+      HiveOperationsBase.validateIcebergViewNotLoadedAsIcebergTable(table, fullName);
+      // Check if it is a valid Iceberg Table
       HiveOperationsBase.validateTableIsIceberg(table, fullName);
 
       metadataLocation = table.getParameters().get(METADATA_LOCATION_PROP);
@@ -135,7 +143,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
     boolean keepHiveStats = conf.getBoolean(ConfigProperties.KEEP_HIVE_STATS, false);
 
     BaseMetastoreOperations.CommitStatus commitStatus =
-            BaseMetastoreOperations.CommitStatus.FAILURE;
+        BaseMetastoreOperations.CommitStatus.FAILURE;
     boolean updateHiveTable = false;
 
     HiveLock lock = lockObject(base);
@@ -149,7 +157,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         if (newTable && tbl.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP) != null) {
           if (TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(tbl.getTableType())) {
             throw new AlreadyExistsException(
-                    "View with same name already exists: %s.%s", database, tableName);
+                "View with same name already exists: %s.%s", database, tableName);
           }
           throw new AlreadyExistsException("Table already exists: %s.%s", database, tableName);
         }
@@ -157,11 +165,14 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         updateHiveTable = true;
         LOG.debug("Committing existing table: {}", fullName);
       } else {
-        tbl = newHmsTable(metadata.property(HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser()));
+        tbl = newHmsTable(
+            metadata.property(HiveCatalog.HMS_TABLE_OWNER, HiveHadoopUtil.currentUser())
+        );
         LOG.debug("Committing new table: {}", fullName);
       }
 
-      tbl.setSd(HiveOperationsBase.storageDescriptor(
+      tbl.setSd(
+          HiveOperationsBase.storageDescriptor(
               metadata.schema(),
               metadata.location(),
               hiveEngineEnabled)); // set to pickup any schema changes
@@ -183,6 +194,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
                 .filter(key -> !metadata.properties().containsKey(key))
                 .collect(Collectors.toSet());
       }
+
       HMSTablePropertyHelper.updateHmsTableForIcebergTable(
           newMetadataLocation,
           tbl,
@@ -198,6 +210,7 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       }
 
       lock.ensureActive();
+
       try {
         persistTable(
             tbl, updateHiveTable, hiveLockEnabled(base, conf) ? null : baseMetadataLocation);
@@ -208,9 +221,9 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         commitStatus = BaseMetastoreOperations.CommitStatus.UNKNOWN;
         throw new CommitStateUnknownException(
             "Failed to heartbeat for hive lock while " +
-              "committing changes. This can lead to a concurrent commit attempt be able to overwrite this commit. " +
-              "Please check the commit history. If you are running into this issue, try reducing " +
-              "iceberg.hive.lock-heartbeat-interval-ms.",
+                "committing changes. This can lead to a concurrent commit attempt be able to overwrite this commit. " +
+                "Please check the commit history. If you are running into this issue, try reducing " +
+                "iceberg.hive.lock-heartbeat-interval-ms.",
             le);
       } catch (org.apache.hadoop.hive.metastore.api.AlreadyExistsException e) {
         throw new AlreadyExistsException(e, "Table already exists: %s.%s", database, tableName);
@@ -225,16 +238,16 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         if (e.getMessage() != null && e.getMessage().contains("Table/View 'HIVE_LOCKS' does not exist")) {
           throw new RuntimeException(
               "Failed to acquire locks from metastore because the underlying metastore " +
-                "table 'HIVE_LOCKS' does not exist. This can occur when using an embedded metastore which does not " +
-                "support transactions. To fix this use an alternative metastore.",
+                  "table 'HIVE_LOCKS' does not exist. This can occur when using an embedded metastore which does not " +
+                  "support transactions. To fix this use an alternative metastore.",
               e);
         }
 
         commitStatus = BaseMetastoreOperations.CommitStatus.UNKNOWN;
         if (e.getMessage() != null && e.getMessage().contains(
-                "The table has been modified. The parameter value for key '" +
-                        HiveTableOperations.METADATA_LOCATION_PROP +
-                        "' is")) {
+            "The table has been modified. The parameter value for key '" +
+                HiveTableOperations.METADATA_LOCATION_PROP +
+                "' is")) {
           // It's possible the HMS client incorrectly retries a successful operation, due to network
           // issue for example, and triggers this exception. So we need double-check to make sure
           // this is really a concurrent modification. Hitting this exception means no pending
@@ -242,16 +255,17 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
           commitStatus = checkCommitStatusStrict(newMetadataLocation, metadata);
           if (commitStatus == BaseMetastoreOperations.CommitStatus.FAILURE) {
             throw new CommitFailedException(
-                    e, "The table %s.%s has been modified concurrently", database, tableName);
+                e, "The table %s.%s has been modified concurrently", database, tableName);
           }
         } else {
           LOG.error(
-                  "Cannot tell if commit to {}.{} succeeded, attempting to reconnect and check.",
-                  database,
-                  tableName,
-                  e);
+              "Cannot tell if commit to {}.{} succeeded, attempting to reconnect and check.",
+              database,
+              tableName,
+              e);
           commitStatus = checkCommitStatus(newMetadataLocation, metadata);
         }
+
         switch (commitStatus) {
           case SUCCESS:
             break;
@@ -276,7 +290,8 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
       HiveOperationsBase.cleanupMetadataAndUnlock(io(), commitStatus, newMetadataLocation, lock);
     }
 
-    LOG.info("Committed to table {} with the new metadata location {}", fullName, newMetadataLocation);
+    LOG.info(
+        "Committed to table {} with the new metadata location {}", fullName, newMetadataLocation);
   }
 
   @Override
@@ -306,14 +321,17 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
 
   /**
    * Returns if the hive engine related values should be enabled on the table, or not.
-   * <p>
-   * The decision is made like this:
+   *
+   * <p>The decision is made like this:
+   *
    * <ol>
-   * <li>Table property value {@link TableProperties#ENGINE_HIVE_ENABLED}
-   * <li>If the table property is not set then check the hive-site.xml property value
-   * {@link ConfigProperties#ENGINE_HIVE_ENABLED}
-   * <li>If none of the above is enabled then use the default value {@link TableProperties#ENGINE_HIVE_ENABLED_DEFAULT}
+   *   <li>Table property value {@link TableProperties#ENGINE_HIVE_ENABLED}
+   *   <li>If the table property is not set then check the hive-site.xml property value {@link
+   *       ConfigProperties#ENGINE_HIVE_ENABLED}
+   *   <li>If none of the above is enabled then use the default value {@link
+   *       TableProperties#ENGINE_HIVE_ENABLED_DEFAULT}
    * </ol>
+   *
    * @param metadata Table metadata to use
    * @param conf The hive configuration to use
    * @return if the hive engine related values should be enabled or not

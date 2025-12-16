@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.txn.jdbc.functions;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.entities.TxnStatus;

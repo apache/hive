@@ -30,7 +30,6 @@ import javax.security.sasl.AuthenticationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.HiveConnection;
-import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -52,7 +51,6 @@ public class TestJdbcNonKrbSASLWithMiniKdc extends TestJdbcWithMiniKdc{
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
     confOverlay.put(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         SessionHookTest.class.getName());
     confOverlay.put(ConfVars.HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS.varname,

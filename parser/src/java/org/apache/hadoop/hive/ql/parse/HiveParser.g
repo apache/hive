@@ -231,6 +231,7 @@ TOK_ALTERTABLE_REPLACE_SNAPSHOTREF;
 TOK_RETAIN;
 TOK_WITH_SNAPSHOT_RETENTION;
 TOK_ALTERTABLE_CONVERT;
+TOK_ALTERTABLE_SET_WRITE_ORDER;
 TOK_MSCK;
 TOK_SHOWCATALOGS;
 TOK_SHOWDATABASES;
@@ -2363,9 +2364,10 @@ columnConstraintType
     ;
 
 defaultVal
-    : constant
-    | function
-    | castExpression
+    : ((PLUS | MINUS)^) unsignedNumericLiterals
+    | constant
+    | ((PLUS | MINUS)^)? function
+    | ((PLUS | MINUS)^)? castExpression
     ;
 
 tableConstraintType

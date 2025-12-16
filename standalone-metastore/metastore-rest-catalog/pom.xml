@@ -23,7 +23,7 @@
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.debug>false</log4j2.debug>
-    <iceberg.version>1.9.1</iceberg.version>
+    <iceberg.version>1.10.0</iceberg.version>
   </properties>
   <dependencies>
     <dependency>
@@ -43,6 +43,13 @@
       <version>${hive.version}</version>
     </dependency>
     <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <version>${hive.version}</version>
+      <classifier>core</classifier>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-common</artifactId>
@@ -266,7 +273,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

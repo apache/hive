@@ -18,7 +18,7 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
@@ -71,8 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**
  * HiveMetaStoreAuthorizer :  Do authorization checks on MetaStore Events in MetaStorePreEventListener
@@ -136,7 +134,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
       }
     } catch (Exception e) {
       LOG.error("HiveMetaStoreAuthorizer.onEvent(): failed", e);
-      throw MetaStoreUtils.newMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
 
     LOG.debug("<== HiveMetaStoreAuthorizer.onEvent(): EventType=" + preEventContext.getEventType());

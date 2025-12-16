@@ -62,9 +62,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 'Set up JDK 21'
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v5
         with:
-          java-version: 21
+          java-version: '21'
+          distribution: temurin
+          cache: maven
 
       - name: Prepare environment variables for Workflow Dispatch
         if: github.event_name == 'workflow_dispatch'
@@ -90,7 +92,7 @@ jobs:
       - name: Build Hive project
         if: github.event_name == 'create' && github.event.ref_type == 'tag' && startsWith(github.event.ref, 'rel/')
         run: |
-          mvn clean package -DskipTests -Pdist
+          mvn --batch-mode clean package -DskipTests -Pdist
           ls ./packaging/target/
           mv ./packaging/target/apache-hive-*-bin.tar.gz ./packaging/src/docker/
           rm -rf ./packaging/target

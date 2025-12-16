@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.constraint.add;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;

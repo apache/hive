@@ -36,11 +36,6 @@
       <version>${iceberg.version}</version>
       <optional>true</optional>
     </dependency>
-    <dependency>
-      <groupId>org.apache.iceberg</groupId>
-      <artifactId>iceberg-bundled-guava</artifactId>
-      <version>${iceberg.version}</version>
-    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -64,7 +59,6 @@
                   <overWrite>true</overWrite>
                   <outputDirectory>${project.build.directory}/classes</outputDirectory>
                   <excludes>
-                      **/StructProjection.class
                   </excludes>
                 </artifactItem>
               </artifactItems>

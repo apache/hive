@@ -92,13 +92,13 @@ public class OrcRecordUpdater implements RecordUpdater {
   static final String ROW_ID_FIELD_NAME = "rowId";
   static final String CURRENT_WRITEID_FIELD_NAME = "currentTransaction";
   static final String ROW_FIELD_NAME = "row";
-  public static final Collection ALL_ACID_ROW_NAMES = Arrays.asList(
-      OrcRecordUpdater.BUCKET_FIELD_NAME,
-      OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME,
-      OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME,
-      OrcRecordUpdater.OPERATION_FIELD_NAME,
-      OrcRecordUpdater.ROW_FIELD_NAME,
-      OrcRecordUpdater.ROW_ID_FIELD_NAME);
+  public static final Collection<String> ALL_ACID_ROW_NAMES = Arrays.asList(
+      OrcRecordUpdater.BUCKET_FIELD_NAME.toLowerCase(),
+      OrcRecordUpdater.CURRENT_WRITEID_FIELD_NAME.toLowerCase(),
+      OrcRecordUpdater.ORIGINAL_WRITEID_FIELD_NAME.toLowerCase(),
+      OrcRecordUpdater.OPERATION_FIELD_NAME.toLowerCase(),
+      OrcRecordUpdater.ROW_FIELD_NAME.toLowerCase(),
+      OrcRecordUpdater.ROW_ID_FIELD_NAME.toLowerCase());
 
   /**
    * total number of fields (above)
