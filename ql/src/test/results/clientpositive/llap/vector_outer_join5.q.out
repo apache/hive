@@ -254,8 +254,8 @@ POSTHOOK: Input: default@sorted_mod_4
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           }
         ]
       },
@@ -962,8 +962,8 @@ POSTHOOK: Input: default@sorted_mod_4
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           }
         ]
       },
@@ -1729,8 +1729,8 @@ POSTHOOK: Input: default@sorted_mod_4
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           }
         ]
       },
@@ -2463,8 +2463,8 @@ POSTHOOK: Input: default@sorted_mod_4
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           }
         ]
       },
@@ -3191,8 +3191,8 @@ POSTHOOK: Input: default@sorted_mod_4
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           },
           {
             "name": "ctinyint",
@@ -4308,8 +4308,8 @@ POSTHOOK: Input: default@small_table2
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           }
         ]
       },
@@ -5016,8 +5016,8 @@ POSTHOOK: Input: default@small_table2
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           }
         ]
       },
@@ -5770,8 +5770,8 @@ POSTHOOK: Input: default@small_table2
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           }
         ]
       },
@@ -6504,8 +6504,8 @@ POSTHOOK: Input: default@small_table2
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           }
         ]
       },
@@ -7232,8 +7232,8 @@ POSTHOOK: Input: default@small_table2
           {
             "name": "cbigint",
             "ndv": 1,
-            "minValue": 0,
-            "maxValue": 0
+            "minValue": null,
+            "maxValue": null
           },
           {
             "name": "cmodtinyint",
