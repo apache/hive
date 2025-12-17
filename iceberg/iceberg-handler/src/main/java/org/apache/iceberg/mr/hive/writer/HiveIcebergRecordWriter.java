@@ -21,45 +21,27 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
-import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.DataWriteResult;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
-import org.apache.iceberg.types.Types;
 
-class HiveIcebergRecordWriter extends HiveIcebergWriterBase {
-
-  private final int currentSpecId;
-  private final Set<String> missingColumns;
-  private final List<Types.NestedField> missingOrStructFields;
-
-  private final HiveFileWriterFactory fileWriterFactory;
+class HiveIcebergRecordWriter extends SchemaInferringDefaultsWriter {
 
   HiveIcebergRecordWriter(Table table, HiveFileWriterFactory fileWriterFactory,
       OutputFileFactory dataFileFactory, Context context) {
-    super(table, newDataWriter(table, fileWriterFactory, dataFileFactory, context));
-
-    this.currentSpecId = table.spec().specId();
-    this.missingColumns = context.missingColumns();
-    this.missingOrStructFields = specs.get(currentSpecId).schema().asStruct().fields().stream()
-        .filter(field -> missingColumns.contains(field.name()) || field.type().isStructType())
-        .toList();
-    this.fileWriterFactory = fileWriterFactory;
+    super(table, fileWriterFactory, dataFileFactory, context);
   }
 
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
-    HiveSchemaUtil.setDefaultValues(record, missingOrStructFields, missingColumns);
-    fileWriterFactory.initialize(() -> record);
-    writer.write(record, specs.get(currentSpecId), partition(record, currentSpecId));
+    writeOrBuffer(record);
   }
 
   @Override

@@ -21,7 +21,6 @@ package org.apache.iceberg.mr.hive.writer;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -29,7 +28,6 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
-import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.io.DataWriteResult;
 import org.apache.iceberg.io.OutputFileFactory;
 import org.apache.iceberg.mr.hive.FilesForCommit;
@@ -37,32 +35,18 @@ import org.apache.iceberg.mr.hive.IcebergAcidUtil;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
-import org.apache.iceberg.types.Types;
 
-class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
-
-  private final int currentSpecId;
-  private final Set<String> missingColumns;
-  private final List<Types.NestedField> missingOrStructFields;
+class HiveIcebergCopyOnWriteRecordWriter extends SchemaInferringDefaultsWriter {
 
   private final GenericRecord rowDataTemplate;
   private final List<DataFile> replacedDataFiles;
 
-  private final HiveFileWriterFactory fileWriterFactory;
-
   HiveIcebergCopyOnWriteRecordWriter(Table table, HiveFileWriterFactory writerFactory,
       OutputFileFactory deleteFileFactory, Context context) {
-    super(table, newDataWriter(table, writerFactory, deleteFileFactory, context));
+    super(table, writerFactory, deleteFileFactory, context);
 
-    this.currentSpecId = table.spec().specId();
     this.rowDataTemplate = GenericRecord.create(table.schema());
     this.replacedDataFiles = Lists.newArrayList();
-
-    this.missingColumns = context.missingColumns();
-    this.missingOrStructFields = specs.get(currentSpecId).schema().asStruct().fields().stream()
-        .filter(field -> missingColumns.contains(field.name()) || field.type().isStructType())
-        .toList();
-    this.fileWriterFactory = writerFactory;
   }
 
   @Override
@@ -82,9 +66,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
             .build();
       replacedDataFiles.add(dataFile);
     } else {
-      HiveSchemaUtil.setDefaultValues(rowData, missingOrStructFields, missingColumns);
-      fileWriterFactory.initialize(() -> rowData);
-      writer.write(rowData, specs.get(currentSpecId), partition(rowData, currentSpecId));
+      writeOrBuffer(rowData);
     }
   }
 
