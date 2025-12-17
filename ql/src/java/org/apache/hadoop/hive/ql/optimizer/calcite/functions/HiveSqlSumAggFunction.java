@@ -115,8 +115,18 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
         throw new AssertionError("unexpected count " + merges);
       }
       int ordinal = extra.register(node);
-      return AggregateCall.create(new HiveSqlSumAggFunction(returnTypeInference, operandTypeInference, operandTypeChecker),
-          false, ImmutableList.of(ordinal), -1, aggregateCall.type, aggregateCall.name);
+      return AggregateCall.create(new HiveSqlSumAggFunction(returnTypeInference,
+              operandTypeInference,
+              operandTypeChecker),
+          false,
+          false,
+          false,
+          ImmutableList.of(ordinal),
+          -1,
+          aggregateCall.distinctKeys,
+          aggregateCall.collation,
+          aggregateCall.type,
+          aggregateCall.name);
     }
   }
 
