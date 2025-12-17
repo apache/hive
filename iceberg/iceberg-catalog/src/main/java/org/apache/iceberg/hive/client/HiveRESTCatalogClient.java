@@ -44,9 +44,10 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
-import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.IcebergTableProperties;
 import org.apache.iceberg.hive.MetastoreUtil;
 import org.apache.iceberg.hive.RuntimeMetaException;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -80,7 +81,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   public void reconnect()  {
     close();
     String catName = MetaStoreUtils.getDefaultCatalog(conf);
-    Map<String, String> properties = CatalogUtils.getCatalogProperties(conf, CatalogUtils.getCatalogName(conf));
+    Map<String, String> properties = IcebergCatalogProperties.getCatalogProperties(conf);
     restCatalog = (RESTCatalog) CatalogUtil.buildIcebergCatalog(catName, properties, null);
   }
 
@@ -161,7 +162,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
           Database database = new Database();
           database.setName(String.join(NAMESPACE_SEPARATOR, namespace.levels()));
           Map<String, String> namespaceMetadata = restCatalog.loadNamespaceMetadata(Namespace.of(dbName));
-          database.setLocationUri(namespaceMetadata.get(CatalogUtils.LOCATION));
+          database.setLocationUri(namespaceMetadata.get(IcebergTableProperties.LOCATION));
           database.setCatalogName(restCatalog.name());
           database.setOwnerName(namespaceMetadata.get(DB_OWNER));
           try {
@@ -194,20 +195,20 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
     if (table.isSetPartitionKeys() && !table.getPartitionKeys().isEmpty()) {
       cols.addAll(table.getPartitionKeys());
     }
-    Properties catalogProperties = CatalogUtils.getCatalogProperties(table);
+    Properties tableProperties = IcebergTableProperties.getTableProperties(table, conf);
     Schema schema = HiveSchemaUtil.convert(cols, Collections.emptyMap(), true);
     Map<String, String> envCtxProps = Optional.ofNullable(request.getEnvContext())
         .map(EnvironmentContext::getProperties)
         .orElse(Collections.emptyMap());
     org.apache.iceberg.PartitionSpec partitionSpec =
         HMSTablePropertyHelper.getPartitionSpec(envCtxProps, schema);
-    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(catalogProperties, schema);
+    SortOrder sortOrder = HMSTablePropertyHelper.getSortOrder(tableProperties, schema);
 
     restCatalog.buildTable(TableIdentifier.of(table.getDbName(), table.getTableName()), schema)
         .withPartitionSpec(partitionSpec)
-        .withLocation(catalogProperties.getProperty(CatalogUtils.LOCATION))
+        .withLocation(tableProperties.getProperty(IcebergTableProperties.LOCATION))
         .withSortOrder(sortOrder)
-        .withProperties(Maps.fromProperties(catalogProperties))
+        .withProperties(Maps.fromProperties(tableProperties))
         .create();
   }
 
@@ -215,7 +216,7 @@ public class HiveRESTCatalogClient extends BaseMetaStoreClient {
   public void createDatabase(Database db) {
     validateCurrentCatalog(db.getCatalogName());
     Map<String, String> props = ImmutableMap.of(
-        CatalogUtils.LOCATION, db.getLocationUri(),
+        IcebergTableProperties.LOCATION, db.getLocationUri(),
         DB_OWNER, db.getOwnerName(),
         DB_OWNER_TYPE, db.getOwnerType().toString()
     );

@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.ITestsSchemaInfo;
 import org.apache.iceberg.CatalogUtil;
-import org.apache.iceberg.hive.CatalogUtils;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -76,7 +76,7 @@ public class TestIcebergRESTCatalogHMSLlapLocalCliDriver {
 
   @Before
   public void setupHiveConfig() {
-    String restCatalogPrefix = String.format("%s%s.", CatalogUtils.CATALOG_CONFIG_PREFIX, CATALOG_NAME);
+    String restCatalogPrefix = String.format("%s%s.", IcebergCatalogProperties.CATALOG_CONFIG_PREFIX, CATALOG_NAME);
 
     Configuration conf = SessionState.get().getConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_IMPL,

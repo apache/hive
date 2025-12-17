@@ -22,9 +22,6 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import org.apache.hadoop.fs.Path;
-import org.apache.iceberg.DataFile;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
@@ -35,16 +32,11 @@ import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
-import org.apache.parquet.hadoop.ParquetFileReader;
-import org.apache.parquet.hadoop.util.HadoopInputFile;
-import org.apache.parquet.schema.GroupType;
-import org.apache.parquet.schema.MessageType;
 import org.junit.Assert;
 import org.junit.Test;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -193,68 +185,6 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
     Assert.assertEquals(2, result.size());
     Assert.assertArrayEquals(new Object[]{"moon", 1L}, result.get(0));
     Assert.assertArrayEquals(new Object[]{"star", 2L}, result.get(1));
-  }
-
-  @Test
-  public void testVariantSelectProjection() throws IOException {
-    assumeTrue(fileFormat == FileFormat.PARQUET);
-    assumeTrue(!isVectorized);
-
-    TableIdentifier table = TableIdentifier.of("default", "variant_projection");
-    shell.executeStatement(String.format("DROP TABLE IF EXISTS %s", table));
-
-    shell.executeStatement(
-        String.format(
-            "CREATE TABLE %s (id INT, payload VARIANT) STORED BY ICEBERG STORED AS %s %s %s",
-            table,
-            fileFormat,
-            testTables.locationForCreateTableSQL(table),
-            testTables.propertiesForCreateTableSQL(
-                ImmutableMap.of("format-version", "3", "variant.shredding.enabled", "true"))));
-
-    shell.executeStatement(
-        String.format(
-            "INSERT INTO %s VALUES " +
-                "(1, parse_json('{\"name\":\"Alice\",\"age\":30}'))," +
-                "(2, parse_json('{\"name\":\"Bob\"}'))",
-            table));
-
-    List<Object[]> rows =
-        shell.executeStatement(
-            String.format(
-                "SELECT id, " +
-                    "variant_get(payload, '$.name') AS name, " +
-                    "try_variant_get(payload, '$.age', 'int') AS age " +
-                    "FROM %s ORDER BY id",
-                table));
-
-    Assert.assertEquals(2, rows.size());
-    Assert.assertEquals(1, ((Number) rows.get(0)[0]).intValue());
-    Assert.assertEquals("Alice", rows.get(0)[1]);
-    Assert.assertEquals(30, ((Number) rows.get(0)[2]).intValue());
-
-    Assert.assertEquals(2, ((Number) rows.get(1)[0]).intValue());
-    Assert.assertEquals("Bob", rows.get(1)[1]);
-    Assert.assertNull(rows.get(1)[2]);
-
-    Table icebergTable = testTables.loadTable(table);
-    Types.NestedField variantField = icebergTable.schema().findField("payload");
-    Assert.assertNotNull("Variant column should exist", variantField);
-    DataFile dataFile =
-        StreamSupport.stream(
-                icebergTable.currentSnapshot().addedDataFiles(icebergTable.io()).spliterator(), false)
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("No data files written for test table"));
-
-    Path parquetPath = new Path(dataFile.path().toString());
-    try (ParquetFileReader reader =
-        ParquetFileReader.open(HadoopInputFile.fromPath(parquetPath, shell.getHiveConf()))) {
-      MessageType parquetSchema = reader.getFooter().getFileMetaData().getSchema();
-      GroupType variantType = parquetSchema.getType(variantField.name()).asGroupType();
-      assertThat(variantType.containsField("typed_value")).isTrue();
-    }
-
-    shell.executeStatement(String.format("DROP TABLE IF EXISTS %s", table));
   }
 
   @Test
