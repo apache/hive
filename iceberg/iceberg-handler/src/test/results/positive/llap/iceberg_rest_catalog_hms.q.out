@@ -98,6 +98,7 @@ TBLPROPERTIES (
   'write.delete.mode'='merge-on-read', 
   'write.format.default'='orc', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: insert into ice_orc2 partition (company_id=100) 
 VALUES ('fn1','ln1', 1, 10), ('fn2','ln2', 2, 20), ('fn3','ln3', 3, 30)
@@ -157,6 +158,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

@@ -6,25 +6,26 @@ hive
 #### A masked pattern was here ####
 PREHOOK: type: CREATECATALOG
 PREHOOK: Output: catalog:test_cat
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATECATALOG
 POSTHOOK: Output: catalog:test_cat
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DESC CATALOG test_cat
 PREHOOK: type: DESCCATALOG
 PREHOOK: Input: catalog:test_cat
 POSTHOOK: query: DESC CATALOG test_cat
 POSTHOOK: type: DESCCATALOG
 POSTHOOK: Input: catalog:test_cat
-Catalog Name	test_cat	 
-Comment	Hive test catalog	 
+test_cat	Hive test catalog	hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 PREHOOK: type: CREATECATALOG
 PREHOOK: Output: catalog:test_cat
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATECATALOG
 POSTHOOK: Output: catalog:test_cat
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: SHOW CATALOGS
 PREHOOK: type: SHOWCATALOGS
 POSTHOOK: query: SHOW CATALOGS
@@ -47,10 +48,11 @@ hive
 #### A masked pattern was here ####
 PREHOOK: type: CREATECATALOG
 PREHOOK: Output: catalog:test_cat
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATECATALOG
 POSTHOOK: Output: catalog:test_cat
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: SHOW CATALOGS
 PREHOOK: type: SHOWCATALOGS
 POSTHOOK: query: SHOW CATALOGS
@@ -77,10 +79,11 @@ POSTHOOK: type: DROPCATALOG
 #### A masked pattern was here ####
 PREHOOK: type: CREATECATALOG
 PREHOOK: Output: catalog:test_cat
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATECATALOG
 POSTHOOK: Output: catalog:test_cat
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: SHOW CATALOGS
 PREHOOK: type: SHOWCATALOGS
 POSTHOOK: query: SHOW CATALOGS
@@ -103,19 +106,18 @@ POSTHOOK: type: SHOWCATALOGS
 #### A masked pattern was here ####
 PREHOOK: type: ALTERCATALOG_LOCATION
 PREHOOK: Output: catalog:test_cat
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERCATALOG_LOCATION
 POSTHOOK: Output: catalog:test_cat
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DESC CATALOG EXTENDED test_cat
 PREHOOK: type: DESCCATALOG
 PREHOOK: Input: catalog:test_cat
 POSTHOOK: query: DESC CATALOG EXTENDED test_cat
 POSTHOOK: type: DESCCATALOG
 POSTHOOK: Input: catalog:test_cat
-Catalog Name	test_cat	 	 
-Comment	Hive test catalog	 	 
-#### A masked pattern was here ####
+test_cat	Hive test catalog	hdfs://### HDFS PATH ###	#Masked#
 PREHOOK: query: ALTER CATALOG test_cat SET PROPERTIES ('key2'='value2')
 PREHOOK: type: ALTERCATALOG_PROPERTIES
 PREHOOK: Output: catalog:test_cat

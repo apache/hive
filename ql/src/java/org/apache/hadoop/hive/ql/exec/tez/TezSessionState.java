@@ -114,7 +114,8 @@ public class TezSessionState {
   private static final String LLAP_TASK_COMMUNICATOR = LlapTaskCommunicator.class.getName();
 
   private final HiveConf conf;
-  private Path tezScratchDir;
+  @VisibleForTesting
+  Path tezScratchDir;
   private LocalResource appJarLr;
   private TezClient session;
   private Future<TezClient> sessionFuture;
@@ -272,9 +273,6 @@ public class TezSessionState {
     this.queueName = confQueueName;
     this.doAsEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS);
 
-    final boolean llapMode = "llap".equalsIgnoreCase(HiveConf.getVar(
-        conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
-
     // TODO This - at least for the session pool - will always be the hive user. How does doAs above this affect things ?
     UserGroupInformation ugi = Utils.getUGI();
     user = ugi.getShortUserName();
@@ -292,12 +290,37 @@ public class TezSessionState {
       LOG.info("Created new resources: " + this.resources);
     }
 
-    // unless already installed on all the cluster nodes, we'll have to
-    // localize hive-exec.jar as well.
+    // Unless already installed on all the cluster nodes, we'll have to localize hive-exec.jar as well.
     appJarLr = createJarLocalResource(utils.getExecJarPathLocal(conf));
 
-    // configuration for the application master
-    final Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
+    try {
+      openInternalUnsafe(isAsync, console);
+    } catch (Exception e) {
+      LOG.warn("Failed to open session, deleting scratch dir to prevent resource leak...", e);
+      cleanupScratchDir();
+      throw e;
+    }
+  }
+
+  /**
+   * Opens a Tez session without performing a complete rollback/cleanup on failure.
+   *
+   * <p><strong>Callers MUST guard this method with try/catch and perform cleanup</strong>
+   * of partially initialized state (such as localized files in the scratch directory).
+   * This method is not safe on its own.</p>
+   *
+   * @param isAsync whether to open the Tez session asynchronously in a separate thread
+   * @param console a {@link LogHelper} used to log session startup events
+   *
+   * @throws TezException if the session fails to start (including failures during
+   *                      container launch or session initialization)
+   * @throws IOException if local resource localization or I/O setup fails
+   */
+  @VisibleForTesting
+  void openInternalUnsafe(boolean isAsync, LogHelper console) throws TezException, IOException {
+    final Map<String, LocalResource> commonLocalResources = new HashMap<>();
+    final boolean llapMode = "llap".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
+
     commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
     for (LocalResource lr : this.resources.localizedResources) {
       commonLocalResources.put(DagUtils.getBaseName(lr), lr);
@@ -312,7 +335,7 @@ public class TezSessionState {
     }
 
     // Create environment for AM.
-    Map<String, String> amEnv = new HashMap<String, String>();
+    Map<String, String> amEnv = new HashMap<>();
     MRHelpers.updateEnvBasedOnMRAMEnv(conf, amEnv);
 
     // and finally we're ready to create and start the session

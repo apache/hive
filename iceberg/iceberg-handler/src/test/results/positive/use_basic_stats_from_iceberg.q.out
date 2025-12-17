@@ -176,6 +176,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
@@ -220,6 +221,7 @@ Table Parameters:
 	uuid                	#Masked#
 	write.delete.mode   	merge-on-read       
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 
