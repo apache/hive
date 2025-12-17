@@ -565,7 +565,8 @@ public class SqlFunctionConverter {
     return calciteOp;
   }
 
-  public static SqlAggFunction getCalciteAggFn(String hiveUdfName, ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
+  public static SqlAggFunction getCalciteAggFn(String hiveUdfName, ImmutableList<RelDataType> calciteArgTypes,
+      RelDataType calciteRetType) {
     SqlAggFunction calciteAggFn = (SqlAggFunction) hiveToCalcite.get(hiveUdfName);
 
     if (calciteAggFn == null) {
