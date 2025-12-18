@@ -30,6 +30,25 @@ import static org.apache.hadoop.hive.metastore.ColumnType.STRING_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TIMESTAMP_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.TINYINT_TYPE_NAME;
 import static org.apache.hadoop.hive.metastore.ColumnType.VARCHAR_TYPE_NAME;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.COLNAME;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.COLTYPE;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.LONG_LOW_VALUE;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.LONG_HIGH_VALUE;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.DOUBLE_LOW_VALUE;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.DOUBLE_HIGH_VALUE;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.BIG_DECIMAL_LOW_VALUE;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.BIG_DECIMAL_HIGH_VALUE;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.NUM_NULLS;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.NUM_DISTINCTS;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.AVG_COL_LEN;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.MAX_COL_LEN;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.NUM_TRUES;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.NUM_FALSES;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.SUM_NDV_LONG;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.SUM_NDV_DOUBLE;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.SUM_NDV_DECIMAL;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.COUNT_ROWS;
+import static org.apache.hadoop.hive.metastore.IExtrapolatePartStatus.DBStatsAggrIndices.SUM_NUM_DISTINCTS;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -168,26 +187,6 @@ class MetaStoreDirectSql {
   private AggregateStatsCache aggrStatsCache;
   private DirectSqlUpdatePart directSqlUpdatePart;
   private DirectSqlInsertPart directSqlInsertPart;
-
-  private static final int COLNAME = 0;
-  private static final int COLTYPE = 1;
-  private static final int LONG_LOW_VALUE = 2;
-  private static final int LONG_HIGH_VALUE = 3;
-  private static final int DOUBLE_LOW_VALUE = 4;
-  private static final int DOUBLE_HIGH_VALUE = 5;
-  private static final int BIG_DECIMAL_LOW_VALUE = 6;
-  private static final int BIG_DECIMAL_HIGH_VALUE = 7;
-  private static final int NUM_NULLS = 8;
-  private static final int NUM_DISTINCTS = 9;
-  private static final int AVG_COL_LEN = 10;
-  private static final int MAX_COL_LEN = 11;
-  private static final int NUM_TRUES = 12;
-  private static final int NUM_FALSES = 13;
-  private static final int SUM_NDV_LONG = 14;
-  private static final int SUM_NDV_DOUBLE = 15;
-  private static final int SUM_NDV_DECIMAL = 16;
-  private static final int COUNT_ROWS = 17;
-  private static final int SUM_NUM_DISTINCTS = 18;
 
   /**
    * This method returns a comma separated string consisting of String values of a given list.
@@ -2061,7 +2060,7 @@ class MetaStoreDirectSql {
       // In this case, at least a column status for a partition is missing.
       // We need to extrapolate this partition based on the other partitions
       List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(colNames.size());
-      queryText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(\"PART_COL_STATS\".\"PART_ID\") "
+      queryText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(1) "
           + " from " + PART_COL_STATS
           + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
           + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
@@ -2125,8 +2124,8 @@ class MetaStoreDirectSql {
             + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
             + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
             + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
-            + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (" + makeParams(extraColumnNameTypeParts.size()) + ")"
-            + " and " + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(partNames.size()) + ")"
+            + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
+            + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
             + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
             + " group by " + PART_COL_STATS + ".\"COLUMN_NAME\"";
 
@@ -2165,8 +2164,8 @@ class MetaStoreDirectSql {
         }
 
         for (Map.Entry<String, String[]> entry : extraColumnNameTypeParts.entrySet()) {
-          // +5 => 3 extra indices for sum,count used in place of avg + 2 for colname and coltype
-          Object[] row = new Object[IExtrapolatePartStatus.colStatNames.length + 5];
+          // +3 => 1 extra index for count required for sumNdvIndices to calculate avg + 2 for colname and coltype
+          Object[] row = new Object[IExtrapolatePartStatus.colStatNames.length + 3];
           String colName = entry.getKey();
           String colType = entry.getValue()[0];
           Long sumVal = Long.parseLong(entry.getValue()[1]);
@@ -2258,16 +2257,18 @@ class MetaStoreDirectSql {
                 list = Batchable.runBatched(batchSize, Collections.singletonList(colName), columnWisePartitionBatches);
                 Object[] min = list.getFirst();
                 Object[] max = list.getLast();
-                for (int i = Math.min(batchSize - 1, list.size() - 1); i < list.size(); i += batchSize) {
-                  Object[] posMax = list.get(i);
-                  if (new BigDecimal(max[0].toString()).compareTo(new BigDecimal(posMax[0].toString())) < 0) {
-                    max = posMax;
-                  }
-                  int j = i + 1;
-                  if (j < list.size()) {
-                    Object[] posMin = list.get(j);
-                    if (new BigDecimal(min[0].toString()).compareTo(new BigDecimal(posMin[0].toString())) > 0) {
-                      min = posMin;
+                if(batchSize>0){
+                  for (int i = Math.min(batchSize - 1, list.size() - 1); i < list.size(); i += batchSize) {
+                    Object[] posMax = list.get(i);
+                    if (new BigDecimal(max[0].toString()).compareTo(new BigDecimal(posMax[0].toString())) < 0) {
+                      max = posMax;
+                    }
+                    int j = i + 1;
+                    if (j < list.size()) {
+                      Object[] posMin = list.get(j);
+                      if (new BigDecimal(min[0].toString()).compareTo(new BigDecimal(posMin[0].toString())) > 0) {
+                        min = posMin;
+                      }
                     }
                   }
                 }
@@ -2319,27 +2320,27 @@ class MetaStoreDirectSql {
   }
 
   private void mergeBackendDBStats(Object[] row1, Object[] row2) {
-    if (row1[COLNAME] == null) {
-      row1[COLNAME] = row2[COLNAME];
-      row1[COLTYPE] = row2[COLTYPE];
+    if (row1[COLNAME.idx()] == null) {
+      row1[COLNAME.idx()] = row2[COLNAME.idx()];
+      row1[COLTYPE.idx()] = row2[COLTYPE.idx()];
     }
-    row1[LONG_LOW_VALUE] = MetastoreDirectSqlUtils.min(row1[LONG_LOW_VALUE], row2[LONG_LOW_VALUE]);
-    row1[LONG_HIGH_VALUE] = MetastoreDirectSqlUtils.max(row1[LONG_HIGH_VALUE], row2[LONG_HIGH_VALUE]);
-    row1[DOUBLE_LOW_VALUE] = MetastoreDirectSqlUtils.min(row1[DOUBLE_LOW_VALUE], row2[DOUBLE_LOW_VALUE]);
-    row1[DOUBLE_HIGH_VALUE] = MetastoreDirectSqlUtils.max(row1[DOUBLE_HIGH_VALUE], row2[DOUBLE_HIGH_VALUE]);
-    row1[BIG_DECIMAL_LOW_VALUE] = MetastoreDirectSqlUtils.min(row1[BIG_DECIMAL_LOW_VALUE], row2[BIG_DECIMAL_LOW_VALUE]);
-    row1[BIG_DECIMAL_HIGH_VALUE] = MetastoreDirectSqlUtils.max(row1[BIG_DECIMAL_HIGH_VALUE], row2[BIG_DECIMAL_HIGH_VALUE]);
-    row1[NUM_NULLS] = MetastoreDirectSqlUtils.sum(row1[NUM_NULLS], row2[NUM_NULLS]);
-    row1[NUM_DISTINCTS] = MetastoreDirectSqlUtils.max(row1[NUM_DISTINCTS], row2[NUM_DISTINCTS]);
-    row1[AVG_COL_LEN] = MetastoreDirectSqlUtils.max(row1[AVG_COL_LEN], row2[AVG_COL_LEN]);
-    row1[MAX_COL_LEN] = MetastoreDirectSqlUtils.max(row1[MAX_COL_LEN], row2[MAX_COL_LEN]);
-    row1[NUM_TRUES] = MetastoreDirectSqlUtils.sum(row1[NUM_TRUES], row2[NUM_TRUES]);
-    row1[NUM_FALSES] = MetastoreDirectSqlUtils.sum(row1[NUM_FALSES], row2[NUM_FALSES]);
-    row1[SUM_NDV_LONG] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_LONG], row2[SUM_NDV_LONG]);
-    row1[SUM_NDV_DOUBLE] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_DOUBLE], row2[SUM_NDV_DOUBLE]);
-    row1[SUM_NDV_DECIMAL] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_DECIMAL], row2[SUM_NDV_DECIMAL]);
-    row1[COUNT_ROWS] = MetastoreDirectSqlUtils.sum(row1[COUNT_ROWS], row2[COUNT_ROWS]);
-    row1[SUM_NUM_DISTINCTS] = MetastoreDirectSqlUtils.sum(row1[SUM_NUM_DISTINCTS], row2[SUM_NUM_DISTINCTS]);
+    row1[LONG_LOW_VALUE.idx()] = MetastoreDirectSqlUtils.min(row1[LONG_LOW_VALUE.idx()], row2[LONG_LOW_VALUE.idx()]);
+    row1[LONG_HIGH_VALUE.idx()] = MetastoreDirectSqlUtils.max(row1[LONG_HIGH_VALUE.idx()], row2[LONG_HIGH_VALUE.idx()]);
+    row1[DOUBLE_LOW_VALUE.idx()] = MetastoreDirectSqlUtils.min(row1[DOUBLE_LOW_VALUE.idx()], row2[DOUBLE_LOW_VALUE.idx()]);
+    row1[DOUBLE_HIGH_VALUE.idx()] = MetastoreDirectSqlUtils.max(row1[DOUBLE_HIGH_VALUE.idx()], row2[DOUBLE_HIGH_VALUE.idx()]);
+    row1[BIG_DECIMAL_LOW_VALUE.idx()] = MetastoreDirectSqlUtils.min(row1[BIG_DECIMAL_LOW_VALUE.idx()], row2[BIG_DECIMAL_LOW_VALUE.idx()]);
+    row1[BIG_DECIMAL_HIGH_VALUE.idx()] = MetastoreDirectSqlUtils.max(row1[BIG_DECIMAL_HIGH_VALUE.idx()], row2[BIG_DECIMAL_HIGH_VALUE.idx()]);
+    row1[NUM_NULLS.idx()] = MetastoreDirectSqlUtils.sum(row1[NUM_NULLS.idx()], row2[NUM_NULLS.idx()]);
+    row1[NUM_DISTINCTS.idx()] = MetastoreDirectSqlUtils.max(row1[NUM_DISTINCTS.idx()], row2[NUM_DISTINCTS.idx()]);
+    row1[AVG_COL_LEN.idx()] = MetastoreDirectSqlUtils.max(row1[AVG_COL_LEN.idx()], row2[AVG_COL_LEN.idx()]);
+    row1[MAX_COL_LEN.idx()] = MetastoreDirectSqlUtils.max(row1[MAX_COL_LEN.idx()], row2[MAX_COL_LEN.idx()]);
+    row1[NUM_TRUES.idx()] = MetastoreDirectSqlUtils.sum(row1[NUM_TRUES.idx()], row2[NUM_TRUES.idx()]);
+    row1[NUM_FALSES.idx()] = MetastoreDirectSqlUtils.sum(row1[NUM_FALSES.idx()], row2[NUM_FALSES.idx()]);
+    row1[SUM_NDV_LONG.idx()] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_LONG.idx()], row2[SUM_NDV_LONG.idx()]);
+    row1[SUM_NDV_DOUBLE.idx()] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_DOUBLE.idx()], row2[SUM_NDV_DOUBLE.idx()]);
+    row1[SUM_NDV_DECIMAL.idx()] = MetastoreDirectSqlUtils.sum(row1[SUM_NDV_DECIMAL.idx()], row2[SUM_NDV_DECIMAL.idx()]);
+    row1[COUNT_ROWS.idx()] = MetastoreDirectSqlUtils.sum(row1[COUNT_ROWS.idx()], row2[COUNT_ROWS.idx()]);
+    row1[SUM_NUM_DISTINCTS.idx()] = MetastoreDirectSqlUtils.sum(row1[SUM_NUM_DISTINCTS.idx()], row2[SUM_NUM_DISTINCTS.idx()]);
   }
 
   private ColumnStatisticsObj prepareCSObjWithAdjustedNDV(
@@ -2350,14 +2351,14 @@ class MetaStoreDirectSql {
       return null;
     }
     ColumnStatisticsData data = new ColumnStatisticsData();
-    ColumnStatisticsObj cso = new ColumnStatisticsObj((String) row[COLNAME], (String) row[COLTYPE], data);
-    Object avgLong = MetastoreDirectSqlUtils.divide(row[SUM_NDV_LONG], row[COUNT_ROWS]);
-    Object avgDouble = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DOUBLE], row[COUNT_ROWS]);
-    Object avgDecimal = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DECIMAL], row[COUNT_ROWS]);
-    StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, row[LONG_LOW_VALUE],
-            row[LONG_HIGH_VALUE], row[DOUBLE_LOW_VALUE], row[DOUBLE_HIGH_VALUE], row[BIG_DECIMAL_LOW_VALUE], row[BIG_DECIMAL_HIGH_VALUE],
-            row[NUM_NULLS], row[NUM_DISTINCTS], row[AVG_COL_LEN], row[MAX_COL_LEN], row[NUM_TRUES], row[NUM_FALSES],
-            avgLong, avgDouble, avgDecimal, row[SUM_NUM_DISTINCTS],
+    ColumnStatisticsObj cso = new ColumnStatisticsObj((String) row[COLNAME.idx()], (String) row[COLTYPE.idx()], data);
+    Object avgLong = MetastoreDirectSqlUtils.divide(row[SUM_NDV_LONG.idx()], row[COUNT_ROWS.idx()]);
+    Object avgDouble = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DOUBLE.idx()], row[COUNT_ROWS.idx()]);
+    Object avgDecimal = MetastoreDirectSqlUtils.divide(row[SUM_NDV_DECIMAL.idx()], row[COUNT_ROWS.idx()]);
+    StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, row[LONG_LOW_VALUE.idx()],
+            row[LONG_HIGH_VALUE.idx()], row[DOUBLE_LOW_VALUE.idx()], row[DOUBLE_HIGH_VALUE.idx()], row[BIG_DECIMAL_LOW_VALUE.idx()], row[BIG_DECIMAL_HIGH_VALUE.idx()],
+            row[NUM_NULLS.idx()], row[NUM_DISTINCTS.idx()], row[AVG_COL_LEN.idx()], row[MAX_COL_LEN.idx()], row[NUM_TRUES.idx()], row[NUM_FALSES.idx()],
+            avgLong, avgDouble, avgDecimal, row[SUM_NUM_DISTINCTS.idx()],
             useDensityFunctionForNDVEstimation, ndvTuner);
     return cso;
   }
