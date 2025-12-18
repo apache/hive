@@ -1024,7 +1024,7 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
-  default Map<String, String> listOverriddenColumnTypesColumnTypes(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  default Map<String, String> listOverriddenColumnTypes(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     return Collections.emptyMap();
   }
 }

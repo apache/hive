@@ -912,7 +912,7 @@ public class DDLPlanUtils {
   private String getColumns(Table table) {
     List<String> columnDescs = new ArrayList<>();
     Map<String, String> colTypes =
-        table.isNonNative() ? table.getStorageHandler().listOverriddenColumnTypesColumnTypes(table) : Collections.emptyMap();
+        table.isNonNative() ? table.getStorageHandler().listOverriddenColumnTypes(table) : Collections.emptyMap();
     for (FieldSchema column : table.getCols()) {
       String columnType = colTypes.getOrDefault(column.getName(),
           formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType())));

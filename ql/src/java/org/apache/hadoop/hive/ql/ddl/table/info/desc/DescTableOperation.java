@@ -279,7 +279,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
    */
   private static void fixColumnTypeName(List<FieldSchema> cols, Table table) {
     Map<String, String> overriddenColumnTypes =
-        table.isNonNative() ? table.getStorageHandler().listOverriddenColumnTypesColumnTypes(table) : Collections.emptyMap();
+        table.isNonNative() ? table.getStorageHandler().listOverriddenColumnTypes(table) : Collections.emptyMap();
     for (FieldSchema col : cols) {
       if (serdeConstants.DECIMAL_TYPE_NAME.equals(col.getType())) {
         col.setType(

@@ -2087,7 +2087,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
-  public Map<String, String> listOverriddenColumnTypesColumnTypes(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+  public Map<String, String> listOverriddenColumnTypes(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Map<String, String> columns = Maps.newHashMap();
     for (Types.NestedField field : icebergTable.schema().columns()) {
