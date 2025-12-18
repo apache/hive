@@ -900,7 +900,7 @@ public interface HiveStorageHandler extends Configurable {
   default List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table table) throws SemanticException {
     return getPartitionNames(table, Maps.newHashMap());
   }
-  
+
   default ColumnInfo getColumnInfo(org.apache.hadoop.hive.ql.metadata.Table hmsTable, String colName)
       throws SemanticException {
     throw new UnsupportedOperationException("Storage handler does not support getting column type " +
@@ -1022,5 +1022,9 @@ public interface HiveStorageHandler extends Configurable {
 
   default boolean supportsDefaultColumnValues(Map<String, String> tblProps) {
     return false;
+  }
+
+  default Map<String, String> listOverriddenColumnTypesColumnTypes(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    return Collections.emptyMap();
   }
 }

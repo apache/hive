@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.info.desc;
 import java.io.DataOutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
           cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
         }
       }
-      fixDecimalColumnTypeName(cols);
+      fixColumnTypeName(cols, table);
 
       setConstraintsAndStorageHandlerInfo(table);
       handleMaterializedView(table);
@@ -270,15 +271,22 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   /**
    * Fix the type name of a column of type decimal w/o precision/scale specified. This makes
    * the describe table show "decimal(10,0)" instead of "decimal" even if the type stored
-   * in metastore is "decimal", which is possible with previous hive.
+   * in metastore is "decimal", which is possible with previous hive and if the column is overridden to some other
+   * logical type.
    *
-   * @param cols columns that to be fixed as such
+   * @param cols  columns that to be fixed as such
+   * @param table the hive table
    */
-  private static void fixDecimalColumnTypeName(List<FieldSchema> cols) {
+  private static void fixColumnTypeName(List<FieldSchema> cols, Table table) {
+    Map<String, String> overriddenColumnTypes =
+        table.isNonNative() ? table.getStorageHandler().listOverriddenColumnTypesColumnTypes(table) : Collections.emptyMap();
     for (FieldSchema col : cols) {
       if (serdeConstants.DECIMAL_TYPE_NAME.equals(col.getType())) {
-        col.setType(DecimalTypeInfo.getQualifiedName(HiveDecimal.USER_DEFAULT_PRECISION,
-            HiveDecimal.USER_DEFAULT_SCALE));
+        col.setType(
+            DecimalTypeInfo.getQualifiedName(HiveDecimal.USER_DEFAULT_PRECISION, HiveDecimal.USER_DEFAULT_SCALE));
+      }
+      if (overriddenColumnTypes.containsKey(col.getName())) {
+        col.setType(overriddenColumnTypes.get(col.getName()));
       }
     }
   }

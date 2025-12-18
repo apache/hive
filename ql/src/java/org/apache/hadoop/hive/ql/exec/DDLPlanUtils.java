@@ -24,6 +24,8 @@ import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+
+import java.util.Collections;
 import java.util.Comparator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -38,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
@@ -910,8 +911,11 @@ public class DDLPlanUtils {
 
   private String getColumns(Table table) {
     List<String> columnDescs = new ArrayList<>();
+    Map<String, String> colTypes =
+        table.isNonNative() ? table.getStorageHandler().listOverriddenColumnTypesColumnTypes(table) : Collections.emptyMap();
     for (FieldSchema column : table.getCols()) {
-      String columnType = formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType()));
+      String columnType = colTypes.getOrDefault(column.getName(),
+          formatType(TypeInfoUtils.getTypeInfoFromTypeString(column.getType())));
       String columnDesc = "  " + unparseIdentifier(column.getName()) + " " + columnType;
       if (column.getComment() != null) {
         columnDesc += " COMMENT '" + HiveStringUtils.escapeHiveCommand(column.getComment()) + "'";

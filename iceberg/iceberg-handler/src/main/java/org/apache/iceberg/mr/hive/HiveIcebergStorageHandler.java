@@ -201,6 +201,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
 import org.apache.iceberg.types.Conversions;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Pair;
 import org.apache.iceberg.util.SerializationUtil;
@@ -2083,6 +2084,28 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       Map<String, String> partitionSpec) throws SemanticException {
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     return IcebergTableUtil.getPartitionNames(icebergTable, partitionSpec, false);
+  }
+
+  @Override
+  public Map<String, String> listOverriddenColumnTypesColumnTypes(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
+    Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+    Map<String, String> columns = Maps.newHashMap();
+    for (Types.NestedField field : icebergTable.schema().columns()) {
+      if (isOverriddenColumn(field.type().typeId())) {
+        columns.put(field.name(), field.type().toString());
+      }
+    }
+    return columns;
+  }
+
+  private boolean isOverriddenColumn(Type.TypeID typeID) {
+    // Geometry, Geography & Timestamp_ns types
+    switch (typeID) {
+      case VARIANT -> {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

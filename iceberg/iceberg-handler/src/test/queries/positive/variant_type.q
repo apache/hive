@@ -1,5 +1,6 @@
 -- Mask random uuid
 --! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
+--! qt:replace:/(\s+uuid\s+)\S+/$1#Masked#/
 -- Mask random snapshot id
 --! qt:replace:/('current-snapshot-id'=')\d+/$1#SnapshotId#/
 -- Mask current-snapshot-timestamp-ms
@@ -10,6 +11,12 @@ CREATE EXTERNAL TABLE variant_test_basic (
     id INT,
     data VARIANT
 ) STORED BY ICEBERG tblproperties('format-version'='3');
+
+show create table variant_test_basic;
+
+describe variant_test_basic;
+
+describe formatted variant_test_basic;
 
 -- Insert primitive types
 INSERT INTO variant_test_basic VALUES
