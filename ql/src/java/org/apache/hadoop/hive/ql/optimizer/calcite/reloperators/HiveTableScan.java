@@ -261,13 +261,8 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
         fieldNames));
 
     // 5. Add Proj on top of TS
-    HiveProject hp = (HiveProject) relBuilder.push(newHT)
+    return relBuilder.push(newHT)
         .project(exprList, new ArrayList<String>(fieldNames)).build();
-
-    // 6. Set synthetic flag, so that we would push filter below this one
-    hp.setSynthetic();
-
-    return hp;
   }
 
   public List<Integer> getNeededColIndxsFrmReloptHT() {
