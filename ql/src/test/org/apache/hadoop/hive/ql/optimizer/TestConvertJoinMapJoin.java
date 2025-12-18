@@ -35,10 +35,10 @@ import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.junit.jupiter.api.Test;
 
-public class TestConvertJoinMapJoin {
+class TestConvertJoinMapJoin {
 
   @Test
-  public void testComputeOnlineDataSizeGenericLargeDataSize() {
+  void testComputeOnlineDataSizeGenericLargeDataSize() {
     ConvertJoinMapJoin converter = new ConvertJoinMapJoin();
     converter.hashTableLoadFactor = 0.75f;
     Statistics stats = new Statistics(1000L, Long.MAX_VALUE, 0L, 0L);
@@ -49,7 +49,7 @@ public class TestConvertJoinMapJoin {
   }
 
   @Test
-  public void testComputeOnlineDataSizeGenericLargeNumRowsWithOverhead() {
+  void testComputeOnlineDataSizeGenericLargeNumRowsWithOverhead() {
     ConvertJoinMapJoin converter = new ConvertJoinMapJoin();
     converter.hashTableLoadFactor = 0.75f;
     Statistics stats = new Statistics(Long.MAX_VALUE / 2, 1000L, 0L, 0L);
@@ -61,7 +61,7 @@ public class TestConvertJoinMapJoin {
   }
 
   @Test
-  public void testComputeOnlineDataSizeGenericNumNullsLargerThanNumRows() {
+  void testComputeOnlineDataSizeGenericNumNullsLargerThanNumRows() {
     ConvertJoinMapJoin converter = new ConvertJoinMapJoin();
     converter.hashTableLoadFactor = 0.75f;
     Statistics stats = new Statistics(100L, 10000L, 0L, 0L);
@@ -77,7 +77,7 @@ public class TestConvertJoinMapJoin {
   }
 
   @Test
-  public void testComputeOnlineDataSizeGenericSmallDataSizeLargeAdjustment() {
+  void testComputeOnlineDataSizeGenericSmallDataSizeLargeAdjustment() {
     ConvertJoinMapJoin converter = new ConvertJoinMapJoin();
     converter.hashTableLoadFactor = 0.75f;
     Statistics stats = new Statistics(1000000L, 100L, 0L, 0L);
@@ -93,7 +93,7 @@ public class TestConvertJoinMapJoin {
   }
 
   @Test
-  public void testComputeOnlineDataSizeGenericAllExtremeValues() {
+  void testComputeOnlineDataSizeGenericAllExtremeValues() {
     ConvertJoinMapJoin converter = new ConvertJoinMapJoin();
     converter.hashTableLoadFactor = 0.75f;
     Statistics stats = new Statistics(Long.MAX_VALUE, Long.MAX_VALUE, 0L, 0L);
@@ -110,7 +110,7 @@ public class TestConvertJoinMapJoin {
   }
 
   @Test
-  public void testComputeCumulativeCardinalityWithParentsOverflow() {
+  void testComputeCumulativeCardinalityWithParentsOverflow() {
     Operator<?> parent1 = createMockOperatorWithStats(Long.MAX_VALUE / 2);
     when(parent1.getParentOperators()).thenReturn(Collections.emptyList());
     Operator<?> parent2 = createMockOperatorWithStats(Long.MAX_VALUE / 2);
@@ -126,7 +126,7 @@ public class TestConvertJoinMapJoin {
   }
 
   @Test
-  public void testComputeCumulativeCardinalityDeepTreeOverflow() {
+  void testComputeCumulativeCardinalityDeepTreeOverflow() {
     Operator<?> leaf = createMockOperatorWithStats(Long.MAX_VALUE / 2);
     when(leaf.getParentOperators()).thenReturn(Collections.emptyList());
     Operator<?> mid1 = createMockOperatorWithStats(Long.MAX_VALUE / 2);
