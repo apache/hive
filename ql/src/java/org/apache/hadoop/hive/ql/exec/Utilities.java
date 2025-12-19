@@ -5094,4 +5094,32 @@ public final class Utilities {
     }
     return suffix;
   }
+
+  /**
+   * Unescape a Hive JDBC identifier, removing surrounding double quotes if present.
+   * @param identifier the identifier to unescape
+   * @return the unescaped identifier
+   */
+  public static String unescapeHiveJdbcIdentifier(String identifier) {
+    return unescapeIdentifier(identifier, '"');
+  }
+
+  /**
+   * Unescape an identifier, removing surrounding characters if present.
+   * 
+   * @param identifier any identifier
+   * @param ch the surrounding character to remove
+   * @return the unescaped identifier
+   */
+  public static String unescapeIdentifier(String identifier, Character ch) {
+    if (identifier == null || identifier.length() < 2) {
+      return identifier;
+    }
+    
+    if (identifier.charAt(0) == ch && identifier.charAt(identifier.length() - 1) == ch) {
+      return identifier.substring(1, identifier.length() - 1);
+    }
+    
+    return identifier;
+  }
 }

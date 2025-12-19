@@ -67,8 +67,7 @@ public class JdbcStorageConfigManager {
       if (!key.equals(CONFIG_PWD) &&
           !key.equals(CONFIG_PWD_KEYSTORE) &&
           !key.equals(CONFIG_PWD_KEY) &&
-          !key.equals(CONFIG_PWD_URI) &&
-          !key.equals(CONFIG_USERNAME)
+          !key.equals(CONFIG_PWD_URI)
       ) {
         jobProps.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
       }
