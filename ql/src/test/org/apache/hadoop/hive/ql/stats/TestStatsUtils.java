@@ -25,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -32,10 +34,15 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.Date;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.Timestamp;
+import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -242,6 +249,76 @@ class TestStatsUtils {
       Arguments.of(serdeConstants.DOUBLE_TYPE_NAME, "OnlyHighValueSet", null, 1000.5, null, 1000.5),
       Arguments.of(serdeConstants.DOUBLE_TYPE_NAME, "NegativeHighValueOnly", null, -5.5, null, -5.5)
     );
+  }
+
+  @Test
+  void testGetColStatisticsTimestampType() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("ts_col");
+    cso.setColType(serdeConstants.TIMESTAMP_TYPE_NAME);
+
+    TimestampColumnStatsData tsStats = new TimestampColumnStatsData();
+    tsStats.setNumDVs(35);
+    tsStats.setNumNulls(5);
+    tsStats.setLowValue(new Timestamp(1000));
+    tsStats.setHighValue(new Timestamp(2000));
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setTimestampStats(tsStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "ts_col");
+
+    assertNotNull(cs, "ColStatistics should not be null");
+    assertEquals(35, cs.getCountDistint(), "TIMESTAMP NumDVs should be extracted from metastore stats");
+    assertEquals(5, cs.getNumNulls(), "NumNulls mismatch");
+  }
+
+  @Test
+  void testGetColStatisticsDateType() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("date_col");
+    cso.setColType(serdeConstants.DATE_TYPE_NAME);
+
+    DateColumnStatsData dateStats = new DateColumnStatsData();
+    dateStats.setNumDVs(42);
+    dateStats.setNumNulls(3);
+    dateStats.setLowValue(new Date(18000));
+    dateStats.setHighValue(new Date(19000));
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setDateStats(dateStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "date_col");
+
+    assertNotNull(cs, "ColStatistics should not be null");
+    assertEquals(42, cs.getCountDistint(), "DATE NumDVs should be extracted from metastore stats");
+    assertEquals(3, cs.getNumNulls(), "NumNulls mismatch");
+  }
+
+  private ColStatistics createColStats(String name, long ndv, long numNulls) {
+    ColStatistics cs = new ColStatistics(name, "string");
+    cs.setCountDistint(ndv);
+    cs.setNumNulls(numNulls);
+    return cs;
+  }
+
+  private Statistics createParentStats(long numRows) {
+    Statistics stats = new Statistics(numRows, 0, 0, 0);
+    stats.setColumnStatsState(Statistics.State.COMPLETE);
+    return stats;
+  }
+
+  @Test
+  void testComputeNDVGroupingColumnsPartialStats() {
+    ColStatistics cs = createColStats("partial_stats_col", 0, 100);
+    Statistics parentStats = createParentStats(1000);
+    List<ColStatistics> colStats = Collections.singletonList(cs);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(colStats, parentStats, false);
+
+    assertEquals(0, ndv, "Partial stats (ndv=0, numNulls<numRows) should return 0, not inflate to 1");
   }
 
 }
