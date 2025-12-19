@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -137,7 +138,7 @@ public class TableDesc implements Serializable, Cloneable {
     this.jobProperties = jobProperties;
   }
 
-  @Explain(displayName = "jobProperties", explainLevels = { Level.EXTENDED })
+  @Explain(displayName = ExplainTask.JOB_PROPERTIES, explainLevels = { Level.EXTENDED })
   public Map<String, String> getJobProperties() {
     return jobProperties;
   }
