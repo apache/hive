@@ -174,7 +174,9 @@ public class TestReservedWords {
         "WHERE",
         "WINDOW",
         "WITH",
-        "VARIANT"
+        "VARIANT",
+        "TIMESTAMP_NS",
+        "TIMESTAMPTZ_NS"
     );
   }
 

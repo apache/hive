@@ -1,0 +1,13 @@
+PREHOOK: query: create table emp(id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emp
+POSTHOOK: query: create table emp(id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emp
+PREHOOK: query: alter table emp add columns (t timestamp_ns)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@emp
+PREHOOK: Output: default@emp
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. Column name t cannot be of type 'timestamp_ns' as it is not supported in non-Iceberg tables.

@@ -88,6 +88,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.serde.serdeConstants.TIMESTAMPTZ_NS_TYPE_NAME;
+import static org.apache.hadoop.hive.serde.serdeConstants.TIMESTAMP_NS_TYPE_NAME;
 import static org.apache.hadoop.hive.serde.serdeConstants.VARIANT_TYPE_NAME;
 
 /**
@@ -1157,12 +1159,13 @@ public class Table implements Serializable {
     for (FieldSchema col: columns) {
       String colName = normalize(col.getName());
       if (colNames.contains(colName)) {
-        throw new HiveException("Duplicate column name " + colName
-            + " in the table definition.");
+        throw new HiveException("Duplicate column name " + colName + " in the table definition.");
       }
-      if (!icebergTable && VARIANT_TYPE_NAME.equalsIgnoreCase(col.getType())) {
-        throw new HiveException(
-            "Column name " + colName + " cannot be of type 'variant' as it is not supported in non-Iceberg tables.");
+      if (!icebergTable && (VARIANT_TYPE_NAME.equalsIgnoreCase(col.getType()) ||
+          TIMESTAMP_NS_TYPE_NAME.equalsIgnoreCase(col.getType()) ||
+          TIMESTAMPTZ_NS_TYPE_NAME.equalsIgnoreCase(col.getType()))) {
+        throw new HiveException("Column name " + colName + " cannot be of type '" + col.getType()
+            + "' as it is not supported in non-Iceberg tables" + ".");
       }
       colNames.add(colName);
     }

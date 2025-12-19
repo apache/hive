@@ -139,6 +139,9 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         writableBinaryObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.decimalTypeInfo, writableHiveDecimalObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.timestampNanoTypeInfo, writableTimestampObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.timestampNanosTZTypeInfo,
+        writableTimestampTZObjectInspector);
   }
 
   private static Map<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>
@@ -165,6 +168,8 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToWritableOI.put(PrimitiveCategory.INTERVAL_DAY_TIME, writableHiveIntervalDayTimeObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.BINARY, writableBinaryObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DECIMAL, writableHiveDecimalObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMP_NS, writableTimestampObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMPTZ_NS, writableTimestampTZObjectInspector);
   }
 
   public static final JavaBooleanObjectInspector javaBooleanObjectInspector =
@@ -240,6 +245,8 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         javaByteArrayObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.decimalTypeInfo, javaHiveDecimalObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.timestampNanoTypeInfo, javaTimestampObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.timestampNanosTZTypeInfo, javaTimestampTZObjectInspector);
   }
 
   private static Map<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> primitiveCategoryToJavaOI =
@@ -263,6 +270,8 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToJavaOI.put(PrimitiveCategory.INTERVAL_DAY_TIME, javaHiveIntervalDayTimeObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.BINARY, javaByteArrayObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.DECIMAL, javaHiveDecimalObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.TIMESTAMP_NS, javaTimestampObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.TIMESTAMPTZ_NS, javaTimestampTZObjectInspector);
   }
 
   /**
