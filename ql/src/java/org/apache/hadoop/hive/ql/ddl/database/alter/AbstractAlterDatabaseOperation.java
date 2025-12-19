@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Operation process of altering a database.
@@ -36,8 +37,9 @@ public abstract class AbstractAlterDatabaseOperation<T extends AbstractAlterData
 
   @Override
   public int execute() throws HiveException {
+    String catName = desc.getCatalogName();
     String dbName = desc.getDatabaseName();
-    Database database = context.getDb().getDatabase(dbName);
+    Database database = context.getDb().getDatabase(catName, dbName);
     if (database == null) {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }

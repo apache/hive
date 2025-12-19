@@ -161,6 +161,8 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
       throw new HiveException("New lock format only supported with db lock manager.");
     }
 
+    // TODO catalog. Need to add catalog into ShowLocksRequest. But ShowLocksRequest doesn't have catalog field.
+    //  Maybe we need to change hive_metastore.thrift to add catalog into ShowLocksRequest struct. Depend on HIVE-29242.
     ShowLocksRequest request = new ShowLocksRequest();
     if (desc.getDbName() == null && desc.getTableName() != null) {
       request.setDbname(SessionState.get().getCurrentDatabase());

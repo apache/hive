@@ -1,0 +1,5 @@
+PREHOOK: query: drop catalog hive
+PREHOOK: type: DROPCATALOG
+PREHOOK: Input: catalog:hive
+PREHOOK: Output: catalog:hive
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Can not drop hive catalog)

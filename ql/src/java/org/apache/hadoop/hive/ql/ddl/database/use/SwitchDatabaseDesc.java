@@ -31,14 +31,21 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class SwitchDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  private final String catalogName;
   private final String databaseName;
 
-  public SwitchDatabaseDesc(String databaseName) {
+  public SwitchDatabaseDesc(String catalogName, String databaseName) {
+    this.catalogName = catalogName;
     this.databaseName = databaseName;
   }
 
   @Explain(displayName = "name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return databaseName;
+  }
+
+  @Explain(displayName = "catalogName", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatalogName() {
+    return catalogName;
   }
 }

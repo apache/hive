@@ -1,0 +1,181 @@
+PREHOOK: query: CREATE DATABASE testdb
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb
+POSTHOOK: query: CREATE DATABASE testdb
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+testdb
+#### A masked pattern was here ####
+PREHOOK: type: CREATECATALOG
+PREHOOK: Output: catalog:testcat
+#### A masked pattern was here ####
+POSTHOOK: type: CREATECATALOG
+POSTHOOK: Output: catalog:testcat
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CATALOGS
+PREHOOK: type: SHOWCATALOGS
+POSTHOOK: query: SHOW CATALOGS
+POSTHOOK: type: SHOWCATALOGS
+hive
+testcat
+PREHOOK: query: CREATE DATABASE testcat.testdb_1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb_1
+POSTHOOK: query: CREATE DATABASE testcat.testdb_1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb_1
+PREHOOK: query: SET CATALOG testcat
+PREHOOK: type: SWITCHCATALOG
+PREHOOK: Input: catalog:testcat
+POSTHOOK: query: SET CATALOG testcat
+POSTHOOK: type: SWITCHCATALOG
+POSTHOOK: Input: catalog:testcat
+PREHOOK: query: select current_catalog()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select current_catalog()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+testcat
+PREHOOK: query: USE hive.default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE hive.default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: select current_catalog()
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select current_catalog()
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+hive
+PREHOOK: query: SET CATALOG testcat
+PREHOOK: type: SWITCHCATALOG
+PREHOOK: Input: catalog:testcat
+POSTHOOK: query: SET CATALOG testcat
+POSTHOOK: type: SWITCHCATALOG
+POSTHOOK: Input: catalog:testcat
+PREHOOK: query: CREATE DATABASE testdb_2
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb_2
+POSTHOOK: query: CREATE DATABASE testdb_2
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb_2
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+testdb_1
+testdb_2
+PREHOOK: query: USE testcat.testdb_1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:testdb_1
+POSTHOOK: query: USE testcat.testdb_1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:testdb_1
+PREHOOK: query: DROP DATABASE testcat.testdb_1
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:testdb_1
+PREHOOK: Output: database:testdb_1
+POSTHOOK: query: DROP DATABASE testcat.testdb_1
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:testdb_1
+POSTHOOK: Output: database:testdb_1
+PREHOOK: query: SHOW DATABASES
+PREHOOK: type: SHOWDATABASES
+POSTHOOK: query: SHOW DATABASES
+POSTHOOK: type: SHOWDATABASES
+default
+testdb_2
+PREHOOK: query: DESCRIBE DATABASE testcat.testdb_2
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:testdb_2
+POSTHOOK: query: DESCRIBE DATABASE testcat.testdb_2
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:testdb_2
+testdb_2		location/in/test		hive_test_user	USER		
+PREHOOK: query: DESCRIBE DATABASE EXTENDED testcat.testdb_2
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:testdb_2
+POSTHOOK: query: DESCRIBE DATABASE EXTENDED testcat.testdb_2
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:testdb_2
+testdb_2		location/in/test		hive_test_user	USER			
+PREHOOK: query: ALTER DATABASE testcat.testdb_2 SET dbproperties('test'='yesthisis')
+PREHOOK: type: ALTERDATABASE
+PREHOOK: Output: database:testdb_2
+POSTHOOK: query: ALTER DATABASE testcat.testdb_2 SET dbproperties('test'='yesthisis')
+POSTHOOK: type: ALTERDATABASE
+POSTHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_OWNER
+PREHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_OWNER
+POSTHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+PREHOOK: type: ALTERDATABASE_LOCATION
+PREHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERDATABASE_LOCATION
+POSTHOOK: Output: database:testdb_2
+#### A masked pattern was here ####
+PREHOOK: query: DESCRIBE DATABASE testcat.testdb_2
+PREHOOK: type: DESCDATABASE
+PREHOOK: Input: database:testdb_2
+POSTHOOK: query: DESCRIBE DATABASE testcat.testdb_2
+POSTHOOK: type: DESCDATABASE
+POSTHOOK: Input: database:testdb_2
+testdb_2		location/in/test		user1	USER		
+PREHOOK: query: SHOW CREATE DATABASE testcat.testdb_2
+PREHOOK: type: SHOW_CREATEDATABASE
+PREHOOK: Input: database:testdb_2
+POSTHOOK: query: SHOW CREATE DATABASE testcat.testdb_2
+POSTHOOK: type: SHOW_CREATEDATABASE
+POSTHOOK: Input: database:testdb_2
+CREATE DATABASE `testdb_2`
+LOCATION
+#### A masked pattern was here ####
+WITH DBPROPERTIES (
+  'test'='yesthisis')
+PREHOOK: query: DROP DATABASE testcat.testdb_2
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:testdb_2
+PREHOOK: Output: database:testdb_2
+POSTHOOK: query: DROP DATABASE testcat.testdb_2
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:testdb_2
+POSTHOOK: Output: database:testdb_2
+PREHOOK: query: DROP CATALOG testcat
+PREHOOK: type: DROPCATALOG
+PREHOOK: Input: catalog:testcat
+PREHOOK: Output: catalog:testcat
+POSTHOOK: query: DROP CATALOG testcat
+POSTHOOK: type: DROPCATALOG
+POSTHOOK: Input: catalog:testcat
+POSTHOOK: Output: catalog:testcat
+PREHOOK: query: DROP DATABASE hive.testdb
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:testdb
+PREHOOK: Output: database:testdb
+POSTHOOK: query: DROP DATABASE hive.testdb
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:testdb
+POSTHOOK: Output: database:testdb
+PREHOOK: query: SET CATALOG hive
+PREHOOK: type: SWITCHCATALOG
+PREHOOK: Input: catalog:hive
+POSTHOOK: query: SET CATALOG hive
+POSTHOOK: type: SWITCHCATALOG
+POSTHOOK: Input: catalog:hive

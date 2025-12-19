@@ -38,15 +38,21 @@ public class SwitchDatabaseOperation extends DDLOperation<SwitchDatabaseDesc> {
 
   @Override
   public int execute() throws HiveException {
+    String catName = desc.getCatalogName();
+    if (catName != null && context.getDb().getCatalog(catName) != null) {
+      SessionState.get().setCurrentCatalog(catName);
+    } else if (catName != null) {
+      throw new HiveException(ErrorMsg.CATALOG_NOT_EXISTS, catName);
+    }
     String dbName = desc.getDatabaseName();
-    if (!context.getDb().databaseExists(dbName)) {
+    if (!context.getDb().databaseExists(catName, dbName)) {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
 
     SessionState.get().setCurrentDatabase(dbName);
 
     // set database specific parameters
-    Database database = context.getDb().getDatabase(dbName);
+    Database database = context.getDb().getDatabase(catName, dbName);
     assert(database != null);
 
     Map<String, String> dbParams = database.getParameters();

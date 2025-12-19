@@ -16,28 +16,28 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.database.alter.location;
+package org.apache.hadoop.hive.ql.ddl.catalog.use;
 
-import org.apache.hadoop.hive.ql.ddl.database.alter.AbstractAlterDatabaseDesc;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
+import java.io.Serializable;
 
 /**
- * DDL task description for ALTER DATABASE ... SET LOCATION ... commands.
+ * DDL task description for SET CATALOG commands.
  */
-@Explain(displayName = "Set Database Location", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class AlterDatabaseSetLocationDesc extends AbstractAlterDatabaseDesc {
-  private static final long serialVersionUID = 1L;
+@Explain(displayName = "Switch Catalog", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
+public class SwitchCatalogDesc implements DDLDesc, Serializable {
+    private static final long serialVersionUID = 1L;
 
-  private final String location;
+    private final String catalogName;
 
-  public AlterDatabaseSetLocationDesc(String catalogName, String databaseName, String location) {
-    super(catalogName, databaseName, null);
-    this.location = location;
-  }
+    public SwitchCatalogDesc(String catalogName) {
+        this.catalogName = catalogName;
+    }
 
-  @Explain(displayName="location")
-  public String getLocation() {
-    return location;
-  }
+    @Explain(displayName = "name", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
+    public String getCatalogName() {
+        return catalogName;
+    }
 }

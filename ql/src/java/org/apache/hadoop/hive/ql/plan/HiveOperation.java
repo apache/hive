@@ -34,6 +34,7 @@ public enum HiveOperation {
   REPLSTATUS("REPLSTATUS", HiveParser.TOK_REPL_STATUS, new Privilege[]{Privilege.SELECT}, null),
   CREATECATALOG("CREATECATALOG", HiveParser.TOK_CREATECATALOG, null, new Privilege[]{Privilege.CREATE}),
   DROPCATALOG("DROPCATALOG", HiveParser.TOK_DROPCATALOG, null, new Privilege[]{Privilege.DROP}),
+  SWITCHCATALOG("SWITCHCATALOG", HiveParser.TOK_SWITCHCATALOG, null, null, true, false),
   CREATEDATABASE("CREATEDATABASE", HiveParser.TOK_CREATEDATABASE, null, new Privilege[]{Privilege.CREATE}),
   CREATEDATACONNECTOR("CREATEDATACONNECTOR", HiveParser.TOK_CREATEDATACONNECTOR, null, new Privilege[]{Privilege.CREATE}),
   DROPDATABASE("DROPDATABASE", HiveParser.TOK_DROPDATABASE, null, new Privilege[]{Privilege.DROP}),
