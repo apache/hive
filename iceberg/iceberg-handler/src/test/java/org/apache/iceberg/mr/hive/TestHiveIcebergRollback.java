@@ -22,9 +22,9 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import org.apache.iceberg.AssertHelpers;
-import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -99,7 +99,7 @@ public class TestHiveIcebergRollback extends HiveIcebergStorageHandlerWithEngine
     Table table = testTables.createTableWithVersions(shell, identifier.name(),
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, fileFormat,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, 2);
-    String metadataLocationBeforeRollback = ((BaseTable) table).operations().current().metadataFileLocation();
+    String metadataLocationBeforeRollback = TableUtil.metadataFileLocation(table);
     shell.executeStatement("ALTER TABLE " + identifier.name() + " EXECUTE ROLLBACK(" +
         table.history().get(0).snapshotId() + ")");
     Assert.assertEquals(3, shell.executeStatement("SELECT * FROM " + identifier.name()).size());

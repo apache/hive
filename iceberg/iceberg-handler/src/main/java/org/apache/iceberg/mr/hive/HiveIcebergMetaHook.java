@@ -96,6 +96,7 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.Transaction;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.UpdateProperties;
@@ -552,7 +553,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       }
 
       // we want to keep the data files but get rid of the metadata directory
-      String metadataLocation = ((BaseTable) this.icebergTable).operations().current().metadataFileLocation();
+      String metadataLocation = TableUtil.metadataFileLocation(this.icebergTable);
       try {
         Path path = new Path(metadataLocation).getParent();
         FileSystem.get(path.toUri(), conf).delete(path, true);
