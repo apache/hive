@@ -49,6 +49,21 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
+{
+  "INPUTS": [
+    "default@src",
+    "default@srcpart",
+    "default@srcpart@ds=2008-04-08/hr=11",
+    "default@srcpart@ds=2008-04-08/hr=12",
+    "default@srcpart@ds=2008-04-09/hr=11",
+    "default@srcpart@ds=2008-04-09/hr=12"
+  ],
+  "OUTPUTS": [
+#### A masked pattern was here ####
+  ],
+  "CURRENT_USER": "hive_test_user",
+  "OPERATION": "QUERY"
+}
 PREHOOK: query: explain authorization use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -68,4 +83,11 @@ PREHOOK: Input: database:default
 POSTHOOK: query: explain formatted authorization use default
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:default
-{"INPUTS":["database:default"],"OUTPUTS":[],"CURRENT_USER":"hive_test_user","OPERATION":"SWITCHDATABASE"}
+{
+  "INPUTS": [
+    "database:default"
+  ],
+  "OUTPUTS": [],
+  "CURRENT_USER": "hive_test_user",
+  "OPERATION": "SWITCHDATABASE"
+}

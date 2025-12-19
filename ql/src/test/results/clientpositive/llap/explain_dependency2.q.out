@@ -6,7 +6,15 @@ POSTHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"input_tables":[{"tablename":"default@src","tabletype":"MANAGED_TABLE"}],"input_partitions":[]}
+{
+  "input_tables": [
+    {
+      "tablename": "default@src",
+      "tabletype": "MANAGED_TABLE"
+    }
+  ],
+  "input_partitions": []
+}
 PREHOOK: query: EXPLAIN DEPENDENCY SELECT count(*) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -15,7 +23,15 @@ POSTHOOK: query: EXPLAIN DEPENDENCY SELECT count(*) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"input_tables":[{"tablename":"default@src","tabletype":"MANAGED_TABLE"}],"input_partitions":[]}
+{
+  "input_tables": [
+    {
+      "tablename": "default@src",
+      "tabletype": "MANAGED_TABLE"
+    }
+  ],
+  "input_partitions": []
+}
 PREHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM srcpart where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -32,7 +48,28 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 #### A masked pattern was here ####
-{"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}],"input_partitions":[{"partitionName":"default@srcpart@ds=2008-04-08/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-08/hr=12"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=11"},{"partitionName":"default@srcpart@ds=2008-04-09/hr=12"}]}
+{
+  "input_tables": [
+    {
+      "tablename": "default@srcpart",
+      "tabletype": "MANAGED_TABLE"
+    }
+  ],
+  "input_partitions": [
+    {
+      "partitionName": "default@srcpart@ds=2008-04-08/hr=11"
+    },
+    {
+      "partitionName": "default@srcpart@ds=2008-04-08/hr=12"
+    },
+    {
+      "partitionName": "default@srcpart@ds=2008-04-09/hr=11"
+    },
+    {
+      "partitionName": "default@srcpart@ds=2008-04-09/hr=12"
+    }
+  ]
+}
 PREHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM srcpart where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -41,7 +78,15 @@ POSTHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM srcpart where ds = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
-{"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}],"input_partitions":[]}
+{
+  "input_tables": [
+    {
+      "tablename": "default@srcpart",
+      "tabletype": "MANAGED_TABLE"
+    }
+  ],
+  "input_partitions": []
+}
 PREHOOK: query: EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -50,7 +95,15 @@ POSTHOOK: query: EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds is not
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
-{"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}],"input_partitions":[]}
+{
+  "input_tables": [
+    {
+      "tablename": "default@srcpart",
+      "tabletype": "MANAGED_TABLE"
+    }
+  ],
+  "input_partitions": []
+}
 PREHOOK: query: EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -59,7 +112,15 @@ POSTHOOK: query: EXPLAIN DEPENDENCY SELECT count(*) FROM srcpart where ds = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 #### A masked pattern was here ####
-{"input_tables":[{"tablename":"default@srcpart","tabletype":"MANAGED_TABLE"}],"input_partitions":[]}
+{
+  "input_tables": [
+    {
+      "tablename": "default@srcpart",
+      "tabletype": "MANAGED_TABLE"
+    }
+  ],
+  "input_partitions": []
+}
 PREHOOK: query: create table tstsrcpart like srcpart
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -76,7 +137,15 @@ POSTHOOK: query: EXPLAIN DEPENDENCY SELECT * FROM tstsrcpart where ds is not nul
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart
 #### A masked pattern was here ####
-{"input_tables":[{"tablename":"default@tstsrcpart","tabletype":"MANAGED_TABLE"}],"input_partitions":[]}
+{
+  "input_tables": [
+    {
+      "tablename": "default@tstsrcpart",
+      "tabletype": "MANAGED_TABLE"
+    }
+  ],
+  "input_partitions": []
+}
 PREHOOK: query: EXPLAIN DEPENDENCY SELECT count(*) FROM tstsrcpart where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstsrcpart
@@ -85,4 +154,12 @@ POSTHOOK: query: EXPLAIN DEPENDENCY SELECT count(*) FROM tstsrcpart where ds is 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstsrcpart
 #### A masked pattern was here ####
-{"input_tables":[{"tablename":"default@tstsrcpart","tabletype":"MANAGED_TABLE"}],"input_partitions":[]}
+{
+  "input_tables": [
+    {
+      "tablename": "default@tstsrcpart",
+      "tabletype": "MANAGED_TABLE"
+    }
+  ],
+  "input_partitions": []
+}

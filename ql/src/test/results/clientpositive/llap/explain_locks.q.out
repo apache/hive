@@ -124,7 +124,9 @@ POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
 POSTHOOK: Output: default@source
-{"LOCK INFORMATION:":"[default.target.p=2/q=2 -> SHARED_READ, default.source -> EXCL_WRITE, default.source -> SHARED_READ]"}
+{
+  "LOCK INFORMATION:": "[default.target.p=2/q=2 -> SHARED_READ, default.source -> EXCL_WRITE, default.source -> SHARED_READ]"
+}
 PREHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
@@ -221,7 +223,9 @@ POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
 POSTHOOK: Output: default@source
-{"LOCK INFORMATION:":"[default.target.p=2/q=2 -> SHARED_READ, default.source -> SHARED_WRITE, default.source -> SHARED_WRITE]"}
+{
+  "LOCK INFORMATION:": "[default.target.p=2/q=2 -> SHARED_READ, default.source -> SHARED_WRITE, default.source -> SHARED_WRITE]"
+}
 PREHOOK: query: explain locks merge into target t using source s on t.a = s.a1 when matched and p = 1 and q = 2 then update set b = 1 when matched and p = 2 and q = 2 then delete when not matched and a1 > 100 then insert values(s.a1,s.b1,s.p1, s.q1)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
