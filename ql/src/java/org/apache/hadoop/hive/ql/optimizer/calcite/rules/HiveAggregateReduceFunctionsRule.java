@@ -300,7 +300,6 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final AggregateCall sumCall =
         AggregateCall.create(
             new HiveSqlSumAggFunction(
-                oldCall.isDistinct(),
                 ReturnTypes.explicit(sumReturnType),
                 oldCall.getAggregation().getOperandTypeInference(),
                 oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
@@ -346,7 +345,6 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final AggregateCall sumCall =
         AggregateCall.create(
             new HiveSqlSumAggFunction(
-                oldCall.isDistinct(),
                 ReturnTypes.explicit(sumReturnType),
                 oldCall.getAggregation().getOperandTypeInference(),
                 oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
@@ -364,7 +362,6 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final AggregateCall countCall =
         AggregateCall.create(
             new HiveSqlCountAggFunction(
-                oldCall.isDistinct(),
                 ReturnTypes.explicit(countRetType),
                 oldCall.getAggregation().getOperandTypeInference(),
                 oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.COUNT,
@@ -445,7 +442,6 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final AggregateCall sumArgSquaredAggCall =
         createAggregateCallWithBinding(typeFactory,
             new HiveSqlSumAggFunction(
-                oldCall.isDistinct(),
                 ReturnTypes.explicit(sumSquaredReturnType),
                 InferTypes.explicit(Collections.singletonList(argSquared.getType())),
                 oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
@@ -461,7 +457,6 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final AggregateCall sumArgAggCall =
         AggregateCall.create(
             new HiveSqlSumAggFunction(
-                oldCall.isDistinct(),
                 ReturnTypes.explicit(sumReturnType),
                 InferTypes.explicit(Collections.singletonList(argRef.getType())),
                 oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.SUM,
@@ -490,7 +485,6 @@ public class HiveAggregateReduceFunctionsRule extends RelOptRule {
     final AggregateCall countArgAggCall =
         AggregateCall.create(
             new HiveSqlCountAggFunction(
-                oldCall.isDistinct(),
                 ReturnTypes.explicit(countRetType),
                 oldCall.getAggregation().getOperandTypeInference(),
                 oldCall.getAggregation().getOperandTypeChecker()), //SqlStdOperatorTable.COUNT,
