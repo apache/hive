@@ -186,6 +186,7 @@ import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.actions.HiveIcebergDeleteOrphanFiles;
 import org.apache.iceberg.mr.hive.plan.IcebergBucketFunction;
 import org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder;
+import org.apache.iceberg.parquet.VariantUtil;
 import org.apache.iceberg.puffin.Blob;
 import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.puffin.Puffin;
@@ -1739,7 +1740,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (FileFormat.AVRO.name().equalsIgnoreCase(tableProps.getProperty(TableProperties.DEFAULT_FILE_FORMAT)) ||
         isValidMetadataTable(tableProps.getProperty(IcebergAcidUtil.META_TABLE_PROPERTY)) ||
         hasOrcTimeInSchema(tableProps, tableSchema) ||
-        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema)) {
+        !hasParquetNestedTypeWithinListOrMap(tableProps, tableSchema) ||
+        VariantUtil.shouldUseVariantShredding(tableProps::getProperty, tableSchema)) {
       // disable vectorization
       SessionStateUtil.getQueryState(conf).ifPresent(queryState ->
           queryState.getConf().setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, false));
