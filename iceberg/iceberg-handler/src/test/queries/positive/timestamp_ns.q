@@ -1,8 +1,8 @@
 CREATE TABLE t (
   ts_us     timestamp,
-  ts_ns     timestamp_ns,
+  ts_ns     nanosecond timestamp,
   ts_tz_us  timestamp with local time zone,
-  ts_tz_ns  timestamptz_ns
+  ts_tz_ns  nanosecond timestamp with local time zone
 )
 STORED BY ICEBERG
 TBLPROPERTIES ('format-version'='3');

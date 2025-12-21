@@ -402,9 +402,9 @@ public final class HiveSchemaUtil {
       case TIMESTAMP_NANO:
         Types.TimestampNanoType nanoType = (Types.TimestampNanoType) type;
         if (nanoType.shouldAdjustToUTC()) {
-          return "timestamptz_ns";
+          return "nanosecond timestamp with local time zone";
         }
-        return "timestamp_ns";
+        return "nanosecond timestamp";
       default:
         throw new UnsupportedOperationException(type + " is not supported");
     }

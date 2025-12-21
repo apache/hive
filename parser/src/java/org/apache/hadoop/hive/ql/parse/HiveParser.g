@@ -2449,8 +2449,8 @@ primitiveType
     | KW_DECIMAL (LPAREN prec=Number (COMMA scale=Number)? RPAREN)? -> ^(TOK_DECIMAL $prec? $scale?)
     | KW_VARCHAR LPAREN length=Number RPAREN      ->    ^(TOK_VARCHAR $length)
     | KW_CHAR LPAREN length=Number RPAREN      ->    ^(TOK_CHAR $length)
-    | KW_TIMESTAMP_NS    -> TOK_TIMESTAMP_NS
-    | KW_TIMESTAMPTZ_NS  -> TOK_TIMESTAMPTZ_NS
+    | KW_NANOSECOND KW_TIMESTAMP -> TOK_TIMESTAMP_NS
+    | KW_NANOSECOND KW_TIMESTAMP KW_WITH KW_LOCAL KW_TIME KW_ZONE -> TOK_TIMESTAMPTZ_NS
     ;
 
 listType

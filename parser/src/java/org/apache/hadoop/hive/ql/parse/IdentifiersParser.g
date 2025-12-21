@@ -524,15 +524,14 @@ timestampLocalTZLiteral
     ;
 
 timestampNsLiteral
-  : KW_TIMESTAMP_NS StringLiteral
+  : KW_NANOSECOND KW_TIMESTAMP StringLiteral
     -> ^(TOK_TIMESTAMP_NSLITERAL StringLiteral)
   ;
 
 timestampTzNsLiteral
-  : KW_TIMESTAMPTZ_NS StringLiteral
+  : KW_NANOSECOND KW_TIMESTAMP KW_WITH KW_LOCAL KW_TIME KW_ZONE StringLiteral
     -> ^(TOK_TIMESTAMPTZ_NSLITERAL StringLiteral)
   ;
-
 
 intervalValue
     :

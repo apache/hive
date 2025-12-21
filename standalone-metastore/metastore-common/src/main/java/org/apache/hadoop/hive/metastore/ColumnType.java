@@ -84,10 +84,11 @@ public class ColumnType {
 
   public static final String VARIANT_TYPE_NAME = "variant";
 
-  public static final String TIMESTAMP_NS = "timestamp_ns";
+  public static final String TIMESTAMP_NS = "nanosecond timestamp";
 
-  public static final String TIMESTAMPTZ_NS = "timestamptz_ns";
+  public static final String TIMESTAMPTZ_NS = "nanosecond timestamp with time zone";
 
+  public static final String NANOSECOND = "nanosecond";
 
   public static final String LIST_COLUMNS = "columns";
 
@@ -207,8 +208,7 @@ public class ColumnType {
     STRUCT_TYPE_NAME,
     UNION_TYPE_NAME,
     VARIANT_TYPE_NAME,
-    TIMESTAMP_NS,
-    TIMESTAMPTZ_NS,
+    NANOSECOND,
     LIST_COLUMNS,
     LIST_COLUMN_TYPES,
     COLUMN_NAME_DELIMITER
