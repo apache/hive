@@ -394,6 +394,9 @@ public class MapJoinTestConfig {
       case LONG:
         hashTableKeyType = HashTableKeyType.LONG;
         break;
+      case DATE:
+        hashTableKeyType = HashTableKeyType.DATE;
+        break;
       case STRING:
         hashTableKeyType = HashTableKeyType.STRING;
         break;
@@ -547,6 +550,7 @@ public class MapJoinTestConfig {
     case BYTE:
     case SHORT:
     case INT:
+    case DATE:
     case LONG:
       switch (VectorMapJoinVariation) {
       case INNER:

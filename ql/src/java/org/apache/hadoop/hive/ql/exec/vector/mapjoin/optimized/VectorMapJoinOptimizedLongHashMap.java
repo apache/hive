@@ -90,8 +90,8 @@ public class VectorMapJoinOptimizedLongHashMap
         integerTypeInfo = TypeInfoFactory.longTypeInfo;
         break;
       case DATE:
-          integerTypeInfo = TypeInfoFactory.dateTypeInfo;
-          break;
+        integerTypeInfo = TypeInfoFactory.dateTypeInfo;
+        break;
       default:
         throw new RuntimeException("Unexpected key type " + hashMap.hashTableKeyType);
       }
