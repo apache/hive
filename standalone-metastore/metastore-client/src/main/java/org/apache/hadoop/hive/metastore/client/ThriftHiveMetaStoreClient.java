@@ -1517,7 +1517,22 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   @Override
   public void dropDatabase(DropDatabaseRequest req) throws TException {
-    client.drop_database_req(req);
+    req.setAsyncDrop(!isLocalMetaStore());
+    AsyncOperationResp resp = client.drop_database_req(req);
+    req.setId(resp.getId());
+    try {
+      while (!resp.isFinished() && !Thread.currentThread().isInterrupted()) {
+        resp = client.drop_database_req(req);
+        if (resp.getMessage() != null) {
+          LOG.info(resp.getMessage());
+        }
+      }
+    } finally {
+      if (!resp.isFinished()) {
+        req.setCancel(true);
+        client.drop_database_req(req);
+      }
+    }
   }
 
   @Override

@@ -14730,11 +14730,14 @@ void swap(AlterDatabaseRequest &a, AlterDatabaseRequest &b);
 std::ostream& operator<<(std::ostream& out, const AlterDatabaseRequest& obj);
 
 typedef struct _DropDatabaseRequest__isset {
-  _DropDatabaseRequest__isset() : catalogName(false), softDelete(true), txnId(true), deleteManagedDir(true) {}
+  _DropDatabaseRequest__isset() : catalogName(false), softDelete(true), txnId(true), deleteManagedDir(true), id(false), asyncDrop(false), cancel(false) {}
   bool catalogName :1;
   bool softDelete :1;
   bool txnId :1;
   bool deleteManagedDir :1;
+  bool id :1;
+  bool asyncDrop :1;
+  bool cancel :1;
 } _DropDatabaseRequest__isset;
 
 class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
@@ -14750,7 +14753,10 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
                         cascade(0),
                         softDelete(false),
                         txnId(0LL),
-                        deleteManagedDir(true) {
+                        deleteManagedDir(true),
+                        id(),
+                        asyncDrop(0),
+                        cancel(0) {
   }
 
   virtual ~DropDatabaseRequest() noexcept;
@@ -14762,6 +14768,9 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
   bool softDelete;
   int64_t txnId;
   bool deleteManagedDir;
+  std::string id;
+  bool asyncDrop;
+  bool cancel;
 
   _DropDatabaseRequest__isset __isset;
 
@@ -14780,6 +14789,12 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
   void __set_txnId(const int64_t val);
 
   void __set_deleteManagedDir(const bool val);
+
+  void __set_id(const std::string& val);
+
+  void __set_asyncDrop(const bool val);
+
+  void __set_cancel(const bool val);
 
   bool operator == (const DropDatabaseRequest & rhs) const
   {
@@ -14806,6 +14821,18 @@ class DropDatabaseRequest : public virtual ::apache::thrift::TBase {
     if (__isset.deleteManagedDir != rhs.__isset.deleteManagedDir)
       return false;
     else if (__isset.deleteManagedDir && !(deleteManagedDir == rhs.deleteManagedDir))
+      return false;
+    if (__isset.id != rhs.__isset.id)
+      return false;
+    else if (__isset.id && !(id == rhs.id))
+      return false;
+    if (__isset.asyncDrop != rhs.__isset.asyncDrop)
+      return false;
+    else if (__isset.asyncDrop && !(asyncDrop == rhs.asyncDrop))
+      return false;
+    if (__isset.cancel != rhs.__isset.cancel)
+      return false;
+    else if (__isset.cancel && !(cancel == rhs.cancel))
       return false;
     return true;
   }

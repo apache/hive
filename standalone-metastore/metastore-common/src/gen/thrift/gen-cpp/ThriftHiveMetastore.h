@@ -39,7 +39,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_database(Database& _return, const std::string& name) = 0;
   virtual void get_database_req(Database& _return, const GetDatabaseRequest& request) = 0;
   virtual void drop_database(const std::string& name, const bool deleteData, const bool cascade) = 0;
-  virtual void drop_database_req(const DropDatabaseRequest& req) = 0;
+  virtual void drop_database_req(AsyncOperationResp& _return, const DropDatabaseRequest& req) = 0;
   virtual void get_databases(std::vector<std::string> & _return, const std::string& pattern) = 0;
   virtual void get_all_databases(std::vector<std::string> & _return) = 0;
   virtual void get_databases_req(GetDatabaseObjectsResponse& _return, const GetDatabaseObjectsRequest& request) = 0;
@@ -378,7 +378,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void drop_database(const std::string& /* name */, const bool /* deleteData */, const bool /* cascade */) override {
     return;
   }
-  void drop_database_req(const DropDatabaseRequest& /* req */) override {
+  void drop_database_req(AsyncOperationResp& /* _return */, const DropDatabaseRequest& /* req */) override {
     return;
   }
   void get_databases(std::vector<std::string> & /* _return */, const std::string& /* pattern */) override {
@@ -2806,7 +2806,8 @@ class ThriftHiveMetastore_drop_database_req_pargs {
 };
 
 typedef struct _ThriftHiveMetastore_drop_database_req_result__isset {
-  _ThriftHiveMetastore_drop_database_req_result__isset() : o1(false), o2(false), o3(false) {}
+  _ThriftHiveMetastore_drop_database_req_result__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success :1;
   bool o1 :1;
   bool o2 :1;
   bool o3 :1;
@@ -2821,11 +2822,14 @@ class ThriftHiveMetastore_drop_database_req_result {
   }
 
   virtual ~ThriftHiveMetastore_drop_database_req_result() noexcept;
+  AsyncOperationResp success;
   NoSuchObjectException o1;
   InvalidOperationException o2;
   MetaException o3;
 
   _ThriftHiveMetastore_drop_database_req_result__isset __isset;
+
+  void __set_success(const AsyncOperationResp& val);
 
   void __set_o1(const NoSuchObjectException& val);
 
@@ -2835,6 +2839,8 @@ class ThriftHiveMetastore_drop_database_req_result {
 
   bool operator == (const ThriftHiveMetastore_drop_database_req_result & rhs) const
   {
+    if (!(success == rhs.success))
+      return false;
     if (!(o1 == rhs.o1))
       return false;
     if (!(o2 == rhs.o2))
@@ -2855,7 +2861,8 @@ class ThriftHiveMetastore_drop_database_req_result {
 };
 
 typedef struct _ThriftHiveMetastore_drop_database_req_presult__isset {
-  _ThriftHiveMetastore_drop_database_req_presult__isset() : o1(false), o2(false), o3(false) {}
+  _ThriftHiveMetastore_drop_database_req_presult__isset() : success(false), o1(false), o2(false), o3(false) {}
+  bool success :1;
   bool o1 :1;
   bool o2 :1;
   bool o3 :1;
@@ -2866,6 +2873,7 @@ class ThriftHiveMetastore_drop_database_req_presult {
 
 
   virtual ~ThriftHiveMetastore_drop_database_req_presult() noexcept;
+  AsyncOperationResp* success;
   NoSuchObjectException o1;
   InvalidOperationException o2;
   MetaException o3;
@@ -35722,9 +35730,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void drop_database(const std::string& name, const bool deleteData, const bool cascade) override;
   void send_drop_database(const std::string& name, const bool deleteData, const bool cascade);
   void recv_drop_database();
-  void drop_database_req(const DropDatabaseRequest& req) override;
+  void drop_database_req(AsyncOperationResp& _return, const DropDatabaseRequest& req) override;
   void send_drop_database_req(const DropDatabaseRequest& req);
-  void recv_drop_database_req();
+  void recv_drop_database_req(AsyncOperationResp& _return);
   void get_databases(std::vector<std::string> & _return, const std::string& pattern) override;
   void send_get_databases(const std::string& pattern);
   void recv_get_databases(std::vector<std::string> & _return);
@@ -37273,13 +37281,14 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->drop_database(name, deleteData, cascade);
   }
 
-  void drop_database_req(const DropDatabaseRequest& req) override {
+  void drop_database_req(AsyncOperationResp& _return, const DropDatabaseRequest& req) override {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->drop_database_req(req);
+      ifaces_[i]->drop_database_req(_return, req);
     }
-    ifaces_[i]->drop_database_req(req);
+    ifaces_[i]->drop_database_req(_return, req);
+    return;
   }
 
   void get_databases(std::vector<std::string> & _return, const std::string& pattern) override {
@@ -39933,9 +39942,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void drop_database(const std::string& name, const bool deleteData, const bool cascade) override;
   int32_t send_drop_database(const std::string& name, const bool deleteData, const bool cascade);
   void recv_drop_database(const int32_t seqid);
-  void drop_database_req(const DropDatabaseRequest& req) override;
+  void drop_database_req(AsyncOperationResp& _return, const DropDatabaseRequest& req) override;
   int32_t send_drop_database_req(const DropDatabaseRequest& req);
-  void recv_drop_database_req(const int32_t seqid);
+  void recv_drop_database_req(AsyncOperationResp& _return, const int32_t seqid);
   void get_databases(std::vector<std::string> & _return, const std::string& pattern) override;
   int32_t send_get_databases(const std::string& pattern);
   void recv_get_databases(std::vector<std::string> & _return, const int32_t seqid);

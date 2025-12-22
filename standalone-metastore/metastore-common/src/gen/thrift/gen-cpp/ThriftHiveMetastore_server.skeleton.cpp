@@ -85,7 +85,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_database\n");
   }
 
-  void drop_database_req(const DropDatabaseRequest& req) {
+  void drop_database_req(AsyncOperationResp& _return, const DropDatabaseRequest& req) {
     // Your implementation goes here
     printf("drop_database_req\n");
   }

@@ -37,7 +37,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  Database get_database(string name)')
     print('  Database get_database_req(GetDatabaseRequest request)')
     print('  void drop_database(string name, bool deleteData, bool cascade)')
-    print('  void drop_database_req(DropDatabaseRequest req)')
+    print('  AsyncOperationResp drop_database_req(DropDatabaseRequest req)')
     print('   get_databases(string pattern)')
     print('   get_all_databases()')
     print('  GetDatabaseObjectsResponse get_databases_req(GetDatabaseObjectsRequest request)')

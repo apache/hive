@@ -2883,7 +2883,7 @@ class Client(fb303.FacebookService.Client, Iface):
 
         """
         self.send_drop_database_req(req)
-        self.recv_drop_database_req()
+        return self.recv_drop_database_req()
 
     def send_drop_database_req(self, req):
         self._oprot.writeMessageBegin('drop_database_req', TMessageType.CALL, self._seqid)
@@ -2904,13 +2904,15 @@ class Client(fb303.FacebookService.Client, Iface):
         result = drop_database_req_result()
         result.read(iprot)
         iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
         if result.o1 is not None:
             raise result.o1
         if result.o2 is not None:
             raise result.o2
         if result.o3 is not None:
             raise result.o3
-        return
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "drop_database_req failed: unknown result")
 
     def get_databases(self, pattern):
         """
@@ -13372,7 +13374,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = drop_database_req_result()
         try:
-            self._handler.drop_database_req(args.req)
+            result.success = self._handler.drop_database_req(args.req)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -23026,6 +23028,7 @@ drop_database_req_args.thrift_spec = (
 class drop_database_req_result(object):
     """
     Attributes:
+     - success
      - o1
      - o2
      - o3
@@ -23033,7 +23036,8 @@ class drop_database_req_result(object):
     """
 
 
-    def __init__(self, o1=None, o2=None, o3=None,):
+    def __init__(self, success=None, o1=None, o2=None, o3=None,):
+        self.success = success
         self.o1 = o1
         self.o2 = o2
         self.o3 = o3
@@ -23047,7 +23051,13 @@ class drop_database_req_result(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
-            if fid == 1:
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = AsyncOperationResp()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
                 if ftype == TType.STRUCT:
                     self.o1 = NoSuchObjectException.read(iprot)
                 else:
@@ -23072,6 +23082,10 @@ class drop_database_req_result(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('drop_database_req_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
         if self.o1 is not None:
             oprot.writeFieldBegin('o1', TType.STRUCT, 1)
             self.o1.write(oprot)
@@ -23102,7 +23116,7 @@ class drop_database_req_result(object):
         return not (self == other)
 all_structs.append(drop_database_req_result)
 drop_database_req_result.thrift_spec = (
-    None,  # 0
+    (0, TType.STRUCT, 'success', [AsyncOperationResp, None], None, ),  # 0
     (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
     (2, TType.STRUCT, 'o2', [InvalidOperationException, None], None, ),  # 2
     (3, TType.STRUCT, 'o3', [MetaException, None], None, ),  # 3

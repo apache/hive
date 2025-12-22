@@ -21569,11 +21569,14 @@ class DropDatabaseRequest(object):
      - softDelete
      - txnId
      - deleteManagedDir
+     - id
+     - asyncDrop
+     - cancel
 
     """
 
 
-    def __init__(self, name=None, catalogName=None, ignoreUnknownDb=None, deleteData=None, cascade=None, softDelete=False, txnId=0, deleteManagedDir=True,):
+    def __init__(self, name=None, catalogName=None, ignoreUnknownDb=None, deleteData=None, cascade=None, softDelete=False, txnId=0, deleteManagedDir=True, id=None, asyncDrop=None, cancel=None,):
         self.name = name
         self.catalogName = catalogName
         self.ignoreUnknownDb = ignoreUnknownDb
@@ -21582,6 +21585,9 @@ class DropDatabaseRequest(object):
         self.softDelete = softDelete
         self.txnId = txnId
         self.deleteManagedDir = deleteManagedDir
+        self.id = id
+        self.asyncDrop = asyncDrop
+        self.cancel = cancel
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -21632,6 +21638,21 @@ class DropDatabaseRequest(object):
                     self.deleteManagedDir = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.id = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.BOOL:
+                    self.asyncDrop = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.BOOL:
+                    self.cancel = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -21673,6 +21694,18 @@ class DropDatabaseRequest(object):
         if self.deleteManagedDir is not None:
             oprot.writeFieldBegin('deleteManagedDir', TType.BOOL, 8)
             oprot.writeBool(self.deleteManagedDir)
+            oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.STRING, 9)
+            oprot.writeString(self.id.encode('utf-8') if sys.version_info[0] == 2 else self.id)
+            oprot.writeFieldEnd()
+        if self.asyncDrop is not None:
+            oprot.writeFieldBegin('asyncDrop', TType.BOOL, 10)
+            oprot.writeBool(self.asyncDrop)
+            oprot.writeFieldEnd()
+        if self.cancel is not None:
+            oprot.writeFieldBegin('cancel', TType.BOOL, 11)
+            oprot.writeBool(self.cancel)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -34125,6 +34158,9 @@ DropDatabaseRequest.thrift_spec = (
     (6, TType.BOOL, 'softDelete', None, False, ),  # 6
     (7, TType.I64, 'txnId', None, 0, ),  # 7
     (8, TType.BOOL, 'deleteManagedDir', None, True, ),  # 8
+    (9, TType.STRING, 'id', 'UTF8', None, ),  # 9
+    (10, TType.BOOL, 'asyncDrop', None, None, ),  # 10
+    (11, TType.BOOL, 'cancel', None, None, ),  # 11
 )
 all_structs.append(GetFunctionsRequest)
 GetFunctionsRequest.thrift_spec = (

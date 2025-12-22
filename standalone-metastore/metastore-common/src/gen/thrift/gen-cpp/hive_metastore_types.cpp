@@ -37876,6 +37876,21 @@ void DropDatabaseRequest::__set_deleteManagedDir(const bool val) {
   this->deleteManagedDir = val;
 __isset.deleteManagedDir = true;
 }
+
+void DropDatabaseRequest::__set_id(const std::string& val) {
+  this->id = val;
+__isset.id = true;
+}
+
+void DropDatabaseRequest::__set_asyncDrop(const bool val) {
+  this->asyncDrop = val;
+__isset.asyncDrop = true;
+}
+
+void DropDatabaseRequest::__set_cancel(const bool val) {
+  this->cancel = val;
+__isset.cancel = true;
+}
 std::ostream& operator<<(std::ostream& out, const DropDatabaseRequest& obj)
 {
   obj.printTo(out);
@@ -37972,6 +37987,30 @@ uint32_t DropDatabaseRequest::read(::apache::thrift::protocol::TProtocol* iprot)
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->asyncDrop);
+          this->__isset.asyncDrop = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 11:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->cancel);
+          this->__isset.cancel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -38033,6 +38072,21 @@ uint32_t DropDatabaseRequest::write(::apache::thrift::protocol::TProtocol* oprot
     xfer += oprot->writeBool(this->deleteManagedDir);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.id) {
+    xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_STRING, 9);
+    xfer += oprot->writeString(this->id);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.asyncDrop) {
+    xfer += oprot->writeFieldBegin("asyncDrop", ::apache::thrift::protocol::T_BOOL, 10);
+    xfer += oprot->writeBool(this->asyncDrop);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.cancel) {
+    xfer += oprot->writeFieldBegin("cancel", ::apache::thrift::protocol::T_BOOL, 11);
+    xfer += oprot->writeBool(this->cancel);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -38048,6 +38102,9 @@ void swap(DropDatabaseRequest &a, DropDatabaseRequest &b) {
   swap(a.softDelete, b.softDelete);
   swap(a.txnId, b.txnId);
   swap(a.deleteManagedDir, b.deleteManagedDir);
+  swap(a.id, b.id);
+  swap(a.asyncDrop, b.asyncDrop);
+  swap(a.cancel, b.cancel);
   swap(a.__isset, b.__isset);
 }
 
@@ -38060,6 +38117,9 @@ DropDatabaseRequest::DropDatabaseRequest(const DropDatabaseRequest& other1427) {
   softDelete = other1427.softDelete;
   txnId = other1427.txnId;
   deleteManagedDir = other1427.deleteManagedDir;
+  id = other1427.id;
+  asyncDrop = other1427.asyncDrop;
+  cancel = other1427.cancel;
   __isset = other1427.__isset;
 }
 DropDatabaseRequest& DropDatabaseRequest::operator=(const DropDatabaseRequest& other1428) {
@@ -38071,6 +38131,9 @@ DropDatabaseRequest& DropDatabaseRequest::operator=(const DropDatabaseRequest& o
   softDelete = other1428.softDelete;
   txnId = other1428.txnId;
   deleteManagedDir = other1428.deleteManagedDir;
+  id = other1428.id;
+  asyncDrop = other1428.asyncDrop;
+  cancel = other1428.cancel;
   __isset = other1428.__isset;
   return *this;
 }
@@ -38085,6 +38148,9 @@ void DropDatabaseRequest::printTo(std::ostream& out) const {
   out << ", " << "softDelete="; (__isset.softDelete ? (out << to_string(softDelete)) : (out << "<null>"));
   out << ", " << "txnId="; (__isset.txnId ? (out << to_string(txnId)) : (out << "<null>"));
   out << ", " << "deleteManagedDir="; (__isset.deleteManagedDir ? (out << to_string(deleteManagedDir)) : (out << "<null>"));
+  out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
+  out << ", " << "asyncDrop="; (__isset.asyncDrop ? (out << to_string(asyncDrop)) : (out << "<null>"));
+  out << ", " << "cancel="; (__isset.cancel ? (out << to_string(cancel)) : (out << "<null>"));
   out << ")";
 }
 

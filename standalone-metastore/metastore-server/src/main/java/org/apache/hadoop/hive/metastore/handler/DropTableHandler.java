@@ -169,13 +169,13 @@ public class DropTableHandler
 
   @Override
   public String getMessagePrefix() {
-    return "AsyncDropTableHandler [" + id + "] -  Drop table " + tableName + ":";
+    return "DropTableHandler [" + id + "] -  Drop table " + tableName + ":";
   }
 
   @Override
   public String getProgress() {
     if (progress == null) {
-      return "AsyncDropTableHandler [" + id + "] hasn't started yet";
+      return getMessagePrefix() + " hasn't started yet";
     }
     return progress.get();
   }

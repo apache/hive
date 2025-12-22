@@ -2971,6 +2971,14 @@ uint32_t ThriftHiveMetastore_drop_database_req_result::read(::apache::thrift::pr
     }
     switch (fid)
     {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->success.read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->o1.read(iprot);
@@ -3013,7 +3021,11 @@ uint32_t ThriftHiveMetastore_drop_database_req_result::write(::apache::thrift::p
 
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_drop_database_req_result");
 
-  if (this->__isset.o1) {
+  if (this->__isset.success) {
+    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
+    xfer += this->success.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  } else if (this->__isset.o1) {
     xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
     xfer += this->o1.write(oprot);
     xfer += oprot->writeFieldEnd();
@@ -3057,6 +3069,14 @@ uint32_t ThriftHiveMetastore_drop_database_req_presult::read(::apache::thrift::p
     }
     switch (fid)
     {
+      case 0:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += (*(this->success)).read(iprot);
+          this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       case 1:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->o1.read(iprot);
@@ -67775,10 +67795,10 @@ void ThriftHiveMetastoreClient::recv_drop_database()
   return;
 }
 
-void ThriftHiveMetastoreClient::drop_database_req(const DropDatabaseRequest& req)
+void ThriftHiveMetastoreClient::drop_database_req(AsyncOperationResp& _return, const DropDatabaseRequest& req)
 {
   send_drop_database_req(req);
-  recv_drop_database_req();
+  recv_drop_database_req(_return);
 }
 
 void ThriftHiveMetastoreClient::send_drop_database_req(const DropDatabaseRequest& req)
@@ -67795,7 +67815,7 @@ void ThriftHiveMetastoreClient::send_drop_database_req(const DropDatabaseRequest
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_drop_database_req()
+void ThriftHiveMetastoreClient::recv_drop_database_req(AsyncOperationResp& _return)
 {
 
   int32_t rseqid = 0;
@@ -67821,10 +67841,15 @@ void ThriftHiveMetastoreClient::recv_drop_database_req()
     iprot_->getTransport()->readEnd();
   }
   ThriftHiveMetastore_drop_database_req_presult result;
+  result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
   iprot_->getTransport()->readEnd();
 
+  if (result.__isset.success) {
+    // _return pointer has now been filled
+    return;
+  }
   if (result.__isset.o1) {
     throw result.o1;
   }
@@ -67834,7 +67859,7 @@ void ThriftHiveMetastoreClient::recv_drop_database_req()
   if (result.__isset.o3) {
     throw result.o3;
   }
-  return;
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "drop_database_req failed: unknown result");
 }
 
 void ThriftHiveMetastoreClient::get_databases(std::vector<std::string> & _return, const std::string& pattern)
@@ -85594,7 +85619,8 @@ void ThriftHiveMetastoreProcessor::process_drop_database_req(int32_t seqid, ::ap
 
   ThriftHiveMetastore_drop_database_req_result result;
   try {
-    iface_->drop_database_req(args.req);
+    iface_->drop_database_req(result.success, args.req);
+    result.__isset.success = true;
   } catch (NoSuchObjectException &o1) {
     result.o1 = std::move(o1);
     result.__isset.o1 = true;
@@ -102783,10 +102809,10 @@ void ThriftHiveMetastoreConcurrentClient::recv_drop_database(const int32_t seqid
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::drop_database_req(const DropDatabaseRequest& req)
+void ThriftHiveMetastoreConcurrentClient::drop_database_req(AsyncOperationResp& _return, const DropDatabaseRequest& req)
 {
   int32_t seqid = send_drop_database_req(req);
-  recv_drop_database_req(seqid);
+  recv_drop_database_req(_return, seqid);
 }
 
 int32_t ThriftHiveMetastoreConcurrentClient::send_drop_database_req(const DropDatabaseRequest& req)
@@ -102807,7 +102833,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_drop_database_req(const DropDa
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_drop_database_req(const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_drop_database_req(AsyncOperationResp& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -102846,10 +102872,16 @@ void ThriftHiveMetastoreConcurrentClient::recv_drop_database_req(const int32_t s
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
       ThriftHiveMetastore_drop_database_req_presult result;
+      result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
       iprot_->getTransport()->readEnd();
 
+      if (result.__isset.success) {
+        // _return pointer has now been filled
+        sentry.commit();
+        return;
+      }
       if (result.__isset.o1) {
         sentry.commit();
         throw result.o1;
@@ -102862,8 +102894,8 @@ void ThriftHiveMetastoreConcurrentClient::recv_drop_database_req(const int32_t s
         sentry.commit();
         throw result.o3;
       }
-      sentry.commit();
-      return;
+      // in a bad state, don't commit
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "drop_database_req failed: unknown result");
     }
     // seqid != rseqid
     this->sync_->updatePending(fname, mtype, rseqid);

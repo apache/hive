@@ -36,6 +36,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.DropTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -150,6 +151,12 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
       if (asycOp == null) {
         asycOp = (AbstractOperationHandler<T, A>)
             new DropTableHandler(handler, request.isAsyncDrop(), request);
+      }
+      return asycOp;
+    } else if (req instanceof DropDatabaseRequest request) {
+      AbstractOperationHandler<T, A> asycOp = ofCache(request.getId(), request.isCancel());
+      if (asycOp == null) {
+        asycOp =  (AbstractOperationHandler<T, A>) new DropDatabaseHandler(handler, request);
       }
       return asycOp;
     }

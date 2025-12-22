@@ -1802,7 +1802,10 @@ struct DropDatabaseRequest {
   5: required bool cascade,
   6: optional bool softDelete=false,
   7: optional i64 txnId=0,
-  8: optional bool deleteManagedDir=true
+  8: optional bool deleteManagedDir=true,
+  9: optional string id,
+  10: optional bool asyncDrop,
+  11: optional bool cancel
 }
 
 struct GetFunctionsRequest {
@@ -2623,7 +2626,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Database get_database_req(1:GetDatabaseRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
-  void drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  AsyncOperationResp drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
   GetDatabaseObjectsResponse get_databases_req (1:GetDatabaseObjectsRequest request) throws(1:MetaException o1)
