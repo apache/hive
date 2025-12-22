@@ -22,9 +22,9 @@ import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.drop.DropDatabaseDesc;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +36,9 @@ public class DropDatabaseHandler extends AbstractMessageHandler {
     DropDatabaseMessage msg =
         deserializer.getDropDatabaseMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    DropDatabaseDesc desc = new DropDatabaseDesc(actualDbName, true, context.eventOnlyReplicationSpec());
+    // TODO catalog. Need to check the actual catalog from Context. Depend on HIVE-29278
+    DropDatabaseDesc desc = new DropDatabaseDesc(HiveUtils.getCurrentCatalogOrDefault(context.db.getConf()),
+            actualDbName, true, false, context.eventOnlyReplicationSpec());
     Task<?> dropDBTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc,
                 true, context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
     context.log.info(

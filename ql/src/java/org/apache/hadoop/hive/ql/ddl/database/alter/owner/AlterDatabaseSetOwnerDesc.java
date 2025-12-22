@@ -33,8 +33,8 @@ public class AlterDatabaseSetOwnerDesc extends AbstractAlterDatabaseDesc {
 
   private final PrincipalDesc ownerPrincipal;
 
-  public AlterDatabaseSetOwnerDesc(String databaseName, PrincipalDesc ownerPrincipal, ReplicationSpec replicationSpec) {
-    super(databaseName, replicationSpec);
+  public AlterDatabaseSetOwnerDesc(String catalogName, String databaseName, PrincipalDesc ownerPrincipal, ReplicationSpec replicationSpec) {
+    super(catalogName, databaseName, replicationSpec);
     this.ownerPrincipal = ownerPrincipal;
   }
 

@@ -59,6 +59,7 @@ import org.apache.iceberg.SchemaParser;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.UpdateSchema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
@@ -1263,7 +1264,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     org.apache.iceberg.Table icebergTable = testTables.loadTable(identifier);
     Assert.assertEquals("should create table using format v2",
-        2, ((BaseTable) icebergTable).operations().current().formatVersion());
+        2, TableUtil.formatVersion(icebergTable));
   }
 
   @Test
@@ -1523,7 +1524,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
 
     String metadataLocation =
-        storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+        storageHandler.getPathForAuth(TableUtil.metadataFileLocation(table),
             hmsTable.getSd().getLocation());
 
     if (masked) {
@@ -1563,7 +1564,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
 
     String metadataFileLocation =
-        URI.create(((BaseTable) sourceTable).operations().current().metadataFileLocation()).getPath();
+        URI.create(TableUtil.metadataFileLocation(sourceTable)).getPath();
     TableIdentifier target = TableIdentifier.of("default", "target");
 
     Table targetTable = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -1618,7 +1619,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
       HiveIcebergStorageHandler storageHandler = new HiveIcebergStorageHandler();
       storageHandler.setConf(shell.getHiveConf());
       String metadataLocation = HiveConf.EncoderDecoderFactory.URL_ENCODER_DECODER.decode(
-          storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+          storageHandler.getPathForAuth(TableUtil.metadataFileLocation(table),
               hmsTable.getSd().getLocation()));
 
       if (masked) {
@@ -1657,7 +1658,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     storageHandler.setConf(shell.getHiveConf());
     URI uriForAuth = storageHandler.getURIForAuth(hmsTable);
     String metadataLocation =
-        storageHandler.getPathForAuth(((BaseTable) table).operations().current().metadataFileLocation(),
+        storageHandler.getPathForAuth(TableUtil.metadataFileLocation(table),
             hmsTable.getSd().getLocation());
 
     if (masked) {
@@ -1679,7 +1680,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
             ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
     testTables.appendIcebergTable(shell.getHiveConf(), sourceTable, FileFormat.PARQUET, null,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    String metadataLocation = TableUtil.metadataFileLocation(sourceTable);
     shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
     TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
     Table targetTable =
@@ -1687,7 +1688,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
             PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1,
             ImmutableMap.<String, String>builder().put("metadata_location", metadataLocation).build()
         );
-    Assert.assertEquals(metadataLocation, ((BaseTable) targetTable).operations().current().metadataFileLocation());
+    Assert.assertEquals(metadataLocation, TableUtil.metadataFileLocation(targetTable));
     List<Object[]> rows = shell.executeStatement("SELECT * FROM " + targetIdentifier.name());
     List<Record> records = HiveIcebergTestUtils.valueForRow(targetTable.schema(), rows);
     HiveIcebergTestUtils.validateData(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, records, 0);
@@ -1712,11 +1713,11 @@ public class TestHiveIcebergStorageHandlerNoScan {
             PartitionSpec.unpartitioned(), FileFormat.PARQUET, Collections.emptyList(), 1, Collections.emptyMap());
     testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    String firstMetadataLocation = ((BaseTable) table).operations().current().metadataFileLocation();
+    String firstMetadataLocation = TableUtil.metadataFileLocation(table);
     testTables.appendIcebergTable(shell.getHiveConf(), table, FileFormat.PARQUET, null,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
     table.refresh();
-    String secondMetadataLocation = ((BaseTable) table).operations().current().metadataFileLocation();
+    String secondMetadataLocation = TableUtil.metadataFileLocation(table);
     Assert.assertNotEquals(firstMetadataLocation, secondMetadataLocation);
     shell.executeStatement("ALTER TABLE " + tableIdentifier.name() + " SET TBLPROPERTIES('metadata_location'='" +
         firstMetadataLocation + "')");
@@ -1743,7 +1744,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
             ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
     testTables.appendIcebergTable(shell.getHiveConf(), sourceTable, FileFormat.PARQUET, null,
         HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
-    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    String metadataLocation = TableUtil.metadataFileLocation(sourceTable);
     shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
     TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
     testTables.createTable(shell, targetIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
@@ -1912,7 +1913,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     executorService.awaitTermination(1, TimeUnit.MINUTES);
 
     // Verify that the insert was effective
-    Assert.assertEquals(((BaseTable) testTables.loadTable(identifier)).operations().current().metadataFileLocation(),
+    Assert.assertEquals(TableUtil.metadataFileLocation(testTables.loadTable(identifier)),
         (long) HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS.size(),
         shell.executeStatement("select count(*) from customers").get(0)[0]
     );
@@ -1937,7 +1938,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
         testTables.createTable(shell, sourceIdentifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
             FileFormat.PARQUET, records, 1,
             ImmutableMap.<String, String>builder().put(InputFormatConfig.EXTERNAL_TABLE_PURGE, "FALSE").build());
-    String metadataLocation = ((BaseTable) sourceTable).operations().current().metadataFileLocation();
+    String metadataLocation = TableUtil.metadataFileLocation(sourceTable);
     shell.executeStatement("DROP TABLE " + sourceIdentifier.name());
     TableIdentifier targetIdentifier = TableIdentifier.of("default", "target");
 

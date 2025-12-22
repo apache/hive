@@ -62,8 +62,7 @@ public class JDBCAggregationPushDownRule extends RelOptRule {
       SqlAggFunction f = relOptRuleOperand.getAggregation();
       if (f instanceof HiveSqlCountAggFunction) {
         //count distinct with more that one argument is not supported
-        HiveSqlCountAggFunction countAgg = (HiveSqlCountAggFunction)f;
-        if (countAgg.isDistinct() && 1 < relOptRuleOperand.getArgList().size()) {
+        if (relOptRuleOperand.isDistinct() && relOptRuleOperand.getArgList().size() > 1) {
           return false;
         }
       }

@@ -35,9 +35,11 @@ public class ShowCreateDatabaseDesc implements DDLDesc, Serializable {
   public static final String SCHEMA = "createdb_stmt#string";
 
   private final Path resFile;
+  private final String catName;
   private final String dbName;
 
-  public ShowCreateDatabaseDesc(String dbName, Path resFile) {
+  public ShowCreateDatabaseDesc(String catName, String dbName, Path resFile) {
+    this.catName = catName;
     this.dbName = dbName;
     this.resFile = resFile;
   }
@@ -50,5 +52,10 @@ public class ShowCreateDatabaseDesc implements DDLDesc, Serializable {
   @Explain(displayName = "database name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getDatabaseName() {
     return dbName;
+  }
+
+  @Explain(displayName = "catalog name", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatalogName() {
+    return catName;
   }
 }

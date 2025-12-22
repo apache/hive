@@ -16,25 +16,28 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.common.jsonexplain;
+package org.apache.hadoop.hive.ql.ddl.catalog.use;
 
-import org.apache.hadoop.hive.common.jsonexplain.tez.TezJsonParser;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.plan.Explain;
 
-public class JsonParserFactory {
+import java.io.Serializable;
 
-  private JsonParserFactory() {
-    // avoid instantiation
-  }
+/**
+ * DDL task description for SET CATALOG commands.
+ */
+@Explain(displayName = "Switch Catalog", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
+public class SwitchCatalogDesc implements DDLDesc, Serializable {
+    private static final long serialVersionUID = 1L;
 
-  /**
-   * @param conf
-   * @return the appropriate JsonParser to print a JSONObject into outputStream.
-   */
-  public static JsonParser getParser(HiveConf conf) {
-    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("tez")) {
-      return new TezJsonParser();
+    private final String catalogName;
+
+    public SwitchCatalogDesc(String catalogName) {
+        this.catalogName = catalogName;
     }
-    return null;
-  }
+
+    @Explain(displayName = "name", explainLevels = { Explain.Level.USER, Explain.Level.DEFAULT, Explain.Level.EXTENDED })
+    public String getCatalogName() {
+        return catalogName;
+    }
 }

@@ -53,16 +53,17 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
       throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
     Database db = metaData.getDatabase();
-    String destinationDBName =
+    String destDBName =
         context.dbName == null ? db.getName() : context.dbName;
+    String destCatalogName = db.getCatalogName(); // TODO catalog. Need to double check the catalog here. Depend on HIVE-29278
 
     CreateDatabaseDesc createDatabaseDesc =
-        new CreateDatabaseDesc(destinationDBName, db.getDescription(), null, null, true, db.getParameters());
+        new CreateDatabaseDesc(destCatalogName, destDBName, db.getDescription(), null, null, true, db.getParameters());
     Task<DDLWork> createDBTask = TaskFactory.get(
         new DDLWork(new HashSet<>(), new HashSet<>(), createDatabaseDesc, true,
                 context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
     if (!db.getParameters().isEmpty()) {
-      AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(destinationDBName,
+      AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(destCatalogName, destDBName,
           db.getParameters(), context.eventOnlyReplicationSpec());
       Task<DDLWork> alterDbProperties = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(),
                                         alterDbDesc, true, context.getDumpDirectory(),
@@ -70,7 +71,7 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
       createDBTask.addDependentTask(alterDbProperties);
     }
     if (StringUtils.isNotEmpty(db.getOwnerName())) {
-      AlterDatabaseSetOwnerDesc alterDbOwner = new AlterDatabaseSetOwnerDesc(destinationDBName,
+      AlterDatabaseSetOwnerDesc alterDbOwner = new AlterDatabaseSetOwnerDesc(destCatalogName, destDBName,
           new PrincipalDesc(db.getOwnerName(), db.getOwnerType()),
           context.eventOnlyReplicationSpec());
       Task<DDLWork> alterDbTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(),
@@ -79,7 +80,7 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
       createDBTask.addDependentTask(alterDbTask);
     }
     updatedMetadata
-        .set(context.dmd.getEventTo().toString(), destinationDBName, null, null);
+        .set(context.dmd.getEventTo().toString(), destDBName, null, null);
     return Collections.singletonList(createDBTask);
   }
 }

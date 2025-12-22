@@ -27,9 +27,6 @@ INSERT INTO tbl_shredded_variant VALUES
 (2, parse_json('{"name": "Bill", "active": false}')),
 (3, parse_json('{"name": "Henry", "age": 20}'));
 
--- Disable vectorized execution until Variant type is supported
-set hive.vectorized.execution.enabled=false;
-
 -- Retrieve and verify
 SELECT id, try_variant_get(data, '$.name') FROM tbl_shredded_variant
 WHERE variant_get(data, '$.age') > 25;
@@ -37,3 +34,23 @@ WHERE variant_get(data, '$.age') > 25;
 EXPLAIN
 SELECT id, try_variant_get(data, '$.name') FROM tbl_shredded_variant
 WHERE variant_get(data, '$.age') > 25;
+
+CREATE TABLE t (
+  id INT,
+  v VARIANT
+)
+STORED BY ICEBERG
+TBLPROPERTIES (
+  'format-version'='3',
+  'variant.shredding.enabled'='true'
+);
+
+INSERT INTO t VALUES
+(1, parse_json('{"a": 1}')),
+(2, parse_json('{"b": 2}'));
+
+SELECT
+  try_variant_get(v, '$.a'),
+  try_variant_get(v, '$.b')
+FROM t
+ORDER BY id;

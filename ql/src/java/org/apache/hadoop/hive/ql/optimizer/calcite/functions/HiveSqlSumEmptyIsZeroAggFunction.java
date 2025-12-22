@@ -42,7 +42,7 @@ import com.google.common.collect.ImmutableList;
 public class HiveSqlSumEmptyIsZeroAggFunction extends SqlAggFunction {
   //~ Constructors -----------------------------------------------------------
 
-  public HiveSqlSumEmptyIsZeroAggFunction(boolean isDistinct, SqlReturnTypeInference returnTypeInference,
+  public HiveSqlSumEmptyIsZeroAggFunction(SqlReturnTypeInference returnTypeInference,
           SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
     super("$SUM0",
         null,

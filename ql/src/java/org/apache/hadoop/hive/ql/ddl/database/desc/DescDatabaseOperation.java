@@ -45,7 +45,7 @@ public class DescDatabaseOperation extends DDLOperation<DescDatabaseDesc> {
   @Override
   public int execute() throws HiveException {
     try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      Database database = context.getDb().getDatabase(desc.getDatabaseName());
+      Database database = context.getDb().getDatabase(desc.getCatalogName(), desc.getDatabaseName());
       if (database == null) {
         throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, desc.getDatabaseName());
       }

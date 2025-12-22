@@ -484,6 +484,7 @@ public class Operation2Privilege {
     op2Priv.put(HiveOperationType.ALTERCATALOG_PROPERTIES, PrivRequirement.newIOPrivRequirement(null, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.DESCCATALOG, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.SHOWCATALOGS, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.SWITCHCATALOG, PrivRequirement.newIOPrivRequirement(null, null));
   }
 
   /**

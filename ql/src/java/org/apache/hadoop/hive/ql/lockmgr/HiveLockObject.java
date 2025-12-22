@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -198,12 +199,17 @@ public class HiveLockObject {
     this.data = lockData;
   }
 
+  public HiveLockObject(Database db, HiveLockObjectData lockData) {
+    this(new String[] {db.getCatalogName(), FileUtils.escapePathName(db.getName()).toLowerCase()}, lockData);
+  }
+
   public HiveLockObject(Table tbl, HiveLockObjectData lockData) {
-    this(new String[] {tbl.getDbName(), FileUtils.escapePathName(tbl.getTableName()).toLowerCase()}, lockData);
+    this(new String[] {tbl.getCatName(), tbl.getDbName(),
+            FileUtils.escapePathName(tbl.getTableName()).toLowerCase()}, lockData);
   }
 
   public HiveLockObject(Partition par, HiveLockObjectData lockData) {
-    this(new String[] {par.getTable().getDbName(),
+    this(new String[] {par.getTable().getCatalogName(), par.getTable().getDbName(),
         FileUtils.escapePathName(par.getTable().getTableName()).toLowerCase(), par.getName()}, lockData);
   }
 
@@ -238,7 +244,11 @@ public class HiveLockObject {
       }
       return new HiveLockObject(par, null);
     } else if (dbName != null) {
-      return new HiveLockObject(dbName, null);
+      Database db = hiveDB.getDatabase(dbName);
+      if (db == null) {
+        throw new HiveException("Database " + dbName + " does not exist");
+      }
+      return new HiveLockObject(db, null);
     }
 
     return null;
@@ -269,13 +279,18 @@ public class HiveLockObject {
     if (pathNames.length == 1) {
       return pathNames[0];
     }
-    else if (pathNames.length == 2) {
-      return pathNames[0] + "@" + pathNames[1];
+
+    if (pathNames.length == 2) {
+      return pathNames[1];
     }
 
-    String ret = pathNames[0] + "@" + pathNames[1] + "@";
+    else if (pathNames.length == 3) {
+      return pathNames[1] + "@" + pathNames[2];
+    }
+
+    String ret = pathNames[1] + "@" + pathNames[2] + "@";
     boolean first = true;
-    for (int i = 2; i < pathNames.length; i++) {
+    for (int i = 3; i < pathNames.length; i++) {
       if (!first) {
         ret = ret + "/";
       } else {

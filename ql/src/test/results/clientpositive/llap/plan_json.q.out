@@ -6,4 +6,140 @@ POSTHOOK: query: EXPLAIN FORMATTED SELECT count(1) FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-{"CBOPlan":{"rels":[{"id":"0","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan","table":["default","src"],"table:alias":"src","inputs":[],"rowCount":500,"avgRowSize":0,"rowType":{"fields":[{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"key"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"value"},{"type":"BIGINT","nullable":true,"name":"BLOCK__OFFSET__INSIDE__FILE"},{"type":"VARCHAR","nullable":true,"precision":2147483647,"name":"INPUT__FILE__NAME"},{"fields":[{"type":"BIGINT","nullable":true,"name":"writeid"},{"type":"INTEGER","nullable":true,"name":"bucketid"},{"type":"BIGINT","nullable":true,"name":"rowid"}],"nullable":true,"name":"ROW__ID"},{"type":"BOOLEAN","nullable":true,"name":"ROW__IS__DELETED"}],"nullable":false},"colStats":[{"name":"key","ndv":316},{"name":"value","ndv":307}]},{"id":"1","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate","group":[],"aggs":[{"agg":{"name":"count","kind":"COUNT","syntax":"FUNCTION_STAR"},"type":{"type":"BIGINT","nullable":true},"distinct":false,"operands":[],"name":null}],"rowCount":1},{"id":"2","relOp":"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject","fields":["_c0"],"exprs":[{"input":0,"name":"$0"}],"rowCount":1}]},"optimizedSQL":"SELECT COUNT(*) AS `_c0`\nFROM `default`.`src`","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"1","Processor Tree:":{"ListSink":{"OperatorId:":"LIST_SINK_7"}}}}}}
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "src"
+        ],
+        "table:alias": "src",
+        "inputs": [],
+        "rowCount": 500,
+        "avgRowSize": 0,
+        "rowType": {
+          "fields": [
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "key"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "value"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "key",
+            "ndv": 316
+          },
+          {
+            "name": "value",
+            "ndv": 307
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [],
+            "name": null
+          }
+        ],
+        "rowCount": 1
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "_c0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT COUNT(*) AS `_c0`\nFROM `default`.`src`",
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-0": {
+      "ROOT STAGE": "TRUE"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "1",
+        "Processor Tree:": {
+          "ListSink": {
+            "OperatorId:": "LIST_SINK_7"
+          }
+        }
+      }
+    }
+  }
+}

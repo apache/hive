@@ -40,10 +40,11 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
   @Override
   public int execute() throws HiveException {
     try {
+      String catName = desc.getCatalogName();
       String dbName = desc.getDatabaseName();
       ReplicationSpec replicationSpec = desc.getReplicationSpec();
       if (replicationSpec.isInReplicationScope()) {
-        Database database = context.getDb().getDatabase(dbName);
+        Database database = context.getDb().getDatabase(catName, dbName);
         if (database == null || !replicationSpec.allowEventReplacementInto(database.getParameters())) {
           return 0;
         }
@@ -52,12 +53,12 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
 
       if (LlapHiveUtils.isLlapMode(context.getConf())) {
         ProactiveEviction.Request.Builder llapEvictRequestBuilder = ProactiveEviction.Request.Builder.create();
-        llapEvictRequestBuilder.addDb(dbName);
+        llapEvictRequestBuilder.addDb(dbName); // TODO catalog. add catalog for the cache. Depend on HIVE-29281
         ProactiveEviction.evict(context.getConf(), llapEvictRequestBuilder.build());
       }
       // Unregister the functions as well
       if (desc.isCasdade()) {
-        FunctionRegistry.unregisterPermanentFunctions(dbName);
+        FunctionRegistry.unregisterPermanentFunctions(dbName); // TODO catalog. add catalog for unregistering functions. Depend on HIVE-29282
       }
     } catch (NoSuchObjectException ex) {
       throw new HiveException(ex, ErrorMsg.DATABASE_NOT_EXISTS, desc.getDatabaseName());

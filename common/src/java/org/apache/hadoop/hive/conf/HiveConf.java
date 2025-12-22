@@ -3765,6 +3765,10 @@ public class HiveConf extends Configuration {
             + "prints) the same node multiple times. The number of visits can become exponential and make the server "
             + "crash or become unresponsive so this limit acts as a safety net to fail-fast the problematic query and "
             + "avoid bringing down the entire server."),
+    @InterfaceAudience.Private
+    HIVE_EXPLAIN_FORMATTED_INDENT("hive.explain.formatted.indent", false,
+        "Whether to indent the JSON output of EXPLAIN FORMATTED for better readability. " +
+        "The property is private to be used in tests only."),
     // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
@@ -6552,6 +6556,19 @@ public class HiveConf extends Configuration {
   }
 
   /**
+   * For internal use only, assumed the "other" has loaded all properties that intend to use
+   * and want to cast it to a HiveConf without extra re-loading the source file.
+   * @param other The Configuration whose properties are to be wrapped by this HiveConf.
+   */
+  private HiveConf(Configuration other) {
+    super(other);
+    setupRestrictList();
+    hiddenSet.addAll(HiveConfUtil.getHiddenSet(other));
+    lockedSet.addAll(HiveConfUtil.getLockedSet(other));
+    origProp = getProperties(other);
+  }
+
+  /**
    * Copy constructor
    */
   public HiveConf(HiveConf other) {
@@ -7311,6 +7328,21 @@ public class HiveConf extends Configuration {
     while (iter.hasNext()) {
       Map.Entry<String, String> e = iter.next();
       set(e.getKey(), e.getValue());
+    }
+  }
+
+  /**
+   * Sometimes if the configuration contains all the information we want,
+   * but want to cast it to a HiveConf, without loading the props from the
+   * source file again, which is wasteful and might cost dozens of milliseconds.
+   * @param configuration The original configuration
+   * @return A HiveConf wrapping on the original configuration
+   */
+  public static HiveConf cloneConf(Configuration configuration) {
+    if (configuration instanceof HiveConf config) {
+      return new HiveConf(config);
+    } else {
+      return new HiveConf(configuration);
     }
   }
 }

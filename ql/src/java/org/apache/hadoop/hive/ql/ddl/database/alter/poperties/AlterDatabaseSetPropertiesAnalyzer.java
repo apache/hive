@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.ddl.database.alter.poperties;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.database.alter.AbstractAlterDatabaseAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -38,11 +40,13 @@ public class AlterDatabaseSetPropertiesAnalyzer extends AbstractAlterDatabaseAna
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    String databaseName = unescapeIdentifier(root.getChild(0).getText());
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
+    String catalogName = catDbNamePair.getLeft();
+    String databaseName = catDbNamePair.getRight();
 
     Map<String, String> dbProps = null;
     for (int i = 1; i < root.getChildCount(); i++) {
-      ASTNode childNode = (ASTNode) root.getChild(i);
+      ASTNode childNode = (ASTNode) root.getChild(i).getChild(0);
       switch (childNode.getToken().getType()) {
       case HiveParser.TOK_PROPERTIES:
         dbProps = getProps((ASTNode) childNode.getChild(0));
@@ -52,7 +56,7 @@ public class AlterDatabaseSetPropertiesAnalyzer extends AbstractAlterDatabaseAna
       }
     }
 
-    AlterDatabaseSetPropertiesDesc desc = new AlterDatabaseSetPropertiesDesc(databaseName, dbProps, null);
+    AlterDatabaseSetPropertiesDesc desc = new AlterDatabaseSetPropertiesDesc(catalogName, databaseName, dbProps, null);
     addAlterDatabaseDesc(desc);
   }
 }
