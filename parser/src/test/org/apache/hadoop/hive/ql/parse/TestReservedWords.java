@@ -175,6 +175,8 @@ public class TestReservedWords {
         "WINDOW",
         "WITH",
         "VARIANT",
+        "TIMESTAMP_NS",
+        "TIMESTAMPTZ_NS",
         "NANOSECOND"
     );
   }
