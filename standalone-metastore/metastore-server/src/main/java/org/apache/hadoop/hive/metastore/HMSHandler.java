@@ -3087,16 +3087,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // to ensure the data is deleted on the transaction committed,
         // regardless of whether the operation has been aborted or not.
         if (result != null && result.success() && result.tableDataShouldBeDeleted()) {
-          boolean ifPurge = isMustPurge(dropTableReq.getEnvContext(), result.table());
+          boolean ifPurge = result.ifPurge();
           boolean shouldEnableCm = result.shouldEnableCm();
           // Data needs deletion. Check if trash may be skipped.
           // Delete the data in the partitions which have other locations
           deletePartitionData(result.partPaths(), ifPurge, shouldEnableCm);
           // Delete the data in the table
-          if (result.table().getSd().getLocation() != null) {
-            Path tablePath = new Path(result.table().getSd().getLocation());
-            deleteTableData(tablePath, ifPurge, shouldEnableCm);
-          }
+          deleteTableData(result.tablePath(), ifPurge, shouldEnableCm);
         }
       }
       AsyncOperationResp resp = new AsyncOperationResp(status.getId());

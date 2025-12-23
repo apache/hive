@@ -41,6 +41,7 @@ import org.apache.thrift.TException;
 
 import static org.apache.hadoop.hive.metastore.HMSHandler.checkTableDataShouldBeDeleted;
 import static org.apache.hadoop.hive.metastore.HMSHandler.isDbReplicationTarget;
+import static org.apache.hadoop.hive.metastore.HMSHandler.isMustPurge;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -111,7 +112,8 @@ public class AsyncDropTableHandler
         }
         success = ms.commitTransaction();
       }
-      return new DropTableResult(tbl, success, tableDataShouldBeDeleted,
+      return new DropTableResult(tblPath, success,
+          tableDataShouldBeDeleted, isMustPurge(request.getEnvContext(), tbl),
           partPaths, ReplChangeManager.shouldEnableCm(db, tbl));
     } finally {
       if (!success) {
@@ -172,12 +174,12 @@ public class AsyncDropTableHandler
   void destroy() {
     super.destroy();
     tbl = null;
-    tblPath = null;
   }
 
-  public record DropTableResult(Table table,
+  public record DropTableResult(Path tablePath,
                                 boolean success,
                                 boolean tableDataShouldBeDeleted,
+                                boolean ifPurge,
                                 List<Path> partPaths,
                                 boolean shouldEnableCm) {
 

@@ -65,6 +65,7 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
   protected T request;
   protected IHMSHandler handler;
   protected final String id;
+  private long timeout;
 
   private AbstractAsyncOperationHandler(String id) {
     this.id = id;
@@ -75,6 +76,7 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
     this.handler = handler;
     this.request = request;
     this.async = async;
+    this.timeout = MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST) ? 10 : 5000;
     OPID_TO_HANDLER.put(id, this);
     if (async) {
       this.executor = Executors.newFixedThreadPool(1, r -> {
@@ -86,14 +88,15 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
     } else {
       this.executor = MoreExecutors.newDirectExecutorService();
     }
-    this.future = executor.submit(() -> {
-      try {
-        return execute();
-      } finally {
-        destroy();
-        OPID_CLEANER.schedule(() -> OPID_TO_HANDLER.remove(id), 1, TimeUnit.HOURS);
-      }
-    });
+    this.future =
+        executor.submit(() -> {
+          try {
+            return execute();
+          } finally {
+            destroy();
+            OPID_CLEANER.schedule(() -> OPID_TO_HANDLER.remove(id), 1, TimeUnit.HOURS);
+          }
+        });
     this.executor.shutdown();
   }
 
@@ -141,7 +144,7 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
     if (req instanceof DropTableRequest request) {
       AbstractAsyncOperationHandler<T, A> asycOp = ofCache(request.getId(), request.isCancel());
       if (asycOp == null) {
-        asycOp= (AbstractAsyncOperationHandler<T, A>)
+        asycOp = (AbstractAsyncOperationHandler<T, A>)
             new AsyncDropTableHandler(handler, request.isAsyncDrop(), request);
       }
       return asycOp;
@@ -155,8 +158,7 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
       throw new IllegalStateException(logMsgPrefix + " hasn't started yet");
     }
     try {
-      long interval = MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST) ? 10 : 5000;
-      result = async ? future.get(interval, TimeUnit.MILLISECONDS) : future.get();
+      result = async ? future.get(timeout, TimeUnit.MILLISECONDS) : future.get();
     } catch (TimeoutException e) {
       // No Op, return to the caller since long polling timeout has expired
       LOG.trace("{} Long polling timed out", logMsgPrefix);
@@ -165,7 +167,7 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
       LOG.trace("{} The background operation was cancelled", logMsgPrefix);
     } catch (ExecutionException | InterruptedException e) {
       // No op, we will deal with this exception later
-      LOG.error(logMsgPrefix + " Failed", e);
+      LOG.error("{} Failed", logMsgPrefix, e);
       if (e.getCause() instanceof Exception ex && !aborted.get()) {
         throw handleException(ex).throwIfInstance(TException.class).defaultMetaException();
       }
@@ -214,7 +216,7 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
 
   public void cancelOperation() {
     if (!future.isDone()) {
-      LOG.warn("Drop operation: {} is still running, but a close signal is triggered", id);
+      LOG.warn("Operation: {} is still running, but a close signal is triggered", id);
       future.cancel(true);
       aborted.set(true);
     }
@@ -269,7 +271,6 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
    */
   void destroy() {
     request = null;
-    executor = null;
     handler = null;
   }
 
