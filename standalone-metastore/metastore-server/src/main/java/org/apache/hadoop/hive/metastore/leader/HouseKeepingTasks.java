@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.metastore.leader;
 
+import com.cronutils.utils.VisibleForTesting;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
-import org.apache.hadoop.hive.metastore.ThreadPool;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -29,6 +31,9 @@ import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.Objects.requireNonNull;
@@ -38,7 +43,7 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
   private final Configuration configuration;
 
   // shut down pool when new leader is selected
-  private ThreadPool metastoreTaskThreadPool;
+  private ScheduledExecutorService metastoreTaskThreadPool;
 
   private boolean runOnlyRemoteTasks;
 
@@ -94,30 +99,24 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
       throw new IllegalStateException("There should be no running tasks before taking the leadership!");
     }
     runningTasks = new ArrayList<>();
-    metastoreTaskThreadPool = ThreadPool.initialize(configuration);
+    ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true)
+        .setNameFormat("Metastore Scheduled Worker(" + election.getName() + ") %d").build();
+    final List<MetastoreTaskThread> tasks;
     if (!runOnlyRemoteTasks) {
-      List<MetastoreTaskThread> alwaysTasks = new ArrayList<>(getAlwaysTasks());
-      for (MetastoreTaskThread task : alwaysTasks) {
-        task.setConf(configuration);
-        task.enforceMutex(election.enforceMutex());
-        long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-        // For backwards compatibility, since some threads used to be hard coded but only run if
-        // frequency was > 0
-        if (freq > 0) {
-          runningTasks.add(task);
-          metastoreTaskThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
-        }
-      }
+      tasks = new ArrayList<>(getAlwaysTasks());
     } else {
-      List<MetastoreTaskThread> remoteOnlyTasks = new ArrayList<>(getRemoteOnlyTasks());
-      for (MetastoreTaskThread task : remoteOnlyTasks) {
-        task.setConf(configuration);
-        task.enforceMutex(election.enforceMutex());
-        long freq = task.runFrequency(TimeUnit.MILLISECONDS);
-        if (freq > 0) {
-          runningTasks.add(task);
-          metastoreTaskThreadPool.getPool().scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
-        }
+      tasks = new ArrayList<>(getRemoteOnlyTasks());
+    }
+    int poolSize = Math.min(MetastoreConf.getIntVar(configuration,
+        MetastoreConf.ConfVars.THREAD_POOL_SIZE), tasks.size());
+    metastoreTaskThreadPool = Executors.newScheduledThreadPool(poolSize, threadFactory);
+    for (MetastoreTaskThread task : tasks) {
+      task.setConf(configuration);
+      task.enforceMutex(election.enforceMutex());
+      long freq = task.runFrequency(TimeUnit.MILLISECONDS);
+      if (freq > 0) {
+        runningTasks.add(task);
+        metastoreTaskThreadPool.scheduleAtFixedRate(task, freq, freq, TimeUnit.MILLISECONDS);
       }
     }
 
@@ -141,4 +140,8 @@ public class HouseKeepingTasks implements LeaderElection.LeadershipStateListener
     }
   }
 
+  @VisibleForTesting
+  public ScheduledExecutorService getExecutorService() {
+    return metastoreTaskThreadPool;
+  }
 }
