@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.vector.mapjoin.hashtable.VectorMapJoinHash
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableKeyType;
 import org.apache.hadoop.hive.serde2.WriteBuffers;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.VerifyLazy;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
@@ -335,6 +336,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
         case SHORT:
         case INT:
         case LONG:
+        case DATE:
           {
             Object[] keyRow = element.getKeyRow();
             Object keyObject = keyRow[0];
@@ -356,6 +358,9 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
               break;
             case LONG:
               longKey = ((LongWritable) keyObject).get();
+              break;
+            case DATE:
+              longKey = ((DateWritableV2) keyObject).getDays();
               break;
             default:
               throw new RuntimeException("Unexpected hash table key type " + hashTableKeyType.name());
