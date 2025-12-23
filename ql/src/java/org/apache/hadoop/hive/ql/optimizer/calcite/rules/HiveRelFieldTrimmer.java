@@ -390,10 +390,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
               true));
       nameList.add(extraField.getName());
     }
-
-    HiveProject hp = (HiveProject) relBuilder.push(dq).project(exprList, nameList).build();
-    hp.setSynthetic();
-    return hp;
+    return relBuilder.push(dq).project(exprList, nameList).build();
   }
 
   private boolean isRexLiteral(final RexNode rexNode) {
