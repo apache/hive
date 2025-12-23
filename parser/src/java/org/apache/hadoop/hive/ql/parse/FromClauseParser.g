@@ -235,11 +235,8 @@ databaseName
 @init { gParent.pushMsg("database name", state); }
 @after { gParent.popMsg(state); }
     :
-    catalog=identifier DOT db=identifier?
-    -> ^(TOK_DBNAME $catalog $db)
-    |
-    db=identifier
-    -> ^(TOK_DBNAME $db)
+    (catalog=identifier DOT)? db=identifier
+    -> ^(TOK_DBNAME $catalog? $db)
     ;
 
 tableName
