@@ -49,7 +49,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: ((ctimestamp1 is null and (cstring1 like '%a')) or (cstring2 = cstring1)) (type: boolean)
+                  filterExpr: ((cstring2 = cstring1) or (ctimestamp1 is null and (cstring1 like '%a'))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 2256914 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -58,8 +58,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: SelectColumnIsNull(col 8:timestamp), FilterStringColLikeStringScalar(col 6:string, pattern %a)), FilterStringGroupColEqualStringGroupColumn(col 7:string, col 6:string))
-                    predicate: ((ctimestamp1 is null and (cstring1 like '%a')) or (cstring2 = cstring1)) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringGroupColumn(col 7:string, col 6:string), FilterExprAndExpr(children: SelectColumnIsNull(col 8:timestamp), FilterStringColLikeStringScalar(col 6:string, pattern %a)))
+                    predicate: ((cstring2 = cstring1) or (ctimestamp1 is null and (cstring1 like '%a'))) (type: boolean)
                     Statistics: Num rows: 7701 Data size: 1414500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cstring1 (type: string), cboolean1 (type: boolean), cdouble (type: double), ctimestamp1 (type: timestamp), (-3728 * UDFToInteger(csmallint)) (type: int), (cdouble - 9763215.5639D) (type: double), (- cdouble) (type: double), ((- cdouble) + 6981.0D) (type: double), (cdouble * -5638.15D) (type: double)

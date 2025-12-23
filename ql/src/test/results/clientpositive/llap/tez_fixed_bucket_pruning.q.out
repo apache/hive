@@ -520,7 +520,7 @@ STAGE PLANS:
                         Map Join Operator
                           condition map:
                                Left Outer Join 0 to 1
-                          Estimated key counts: Map 4 => 90170
+                          Estimated key counts: Map 4 => 180340
                           keys:
                             0 _col1 (type: bigint), _col0 (type: bigint)
                             1 _col0 (type: bigint), _col2 (type: bigint)
@@ -671,11 +671,11 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: ((idp_data_date = DATE'2017-12-28') and finplan_detail_object_id is not null and l3_snapshot_number is not null) (type: boolean)
-                    Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 180340 Data size: 14427200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l3_snapshot_number (type: bigint), plan_key (type: bigint), finplan_detail_object_id (type: bigint)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 90170 Data size: 2164080 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 180340 Data size: 4328160 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: bigint), _col2 (type: bigint)
@@ -683,7 +683,7 @@ STAGE PLANS:
                         numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: bigint), _col2 (type: bigint)
-                        Statistics: Num rows: 90170 Data size: 2164080 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 180340 Data size: 4328160 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: true
@@ -978,7 +978,7 @@ STAGE PLANS:
                         Map Join Operator
                           condition map:
                                Left Outer Join 0 to 1
-                          Estimated key counts: Map 4 => 90170
+                          Estimated key counts: Map 4 => 180340
                           keys:
                             0 _col1 (type: bigint), _col0 (type: bigint)
                             1 _col0 (type: bigint), _col2 (type: bigint)
@@ -1130,11 +1130,11 @@ STAGE PLANS:
                   Filter Operator
                     isSamplingPred: false
                     predicate: ((idp_data_date = DATE'2017-12-28') and finplan_detail_object_id is not null and l3_snapshot_number is not null) (type: boolean)
-                    Statistics: Num rows: 90170 Data size: 7213600 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 180340 Data size: 14427200 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l3_snapshot_number (type: bigint), plan_key (type: bigint), finplan_detail_object_id (type: bigint)
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 90170 Data size: 2164080 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 180340 Data size: 4328160 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: bigint), _col2 (type: bigint)
@@ -1142,7 +1142,7 @@ STAGE PLANS:
                         numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: bigint), _col2 (type: bigint)
-                        Statistics: Num rows: 90170 Data size: 2164080 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 180340 Data size: 4328160 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: 1
                         value expressions: _col1 (type: bigint)
                         auto parallelism: true

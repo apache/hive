@@ -151,19 +151,19 @@ STAGE PLANS:
                         input vertices:
                           1 Map 2
                         Position of Big Table: 0
-                        Statistics: Num rows: 30 Data size: 10080 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
                         BucketMapJoin: true
                         Select Operator
                           expressions: _col0 (type: date), 'pipeline' (type: string), _col1 (type: decimal(38,0)), _col2 (type: date), 'pipeline' (type: string), _col3 (type: decimal(38,0))
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                          Statistics: Num rows: 30 Data size: 15600 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             bucketingVersion: 2
                             compressed: false
                             GlobalTableId: 0
 #### A masked pattern was here ####
                             NumFilesPerFileSink: 1
-                            Statistics: Num rows: 30 Data size: 15600 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -380,19 +380,19 @@ STAGE PLANS:
                         input vertices:
                           1 Reducer 3
                         Position of Big Table: 0
-                        Statistics: Num rows: 10 Data size: 3360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
                         BucketMapJoin: true
                         Select Operator
                           expressions: _col0 (type: date), 'pipeline' (type: string), _col1 (type: decimal(38,0)), _col2 (type: date), 'pipeline' (type: string), _col3 (type: decimal(38,0))
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                          Statistics: Num rows: 10 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             bucketingVersion: 2
                             compressed: false
                             GlobalTableId: 0
 #### A masked pattern was here ####
                             NumFilesPerFileSink: 1
-                            Statistics: Num rows: 10 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -467,10 +467,10 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: date_col (type: date), decimal_col (type: decimal(38,0))
-                      minReductionHashAggr: 0.99
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: date), _col1 (type: decimal(38,0))
@@ -478,7 +478,7 @@ STAGE PLANS:
                         numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
-                        Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
                         auto parallelism: false
             Execution mode: llap
@@ -533,7 +533,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: date), KEY._col1 (type: decimal(38,0))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: date), _col1 (type: decimal(38,0))
@@ -541,7 +541,7 @@ STAGE PLANS:
                   numBuckets: -1
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: decimal(38,0))
-                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   auto parallelism: false
 
@@ -628,18 +628,18 @@ STAGE PLANS:
                         input vertices:
                           1 Map 2
                         Position of Big Table: 0
-                        Statistics: Num rows: 30 Data size: 10080 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: date), 'pipeline' (type: string), _col1 (type: decimal(38,0)), _col2 (type: date), 'pipeline' (type: string), _col3 (type: decimal(38,0))
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                          Statistics: Num rows: 30 Data size: 15600 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             bucketingVersion: 2
                             compressed: false
                             GlobalTableId: 0
 #### A masked pattern was here ####
                             NumFilesPerFileSink: 1
-                            Statistics: Num rows: 30 Data size: 15600 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -848,7 +848,7 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        Estimated key counts: Reducer 3 => 1
+                        Estimated key counts: Reducer 3 => 3
                         keys:
                           0 _col0 (type: date), _col1 (type: decimal(38,0))
                           1 _col0 (type: date), _col1 (type: decimal(38,0))
@@ -856,18 +856,18 @@ STAGE PLANS:
                         input vertices:
                           1 Reducer 3
                         Position of Big Table: 0
-                        Statistics: Num rows: 10 Data size: 3360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: date), 'pipeline' (type: string), _col1 (type: decimal(38,0)), _col2 (type: date), 'pipeline' (type: string), _col3 (type: decimal(38,0))
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                          Statistics: Num rows: 10 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             bucketingVersion: 2
                             compressed: false
                             GlobalTableId: 0
 #### A masked pattern was here ####
                             NumFilesPerFileSink: 1
-                            Statistics: Num rows: 10 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -942,10 +942,10 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: date_col (type: date), decimal_col (type: decimal(38,0))
-                      minReductionHashAggr: 0.99
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: date), _col1 (type: decimal(38,0))
@@ -953,7 +953,7 @@ STAGE PLANS:
                         numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
-                        Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
                         auto parallelism: true
             Execution mode: llap
@@ -1008,7 +1008,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: date), KEY._col1 (type: decimal(38,0))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: date), _col1 (type: decimal(38,0))
@@ -1016,7 +1016,7 @@ STAGE PLANS:
                   numBuckets: -1
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
-                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   auto parallelism: true
 
@@ -1103,19 +1103,19 @@ STAGE PLANS:
                         input vertices:
                           1 Map 2
                         Position of Big Table: 0
-                        Statistics: Num rows: 30 Data size: 10080 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
                         BucketMapJoin: true
                         Select Operator
                           expressions: _col0 (type: date), 'pipeline' (type: string), _col1 (type: decimal(38,0)), _col2 (type: date), 'pipeline' (type: string), _col3 (type: decimal(38,0))
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                          Statistics: Num rows: 30 Data size: 15600 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             bucketingVersion: 2
                             compressed: false
                             GlobalTableId: 0
 #### A masked pattern was here ####
                             NumFilesPerFileSink: 1
-                            Statistics: Num rows: 30 Data size: 15600 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1332,19 +1332,19 @@ STAGE PLANS:
                         input vertices:
                           1 Reducer 3
                         Position of Big Table: 0
-                        Statistics: Num rows: 10 Data size: 3360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
                         BucketMapJoin: true
                         Select Operator
                           expressions: _col0 (type: date), 'pipeline' (type: string), _col1 (type: decimal(38,0)), _col2 (type: date), 'pipeline' (type: string), _col3 (type: decimal(38,0))
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                          Statistics: Num rows: 10 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             bucketingVersion: 2
                             compressed: false
                             GlobalTableId: 0
 #### A masked pattern was here ####
                             NumFilesPerFileSink: 1
-                            Statistics: Num rows: 10 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1419,10 +1419,10 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: date_col (type: date), decimal_col (type: decimal(38,0))
-                      minReductionHashAggr: 0.99
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: date), _col1 (type: decimal(38,0))
@@ -1430,7 +1430,7 @@ STAGE PLANS:
                         numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
-                        Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
                         auto parallelism: false
             Execution mode: vectorized, llap
@@ -1485,7 +1485,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: date), KEY._col1 (type: decimal(38,0))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: date), _col1 (type: decimal(38,0))
@@ -1493,7 +1493,7 @@ STAGE PLANS:
                   numBuckets: -1
                   sort order: ++
                   Map-reduce partition columns: _col1 (type: decimal(38,0))
-                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   auto parallelism: false
 
@@ -1580,18 +1580,18 @@ STAGE PLANS:
                         input vertices:
                           1 Map 2
                         Position of Big Table: 0
-                        Statistics: Num rows: 30 Data size: 10080 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: date), 'pipeline' (type: string), _col1 (type: decimal(38,0)), _col2 (type: date), 'pipeline' (type: string), _col3 (type: decimal(38,0))
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                          Statistics: Num rows: 30 Data size: 15600 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             bucketingVersion: 2
                             compressed: false
                             GlobalTableId: 0
 #### A masked pattern was here ####
                             NumFilesPerFileSink: 1
-                            Statistics: Num rows: 30 Data size: 15600 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1800,7 +1800,7 @@ STAGE PLANS:
                       Map Join Operator
                         condition map:
                              Inner Join 0 to 1
-                        Estimated key counts: Reducer 3 => 1
+                        Estimated key counts: Reducer 3 => 3
                         keys:
                           0 _col0 (type: date), _col1 (type: decimal(38,0))
                           1 _col0 (type: date), _col1 (type: decimal(38,0))
@@ -1808,18 +1808,18 @@ STAGE PLANS:
                         input vertices:
                           1 Reducer 3
                         Position of Big Table: 0
-                        Statistics: Num rows: 10 Data size: 3360 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
                           expressions: _col0 (type: date), 'pipeline' (type: string), _col1 (type: decimal(38,0)), _col2 (type: date), 'pipeline' (type: string), _col3 (type: decimal(38,0))
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                          Statistics: Num rows: 10 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             bucketingVersion: 2
                             compressed: false
                             GlobalTableId: 0
 #### A masked pattern was here ####
                             NumFilesPerFileSink: 1
-                            Statistics: Num rows: 10 Data size: 5200 Basic stats: COMPLETE Column stats: COMPLETE
+                            Statistics: Num rows: 3 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
 #### A masked pattern was here ####
                             table:
                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -1894,10 +1894,10 @@ STAGE PLANS:
                     Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: date_col (type: date), decimal_col (type: decimal(38,0))
-                      minReductionHashAggr: 0.99
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
                         key expressions: _col0 (type: date), _col1 (type: decimal(38,0))
@@ -1905,7 +1905,7 @@ STAGE PLANS:
                         numBuckets: -1
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
-                        Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                         tag: -1
                         auto parallelism: true
             Execution mode: vectorized, llap
@@ -1960,7 +1960,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: date), KEY._col1 (type: decimal(38,0))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   bucketingVersion: 2
                   key expressions: _col0 (type: date), _col1 (type: decimal(38,0))
@@ -1968,7 +1968,7 @@ STAGE PLANS:
                   numBuckets: -1
                   sort order: ++
                   Map-reduce partition columns: _col0 (type: date), _col1 (type: decimal(38,0))
-                  Statistics: Num rows: 1 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 3 Data size: 504 Basic stats: COMPLETE Column stats: COMPLETE
                   tag: 1
                   auto parallelism: true
 

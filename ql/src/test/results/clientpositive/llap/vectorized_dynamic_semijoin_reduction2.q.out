@@ -761,10 +761,10 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: date)
                   1 _col0 (type: date)
-                Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.99
+                  minReductionHashAggr: 0.95238096
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
@@ -910,10 +910,10 @@ STAGE PLANS:
                 keys:
                   0 _col0 (type: timestamp)
                   1 _col0 (type: timestamp)
-                Statistics: Num rows: 2000 Data size: 16000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 21 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
-                  minReductionHashAggr: 0.99
+                  minReductionHashAggr: 0.95238096
                   mode: hash
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE

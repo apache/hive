@@ -87,7 +87,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: (((cstring1 like '%a') or ((cboolean2 <= 1) and (cbigint >= UDFToLong(csmallint)))) and ((cboolean1 >= cboolean2) or (UDFToShort(ctinyint) <> csmallint)) and ctimestamp1 is null) (type: boolean)
+                  filterExpr: (ctimestamp1 is null and ((cstring1 like '%a') or ((cboolean2 <= 1) and (cbigint >= UDFToLong(csmallint)))) and ((cboolean1 >= cboolean2) or (UDFToShort(ctinyint) <> csmallint))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1522994 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -96,8 +96,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 6:string, pattern %a), FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 11:boolean, val 1), FilterLongColGreaterEqualLongColumn(col 3:bigint, col 1:bigint)(children: col 1:smallint))), FilterExprOrExpr(children: FilterLongColGreaterEqualLongColumn(col 10:boolean, col 11:boolean), FilterLongColNotEqualLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint)), SelectColumnIsNull(col 8:timestamp))
-                    predicate: (((cstring1 like '%a') or ((cboolean2 <= 1) and (cbigint >= UDFToLong(csmallint)))) and ((cboolean1 >= cboolean2) or (UDFToShort(ctinyint) <> csmallint)) and ctimestamp1 is null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 8:timestamp), FilterExprOrExpr(children: FilterStringColLikeStringScalar(col 6:string, pattern %a), FilterExprAndExpr(children: FilterLongColLessEqualLongScalar(col 11:boolean, val 1), FilterLongColGreaterEqualLongColumn(col 3:bigint, col 1:bigint)(children: col 1:smallint))), FilterExprOrExpr(children: FilterLongColGreaterEqualLongColumn(col 10:boolean, col 11:boolean), FilterLongColNotEqualLongColumn(col 0:smallint, col 1:smallint)(children: col 0:tinyint)))
+                    predicate: (ctimestamp1 is null and ((cstring1 like '%a') or ((cboolean2 <= 1) and (cbigint >= UDFToLong(csmallint)))) and ((cboolean1 >= cboolean2) or (UDFToShort(ctinyint) <> csmallint))) (type: boolean)
                     Statistics: Num rows: 1903 Data size: 236052 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cbigint (type: bigint), cboolean1 (type: boolean), cstring1 (type: string), cdouble (type: double), UDFToDouble(cbigint) (type: double), (UDFToDouble(cbigint) * UDFToDouble(cbigint)) (type: double), (cdouble * cdouble) (type: double)
