@@ -2091,21 +2091,21 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
     Map<String, String> columns = Maps.newHashMap();
     for (Types.NestedField field : icebergTable.schema().columns()) {
-      if (isOverriddenColumn(field.type().typeId())) {
-        columns.put(field.name(), field.type().toString());
+      String overriddenColumnName = getOverriddenColumn(field.type());
+      if (overriddenColumnName != null) {
+        columns.put(field.name(), overriddenColumnName);
       }
     }
     return columns;
   }
 
-  private boolean isOverriddenColumn(Type.TypeID typeID) {
+  private String getOverriddenColumn(Type type) {
     // Geometry, Geography & Timestamp_ns types
-    switch (typeID) {
-      case VARIANT -> {
-        return true;
-      }
+    switch (type.typeId()) {
+      case VARIANT:
+        return type.toString();
     }
-    return false;
+    return null;
   }
 
   /**
