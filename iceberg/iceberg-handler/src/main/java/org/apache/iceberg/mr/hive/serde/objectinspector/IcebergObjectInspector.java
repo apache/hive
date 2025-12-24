@@ -137,7 +137,9 @@ public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectI
         return IcebergTimeObjectInspector.get();
       case TIMESTAMP_NANO:
         boolean adjust = ((Types.TimestampNanoType) primitiveType).shouldAdjustToUTC();
-        return adjust ? TIMESTAMP_INSPECTOR_WITH_TZ : TIMESTAMP_INSPECTOR;
+        return adjust ?
+            IcebergNanosecondTimestampWithZoneObjectInspectorHive3.get() :
+            IcebergNanosecondTimestampObjectInspectorHive3.get();
       default:
         throw new IllegalArgumentException(primitiveType.typeId() + " type is not supported");
     }

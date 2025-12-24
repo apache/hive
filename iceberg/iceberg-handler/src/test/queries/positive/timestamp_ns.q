@@ -15,3 +15,7 @@ INSERT INTO t VALUES (
 );
 
 SELECT * FROM t;
+
+CREATE TABLE tgt STORED BY ICEBERG TBLPROPERTIES ('format-version'='3') AS SELECT * FROM t;
+
+select * from tgt;

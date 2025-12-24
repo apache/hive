@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -41,6 +42,10 @@ public class IcebergTimestampWithZoneObjectInspectorHive3 extends AbstractPrimit
 
   private IcebergTimestampWithZoneObjectInspectorHive3() {
     super(TypeInfoFactory.timestampLocalTZTypeInfo);
+  }
+
+  protected IcebergTimestampWithZoneObjectInspectorHive3(PrimitiveTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override

@@ -210,9 +210,11 @@ public class TypeConverter {
       convertedType = dtFactory.createSqlType(SqlTypeName.DATE);
       break;
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       convertedType = dtFactory.createSqlType(SqlTypeName.TIMESTAMP);
       break;
     case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:
       convertedType = dtFactory.createSqlType(SqlTypeName.TIMESTAMP_WITH_LOCAL_TIME_ZONE);
       break;
     case INTERVAL_YEAR_MONTH:

@@ -99,6 +99,10 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableBinaryObjectInspector();
   public static final WritableHiveDecimalObjectInspector writableHiveDecimalObjectInspector =
       new WritableHiveDecimalObjectInspector(TypeInfoFactory.decimalTypeInfo);
+  public static final WritableTimestampObjectInspector writableTimestampNanoObjectInspector =
+      new WritableTimestampObjectInspector(TypeInfoFactory.timestampNanoTypeInfo);
+  public static final WritableTimestampLocalTZObjectInspector writableTimestampNanoTZObjectInspector =
+      new WritableTimestampLocalTZObjectInspector(TypeInfoFactory.timestampNanosTZTypeInfo);
 
   // Map from PrimitiveTypeInfo to AbstractPrimitiveWritableObjectInspector.
   private static ConcurrentHashMap<PrimitiveTypeInfo, AbstractPrimitiveWritableObjectInspector>
@@ -139,9 +143,7 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         writableBinaryObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.decimalTypeInfo, writableHiveDecimalObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.timestampNanoTypeInfo, writableTimestampObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.timestampNanosTZTypeInfo,
-        writableTimestampTZObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.timestampNanoTypeInfo, writableTimestampNanoObjectInspector);
   }
 
   private static Map<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>
@@ -168,8 +170,8 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToWritableOI.put(PrimitiveCategory.INTERVAL_DAY_TIME, writableHiveIntervalDayTimeObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.BINARY, writableBinaryObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DECIMAL, writableHiveDecimalObjectInspector);
-    primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMP_NS, writableTimestampObjectInspector);
-    primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMPTZ_NS, writableTimestampTZObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMP_NS, writableTimestampNanoObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMPTZ_NS, writableTimestampNanoTZObjectInspector);
   }
 
   public static final JavaBooleanObjectInspector javaBooleanObjectInspector =
@@ -311,6 +313,7 @@ public final class PrimitiveObjectInspectorFactory {
       result = new WritableHiveVarcharObjectInspector((VarcharTypeInfo) typeInfo);
       break;
     case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:
       result = new WritableTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo) typeInfo);
       break;
     case DECIMAL:

@@ -290,6 +290,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -9117,6 +9118,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // cannot convert to complex types
         column = null;
       } else {
+        Class<?> targetClass =
+            PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((PrimitiveTypeInfo) tableFieldTypeInfo)
+                .getPrimitiveWritableClass();
+        Class<?> sourceClass =
+            PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((PrimitiveTypeInfo) rowFieldTypeInfo)
+                .getPrimitiveWritableClass();
+        // Check 1: Are they the exact same class?
+        // Check 2: Is one a subclass of the other? (e.g., TimestampNanoWritable extends TimestampWritableV2)
+        // This allows implicit compatibility between Parent and Child types without a cast.
+        if (targetClass == sourceClass || targetClass.isAssignableFrom(sourceClass) || sourceClass.isAssignableFrom(
+            targetClass)) {
+          return column;
+        }
         column = ExprNodeTypeCheck.getExprNodeDefaultExprProcessor()
             .createConversionCast(column, (PrimitiveTypeInfo)tableFieldTypeInfo);
       }
