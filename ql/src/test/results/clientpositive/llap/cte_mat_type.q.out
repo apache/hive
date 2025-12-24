@@ -1,0 +1,203 @@
+PREHOOK: query: CREATE TABLE emps
+(
+    empid  INTEGER,
+    deptno INTEGER,
+    name   VARCHAR(10),
+    salary DECIMAL(8, 2)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps
+POSTHOOK: query: CREATE TABLE emps
+(
+    empid  INTEGER,
+    deptno INTEGER,
+    name   VARCHAR(10),
+    salary DECIMAL(8, 2)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps
+PREHOOK: query: CREATE TABLE depts
+(
+    deptno INTEGER,
+    name   VARCHAR(20)
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@depts
+POSTHOOK: query: CREATE TABLE depts
+(
+    deptno INTEGER,
+    name   VARCHAR(20)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@depts
+PREHOOK: query: EXPLAIN CBO
+WITH dept_avg AS (
+  SELECT d.name AS d_name, AVG(e.salary) AS avg_salary
+  FROM emps e
+  INNER JOIN depts d ON e.deptno = d.deptno
+  GROUP BY d.name
+)
+SELECT d_name, 'HIGH'
+FROM dept_avg da
+WHERE da.avg_salary >= 100000
+UNION
+SELECT d_name, 'LOW'
+FROM dept_avg da
+WHERE da.avg_salary < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dept_avg
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+WITH dept_avg AS (
+  SELECT d.name AS d_name, AVG(e.salary) AS avg_salary
+  FROM emps e
+  INNER JOIN depts d ON e.deptno = d.deptno
+  GROUP BY d.name
+)
+SELECT d_name, 'HIGH'
+FROM dept_avg da
+WHERE da.avg_salary >= 100000
+UNION
+SELECT d_name, 'LOW'
+FROM dept_avg da
+WHERE da.avg_salary < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dept_avg
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(d_name=[$0], _c1=[$1])
+  HiveAggregate(group=[{0, 1}])
+    HiveProject(d_name=[$0], _o__c1=[$1])
+      HiveUnion(all=[true])
+        HiveProject(d_name=[$0], _o__c1=[_UTF-16LE'HIGH':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+          HiveFilter(condition=[>=($1, 100000:DECIMAL(6, 0))])
+            HiveTableScan(table=[[default, dept_avg]], table:alias=[da])
+        HiveProject(d_name=[$0], _o__c1=[_UTF-16LE'LOW':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+          HiveFilter(condition=[<($1, 100000:DECIMAL(6, 0))])
+            HiveTableScan(table=[[default, dept_avg]], table:alias=[da])
+
+PREHOOK: query: EXPLAIN CBO
+WITH dept_avg AS (
+  SELECT d.name AS d_name, AVG(e.salary) AS avg_salary
+  FROM emps e
+  INNER JOIN depts d ON e.deptno = d.deptno
+  GROUP BY d.name
+)
+SELECT d_name, 'HIGH'
+FROM dept_avg da
+WHERE da.avg_salary >= 100000
+UNION
+SELECT d_name, 'LOW'
+FROM dept_avg da
+WHERE da.avg_salary < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+WITH dept_avg AS (
+  SELECT d.name AS d_name, AVG(e.salary) AS avg_salary
+  FROM emps e
+  INNER JOIN depts d ON e.deptno = d.deptno
+  GROUP BY d.name
+)
+SELECT d_name, 'HIGH'
+FROM dept_avg da
+WHERE da.avg_salary >= 100000
+UNION
+SELECT d_name, 'LOW'
+FROM dept_avg da
+WHERE da.avg_salary < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(d_name=[$0], _c1=[$1])
+  HiveAggregate(group=[{0, 1}])
+    HiveProject(d_name=[$0], _o__c1=[$1])
+      HiveUnion(all=[true])
+        HiveProject(d_name=[$0], _o__c1=[_UTF-16LE'HIGH':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+          HiveFilter(condition=[>=(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+            HiveTableSpool(table=[[cte, cte_suggestion_0]])
+              HiveProject(name=[$0], $f1=[$1], $f2=[$2])
+                HiveAggregate(group=[{3}], agg#0=[sum($1)], agg#1=[count($1)])
+                  HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(deptno=[$1], salary=[$3])
+                      HiveFilter(condition=[IS NOT NULL($1)])
+                        HiveTableScan(table=[[default, emps]], table:alias=[e])
+                    HiveProject(deptno=[$0], name=[$1])
+                      HiveFilter(condition=[IS NOT NULL($0)])
+                        HiveTableScan(table=[[default, depts]], table:alias=[d])
+        HiveProject(d_name=[$0], _o__c1=[_UTF-16LE'LOW':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+          HiveFilter(condition=[<(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+            HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+
+PREHOOK: query: EXPLAIN CBO
+WITH dept_avg AS (
+  SELECT d.name AS d_name, AVG(e.salary) AS avg_salary
+  FROM emps e
+  INNER JOIN depts d ON e.deptno = d.deptno
+  GROUP BY d.name
+)
+SELECT d_name, 'HIGH'
+FROM dept_avg da
+WHERE da.avg_salary >= 100000
+UNION
+SELECT d_name, 'LOW'
+FROM dept_avg da
+WHERE da.avg_salary < 100000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+WITH dept_avg AS (
+  SELECT d.name AS d_name, AVG(e.salary) AS avg_salary
+  FROM emps e
+  INNER JOIN depts d ON e.deptno = d.deptno
+  GROUP BY d.name
+)
+SELECT d_name, 'HIGH'
+FROM dept_avg da
+WHERE da.avg_salary >= 100000
+UNION
+SELECT d_name, 'LOW'
+FROM dept_avg da
+WHERE da.avg_salary < 100000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(d_name=[$0], _c1=[$1])
+  HiveAggregate(group=[{0, 1}])
+    HiveProject(d_name=[$0], _o__c1=[$1])
+      HiveUnion(all=[true])
+        HiveProject(d_name=[$0], _o__c1=[_UTF-16LE'HIGH':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+          HiveFilter(condition=[>=(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+            HiveAggregate(group=[{3}], agg#0=[sum($1)], agg#1=[count($1)])
+              HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(deptno=[$1], salary=[$3])
+                  HiveFilter(condition=[IS NOT NULL($1)])
+                    HiveTableScan(table=[[default, emps]], table:alias=[e])
+                HiveProject(deptno=[$0], name=[$1])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[default, depts]], table:alias=[d])
+        HiveProject(d_name=[$0], _o__c1=[_UTF-16LE'LOW':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+          HiveFilter(condition=[<(CAST(/($1, $2)):DECIMAL(12, 6), 100000:DECIMAL(6, 0))])
+            HiveAggregate(group=[{3}], agg#0=[sum($1)], agg#1=[count($1)])
+              HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveProject(deptno=[$1], salary=[$3])
+                  HiveFilter(condition=[IS NOT NULL($1)])
+                    HiveTableScan(table=[[default, emps]], table:alias=[e])
+                HiveProject(deptno=[$0], name=[$1])
+                  HiveFilter(condition=[IS NOT NULL($0)])
+                    HiveTableScan(table=[[default, depts]], table:alias=[d])
+
