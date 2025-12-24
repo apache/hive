@@ -1,0 +1,94 @@
+PREHOOK: query: CREATE TABLE default_stats_rule_test (id int, val string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@default_stats_rule_test
+POSTHOOK: query: CREATE TABLE default_stats_rule_test (id int, val string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@default_stats_rule_test
+PREHOOK: query: INSERT INTO default_stats_rule_test VALUES (1, NULL), (2, NULL), (3, 'x')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@default_stats_rule_test
+POSTHOOK: query: INSERT INTO default_stats_rule_test VALUES (1, NULL), (2, NULL), (3, 'x')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@default_stats_rule_test
+POSTHOOK: Lineage: default_stats_rule_test.id SCRIPT []
+POSTHOOK: Lineage: default_stats_rule_test.val SCRIPT []
+PREHOOK: query: ANALYZE TABLE default_stats_rule_test COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@default_stats_rule_test
+PREHOOK: Output: default@default_stats_rule_test
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE default_stats_rule_test COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@default_stats_rule_test
+POSTHOOK: Output: default@default_stats_rule_test
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN SELECT val FROM default_stats_rule_test ORDER BY val LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@default_stats_rule_test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT val FROM default_stats_rule_test ORDER BY val LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@default_stats_rule_test
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default_stats_rule_test
+                  Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                  Top N Key Operator
+                    sort order: +
+                    keys: val (type: string)
+                    null sort order: z
+                    Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                    top n: 1
+                    Select Operator
+                      expressions: val (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 1
+                  Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+

@@ -3167,16 +3167,17 @@ public class StatsRulesProcFactory {
             for (Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
               Statistics parentStats = parent.getStatistics();
 
+              List<ColStatistics> colStats =
+                  StatsUtils.getColStatisticsFromExprMap(hconf, parentStats, op.getColumnExprMap(), op.getSchema());
               if (stats == null) {
                 stats = parentStats.clone();
+                stats.setColumnStats(colStats);
               } else {
                 stats.addBasicStats(parentStats);
+                stats.addToColumnStats(colStats);
               }
 
               stats.updateColumnStatsState(parentStats.getColumnStatsState());
-              List<ColStatistics> colStats =
-                  StatsUtils.getColStatisticsFromExprMap(hconf, parentStats, op.getColumnExprMap(), op.getSchema());
-              stats.addToColumnStats(colStats);
 
               if (LOG.isDebugEnabled()) {
                 LOG.debug("[0] STATS-" + op.toString() + ": " + stats.extendedToString());
