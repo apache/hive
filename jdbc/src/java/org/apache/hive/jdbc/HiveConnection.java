@@ -175,9 +175,13 @@ public class HiveConnection implements java.sql.Connection {
     // sess_var_list -> sessConfMap
     // hive_conf_list -> hiveConfMap
     // hive_var_list -> hiveVarMap
-    host = Utils.getCanonicalHostName(connParams.getHost());
-    port = connParams.getPort();
     sessConfMap = connParams.getSessionVars();
+    if (isKerberosAuthMode()) {
+      host = Utils.getCanonicalHostName(connParams.getHost());
+    } else {
+      host = connParams.getHost();
+    }
+    port = connParams.getPort();
     isEmbeddedMode = connParams.isEmbeddedMode();
 
     if (sessConfMap.containsKey(JdbcConnectionParams.FETCH_SIZE)) {
@@ -251,7 +255,11 @@ public class HiveConnection implements java.sql.Connection {
             }
             // Update with new values
             jdbcUriString = connParams.getJdbcUriString();
-            host = Utils.getCanonicalHostName(connParams.getHost());
+            if (isKerberosAuthMode()) {
+              host = Utils.getCanonicalHostName(connParams.getHost());
+            } else {
+              host = connParams.getHost();
+            }
             port = connParams.getPort();
           } else {
             errMsg = warnMsg;

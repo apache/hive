@@ -59,7 +59,7 @@ public abstract class HiveFileProcessor implements IHiveFileProcessor {
     String line;
     StringBuilder qsb = new StringBuilder();
     while ((line = reader.readLine()) != null) {
-      if (!line.startsWith("--")) {
+      if (!line.trim().startsWith("--")) {
         qsb.append(line);
       }
     }

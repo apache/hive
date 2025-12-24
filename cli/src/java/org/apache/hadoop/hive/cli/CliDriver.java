@@ -463,7 +463,7 @@ public class CliDriver {
 
     while ((line = r.readLine()) != null) {
       // Skipping through comments
-      if (! line.startsWith("--")) {
+      if (! line.trim().startsWith("--")) {
         qsb.append(line + "\n");
       }
     }
