@@ -71,6 +71,13 @@ public class TopNKeyProcessor implements SemanticNodeProcessor {
       return null;
     }
 
+    // Skip the current optimization when a simple global ORDER BY...LIMIT is present
+    // (topN > -1 and hasOnlyOrderByLimit()).
+    // This plan structure is handled more efficiently by the specialized 'TopN In Reducer' optimization.
+    if (reduceSinkDesc.getTopN() > -1 && reduceSinkDesc.hasOnlyOrderByLimit()) {
+      return null;
+    }
+
     if (reduceSinkDesc.getTopN() > maxTopNAllowed) {
       return null;
     }
