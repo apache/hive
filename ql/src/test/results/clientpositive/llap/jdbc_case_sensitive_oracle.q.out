@@ -1,0 +1,188 @@
+PREHOOK: query: CREATE EXTERNAL TABLE country_test (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "\"WorldData\"",
+    "hive.sql.dbcp.password" = "QTestPassword123",
+    "hive.sql.schema" = "\"WorldData\"",
+    "hive.sql.table" = "\"Country\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_test
+POSTHOOK: query: CREATE EXTERNAL TABLE country_test (id int, name varchar(20))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "\"WorldData\"",
+    "hive.sql.dbcp.password" = "QTestPassword123",
+    "hive.sql.schema" = "\"WorldData\"",
+    "hive.sql.table" = "\"Country\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country_test
+PREHOOK: query: SELECT * FROM country_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM country_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_test
+#### A masked pattern was here ####
+1	India
+2	USA
+3	Japan
+4	Germany
+PREHOOK: query: CREATE EXTERNAL TABLE cities_test (id int, name varchar(20), regionid int)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "\"WorldData\"",
+    "hive.sql.dbcp.password" = "QTestPassword123",
+    "hive.sql.schema" = "\"WorldData\"",
+    "hive.sql.table" = "\"Cities\"",
+    "hive.sql.partitionColumn" = "RegionID",
+    "hive.sql.numPartitions" = "2"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cities_test
+POSTHOOK: query: CREATE EXTERNAL TABLE cities_test (id int, name varchar(20), regionid int)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "\"WorldData\"",
+    "hive.sql.dbcp.password" = "QTestPassword123",
+    "hive.sql.schema" = "\"WorldData\"",
+    "hive.sql.table" = "\"Cities\"",
+    "hive.sql.partitionColumn" = "RegionID",
+    "hive.sql.numPartitions" = "2"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cities_test
+PREHOOK: query: SELECT * FROM cities_test where regionid >= 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cities_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM cities_test where regionid >= 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cities_test
+#### A masked pattern was here ####
+2	New York	20
+3	Tokyo	30
+4	Berlin	40
+6	Kyoto	30
+PREHOOK: query: CREATE EXTERNAL TABLE geography_test (id int, description varchar(50))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "\"WorldData\"",
+    "hive.sql.dbcp.password" = "QTestPassword123",
+    "hive.sql.query" = "SELECT id, \"Description\" FROM \"WorldData\".\"Geography\""
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geography_test
+POSTHOOK: query: CREATE EXTERNAL TABLE geography_test (id int, description varchar(50))
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "ORACLE",
+    "hive.sql.jdbc.driver" = "oracle.jdbc.OracleDriver",
+    "hive.sql.jdbc.url" = "jdbc:oracle:thin:@//localhost:1521/XEPDB1",
+    "hive.sql.dbcp.username" = "\"WorldData\"",
+    "hive.sql.dbcp.password" = "QTestPassword123",
+    "hive.sql.query" = "SELECT id, \"Description\" FROM \"WorldData\".\"Geography\""
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geography_test
+PREHOOK: query: SELECT * FROM geography_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geography_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM geography_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geography_test
+#### A masked pattern was here ####
+1	Asia
+2	North America
+3	Asia
+4	Europe
+PREHOOK: query: SELECT * FROM country_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@country_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM country_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@country_test
+#### A masked pattern was here ####
+1	India
+2	USA
+3	Japan
+4	Germany
+PREHOOK: query: SELECT * FROM cities_test where regionid >= 20
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cities_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM cities_test where regionid >= 20
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cities_test
+#### A masked pattern was here ####
+2	New York	20
+3	Tokyo	30
+4	Berlin	40
+6	Kyoto	30
+PREHOOK: query: SELECT * FROM geography_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@geography_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM geography_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@geography_test
+#### A masked pattern was here ####
+1	Asia
+2	North America
+3	Asia
+4	Europe
+PREHOOK: query: DROP TABLE country_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@country_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@country_test
+POSTHOOK: query: DROP TABLE country_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@country_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@country_test
+PREHOOK: query: DROP TABLE cities_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@cities_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@cities_test
+POSTHOOK: query: DROP TABLE cities_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@cities_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@cities_test
+PREHOOK: query: DROP TABLE geography_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@geography_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@geography_test
+POSTHOOK: query: DROP TABLE geography_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@geography_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@geography_test

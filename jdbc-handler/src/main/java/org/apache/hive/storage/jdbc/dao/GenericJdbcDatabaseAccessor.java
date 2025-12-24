@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
+import org.apache.hive.storage.jdbc.conf.DatabaseType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.apache.hadoop.hive.ql.exec.Utilities.unescapeHiveJdbcIdentifier;
 
 /**
  * A data accessor that should in theory work with all JDBC compliant database drivers.
@@ -364,7 +366,7 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
       Matcher m = fromPattern.matcher(sql);
       Preconditions.checkArgument(m.matches());
       
-      if (!tableName.equals(m.group(2).replaceAll("[`\"]", ""))) {
+      if (!tableName.equals(m.group(2))) {
         throw new RuntimeException("Cannot find " + tableName + " in sql query " + sql);
       }
       result = String.format("%s (%s) tmptable %s", m.group(1), boundaryQuery, m.group(3));
@@ -537,12 +539,27 @@ public class GenericJdbcDatabaseAccessor implements DatabaseAccessor {
     return true;
   }
 
+  /**
+   * Quotes an identifier based on the database type.
+   *
+   * @param identifier The identifier to quote
+   * @param dbType The DatabaseType enum
+   * @return A database-specific quoted identifier (e.g., "\"Country\"" or "`Country`")
+   */
+  protected static String quoteIdentifier(String identifier, DatabaseType dbType) {
+    if (identifier == null || dbType == null || dbType.getStartQuote() == null) {
+      return identifier;
+    }
+    return dbType.getStartQuote() + identifier + dbType.getEndQuote();
+  }
+
   private static String getQualifiedTableName(Configuration conf) {
-    String tableName = conf.get(Constants.JDBC_TABLE);
+    DatabaseType dbType = DatabaseType.from(conf.get(JdbcStorageConfig.DATABASE_TYPE.getPropertyName()));
+    String tableName = quoteIdentifier(unescapeHiveJdbcIdentifier(conf.get(Constants.JDBC_TABLE)), dbType);
     if (tableName == null) {
       return null;
     }
-    String schemaName = conf.get(Constants.JDBC_SCHEMA);
+    String schemaName = quoteIdentifier(unescapeHiveJdbcIdentifier(conf.get(Constants.JDBC_SCHEMA)), dbType);
     return schemaName == null ? tableName : schemaName + "." + tableName;
   }
 
