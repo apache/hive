@@ -113,9 +113,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
   private static ShutdownHookManager shutdownHookMgr;
 
-  /** MM write states. */
-  public static final char MM_WRITE_OPEN = 'o', MM_WRITE_COMMITTED = 'c', MM_WRITE_ABORTED = 'a';
-
   static HadoopThriftAuthBridge.Server saslServer;
   private static MetastoreDelegationTokenManager delegationTokenManager;
   static boolean useSasl;
@@ -125,26 +122,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   private static ThriftServer thriftServer;
   /** the servlet server. */
   private static Server servletServer = null;
-  /** the port and path of the property servlet. */
-  private static int propertyServletPort = -1;
 
-  /**
-   * Gets the embedded servlet server.
-   * @return the server instance or null
-   */
-  public static Server getServletServer() {
-    return servletServer;
-  }
-
-  /**
-   * Gets the property servlet connector port.
-   * <p>If configuration is 0, this port is allocated by the system.</p>
-   * @return the connector port or -1 if not configured
-   */
-  public static int getPropertyServletPort() {
-    return propertyServletPort;
-  }
-  
   public static boolean isRenameAllowed(Database srcDB, Database destDB) {
     if (!srcDB.getName().equalsIgnoreCase(destDB.getName())) {
       if (ReplChangeManager.isSourceOfReplication(srcDB) || ReplChangeManager.isSourceOfReplication(destDB)) {
@@ -716,13 +694,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     // optionally create and start the property and Iceberg REST server
     ServletServerBuilder builder = new ServletServerBuilder(conf);
-    ServletServerBuilder.Descriptor properties = builder.addServlet(PropertyServlet.createServlet(conf));
+    builder.addServlet(PropertyServlet.createServlet(conf));
     builder.addServlet(createCatalogServlet(conf));
     servletServer = builder.start(LOG);
-    if (servletServer != null && properties != null) {
-      propertyServletPort = properties.getPort();
-    }
-
     // main server
     thriftServer.start();
   }
