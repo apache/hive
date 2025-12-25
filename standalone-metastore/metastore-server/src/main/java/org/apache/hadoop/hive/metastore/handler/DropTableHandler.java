@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.handler;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -26,6 +26,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.HMSHandler;
+import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
+import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
@@ -39,25 +44,26 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.thrift.TException;
 
-import static org.apache.hadoop.hive.metastore.HMSHandler.checkTableDataShouldBeDeleted;
-import static org.apache.hadoop.hive.metastore.HMSHandler.isDbReplicationTarget;
-import static org.apache.hadoop.hive.metastore.HMSHandler.isMustPurge;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkTableDataShouldBeDeleted;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMustPurge;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
-public class AsyncDropTableHandler
-    extends AbstractAsyncOperationHandler<DropTableRequest, AsyncDropTableHandler.DropTableResult> {
+public class DropTableHandler
+    extends AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> {
   private Table tbl;
   private Path tblPath;
   private TableName tableName;
   private boolean tableDataShouldBeDeleted;
   private AtomicReference<String> progress;
 
-  AsyncDropTableHandler(IHMSHandler handler, boolean async, DropTableRequest request) {
+  DropTableHandler(IHMSHandler handler, boolean async, DropTableRequest request)
+      throws TException, IOException{
     super(handler, async, request);
   }
 
-  public DropTableResult dropTable() throws TException {
+  public DropTableResult execute() throws TException {
     boolean success = false;
     List<Path> partPaths = null;
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
@@ -127,7 +133,7 @@ public class AsyncDropTableHandler
     }
   }
 
-  public DropTableResult execute() throws TException, IOException {
+  public void beforeExecute() throws TException, IOException {
     // drop any partitions
     String catName = normalizeIdentifier(
         request.isSetCatalogName() ? request.getCatalogName() : getDefaultCatalog(handler.getConf()));
@@ -135,8 +141,8 @@ public class AsyncDropTableHandler
     String dbname = normalizeIdentifier(request.getDbName());
     tableName = new TableName(catName, dbname, name);
     progress = new AtomicReference<>("Starting to drop the table: " + tableName);
-    GetTableRequest req = new GetTableRequest(request.getDbName(), request.getTableName());
-    req.setCatName(catName);
+    GetTableRequest req = new GetTableRequest(tableName.getDb(), tableName.getTable());
+    req.setCatName(tableName.getCat());
     tbl = handler.get_table_core(req);
     if (tbl == null) {
       throw new NoSuchObjectException(tableName + " doesn't exist");
@@ -148,22 +154,26 @@ public class AsyncDropTableHandler
     if (tbl.getSd().getLocation() != null) {
       tblPath = new Path(tbl.getSd().getLocation());
     }
+
     if (tableDataShouldBeDeleted && tblPath != null) {
+      // HIVE-28804 drop table user should have table path and parent path permission
       if (!handler.getWh().isWritable(tblPath.getParent())) {
-        throw new MetaException(tableName + " not deleted since " + tblPath.getParent() +
-            " is not writable by " + SecurityUtils.getUser());
+        throw new MetaException("%s not deleted since %s is not writable by %s"
+            .formatted(tableName.getNotEmptyDbTable(), tblPath.getParent(), SecurityUtils.getUser()));
+      } else if (!handler.getWh().isWritable(tblPath)) {
+        throw new MetaException("%s not deleted since %s is not writable by %s"
+            .formatted(tableName.getNotEmptyDbTable(), tblPath, SecurityUtils.getUser()));
       }
     }
-    return dropTable();
   }
 
   @Override
-  public String getLogMessagePrefix() {
+  public String getMessagePrefix() {
     return "AsyncDropTableHandler [" + id + "] -  Drop table " + tableName + ":";
   }
 
   @Override
-  public String getOperationProgress() {
+  public String getProgress() {
     if (progress == null) {
       return "AsyncDropTableHandler [" + id + "] hasn't started yet";
     }

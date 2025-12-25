@@ -68,6 +68,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.ExceptionHandler;
@@ -1765,5 +1766,31 @@ public class MetaStoreServerUtils {
 
   public static boolean isCompactionTxn(TxnType txnType) {
     return TxnType.COMPACTION.equals(txnType) || TxnType.REBALANCE_COMPACTION.equals(txnType);
+  }
+
+  public static boolean isDbReplicationTarget(Database db) {
+    String dbCkptStatus = (db.getParameters() == null) ? null : db.getParameters().get(ReplConst.REPL_TARGET_DB_PROPERTY);
+    return dbCkptStatus != null && !dbCkptStatus.trim().isEmpty();
+  }
+
+  public static boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
+    if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
+      // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
+      return MetaStoreUtils.isExternalTablePurge(tbl);
+    }
+    return deleteData;
+  }
+
+  public static boolean isMustPurge(EnvironmentContext envContext, Table tbl) {
+    // Data needs deletion. Check if trash may be skipped.
+    // Trash may be skipped iff:
+    //  1. deleteData == true, obviously.
+    //  2. tbl is external.
+    //  3. Either
+    //    3.1. User has specified PURGE from the commandline, and if not,
+    //    3.2. User has set the table to auto-purge.
+    return (envContext != null && envContext.getProperties() != null
+        && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+        || MetaStoreUtils.isSkipTrash(tbl.getParameters());
   }
 }

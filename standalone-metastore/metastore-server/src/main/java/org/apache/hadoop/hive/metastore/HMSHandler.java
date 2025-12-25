@@ -48,6 +48,8 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
 import org.apache.hadoop.hive.metastore.events.*;
+import org.apache.hadoop.hive.metastore.handler.AbstractOperationHandler;
+import org.apache.hadoop.hive.metastore.handler.DropTableHandler;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -115,6 +117,9 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTLT;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkTableDataShouldBeDeleted;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMustPurge;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -1154,11 +1159,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  static boolean isDbReplicationTarget(Database db) {
-    String dbCkptStatus = (db.getParameters() == null) ? null : db.getParameters().get(ReplConst.REPL_TARGET_DB_PROPERTY);
-    return dbCkptStatus != null && !dbCkptStatus.trim().isEmpty();
-  }
-
   // Assumes that the catalog has already been set.
   private void create_database_core(RawStore ms, final Database db)
       throws AlreadyExistsException, InvalidObjectException, MetaException {
@@ -1738,9 +1738,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             // Drop the table but not its data
             dropRequest.setDeleteData(false);
             dropRequest.setDropPartitions(true);
-            AbstractAsyncOperationHandler<DropTableRequest, AsyncDropTableHandler.DropTableResult> asyncOp =
-                AbstractAsyncOperationHandler.offer(HMSHandler.this, dropRequest);
-            AsyncDropTableHandler.DropTableResult result = asyncOp.getResult();
+            AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> asyncOp =
+                AbstractOperationHandler.offer(HMSHandler.this, dropRequest);
+            DropTableHandler.DropTableResult result = asyncOp.getResult();
             if (tableDataShouldBeDeleted
                 && result.success()
                 && result.partPaths() != null) {
@@ -2934,15 +2934,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return (ms.getTable(catName, dbname, name, null) != null);
   }
 
-
-  static boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
-    if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
-      // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
-      return MetaStoreUtils.isExternalTablePurge(tbl);
-    }
-    return deleteData;
-  }
-
   /**
    * Deletes the data in a table's location, if it fails logs an error
    *
@@ -3073,16 +3064,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public AsyncOperationResp drop_table_req(DropTableRequest dropTableReq) throws MetaException, NoSuchObjectException {
+  public AsyncOperationResp drop_table_req(DropTableRequest dropTableReq)
+      throws MetaException, NoSuchObjectException {
     startFunction("drop_table_req", ": " + dropTableReq.getTableName());
     boolean success = false;
     Exception ex = null;
     try {
-      AbstractAsyncOperationHandler<DropTableRequest, AsyncDropTableHandler.DropTableResult> asyncOp =
-          AbstractAsyncOperationHandler.offer(this, dropTableReq);
-      AbstractAsyncOperationHandler.OperationStatus status = asyncOp.getOperationStatus();
+      AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> asyncOp =
+          AbstractOperationHandler.offer(this, dropTableReq);
+      AbstractOperationHandler.OperationStatus status = asyncOp.getOperationStatus();
       if (status.isFinished()) {
-        AsyncDropTableHandler.DropTableResult result = asyncOp.getResult();
+        DropTableHandler.DropTableResult result = asyncOp.getResult();
         // Moving the data deletion out of the async handler,
         // to ensure the data is deleted on the transaction committed,
         // regardless of whether the operation has been aborted or not.
@@ -4849,19 +4841,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     }
     return true;
-  }
-
-  static boolean isMustPurge(EnvironmentContext envContext, Table tbl) {
-    // Data needs deletion. Check if trash may be skipped.
-    // Trash may be skipped iff:
-    //  1. deleteData == true, obviously.
-    //  2. tbl is external.
-    //  3. Either
-    //    3.1. User has specified PURGE from the commandline, and if not,
-    //    3.2. User has set the table to auto-purge.
-    return (envContext != null && envContext.getProperties() != null
-            && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
-        || MetaStoreUtils.isSkipTrash(tbl.getParameters());
   }
 
   static long getWriteId(EnvironmentContext context){

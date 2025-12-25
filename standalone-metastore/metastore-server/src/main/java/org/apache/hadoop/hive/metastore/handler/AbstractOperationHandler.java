@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore;
+package org.apache.hadoop.hive.metastore.handler;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.DropTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -46,13 +47,14 @@ import org.slf4j.LoggerFactory;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
 
-public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
-  private static final Logger LOG = LoggerFactory.getLogger(AbstractAsyncOperationHandler.class);
-  private static final Map<String, AbstractAsyncOperationHandler> OPID_TO_HANDLER = new ConcurrentHashMap<>();
+public abstract class AbstractOperationHandler<T extends TBase, A> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractOperationHandler.class);
+  private static final Map<String, AbstractOperationHandler> OPID_TO_HANDLER = new ConcurrentHashMap<>();
   private static final ScheduledExecutorService OPID_CLEANER = Executors.newScheduledThreadPool(1, r -> {
     Thread thread = new Thread(r);
     thread.setDaemon(true);
-    thread.setName("AsyncOperationsHandler-cleaner");
+    thread.setName("OperationHandler-Cleaner");
     return thread;
   });
 
@@ -67,11 +69,12 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
   protected final String id;
   private long timeout;
 
-  private AbstractAsyncOperationHandler(String id) {
+  private AbstractOperationHandler(String id) {
     this.id = id;
   }
 
-  AbstractAsyncOperationHandler(IHMSHandler handler, boolean async, T request) {
+  AbstractOperationHandler(IHMSHandler handler, boolean async, T request)
+      throws TException, IOException {
     this.id = UUID.randomUUID().toString();
     this.handler = handler;
     this.request = request;
@@ -82,12 +85,13 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
       this.executor = Executors.newFixedThreadPool(1, r -> {
         Thread thread = new Thread(r);
         thread.setDaemon(true);
-        thread.setName("TableOperationsHandler " + id);
+        thread.setName("OperationHandler[" + id + "]");
         return thread;
       });
     } else {
       this.executor = MoreExecutors.newDirectExecutorService();
     }
+    beforeExecute();
     this.future =
         executor.submit(() -> {
           try {
@@ -100,9 +104,9 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
     this.executor.shutdown();
   }
 
-  private static <T extends TBase, A> AbstractAsyncOperationHandler<T, A>
+  private static <T extends TBase, A> AbstractOperationHandler<T, A>
       ofCache(String opId, boolean shouldCancel) throws TException {
-    AbstractAsyncOperationHandler<T, A> asyncOp = null;
+    AbstractOperationHandler<T, A> asyncOp = null;
     if (opId != null) {
       asyncOp = OPID_TO_HANDLER.get(opId);
       if (asyncOp == null && !shouldCancel) {
@@ -112,7 +116,7 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
         if (asyncOp != null) {
           asyncOp.cancelOperation();
         } else {
-          asyncOp = new AbstractAsyncOperationHandler<>(opId) {
+          asyncOp = new AbstractOperationHandler<>(opId) {
             @Override
             public OperationStatus getOperationStatus() throws TException {
               OperationStatus resp = new OperationStatus(opId);
@@ -125,11 +129,11 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
               throw new UnsupportedOperationException();
             }
             @Override
-            public String getLogMessagePrefix() {
+            public String getMessagePrefix() {
               throw new UnsupportedOperationException();
             }
             @Override
-            public String getOperationProgress() {
+            public String getProgress() {
               throw new UnsupportedOperationException();
             }
           };
@@ -139,13 +143,13 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
     return asyncOp;
   }
 
-  public static <T extends TBase, A> AbstractAsyncOperationHandler<T, A> offer(IHMSHandler handler, T req)
-      throws TException {
+  public static <T extends TBase, A> AbstractOperationHandler<T, A> offer(IHMSHandler handler, T req)
+      throws TException, IOException {
     if (req instanceof DropTableRequest request) {
-      AbstractAsyncOperationHandler<T, A> asycOp = ofCache(request.getId(), request.isCancel());
+      AbstractOperationHandler<T, A> asycOp = ofCache(request.getId(), request.isCancel());
       if (asycOp == null) {
-        asycOp = (AbstractAsyncOperationHandler<T, A>)
-            new AsyncDropTableHandler(handler, request.isAsyncDrop(), request);
+        asycOp = (AbstractOperationHandler<T, A>)
+            new DropTableHandler(handler, request.isAsyncDrop(), request);
       }
       return asycOp;
     }
@@ -153,7 +157,7 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
   }
 
   public OperationStatus getOperationStatus() throws TException {
-    String logMsgPrefix = getLogMessagePrefix();
+    String logMsgPrefix = getMessagePrefix();
     if (future == null) {
       throw new IllegalStateException(logMsgPrefix + " hasn't started yet");
     }
@@ -180,12 +184,12 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
       resp.setFinished(true);
       resp.setMessage(logMsgPrefix + (future.isCancelled() ? " Canceled" : " Done"));
     } else {
-      resp.setMessage(logMsgPrefix + " In-progress, state - " + getOperationProgress());
+      resp.setMessage(logMsgPrefix + " In-progress, state - " + getProgress());
     }
     return resp;
   }
 
-  static class OperationStatus {
+  public static class OperationStatus {
     private final String id;
     private String message;
     private boolean finished;
@@ -216,9 +220,9 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
 
   public void cancelOperation() {
     if (!future.isDone()) {
-      LOG.warn("Operation: {} is still running, but a close signal is triggered", id);
       future.cancel(true);
       aborted.set(true);
+      LOG.warn("{} is still running, but a close signal is sent out", getMessagePrefix());
     }
     executor.shutdown();
   }
@@ -232,9 +236,19 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
   public final A getResult() throws TException {
     OperationStatus resp = getOperationStatus();
     if (!resp.isFinished()) {
-      throw new IllegalStateException("Result is un-available as the operation " + id + " is still running");
+      throw new IllegalStateException("Result is un-available as " +
+          getMessagePrefix() + " is still running");
     }
     return result;
+  }
+
+  /**
+   * Method invoked prior to executing the given operation.
+   * This method may be used to initialize and validate the operation.
+   * @throws TException
+   */
+  protected void beforeExecute() throws TException, IOException {
+
   }
 
   /**
@@ -250,19 +264,18 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
    *
    * @return message prefix
    */
-  protected abstract String getLogMessagePrefix();
+  protected abstract String getMessagePrefix();
 
   /**
    * Get the message about the operation progress.
    *
    * @return the progress
    */
-  protected abstract String getOperationProgress();
+  protected abstract String getProgress();
 
   public void checkInterrupted() throws MetaException {
     if (aborted.get()) {
-      String errorMessage = "FAILED: drop table " + id + " has been interrupted";
-      throw new MetaException(errorMessage);
+      throw new MetaException(getMessagePrefix() + " has been interrupted");
     }
   }
 
@@ -278,4 +291,5 @@ public abstract class AbstractAsyncOperationHandler <T extends TBase, A> {
   public static boolean containsOp(String opId) {
     return OPID_TO_HANDLER.containsKey(opId);
   }
+
 }
