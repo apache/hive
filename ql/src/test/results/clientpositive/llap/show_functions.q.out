@@ -283,6 +283,8 @@ month
 months_between
 murmur_hash
 named_struct
+nanosecond timestamp
+nanosecond timestamp with local time zone
 ndv_compute_bit_vector
 negative
 next_day
@@ -607,6 +609,7 @@ lcase
 like
 locate
 minute
+nanosecond timestamp with local time zone
 negative
 ntile
 parse_url_tuple
@@ -925,6 +928,8 @@ month
 months_between
 murmur_hash
 named_struct
+nanosecond timestamp
+nanosecond timestamp with local time zone
 ndv_compute_bit_vector
 negative
 next_day
