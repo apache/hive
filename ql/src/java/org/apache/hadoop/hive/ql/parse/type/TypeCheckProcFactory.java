@@ -142,6 +142,8 @@ public class TypeCheckProcFactory<T> {
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_MAP, "toMap");
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_LIST, "toArray");
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_STRUCT, "toStruct");
+    CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_TIMESTAMP_NS, serdeConstants.TIMESTAMP_TYPE_NAME);
+    CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_TIMESTAMPTZ_NS, serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
 
     WINDOWING_TOKENS = new HashSet<Integer>();
     WINDOWING_TOKENS.add(HiveParser.KW_OVER);
@@ -518,6 +520,22 @@ public class TypeCheckProcFactory<T> {
           }
           return exprFactory.createTimestampLocalTimeZoneConstantExpr(timeString, conf.getLocalTimeZone());
         }
+        if (expr.getType() == HiveParser.TOK_TIMESTAMP_NSLITERAL) {
+          T ts = exprFactory.createTimestampConstantExpr(timeString);
+          return exprFactory.setTypeInfo(ts, TypeInfoFactory.timestampNanoTypeInfo);
+        }
+        if (expr.getType() == HiveParser.TOK_TIMESTAMPTZ_NSLITERAL) {
+          HiveConf conf;
+          try {
+            conf = Hive.get().getConf();
+          } catch (HiveException e) {
+            throw new SemanticException(e);
+          }
+
+          T ts = exprFactory.createTimestampLocalTimeZoneConstantExpr(timeString, conf.getLocalTimeZone());
+          return exprFactory.setTypeInfo(ts, TypeInfoFactory.timestampNanosTZTypeInfo);
+        }
+
         throw new IllegalArgumentException("Invalid time literal type " + expr.getType());
       } catch (Exception err) {
         throw new SemanticException(

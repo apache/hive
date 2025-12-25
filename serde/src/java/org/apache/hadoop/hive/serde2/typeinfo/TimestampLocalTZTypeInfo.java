@@ -38,9 +38,9 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
     this.timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
   }
 
-  @Override
-  public String getTypeName() {
-    return serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME;
+  public TimestampLocalTZTypeInfo(String typeName, String timeZoneStr) {
+    super(typeName);
+    this.timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
   }
 
   @Override
@@ -78,11 +78,15 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
 
   @Override
   public String getQualifiedName() {
-    return getQualifiedName(null);
+    return getQualifiedName(typeName, null);
   }
 
   public static String getQualifiedName(ZoneId timeZone) {
-    StringBuilder sb = new StringBuilder(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
+    return getQualifiedName(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME, timeZone);
+  }
+
+  public static String getQualifiedName(String typeName, ZoneId timeZone) {
+    StringBuilder sb = new StringBuilder(typeName);
     if (timeZone != null) {
       sb.append("('");
       sb.append(timeZone);

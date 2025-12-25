@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.common.type.HiveIntervalYearMonth;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampNano;
+import org.apache.hadoop.hive.common.type.TimestampNanoTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.common.type.TimestampUtils;
@@ -52,6 +54,8 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampNanoTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampNanoWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
@@ -254,6 +258,13 @@ public final class PrimitiveObjectInspectorUtils {
       PrimitiveCategory.CHAR, serdeConstants.CHAR_TYPE_NAME, null, HiveChar.class,
       HiveCharWritable.class);
 
+  public static final PrimitiveTypeEntry timestampnsTypeEntry =
+      new PrimitiveTypeEntry(PrimitiveCategory.TIMESTAMP_NS, serdeConstants.TIMESTAMP_NS_TYPE_NAME, null,
+          TimestampNano.class, TimestampNanoWritable.class);
+  public static final PrimitiveTypeEntry timestampnsTZTypeEntry =
+      new PrimitiveTypeEntry(PrimitiveCategory.TIMESTAMPTZ_NS, serdeConstants.TIMESTAMPTZ_NS_TYPE_NAME, null,
+          TimestampNanoTZ.class, TimestampNanoTZWritable.class);
+
   // The following is a complex type for special handling
   public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.UNKNOWN, "unknown", null, Object.class, null);
@@ -277,6 +288,8 @@ public final class PrimitiveObjectInspectorUtils {
     registerType(intervalYearMonthTypeEntry);
     registerType(intervalDayTimeTypeEntry);
     registerType(decimalTypeEntry);
+    registerType(timestampnsTypeEntry);
+    registerType(timestampnsTZTypeEntry);
     registerType(unknownTypeEntry);
   }
 
@@ -1440,6 +1453,8 @@ public final class PrimitiveObjectInspectorUtils {
       case DATE:
       case TIMESTAMP:
       case TIMESTAMPLOCALTZ:
+      case TIMESTAMP_NS:
+      case TIMESTAMPTZ_NS:
         return PrimitiveGrouping.DATE_GROUP;
       case INTERVAL_YEAR_MONTH:
       case INTERVAL_DAY_TIME:
