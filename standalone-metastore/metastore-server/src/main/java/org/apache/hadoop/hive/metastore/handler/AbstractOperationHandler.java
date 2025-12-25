@@ -98,7 +98,7 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
           try {
             return execute();
           } finally {
-            destroy();
+            afterExecute();
             OPID_CLEANER.schedule(() -> OPID_TO_HANDLER.remove(id), 1, TimeUnit.HOURS);
           }
         });
@@ -107,17 +107,17 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
 
   private static <T extends TBase, A> AbstractOperationHandler<T, A>
       ofCache(String opId, boolean shouldCancel) throws TException {
-    AbstractOperationHandler<T, A> asyncOp = null;
+    AbstractOperationHandler<T, A> opHandler = null;
     if (opId != null) {
-      asyncOp = OPID_TO_HANDLER.get(opId);
-      if (asyncOp == null && !shouldCancel) {
+      opHandler = OPID_TO_HANDLER.get(opId);
+      if (opHandler == null && !shouldCancel) {
         throw new MetaException("Couldn't find the async operation handler: " + opId);
       }
       if (shouldCancel) {
-        if (asyncOp != null) {
-          asyncOp.cancelOperation();
+        if (opHandler != null) {
+          opHandler.cancelOperation();
         } else {
-          asyncOp = new AbstractOperationHandler<>(opId) {
+          opHandler = new AbstractOperationHandler<>(opId) {
             @Override
             public OperationStatus getOperationStatus() throws TException {
               OperationStatus resp = new OperationStatus(opId);
@@ -141,24 +141,24 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
         }
       }
     }
-    return asyncOp;
+    return opHandler;
   }
 
   public static <T extends TBase, A> AbstractOperationHandler<T, A> offer(IHMSHandler handler, T req)
       throws TException, IOException {
     if (req instanceof DropTableRequest request) {
-      AbstractOperationHandler<T, A> asycOp = ofCache(request.getId(), request.isCancel());
-      if (asycOp == null) {
-        asycOp = (AbstractOperationHandler<T, A>)
+      AbstractOperationHandler<T, A> opHandler = ofCache(request.getId(), request.isCancel());
+      if (opHandler == null) {
+        opHandler = (AbstractOperationHandler<T, A>)
             new DropTableHandler(handler, request.isAsyncDrop(), request);
       }
-      return asycOp;
+      return opHandler;
     } else if (req instanceof DropDatabaseRequest request) {
-      AbstractOperationHandler<T, A> asycOp = ofCache(request.getId(), request.isCancel());
-      if (asycOp == null) {
-        asycOp =  (AbstractOperationHandler<T, A>) new DropDatabaseHandler(handler, request);
+      AbstractOperationHandler<T, A> opHandler = ofCache(request.getId(), request.isCancel());
+      if (opHandler == null) {
+        opHandler =  (AbstractOperationHandler<T, A>) new DropDatabaseHandler(handler, request);
       }
-      return asycOp;
+      return opHandler;
     }
     throw new UnsupportedOperationException("Not yet implemented");
   }
@@ -251,7 +251,8 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
 
   /**
    * Method invoked prior to executing the given operation.
-   * This method may be used to initialize and validate the operation.
+   * This method may be used to initialize and validate the operation and
+   * executed at the same thread as the caller.
    * @throws TException
    */
   protected void beforeExecute() throws TException, IOException {
@@ -287,9 +288,10 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
   }
 
   /**
-   * Free the resources this handler holds
+   * Method after the operation is done,
+   * can be used to free the resources this handler holds
    */
-  void destroy() {
+  protected void afterExecute() {
     request = null;
     handler = null;
   }

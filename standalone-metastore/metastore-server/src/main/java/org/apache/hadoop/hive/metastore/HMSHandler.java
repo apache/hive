@@ -1606,15 +1606,20 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Exception ex = null;
     try {
-      AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> asyncOp =
+      AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> dropDatabaseOp =
           AbstractOperationHandler.offer(this, req);
-      AbstractOperationHandler.OperationStatus status = asyncOp.getOperationStatus();
-      if (status.isFinished()) {
-        DropDatabaseHandler.DropDatabaseResult result = asyncOp.getResult();
-        // Moving the data deletion out of the async handler,
-        // to ensure the data is deleted on the transaction committed,
-        // regardless of whether the operation has been aborted or not.
-        if (result.isSuccess() && req.isDeleteData()) {
+      AbstractOperationHandler.OperationStatus status = dropDatabaseOp.getOperationStatus();
+      if (status.isFinished() && dropDatabaseOp.getResult() != null && dropDatabaseOp.getResult().isSuccess()) {
+        DropDatabaseHandler.DropDatabaseResult result = dropDatabaseOp.getResult();
+        for (Path funcCmPath : result.getFunctionCmPaths()) {
+          wh.addToChangeManagement(funcCmPath);
+        }
+        if (req.isDeleteData()) {
+          // Moving the data deletion out of the async handler.
+          // For every Thrift call, when it goes to the end, the TUGIBasedProcessor or
+          // TUGIAssumingProcessor would close the shared FileSystem by FileSystem.closeAllForUGI(clientUgi).
+          // A "java.io.IOException: Filesystem closed" will be raised if the async handler happens to
+          // use the same FileSystem instance closed by the processor.
           Database db = result.getDatabase();
           // Delete the data in the partitions which have other locations
           deletePartitionData(result.getPartitionPaths(), false, db);
@@ -1622,29 +1627,27 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           for (Path tablePath : result.getTablePaths()) {
             deleteTableData(tablePath, false, db);
           }
-          final Database dbFinal = db;
-          final Path path = (dbFinal.getManagedLocationUri() != null) ?
-              new Path(dbFinal.getManagedLocationUri()) : wh.getDatabaseManagedPath(dbFinal);
+          Path path = (db.getManagedLocationUri() != null) ?
+              new Path(db.getManagedLocationUri()) : wh.getDatabaseManagedPath(db);
           if (req.isDeleteManagedDir()) {
             try {
               Boolean deleted = UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Boolean>)
-                  () -> wh.deleteDir(path, true, dbFinal));
+                  () -> wh.deleteDir(path, true, db));
               if (!deleted) {
-                LOG.error("Failed to delete database's managed warehouse directory: " + path);
+                LOG.error("Failed to delete database's managed warehouse directory: {}", path);
               }
             } catch (Exception e) {
-              LOG.error("Failed to delete database's managed warehouse directory: " + path + " " + e.getMessage());
+              LOG.error("Failed to delete database's managed warehouse directory: {}", path, e);
             }
           }
           try {
             Boolean deleted = UserGroupInformation.getCurrentUser().doAs((PrivilegedExceptionAction<Boolean>)
-                () -> wh.deleteDir(new Path(dbFinal.getLocationUri()), true, dbFinal));
+                () -> wh.deleteDir(new Path(db.getLocationUri()), true, db));
             if (!deleted) {
-              LOG.error("Failed to delete database external warehouse directory " + db.getLocationUri());
+              LOG.error("Failed to delete database external warehouse directory: {}", db.getLocationUri());
             }
-          } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-            LOG.error("Failed to delete the database external warehouse directory: " + db.getLocationUri() + " " + e
-                .getMessage());
+          } catch (Exception e) {
+            LOG.error("Failed to delete the database external warehouse directory: {}", db.getLocationUri(), e);
           }
         }
       }
@@ -2870,15 +2873,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Exception ex = null;
     try {
-      AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> asyncOp =
+      AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> dropTableOp =
           AbstractOperationHandler.offer(this, dropTableReq);
-      AbstractOperationHandler.OperationStatus status = asyncOp.getOperationStatus();
-      if (status.isFinished()) {
-        DropTableHandler.DropTableResult result = asyncOp.getResult();
-        // Moving the data deletion out of the async handler,
-        // to ensure the data is deleted on the transaction committed,
-        // regardless of whether the operation has been aborted or not.
-        if (result != null && result.success() && result.tableDataShouldBeDeleted()) {
+      AbstractOperationHandler.OperationStatus status = dropTableOp.getOperationStatus();
+      if (status.isFinished() && dropTableOp.getResult() != null && dropTableOp.getResult().success()) {
+        DropTableHandler.DropTableResult result = dropTableOp.getResult();
+        if (result.tableDataShouldBeDeleted()) {
           boolean ifPurge = result.ifPurge();
           boolean shouldEnableCm = result.shouldEnableCm();
           // Data needs deletion. Check if trash may be skipped.

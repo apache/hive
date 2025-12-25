@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.fs.Path;
@@ -40,10 +39,12 @@ import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DropTableRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
+import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -62,27 +63,25 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbRe
 
 public class DropDatabaseHandler
     extends AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
-  private Warehouse wh;
-  private RawStore rs;
   private Database db;
-  private boolean isReplicated;
-  private List<String> tables;
-  private List<String> functions;
+  private List<Table> tables;
+  private List<Function> functions;
   private List<String> procedures;
   private List<String> packages;
   private AtomicReference<String> progress;
-  
+  private DropDatabaseResult result;
+
   DropDatabaseHandler(IHMSHandler handler, DropDatabaseRequest request)
       throws TException, IOException {
     super(handler, request.isAsyncDrop(), request);
   }
 
-  public DropDatabaseResult execute() throws TException {
+  public DropDatabaseResult execute() throws TException, IOException {
     boolean success = false;
-    List<Path> tablePaths = new ArrayList<>();
+
     List<Path> partitionPaths = new ArrayList<>();
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    DropDatabaseResult result = new DropDatabaseResult(db);
+    RawStore rs = handler.getMS();
     rs.openTransaction();
     try {
       ((HMSHandler) handler).firePreEvent(new PreDropDatabaseEvent(db, handler));
@@ -92,14 +91,11 @@ public class DropDatabaseHandler
         }
         return result;
       }
-      Path databasePath = wh.getDnsPath(wh.getDatabasePath(db));
-      String catPrependedName =
-          MetaStoreUtils.prependCatalogToDbName(request.getCatalogName(), request.getName(), handler.getConf());
       // drop any functions before dropping db
       for (int i = 0, j = functions.size(); i < functions.size(); i++, j--) {
         progress.set("Dropping functions from the database, " + j + " functions left");
-        String funcName = functions.get(i);
-        handler.drop_function(catPrependedName, funcName);
+        Function func = functions.get(i);
+        rs.dropFunction(request.getCatalogName(), request.getName(), func.getFunctionName());
       }
 
       for (int i = 0, j = procedures.size(); i < procedures.size(); i++, j--) {
@@ -114,108 +110,40 @@ public class DropDatabaseHandler
         rs.dropPackage(new DropPackageRequest(request.getCatalogName(), request.getName(), pkgName));
       }
 
-      final int tableBatchSize = MetastoreConf.getIntVar(handler.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
-      // First pass will drop the materialized views
-      List<String> materializedViewNames = rs.getTables(request.getCatalogName(), request.getName(),
-          ".*", TableType.MATERIALIZED_VIEW, -1);
-      AtomicInteger numTables = new AtomicInteger(materializedViewNames == null ? 0 : materializedViewNames.size());
-      Batchable.runBatched(tableBatchSize, materializedViewNames, new Batchable<String, Void>() {
-        @Override
-        public List<Void> run(List<String> input) throws Exception {
-          checkInterrupted();
-          progress.set("Dropping materialized views from the database, " + numTables.get() + " views left");
-          List<Table> materializedViews = rs.getTableObjectsByName(request.getCatalogName(), request.getName(), input);
-          for (Table materializedView : materializedViews) {
-            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(materializedView, request.isSoftDelete());
+      for (int i = 0, j = tables.size(); i < tables.size(); i++, j--) {
+        checkInterrupted();
+        progress.set("Dropping tables from the database, " + j + " tables left");
+        Table table = tables.get(i);
+        boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, request.isSoftDelete());
+        boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, request.isDeleteData())
+            && !isSoftDelete;
 
-            if (materializedView.getSd().getLocation() != null && !isSoftDelete) {
-              Path materializedViewPath = wh.getDnsPath(new Path(materializedView.getSd().getLocation()));
-
-              if (!FileUtils.isSubdirectory(databasePath.toString(), materializedViewPath.toString())
-                  || request.isSoftDelete()) {
-                if (!wh.isWritable(materializedViewPath.getParent())) {
-                  throw new MetaException("Database metadata not deleted since table: " +
-                      materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
-                      " which is not writable by " + SecurityUtils.getUser());
-                }
-                tablePaths.add(materializedViewPath);
-              }
-            }
-            EnvironmentContext context = null;
-            if (isSoftDelete) {
-              context = new EnvironmentContext();
-              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(request.getTxnId()));
-            }
-            // Drop the materialized view but not its data
-            handler.drop_table_with_environment_context(
-                request.getName(), materializedView.getTableName(), false, context);
-
-            // Remove from all tables
-            tables.remove(materializedView.getTableName());
-          }
-          numTables.set(numTables.get() - input.size());
-          return Collections.emptyList();
+        EnvironmentContext context = null;
+        if (isSoftDelete) {
+          context = new EnvironmentContext();
+          context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(request.getTxnId()));
+          request.setDeleteManagedDir(false);
         }
-      });
-
-      // drop tables before dropping db
-      numTables.set(tables.size());
-      Batchable.runBatched(tableBatchSize, new ArrayList<>(tables), new Batchable<String, Void>() {
-        @Override
-        public List<Void> run(List<String> input) throws Exception {
-          checkInterrupted();
-          progress.set("Dropping tables from the database, " + numTables.get() + " tables left");
-          List<Table> tables = rs.getTableObjectsByName(request.getCatalogName(), request.getName(), input);
-          for (Table table : tables) {
-            // If the table is not external and it might not be in a subdirectory of the database
-            // add it's locations to the list of paths to delete
-            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, request.isSoftDelete());
-            boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, request.isDeleteData())
-                && !isSoftDelete;
-
-            boolean isManagedTable = table.getTableType().equals(TableType.MANAGED_TABLE.toString());
-            if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
-              Path tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
-              if (!isManagedTable || request.isSoftDelete()) {
-                if (!wh.isWritable(tablePath.getParent())) {
-                  throw new MetaException(
-                      "Database metadata not deleted since table: " + table.getTableName() + " has a parent location "
-                          + tablePath.getParent() + " which is not writable by " + SecurityUtils.getUser());
-                }
-                tablePaths.add(tablePath);
-              }
-            }
-
-            EnvironmentContext context = null;
-            if (isSoftDelete) {
-              context = new EnvironmentContext();
-              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(request.getTxnId()));
-              request.setDeleteManagedDir(false);
-            }
-            DropTableRequest dropRequest = new DropTableRequest(table.getDbName(), table.getTableName());
-            dropRequest.setCatalogName(table.getCatName());
-            dropRequest.setEnvContext(context);
-            // Drop the table but not its data
-            dropRequest.setDeleteData(false);
-            dropRequest.setDropPartitions(true);
-            AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> asyncOp =
-                AbstractOperationHandler.offer(handler, dropRequest);
-            DropTableHandler.DropTableResult result = asyncOp.getResult();
-            if (tableDataShouldBeDeleted
-                && result.success()
-                && result.partPaths() != null) {
-              partitionPaths.addAll(result.partPaths());
-            }
-          }
-          numTables.set(numTables.get() - input.size());
-          return Collections.emptyList();
+        DropTableRequest dropRequest = new DropTableRequest(request.getName(), table.getTableName());
+        dropRequest.setCatalogName(request.getCatalogName());
+        dropRequest.setEnvContext(context);
+        // Drop the table but not its data
+        dropRequest.setDeleteData(false);
+        dropRequest.setDropPartitions(true);
+        AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> asyncOp =
+            AbstractOperationHandler.offer(handler, dropRequest);
+        DropTableHandler.DropTableResult result = asyncOp.getResult();
+        if (tableDataShouldBeDeleted
+            && result.success()
+            && result.partPaths() != null) {
+          partitionPaths.addAll(result.partPaths());
         }
-      });
+      }
 
       if (rs.dropDatabase(request.getCatalogName(), request.getName())) {
         if (!handler.getTransactionalListeners().isEmpty()) {
           checkInterrupted();
-          DropDatabaseEvent dropEvent = new DropDatabaseEvent(db, true, handler, isReplicated);
+          DropDatabaseEvent dropEvent = new DropDatabaseEvent(db, true, handler, isDbReplicationTarget(db));
           EnvironmentContext context = null;
           if (!request.isDeleteManagedDir()) {
             context = new EnvironmentContext();
@@ -229,7 +157,6 @@ public class DropDatabaseHandler
         success = rs.commitTransaction();
       }
       result.setSuccess(success);
-      result.setTablePaths(tablePaths);
       result.setPartitionPaths(partitionPaths);
     } finally {
       if (!success) {
@@ -238,7 +165,7 @@ public class DropDatabaseHandler
       if (!handler.getListeners().isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(handler.getListeners(),
             EventMessage.EventType.DROP_DATABASE,
-            new DropDatabaseEvent(db, success, handler, isReplicated),
+            new DropDatabaseEvent(db, success, handler, isDbReplicationTarget(db)),
             null,
             transactionalListenerResponses, rs);
       }
@@ -246,25 +173,22 @@ public class DropDatabaseHandler
     return result;
   }
 
-
   @Override
   protected void beforeExecute() throws TException, IOException {
     if (request.getName() == null) {
       throw new MetaException("Database name cannot be null.");
     }
-    wh = handler.getWh();
-    rs = handler.getMS();
+    RawStore rs = handler.getMS();
     String catalogName =
         request.isSetCatalogName() ? request.getCatalogName() : MetaStoreUtils.getDefaultCatalog(handler.getConf());
     request.setCatalogName(catalogName);
     db = rs.getDatabase(request.getCatalogName(), request.getName());
-    isReplicated = isDbReplicationTarget(db);
     if (!MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST) && ReplChangeManager.isSourceOfReplication(db)) {
       throw new InvalidOperationException("can not drop a database which is a source of replication");
     }
 
-    tables = defaultEmptyList(rs.getAllTables(request.getCatalogName(), request.getName()));
-    functions = defaultEmptyList(rs.getFunctionsRequest(request.getCatalogName(), request.getName(), "*", true));
+    List<String> tables = defaultEmptyList(rs.getAllTables(request.getCatalogName(), request.getName()));
+    functions = defaultEmptyList(rs.getFunctionsRequest(request.getCatalogName(), request.getName(), null, false));
     ListStoredProcedureRequest procedureRequest = new ListStoredProcedureRequest(request.getCatalogName());
     procedureRequest.setDbName(request.getName());
     procedures = defaultEmptyList(rs.getAllStoredProcedures(procedureRequest));
@@ -291,18 +215,86 @@ public class DropDatabaseHandler
       }
     }
     Path path = new Path(db.getLocationUri()).getParent();
-    if (!wh.isWritable(path)) {
+    if (!handler.getWh().isWritable(path)) {
       throw new MetaException("Database not dropped since its external warehouse location " + path +
           " is not writable by " + SecurityUtils.getUser());
     }
-    path = wh.getDatabaseManagedPath(db).getParent();
-    if (!wh.isWritable(path)) {
+    path = handler.getWh().getDatabaseManagedPath(db).getParent();
+    if (!handler.getWh().isWritable(path)) {
       throw new MetaException("Database not dropped since its managed warehouse location " + path +
           " is not writable by " + SecurityUtils.getUser());
     }
+
+    result = new DropDatabaseResult(db);
+    addFuncPathToCm();
+    // check the permission of table path to be deleted
+    checkTablePathPermission(rs, tables);
     progress = new AtomicReference<>(
         String.format("Starting to drop the database with %d tables, %d functions, %d procedures and %d packages.",
             tables.size(), functions.size(), procedures.size(), packages.size()));
+  }
+
+  private void addFuncPathToCm() {
+    boolean needsCm = ReplChangeManager.isSourceOfReplication(db);
+    List<Path> funcNeedCmPaths = new ArrayList<>();
+    for (Function func : functions) {
+      // if copy of jar to change management fails we fail the metastore transaction, since the
+      // user might delete the jars on HDFS externally after dropping the function, hence having
+      // a copy is required to allow incremental replication to work correctly.
+      if (func.getResourceUris() != null && !func.getResourceUris().isEmpty()) {
+        for (ResourceUri uri : func.getResourceUris()) {
+          if (uri.getUri().toLowerCase().startsWith("hdfs:") && needsCm) {
+            funcNeedCmPaths.add(new Path(uri.getUri()));
+          }
+        }
+      }
+    }
+    result.setFunctionCmPaths(funcNeedCmPaths);
+  }
+
+  private void checkTablePathPermission(RawStore rs, List<String> tables) throws MetaException {
+    int tableBatchSize = MetastoreConf.getIntVar(handler.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
+    Warehouse wh = handler.getWh();
+    Path databasePath = wh.getDnsPath(wh.getDatabasePath(db));
+    List<Path> tablePaths = new ArrayList<>();
+    this.tables = Batchable.runBatched(tableBatchSize, new ArrayList<>(tables), new Batchable<>() {
+      @Override
+      public List<Table> run(List<String> input) throws Exception {
+        List<Table> tables = rs.getTableObjectsByName(request.getCatalogName(), request.getName(), input);
+        for (Table table : tables) {
+          Path tblPathToDelete = null;
+          // If the table is not external and it might not be in a subdirectory of the database
+          // add it's locations to the list of paths to delete
+          boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, request.isSoftDelete());
+          boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table,
+              request.isDeleteData()) && !isSoftDelete;
+          if (table.getSd().getLocation() != null) {
+            if (table.getTableType().equals(TableType.MATERIALIZED_VIEW.toString()) && !isSoftDelete) {
+              Path materializedViewPath = wh.getDnsPath(new Path(table.getSd().getLocation()));
+              if (!FileUtils.isSubdirectory(databasePath.toString(), materializedViewPath.toString()) ||
+                  request.isSoftDelete()) {
+                tblPathToDelete = materializedViewPath;
+              }
+            } else if (tableDataShouldBeDeleted) {
+              boolean isManagedTable = table.getTableType().equals(TableType.MANAGED_TABLE.toString());
+              if (!isManagedTable || request.isSoftDelete()) {
+                tblPathToDelete = wh.getDnsPath(new Path(table.getSd().getLocation()));
+              }
+            }
+          }
+          if (tblPathToDelete != null) {
+            if (!wh.isWritable(tblPathToDelete.getParent())) {
+              throw new MetaException("Database metadata not deleted since table: " +
+                  table.getTableName() + " has a parent location " + tblPathToDelete.getParent() +
+                  " which is not writable by " + SecurityUtils.getUser());
+            }
+            tablePaths.add(tblPathToDelete);
+          }
+        }
+        return tables;
+      }
+    });
+    result.setTablePaths(tablePaths);
   }
 
   private <T> List<T> defaultEmptyList(List<T> list) {
@@ -329,6 +321,7 @@ public class DropDatabaseHandler
     private boolean success;
     private List<Path> tablePaths;
     private List<Path> partitionPaths;
+    private List<Path> functionCmPaths;
     private final Database database;
 
     public DropDatabaseResult(Database db) {
@@ -359,13 +352,22 @@ public class DropDatabaseHandler
       this.partitionPaths = partitionPaths;
     }
 
+    public List<Path> getFunctionCmPaths() {
+      return functionCmPaths;
+    }
+
+    public void setFunctionCmPaths(List<Path> functionCmPaths) {
+      this.functionCmPaths = functionCmPaths;
+    }
+
     public Database getDatabase() {
       return database;
     }
   }
 
   @Override
-  void destroy() {
+  protected void afterExecute() {
+    super.afterExecute();
     tables = null;
     functions = null;
     procedures = null;

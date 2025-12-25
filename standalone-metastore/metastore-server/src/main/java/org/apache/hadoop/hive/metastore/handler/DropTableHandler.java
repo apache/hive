@@ -158,11 +158,11 @@ public class DropTableHandler
     if (tableDataShouldBeDeleted && tblPath != null) {
       // HIVE-28804 drop table user should have table path and parent path permission
       if (!handler.getWh().isWritable(tblPath.getParent())) {
-        throw new MetaException("%s not deleted since %s is not writable by %s"
-            .formatted(tableName.getNotEmptyDbTable(), tblPath.getParent(), SecurityUtils.getUser()));
+        throw new MetaException("Table metadata not deleted since %s is not writable by %s"
+            .formatted(tblPath.getParent(), SecurityUtils.getUser()));
       } else if (!handler.getWh().isWritable(tblPath)) {
-        throw new MetaException("%s not deleted since %s is not writable by %s"
-            .formatted(tableName.getNotEmptyDbTable(), tblPath, SecurityUtils.getUser()));
+        throw new MetaException("Table metadata not deleted since %s is not writable by %s"
+            .formatted(tblPath, SecurityUtils.getUser()));
       }
     }
   }
@@ -181,8 +181,8 @@ public class DropTableHandler
   }
 
   @Override
-  void destroy() {
-    super.destroy();
+  protected void afterExecute() {
+    super.afterExecute();
     tbl = null;
   }
 
