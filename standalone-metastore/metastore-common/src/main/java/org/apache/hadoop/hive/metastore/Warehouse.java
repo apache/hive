@@ -56,6 +56,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.stringtemplate.v4.ST;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
@@ -73,10 +74,14 @@ public class Warehouse {
   private static final String CAT_DB_TABLE_SEPARATOR = ".";
 
   private Path whRoot;
+  private Path whCatRoot;
   private Path whRootExternal;
+  private Path whCatRootExternal;
   private final Configuration conf;
   private final String whRootString;
+  private final String whCatRootString;
   private final String whRootExternalString;
+  private final String whCatRootExternalString;
   private final boolean isTenantBasedStorage;
 
   public static final Logger LOG = LoggerFactory.getLogger("hive.metastore.warehouse");
@@ -86,15 +91,24 @@ public class Warehouse {
 
   public Warehouse(Configuration conf) throws MetaException {
     this.conf = conf;
-    whRootString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
-    if (StringUtils.isBlank(whRootString)) {
-      throw new MetaException(ConfVars.WAREHOUSE.getVarname()
-          + " is not set in the config or blank");
-    }
+
+    whRootString = getRequiredVar(conf, ConfVars.WAREHOUSE);
+    whCatRootString = getRequiredVar(conf, ConfVars.WAREHOUSE_CATALOG);
+
     whRootExternalString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
+    whCatRootExternalString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_CATALOG_EXTERNAL);
+
     cm = ReplChangeManager.getInstance(conf);
     storageAuthCheck = MetastoreConf.getBoolVar(conf, ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS);
     isTenantBasedStorage = MetastoreConf.getBoolVar(conf, ConfVars.ALLOW_TENANT_BASED_STORAGE);
+  }
+
+  private static String getRequiredVar(Configuration conf, ConfVars var) throws MetaException {
+    String value = MetastoreConf.getVar(conf, var);
+    if (StringUtils.isBlank(value)) {
+      throw new MetaException(var.getVarname() + " is not set in the config or blank");
+    }
+    return value;
   }
 
   /**
@@ -156,33 +170,67 @@ public class Warehouse {
    * This involves opening the FileSystem corresponding to the warehouse root
    * dir (but that should be ok given that this is only called during DDL
    * statements for non-external tables).
+   *
+   * @deprecated use {@link #getWhRoot(String)}
    */
   public Path getWhRoot() throws MetaException {
-    if (whRoot != null) {
-      return whRoot;
-    }
-    whRoot = getDnsPath(new Path(whRootString));
-    return whRoot;
+    return getWhRoot(DEFAULT_CATALOG_NAME);
   }
 
-  public Path getWhRootExternal() throws MetaException {
-    if (whRootExternal != null) {
-      return whRootExternal;
+  public Path getWhRoot(String catalogName) throws MetaException {
+    boolean isDefault = DEFAULT_CATALOG_NAME.equals(catalogName.trim());
+
+    Path rootDir = isDefault ? whRoot : whCatRoot;
+    if (rootDir == null) {
+      rootDir = getDnsPath(new Path(isDefault ? whRootString : whCatRootString));
+      if (isDefault) {
+        whRoot = rootDir;
+      } else {
+        whCatRoot = rootDir;
+      }
     }
-    if (!hasExternalWarehouseRoot()) {
-      whRootExternal = getWhRoot();
-    } else {
-      whRootExternal = getDnsPath(new Path(whRootExternalString));
-    }
-    return whRootExternal;
+
+    return isDefault ? rootDir : new Path(rootDir, catalogName);
   }
+
+
+
+  /**
+   * @deprecated use {@link #getWhRootExternal(String)}
+   */
+  public Path getWhRootExternal() throws MetaException {
+    return getWhRootExternal(DEFAULT_CATALOG_NAME);
+  }
+
+  public Path getWhRootExternal(String catalogName) throws MetaException {
+    boolean isDefault = DEFAULT_CATALOG_NAME.equals(catalogName);
+
+    Path rootExDir = isDefault ? whRootExternal : whCatRootExternal;
+    if (rootExDir != null) {
+      return isDefault ? rootExDir : new Path(rootExDir, catalogName);
+    }
+
+    if (isDefault) {
+      rootExDir = hasExternalWarehouseRoot()
+              ? getDnsPath(new Path(whRootExternalString))
+              : getWhRoot(catalogName);
+      whRootExternal = rootExDir;
+      return rootExDir;
+    }
+
+    rootExDir = hasExternalWarehouseRoot(catalogName)
+            ? getDnsPath(new Path(whCatRootExternalString, catalogName))
+            : getWhRoot(catalogName);
+    whCatRootExternal = rootExDir;
+    return rootExDir;
+  }
+
 
   /**
    * Build the database path based on catalog name and database name.  This should only be used
    * when a database is being created or altered.  If you just want to find out the path a
    * database is already using call {@link #getDatabasePath(Database)}.  If the passed in
-   * database already has a path set that will be used.  If not the location will be built using
-   * catalog's path and the database name.
+   * database already has a path set that will be used.
    * @param cat catalog the database is in
    * @param db database object
    * @return Path representing the directory for the database
@@ -191,19 +239,15 @@ public class Warehouse {
    */
   public Path determineDatabasePath(Catalog cat, Database db) throws MetaException {
     if (db.getType() == DatabaseType.REMOTE) {
-      return getDefaultDatabasePath(db.getName(), true);
+      return getDefaultDatabasePath(db, true);
     }
     if (db.isSetLocationUri()) {
       return getDnsPath(new Path(db.getLocationUri()));
     }
-    if (cat == null || cat.getName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
-      if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-        return getWhRootExternal();
-      } else {
-        return new Path(getWhRootExternal(), dbDirFromDbName(db));
-      }
+    if (db.getName().equals(DEFAULT_DATABASE_NAME)){
+      return getWhRootExternal(cat.getName());
     } else {
-      return new Path(getDnsPath(new Path(cat.getLocationUri())), dbDirFromDbName(db));
+      return new Path(getWhRootExternal(cat.getName()), dbDirFromDbName(db));
     }
   }
 
@@ -225,7 +269,7 @@ public class Warehouse {
     }
     if (db.getCatalogName().equalsIgnoreCase(DEFAULT_CATALOG_NAME) &&
         db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-      return getWhRoot();
+      return getWhRoot(DEFAULT_CATALOG_NAME);
     }
     // this is for backward-compatibility where certain DBs do not have managedLocationUri set
     return new Path(db.getLocationUri());
@@ -241,9 +285,9 @@ public class Warehouse {
    */
   public Path getDatabaseExternalPath(Database db) throws MetaException {
       Path dbPath = new Path(db.getLocationUri());
-      if (FileUtils.isSubdirectory(getWhRoot().toString(), dbPath.toString() + Path.SEPARATOR)) {
+      if (FileUtils.isSubdirectory(getWhRoot(db.getCatalogName()).toString(), dbPath.toString() + Path.SEPARATOR)) {
         // db metadata incorrect, find new location based on external warehouse root
-        dbPath = getDefaultExternalDatabasePath(db.getName());
+        dbPath = getDefaultExternalDatabasePath(db);
       }
       return getDnsPath(dbPath);
   }
@@ -264,12 +308,15 @@ public class Warehouse {
       return new Path(db.getLocationUri());
     }
     if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-      return getWhRoot();
+      return getWhRoot(db.getCatalogName());
     }
 
-    return new Path(getWhRoot(), db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+    return new Path(getWhRoot(db.getCatalogName()), db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
+  /**
+   * @deprecated use {@link #getDefaultDatabasePath(Database)}
+   */
   public Path getDefaultDatabasePath(String dbName) throws MetaException {
     // TODO CAT - I am fairly certain that most calls to this are in error.  This should only be
     // used when the database location is unset, which should never happen except when a
@@ -279,27 +326,59 @@ public class Warehouse {
     return getDefaultDatabasePath(dbName, false);
   }
 
+  public Path getDefaultDatabasePath(Database db) throws MetaException {
+    return getDefaultDatabasePath(db, false);
+  }
+
+  /**
+   * @deprecated use {@link #getDefaultExternalDatabasePath(Database)}
+   */
   public Path getDefaultExternalDatabasePath(String dbName) throws MetaException {
     return getDefaultDatabasePath(dbName, true);
   }
 
+  public Path getDefaultExternalDatabasePath(Database db) throws MetaException {
+    return getDefaultDatabasePath(db, true);
+  }
+
+  /**
+   * @deprecated use {@link #getDefaultDatabasePath(Database, boolean)}
+   */
   // should only be used to determine paths before the creation of databases
   public Path getDefaultDatabasePath(String dbName, boolean inExternalWH) throws MetaException {
+    Database db = new Database();
+    db.setName(dbName);
+    db.setCatalogName(DEFAULT_CATALOG_NAME);
+    return getDefaultDatabasePath(db, inExternalWH);
+  }
+
+  public Path getDefaultDatabasePath(Database db, boolean inExternalWH) throws MetaException {
+    String catalogName = db.getCatalogName();
+    String dbName = db.getName();
     if (inExternalWH) {
       if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-        return getWhRootExternal();
+        return getWhRootExternal(catalogName);
       }
-      return new Path(getWhRootExternal(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+      return new Path(getWhRootExternal(catalogName), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
     } else {
       if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-        return getWhRoot();
+        return getWhRoot(catalogName);
       }
-      return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+      return new Path(getWhRoot(catalogName), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
     }
   }
 
+  /**
+   * @deprecated use {@link #hasExternalWarehouseRoot(String)}
+   */
   private boolean hasExternalWarehouseRoot() {
-    return !StringUtils.isBlank(whRootExternalString);
+    return hasExternalWarehouseRoot(DEFAULT_CATALOG_NAME);
+  }
+
+  private boolean hasExternalWarehouseRoot(String catalogName) {
+    return catalogName.equalsIgnoreCase(DEFAULT_CATALOG_NAME)
+            ? !StringUtils.isBlank(whRootExternalString)
+            : !StringUtils.isBlank(whCatRootExternalString);
   }
 
   /**
@@ -319,10 +398,10 @@ public class Warehouse {
     Path dbPath = null;
     if (isExternal) {
       dbPath = new Path(db.getLocationUri());
-      if (FileUtils.isSubdirectory(getWhRoot().toString(), dbPath.toString()) ||
-          getWhRoot().equals(dbPath)) {
+      if (FileUtils.isSubdirectory(getWhRoot(db.getCatalogName()).toString(), dbPath.toString()) ||
+          getWhRoot(db.getCatalogName()).equals(dbPath)) {
         // db metadata incorrect, find new location based on external warehouse root
-        dbPath = getDefaultExternalDatabasePath(db.getName());
+        dbPath = getDefaultExternalDatabasePath(db);
       }
     } else {
       dbPath = getDatabaseManagedPath(db);

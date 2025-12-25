@@ -82,7 +82,7 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
       db = hive.getDatabase(QUERY_HISTORY_DB_NAME);
       if (db == null) {
         LOG.warn("Database ({}) for query history table hasn't been found, auto-creating one", QUERY_HISTORY_DB_NAME);
-        String location = getDatabaseLocation(QUERY_HISTORY_DB_NAME);
+        String location = getDatabaseLocation(db);
         db = new Database(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_DB_COMMENT,
             location, null);
         hive.createDatabase(db, false);
@@ -93,8 +93,8 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
     }
   }
 
-  private String getDatabaseLocation(String databaseName) throws Exception {
-    return warehouse.getDefaultExternalDatabasePath(databaseName).toUri().toString();
+  private String getDatabaseLocation(Database db) throws Exception {
+    return warehouse.getDefaultExternalDatabasePath(db).toUri().toString();
   }
 
   protected Table initTable(Hive hive, Database db) {

@@ -569,12 +569,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         // One time update issue.  When the new 'hive' catalog is created in an upgrade the
         // script does not know the location of the warehouse.  So we need to update it.
         LOG.info("Setting location of default catalog, as it hasn't been done after upgrade");
-        defaultCat.setLocationUri(wh.getWhRoot().toString());
+        defaultCat.setLocationUri(wh.getWhRoot(DEFAULT_CATALOG_NAME).toString());
         ms.alterCatalog(defaultCat.getName(), defaultCat);
       }
 
     } catch (NoSuchObjectException e) {
-      Catalog cat = new Catalog(DEFAULT_CATALOG_NAME, wh.getWhRoot().toString());
+      Catalog cat = new Catalog(DEFAULT_CATALOG_NAME, wh.getWhRoot(DEFAULT_CATALOG_NAME).toString());
       long time = System.currentTimeMillis() / 1000;
       cat.setCreateTime((int) time);
       cat.setDescription(Warehouse.DEFAULT_CATALOG_COMMENT);
@@ -587,8 +587,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       ms.getDatabase(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
     } catch (NoSuchObjectException e) {
       LOG.info("Started creating a default database with name: "+DEFAULT_DATABASE_NAME);
-      Database db = new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
-          wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME, true).toString(), null);
+      Database db = new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT, null, null);
+      db.setLocationUri(wh.getDefaultDatabasePath(db, true).toString());
       db.setOwnerName(PUBLIC);
       db.setOwnerType(PrincipalType.ROLE);
       db.setCatalogName(DEFAULT_CATALOG_NAME);
@@ -1162,8 +1162,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (passedInURI == null && passedInManagedURI == null) {
       skipAuthorization = true;
     }
-    final Path defaultDbExtPath = wh.getDefaultDatabasePath(db.getName(), true);
-    final Path defaultDbMgdPath = wh.getDefaultDatabasePath(db.getName(), false);
+    final Path defaultDbExtPath = wh.getDefaultDatabasePath(db, true);
+    final Path defaultDbMgdPath = wh.getDefaultDatabasePath(db, false);
     final Path dbExtPath = (passedInURI != null) ? wh.getDnsPath(new Path(passedInURI)) : wh.determineDatabasePath(cat, db);
     final Path dbMgdPath = (passedInManagedURI != null) ? wh.getDnsPath(new Path(passedInManagedURI)) : null;
 

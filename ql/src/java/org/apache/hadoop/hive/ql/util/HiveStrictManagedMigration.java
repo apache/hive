@@ -747,7 +747,7 @@ public class HiveStrictManagedMigration {
       boolean modifyLocation = shouldModifyDatabaseLocation(dbObj);
 
       if (modifyLocation) {
-        Path newDefaultDbLocation = getDefaultDbPathManagedOrExternal(dbName);
+        Path newDefaultDbLocation = getDefaultDbPathManagedOrExternal(dbObj);
 
         LOG.info("Changing location of database {} to {}", dbName, newDefaultDbLocation);
         if (!runOptions.dryRun) {
@@ -794,7 +794,7 @@ public class HiveStrictManagedMigration {
             "The migration must be run again for this database.", dbObj.getName());
         } else {
           if (!runOptions.dryRun) {
-            Path newDefaultDbLocation = getDefaultDbPathManagedOrExternal(dbName);
+            Path newDefaultDbLocation = getDefaultDbPathManagedOrExternal(dbObj);
             // dbObj after this call would have the new DB location.
             // Keep that in mind if anything below this requires the old DB path.
             hiveUpdater.get().updateDbLocation(dbObj, newDefaultDbLocation);
@@ -810,10 +810,10 @@ public class HiveStrictManagedMigration {
     }
   }
 
-  private Path getDefaultDbPathManagedOrExternal(String dbName) throws MetaException {
+  private Path getDefaultDbPathManagedOrExternal(Database db) throws MetaException {
     return runOptions.shouldMoveExternal ?
-      wh.get().getDefaultExternalDatabasePath(dbName) :
-      wh.get().getDefaultDatabasePath(dbName);
+            wh.get().getDefaultExternalDatabasePath(db) :
+            wh.get().getDefaultDatabasePath(db);
   }
 
   public static boolean migrateTable(Table tableObj, TableType tableType, TableMigrationOption migrationOption,
@@ -878,7 +878,7 @@ public class HiveStrictManagedMigration {
 
       if (shouldMoveTable && shouldModifyTableLocation(dbObj, tableObj)) {
         Path newTablePath = wh.get().getDnsPath(
-          new Path(getDefaultDbPathManagedOrExternal(dbName),
+          new Path(getDefaultDbPathManagedOrExternal(dbObj),
             MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
         moveTableData(dbObj, tableObj, newTablePath);
         if (!runOptions.dryRun) {
@@ -910,7 +910,7 @@ public class HiveStrictManagedMigration {
       // Check if the database location is in the default location based on the old warehouse root.
       // If so then change the database location to the default based on the current warehouse root.
       String dbLocation = dbObj.getLocationUri();
-      Path oldDefaultDbLocation = oldWh.get().getDefaultDatabasePath(dbName);
+      Path oldDefaultDbLocation = oldWh.get().getDefaultDatabasePath(dbObj);
       if (arePathsEqual(conf, dbLocation, oldDefaultDbLocation.toString())) {
         if (hasEquivalentEncryption(encryptionShim, oldDefaultDbLocation, targetPath)) {
           if (hasEquivalentErasureCodingPolicy(ecShim, oldDefaultDbLocation, targetPath)) {
@@ -965,7 +965,7 @@ public class HiveStrictManagedMigration {
   }
 
   void createExternalDbDir(Database dbObj) throws IOException, MetaException {
-    Path externalTableDbPath = wh.get().getDefaultExternalDatabasePath(dbObj.getName());
+    Path externalTableDbPath = wh.get().getDefaultExternalDatabasePath(dbObj);
     FileSystem fs = getFS(externalTableDbPath, conf, fsOperationUser);
     if (!fs.exists(externalTableDbPath)) {
       String dbOwner = ownerName;

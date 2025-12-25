@@ -1783,6 +1783,15 @@ public class MetastoreConf {
         "hive.metastore.warehouse.external.dir", "",
         "Default location for external tables created in the warehouse. " +
         "If not set or null, then the normal warehouse location will be used as the default location."),
+    WAREHOUSE_CATALOG("metastore.warehouse.catalog.dir",
+            "hive.metastore.warehouse.catalog.dir", "/user/hive/catalog/warehouse",
+            "location of default database for the warehouse. If the name of the catalog to which the db belongs is testcat," +
+                    "then the default path prefix for the db is /user/hive/catalog/warehouse/testcat."),
+    WAREHOUSE_CATALOG_EXTERNAL("metastore.warehouse.catalog.external.dir",
+            "hive.metastore.warehouse.catalog.external.dir", "",
+            "Default location for external tables created in the warehouse. " +
+                    "If not set or null, then the normal warehouse location(MetastoreConf.WAREHOUSE_CATALOG) " +
+                    "will be used as the default location."),
     WM_DEFAULT_POOL_SIZE("metastore.wm.default.pool.size",
         "hive.metastore.wm.default.pool.size", 4,
         "The size of a default pool to create when creating an empty resource plan;\n" +
