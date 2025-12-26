@@ -2554,10 +2554,26 @@ public class Hive implements AutoCloseable {
     }
   }
 
+  /**
+   * @deprecated use {@link #validateDatabaseExists(String, String)}
+   */
   public void validateDatabaseExists(String databaseName) throws SemanticException {
     boolean exists;
     try {
       exists = databaseExists(databaseName);
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName), e);
+    }
+
+    if (!exists) {
+      throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName));
+    }
+  }
+
+  public void validateDatabaseExists(String catalogName, String databaseName) throws SemanticException {
+    boolean exists;
+    try {
+      exists = databaseExists(catalogName, databaseName);
     } catch (HiveException e) {
       throw new SemanticException(ErrorMsg.DATABASE_NOT_EXISTS.getMsg(databaseName), e);
     }

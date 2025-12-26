@@ -33,3 +33,11 @@ POSTHOOK: query: create table testcat.testdb1.test2(id int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:testdb1
 POSTHOOK: Output: testdb1@test2
+PREHOOK: query: show tables
+PREHOOK: type: SHOWTABLES
+PREHOOK: Input: database:testdb1
+POSTHOOK: query: show tables
+POSTHOOK: type: SHOWTABLES
+POSTHOOK: Input: database:testdb1
+test1
+test2

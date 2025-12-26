@@ -13,3 +13,6 @@ create table test1(id int);
 
 -- create tbl in db testcat.testdb1 by cat.db.tbl syntax
 create table testcat.testdb1.test2(id int);
+
+-- show tables in current db testcat.testdb1
+show tables;
