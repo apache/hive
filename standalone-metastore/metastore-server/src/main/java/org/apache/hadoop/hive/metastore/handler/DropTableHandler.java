@@ -91,8 +91,6 @@ public class DropTableHandler
             " views %s%n", isPartOfMV));
       }
 
-      ((HMSHandler) handler).firePreEvent(new PreDropTableEvent(tbl, request.isDeleteData(), handler));
-
       // Drop the partitions and get a list of locations which need to be deleted
       if (request.isDropPartitions()) {
         checkInterrupted();
@@ -165,6 +163,7 @@ public class DropTableHandler
             .formatted(tblPath, SecurityUtils.getUser()));
       }
     }
+    ((HMSHandler) handler).firePreEvent(new PreDropTableEvent(tbl, request.isDeleteData(), handler));
   }
 
   @Override

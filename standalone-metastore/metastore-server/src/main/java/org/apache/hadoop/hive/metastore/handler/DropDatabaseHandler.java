@@ -63,6 +63,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbRe
 
 public class DropDatabaseHandler
     extends AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
+  private String name;
   private Database db;
   private List<Table> tables;
   private List<Function> functions;
@@ -84,7 +85,6 @@ public class DropDatabaseHandler
     RawStore rs = handler.getMS();
     rs.openTransaction();
     try {
-      ((HMSHandler) handler).firePreEvent(new PreDropDatabaseEvent(db, handler));
       if (MetaStoreUtils.isDatabaseRemote(db)) {
         if (rs.dropDatabase(db.getCatalogName(), db.getName())) {
           success = rs.commitTransaction();
@@ -175,7 +175,7 @@ public class DropDatabaseHandler
 
   @Override
   protected void beforeExecute() throws TException, IOException {
-    if (request.getName() == null) {
+    if ((name = request.getName()) == null) {
       throw new MetaException("Database name cannot be null.");
     }
     RawStore rs = handler.getMS();
@@ -232,6 +232,8 @@ public class DropDatabaseHandler
     progress = new AtomicReference<>(
         String.format("Starting to drop the database with %d tables, %d functions, %d procedures and %d packages.",
             tables.size(), functions.size(), procedures.size(), packages.size()));
+
+    ((HMSHandler) handler).firePreEvent(new PreDropDatabaseEvent(db, handler));
   }
 
   private void addFuncPathToCm() {
@@ -306,7 +308,7 @@ public class DropDatabaseHandler
 
   @Override
   protected String getMessagePrefix() {
-    return "DropDatabaseHandler [" + id + "] -  Drop database " + request.getName() + ":";
+    return "DropDatabaseHandler [" + id + "] -  Drop database " + name + ":";
   }
 
   @Override

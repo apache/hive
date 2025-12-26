@@ -4653,17 +4653,17 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       List<String> partNames = new ArrayList<>();
       if (part_vals == null || part_vals.isEmpty()) {
         part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
-        partNames.add(dropPartitionReq.getPartName());
-      } else if (dropPartitionReq.getPartName() == null) {
-        partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
       }
+      partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
       startPartitionFunction("drop_partition_req", catName, dbName, tbl_name, part_vals);
-      LOG.info("Partition values:" + part_vals);
+      LOG.info("Partition values: {}", part_vals);
       RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
       DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
-      request.setNeedResult(false);
       request.setCatName(catName);
       request.setIfExists(false);
+      request.setNeedResult(false);
+      request.setDeleteData(dropPartitionReq.isDeleteData());
+      request.setEnvironmentContext(dropPartitionReq.getEnvironmentContext());
       drop_partitions_req(request);
       return true;
     } catch (Exception e) {
