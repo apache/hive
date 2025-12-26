@@ -856,7 +856,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     public function drop_database_req(\metastore\DropDatabaseRequest $req)
     {
         $this->send_drop_database_req($req);
-        $this->recv_drop_database_req();
+        return $this->recv_drop_database_req();
     }
 
     public function send_drop_database_req(\metastore\DropDatabaseRequest $req)
@@ -906,6 +906,9 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
             $result->read($this->input_);
             $this->input_->readMessageEnd();
         }
+        if ($result->success !== null) {
+            return $result->success;
+        }
         if ($result->o1 !== null) {
             throw $result->o1;
         }
@@ -915,7 +918,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         if ($result->o3 !== null) {
             throw $result->o3;
         }
-        return;
+        throw new \Exception("drop_database_req failed: unknown result");
     }
 
     public function get_databases($pattern)
@@ -3136,7 +3139,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     public function drop_table_req(\metastore\DropTableRequest $dropTableReq)
     {
         $this->send_drop_table_req($dropTableReq);
-        $this->recv_drop_table_req();
+        return $this->recv_drop_table_req();
     }
 
     public function send_drop_table_req(\metastore\DropTableRequest $dropTableReq)
@@ -3186,13 +3189,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
             $result->read($this->input_);
             $this->input_->readMessageEnd();
         }
+        if ($result->success !== null) {
+            return $result->success;
+        }
         if ($result->o1 !== null) {
             throw $result->o1;
         }
         if ($result->o3 !== null) {
             throw $result->o3;
         }
-        return;
+        throw new \Exception("drop_table_req failed: unknown result");
     }
 
     public function truncate_table($dbName, $tableName, array $partNames)

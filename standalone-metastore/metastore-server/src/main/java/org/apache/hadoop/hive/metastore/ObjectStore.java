@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.Batchable.NO_BATCHING;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaException;
@@ -48,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
@@ -56,7 +58,9 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -288,7 +292,7 @@ import com.google.common.collect.Sets;
  * filestore.
  */
 public class ObjectStore implements RawStore, Configurable {
-  protected int batchSize = Batchable.NO_BATCHING;
+  protected int batchSize = NO_BATCHING;
 
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
       "yyyy_MM_dd_HH_mm_ss");
@@ -312,20 +316,7 @@ public class ObjectStore implements RawStore, Configurable {
   public static final String TRUSTSTORE_PASSWORD_KEY = "javax.net.ssl.trustStorePassword";
   public static final String TRUSTSTORE_TYPE_KEY = "javax.net.ssl.trustStoreType";
 
-  private static final String HOSTNAME;
-  private static final String USER;
   private static final String JDO_PARAM = ":param";
-  static {
-    String hostname = "UNKNOWN";
-    try {
-      InetAddress clientAddr = InetAddress.getLocalHost();
-      hostname = clientAddr.getHostAddress();
-    } catch (IOException e) {
-    }
-    HOSTNAME = hostname;
-    String user = System.getenv("USER");
-    USER = org.apache.commons.lang3.StringUtils.defaultString(user, "UNKNOWN");
-  }
 
   /** Constant declaring a query parameter of type string and name key. */
   private static final String PTYPARAM_STR_KEY = "java.lang.String key";
@@ -1542,7 +1533,32 @@ public class ObjectStore implements RawStore, Configurable {
     return mViewList;
   }
 
-
+  @Override
+  public List<String> dropAllPartitionsAndGetLocations(TableName table,
+      String baseLocationToNotShow, AtomicReference<String> message)
+      throws MetaException, InvalidInputException, NoSuchObjectException, InvalidObjectException {
+    String catName = table.getCat();
+    String dbName = table.getDb();
+    String tableName = table.getTable();
+    return new GetHelper<List<String>>(catName, dbName, tableName, true, true) {
+      @Override
+      protected String describeResult() {
+        return "delete all partitions from " + table;
+      }
+      @Override
+      protected List<String> getSqlResult(GetHelper<List<String>> ctx) throws MetaException {
+        return directSql.dropAllPartitionsAndGetLocations(getTable().getId(), baseLocationToNotShow, message);
+      }
+      @Override
+      protected List<String> getJdoResult(GetHelper<List<String>> ctx)
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+        Map<String, String> partitionLocations =
+            getPartitionLocations(catName, dbName, tableName, baseLocationToNotShow, -1);
+        dropPartitionsViaJdo(catName, dbName, tableName, new ArrayList<>(partitionLocations.keySet()), message);
+        return partitionLocations.values().stream().filter(Objects::nonNull).toList();
+      }
+    }.run(true);
+  }
 
   private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName(
       String catName, String dbName, String tableName, String constraintname) {
@@ -2913,7 +2929,7 @@ public class ObjectStore implements RawStore, Configurable {
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
     Map<String,String> params = convertMap(mpart.getParameters(), args);
-    boolean noFS = args != null && args.length == 1 ? args[0].isSkipColumnSchemaForPartition() : false;
+    boolean noFS = args != null && args.length == 1 && args[0].isSkipColumnSchemaForPartition();
     Partition p = new Partition(convertList(mpart.getValues()), dbName, tblName,
         mpart.getCreateTime(), mpart.getLastAccessTime(),
         convertToStorageDescriptor(mpart.getSd(), noFS, isAcidTable), params);
@@ -2961,25 +2977,36 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected List<Void> getJdoResult(GetHelper<List<Void>> ctx) throws MetaException {
-        dropPartitionsViaJdo(catName, dbName, tblName, partNames);
+        dropPartitionsViaJdo(catName, dbName, tblName, partNames, new AtomicReference<>());
         return Collections.emptyList();
       }
     }.run(false);
   }
 
   private void dropPartitionsViaJdo(String catName, String dbName, String tblName,
-      List<String> partNames) throws MetaException {
+      List<String> partNames, AtomicReference<String> message) throws MetaException {
     boolean success = false;
 
     if (partNames.isEmpty()) {
       return;
     }
     openTransaction();
-
+    
+    int batch = batchSize == NO_BATCHING ? 1 : (partNames.size() + batchSize) / batchSize;
+    AtomicLong batchIdx = new AtomicLong(1);
+    AtomicLong timeSpent = new AtomicLong(0);
     try {
       Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
         @Override
         public List<Void> run(List<String> input) throws MetaException {
+          StringBuilder progress = new StringBuilder("Dropping partitions, batch: ");
+          long start = System.currentTimeMillis();
+          progress.append(batchIdx.get()).append("/").append(batch);
+          if (batchIdx.get() > 1) {
+            long leftTime = (batch - batchIdx.get()) * timeSpent.get() / batchIdx.get();
+            progress.append(", time left: ").append(leftTime).append("ms");
+          }
+          message.set(progress.toString());
           // Delete all things.
           dropPartitionGrantsNoTxn(catName, dbName, tblName, input);
           dropPartitionAllColumnGrantsNoTxn(catName, dbName, tblName, input);
@@ -2990,6 +3017,8 @@ public class ObjectStore implements RawStore, Configurable {
             removeUnusedColumnDescriptor(mcd);
           }
           dropPartitionsNoTxn(catName, dbName, tblName, input);
+          timeSpent.addAndGet(System.currentTimeMillis() - start);
+          batchIdx.incrementAndGet();
           return Collections.emptyList();
         }
       });
@@ -10356,6 +10385,13 @@ public class ObjectStore implements RawStore, Configurable {
     IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(getConf());
     String hiveSchemaVer = metastoreSchemaInfo.getHiveSchemaVersion();
 
+    String user = StringUtils.defaultString(System.getenv("USER"), "UNKNOWN");
+    String hostName = "UNKNOWN";
+    try {
+      hostName = InetAddress.getLocalHost().getHostAddress();
+    } catch (IOException e) {
+      LOG.debug("Fail to get the address of the local host", e);
+    }
     if (dbSchemaVer == null) {
       if (strictValidation) {
         throw new MetaException("Version information not found in metastore.");
@@ -10363,8 +10399,7 @@ public class ObjectStore implements RawStore, Configurable {
         LOG.warn("Version information not found in metastore. {} is not " +
           "enabled so recording the schema version {}", ConfVars.SCHEMA_VERIFICATION,
             hiveSchemaVer);
-        setMetaStoreSchemaVersion(hiveSchemaVer,
-          "Set by MetaStore " + USER + "@" + HOSTNAME);
+        setMetaStoreSchemaVersion(hiveSchemaVer, "Set by MetaStore " + user + "@" + hostName);
       }
     } else {
       if (metastoreSchemaInfo.isVersionCompatible(hiveSchemaVer, dbSchemaVer)) {
@@ -10379,8 +10414,7 @@ public class ObjectStore implements RawStore, Configurable {
           LOG.error("Version information found in metastore differs {} " +
               "from expected schema version {}. Schema verification is disabled {}",
               dbSchemaVer, hiveSchemaVer, ConfVars.SCHEMA_VERIFICATION);
-          setMetaStoreSchemaVersion(hiveSchemaVer,
-            "Set by MetaStore " + USER + "@" + HOSTNAME);
+          setMetaStoreSchemaVersion(hiveSchemaVer, "Set by MetaStore " + user + "@" + hostName);
         }
       }
     }
