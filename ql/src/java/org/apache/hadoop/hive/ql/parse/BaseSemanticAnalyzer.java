@@ -508,11 +508,19 @@ public abstract class BaseSemanticAnalyzer {
           ErrorMsg.INVALID_TABLE_NAME.getMsg(), tabNameNode));
     }
 
-    if (tabNameNode.getChildCount() == 3) {
-      final String dbName = unescapeIdentifier(tabNameNode.getChild(0).getText());
-      final String tableName = unescapeIdentifier(tabNameNode.getChild(1).getText());
-      final String tableMetaRef = unescapeIdentifier(tabNameNode.getChild(2).getText());
+    if (tabNameNode.getChildCount() == 4) {
+      catalogName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+      final String dbName = unescapeIdentifier(tabNameNode.getChild(1).getText());
+      final String tableName = unescapeIdentifier(tabNameNode.getChild(2).getText());
+      final String tableMetaRef = unescapeIdentifier(tabNameNode.getChild(3).getText());
       return HiveTableName.fromString(tableName, catalogName, dbName, tableMetaRef);
+    }
+
+    if (tabNameNode.getChildCount() == 3) {
+      catalogName = unescapeIdentifier(tabNameNode.getChild(0).getText());
+      final String dbName = unescapeIdentifier(tabNameNode.getChild(1).getText());
+      final String tableName = unescapeIdentifier(tabNameNode.getChild(2).getText());
+      return HiveTableName.fromString(tableName, catalogName, dbName);
     }
 
     if (tabNameNode.getChildCount() == 2) {
@@ -522,14 +530,14 @@ public abstract class BaseSemanticAnalyzer {
         throw new SemanticException(ASTErrorUtils.getMsg(
             ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tabNameNode));
       }
-      return HiveTableName.ofNullable(tableName, dbName);
+      return HiveTableName.fromString(tableName, catalogName, dbName);
     }
     final String tableName = unescapeIdentifier(tabNameNode.getChild(0).getText());
     if (tableName.contains(".")) {
       throw new SemanticException(ASTErrorUtils.getMsg(
           ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tabNameNode));
     }
-    return HiveTableName.ofNullable(tableName);
+    return HiveTableName.fromString(tableName, catalogName, SessionState.get().getCurrentDatabase());
   }
 
   /**

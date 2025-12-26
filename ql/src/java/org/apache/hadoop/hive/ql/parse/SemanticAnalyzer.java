@@ -13888,12 +13888,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /** Adds entities for create table/create view. */
-  protected void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type,
+  protected void addDbAndTabToOutputs(TableName qualifiedTabName, TableType type,
       boolean isTemporary, Map<String, String> tblProps, StorageFormat storageFormat) throws SemanticException {
-    Database database  = getDatabase(qualifiedTabName[0]);
+    Database database  = getDatabase(qualifiedTabName.getCat(), qualifiedTabName.getDb(), true);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
 
-    Table t = new Table(qualifiedTabName[0], qualifiedTabName[1]);
+    Table t = new Table(qualifiedTabName.getDb(), qualifiedTabName.getTable());
+    t.setCatalogName(qualifiedTabName.getCat());
     t.setParameters(tblProps);
     t.setTableType(type);
     t.setTemporary(isTemporary);
@@ -14071,7 +14072,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
         location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
         storageFormat.getSerdeProps());
-    addDbAndTabToOutputs(new String[] {qualTabName.getDb(), qualTabName.getTable()}, TableType.MATERIALIZED_VIEW,
+    addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW,
         false, tblProps, storageFormat);
     queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
     qb.setViewDesc(createVwDesc);
