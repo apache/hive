@@ -1793,4 +1793,13 @@ public class MetaStoreServerUtils {
         && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
         || MetaStoreUtils.isSkipTrash(tbl.getParameters());
   }
+
+  public static long getWriteId(EnvironmentContext context){
+    return Optional.ofNullable(context)
+        .map(EnvironmentContext::getProperties)
+        .map(prop -> prop.get(hive_metastoreConstants.WRITE_ID))
+        .map(Long::parseLong)
+        .orElse(0L);
+  }
+
 }

@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
+import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -81,8 +82,8 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
     this.request = request;
     this.async = async;
     this.timeout = MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST) ? 10 : 5000;
-    OPID_TO_HANDLER.put(id, this);
     if (async) {
+      OPID_TO_HANDLER.put(id, this);
       this.executor = Executors.newFixedThreadPool(1, r -> {
         Thread thread = new Thread(r);
         thread.setDaemon(true);
@@ -158,6 +159,10 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
       if (opHandler == null) {
         opHandler =  (AbstractOperationHandler<T, A>) new DropDatabaseHandler(handler, request);
       }
+      return opHandler;
+    } else if (req instanceof DropPartitionsRequest request) {
+      AbstractOperationHandler<T, A> opHandler =
+          (AbstractOperationHandler<T, A>) new DropPartitionsHandler(handler, request);
       return opHandler;
     }
     throw new UnsupportedOperationException("Not yet implemented");

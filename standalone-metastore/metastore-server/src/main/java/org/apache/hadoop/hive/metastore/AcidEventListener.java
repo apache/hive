@@ -45,8 +45,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import static org.apache.hadoop.hive.metastore.HMSHandler.getWriteId;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getWriteId;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMustPurge;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.throwMetaException;
 
