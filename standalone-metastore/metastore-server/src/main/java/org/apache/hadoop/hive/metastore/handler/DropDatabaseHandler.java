@@ -63,6 +63,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbRe
 
 public class DropDatabaseHandler
     extends AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
+  private String name;
   private Database db;
   private List<Table> tables;
   private List<Function> functions;
@@ -175,7 +176,7 @@ public class DropDatabaseHandler
 
   @Override
   protected void beforeExecute() throws TException, IOException {
-    if (request.getName() == null) {
+    if ((name = request.getName()) == null) {
       throw new MetaException("Database name cannot be null.");
     }
     RawStore rs = handler.getMS();
@@ -306,7 +307,7 @@ public class DropDatabaseHandler
 
   @Override
   protected String getMessagePrefix() {
-    return "DropDatabaseHandler [" + id + "] -  Drop database " + request.getName() + ":";
+    return "DropDatabaseHandler [" + id + "] -  Drop database " + name + ":";
   }
 
   @Override

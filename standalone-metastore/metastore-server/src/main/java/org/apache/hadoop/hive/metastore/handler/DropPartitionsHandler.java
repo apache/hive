@@ -229,6 +229,11 @@ public class DropPartitionsHandler
     }
   }
 
+  @Override
+  protected void afterExecute() {
+    request = null;
+  }
+
   /**
    * Stores a path and its size.
    */
