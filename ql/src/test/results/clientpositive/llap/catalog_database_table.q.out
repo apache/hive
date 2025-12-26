@@ -1,0 +1,35 @@
+#### A masked pattern was here ####
+PREHOOK: type: CREATECATALOG
+PREHOOK: Output: catalog:testcat
+#### A masked pattern was here ####
+POSTHOOK: type: CREATECATALOG
+POSTHOOK: Output: catalog:testcat
+#### A masked pattern was here ####
+PREHOOK: query: create database testcat.testdb1
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:testdb1
+POSTHOOK: query: create database testcat.testdb1
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:testdb1
+PREHOOK: query: use testcat.testdb1
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:testdb1
+POSTHOOK: query: use testcat.testdb1
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:testdb1
+PREHOOK: query: create table test1(id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb1
+PREHOOK: Output: testdb1@test1
+POSTHOOK: query: create table test1(id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb1
+POSTHOOK: Output: testdb1@test1
+PREHOOK: query: create table testcat.testdb1.test2(id int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:testdb1
+PREHOOK: Output: testdb1@test2
+POSTHOOK: query: create table testcat.testdb1.test2(id int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:testdb1
+POSTHOOK: Output: testdb1@test2
