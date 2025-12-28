@@ -321,4 +321,16 @@ class TestStatsUtils {
     assertEquals(0, ndv, "Partial stats (ndv=0, numNulls<numRows) should return 0, not inflate to 1");
   }
 
+  @Test
+  void testComputeNDVGroupingColumnsAllNulls() {
+    // When ndv=0 and numNulls >= numRows, it's a "constant NULL" column, so NDV should be 1
+    ColStatistics cs = createColStats("all_nulls_col", 0, 1000);
+    Statistics parentStats = createParentStats(1000);
+    List<ColStatistics> colStats = Collections.singletonList(cs);
+
+    long ndv = StatsUtils.computeNDVGroupingColumns(colStats, parentStats, false);
+
+    assertEquals(1, ndv, "All-null column (ndv=0, numNulls==numRows) should have NDV inflated to 1");
+  }
+
 }

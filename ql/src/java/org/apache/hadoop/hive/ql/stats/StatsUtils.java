@@ -2088,19 +2088,7 @@ public class StatsUtils {
     // compute product of distinct values of grouping columns
     for (ColStatistics cs : colStats) {
       if (cs != null) {
-        long ndv = cs.getCountDistint();
-
-        if (ndv == 0L) {
-          // Typically, ndv == 0 means "NDV unknown", and no safe GROUPBY adjustments are possible
-          // However, there is a special exception for "constant NULL" columns. They are intentionally generated
-          // with NDV values of 0 and numNulls == numRows, while their actual NDV is 1
-          if (cs.getNumNulls() >= parentStats.getNumRows()) {
-            ndv = 1L;
-          }
-        } else if (cs.getNumNulls() > 0L) {
-          ndv = StatsUtils.safeAdd(ndv, 1L);
-        }
-        ndvValues.add(ndv);
+        ndvValues.add(getGroupingColumnNdv(cs, parentStats));
       } else {
         if (parentStats.getColumnStatsState().equals(Statistics.State.COMPLETE)) {
           // the column must be an aggregate column inserted by GBY. We
@@ -2118,5 +2106,21 @@ public class StatsUtils {
     }
 
     return ndvValues;
+  }
+
+  private static long getGroupingColumnNdv(ColStatistics cs, Statistics parentStats) {
+    long ndv = cs.getCountDistint();
+
+    if (ndv == 0L) {
+      // Typically, ndv == 0 means "NDV unknown", and no safe GROUPBY adjustments are possible
+      // However, there is a special exception for "constant NULL" columns. They are intentionally generated
+      // with NDV values of 0 and numNulls == numRows, while their actual NDV is 1
+      if (cs.getNumNulls() >= parentStats.getNumRows()) {
+        ndv = 1L;
+      }
+    } else if (cs.getNumNulls() > 0L) {
+      ndv = StatsUtils.safeAdd(ndv, 1L);
+    }
+    return ndv;
   }
 }
