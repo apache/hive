@@ -61,14 +61,11 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCa
 
 public class DropPartitionsHandler
     extends AbstractOperationHandler<DropPartitionsRequest, DropPartitionsHandler.DropPartitionsResult> {
-
   private String catName;
   private String dbName;
   private String tblName;
   private Table table;
   private List<Partition> partitions;
-  private boolean tableDataShouldBeDeleted;
-  private DropPartitionsResult result;
 
   DropPartitionsHandler(IHMSHandler handler, DropPartitionsRequest request)
       throws TException, IOException {
@@ -77,13 +74,17 @@ public class DropPartitionsHandler
 
   @Override
   protected DropPartitionsResult execute() throws TException, IOException {
-    PriorityQueue<PathAndDepth> dirsToDelete = new PriorityQueue<>();
-    List<Path> archToDelete = new ArrayList<>();
     EnvironmentContext envContext =
         request.isSetEnvironmentContext() ? request.getEnvironmentContext() : null;
     boolean success = false;
     Map<String, String> transactionalListenerResponses = null;
     RawStore ms = handler.getMS();
+    boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, request.isDeleteData());
+    boolean mustPurge = isMustPurge(request.getEnvironmentContext(), table);
+    boolean needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, dbName), table);
+    DropPartitionsResult result = new DropPartitionsResult(partitions, tableDataShouldBeDeleted,
+        TxnUtils.isTransactionalTable(table),
+        mustPurge, needsCm);
     try {
       ms.openTransaction();
       // We need Partition-s for firing events and for result; DN needs MPartition-s to drop.
@@ -93,20 +94,21 @@ public class DropPartitionsHandler
       for (Partition part : partitions) {
         // TODO - we need to speed this up for the normal path where all partitions are under
         // the table and we don't have to stat every partition
-        ((HMSHandler)handler).firePreEvent(new PreDropPartitionEvent(table, part, request.isDeleteData(), handler));
         partNames.add(FileUtils.makePartName(colNames, part.getValues()));
+        ((HMSHandler)handler).firePreEvent(new PreDropPartitionEvent(table, part, request.isDeleteData(), handler));
         if (tableDataShouldBeDeleted) {
           if (MetaStoreUtils.isArchived(part)) {
             // Archived partition is only able to delete original location.
             Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-            archToDelete.add(archiveParentDir);
+            verifyIsWritablePath(archiveParentDir);
+            result.addArchToDelete(archiveParentDir);
           } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
             Path partPath = new Path(part.getSd().getLocation());
-            dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size(), true));
+            verifyIsWritablePath(partPath);
+            result.addDirToDelete(new PathAndDepth(partPath, part.getValues().size(), true));
           }
         }
       }
-
       ms.dropPartitions(catName, dbName, tblName, partNames);
       if (!partitions.isEmpty() && !handler.getTransactionalListeners().isEmpty()) {
         transactionalListenerResponses = MetaStoreListenerNotifier
@@ -115,21 +117,17 @@ public class DropPartitionsHandler
       }
       success = ms.commitTransaction();
       result.setSuccess(success);
-      result.setPathToDelete(dirsToDelete);
-      result.setArchToDelete(archToDelete);
       return result;
     } finally {
       if (!success) {
         ms.rollbackTransaction();
       }
-      if (partitions != null) {
-        if (!partitions.isEmpty() && !handler.getListeners().isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(handler.getListeners(),
-              EventMessage.EventType.DROP_PARTITION,
-              new DropPartitionEvent(table, partitions, success, request.isDeleteData(), handler),
-              envContext,
-              transactionalListenerResponses, ms);
-        }
+      if (!partitions.isEmpty() && !handler.getListeners().isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(handler.getListeners(),
+            EventMessage.EventType.DROP_PARTITION,
+            new DropPartitionEvent(table, partitions, success, request.isDeleteData(), handler),
+            envContext,
+            transactionalListenerResponses, ms);
       }
     }
   }
@@ -143,14 +141,15 @@ public class DropPartitionsHandler
     GetTableRequest getTableRequest = new GetTableRequest(dbName, tblName);
     getTableRequest.setCatName(catName);
     table = handler.get_table_core(getTableRequest);
-
     boolean hasMissingParts = false;
     boolean ifExists = request.isSetIfExists() && request.isIfExists();
     boolean ignoreProtection = request.isSetIgnoreProtection() && request.isIgnoreProtection();
+
+    List<Partition> parts = null;
     RequestPartsSpec spec = request.getParts();
     if (spec.isSetExprs()) {
       // Dropping by expressions.
-      partitions = new ArrayList<>(spec.getExprs().size());
+      parts = new ArrayList<>(spec.getExprs().size());
       for (DropPartitionsExpr expr : spec.getExprs()) {
         List<Partition> result = new ArrayList<>();
         boolean hasUnknown = ms.getPartitionsByExpr(catName, dbName, tblName, result,
@@ -164,7 +163,7 @@ public class DropPartitionsHandler
         // this is to prevent dropping archived partition which is archived in a
         // different level the drop command specified.
         if (!ignoreProtection && expr.isSetPartArchiveLevel()) {
-          for (Partition part : result) {
+          for (Partition part : parts) {
             if (MetaStoreUtils.isArchived(part)
                 && MetaStoreUtils.getArchivingLevel(part) < expr.getPartArchiveLevel()) {
               throw new MetaException("Cannot drop a subset of partitions "
@@ -179,15 +178,15 @@ public class DropPartitionsHandler
             break;
           }
         }
-        partitions.addAll(result);
+        parts.addAll(result);
       }
     } else if (spec.isSetNames()) {
       List<String> partNames = spec.getNames();
-      partitions = ms.getPartitionsByNames(catName, dbName, tblName,
+      parts = ms.getPartitionsByNames(catName, dbName, tblName,
           new GetPartitionsArgs.GetPartitionsArgsBuilder()
               .partNames(partNames).skipColumnSchemaForPartition(request.isSkipColumnSchemaForPartition())
               .build());
-      hasMissingParts = (partitions.size() != partNames.size());
+      hasMissingParts = parts == null || (parts.size() != partNames.size());
     } else {
       throw new MetaException("Partition spec is not set");
     }
@@ -195,26 +194,7 @@ public class DropPartitionsHandler
     if (hasMissingParts && !ifExists) {
       throw new NoSuchObjectException("Some partitions to drop are missing");
     }
-
-    tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, request.isDeleteData());
-    boolean mustPurge = isMustPurge(request.getEnvironmentContext(), table);
-    boolean needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, dbName), table);
-
-    for (Partition part : partitions) {
-      if (tableDataShouldBeDeleted) {
-        if (MetaStoreUtils.isArchived(part)) {
-          // Archived partition is only able to delete original location.
-          Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-          verifyIsWritablePath(archiveParentDir);
-        } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
-          Path partPath = new Path(part.getSd().getLocation());
-          verifyIsWritablePath(partPath);
-        }
-      }
-    }
-    result = new DropPartitionsResult(partitions, tableDataShouldBeDeleted,
-        TxnUtils.isTransactionalTable(table),
-        mustPurge, needsCm);
+    this.partitions = parts == null ? Collections.emptyList() : parts;
   }
 
   public void verifyIsWritablePath(Path dir) throws MetaException {
@@ -279,8 +259,8 @@ public class DropPartitionsHandler
     private final boolean needCm;
     private final boolean isTransactionalTable;
     private boolean success;
-    private PriorityQueue<PathAndDepth> pathToDelete;
-    private List<Path> archToDelete;
+    private final PriorityQueue<PathAndDepth> dirsToDelete = new PriorityQueue<>();
+    private final List<Path> archToDelete = new ArrayList<>();
 
     public DropPartitionsResult(List<Partition> partitions,
         boolean tableDataShouldBeDeleted,
@@ -321,30 +301,30 @@ public class DropPartitionsHandler
       this.success = success;
     }
 
-    public void setPathToDelete(PriorityQueue<PathAndDepth> pathToDelete) {
-      this.pathToDelete = pathToDelete;
+    public void addDirToDelete(PathAndDepth pathToDelete) {
+      this.dirsToDelete.add(pathToDelete);
     }
 
     public List<Path> getArchToDelete() {
       return archToDelete;
     }
 
-    public void setArchToDelete(List<Path> archToDelete) {
-      this.archToDelete = archToDelete;
+    public void addArchToDelete(Path archToDelete) {
+      this.archToDelete.add(archToDelete);
     }
 
-    public Iterator<PathAndDepth> getPathToDelete() {
-      if (pathToDelete == null || pathToDelete.isEmpty()) {
+    public Iterator<PathAndDepth> getDirsToDelete() {
+      if (dirsToDelete.isEmpty()) {
         return Collections.emptyIterator();
       }
       HashSet<PathAndDepth> processed = new HashSet<>();
       return new Iterator<>() {
         @Override
         public boolean hasNext() {
-          while (!pathToDelete.isEmpty()) {
-            PathAndDepth path = pathToDelete.peek();
+          while (!dirsToDelete.isEmpty()) {
+            PathAndDepth path = dirsToDelete.peek();
             if (processed.contains(path)) {
-              pathToDelete.poll();
+              dirsToDelete.poll();
               continue;
             }
             return true;
@@ -354,8 +334,8 @@ public class DropPartitionsHandler
 
         @Override
         public PathAndDepth next() {
-          PathAndDepth curPath = pathToDelete.poll();
-          addParentForDel(pathToDelete, curPath);
+          PathAndDepth curPath = dirsToDelete.poll();
+          addParentForDel(dirsToDelete, curPath);
           processed.add(curPath);
           return curPath;
         }

@@ -79,7 +79,6 @@ public class DropDatabaseHandler
 
   public DropDatabaseResult execute() throws TException, IOException {
     boolean success = false;
-
     List<Path> partitionPaths = new ArrayList<>();
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
     RawStore rs = handler.getMS();
@@ -110,10 +109,11 @@ public class DropDatabaseHandler
         rs.dropPackage(new DropPackageRequest(request.getCatalogName(), request.getName(), pkgName));
       }
 
-      for (int i = 0, j = tables.size(); i < tables.size(); i++, j--) {
-        checkInterrupted();
+      List<Table> tablesToDrop = sortTablesToDrop();
+      for (int i = 0, j = tablesToDrop.size(); i < tablesToDrop.size(); i++, j--) {
         progress.set("Dropping tables from the database, " + j + " tables left");
-        Table table = tables.get(i);
+        checkInterrupted();
+        Table table = tablesToDrop.get(i);
         boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, request.isSoftDelete());
         boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, request.isDeleteData())
             && !isSoftDelete;
@@ -130,9 +130,9 @@ public class DropDatabaseHandler
         // Drop the table but not its data
         dropRequest.setDeleteData(false);
         dropRequest.setDropPartitions(true);
-        AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> asyncOp =
+        AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> dropTable =
             AbstractOperationHandler.offer(handler, dropRequest);
-        DropTableHandler.DropTableResult result = asyncOp.getResult();
+        DropTableHandler.DropTableResult result = dropTable.getResult();
         if (tableDataShouldBeDeleted
             && result.success()
             && result.partPaths() != null) {
@@ -226,7 +226,7 @@ public class DropDatabaseHandler
     }
 
     result = new DropDatabaseResult(db);
-    addFuncPathToCm();
+    checkFuncPathToCm();
     // check the permission of table path to be deleted
     checkTablePathPermission(rs, tables);
     progress = new AtomicReference<>(
@@ -236,7 +236,7 @@ public class DropDatabaseHandler
     ((HMSHandler) handler).firePreEvent(new PreDropDatabaseEvent(db, handler));
   }
 
-  private void addFuncPathToCm() {
+  private void checkFuncPathToCm() {
     boolean needsCm = ReplChangeManager.isSourceOfReplication(db);
     List<Path> funcNeedCmPaths = new ArrayList<>();
     for (Function func : functions) {
@@ -304,6 +304,21 @@ public class DropDatabaseHandler
       return Collections.emptyList();
     }
     return list;
+  }
+
+  private List<Table> sortTablesToDrop() {
+    // drop the materialized view first
+    List<Table> materializedTables = new ArrayList<>();
+    List<Table> normalTables = new ArrayList<>();
+    for (Table table : tables) {
+      if (table.getTableType().equals(TableType.MATERIALIZED_VIEW.toString())) {
+        materializedTables.add(table);
+      } else {
+        normalTables.add(table);
+      }
+    }
+    materializedTables.addAll(normalTables);
+    return materializedTables;
   }
 
   @Override

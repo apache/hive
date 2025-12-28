@@ -4594,9 +4594,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           // Parents with the deepest path are always processed first. It guarantees that the emptiness
           // of a parent won't be changed once it has been processed. So duplicated processing can be
           // avoided.
-          for (Iterator<DropPartitionsHandler.PathAndDepth> pathToDelete = result.getPathToDelete();
-               pathToDelete.hasNext(); ) {
-            DropPartitionsHandler.PathAndDepth p = pathToDelete.next();
+          for (Iterator<DropPartitionsHandler.PathAndDepth> iterator = result.getDirsToDelete();
+               iterator.hasNext(); ) {
+            DropPartitionsHandler.PathAndDepth p = iterator.next();
             Path path = p.path();
             if (p.isPartitionDir()) {
               wh.deleteDir(path, result.mustPurge(), result.needCm());

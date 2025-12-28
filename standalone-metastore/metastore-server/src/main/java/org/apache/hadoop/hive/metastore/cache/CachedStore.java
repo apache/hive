@@ -1593,7 +1593,6 @@ public class CachedStore implements RawStore, Configurable {
       if (tbl != null) {
         tables.add(tbl);
       }
-      tables.add(tbl);
     }
     return tables;
   }

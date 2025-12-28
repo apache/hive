@@ -145,24 +145,23 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
     return opHandler;
   }
 
-  public static <T extends TBase, A> AbstractOperationHandler<T, A> offer(IHMSHandler handler, T req)
+  public static <T extends TBase> AbstractOperationHandler offer(IHMSHandler handler, T req)
       throws TException, IOException {
+    AbstractOperationHandler opHandler;
     if (req instanceof DropTableRequest request) {
-      AbstractOperationHandler<T, A> opHandler = ofCache(request.getId(), request.isCancel());
+      opHandler = ofCache(request.getId(), request.isCancel());
       if (opHandler == null) {
-        opHandler = (AbstractOperationHandler<T, A>)
-            new DropTableHandler(handler, request.isAsyncDrop(), request);
+        opHandler = new DropTableHandler(handler, request.isAsyncDrop(), request);
       }
       return opHandler;
     } else if (req instanceof DropDatabaseRequest request) {
-      AbstractOperationHandler<T, A> opHandler = ofCache(request.getId(), request.isCancel());
+      opHandler = ofCache(request.getId(), request.isCancel());
       if (opHandler == null) {
-        opHandler =  (AbstractOperationHandler<T, A>) new DropDatabaseHandler(handler, request);
+        opHandler =  new DropDatabaseHandler(handler, request);
       }
       return opHandler;
     } else if (req instanceof DropPartitionsRequest request) {
-      AbstractOperationHandler<T, A> opHandler =
-          (AbstractOperationHandler<T, A>) new DropPartitionsHandler(handler, request);
+      opHandler = new DropPartitionsHandler(handler, request);
       return opHandler;
     }
     throw new UnsupportedOperationException("Not yet implemented");
