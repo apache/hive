@@ -67,7 +67,7 @@
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
     <checkstyle.version>11.1.0</checkstyle.version>
     <commons-collections4.version>4.4</commons-collections4.version>
-    <commons-lang3.version>3.14.0</commons-lang3.version>
+    <commons-lang3.version>3.20.0</commons-lang3.version>
     <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
     <datasketches.version>2.0.0</datasketches.version>
     <datanucleus-api-jdo.version>6.0.3</datanucleus-api-jdo.version>
