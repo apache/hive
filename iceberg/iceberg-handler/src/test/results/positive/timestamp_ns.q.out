@@ -82,6 +82,24 @@ POSTHOOK: query: INSERT INTO t VALUES (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t
+PREHOOK: query: SELECT ts_ns FROM t ORDER BY ts_ns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT ts_ns FROM t ORDER BY ts_ns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789
+PREHOOK: query: SELECT ts_tz_ns FROM t ORDER BY ts_tz_ns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT ts_tz_ns FROM t ORDER BY ts_tz_ns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789 US/Pacific
 PREHOOK: query: SELECT * FROM t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t

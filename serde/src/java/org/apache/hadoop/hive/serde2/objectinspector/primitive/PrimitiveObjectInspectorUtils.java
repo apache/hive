@@ -461,11 +461,13 @@ public final class PrimitiveObjectInspectorUtils {
       return ((DateObjectInspector) oi1).getPrimitiveWritableObject(o1)
           .equals(((DateObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
-    case TIMESTAMP: {
+    case TIMESTAMP:
+    case TIMESTAMP_NS: {
       return ((TimestampObjectInspector) oi1).getPrimitiveWritableObject(o1)
           .equals(((TimestampObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
-    case TIMESTAMPLOCALTZ: {
+    case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:  {
       return ((TimestampLocalTZObjectInspector) oi1).getPrimitiveWritableObject(o1).equals(
           ((TimestampLocalTZObjectInspector) oi2).getPrimitiveWritableObject(o2));
     }
@@ -555,6 +557,7 @@ public final class PrimitiveObjectInspectorUtils {
       }
       break;
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       result = (((TimestampObjectInspector) oi)
           .getPrimitiveWritableObject(o).getSeconds() != 0);
       break;
@@ -747,6 +750,7 @@ public final class PrimitiveObjectInspectorUtils {
       break;
     }
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       result = (int) (((TimestampObjectInspector) oi)
           .getPrimitiveWritableObject(o).getSeconds());
       break;
@@ -817,10 +821,12 @@ public final class PrimitiveObjectInspectorUtils {
       break;
     }
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
           .getSeconds();
       break;
     case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:
       result = ((TimestampLocalTZObjectInspector) oi).getPrimitiveWritableObject(o)
                 .getSeconds();
       break;
@@ -884,6 +890,7 @@ public final class PrimitiveObjectInspectorUtils {
       result = Double.parseDouble(getString(o, oi));
       break;
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getDouble();
       break;
     case DECIMAL:
@@ -970,9 +977,11 @@ public final class PrimitiveObjectInspectorUtils {
       result = ((DateObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
     case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:
       result = ((TimestampLocalTZObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
     case INTERVAL_YEAR_MONTH:
@@ -1113,6 +1122,7 @@ public final class PrimitiveObjectInspectorUtils {
       result = HiveDecimal.create(getString(o, oi));
       break;
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       Double ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
         .getDouble();
       result = HiveDecimal.create(ts.toString());
@@ -1166,10 +1176,12 @@ public final class PrimitiveObjectInspectorUtils {
       result = ((DateObjectInspector) oi).getPrimitiveWritableObject(o).get();
       break;
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       result = DateWritableV2.timeToDate(
           ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getSeconds());
       break;
     case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:
       String tstz = oi.getPrimitiveWritableObject(o).toString();
       int divSpace = tstz.indexOf(' ');
       if (divSpace == -1) {
@@ -1244,9 +1256,11 @@ public final class PrimitiveObjectInspectorUtils {
           ((DateObjectInspector) inputOI).getPrimitiveWritableObject(o).get().toEpochMilli());
       break;
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       result = ((TimestampObjectInspector) inputOI).getPrimitiveWritableObject(o).getTimestamp();
       break;
     case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:
       String tstz = inputOI.getPrimitiveWritableObject(o).toString();
       int index = tstz.indexOf(" ");
       index = tstz.indexOf(" ", index + 1);
@@ -1331,11 +1345,13 @@ public final class PrimitiveObjectInspectorUtils {
       Date date = ((DateObjectInspector) oi).getPrimitiveWritableObject(o).get();
       return TimestampTZUtil.convert(date, timeZone);
     }
-    case TIMESTAMP: {
+    case TIMESTAMP:
+    case TIMESTAMP_NS: {
       Timestamp ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getTimestamp();
       return TimestampTZUtil.convert(ts, timeZone);
     }
-    case TIMESTAMPLOCALTZ: {
+    case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:  {
       return ((TimestampLocalTZObjectInspector) oi).getPrimitiveWritableObject(o).getTimestampTZ();
     }
     default:
