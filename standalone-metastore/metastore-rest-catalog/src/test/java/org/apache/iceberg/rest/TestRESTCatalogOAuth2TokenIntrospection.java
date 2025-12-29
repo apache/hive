@@ -21,6 +21,7 @@ package org.apache.iceberg.rest;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.CATALOG_SERVLET_AUTH_OAUTH2_VALIDATION_METHOD;
 
 import java.util.Map;
+import java.util.Optional;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.iceberg.exceptions.NotAuthorizedException;
@@ -45,6 +46,16 @@ class TestRESTCatalogOAuth2TokenIntrospection extends BaseRESTCatalogTests {
         "oauth2-server-uri", REST_CATALOG_EXTENSION.getOAuth2TokenEndpoint(),
         "credential", REST_CATALOG_EXTENSION.getOAuth2ClientCredential()
     );
+  }
+
+  @Override
+  protected Optional<Map<String, String>> getPermissionTestClientConfiguration() {
+    return Optional.of(Map.of(
+        "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
+        "rest.auth.type", "oauth2",
+        "oauth2-server-uri", REST_CATALOG_EXTENSION.getOAuth2TokenEndpoint(),
+        "credential", REST_CATALOG_EXTENSION.getOAuth2ClientCredentialForPermissionTest()
+    ));
   }
 
   @Test

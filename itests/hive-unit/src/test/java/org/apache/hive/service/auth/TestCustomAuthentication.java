@@ -82,7 +82,6 @@ public class TestCustomAuthentication {
   public void testCustomAuthentication() throws Exception {
 
     String url = "jdbc:hive2://localhost:10000/default";
-    Class.forName("org.apache.hive.jdbc.HiveDriver");
 
     try {
       DriverManager.getConnection(url, "wronguser", "pwd");

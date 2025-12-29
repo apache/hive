@@ -227,9 +227,19 @@ public class TestAvroObjectInspectorGenerator {
       "  \"fields\" : [\n" +
       "    {\"name\":\"timestampField\", " +
       "     \"type\":\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\", " +
-      "         \"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME + "\"}" +
+      "         \"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME_MILLIS + "\"}" +
       "  ]\n" +
       "}";
+
+  public static final String TIMESTAMP_SCHEMA_MICROS = "{\n" +
+          "  \"type\": \"record\", \n" +
+          "  \"name\": \"timestampTest\",\n" +
+          "  \"fields\" : [\n" +
+          "    {\"name\":\"timestampField\", " +
+          "     \"type\":\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\", " +
+          "         \"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME_MICROS + "\"}" +
+          "  ]\n" +
+          "}";
 
   public static final String KITCHEN_SINK_SCHEMA = "{\n" +
       "  \"namespace\": \"org.apache.hadoop.hive\",\n" +

@@ -107,13 +107,6 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     try {
       warehouse = new Warehouse(MetastoreConf.newMetastoreConf());
     } catch (MetaException e) { /* ignore */ }
-
-    try {
-      Class.forName(driverClassName);
-    } catch (ClassNotFoundException cnfe) {
-      LOG.warn("Driver class not found in classpath: {}" + driverClassName);
-      throw new RuntimeException("Driver class not found:" + driverClass.getClass().getName(), cnfe);
-    }
   }
 
   @Override public void open() throws ConnectException {

@@ -319,8 +319,7 @@ public final class GenMRSkewJoinProcessor {
       }
       mapJoinOp.setChildOperators(childOps);
 
-      HiveConf jc = new HiveConf(parseCtx.getConf(),
-          GenMRSkewJoinProcessor.class);
+      HiveConf jc = new HiveConf(parseCtx.getConf());
 
       newPlan.setNumMapTasks(HiveConf
           .getIntVar(jc, HiveConf.ConfVars.HIVE_SKEWJOIN_MAPJOIN_NUM_MAP_TASK));

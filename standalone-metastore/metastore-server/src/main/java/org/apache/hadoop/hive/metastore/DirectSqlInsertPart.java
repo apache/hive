@@ -31,7 +31,7 @@ import java.util.Map;
 import javax.jdo.PersistenceManager;
 import javax.jdo.identity.LongIdentity;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;

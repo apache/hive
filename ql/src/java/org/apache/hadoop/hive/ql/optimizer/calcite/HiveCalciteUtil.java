@@ -954,7 +954,7 @@ public class HiveCalciteUtil {
       PrimitiveTypeInfo typeInfo, Integer pos, RelDataType aggFnRetType) {
     ImmutableList.Builder<RelDataType> aggArgRelDTBldr = new ImmutableList.Builder<RelDataType>();
     aggArgRelDTBldr.add(TypeConverter.convert(typeInfo, cluster.getTypeFactory()));
-    SqlAggFunction aggFunction = SqlFunctionConverter.getCalciteAggFn(funcName, false,
+    SqlAggFunction aggFunction = SqlFunctionConverter.getCalciteAggFn(funcName,
         aggArgRelDTBldr.build(), aggFnRetType);
     List<Integer> argList = new ArrayList<Integer>();
     argList.add(pos);

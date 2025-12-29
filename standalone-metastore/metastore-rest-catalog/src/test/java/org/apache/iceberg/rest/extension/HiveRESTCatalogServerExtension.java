@@ -138,6 +138,10 @@ public class HiveRESTCatalogServerExtension implements BeforeAllCallback, Before
     return authorizationServer.getClientCredential();
   }
 
+  public String getOAuth2ClientCredentialForPermissionTest() {
+    return authorizationServer.getClientCredentialForPermissionTest();
+  }
+
   public String getOAuth2AccessToken() {
     return authorizationServer.getAccessToken();
   }

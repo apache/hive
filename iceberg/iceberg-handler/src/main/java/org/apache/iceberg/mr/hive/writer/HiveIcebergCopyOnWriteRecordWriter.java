@@ -36,18 +36,15 @@ import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
-class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
-
-  private final int currentSpecId;
+class HiveIcebergCopyOnWriteRecordWriter extends SchemaInferringDefaultsWriter {
 
   private final GenericRecord rowDataTemplate;
   private final List<DataFile> replacedDataFiles;
 
   HiveIcebergCopyOnWriteRecordWriter(Table table, HiveFileWriterFactory writerFactory,
       OutputFileFactory deleteFileFactory, Context context) {
-    super(table, newDataWriter(table, writerFactory, deleteFileFactory, context));
+    super(table, writerFactory, deleteFileFactory, context);
 
-    this.currentSpecId = table.spec().specId();
     this.rowDataTemplate = GenericRecord.create(table.schema());
     this.replacedDataFiles = Lists.newArrayList();
   }
@@ -69,7 +66,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergWriterBase {
             .build();
       replacedDataFiles.add(dataFile);
     } else {
-      writer.write(rowData, specs.get(currentSpecId), partition(rowData, currentSpecId));
+      writeOrBuffer(rowData);
     }
   }
 

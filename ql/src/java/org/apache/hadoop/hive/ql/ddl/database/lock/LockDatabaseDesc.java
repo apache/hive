@@ -31,16 +31,23 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class LockDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  private final String catalogName;
   private final String databaseName;
   private final String mode;
   private final String queryId;
   private final String queryStr;
 
-  public LockDatabaseDesc(String databaseName, String mode, String queryId, String queryStr) {
+  public LockDatabaseDesc(String catalogName, String databaseName, String mode, String queryId, String queryStr) {
+    this.catalogName = catalogName;
     this.databaseName = databaseName;
     this.mode = mode;
     this.queryId = queryId;
     this.queryStr = queryStr;
+  }
+
+  @Explain(displayName = "catalog", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatalogName() {
+    return catalogName;
   }
 
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

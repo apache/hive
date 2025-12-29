@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -378,8 +379,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * @return <code>false</code> if an ACID file, <code>true</code> if a simple orc file
    */
   public static boolean isOriginal(Reader file) {
-    return !CollectionUtils.isEqualCollection(file.getSchema().getFieldNames(),
-        OrcRecordUpdater.ALL_ACID_ROW_NAMES);
+    return !containsAllAcidRows(file.getSchema().getFieldNames());
   }
 
   /**
@@ -388,8 +388,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * @return <code>false</code> if an ACID file, <code>true</code> if a simple orc file
    */
   public static boolean isOriginal(Footer footer) {
-    return !CollectionUtils.isEqualCollection(footer.getTypesList().get(0).getFieldNamesList(),
-        OrcRecordUpdater.ALL_ACID_ROW_NAMES);
+    return !containsAllAcidRows(footer.getTypesList().getFirst().getFieldNamesList());
+  }
+
+  private static boolean containsAllAcidRows(Collection<String> fieldNames) {
+    Collection<String> lowerCaseFieldNames = fieldNames.stream()
+            .map(String::toLowerCase)
+            .collect(Collectors.toCollection(HashSet::new));
+
+    return CollectionUtils.isEqualCollection(OrcRecordUpdater.ALL_ACID_ROW_NAMES, lowerCaseFieldNames);
   }
 
   public static boolean[] genIncludedColumns(TypeDescription readerSchema,

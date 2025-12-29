@@ -31,8 +31,8 @@ public class AlterDatabaseSetManagedLocationDesc extends AbstractAlterDatabaseDe
 
   private final String managedLocation;
 
-  public AlterDatabaseSetManagedLocationDesc(String databaseName, String managedLocation) {
-    super(databaseName, null);
+  public AlterDatabaseSetManagedLocationDesc(String catalogName, String databaseName, String managedLocation) {
+    super(catalogName, databaseName, null);
     this.managedLocation = managedLocation;
   }
 

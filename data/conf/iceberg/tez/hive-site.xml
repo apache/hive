@@ -320,4 +320,8 @@
   <name>hive.lock.sleep.between.retries</name>
   <value>2</value>
 </property>
+  <property>
+    <name>hive.explain.formatted.indent</name>
+    <value>true</value>
+  </property>
 </configuration>

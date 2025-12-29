@@ -41,14 +41,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
-public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggregateDistinct {
-
-  final boolean                isDistinct;
+public class HiveSqlCountAggFunction extends SqlAggFunction {
   final SqlReturnTypeInference returnTypeInference;
   final SqlOperandTypeInference operandTypeInference;
   final SqlOperandTypeChecker operandTypeChecker;
 
-  public HiveSqlCountAggFunction(boolean isDistinct, SqlReturnTypeInference returnTypeInference,
+  public HiveSqlCountAggFunction(SqlReturnTypeInference returnTypeInference,
       SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
     super(
         "count",
@@ -57,15 +55,9 @@ public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggreg
         operandTypeInference,
         operandTypeChecker,
         SqlFunctionCategory.NUMERIC);
-    this.isDistinct = isDistinct;
     this.returnTypeInference = returnTypeInference;
     this.operandTypeChecker = operandTypeChecker;
     this.operandTypeInference = operandTypeInference;
-  }
-
-  @Override
-  public boolean isDistinct() {
-    return isDistinct;
   }
 
   @Override
@@ -91,7 +83,7 @@ public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggreg
     @Override
     public AggregateCall other(RelDataTypeFactory typeFactory, AggregateCall e) {
       return AggregateCall.create(
-          new HiveSqlCountAggFunction(isDistinct, returnTypeInference, operandTypeInference, operandTypeChecker),
+          new HiveSqlCountAggFunction(returnTypeInference, operandTypeInference, operandTypeChecker),
           false, ImmutableIntList.of(), -1,
           typeFactory.createTypeWithNullability(typeFactory.createSqlType(SqlTypeName.BIGINT), true), "count");
     }
@@ -122,14 +114,14 @@ public class HiveSqlCountAggFunction extends SqlAggFunction implements CanAggreg
       }
       int ordinal = extra.register(node);
       return AggregateCall.create(
-          new HiveSqlSumEmptyIsZeroAggFunction(isDistinct, returnTypeInference, operandTypeInference, operandTypeChecker),
+          new HiveSqlSumEmptyIsZeroAggFunction(returnTypeInference, operandTypeInference, operandTypeChecker),
           false, ImmutableList.of(ordinal), -1, aggregateCall.type, aggregateCall.name);
     }
   }
 
   @Override
   public @Nullable SqlAggFunction getRollup() {
-    return new HiveSqlSumEmptyIsZeroAggFunction(isDistinct(), getReturnTypeInference(), getOperandTypeInference(),
+    return new HiveSqlSumEmptyIsZeroAggFunction(getReturnTypeInference(), getOperandTypeInference(),
         getOperandTypeChecker());
   }
 }

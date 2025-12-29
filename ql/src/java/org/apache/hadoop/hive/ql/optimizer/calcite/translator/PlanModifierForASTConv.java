@@ -229,12 +229,16 @@ public class PlanModifierForASTConv {
         // No self-join detected, return the join as is
         aliases.addAll(lf.aliases);
         aliases.addAll(rf.aliases);
+      } else {
+        // Self-join detected, introduce a derived table for the left side
+        aliases.addAll(rf.aliases);
+        newL = introduceDerivedTable(newL);
+      }
+      if (newL == join.getLeft() && newR == join.getRight()) {
+        return join;
+      } else {
         return join.copy(join.getTraitSet(), Arrays.asList(newL, newR));
       }
-      // Self-join detected, introduce a derived table for the left side
-      aliases.addAll(rf.aliases);
-      introduceDerivedTable(newL, join);
-      return join;
     }
 
     @Override
@@ -489,8 +493,7 @@ public class PlanModifierForASTConv {
     RelDataType longType = TypeConverter.convert(TypeInfoFactory.longTypeInfo, typeFactory);
     RelDataType intType = TypeConverter.convert(TypeInfoFactory.intTypeInfo, typeFactory);
     // Create the dummy aggregation.
-    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn("count", false,
-        ImmutableList.of(intType), longType);
+    SqlAggFunction countFn = SqlFunctionConverter.getCalciteAggFn("count", ImmutableList.of(intType), longType);
     // TODO: Using 0 might be wrong; might need to walk down to find the
     // proper index of a dummy.
     List<Integer> argList = ImmutableList.of(0);

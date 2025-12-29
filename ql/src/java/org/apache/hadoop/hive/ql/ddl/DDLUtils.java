@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
@@ -41,7 +43,9 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ASTErrorUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -260,5 +264,32 @@ public final class DDLUtils {
     ConstraintsUtils.constraintInfosToDefaultConstraints(tableName, defaultConstraintsInfo, defaultConstraints,
         isNativeColumnDefaultSupported);
     SessionStateUtil.addResourceOrThrow(conf, SessionStateUtil.COLUMN_DEFAULTS, defaultConstraints);
+  }
+
+  /**
+   *
+   * @param dbNameNode A root node that contains database fields
+   * @return Return a Pair object which includes catalogName and dbName
+   * @throws SemanticException
+   */
+  public static Pair<String, String> getCatDbNamePair(ASTNode dbNameNode) throws SemanticException {
+    String catName = null;
+    String dbName;
+
+    if (dbNameNode.getChildCount() == 2) {
+      catName = BaseSemanticAnalyzer.unescapeIdentifier(dbNameNode.getChild(0).getText());
+      dbName = BaseSemanticAnalyzer.unescapeIdentifier(dbNameNode.getChild(1).getText());
+    } else if (dbNameNode.getChildCount() == 1) {
+      dbName = BaseSemanticAnalyzer.unescapeIdentifier(dbNameNode.getChild(0).getText());
+    } else {
+      dbName = BaseSemanticAnalyzer.unescapeIdentifier(dbNameNode.getText());
+    }
+
+    if ((catName != null && catName.contains(".")) || dbName.contains(".")) {
+      throw new SemanticException(ASTErrorUtils.getMsg(
+              ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), dbNameNode));
+    }
+
+    return Pair.of(catName, dbName);
   }
 }

@@ -14,4 +14,147 @@ POSTHOOK: query: explain formatted select * from test
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-{"CBOPlan":"{\n  \"rels\": [\n    {\n      \"id\": \"0\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan\",\n      \"table\": [\n        \"default\",\n        \"test\"\n      ],\n      \"table:alias\": \"test\",\n      \"inputs\": [],\n      \"rowCount\": 1.0,\n      \"avgRowSize\": 8.0,\n      \"rowType\": {\n        \"fields\": [\n          {\n            \"type\": \"INTEGER\",\n            \"nullable\": true,\n            \"name\": \"a\"\n          },\n          {\n            \"type\": \"INTEGER\",\n            \"nullable\": true,\n            \"name\": \"b\"\n          },\n          {\n            \"type\": \"INTEGER\",\n            \"nullable\": true,\n            \"name\": \"PARTITION__SPEC__ID\"\n          },\n          {\n            \"type\": \"BIGINT\",\n            \"nullable\": true,\n            \"name\": \"PARTITION__HASH\"\n          },\n          {\n            \"type\": \"VARCHAR\",\n            \"nullable\": true,\n            \"precision\": 2147483647,\n            \"name\": \"FILE__PATH\"\n          },\n          {\n            \"type\": \"BIGINT\",\n            \"nullable\": true,\n            \"name\": \"ROW__POSITION\"\n          },\n          {\n            \"type\": \"VARCHAR\",\n            \"nullable\": true,\n            \"precision\": 2147483647,\n            \"name\": \"PARTITION__PROJECTION\"\n          },\n          {\n            \"type\": \"BIGINT\",\n            \"nullable\": true,\n            \"name\": \"SNAPSHOT__ID\"\n          }\n        ],\n        \"nullable\": false\n      },\n      \"colStats\": [\n        {\n          \"name\": \"a\",\n          \"ndv\": 1,\n          \"minValue\": -2147483648,\n          \"maxValue\": 2147483647\n        },\n        {\n          \"name\": \"b\",\n          \"ndv\": 1,\n          \"minValue\": -2147483648,\n          \"maxValue\": 2147483647\n        }\n      ]\n    },\n    {\n      \"id\": \"1\",\n      \"relOp\": \"org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject\",\n      \"fields\": [\n        \"test.a\",\n        \"test.b\"\n      ],\n      \"exprs\": [\n        {\n          \"input\": 0,\n          \"name\": \"$0\"\n        },\n        {\n          \"input\": 1,\n          \"name\": \"$1\"\n        }\n      ],\n      \"rowCount\": 1.0\n    }\n  ]\n}","optimizedSQL":"SELECT `a` AS `test.a`, `b` AS `test.b`\nFROM `default`.`test`","cboInfo":"Plan optimized by CBO.","STAGE DEPENDENCIES":{"Stage-0":{"ROOT STAGE":"TRUE"}},"STAGE PLANS":{"Stage-0":{"Fetch Operator":{"limit:":"-1","Processor Tree:":{"TableScan":{"alias:":"test","columns:":["a","b"],"database:":"default","table:":"test","isTempTable:":"false","OperatorId:":"TS_0","children":{"Select Operator":{"expressions:":"a (type: int), b (type: int)","columnExprMap:":{"_col0":"a","_col1":"b"},"outputColumnNames:":["_col0","_col1"],"OperatorId:":"SEL_1","children":{"ListSink":{"OperatorId:":"LIST_SINK_3"}}}}}}}}}}
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "test"
+        ],
+        "table:alias": "test",
+        "inputs": [],
+        "rowCount": 1,
+        "avgRowSize": 8,
+        "rowType": {
+          "fields": [
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "a"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "b"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "PARTITION__SPEC__ID"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "PARTITION__HASH"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "FILE__PATH"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ROW__POSITION"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "PARTITION__PROJECTION"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "SNAPSHOT__ID"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "a",
+            "ndv": 1,
+            "minValue": -2147483648,
+            "maxValue": 2147483647
+          },
+          {
+            "name": "b",
+            "ndv": 1,
+            "minValue": -2147483648,
+            "maxValue": 2147483647
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "test.a",
+          "test.b"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 1
+      }
+    ]
+  },
+  "optimizedSQL": "SELECT `a` AS `test.a`, `b` AS `test.b`\nFROM `default`.`test`",
+  "cboInfo": "Plan optimized by CBO.",
+  "STAGE DEPENDENCIES": {
+    "Stage-0": {
+      "ROOT STAGE": "TRUE"
+    }
+  },
+  "STAGE PLANS": {
+    "Stage-0": {
+      "Fetch Operator": {
+        "limit:": "-1",
+        "Processor Tree:": {
+          "TableScan": {
+            "alias:": "test",
+            "columns:": [
+              "a",
+              "b"
+            ],
+            "database:": "default",
+            "table:": "test",
+            "isTempTable:": "false",
+            "OperatorId:": "TS_0",
+            "children": {
+              "Select Operator": {
+                "expressions:": "a (type: int), b (type: int)",
+                "columnExprMap:": {
+                  "_col0": "a",
+                  "_col1": "b"
+                },
+                "outputColumnNames:": [
+                  "_col0",
+                  "_col1"
+                ],
+                "OperatorId:": "SEL_1",
+                "children": {
+                  "ListSink": {
+                    "OperatorId:": "LIST_SINK_3"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

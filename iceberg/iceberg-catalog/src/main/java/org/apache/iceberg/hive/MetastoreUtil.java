@@ -140,9 +140,9 @@ public class MetastoreUtil {
         HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
     HMSTablePropertyHelper.updateHmsTableForIcebergTable(metadata.metadataFileLocation(), result, metadata,
         null, true, maxHiveTablePropertySize, null);
-    String catalogType = CatalogUtils.getCatalogType(conf);
-    if (!StringUtils.isEmpty(catalogType) && !CatalogUtils.NO_CATALOG_TYPE.equals(catalogType)) {
-      result.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, CatalogUtils.getCatalogType(conf));
+    String catalogType = IcebergCatalogProperties.getCatalogType(conf);
+    if (!StringUtils.isEmpty(catalogType) && !IcebergCatalogProperties.NO_CATALOG_TYPE.equals(catalogType)) {
+      result.getParameters().put(CatalogUtil.ICEBERG_CATALOG_TYPE, IcebergCatalogProperties.getCatalogType(conf));
     }
     result.setSd(getHiveStorageDescriptor(table));
     return result;

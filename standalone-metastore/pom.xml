@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>23</version>
+    <version>35</version>
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-standalone-metastore</artifactId>
@@ -66,6 +66,7 @@
     <antlr.version>4.9.3</antlr.version>
     <apache-directory-server.version>2.0.0-M24</apache-directory-server.version>
     <checkstyle.version>11.1.0</checkstyle.version>
+    <commons-collections4.version>4.4</commons-collections4.version>
     <commons-lang3.version>3.14.0</commons-lang3.version>
     <commons-dbcp2.version>2.12.0</commons-dbcp2.version>
     <datasketches.version>2.0.0</datasketches.version>
@@ -83,7 +84,7 @@
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>22.0</guava.version>
-    <hadoop.version>3.4.1</hadoop.version>
+    <hadoop.version>3.4.2</hadoop.version>
     <hikaricp.version>4.0.3</hikaricp.version>
     <jackson.version>2.16.1</jackson.version>
     <jexl.version>3.3</jexl.version>
@@ -592,6 +593,13 @@
           <artifactId>maven-assembly-plugin</artifactId>
         </plugin>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <proc>none</proc>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>versions-maven-plugin</artifactId>
           <version>${maven.versions.plugin.version}</version>
@@ -664,6 +672,14 @@
               </configuration>
             </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <outputDirectory>${project.build.directory}/site</outputDirectory>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

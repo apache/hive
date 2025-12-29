@@ -74,7 +74,6 @@ public class TestReExecuteKilledTezAMQueryPlugin {
     conf.setVar(HiveConf.ConfVars.USERS_IN_ADMIN_ROLE, System.getProperty("user.name"));
     conf.set(HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES.varname, "recompile_without_cbo,reexecute_lost_am");
     MiniHS2.cleanupLocalDir();
-    Class.forName(MiniHS2.getJdbcDriverName());
     miniHS2 = new MiniHS2(conf, MiniHS2.MiniClusterType.LLAP);
     dataFileDir = conf.get("test.data.files").replace('\\', '/').replace("c:", "");
     Map<String, String> confOverlay = new HashMap<String, String>();

@@ -33,7 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -1196,6 +1196,10 @@ public class Table implements Serializable {
 
   public String getCatalogName() {
     return this.tTable.getCatName();
+  }
+
+  public void setCatalogName(String catalogName) {
+    this.tTable.setCatName(catalogName);
   }
 
   public void setOutdatedForRewriting(Boolean validForRewritingMaterializedView) {

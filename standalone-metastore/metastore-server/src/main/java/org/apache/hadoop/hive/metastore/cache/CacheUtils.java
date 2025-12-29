@@ -21,8 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -30,8 +29,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.PartitionWrapper;
 import org.apache.hadoop.hive.metastore.cache.SharedCache.TableWrapper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
-
-import static org.apache.hadoop.hive.metastore.cache.CachedStore.shouldCacheTable;
 
 public class CacheUtils {
   private static final String delimit = "\u0001";

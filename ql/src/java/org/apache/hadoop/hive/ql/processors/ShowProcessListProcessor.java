@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import com.google.common.base.Joiner;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.session.ProcessListInfo;

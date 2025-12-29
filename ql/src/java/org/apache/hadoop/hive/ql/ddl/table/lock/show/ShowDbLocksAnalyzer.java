@@ -18,8 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.lock.show;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -41,16 +44,21 @@ public class ShowDbLocksAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode root) throws SemanticException {
     ctx.setResFile(ctx.getLocalTmpPath());
 
-    String dbName = stripQuotes(root.getChild(0).getText());
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
+    String catName = catDbNamePair.getLeft();
+    if (catName != null && getCatalog(catName) == null) {
+      throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catName);
+    }
+    String dbName = catDbNamePair.getRight();
     boolean isExtended = (root.getChildCount() > 1);
 
     assert txnManager != null : "Transaction manager should be set before calling analyze";
-    ShowLocksDesc desc = new ShowLocksDesc(ctx.getResFile(), dbName, isExtended, txnManager.useNewShowLocksFormat());
+    ShowLocksDesc desc = new ShowLocksDesc(ctx.getResFile(), catName, dbName, isExtended, txnManager.useNewShowLocksFormat());
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 
     task.setFetchSource(true);
-    setFetchTask(createFetchTask(desc.getSchema()));
+    setFetchTask(createFetchTask(desc.getDbSchema()));
 
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);

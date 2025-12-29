@@ -44,6 +44,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_tv1
 PREHOOK: type: DROPTABLE
@@ -88,7 +89,8 @@ TBLPROPERTIES (
   'snapshot-count'='0', 
   'table_type'='ICEBERG', 
 #### A masked pattern was here ####
-  'uuid'='#Masked#')
+  'uuid'='#Masked#', 
+  'write.metadata.delete-after-commit.enabled'='true')
 PREHOOK: query: DROP TABLE IF EXISTS ice_tv2
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
@@ -135,6 +137,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform
 PREHOOK: type: DROPTABLE
@@ -194,6 +197,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_transform_prop
 PREHOOK: type: DROPTABLE
@@ -254,6 +258,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_t_identity_part
 PREHOOK: type: DROPTABLE
@@ -302,6 +307,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_data
 PREHOOK: type: DROPTABLE
@@ -359,6 +365,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: DROP TABLE IF EXISTS ice_noHive
 PREHOOK: type: DROPTABLE
@@ -404,6 +411,7 @@ TBLPROPERTIES (
   'uuid'='#Masked#', 
   'write.delete.mode'='merge-on-read', 
   'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
   'write.update.mode'='merge-on-read')
 PREHOOK: query: INSERT INTO ice_noHive VALUES (1, 'ABC'),(2, 'CCC'),(3, 'DBD')
 PREHOOK: type: QUERY

@@ -72,8 +72,8 @@ import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -3568,6 +3568,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               for (int j = 0; j < grpByAstExprs.size(); j++) {
                 ASTNode grpByExpr = grpByAstExprs.get(j);
                 if (grpByExpr.toStringTree().equals(c.toStringTree())) {
+                  // Add the copy translation for grouping udf keys. This will make sure that same translation as
+                  // group by key is applied on the grouping udf key. If translation is added to group by key
+                  // to add the table name to the column name (tbl.key), then same thing will be done for grouping
+                  // udf keys also.
+                  unparseTranslator.addCopyTranslation(c, grpByExpr);
                   // Create and add AST node with position of grouping function input
                   // in group by clause
                   ASTNode childN = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
