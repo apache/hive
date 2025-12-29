@@ -86,7 +86,7 @@ public class ColumnType {
 
   public static final String TIMESTAMP_NS = "nanosecond timestamp";
 
-  public static final String TIMESTAMPTZ_NS = "nanosecond timestamp with time zone";
+  public static final String TIMESTAMPTZ_NS = "nanosecond timestamp with local time zone";
 
   public static final String NANOSECOND = "nanosecond";
 

@@ -33,6 +33,8 @@ INSERT INTO t VALUES (
 
 SELECT ts_ns FROM t ORDER BY ts_ns;
 SELECT ts_tz_ns FROM t ORDER BY ts_tz_ns;
+SELECT CAST(ts_ns AS STRING) FROM t;
+SELECT CAST(ts_tz_ns AS STRING) FROM t;
 
 SELECT * FROM t;
 

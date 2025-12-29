@@ -100,6 +100,24 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2025-12-18 10:15:30.123456789 US/Pacific
+PREHOOK: query: SELECT CAST(ts_ns AS STRING) FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(ts_ns AS STRING) FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789
+PREHOOK: query: SELECT CAST(ts_tz_ns AS STRING) FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(ts_tz_ns AS STRING) FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789 US/Pacific
 PREHOOK: query: SELECT * FROM t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
