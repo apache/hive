@@ -131,6 +131,7 @@ public class DropTableHandler
     }
   }
 
+  @Override
   public void beforeExecute() throws TException, IOException {
     // drop any partitions
     String catName = normalizeIdentifier(

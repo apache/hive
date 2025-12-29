@@ -376,8 +376,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     endFunctionListeners = MetaStoreServerUtils.getMetaStoreListeners(
         MetaStoreEndFunctionListener.class, conf, MetastoreConf.getVar(conf, ConfVars.END_FUNCTION_LISTENERS));
 
-
-
     expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
     fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
 
@@ -4595,7 +4593,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           // of a parent won't be changed once it has been processed. So duplicated processing can be
           // avoided.
           for (Iterator<DropPartitionsHandler.PathAndDepth> iterator = result.getDirsToDelete();
-               iterator.hasNext(); ) {
+               iterator.hasNext();) {
             DropPartitionsHandler.PathAndDepth p = iterator.next();
             Path path = p.path();
             if (p.isPartitionDir()) {

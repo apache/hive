@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
@@ -217,27 +218,19 @@ public class DropPartitionsHandler
   /**
    * Stores a path and its size.
    */
-    public record PathAndDepth(Path path, int depth, boolean isPartitionDir) implements Comparable<PathAndDepth> {
+  public record PathAndDepth(Path path, int depth, boolean isPartitionDir) implements Comparable<PathAndDepth> {
 
     @Override
-      public int hashCode() {
-        return Objects.hash(path.hashCode(), depth);
-      }
+    public int hashCode() {
+      return Objects.hash(path.hashCode(), depth);
+    }
 
     /**
      * The largest {@code depth} is processed first in a {@link PriorityQueue}.
      */
-      @Override
-      public int compareTo(PathAndDepth o) {
-        return o.depth - depth;
-      }
-    }
-
-  private static void addParentForDel(PriorityQueue<PathAndDepth> parentsToDelete,
-      PathAndDepth p) {
-    Path parent = p.path.getParent();
-    if (parent != null && p.depth - 1 > 0) {
-      parentsToDelete.add(new PathAndDepth(parent, p.depth - 1, false));
+    @Override
+    public int compareTo(PathAndDepth o) {
+      return o.depth - depth;
     }
   }
 
@@ -317,7 +310,7 @@ public class DropPartitionsHandler
       if (dirsToDelete.isEmpty()) {
         return Collections.emptyIterator();
       }
-      HashSet<PathAndDepth> processed = new HashSet<>();
+      Set<PathAndDepth> processed = new HashSet<>();
       return new Iterator<>() {
         @Override
         public boolean hasNext() {
@@ -335,7 +328,10 @@ public class DropPartitionsHandler
         @Override
         public PathAndDepth next() {
           PathAndDepth curPath = dirsToDelete.poll();
-          addParentForDel(dirsToDelete, curPath);
+          Path parent = curPath.path.getParent();
+          if (parent != null && curPath.depth - 1 > 0) {
+            dirsToDelete.add(new PathAndDepth(parent, curPath.depth - 1, false));
+          }
           processed.add(curPath);
           return curPath;
         }

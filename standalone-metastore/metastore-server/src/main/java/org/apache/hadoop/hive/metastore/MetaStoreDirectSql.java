@@ -2868,7 +2868,7 @@ class MetaStoreDirectSql {
   }
 
   /** 
-   * Drop partitions by the given table id, and return the locations that outside of the baseLocationToNotShow
+   * Drop partitions by the given table id, and return the locations that outside of the baseLocationToNotShow.
    * @param tableId the table id
    * @param baseLocationToNotShow the parent directory
    * @return locations that outside of the parent directory

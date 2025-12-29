@@ -79,7 +79,6 @@ public class DropDatabaseHandler
 
   public DropDatabaseResult execute() throws TException, IOException {
     boolean success = false;
-    List<Path> partitionPaths = new ArrayList<>();
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
     RawStore rs = handler.getMS();
     rs.openTransaction();
@@ -90,6 +89,7 @@ public class DropDatabaseHandler
         }
         return result;
       }
+      List<Path> partitionPaths = new ArrayList<>();
       // drop any functions before dropping db
       for (int i = 0, j = functions.size(); i < functions.size(); i++, j--) {
         progress.set("Dropping functions from the database, " + j + " functions left");
@@ -132,11 +132,11 @@ public class DropDatabaseHandler
         dropRequest.setDropPartitions(true);
         AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> dropTable =
             AbstractOperationHandler.offer(handler, dropRequest);
-        DropTableHandler.DropTableResult result = dropTable.getResult();
+        DropTableHandler.DropTableResult dropTableResult = dropTable.getResult();
         if (tableDataShouldBeDeleted
-            && result.success()
-            && result.partPaths() != null) {
-          partitionPaths.addAll(result.partPaths());
+            && dropTableResult.success()
+            && dropTableResult.partPaths() != null) {
+          partitionPaths.addAll(dropTableResult.partPaths());
         }
       }
 
@@ -187,7 +187,7 @@ public class DropDatabaseHandler
       throw new InvalidOperationException("can not drop a database which is a source of replication");
     }
 
-    List<String> tables = defaultEmptyList(rs.getAllTables(request.getCatalogName(), request.getName()));
+    List<String> tableNames = defaultEmptyList(rs.getAllTables(request.getCatalogName(), request.getName()));
     functions = defaultEmptyList(rs.getFunctionsRequest(request.getCatalogName(), request.getName(), null, false));
     ListStoredProcedureRequest procedureRequest = new ListStoredProcedureRequest(request.getCatalogName());
     procedureRequest.setDbName(request.getName());
@@ -228,7 +228,7 @@ public class DropDatabaseHandler
     result = new DropDatabaseResult(db);
     checkFuncPathToCm();
     // check the permission of table path to be deleted
-    checkTablePathPermission(rs, tables);
+    checkTablePathPermission(rs, tableNames);
     progress = new AtomicReference<>(
         String.format("Starting to drop the database with %d tables, %d functions, %d procedures and %d packages.",
             tables.size(), functions.size(), procedures.size(), packages.size()));
@@ -254,16 +254,16 @@ public class DropDatabaseHandler
     result.setFunctionCmPaths(funcNeedCmPaths);
   }
 
-  private void checkTablePathPermission(RawStore rs, List<String> tables) throws MetaException {
+  private void checkTablePathPermission(RawStore rs, List<String> tableNames) throws MetaException {
     int tableBatchSize = MetastoreConf.getIntVar(handler.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     Warehouse wh = handler.getWh();
     Path databasePath = wh.getDnsPath(wh.getDatabasePath(db));
     List<Path> tablePaths = new ArrayList<>();
-    this.tables = Batchable.runBatched(tableBatchSize, new ArrayList<>(tables), new Batchable<>() {
+    this.tables = Batchable.runBatched(tableBatchSize, tableNames, new Batchable<>() {
       @Override
       public List<Table> run(List<String> input) throws Exception {
-        List<Table> tables = rs.getTableObjectsByName(request.getCatalogName(), request.getName(), input);
-        for (Table table : tables) {
+        List<Table> tabs = rs.getTableObjectsByName(request.getCatalogName(), request.getName(), input);
+        for (Table table : tabs) {
           Path tblPathToDelete = null;
           // If the table is not external and it might not be in a subdirectory of the database
           // add it's locations to the list of paths to delete
@@ -293,7 +293,7 @@ public class DropDatabaseHandler
             tablePaths.add(tblPathToDelete);
           }
         }
-        return tables;
+        return tabs;
       }
     });
     result.setTablePaths(tablePaths);
