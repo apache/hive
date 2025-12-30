@@ -44,7 +44,7 @@ public class PessimisticStatCombiner {
 
       // NDVs can only be accurately combined if full information about columns, query branches and
       // their relationships is available. Without that info, there is only one "truly conservative"
-      // value of NDV which is 0, which means that the NDV is unknown. It forces optimized
+      // value of NDV which is 0, which means that the NDV is unknown. It forces optimizer
       // to make the most conservative decisions possible, which is the exact goal of
       // PessimisticStatCombiner. It does inflate statistics in multiple cases, but at the same time it
       // also ensures than the query execution does not "blow up" due to too optimistic stats estimates
