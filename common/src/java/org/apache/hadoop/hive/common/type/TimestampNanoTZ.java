@@ -18,5 +18,10 @@
 
 package org.apache.hadoop.hive.common.type;
 
+import java.time.ZonedDateTime;
+
 public class TimestampNanoTZ extends TimestampTZ {
+  public TimestampNanoTZ(ZonedDateTime zonedDateTime) {
+    super(zonedDateTime);
+  }
 }

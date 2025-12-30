@@ -18,5 +18,10 @@
 
 package org.apache.hadoop.hive.serde2.io;
 
+import org.apache.hadoop.hive.common.type.TimestampNanoTZ;
+
 public class TimestampNanoTZWritable extends TimestampLocalTZWritable {
+  public TimestampNanoTZWritable(TimestampNanoTZ tsTz) {
+    super(tsTz);
+  }
 }

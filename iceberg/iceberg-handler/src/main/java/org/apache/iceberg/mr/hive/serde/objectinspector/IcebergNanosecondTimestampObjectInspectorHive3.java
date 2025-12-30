@@ -19,6 +19,9 @@
 
 package org.apache.iceberg.mr.hive.serde.objectinspector;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampNano;
+import org.apache.hadoop.hive.serde2.io.TimestampNanoWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class IcebergNanosecondTimestampObjectInspectorHive3 extends IcebergTimestampObjectInspectorHive3 {
@@ -34,4 +37,18 @@ public class IcebergNanosecondTimestampObjectInspectorHive3 extends IcebergTimes
     super(TypeInfoFactory.timestampNanoTypeInfo);
   }
 
+  @Override
+  public TimestampNano getPrimitiveJavaObject(Object o) {
+    Timestamp timestamp = super.getPrimitiveJavaObject(o);
+    if (timestamp == null) {
+      return null;
+    }
+    return new TimestampNano(timestamp);
+  }
+
+  @Override
+  public TimestampNanoWritable getPrimitiveWritableObject(Object o) {
+    TimestampNano ts = getPrimitiveJavaObject(o);
+    return ts == null ? null : new TimestampNanoWritable(ts);
+  }
 }

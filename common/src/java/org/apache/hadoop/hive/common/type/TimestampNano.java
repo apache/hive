@@ -19,4 +19,8 @@
 package org.apache.hadoop.hive.common.type;
 
 public class TimestampNano extends Timestamp {
+
+  public TimestampNano(Timestamp ts) {
+    super(ts);
+  }
 }

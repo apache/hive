@@ -19,6 +19,9 @@
 
 package org.apache.iceberg.mr.hive.serde.objectinspector;
 
+import org.apache.hadoop.hive.common.type.TimestampNanoTZ;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.serde2.io.TimestampNanoTZWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class IcebergNanosecondTimestampWithZoneObjectInspectorHive3
@@ -33,5 +36,20 @@ public class IcebergNanosecondTimestampWithZoneObjectInspectorHive3
 
   private IcebergNanosecondTimestampWithZoneObjectInspectorHive3() {
     super(TypeInfoFactory.timestampNanosTZTypeInfo);
+  }
+
+  @Override
+  public TimestampNanoTZ getPrimitiveJavaObject(Object o) {
+    TimestampTZ ttz = super.getPrimitiveJavaObject(o);
+    if (ttz == null) {
+      return null;
+    }
+    return new TimestampNanoTZ(ttz.getZonedDateTime());
+  }
+
+  @Override
+  public TimestampNanoTZWritable getPrimitiveWritableObject(Object o) {
+    TimestampNanoTZ tsTz = getPrimitiveJavaObject(o);
+    return tsTz == null ? null : new TimestampNanoTZWritable(tsTz);
   }
 }

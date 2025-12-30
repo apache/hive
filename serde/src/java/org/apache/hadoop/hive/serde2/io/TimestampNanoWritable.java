@@ -18,5 +18,10 @@
 
 package org.apache.hadoop.hive.serde2.io;
 
+import org.apache.hadoop.hive.common.type.TimestampNano;
+
 public class TimestampNanoWritable extends TimestampWritableV2 {
+  public TimestampNanoWritable(TimestampNano ts) {
+    super(ts);
+  }
 }
