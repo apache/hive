@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
-import org.apache.hadoop.hive.metastore.ThreadPool;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
@@ -549,7 +548,6 @@ public class TestDbTxnManager {
   public void tearDown() throws Exception {
     if (txnMgr != null) txnMgr.closeTxnManager();
     TestTxnDbUtil.cleanDb(conf);
-    ThreadPool.shutdown();
   }
 
   private static class MockQueryPlan extends QueryPlan {

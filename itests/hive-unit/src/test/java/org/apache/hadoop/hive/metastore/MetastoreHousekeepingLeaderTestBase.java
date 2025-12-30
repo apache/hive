@@ -24,6 +24,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.leader.HouseKeepingTasks;
 import org.apache.hadoop.hive.metastore.leader.LeaderElection;
 import org.apache.hadoop.hive.metastore.leader.LeaderElectionContext;
 import org.apache.hadoop.hive.metastore.leader.LeaderElectionFactory;
@@ -42,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
@@ -290,9 +292,10 @@ abstract class MetastoreHousekeepingLeaderTestBase {
     protected void notifyListener() {
       ScheduledExecutorService service = null;
       if (!isLeader) {
-        try {
-          service = ThreadPool.getPool();
-        } catch (Exception ignored) {
+        Optional<LeadershipStateListener> houseKeepingTasks  =
+            listeners.stream().filter(s -> s instanceof HouseKeepingTasks).findFirst();
+        if (houseKeepingTasks.isPresent()) {
+          service = ((HouseKeepingTasks) houseKeepingTasks.get()).getExecutorService();
         }
       }
       super.notifyListener();
