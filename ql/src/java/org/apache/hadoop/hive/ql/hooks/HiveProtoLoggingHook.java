@@ -92,6 +92,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -489,13 +490,13 @@ public class HiveProtoLoggingHook implements ExecuteWithHookContext {
     }
 
     private List<String> getTablesFromEntitySet(Set<? extends Entity> entities) {
-      List<String> tableNames = new ArrayList<>();
+      Set<String> tableNames = new HashSet<>();
       for (Entity entity : entities) {
         if (entity.getType() == TABLE || entity.getType() == PARTITION) {
           tableNames.add(entity.getTable().getDbName() + "." + entity.getTable().getTableName());
         }
       }
-      return tableNames;
+      return new ArrayList<>(tableNames);
     }
 
     private ExecutionMode getExecutionMode(QueryPlan plan, List<ExecDriver> mrTasks,
