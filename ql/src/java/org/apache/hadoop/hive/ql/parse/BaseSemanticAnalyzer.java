@@ -40,6 +40,7 @@ import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -124,6 +125,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_LOAD_DATA_USE_NATIVE_API;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_FIRST;
 import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.NullOrder.NULLS_LAST;
 import static org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order.ASC;
@@ -431,6 +433,9 @@ public abstract class BaseSemanticAnalyzer {
     return getUnescapedName(tableOrColumnNode, null);
   }
 
+  /**
+   * * @deprecated use {@link #getCatDbTableNameTriple(ASTNode)} instead.
+   */
   public static Map.Entry<String, String> getDbTableNamePair(ASTNode tableNameNode) throws SemanticException {
 
     if (tableNameNode.getType() != HiveParser.TOK_TABNAME ||
@@ -457,6 +462,29 @@ public abstract class BaseSemanticAnalyzer {
       }
       return Pair.of(null,tableName);
     }
+  }
+
+  public static Triple<String, String, String> getCatDbTableNameTriple(ASTNode tableNameNode) throws SemanticException {
+    if (tableNameNode.getType() != HiveParser.TOK_TABNAME || tableNameNode.getChildCount() < 1 || tableNameNode.getChildCount() > 4) {
+      throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE_NAME.getMsg(), tableNameNode));
+    }
+
+    List<String> parts = new ArrayList<>();
+    for (int i = 0; i < tableNameNode.getChildCount(); i++) {
+      String part = unescapeIdentifier(tableNameNode.getChild(i).getText());
+      if (part != null && part.contains(".")) {
+        throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.OBJECTNAME_CONTAINS_DOT.getMsg(), tableNameNode));
+      }
+      parts.add(part);
+    }
+
+    return switch (parts.size()) {
+      case 1 -> Triple.of(null, null, parts.get(0));
+      case 2 -> Triple.of(null, parts.get(0), parts.get(1));
+      case 3 -> Triple.of(parts.get(0), parts.get(1), parts.get(2));
+      case 4 -> Triple.of(parts.get(0), parts.get(1), parts.get(2) + "." + parts.get(3));
+      default -> throw new SemanticException(ASTErrorUtils.getMsg(ErrorMsg.INVALID_TABLE_NAME.getMsg(), tableNameNode));
+    };
   }
 
   public static String getUnescapedName(ASTNode tableOrColumnNode, String currentDatabase) throws SemanticException {
@@ -1967,7 +1995,27 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected Table getTable(TableName tn, boolean throwException) throws SemanticException {
-    return getTable(tn.getDb(), tn.getTable(), tn.getTableMetaRef(), throwException);
+    String catName = tn.getCat();
+    String dbName = tn.getDb();
+    String tblName = tn.getTable();
+
+    Table tab;
+    try {
+      tab = db.getTable(tn, false);
+    }
+    catch (InvalidTableException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName,
+              catName, dbName).getNotEmptyDbTable()), e);
+    }
+    catch (Exception e) {
+      throw new SemanticException(e.getMessage(), e);
+    }
+    if (tab == null && throwException) {
+      // getTable needs a refactor with all ~50 occurences
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName,
+              catName, dbName).getNotEmptyDbTable()));
+    }
+    return tab;
   }
 
   protected Table getTable(String tblName) throws SemanticException {
@@ -1982,25 +2030,14 @@ public abstract class BaseSemanticAnalyzer {
     return getTable(database, tblName, null, throwException);
   }
 
+  /**
+   * @deprecated use {@link #getTable(TableName, boolean)} instead
+   * Since this is a protected method, can we directly remove it?
+   */
   protected Table getTable(String database, String tblName, String tableMetaRef, boolean throwException)
       throws SemanticException {
-    Table tab;
-    try {
-      String tableName = tableMetaRef == null ? tblName : tblName + "." + tableMetaRef;
-      tab = database == null ? db.getTable(tableName, false)
-          : db.getTable(database, tblName, tableMetaRef, false);
-    }
-    catch (InvalidTableException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()), e);
-    }
-    catch (Exception e) {
-      throw new SemanticException(e.getMessage(), e);
-    }
-    if (tab == null && throwException) {
-      // getTable needs a refactor with all ~50 occurences
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(TableName.fromString(tblName, null, database).getNotEmptyDbTable()));
-    }
-    return tab;
+    TableName table = new TableName(getDefaultCatalog(conf), database, tblName, tableMetaRef);
+    return getTable(table, throwException);
   }
 
   public List<Task<?>> getAllRootTasks() {
