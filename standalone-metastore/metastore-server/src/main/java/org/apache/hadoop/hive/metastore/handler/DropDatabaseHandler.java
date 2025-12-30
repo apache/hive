@@ -197,7 +197,7 @@ public class DropDatabaseHandler
     packages = defaultEmptyList(rs.listPackages(pkgRequest));
 
     if (!request.isCascade()) {
-      if (!tables.isEmpty()) {
+      if (!tableNames.isEmpty()) {
         throw new InvalidOperationException(
             "Database " + db.getName() + " is not empty. One or more tables exist.");
       }
