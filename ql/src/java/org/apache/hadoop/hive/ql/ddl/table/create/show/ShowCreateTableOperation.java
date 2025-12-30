@@ -23,13 +23,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
@@ -50,7 +47,8 @@ public class ShowCreateTableOperation extends DDLOperation<ShowCreateTableDesc> 
   public int execute() throws HiveException {
     // get the create table statement for the table and populate the output
     try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
-      Table table = context.getDb().getTable(desc.getDatabaseName(), desc.getTableName());
+      TableName tn = new TableName(desc.getCatalogName(), desc.getDatabaseName(), desc.getTableName());
+      Table table = context.getDb().getTable(tn, true);
       DDLPlanUtils ddlObj = new DDLPlanUtils();
       String command;
       if (table.isView()) {

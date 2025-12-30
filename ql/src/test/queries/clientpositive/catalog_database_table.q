@@ -16,3 +16,9 @@ create table testcat.testdb1.test2(id int);
 
 -- show tables in current db testcat.testdb1
 show tables;
+
+-- show create table in current db testcat.testdb1
+show create table test1;
+
+-- show create table use cat.db.tbl syntax
+show create table testcat.testdb1.test2;

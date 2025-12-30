@@ -41,3 +41,41 @@ POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:testdb1
 test1
 test2
+PREHOOK: query: show create table test1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: testdb1@test1
+POSTHOOK: query: show create table test1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: testdb1@test1
+CREATE TABLE `test1`(
+  `id` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
+PREHOOK: query: show create table testcat.testdb1.test2
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: testdb1@test2
+POSTHOOK: query: show create table testcat.testdb1.test2
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: testdb1@test2
+CREATE TABLE `testdb1`.`test2`(
+  `id` int)
+ROW FORMAT SERDE 
+  'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+#### A masked pattern was here ####
