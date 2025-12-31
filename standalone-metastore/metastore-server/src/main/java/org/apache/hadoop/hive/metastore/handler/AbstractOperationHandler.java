@@ -36,6 +36,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DropTableRequest;
@@ -147,21 +148,23 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
 
   public static <T extends TBase> AbstractOperationHandler offer(IHMSHandler handler, T req)
       throws TException, IOException {
-    AbstractOperationHandler opHandler;
+    AbstractOperationHandler opHandler = null;
     if (req instanceof DropTableRequest request) {
       opHandler = ofCache(request.getId(), request.isCancel());
       if (opHandler == null) {
         opHandler = new DropTableHandler(handler, request.isAsyncDrop(), request);
       }
-      return opHandler;
     } else if (req instanceof DropDatabaseRequest request) {
       opHandler = ofCache(request.getId(), request.isCancel());
       if (opHandler == null) {
-        opHandler =  new DropDatabaseHandler(handler, request);
+        opHandler = new DropDatabaseHandler(handler, request);
       }
-      return opHandler;
     } else if (req instanceof DropPartitionsRequest request) {
       opHandler = new DropPartitionsHandler(handler, request);
+    } else if (req instanceof AddPartitionsRequest request) {
+      opHandler = new AddPartitionsHandler(handler, request);
+    }
+    if (opHandler != null) {
       return opHandler;
     }
     throw new UnsupportedOperationException("Not yet implemented");
