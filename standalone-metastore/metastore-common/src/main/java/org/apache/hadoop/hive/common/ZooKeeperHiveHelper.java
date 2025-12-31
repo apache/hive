@@ -228,11 +228,30 @@ public class ZooKeeperHiveHelper {
   public ZooKeeperHiveHelper(ZooKeeperHiveHelperBuilder builder) {
     // Get the ensemble server addresses in the format host1:port1, host2:port2, ... . Append
     // the configured port to hostname if the hostname doesn't contain a port.
-    String[] hosts = builder.getQuorum().split(",");
+    String quorumInput = builder.getQuorum();
+    if (quorumInput == null || quorumInput.trim().isEmpty()) {
+      throw new IllegalArgumentException("ZooKeeper quorum cannot be null or empty");
+    }
+    // Clean up any protocol prefixes (thrift://, //, etc.)
+    quorumInput = quorumInput.trim();
+    if (quorumInput.startsWith("//")) {
+      quorumInput = quorumInput.substring(2);
+    }
+    int protocolIndex = quorumInput.indexOf("://");
+    if (protocolIndex >= 0) {
+      quorumInput = quorumInput.substring(protocolIndex + 3);
+    }
+    
+    String[] hosts = quorumInput.split(",");
     StringBuilder quorumServers = new StringBuilder();
     for (int i = 0; i < hosts.length; i++) {
-      quorumServers.append(hosts[i].trim());
-      if (!hosts[i].contains(":")) {
+      String host = hosts[i].trim();
+      // Clean up any remaining protocol artifacts
+      if (host.startsWith("//")) {
+        host = host.substring(2);
+      }
+      quorumServers.append(host);
+      if (!host.contains(":")) {
         quorumServers.append(":");
         quorumServers.append(builder.getClientPort());
       }

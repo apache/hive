@@ -1942,6 +1942,23 @@ public class MetastoreConf {
         "hive.metastore.iceberg.catalog.cache.expiry", -1,
         "HMS Iceberg Catalog cache expiry."
     ),
+    REST_CATALOG_HA_ENABLED("metastore.rest.catalog.ha.enabled",
+        "hive.metastore.rest.catalog.ha.enabled", false,
+        "Whether REST Catalog supports High Availability with ZooKeeper service discovery."
+    ),
+    REST_CATALOG_HA_REGISTRY_NAMESPACE("metastore.rest.catalog.ha.registry.namespace",
+        "hive.metastore.rest.catalog.ha.registry.namespace", "restCatalogHA",
+        "The parent node in ZooKeeper used by REST Catalog when supporting HA."
+    ),
+    REST_CATALOG_HA_MODE("metastore.rest.catalog.ha.mode",
+        "hive.metastore.rest.catalog.ha.mode", "active-passive",
+        new StringSetValidator("active-passive", "active-active"),
+        "REST Catalog HA mode: 'active-passive' for leader election, 'active-active' for load balancing."
+    ),
+    REST_CATALOG_INSTANCE_URI("metastore.rest.catalog.instance.uri",
+        "hive.metastore.rest.catalog.instance.uri", "",
+        "REST Catalog instance URI (host:port) for service discovery registration."
+    ),
     HTTPSERVER_THREADPOOL_MIN("hive.metastore.httpserver.threadpool.min",
             "hive.metastore.httpserver.threadpool.min", 8,
             "HMS embedded HTTP server minimum number of threads."
