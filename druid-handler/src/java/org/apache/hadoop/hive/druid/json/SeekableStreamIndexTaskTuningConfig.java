@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.druid.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.druid.indexer.partitions.DynamicPartitionsSpec;
 import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.incremental.AppendableIndexSpec;
 import org.apache.druid.segment.indexing.RealtimeTuningConfig;
 import org.apache.druid.segment.indexing.TuningConfig;
 import org.apache.druid.segment.realtime.appenderator.AppenderatorConfig;
@@ -35,12 +36,15 @@ import java.util.Objects;
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfig, AppenderatorConfig {
+public abstract class SeekableStreamIndexTaskTuningConfig implements AppenderatorConfig
+{
   private static final boolean DEFAULT_RESET_OFFSET_AUTOMATICALLY = false;
   private static final boolean DEFAULT_SKIP_SEQUENCE_NUMBER_AVAILABILITY_CHECK = false;
 
+  private final AppendableIndexSpec appendableIndexSpec;
   private final int maxRowsInMemory;
   private final long maxBytesInMemory;
+  private final boolean skipBytesInMemoryOverheadCheck;
   private final DynamicPartitionsSpec partitionsSpec;
   private final Period intermediatePersistPeriod;
   private final File basePersistDirectory;
@@ -61,8 +65,10 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   private final int maxSavedParseExceptions;
 
   public SeekableStreamIndexTaskTuningConfig(
+      @Nullable AppendableIndexSpec appendableIndexSpec,
       @Nullable Integer maxRowsInMemory,
       @Nullable Long maxBytesInMemory,
+      @Nullable Boolean skipBytesInMemoryOverheadCheck,
       @Nullable Integer maxRowsPerSegment,
       @Nullable Long maxTotalRows,
       @Nullable Period intermediatePersistPeriod,
@@ -70,8 +76,6 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
       @Nullable Integer maxPendingPersists,
       @Nullable IndexSpec indexSpec,
       @Nullable IndexSpec indexSpecForIntermediatePersists,
-      // This parameter is left for compatibility when reading existing configs, to be removed in Druid 0.12.
-      @Deprecated @JsonProperty("buildV9Directly") @Nullable Boolean buildV9Directly,
       @Deprecated @Nullable Boolean reportParseExceptions,
       @Nullable Long handoffConditionTimeout,
       @Nullable Boolean resetOffsetAutomatically,
@@ -81,171 +85,198 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
       @Nullable Boolean logParseExceptions,
       @Nullable Integer maxParseExceptions,
       @Nullable Integer maxSavedParseExceptions
-  ) {
+  )
+  {
     // Cannot be a static because default basePersistDirectory is unique per-instance
     final RealtimeTuningConfig defaults = RealtimeTuningConfig.makeDefaultTuningConfig(basePersistDirectory);
 
+    this.appendableIndexSpec = appendableIndexSpec == null ? DEFAULT_APPENDABLE_INDEX : appendableIndexSpec;
     this.maxRowsInMemory = maxRowsInMemory == null ? defaults.getMaxRowsInMemory() : maxRowsInMemory;
     this.partitionsSpec = new DynamicPartitionsSpec(maxRowsPerSegment, maxTotalRows);
     // initializing this to 0, it will be lazily initialized to a value
-    // @see server.src.main.java.org.apache.druid.segment.indexing.TuningConfigs#getMaxBytesInMemoryOrDefault(long)
+    // @see #getMaxBytesInMemoryOrDefault()
     this.maxBytesInMemory = maxBytesInMemory == null ? 0 : maxBytesInMemory;
+    this.skipBytesInMemoryOverheadCheck = skipBytesInMemoryOverheadCheck == null ?
+                                          DEFAULT_SKIP_BYTES_IN_MEMORY_OVERHEAD_CHECK : skipBytesInMemoryOverheadCheck;
     this.intermediatePersistPeriod = intermediatePersistPeriod == null
-        ? defaults.getIntermediatePersistPeriod()
-        : intermediatePersistPeriod;
-    this.basePersistDirectory = defaults.getBasePersistDirectory();
+                                     ? defaults.getIntermediatePersistPeriod()
+                                     : intermediatePersistPeriod;
+    this.basePersistDirectory = basePersistDirectory;
     this.maxPendingPersists = maxPendingPersists == null ? 0 : maxPendingPersists;
     this.indexSpec = indexSpec == null ? defaults.getIndexSpec() : indexSpec;
     this.indexSpecForIntermediatePersists = indexSpecForIntermediatePersists == null ?
-        this.indexSpec : indexSpecForIntermediatePersists;
+                                            this.indexSpec : indexSpecForIntermediatePersists;
     this.reportParseExceptions = reportParseExceptions == null
-        ? defaults.isReportParseExceptions()
-        : reportParseExceptions;
+                                 ? defaults.isReportParseExceptions()
+                                 : reportParseExceptions;
     this.handoffConditionTimeout = handoffConditionTimeout == null
-        ? defaults.getHandoffConditionTimeout()
-        : handoffConditionTimeout;
+                                   ? defaults.getHandoffConditionTimeout()
+                                   : handoffConditionTimeout;
     this.resetOffsetAutomatically = resetOffsetAutomatically == null
-        ? DEFAULT_RESET_OFFSET_AUTOMATICALLY
-        : resetOffsetAutomatically;
+                                    ? DEFAULT_RESET_OFFSET_AUTOMATICALLY
+                                    : resetOffsetAutomatically;
     this.segmentWriteOutMediumFactory = segmentWriteOutMediumFactory;
     this.intermediateHandoffPeriod = intermediateHandoffPeriod == null
-        ? new Period().withDays(Integer.MAX_VALUE)
-        : intermediateHandoffPeriod;
+                                     ? new Period().withDays(Integer.MAX_VALUE)
+                                     : intermediateHandoffPeriod;
     this.skipSequenceNumberAvailabilityCheck = skipSequenceNumberAvailabilityCheck == null
-        ? DEFAULT_SKIP_SEQUENCE_NUMBER_AVAILABILITY_CHECK
-        : skipSequenceNumberAvailabilityCheck;
+                                               ? DEFAULT_SKIP_SEQUENCE_NUMBER_AVAILABILITY_CHECK
+                                               : skipSequenceNumberAvailabilityCheck;
 
     if (this.reportParseExceptions) {
       this.maxParseExceptions = 0;
       this.maxSavedParseExceptions = maxSavedParseExceptions == null ? 0 : Math.min(1, maxSavedParseExceptions);
     } else {
       this.maxParseExceptions = maxParseExceptions == null
-          ? TuningConfig.DEFAULT_MAX_PARSE_EXCEPTIONS
-          : maxParseExceptions;
+                                ? TuningConfig.DEFAULT_MAX_PARSE_EXCEPTIONS
+                                : maxParseExceptions;
       this.maxSavedParseExceptions = maxSavedParseExceptions == null
-          ? TuningConfig.DEFAULT_MAX_SAVED_PARSE_EXCEPTIONS
-          : maxSavedParseExceptions;
+                                     ? TuningConfig.DEFAULT_MAX_SAVED_PARSE_EXCEPTIONS
+                                     : maxSavedParseExceptions;
     }
     this.logParseExceptions = logParseExceptions == null
-        ? TuningConfig.DEFAULT_LOG_PARSE_EXCEPTIONS
-        : logParseExceptions;
+                              ? TuningConfig.DEFAULT_LOG_PARSE_EXCEPTIONS
+                              : logParseExceptions;
   }
 
   @Override
   @JsonProperty
-  public int getMaxRowsInMemory() {
+  public AppendableIndexSpec getAppendableIndexSpec()
+  {
+    return appendableIndexSpec;
+  }
+
+  @Override
+  @JsonProperty
+  public int getMaxRowsInMemory()
+  {
     return maxRowsInMemory;
   }
 
   @Override
   @JsonProperty
-  public long getMaxBytesInMemory() {
+  public long getMaxBytesInMemory()
+  {
     return maxBytesInMemory;
+  }
+
+  @JsonProperty
+  @Override
+  public boolean isSkipBytesInMemoryOverheadCheck()
+  {
+    return skipBytesInMemoryOverheadCheck;
   }
 
   @Override
   @JsonProperty
-  public Integer getMaxRowsPerSegment() {
+  public Integer getMaxRowsPerSegment()
+  {
     return partitionsSpec.getMaxRowsPerSegment();
   }
 
   @JsonProperty
   @Override
   @Nullable
-  public Long getMaxTotalRows() {
+  public Long getMaxTotalRows()
+  {
     return partitionsSpec.getMaxTotalRows();
   }
 
   @Override
-  public DynamicPartitionsSpec getPartitionsSpec() {
+  public DynamicPartitionsSpec getPartitionsSpec()
+  {
     return partitionsSpec;
   }
 
   @Override
   @JsonProperty
-  public Period getIntermediatePersistPeriod() {
+  public Period getIntermediatePersistPeriod()
+  {
     return intermediatePersistPeriod;
   }
 
   @Override
-  @JsonProperty
-  public File getBasePersistDirectory() {
+  public File getBasePersistDirectory()
+  {
     return basePersistDirectory;
   }
 
   @Override
   @JsonProperty
   @Deprecated
-  public int getMaxPendingPersists() {
+  public int getMaxPendingPersists()
+  {
     return maxPendingPersists;
   }
 
   @Override
   @JsonProperty
-  public IndexSpec getIndexSpec() {
+  public IndexSpec getIndexSpec()
+  {
     return indexSpec;
   }
 
   @JsonProperty
   @Override
-  public IndexSpec getIndexSpecForIntermediatePersists() {
+  public IndexSpec getIndexSpecForIntermediatePersists()
+  {
     return indexSpecForIntermediatePersists;
-  }
-
-  /**
-   * Always returns true, doesn't affect the version being built.
-   */
-  @Deprecated
-  @JsonProperty
-  public boolean getBuildV9Directly() {
-    return true;
   }
 
   @Override
   @JsonProperty
-  public boolean isReportParseExceptions() {
+  public boolean isReportParseExceptions()
+  {
     return reportParseExceptions;
   }
 
   @JsonProperty
-  public long getHandoffConditionTimeout() {
+  public long getHandoffConditionTimeout()
+  {
     return handoffConditionTimeout;
   }
 
   @JsonProperty
-  public boolean isResetOffsetAutomatically() {
+  public boolean isResetOffsetAutomatically()
+  {
     return resetOffsetAutomatically;
   }
 
   @Override
   @JsonProperty
   @Nullable
-  public SegmentWriteOutMediumFactory getSegmentWriteOutMediumFactory() {
+  public SegmentWriteOutMediumFactory getSegmentWriteOutMediumFactory()
+  {
     return segmentWriteOutMediumFactory;
   }
 
   @JsonProperty
-  public Period getIntermediateHandoffPeriod() {
+  public Period getIntermediateHandoffPeriod()
+  {
     return intermediateHandoffPeriod;
   }
 
   @JsonProperty
-  public boolean isLogParseExceptions() {
+  public boolean isLogParseExceptions()
+  {
     return logParseExceptions;
   }
 
   @JsonProperty
-  public int getMaxParseExceptions() {
+  public int getMaxParseExceptions()
+  {
     return maxParseExceptions;
   }
 
   @JsonProperty
-  public int getMaxSavedParseExceptions() {
+  public int getMaxSavedParseExceptions()
+  {
     return maxSavedParseExceptions;
   }
 
   @JsonProperty
-  public boolean isSkipSequenceNumberAvailabilityCheck() {
+  public boolean isSkipSequenceNumberAvailabilityCheck()
+  {
     return skipSequenceNumberAvailabilityCheck;
   }
 
@@ -253,7 +284,8 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
   public abstract SeekableStreamIndexTaskTuningConfig withBasePersistDirectory(File dir);
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(Object o)
+  {
     if (this == o) {
       return true;
     }
@@ -261,30 +293,35 @@ public abstract class SeekableStreamIndexTaskTuningConfig implements TuningConfi
       return false;
     }
     SeekableStreamIndexTaskTuningConfig that = (SeekableStreamIndexTaskTuningConfig) o;
-    return maxRowsInMemory == that.maxRowsInMemory &&
-        maxBytesInMemory == that.maxBytesInMemory &&
-        maxPendingPersists == that.maxPendingPersists &&
-        reportParseExceptions == that.reportParseExceptions &&
-        handoffConditionTimeout == that.handoffConditionTimeout &&
-        resetOffsetAutomatically == that.resetOffsetAutomatically &&
-        skipSequenceNumberAvailabilityCheck == that.skipSequenceNumberAvailabilityCheck &&
-        logParseExceptions == that.logParseExceptions &&
-        maxParseExceptions == that.maxParseExceptions &&
-        maxSavedParseExceptions == that.maxSavedParseExceptions &&
-        Objects.equals(partitionsSpec, that.partitionsSpec) &&
-        Objects.equals(intermediatePersistPeriod, that.intermediatePersistPeriod) &&
-        Objects.equals(basePersistDirectory, that.basePersistDirectory) &&
-        Objects.equals(indexSpec, that.indexSpec) &&
-        Objects.equals(indexSpecForIntermediatePersists, that.indexSpecForIntermediatePersists) &&
-        Objects.equals(segmentWriteOutMediumFactory, that.segmentWriteOutMediumFactory) &&
-        Objects.equals(intermediateHandoffPeriod, that.intermediateHandoffPeriod);
+    return Objects.equals(appendableIndexSpec, that.appendableIndexSpec) &&
+           maxRowsInMemory == that.maxRowsInMemory &&
+           maxBytesInMemory == that.maxBytesInMemory &&
+           skipBytesInMemoryOverheadCheck == that.skipBytesInMemoryOverheadCheck &&
+           maxPendingPersists == that.maxPendingPersists &&
+           reportParseExceptions == that.reportParseExceptions &&
+           handoffConditionTimeout == that.handoffConditionTimeout &&
+           resetOffsetAutomatically == that.resetOffsetAutomatically &&
+           skipSequenceNumberAvailabilityCheck == that.skipSequenceNumberAvailabilityCheck &&
+           logParseExceptions == that.logParseExceptions &&
+           maxParseExceptions == that.maxParseExceptions &&
+           maxSavedParseExceptions == that.maxSavedParseExceptions &&
+           Objects.equals(partitionsSpec, that.partitionsSpec) &&
+           Objects.equals(intermediatePersistPeriod, that.intermediatePersistPeriod) &&
+           Objects.equals(basePersistDirectory, that.basePersistDirectory) &&
+           Objects.equals(indexSpec, that.indexSpec) &&
+           Objects.equals(indexSpecForIntermediatePersists, that.indexSpecForIntermediatePersists) &&
+           Objects.equals(segmentWriteOutMediumFactory, that.segmentWriteOutMediumFactory) &&
+           Objects.equals(intermediateHandoffPeriod, that.intermediateHandoffPeriod);
   }
 
   @Override
-  public int hashCode() {
+  public int hashCode()
+  {
     return Objects.hash(
+        appendableIndexSpec,
         maxRowsInMemory,
         maxBytesInMemory,
+        skipBytesInMemoryOverheadCheck,
         partitionsSpec,
         intermediatePersistPeriod,
         basePersistDirectory,

@@ -20,40 +20,37 @@ package org.apache.hadoop.hive.druid.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import org.joda.time.DateTime;
 
-import java.util.Map;
-
 import javax.annotation.Nullable;
+import java.util.Map;
 
 /**
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-@SuppressWarnings("unused") public class TaskReportData {
-  /**
-   * Task type used by serializer but does not have any functionality as far i can tell.
-   */
-  @SuppressWarnings("unused") public enum TaskType {
-    ACTIVE, PUBLISHING, UNKNOWN
-  }
-
+@SuppressWarnings("unused") public class TaskReportData<PartitionIdType, SequenceOffsetType>
+{
   private final String id;
-  private final Map<Integer, Long> startingOffsets;
+  private final Map<PartitionIdType, SequenceOffsetType> startingOffsets;
   private final DateTime startTime;
   private final Long remainingSeconds;
   private final TaskType type;
-  private final Map<Integer, Long> currentOffsets;
-  private final Map<Integer, Long> lag;
+  private final Map<PartitionIdType, SequenceOffsetType> currentOffsets;
+  private final Map<PartitionIdType, Long> lag;
+  private final Map<PartitionIdType, Long> lagMillis;
 
-  public TaskReportData(String id,
-      @Nullable Map<Integer, Long> startingOffsets,
-      @Nullable Map<Integer, Long> currentOffsets,
-      DateTime startTime,
+  public TaskReportData(
+      String id,
+      @Nullable Map<PartitionIdType, SequenceOffsetType> startingOffsets,
+      @Nullable Map<PartitionIdType, SequenceOffsetType> currentOffsets,
+      @Nullable DateTime startTime,
       Long remainingSeconds,
       TaskType type,
-      @Nullable Map<Integer, Long> lag) {
+      @Nullable Map<PartitionIdType, Long> lag,
+      @Nullable Map<PartitionIdType, Long> lagMillis
+  )
+  {
     this.id = id;
     this.startingOffsets = startingOffsets;
     this.currentOffsets = currentOffsets;
@@ -61,42 +58,83 @@ import javax.annotation.Nullable;
     this.remainingSeconds = remainingSeconds;
     this.type = type;
     this.lag = lag;
+    this.lagMillis = lagMillis;
   }
 
-  @JsonProperty public String getId() {
+  @JsonProperty
+  public String getId()
+  {
     return id;
   }
 
-  @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) public Map<Integer, Long> getStartingOffsets() {
+  @JsonProperty
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public Map<PartitionIdType, SequenceOffsetType> getStartingOffsets()
+  {
     return startingOffsets;
   }
 
-  @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) public Map<Integer, Long> getCurrentOffsets() {
+  @JsonProperty
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public Map<PartitionIdType, SequenceOffsetType> getCurrentOffsets()
+  {
     return currentOffsets;
   }
 
-  @JsonProperty public DateTime getStartTime() {
+  @JsonProperty
+  public DateTime getStartTime()
+  {
     return startTime;
   }
 
-  @JsonProperty public Long getRemainingSeconds() {
+  @JsonProperty
+  public Long getRemainingSeconds()
+  {
     return remainingSeconds;
   }
 
-  @JsonProperty public TaskType getType() {
+  @JsonProperty
+  public TaskType getType()
+  {
     return type;
   }
 
-  @JsonProperty @JsonInclude(JsonInclude.Include.NON_NULL) public Map<Integer, Long> getLag() {
+  @JsonProperty
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public Map<PartitionIdType, Long> getLag()
+  {
     return lag;
   }
 
-  @Override public String toString() {
-    return "{" + "id='" + id + '\'' + (startingOffsets != null ? ", startingOffsets=" + startingOffsets : "") + (
-        currentOffsets != null ?
-            ", currentOffsets=" + currentOffsets :
-            "") + ", startTime=" + startTime + ", remainingSeconds=" + remainingSeconds + (lag != null ?
-        ", lag=" + lag :
-        "") + '}';
+  @JsonProperty
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public Map<PartitionIdType, Long> getLagMillis()
+  {
+    return lagMillis;
+  }
+
+  @Override
+  public String toString()
+  {
+    return "{" +
+           "id='" + id + '\'' +
+           (startingOffsets != null ? ", startingOffsets=" + startingOffsets : "") +
+           (currentOffsets != null ? ", currentOffsets=" + currentOffsets : "") +
+           ", startTime=" + startTime +
+           ", remainingSeconds=" + remainingSeconds +
+           (lag != null ? ", lag=" + lag : "") +
+           (lagMillis != null ? ", lagMillis=" + lagMillis : "") +
+           '}';
+  }
+
+  /**
+   * Used by the Supervisor to report status of tasks
+   * ACTIVE - task is waiting to be started, started, or reading
+   * PUBLISHING - task is publishing or registering handoff
+   * UNNKNOWN - unknown
+   */
+  @SuppressWarnings("unused") public enum TaskType
+  {
+    ACTIVE, PUBLISHING, UNKNOWN
   }
 }
