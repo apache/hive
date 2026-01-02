@@ -4092,9 +4092,9 @@ public class HiveConf extends Configuration {
         "If hive.server2.tez.initialize.default.sessions is enabled, the maximum number of\n" +
         "threads to use to initialize the default sessions."),
     HIVE_SERVER2_TEZ_SESSION_RESTRICTED_CONFIGS("hive.server2.tez.sessions.restricted.configs", "",
-      "The configuration settings that cannot be set when submitting jobs to HiveServer2. If\n" +
-      "any of these are set to values different from those in the server configuration, an\n" +
-      "exception will be thrown."),
+    "The configuration settings that cannot be set when submitting jobs to HiveServer2. If\n" +
+    "any of these are set to values different from those in the server configuration, an\n" +
+    "exception will be thrown."),
     HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED("hive.server2.tez.sessions.custom.queue.allowed",
       "true", new StringSet("true", "false", "ignore"),
       "Whether Tez session pool should allow submitting queries to custom queues. The options\n" +
