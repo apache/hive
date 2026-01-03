@@ -2977,7 +2977,7 @@ public class ObjectStore implements RawStore, Configurable {
     openTransaction();
 
     try {
-      Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+      new Batchable<String, Void>() {
         @Override
         public List<Void> run(List<String> input) throws MetaException {
           // Delete all things.
@@ -2992,7 +2992,7 @@ public class ObjectStore implements RawStore, Configurable {
           dropPartitionsNoTxn(catName, dbName, tblName, input);
           return Collections.emptyList();
         }
-      });
+      }.runBatched(batchSize, partNames);
 
       if (!(success = commitTransaction())) {
         throw new MetaException("Failed to drop partitions");
@@ -4033,7 +4033,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (partNames.isEmpty()) {
       return Collections.emptyList();
     }
-    return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
+    return new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
         Pair<Query, Map<String, String>> queryWithParams =
@@ -4051,7 +4051,7 @@ public class ObjectStore implements RawStore, Configurable {
           return partitions;
         }
       }
-    });
+    }.runBatched(batchSize, partNames);
   }
 
   private void dropPartitionsNoTxn(String catName, String dbName, String tblName, List<String> partNames) {
@@ -9394,7 +9394,7 @@ public class ObjectStore implements RawStore, Configurable {
       List<MTableColumnStatistics> result = Collections.emptyList();
       try (Query query = pm.newQuery(MTableColumnStatistics.class)) {
       result =
-          Batchable.runBatched(batchSize, colNames, new Batchable<String, MTableColumnStatistics>() {
+          new Batchable<String, MTableColumnStatistics>() {
             @Override
             public List<MTableColumnStatistics> run(List<String> input)
                 throws MetaException {
@@ -9419,7 +9419,7 @@ public class ObjectStore implements RawStore, Configurable {
               pm.retrieveAll(paritial);
               return paritial;
             }
-          });
+          }.runBatched(batchSize, colNames);
 
       if (result.size() > colNames.size()) {
         throw new MetaException("Unexpected " + result.size() + " statistics for "
@@ -9982,7 +9982,7 @@ public class ObjectStore implements RawStore, Configurable {
     String catalog = normalizeIdentifier(catName);
     try {
       openTransaction();
-      Batchable<String, Void> b = new Batchable<String, Void>() {
+      BatchableQuery<String, Void> b = new BatchableQuery<String, Void>() {
         @Override
         public List<Void> run(List<String> input) throws Exception {
           Query query = pm.newQuery(MPartitionColumnStatistics.class);
@@ -10030,7 +10030,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
       };
       try {
-        Batchable.runBatched(batchSize, partNames, b);
+        b.runBatched(batchSize, partNames);
       } finally {
         b.closeAllQueries();
       }

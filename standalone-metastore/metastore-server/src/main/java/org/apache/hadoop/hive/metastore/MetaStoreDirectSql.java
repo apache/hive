@@ -530,7 +530,7 @@ class MetaStoreDirectSql {
    */
   public List<Partition> alterPartitions(MTable table, List<String> partNames,
                                          List<Partition> newParts, String queryWriteIdList) throws MetaException {
-    List<Object[]> rows = Batchable.runBatched(batchSize, partNames, new Batchable<String, Object[]>() {
+    List<Object[]> rows = new Batchable<String, Object[]>() {
       @Override
       public List<Object[]> run(List<String> input) throws Exception {
         String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
@@ -538,7 +538,7 @@ class MetaStoreDirectSql {
         return getPartitionFieldsViaSqlFilter(table.getDatabase().getCatalogName(), table.getDatabase().getName(),
                 table.getTableName(), columns, filter, input, Collections.emptyList(), null);
       }
-    });
+    }.runBatched(batchSize, partNames);
     Map<List<String>, Long> partValuesToId = new HashMap<>();
     Map<Long, Long> partIdToSdId = new HashMap<>();
     Map<Long, Long> partIdToWriteId = new HashMap<>();
@@ -720,12 +720,12 @@ class MetaStoreDirectSql {
     if (partNames.isEmpty()) {
       return Collections.emptyList();
     }
-    return Batchable.runBatched(batchSize, partNames, new Batchable<String, Partition>() {
+    return new Batchable<String, Partition>() {
       @Override
       public List<Partition> run(List<String> input) throws MetaException {
         return getPartitionsByNames(catName, dbName, tblName, partNames, false, args);
       }
-    });
+    }.runBatched(batchSize, partNames);
   }
 
   /**
@@ -759,12 +759,12 @@ class MetaStoreDirectSql {
       return Collections.emptyList(); // no partitions, bail early.
     }
     boolean isAcidTable = TxnUtils.isAcidTable(table);
-    return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
+    return new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
         return getPartitionsByPartitionIds(catName, dbName, tblName, input, isAcidTable, args);
       }
-    });
+    }.runBatched(batchSize, partitionIds);
   }
 
   /**
@@ -852,12 +852,12 @@ class MetaStoreDirectSql {
         new PartitionProjectionEvaluator(pm, fieldnameToTableName, partitionFields,
             convertMapNullsToEmptyStrings, isView, includeParamKeyPattern, excludeParamKeyPattern);
     // Get full objects. For Oracle/etc. do it in batches.
-    return Batchable.runBatched(batchSize, partitionIds, new Batchable<Long, Partition>() {
+    return new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
         return projectionEvaluator.getPartitionsUsingProjectionList(input);
       }
-    });
+    }.runBatched(batchSize, partitionIds);
   }
 
   public static class SqlFilterForPushdown {
@@ -1042,12 +1042,12 @@ class MetaStoreDirectSql {
     if (partIdList.isEmpty()) {
       return Collections.emptyList(); // no partitions, bail early.
     }
-    return Batchable.runBatched(batchSize, partIdList, new Batchable<Long, Partition>() {
+    return new Batchable<Long, Partition>() {
       @Override
       public List<Partition> run(List<Long> input) throws MetaException {
         return getPartitionsByPartitionIds(catName, dbName, tblName, input, isAcidTable, args);
       }
-    });
+    }.runBatched(batchSize, partIdList);
   }
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */
@@ -1676,7 +1676,7 @@ class MetaStoreDirectSql {
           + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
           + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ?"
           + " and \"ENGINE\" = ? and \"COLUMN_NAME\" in (";
-    Batchable<String, Object[]> b = new Batchable<String, Object[]>() {
+    BatchableQuery<String, Object[]> b = new BatchableQuery<String, Object[]>() {
       @Override
       public List<Object[]> run(List<String> input) throws MetaException {
         String queryText = queryText0 + makeParams(input.size()) + ")";
@@ -1704,7 +1704,7 @@ class MetaStoreDirectSql {
     };
     List<Object[]> list;
     try {
-      list = Batchable.runBatched(batchSize, colNames, b);
+      list = b.runBatched(batchSize, colNames);
       if (list != null) {
         list = new ArrayList<>(list);
       }
@@ -1882,10 +1882,10 @@ class MetaStoreDirectSql {
         + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s) and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
         + " and " + PART_COL_STATS + ".\"ENGINE\" = ?"
         + " group by " + PART_COL_STATS + ".\"PART_ID\"";
-    List<Long> allCounts = Batchable.runBatched(batchSize, colNames, new Batchable<String, Long>() {
+    List<Long> allCounts = new Batchable<String, Long>() {
       @Override
       public List<Long> run(final List<String> inputColName) throws MetaException {
-        return Batchable.runBatched(batchSize, partNames, new Batchable<String, Long>() {
+        return new Batchable<String, Long>() {
           @Override
           public List<Long> run(List<String> inputPartNames) throws MetaException {
             long partsFound = 0;
@@ -1907,9 +1907,9 @@ class MetaStoreDirectSql {
               return Lists.<Long>newArrayList(partsFound);
             }
           }
-        });
+        }.runBatched(batchSize, partNames);
       }
-    });
+    }.runBatched(batchSize, colNames);
     long partsFound = 0;
     for (Long val : allCounts) {
       partsFound += val;
@@ -1922,19 +1922,19 @@ class MetaStoreDirectSql {
       List<String> colNames, String engine, long partsFound, final boolean useDensityFunctionForNDVEstimation,
       final double ndvTuner, final boolean enableBitVector, boolean enableKll) throws MetaException {
     final boolean areAllPartsFound = (partsFound == partNames.size());
-    return Batchable.runBatched(batchSize, colNames, new Batchable<String, ColumnStatisticsObj>() {
+    return new Batchable<String, ColumnStatisticsObj>() {
       @Override
       public List<ColumnStatisticsObj> run(final List<String> inputColNames) throws MetaException {
-        return Batchable.runBatched(batchSize, partNames, new Batchable<String, ColumnStatisticsObj>() {
+        return new Batchable<String, ColumnStatisticsObj>() {
           @Override
           public List<ColumnStatisticsObj> run(List<String> inputPartNames) throws MetaException {
             return columnStatisticsObjForPartitionsBatch(catName, dbName, tableName, inputPartNames,
                 inputColNames, engine, areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner,
                 enableBitVector, enableKll);
           }
-        });
+        }.runBatched(batchSize, partNames);
       }
-    });
+    }.runBatched(batchSize, colNames);
   }
 
   public List<ColStatsObjWithSourceInfo> getColStatsForAllTablePartitions(String catName, String dbName,
@@ -2358,10 +2358,10 @@ class MetaStoreDirectSql {
         + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
         + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
         + " order by " + PARTITIONS +  ".\"PART_NAME\"";
-    Batchable<String, Object[]> b = new Batchable<String, Object[]>() {
+    BatchableQuery<String, Object[]> b = new BatchableQuery<String, Object[]>() {
       @Override
       public List<Object[]> run(final List<String> inputColNames) throws MetaException {
-        Batchable<String, Object[]> b2 = new Batchable<String, Object[]>() {
+        BatchableQuery<String, Object[]> b2 = new BatchableQuery<String, Object[]>() {
           @Override
           public List<Object[]> run(List<String> inputPartNames) throws MetaException {
             String queryText = String.format(queryText0,
@@ -2382,7 +2382,7 @@ class MetaStoreDirectSql {
           }
         };
         try {
-          return Batchable.runBatched(batchSize, partNames, b2);
+          return b2.runBatched(batchSize, partNames);
         } finally {
           addQueryAfterUse(b2);
         }
@@ -2393,7 +2393,7 @@ class MetaStoreDirectSql {
     String lastPartName = null;
     int from = 0;
     try {
-      List<Object[]> list = Batchable.runBatched(batchSize, colNames, b);
+      List<Object[]> list = b.runBatched(batchSize, colNames);
       for (int i = 0; i <= list.size(); ++i) {
         boolean isLast = i == list.size();
         String partName = isLast ? null : (String) list.get(i)[0];
@@ -2892,7 +2892,7 @@ class MetaStoreDirectSql {
       return;
     }
 
-    Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+    new Batchable<String, Void>() {
       @Override
       public List<Void> run(List<String> input) throws MetaException {
         String filter = "" + PARTITIONS + ".\"PART_NAME\" in (" + makeParams(input.size()) + ")";
@@ -2905,7 +2905,7 @@ class MetaStoreDirectSql {
         dropPartitionsByPartitionIds(partitionIds);
         return Collections.emptyList();
       }
-    });
+    }.runBatched(batchSize, partNames);
   }
 
 
@@ -3318,7 +3318,7 @@ class MetaStoreDirectSql {
 
   public boolean deletePartitionColumnStats(String catName, String dbName, String tblName,
       List<String> partNames, List<String> colNames, String engine) throws MetaException {
-    Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+    new Batchable<String, Void>() {
       @Override
       public List<Void> run(List<String> input) throws Exception {
         String sqlFilter = PARTITIONS + ".\"PART_NAME\" in  (" + makeParams(input.size()) + ")";
@@ -3344,7 +3344,7 @@ class MetaStoreDirectSql {
         }
         return null;
       }
-    });
+    }.runBatched(batchSize, partNames);
     return true;
   }
 
@@ -3363,12 +3363,12 @@ class MetaStoreDirectSql {
       return Collections.emptyList(); // no functions, bail early.
     }
     // Get full objects. For Oracle/etc. do it in batches.
-    return Batchable.runBatched(batchSize, funcIds, new Batchable<Long, Function>() {
+    return new Batchable<Long, Function>() {
       @Override
       public List<Function> run(List<Long> input) throws MetaException {
         return getFunctionsFromFunctionIds(input, catName);
       }
-    });
+    }.runBatched(batchSize, funcIds);
   }
 
   private List<Function> getFunctionsFromFunctionIds(List<Long> funcIdList, String catName) throws MetaException {

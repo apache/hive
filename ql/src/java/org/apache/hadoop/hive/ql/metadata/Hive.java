@@ -4701,7 +4701,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     try {
-      Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
+      new Batchable<String, Void>() {
         @Override
         public List<Void> run(List<String> list) throws Exception {
           req.getFilterSpec().setFilters(list);
@@ -4712,7 +4712,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
           return Collections.emptyList();
         }
-      });
+      }.runBatched(batchSize, partNames);
     } catch (Exception e) {
       throw new HiveException(e);
     }

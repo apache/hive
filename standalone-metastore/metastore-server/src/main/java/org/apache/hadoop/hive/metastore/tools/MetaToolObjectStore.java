@@ -52,7 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.commons.lang3.StringUtils.repeat;
-import static org.apache.hadoop.hive.metastore.Batchable.runBatched;
 
 /**
  * This class should be used in metatool only
@@ -674,7 +673,7 @@ public class MetaToolObjectStore extends ObjectStore {
   private void collectPartitionSummary(Map<Long, MetadataTableSummary> summaries,  Set<Long> partedTabs,
       Set<Long> nonPartedTabs) throws MetaException {
     String queryText0 = "select \"TBL_ID\", count(1) from \"PARTITION_KEYS\" where \"TBL_ID\" in (";
-    runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
+    new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText0, " group by \"TBL_ID\"");
@@ -696,9 +695,9 @@ public class MetaToolObjectStore extends ObjectStore {
         }
         return Collections.emptyList();
       }
-    });
+    }.runBatched(batchSize, new ArrayList<>(summaries.keySet()));
     String queryText1 = "select \"TBL_ID\", count(1) from \"PARTITIONS\" where \"TBL_ID\" in (";
-    runBatched(batchSize, new ArrayList<>(partedTabs), new Batchable<Long, Void>() {
+    new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText1, " group by \"TBL_ID\"");
@@ -717,7 +716,7 @@ public class MetaToolObjectStore extends ObjectStore {
         }
         return Collections.emptyList();
       }
-    });
+    }.runBatched(batchSize, new ArrayList<>(partedTabs));
   }
 
   private void collectColumnSummary(Map<Long, MetadataTableSummary> summaries) throws MetaException {
@@ -725,7 +724,7 @@ public class MetaToolObjectStore extends ObjectStore {
         " sum(CASE WHEN \"TYPE_NAME\" like 'struct%' THEN 1 ELSE 0 END), sum(CASE WHEN \"TYPE_NAME\" like 'map%' THEN 1 ELSE 0 END)" +
         " from \"TBLS\" t join \"SDS\" s on t.\"SD_ID\" = s.\"SD_ID\" join \"CDS\" c on s.\"CD_ID\" = c.\"CD_ID\" join \"COLUMNS_V2\" v on c.\"CD_ID\" = v.\"CD_ID\"" +
         " where \"TBL_ID\" in (";
-    runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
+    new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText0, " group by \"TBL_ID\"");
@@ -745,7 +744,7 @@ public class MetaToolObjectStore extends ObjectStore {
         }
         return Collections.emptyList();
       }
-    });
+    }.runBatched(batchSize, new ArrayList<>(summaries.keySet()));
   }
 
   private void collectTabFormatSummary(Map<Long, MetadataTableSummary> summaries) throws MetaException {
@@ -754,7 +753,7 @@ public class MetaToolObjectStore extends ObjectStore {
     String queryText1 = "select p.\"TBL_ID\", " + dbType.toVarChar("p.\"PARAM_VALUE\"") + " from \"TABLE_PARAMS\" p " +
         " where p.\"PARAM_KEY\" = 'transactional_properties' and p.\"TBL_ID\" in (";
     List<Long> transactionTables = new ArrayList<>();
-    runBatched(batchSize, new ArrayList<>(summaries.keySet()), new Batchable<Long, Void>() {
+    new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText0, "");
@@ -775,9 +774,9 @@ public class MetaToolObjectStore extends ObjectStore {
         }
         return Collections.emptyList();
       }
-    });
+    }.runBatched(batchSize, new ArrayList<>(summaries.keySet()));
 
-    runBatched(batchSize, transactionTables, new Batchable<Long, Void>() {
+    new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         Pair<Query<?>, List<Object[]>> qResult = getResultFromInput(input, queryText1, "");
@@ -799,7 +798,7 @@ public class MetaToolObjectStore extends ObjectStore {
         }
         return Collections.emptyList();
       }
-    });
+    }.runBatched(batchSize, transactionTables);
   }
 
   private Pair<Query<?>, List<Object[]>> getResultFromInput(List<Long> input,
@@ -844,24 +843,24 @@ public class MetaToolObjectStore extends ObjectStore {
       Set<Long> partedTabs) throws MetaException {
     String queryText0 = "select \"TBL_ID\", \"PARAM_KEY\", CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0)) from \"TABLE_PARAMS\" where \"PARAM_KEY\" " +
         "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and \"TBL_ID\" in (";
-    runBatched(batchSize, new ArrayList<>(nonPartedTabs), new Batchable<Long, Void>() {
+    new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         collectBasicStats(queryText0, input, summaries, "");
         return Collections.emptyList();
       }
-    });
+    }.runBatched(batchSize, new ArrayList<>(nonPartedTabs));
 
    String queryText1 = "select \"TBL_ID\", \"PARAM_KEY\", sum(CAST(" + dbType.toVarChar("\"PARAM_VALUE\"") + " AS decimal(21,0))) from \"PARTITIONS\" t " +
        "join \"PARTITION_PARAMS\" p on p.\"PART_ID\" = t.\"PART_ID\" where \"PARAM_KEY\" " +
        "in ('" + StatsSetupConst.TOTAL_SIZE + "', '" + StatsSetupConst.NUM_FILES + "', '" + StatsSetupConst.ROW_COUNT + "') and t.\"TBL_ID\" in (";
-   runBatched(batchSize, new ArrayList<>(partedTabs), new Batchable<Long, Void>() {
+    new Batchable<Long, Void>() {
       @Override
       public List<Void> run(List<Long> input) throws Exception {
         collectBasicStats(queryText1, input, summaries, " group by \"TBL_ID\", \"PARAM_KEY\"");
         return Collections.emptyList();
       }
-    });
+    }.runBatched(batchSize, new ArrayList<>(partedTabs));
   }
 
   private void collectBasicStats(String queryText0, List<Long> input, Map<Long, MetadataTableSummary> summaries, String subQ)
@@ -920,7 +919,7 @@ public class MetaToolObjectStore extends ObjectStore {
     }
 
     Deadline.checkTimeout();
-    List<Long> tables = Batchable.runBatched(batchSize, new ArrayList<>(tableIds), new Batchable<Long, Long>() {
+    List<Long> tables = new Batchable<Long, Long>() {
       @Override
       public List<Long> run(List<Long> input) throws Exception {
         int size = input.size();
@@ -956,7 +955,7 @@ public class MetaToolObjectStore extends ObjectStore {
         }
         return ids;
       }
-    });
+    }.runBatched(batchSize, new ArrayList<>(tableIds));
     return new HashSet<>(tables);
   }
 }

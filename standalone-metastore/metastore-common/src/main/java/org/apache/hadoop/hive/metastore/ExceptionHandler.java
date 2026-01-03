@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.thrift.TException;
 
+
 import static java.util.Objects.requireNonNull;
 
 /**
