@@ -53,8 +53,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
-import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFields;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortOrderUtils;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
@@ -79,7 +78,6 @@ import org.apache.hadoop.hive.ql.parse.StorageFormat;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
-import org.apache.hadoop.hive.ql.util.NullOrdering;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
@@ -171,24 +169,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
   }
 
   private String getSortOrderJson(ASTNode ast) {
-    List<SortFieldDesc> sortFieldDescList = new ArrayList<>();
-    SortFields sortFields = new SortFields(sortFieldDescList);
-    for (int i = 0; i < ast.getChildCount(); i++) {
-      ASTNode child = (ASTNode) ast.getChild(i);
-      SortFieldDesc.SortDirection sortDirection =
-          child.getToken().getType() == HiveParser.TOK_TABSORTCOLNAMEDESC ? SortFieldDesc.SortDirection.DESC
-              : SortFieldDesc.SortDirection.ASC;
-      child = (ASTNode) child.getChild(0);
-      String name = unescapeIdentifier(child.getChild(0).getText()).toLowerCase();
-      NullOrdering nullOrder = NullOrdering.fromToken(child.getToken().getType());
-      sortFieldDescList.add(new SortFieldDesc(name, sortDirection, nullOrder));
-    }
-    try {
-      return JSON_OBJECT_MAPPER.writer().writeValueAsString(sortFields);
-    } catch (JsonProcessingException e) {
-      LOG.warn("Can not create write order json. ", e);
-      return null;
-    }
+    return SortOrderUtils.parseSortOrderToJson(ast);
   }
 
   /**
