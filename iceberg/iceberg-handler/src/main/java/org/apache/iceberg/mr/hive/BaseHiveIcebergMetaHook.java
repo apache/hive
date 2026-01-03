@@ -51,7 +51,6 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
-import org.apache.iceberg.SortDirection;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
@@ -251,21 +250,16 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
       return;
     }
 
-    try {
-      SortFields sortFields = JSON_OBJECT_MAPPER.reader().readValue(sortOrderJSONString, SortFields.class);
-      if (sortFields != null && !sortFields.getSortFields().isEmpty()) {
-        SortOrder.Builder sortOrderBuilder = SortOrder.builderFor(schema);
-        sortFields.getSortFields().forEach(fieldDesc -> {
-          NullOrder nullOrder = fieldDesc.getNullOrdering() == NullOrdering.NULLS_FIRST ?
-              NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
-          SortDirection sortDirection = fieldDesc.getDirection() == SortFieldDesc.SortDirection.ASC ?
-              SortDirection.ASC : SortDirection.DESC;
-          sortOrderBuilder.sortBy(fieldDesc.getColumnName(), sortDirection, nullOrder);
-        });
-        properties.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(sortOrderBuilder.build()));
-      }
-    } catch (Exception e) {
-      LOG.warn("Can not read write order json: {}", sortOrderJSONString);
+    List<SortFieldDesc> sortFieldDescList = parseSortFieldsJSON(sortOrderJSONString);
+    if (sortFieldDescList != null) {
+      SortOrder.Builder sortOrderBuilder = SortOrder.builderFor(schema);
+      sortFieldDescList.forEach(fieldDesc ->
+          sortOrderBuilder.sortBy(
+              fieldDesc.getColumnName(),
+              convertSortDirection(fieldDesc.getDirection()),
+              convertNullOrder(fieldDesc.getNullOrdering()))
+      );
+      properties.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(sortOrderBuilder.build()));
     }
   }
 
@@ -302,6 +296,44 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     } catch (Exception e) {
       return false;
     }
+  }
+
+  /**
+   * Parses Hive SortFields JSON and returns the list of sort field descriptors.
+   * This is a common utility method used by both CREATE TABLE and ALTER TABLE flows.
+   *
+   * @param sortOrderJSONString The JSON string containing Hive SortFields
+   * @return List of SortFieldDesc, or null if parsing fails or JSON is empty
+   */
+  protected List<SortFieldDesc> parseSortFieldsJSON(String sortOrderJSONString) {
+    if (Strings.isNullOrEmpty(sortOrderJSONString)) {
+      return Collections.emptyList();
+    }
+
+    try {
+      SortFields sortFields = JSON_OBJECT_MAPPER.reader().readValue(sortOrderJSONString, SortFields.class);
+      if (sortFields != null) {
+        return sortFields.getSortFields();
+      }
+    } catch (Exception e) {
+      LOG.warn("Failed to parse sort order JSON: {}", sortOrderJSONString, e);
+    }
+    return Collections.emptyList();
+  }
+
+  /**
+   * Converts Hive NullOrdering to Iceberg NullOrder.
+   */
+  protected static NullOrder convertNullOrder(NullOrdering nullOrdering) {
+    return nullOrdering == NullOrdering.NULLS_FIRST ? NullOrder.NULLS_FIRST : NullOrder.NULLS_LAST;
+  }
+
+  /**
+   * Converts Hive SortDirection to Iceberg SortDirection.
+   */
+  private static org.apache.iceberg.SortDirection convertSortDirection(SortFieldDesc.SortDirection direction) {
+    return direction == SortFieldDesc.SortDirection.ASC ?
+        org.apache.iceberg.SortDirection.ASC : org.apache.iceberg.SortDirection.DESC;
   }
 
   @Override
