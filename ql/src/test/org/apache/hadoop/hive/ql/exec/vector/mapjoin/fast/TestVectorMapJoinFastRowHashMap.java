@@ -519,7 +519,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
         random,
         VectorRandomRowSource.SupportedTypes.ALL,
         4,
-        /* allowNulls */ false, /* isUnicodeOk */
+        false,
         false);
 
     int rowCount = 1000;
@@ -532,7 +532,7 @@ public class TestVectorMapJoinFastRowHashMap extends CommonFastHashTable {
         HashTableKeyType.DATE,
         verifyTable,
         new String[] {"date"},
-        /* doClipping */ false, /* useExactBytes */
+        false,
         true);
   }
 

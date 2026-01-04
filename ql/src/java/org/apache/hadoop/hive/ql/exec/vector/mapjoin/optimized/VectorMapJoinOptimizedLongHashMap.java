@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.mapjoin.optimized;
 
-import java.io.IOException;
-
 import org.apache.hadoop.hive.ql.exec.JoinUtil.JoinResult;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer.ReusableGetAdaptor;
@@ -34,6 +32,9 @@ import org.apache.hadoop.hive.serde2.WriteBuffers.ByteSegmentRef;
 import org.apache.hadoop.hive.serde2.binarysortable.fast.BinarySortableDeserializeRead;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLongHashUtil;
+
+import java.io.IOException;
 
 /*
  * An single long value hash map based on the BytesBytesMultiHashMap.
@@ -110,28 +111,9 @@ public class VectorMapJoinOptimizedLongHashMap
         if (!keyBinarySortableDeserializeRead.readNextField()) {
           return false;
         }
-        switch (hashMap.hashTableKeyType) {
-        case BOOLEAN:
-          longValue = keyBinarySortableDeserializeRead.currentBoolean ? 1 : 0;
-          break;
-        case BYTE:
-          longValue = keyBinarySortableDeserializeRead.currentByte;
-          break;
-        case SHORT:
-          longValue = keyBinarySortableDeserializeRead.currentShort;
-          break;
-        case INT:
-          longValue = keyBinarySortableDeserializeRead.currentInt;
-          break;
-        case LONG:
-          longValue = keyBinarySortableDeserializeRead.currentLong;
-          break;
-        case DATE:
-          longValue = keyBinarySortableDeserializeRead.currentDateWritable.getDays();
-          break;
-        default:
-          throw new RuntimeException("Unexpected key type " + hashMap.hashTableKeyType);
-        }
+        longValue =
+            VectorMapJoinLongHashUtil.deserializeLongKey(
+                keyBinarySortableDeserializeRead, hashMap.hashTableKeyType);
       } catch (IOException e) {
         throw new HiveException(e);
       }
