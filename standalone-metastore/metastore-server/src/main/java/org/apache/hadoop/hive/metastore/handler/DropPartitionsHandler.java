@@ -59,12 +59,11 @@ import org.apache.thrift.TException;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkTableDataShouldBeDeleted;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMustPurge;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 public class DropPartitionsHandler
     extends AbstractOperationHandler<DropPartitionsRequest, DropPartitionsHandler.DropPartitionsResult> {
-  private String catName;
-  private String dbName;
-  private String tblName;
+  private TableName tableName;
   private Table table;
   private List<Partition> partitions;
 
@@ -75,6 +74,9 @@ public class DropPartitionsHandler
 
   @Override
   protected DropPartitionsResult execute() throws TException, IOException {
+    String catName = tableName.getCat();
+    String dbName = tableName.getDb();
+    String tblName = tableName.getTable();
     EnvironmentContext envContext =
         request.isSetEnvironmentContext() ? request.getEnvironmentContext() : null;
     boolean success = false;
@@ -136,9 +138,15 @@ public class DropPartitionsHandler
   @Override
   protected void beforeExecute() throws TException, IOException {
     RawStore ms = handler.getMS();
-    dbName = request.getDbName();
-    tblName = request.getTblName();
-    catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(handler.getConf());
+    if (request.getDbName() == null || request.getTblName() == null) {
+      throw new MetaException("The database and table name cannot be null.");
+    }
+   this.tableName = new TableName(
+       normalizeIdentifier(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(handler.getConf())),
+       normalizeIdentifier(request.getDbName()), normalizeIdentifier(request.getTblName()));
+    String catName = tableName.getCat();
+    String dbName = tableName.getDb();
+    String tblName = tableName.getTable();
     GetTableRequest getTableRequest = new GetTableRequest(dbName, tblName);
     getTableRequest.setCatName(catName);
     table = handler.get_table_core(getTableRequest);
@@ -236,8 +244,7 @@ public class DropPartitionsHandler
 
   @Override
   protected String getMessagePrefix() {
-    return "DropPartitionsHandler [" + id + "] -  Drop partitions from " +
-        new TableName(catName, dbName, tblName) + ":";
+    return "DropPartitionsHandler [" + id + "] -  Drop partitions from " + tableName + ":";
   }
 
   @Override

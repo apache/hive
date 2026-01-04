@@ -60,10 +60,12 @@ import org.apache.thrift.TException;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkTableDataShouldBeDeleted;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 public class DropDatabaseHandler
     extends AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
   private String name;
+  private String catalogName;
   private Database db;
   private List<Table> tables;
   private List<Function> functions;
@@ -94,19 +96,19 @@ public class DropDatabaseHandler
       for (int i = 0, j = functions.size(); i < functions.size(); i++, j--) {
         progress.set("Dropping functions from the database, " + j + " functions left");
         Function func = functions.get(i);
-        rs.dropFunction(request.getCatalogName(), request.getName(), func.getFunctionName());
+        rs.dropFunction(catalogName, name, func.getFunctionName());
       }
 
       for (int i = 0, j = procedures.size(); i < procedures.size(); i++, j--) {
         progress.set("Dropping procedures from the database, " + j + " procedures left");
         String procName = procedures.get(i);
-        rs.dropStoredProcedure(request.getCatalogName(), request.getName(), procName);
+        rs.dropStoredProcedure(catalogName, name, procName);
       }
 
       for (int i = 0, j = packages.size(); i < packages.size(); i++, j--) {
         progress.set("Dropping packages from the database, " + j + " packages left");
         String pkgName = packages.get(i);
-        rs.dropPackage(new DropPackageRequest(request.getCatalogName(), request.getName(), pkgName));
+        rs.dropPackage(new DropPackageRequest(catalogName, name, pkgName));
       }
 
       List<Table> tablesToDrop = sortTablesToDrop();
@@ -124,8 +126,8 @@ public class DropDatabaseHandler
           context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(request.getTxnId()));
           request.setDeleteManagedDir(false);
         }
-        DropTableRequest dropRequest = new DropTableRequest(request.getName(), table.getTableName());
-        dropRequest.setCatalogName(request.getCatalogName());
+        DropTableRequest dropRequest = new DropTableRequest(name, table.getTableName());
+        dropRequest.setCatalogName(catalogName);
         dropRequest.setEnvContext(context);
         // Drop the table but not its data
         dropRequest.setDeleteData(false);
@@ -140,7 +142,7 @@ public class DropDatabaseHandler
         }
       }
 
-      if (rs.dropDatabase(request.getCatalogName(), request.getName())) {
+      if (rs.dropDatabase(catalogName, name)) {
         if (!handler.getTransactionalListeners().isEmpty()) {
           checkInterrupted();
           DropDatabaseEvent dropEvent = new DropDatabaseEvent(db, true, handler, isDbReplicationTarget(db));
@@ -175,25 +177,26 @@ public class DropDatabaseHandler
 
   @Override
   protected void beforeExecute() throws TException, IOException {
-    if ((name = request.getName()) == null) {
+    if (request.getName() == null) {
       throw new MetaException("Database name cannot be null.");
     }
+    this.name = normalizeIdentifier(request.getName());
+    this.catalogName = normalizeIdentifier(
+        request.isSetCatalogName() ? request.getCatalogName() : MetaStoreUtils.getDefaultCatalog(handler.getConf()));
+
     RawStore rs = handler.getMS();
-    String catalogName =
-        request.isSetCatalogName() ? request.getCatalogName() : MetaStoreUtils.getDefaultCatalog(handler.getConf());
-    request.setCatalogName(catalogName);
-    db = rs.getDatabase(request.getCatalogName(), request.getName());
+    db = rs.getDatabase(catalogName, name);
     if (!MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST) && ReplChangeManager.isSourceOfReplication(db)) {
       throw new InvalidOperationException("can not drop a database which is a source of replication");
     }
 
-    List<String> tableNames = defaultEmptyList(rs.getAllTables(request.getCatalogName(), request.getName()));
-    functions = defaultEmptyList(rs.getFunctionsRequest(request.getCatalogName(), request.getName(), null, false));
-    ListStoredProcedureRequest procedureRequest = new ListStoredProcedureRequest(request.getCatalogName());
-    procedureRequest.setDbName(request.getName());
+    List<String> tableNames = defaultEmptyList(rs.getAllTables(catalogName, name));
+    functions = defaultEmptyList(rs.getFunctionsRequest(catalogName, name, null, false));
+    ListStoredProcedureRequest procedureRequest = new ListStoredProcedureRequest(catalogName);
+    procedureRequest.setDbName(name);
     procedures = defaultEmptyList(rs.getAllStoredProcedures(procedureRequest));
-    ListPackageRequest pkgRequest = new ListPackageRequest(request.getCatalogName());
-    pkgRequest.setDbName(request.getName());
+    ListPackageRequest pkgRequest = new ListPackageRequest(catalogName);
+    pkgRequest.setDbName(name);
     packages = defaultEmptyList(rs.listPackages(pkgRequest));
 
     if (!request.isCascade()) {
@@ -262,7 +265,7 @@ public class DropDatabaseHandler
     this.tables = Batchable.runBatched(tableBatchSize, tableNames, new Batchable<>() {
       @Override
       public List<Table> run(List<String> input) throws Exception {
-        List<Table> tabs = rs.getTableObjectsByName(request.getCatalogName(), request.getName(), input);
+        List<Table> tabs = rs.getTableObjectsByName(catalogName, name, input);
         for (Table table : tabs) {
           Path tblPathToDelete = null;
           // If the table is not external and it might not be in a subdirectory of the database

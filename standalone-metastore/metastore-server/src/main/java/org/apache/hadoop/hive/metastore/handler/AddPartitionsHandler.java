@@ -71,12 +71,12 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.canUpdateStats;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 public class AddPartitionsHandler
     extends AbstractOperationHandler<AddPartitionsRequest, AddPartitionsHandler.AddPartitionsResult> {
-  private String catName;
-  private String dbName;
-  private String tblName;
+  private TableName tableName;
   private Warehouse wh;
   private Table table;
   private Database db;
@@ -98,6 +98,8 @@ public class AddPartitionsHandler
     List<ColumnStatistics> partsColStats = new ArrayList<>();
     List<Long> partsWriteIds = new ArrayList<>();
 
+    String dbName = tableName.getDb();
+    String tblName = tableName.getTable();
     Lock tableLock = ((HMSHandler)handler).getTableLockFor(dbName, tblName);
     tableLock.lock();
     RawStore ms = handler.getMS();
@@ -124,12 +126,12 @@ public class AddPartitionsHandler
         // incorrect, an exception will be thrown before the threads which create the partition
         // folders are submitted. This way we can be sure that no partition and no partition
         // folder will be created if the list contains an invalid partition.
-        validatePartition(part, catName, tblName, dbName, partsToAdd);
+        validatePartition(part, tableName.getCat(), tblName, dbName, partsToAdd);
         nameToPart.put(Warehouse.makePartName(partitionKeys, part.getValues()), part);
       }
 
       List<Partition> existedParts =
-          ms.getPartitionsByNames(catName, dbName, tblName,
+          ms.getPartitionsByNames(tableName.getCat(), dbName, tblName,
               new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(new ArrayList<>(nameToPart.keySet())).build());
       List<String> existedPartNames = new ArrayList<>();
       for (Partition part : existedParts) {
@@ -151,7 +153,7 @@ public class AddPartitionsHandler
       newParts.addAll(createPartitionFolders(partitionsToAdd, addedPartitions, envContext));
 
       if (!newParts.isEmpty()) {
-        ms.addPartitions(catName, dbName, tblName, newParts);
+        ms.addPartitions(tableName.getCat(), dbName, tblName, newParts);
       }
 
       // Notification is generated for newly created partitions only. The subset of partitions
@@ -213,23 +215,23 @@ public class AddPartitionsHandler
 
   @Override
   protected void beforeExecute() throws TException, IOException {
-    this.catName = request.getCatName();
-    this.dbName = request.getDbName();
-    this.tblName = request.getTblName();
-    if (dbName == null || tblName == null) {
+    if (request.getDbName() == null || request.getTblName() == null) {
       throw new MetaException("The database and table name cannot be null.");
     }
+    this.tableName = new TableName(
+        normalizeIdentifier(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(handler.getConf())),
+        normalizeIdentifier(request.getDbName()), normalizeIdentifier(request.getTblName()));
     this.wh = handler.getWh();
     RawStore ms = handler.getMS();
-    table = ms.getTable(catName, dbName, tblName, null);
+    table = ms.getTable(tableName.getCat(), tableName.getDb(), tableName.getTable(), null);
     if (table == null) {
       throw new InvalidObjectException("Unable to add partitions because "
-          + TableName.getQualified(catName, dbName, tblName) + " does not exist");
+          + tableName + " does not exist");
     }
 
-    db = ms.getDatabase(catName, dbName);
+    db = ms.getDatabase(tableName.getCat(), tableName.getDb());
     if (MetaStoreUtils.isDatabaseRemote(db)) {
-      throw new MetaException("Operation add_partitions not supported for REMOTE database " + dbName);
+      throw new MetaException("Operation add_partitions not supported for REMOTE database " + tableName.getDb());
     }
 
     if (threadPool == null) {
@@ -552,8 +554,7 @@ public class AddPartitionsHandler
 
   @Override
   protected String getMessagePrefix() {
-    return "AddPartitionsHandler [" + id + "] -  Add partitions for " +
-        new TableName(catName, dbName, tblName) + ":";
+    return "AddPartitionsHandler [" + id + "] -  Add partitions for " + tableName + ":";
   }
 
   @Override
