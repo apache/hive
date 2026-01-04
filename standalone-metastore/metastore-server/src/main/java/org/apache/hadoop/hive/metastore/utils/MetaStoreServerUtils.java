@@ -1803,14 +1803,14 @@ public class MetaStoreServerUtils {
   }
 
   /**
-   * Verify if update stats while altering partition(s)
+   * Verify if update stats while altering partition(s).
    * For the following three cases HMS will not update partition stats
    * 1) Table property 'DO_NOT_UPDATE_STATS' = True
    * 2) HMS configuration property 'STATS_AUTO_GATHER' = False
    * 3) Is View
    */
   public static boolean canUpdateStats(Configuration conf, Table tbl) {
-    Map<String,String> tblParams = tbl.getParameters();
+    Map<String, String> tblParams = tbl.getParameters();
     boolean updateStatsTbl = true;
     if ((tblParams != null) && tblParams.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)) {
       updateStatsTbl = !Boolean.valueOf(tblParams.get(StatsSetupConst.DO_NOT_UPDATE_STATS));

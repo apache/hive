@@ -19,11 +19,14 @@
 package org.apache.hadoop.hive.metastore.handler;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HMSHandler;
@@ -31,6 +34,7 @@ import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DropTableRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
@@ -43,6 +47,8 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkTableDataShouldBeDeleted;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
@@ -52,15 +58,15 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 public class DropTableHandler
     extends AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> {
+  private static final Logger LOG = LoggerFactory.getLogger(DropTableHandler.class);
   private Table tbl;
   private Path tblPath;
   private TableName tableName;
   private boolean tableDataShouldBeDeleted;
   private AtomicReference<String> progress;
 
-  DropTableHandler(IHMSHandler handler, boolean async, DropTableRequest request)
-      throws TException, IOException{
-    super(handler, async, request);
+  DropTableHandler(IHMSHandler handler, DropTableRequest request) {
+    super(handler, request.isAsyncDrop(), request);
   }
 
   public DropTableResult execute() throws TException {
@@ -181,9 +187,67 @@ public class DropTableHandler
   }
 
   @Override
-  protected void afterExecute() {
-    super.afterExecute();
-    tbl = null;
+  protected void afterExecute(DropTableResult result) throws MetaException, IOException {
+    try {
+      if (result != null && result.success()) {
+        if (result.tableDataShouldBeDeleted()) {
+          boolean ifPurge = result.ifPurge();
+          boolean shouldEnableCm = result.shouldEnableCm();
+          // Data needs deletion. Check if trash may be skipped.
+          // Delete the data in the partitions which have other locations
+          List<Path> pathsToDelete = new ArrayList<>();
+          if (result.partPaths != null) {
+            pathsToDelete.addAll(result.partPaths);
+          }
+          pathsToDelete.add(result.tablePath);
+          for (Path path : pathsToDelete) {
+            deleteDataExcludeCmroot(path, ifPurge, shouldEnableCm);
+          }
+        }
+      }
+    } finally {
+      super.afterExecute(result);
+      tbl = null;
+    }
+  }
+
+  /**
+   * Delete data from path excluding cmdir
+   * and for each that fails logs an error.
+   *
+   * @param path
+   * @param ifPurge completely purge the partition (skipping trash) while
+   *                removing data from warehouse
+   * @param shouldEnableCm If cm should be enabled
+   */
+  private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) {
+    try {
+      Warehouse wh = handler.getWh();
+      Configuration conf = handler.getConf();
+      if (shouldEnableCm) {
+        //Don't delete cmdir if its inside the partition path
+        FileStatus[] statuses = path.getFileSystem(conf).listStatus(path,
+            ReplChangeManager.CMROOT_PATH_FILTER);
+        for (final FileStatus status : statuses) {
+          wh.deleteDir(status.getPath(), ifPurge, shouldEnableCm);
+        }
+        //Check if table directory is empty, delete it
+        FileStatus[] statusWithoutFilter = path.getFileSystem(conf).listStatus(path);
+        if (statusWithoutFilter.length == 0) {
+          wh.deleteDir(path, ifPurge, shouldEnableCm);
+        }
+      } else {
+        //If no cm delete the complete table directory
+        wh.deleteDir(path, ifPurge, shouldEnableCm);
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to delete directory: {}", path, e);
+    }
+  }
+
+  @Override
+  protected String getHandlerAlias() {
+    return "drop_table_req";
   }
 
   public record DropTableResult(Path tablePath,
@@ -191,7 +255,7 @@ public class DropTableHandler
                                 boolean tableDataShouldBeDeleted,
                                 boolean ifPurge,
                                 List<Path> partPaths,
-                                boolean shouldEnableCm) {
+                                boolean shouldEnableCm) implements Result {
 
   }
 }

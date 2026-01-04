@@ -84,7 +84,7 @@ public class AddPartitionsHandler
 
   protected Warehouse wh;
 
-  public AddPartitionsHandler(IHMSHandler handler, AddPartitionsRequest request) throws TException, IOException {
+  public AddPartitionsHandler(IHMSHandler handler, AddPartitionsRequest request) {
     super(handler, false, request);
   }
 
@@ -273,7 +273,7 @@ public class AddPartitionsHandler
    */
   private void validatePartition(final Partition part, final String catName,
       final String tblName, final String dbName, final Set<PartValEqWrapperLite> partsToAdd)
-      throws MetaException, TException {
+      throws TException {
     MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(), handler.getConf());
     if (part.getDbName() == null || part.getTableName() == null) {
       throw new MetaException("The database and table name must be set in the partition.");
@@ -563,7 +563,7 @@ public class AddPartitionsHandler
     return "Adding partitions";
   }
 
-  public record AddPartitionsResult(boolean success, List<Partition> newParts) {
+  public record AddPartitionsResult(boolean success, List<Partition> newParts) implements Result {
 
   }
 }

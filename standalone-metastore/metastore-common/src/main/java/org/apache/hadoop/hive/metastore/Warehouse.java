@@ -424,7 +424,7 @@ public class Warehouse {
     return false;
   }
 
-  void addToChangeManagement(Path file) throws MetaException {
+  public void addToChangeManagement(Path file) throws MetaException {
     try {
       cm.recycle(file, RecycleType.COPY, true);
     } catch (IOException e) {

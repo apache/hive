@@ -3710,6 +3710,10 @@ public abstract class TestHiveMetaStore {
         // just check the initializeAddedPartition
         this.wh = warehouse;
       }
+      @Override
+      protected void afterExecute(AddPartitionsResult result) {
+        // noop
+      }
     };
     //Invoke initializeAddedPartition();
     addPartsHandler.initializeAddedPartition(tbl, part, false, null);

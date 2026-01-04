@@ -115,7 +115,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTabl
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTLT;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.canUpdateStats;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getWriteId;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
@@ -1584,73 +1583,27 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public AsyncOperationResp drop_database_req(final DropDatabaseRequest req)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
-    startFunction("drop_database", ": " + req.getName());
-    
-    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(req.getCatalogName()) 
+    logAndAudit("drop_database: " + req.getName() + ", async: " + req.isAsyncDrop() + ", id: " + req.getId());
+
+    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(req.getCatalogName())
           && DEFAULT_DATABASE_NAME.equalsIgnoreCase(req.getName())) {
-      endFunction("drop_database", false, null);
-      throw new MetaException("Can not drop " + DEFAULT_DATABASE_NAME + " database in catalog " 
+      throw new MetaException("Can not drop " + DEFAULT_DATABASE_NAME + " database in catalog "
         + DEFAULT_CATALOG_NAME);
     }
-
     Exception ex = null;
     try {
-      AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> dropDatabaseOp =
-          AbstractOperationHandler.offer(this, req);
+      DropDatabaseHandler dropDatabaseOp = AbstractOperationHandler.offer(this, req);
       AbstractOperationHandler.OperationStatus status = dropDatabaseOp.getOperationStatus();
-      if (status.isFinished() && dropDatabaseOp.getResult() != null && dropDatabaseOp.getResult().isSuccess()) {
-        DropDatabaseHandler.DropDatabaseResult result = dropDatabaseOp.getResult();
-        for (Path funcCmPath : result.getFunctionCmPaths()) {
-          wh.addToChangeManagement(funcCmPath);
-        }
-        if (req.isDeleteData()) {
-          // Moving the data deletion out of the async handler.
-          // For every Thrift call, when it goes to the end, the TUGIBasedProcessor or
-          // TUGIAssumingProcessor would close the shared FileSystem by FileSystem.closeAllForUGI(clientUgi).
-          // A "java.io.IOException: Filesystem closed" will be raised if the async handler happens to
-          // use the same FileSystem instance closed by the processor.
-          Database db = result.getDatabase();
-          // Delete the data in the partitions which have other locations
-          deletePartitionData(result.getPartitionPaths(), false, db);
-          // Delete the data in the tables which have other locations or soft-delete is enabled
-          for (Path tablePath : result.getTablePaths()) {
-            deleteTableData(tablePath, false, db);
-          }
-          Path path = (db.getManagedLocationUri() != null) ?
-              new Path(db.getManagedLocationUri()) : wh.getDatabaseManagedPath(db);
-          if (req.isDeleteManagedDir()) {
-            try {
-              Boolean deleted = UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Boolean>)
-                  () -> wh.deleteDir(path, true, db));
-              if (!deleted) {
-                LOG.error("Failed to delete database's managed warehouse directory: {}", path);
-              }
-            } catch (Exception e) {
-              LOG.error("Failed to delete database's managed warehouse directory: {}", path, e);
-            }
-          }
-          try {
-            Boolean deleted = UserGroupInformation.getCurrentUser().doAs((PrivilegedExceptionAction<Boolean>)
-                () -> wh.deleteDir(new Path(db.getLocationUri()), true, db));
-            if (!deleted) {
-              LOG.error("Failed to delete database external warehouse directory: {}", db.getLocationUri());
-            }
-          } catch (Exception e) {
-            LOG.error("Failed to delete the database external warehouse directory: {}", db.getLocationUri(), e);
-          }
-        }
-      }
-      AsyncOperationResp resp = new AsyncOperationResp(status.getId());
-      resp.setFinished(status.isFinished());
-      resp.setMessage(status.getMessage());
-      return resp;
+      return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
           .throwIfInstance(NoSuchObjectException.class, InvalidOperationException.class, MetaException.class)
           .defaultMetaException();
     } finally {
-      endFunction("drop_database", ex == null, ex);
+      for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
+        listener.onEndFunction("drop_database_req", new MetaStoreEndFunctionContext(ex == null, ex, null));
+      }
     }
   }
 
@@ -2726,110 +2679,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return (ms.getTable(catName, dbname, name, null) != null);
   }
 
-  /**
-   * Deletes the data in a table's location, if it fails logs an error
-   *
-   * @param tablePath
-   * @param ifPurge completely purge the table (skipping trash) while removing
-   *                data from warehouse
-   * @param shouldEnableCm If cm should be enabled
-   */
-  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
-    if (tablePath != null) {
-      deleteDataExcludeCmroot(tablePath, ifPurge, shouldEnableCm);
-    }
-  }
-
-  /**
-   * Deletes the data in a table's location, if it fails logs an error.
-   *
-   * @param tablePath
-   * @param ifPurge completely purge the table (skipping trash) while removing
-   *                data from warehouse
-   * @param db Database
-   */
-  private void deleteTableData(Path tablePath, boolean ifPurge, Database db) {
-    if (tablePath != null) {
-      try {
-        wh.deleteDir(tablePath, ifPurge, db);
-      } catch (Exception e) {
-        LOG.error("Failed to delete table directory: " + tablePath +
-            " " + e.getMessage());
-      }
-    }
-  }
-
-  /**
-   * Give a list of partitions' locations, tries to delete each one
-   * and for each that fails logs an error.
-   *
-   * @param partPaths
-   * @param ifPurge completely purge the partition (skipping trash) while
-   *                removing data from warehouse
-   * @param shouldEnableCm If cm should be enabled
-   */
-  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
-    if (partPaths != null && !partPaths.isEmpty()) {
-      for (Path partPath : partPaths) {
-        deleteDataExcludeCmroot(partPath, ifPurge, shouldEnableCm);
-      }
-    }
-  }
-
-  /**
-   * Give a list of partitions' locations, tries to delete each one
-   * and for each that fails logs an error.
-   *
-   * @param partPaths
-   * @param ifPurge completely purge the partition (skipping trash) while
-   *                removing data from warehouse
-   * @param db Database
-   */
-  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, Database db) {
-    if (partPaths != null && !partPaths.isEmpty()) {
-      for (Path partPath : partPaths) {
-        try {
-          wh.deleteDir(partPath, ifPurge, db);
-        } catch (Exception e) {
-          LOG.error("Failed to delete partition directory: " + partPath +
-              " " + e.getMessage());
-        }
-      }
-    }
-  }
-
-  /**
-   * Delete data from path excluding cmdir
-   * and for each that fails logs an error.
-   *
-   * @param path
-   * @param ifPurge completely purge the partition (skipping trash) while
-   *                removing data from warehouse
-   * @param shouldEnableCm If cm should be enabled
-   */
-  private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) {
-    try {
-      if (shouldEnableCm) {
-        //Don't delete cmdir if its inside the partition path
-        FileStatus[] statuses = path.getFileSystem(conf).listStatus(path,
-            ReplChangeManager.CMROOT_PATH_FILTER);
-        for (final FileStatus status : statuses) {
-          wh.deleteDir(status.getPath(), ifPurge, shouldEnableCm);
-        }
-        //Check if table directory is empty, delete it
-        FileStatus[] statusWithoutFilter = path.getFileSystem(conf).listStatus(path);
-        if (statusWithoutFilter.length == 0) {
-          wh.deleteDir(path, ifPurge, shouldEnableCm);
-        }
-      } else {
-        //If no cm delete the complete table directory
-        wh.deleteDir(path, ifPurge, shouldEnableCm);
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to delete directory: {}", path, e);
-    }
-  }
-
   @Override
   @Deprecated
   public void drop_table(final String dbname, final String name, final boolean deleteData)
@@ -2856,37 +2705,24 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public AsyncOperationResp drop_table_req(DropTableRequest dropTableReq)
+  public AsyncOperationResp drop_table_req(DropTableRequest dropReq)
       throws MetaException, NoSuchObjectException {
-    startFunction("drop_table_req", ": " + dropTableReq.getTableName());
-    boolean success = false;
+    logAndAudit("drop_table_req: " + dropReq.getTableName() +
+        ", async: " + dropReq.isAsyncDrop() + ", id: " + dropReq.getId());
     Exception ex = null;
     try {
-      AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> dropTableOp =
-          AbstractOperationHandler.offer(this, dropTableReq);
+      DropTableHandler dropTableOp = AbstractOperationHandler.offer(this, dropReq);
       AbstractOperationHandler.OperationStatus status = dropTableOp.getOperationStatus();
-      if (status.isFinished() && dropTableOp.getResult() != null && dropTableOp.getResult().success()) {
-        DropTableHandler.DropTableResult result = dropTableOp.getResult();
-        if (result.tableDataShouldBeDeleted()) {
-          boolean ifPurge = result.ifPurge();
-          boolean shouldEnableCm = result.shouldEnableCm();
-          // Data needs deletion. Check if trash may be skipped.
-          // Delete the data in the partitions which have other locations
-          deletePartitionData(result.partPaths(), ifPurge, shouldEnableCm);
-          // Delete the data in the table
-          deleteTableData(result.tablePath(), ifPurge, shouldEnableCm);
-        }
-      }
-      AsyncOperationResp resp = new AsyncOperationResp(status.getId());
-      resp.setFinished(status.isFinished());
-      resp.setMessage(status.getMessage());
-      return resp;
+      return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
               .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
     } finally {
-      endFunction("drop_table_req", success, ex, dropTableReq.getTableName());
+      for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
+        listener.onEndFunction("drop_table_req", new MetaStoreEndFunctionContext(ex == null, ex,
+            TableName.getQualified(dropReq.getCatalogName(), dropReq.getDbName(), dropReq.getTableName())));
+      }
     }
   }
 
@@ -3086,7 +2922,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * @param writeId allocated writeId
    * @throws MetaException
    */
-  static void addTruncateBaseFile(Path location, long writeId, Configuration conf, DataFormat dataFormat) 
+  public static void addTruncateBaseFile(Path location, long writeId, Configuration conf, DataFormat dataFormat)
       throws MetaException {
     if (location == null) 
       return;
@@ -3735,10 +3571,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       // Make sure all the partitions have the catalog set as well
       request.getParts().forEach(p -> p.setCatName(catName));
       request.setCatName(catName);
-      AbstractOperationHandler<AddPartitionsRequest, AddPartitionsHandler.AddPartitionsResult> addPartsOp =
-          AbstractOperationHandler.offer(this, request);
+      AddPartitionsHandler addPartsOp = AbstractOperationHandler.offer(this, request);
       AbstractOperationHandler.OperationStatus status = addPartsOp.getOperationStatus();
-      if (status.isFinished() && addPartsOp.getResult() != null && addPartsOp.getResult().success()) {
+      if (status.isFinished() && addPartsOp.success()) {
         AddPartitionsHandler.AddPartitionsResult addPartsResult = addPartsOp.getResult();
         if (request.isNeedResult()) {
           if (isColSkippedForPartitions) {
@@ -3756,6 +3591,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throw handleException(e).throwIfInstance(TException.class).defaultMetaException();
     } finally {
       endFunction("add_partitions_req", ex == null, ex, tblName);
+    }
+
+    if (!result.isSetPartitions() && request.isNeedResult()) {
+      // This is mainly for backwards compatibility,
+      // old client may ask for the added partitions even if it fails.
+      result.setPartitions(request.getParts());
     }
     return result;
   }
@@ -4094,54 +3935,25 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public DropPartitionsResult drop_partitions_req(
       DropPartitionsRequest request) throws TException {
+    startFunction("drop_partitions_req",
+        ": db=" + request.getDbName() + " tab=" + request.getTblName());
+    Exception ex = null;
     try {
       DropPartitionsResult resp = new DropPartitionsResult();
-      AbstractOperationHandler<DropPartitionsRequest, DropPartitionsHandler.DropPartitionsResult> dropPartsOp =
-          AbstractOperationHandler.offer(this, request);
+      DropPartitionsHandler dropPartsOp = AbstractOperationHandler.offer(this, request);
       AbstractOperationHandler.OperationStatus status = dropPartsOp.getOperationStatus();
-      if (status.isFinished() && dropPartsOp.getResult() != null && dropPartsOp.getResult().success()) {
-        DropPartitionsHandler.DropPartitionsResult result = dropPartsOp.getResult();
-        long writeId = getWriteId(request.getEnvironmentContext());
-        if (result.tableDataShouldBeDeleted()) {
-          LOG.info(result.mustPurge() ?
-              "dropPartition() will purge partition-directories directly, skipping trash."
-              :  "dropPartition() will move partition-directories to trash-directory.");
-          // Archived partitions have har:/to_har_file as their location.
-          // The original directory was saved in params
-          for (Path path : result.getArchToDelete()) {
-            wh.deleteDir(path, result.mustPurge(), result.needCm());
-          }
-
-          // Uses a priority queue to delete the parents of deleted directories if empty.
-          // Parents with the deepest path are always processed first. It guarantees that the emptiness
-          // of a parent won't be changed once it has been processed. So duplicated processing can be
-          // avoided.
-          for (Iterator<DropPartitionsHandler.PathAndDepth> iterator = result.getDirsToDelete();
-               iterator.hasNext();) {
-            DropPartitionsHandler.PathAndDepth p = iterator.next();
-            Path path = p.path();
-            if (p.isPartitionDir()) {
-              wh.deleteDir(path, result.mustPurge(), result.needCm());
-            } else if (wh.isWritable(path) && wh.isEmptyDir(path)) {
-              wh.deleteDir(path, result.mustPurge(), result.needCm());
-            }
-          }
-        } else if (result.isTransactionalTable() && writeId > 0) {
-          for (Partition part : result.getPartitions()) {
-            if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
-              Path partPath = new Path(part.getSd().getLocation());
-              ((DropPartitionsHandler) dropPartsOp).verifyIsWritablePath(partPath);
-              addTruncateBaseFile(partPath, writeId, conf, DataFormat.DROPPED);
-            }
-          }
-        }
+      if (status.isFinished() && dropPartsOp.success()) {
         if (request.isNeedResult()) {
-          resp.setPartitions(result.getPartitions());
+          resp.setPartitions(dropPartsOp.getResult().getPartitions());
         }
       }
       return resp;
     } catch (Exception e) {
+      ex = e;
       throw handleException(e).throwIfInstance(TException.class).defaultMetaException();
+    } finally {
+      endFunction("drop_partition_req", ex == null, ex,
+          TableName.getQualified(request.getCatName(), request.getDbName(), request.getTblName()));
     }
   }
 

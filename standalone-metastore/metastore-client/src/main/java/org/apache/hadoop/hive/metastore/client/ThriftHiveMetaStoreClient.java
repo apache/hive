@@ -1027,8 +1027,12 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         new ArrayList<>(Arrays.asList(new_part)), false);
     addPartitionsReq.setCatName(new_part.getCatName());
     addPartitionsReq.setEnvironmentContext(envContext);
-    Partition p = client.add_partitions_req(addPartitionsReq).getPartitions().get(0);
-    return HiveMetaStoreClientUtils.deepCopy(p);
+
+    List<Partition> new_parts = client.add_partitions_req(addPartitionsReq).getPartitions();
+    if (new_parts != null && !new_parts.isEmpty()) {
+      return HiveMetaStoreClientUtils.deepCopy(new_parts.getFirst());
+    }
+    return null;
   }
 
   @Override
@@ -1075,12 +1079,14 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     AddPartitionsResult result = client.add_partitions_req(req);
     if (needResults) {
       List<Partition> new_parts = HiveMetaStoreClientUtils.deepCopyPartitions(result.getPartitions());
-      if (skipColumnSchemaForPartition) {
-        new_parts.forEach(partition -> partition.getSd().setCols(result.getPartitionColSchema()));
+      if (new_parts != null && !new_parts.isEmpty()) {
+        if (skipColumnSchemaForPartition) {
+          new_parts.forEach(partition -> partition.getSd().setCols(result.getPartitionColSchema()));
+        }
+        return FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, new_parts);
       }
-      return FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, new_parts);
     }
-    return null;
+    return Collections.emptyList();
   }
 
   @Override

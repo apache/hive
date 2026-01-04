@@ -30,12 +30,14 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.AcidMetaDataFile;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsExpr;
 import org.apache.hadoop.hive.metastore.api.DropPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
@@ -55,20 +57,24 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.metastore.HMSHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkTableDataShouldBeDeleted;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getWriteId;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMustPurge;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
 public class DropPartitionsHandler
     extends AbstractOperationHandler<DropPartitionsRequest, DropPartitionsHandler.DropPartitionsResult> {
+  private static final Logger LOG = LoggerFactory.getLogger(DropPartitionsHandler.class);
   private TableName tableName;
   private Table table;
   private List<Partition> partitions;
 
-  DropPartitionsHandler(IHMSHandler handler, DropPartitionsRequest request)
-      throws TException, IOException {
+  DropPartitionsHandler(IHMSHandler handler, DropPartitionsRequest request) {
     super(handler, false, request);
   }
 
@@ -141,9 +147,9 @@ public class DropPartitionsHandler
     if (request.getDbName() == null || request.getTblName() == null) {
       throw new MetaException("The database and table name cannot be null.");
     }
-   this.tableName = new TableName(
-       normalizeIdentifier(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(handler.getConf())),
-       normalizeIdentifier(request.getDbName()), normalizeIdentifier(request.getTblName()));
+    this.tableName = new TableName(
+        normalizeIdentifier(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(handler.getConf())),
+        normalizeIdentifier(request.getDbName()), normalizeIdentifier(request.getTblName()));
     String catName = tableName.getCat();
     String dbName = tableName.getDb();
     String tblName = tableName.getTable();
@@ -206,7 +212,7 @@ public class DropPartitionsHandler
     this.partitions = parts == null ? Collections.emptyList() : parts;
   }
 
-  public void verifyIsWritablePath(Path dir) throws MetaException {
+  private void verifyIsWritablePath(Path dir) throws MetaException {
     try {
       if (!handler.getWh().isWritable(dir.getParent())) {
         throw new MetaException("Table partition not deleted since " + dir.getParent()
@@ -219,8 +225,44 @@ public class DropPartitionsHandler
   }
 
   @Override
-  protected void afterExecute() {
-    request = null;
+  protected void afterExecute(DropPartitionsResult result) throws MetaException, IOException {
+    if (result != null && result.success()) {
+      Warehouse wh = handler.getWh();
+      long writeId = getWriteId(request.getEnvironmentContext());
+      if (result.tableDataShouldBeDeleted()) {
+        LOG.info(result.mustPurge() ?
+            "dropPartition() will purge partition-directories directly, skipping trash."
+            :  "dropPartition() will move partition-directories to trash-directory.");
+        // Archived partitions have har:/to_har_file as their location.
+        // The original directory was saved in params
+        for (Path path : result.getArchToDelete()) {
+          wh.deleteDir(path, result.mustPurge(), result.needCm());
+        }
+
+        // Uses a priority queue to delete the parents of deleted directories if empty.
+        // Parents with the deepest path are always processed first. It guarantees that the emptiness
+        // of a parent won't be changed once it has been processed. So duplicated processing can be
+        // avoided.
+        for (Iterator<DropPartitionsHandler.PathAndDepth> iterator = result.getDirsToDelete();
+             iterator.hasNext();) {
+          DropPartitionsHandler.PathAndDepth p = iterator.next();
+          Path path = p.path();
+          if (p.isPartitionDir()) {
+            wh.deleteDir(path, result.mustPurge(), result.needCm());
+          } else if (wh.isWritable(path) && wh.isEmptyDir(path)) {
+            wh.deleteDir(path, result.mustPurge(), result.needCm());
+          }
+        }
+      } else if (result.isTransactionalTable() && writeId > 0) {
+        for (Partition part : result.getPartitions()) {
+          if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
+            Path partPath = new Path(part.getSd().getLocation());
+            verifyIsWritablePath(partPath);
+            addTruncateBaseFile(partPath, writeId, handler.getConf(), AcidMetaDataFile.DataFormat.DROPPED);
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -252,7 +294,7 @@ public class DropPartitionsHandler
     return "Dropping partitions";
   }
 
-  public static class DropPartitionsResult {
+  public static class DropPartitionsResult implements Result {
     private final List<Partition> partitions;
     private final boolean tableDataShouldBeDeleted;
     private final boolean mustPurge;
@@ -345,5 +387,4 @@ public class DropPartitionsHandler
       };
     }
   }
-
 }

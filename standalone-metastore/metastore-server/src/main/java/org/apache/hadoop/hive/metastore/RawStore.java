@@ -341,12 +341,14 @@ public interface RawStore extends Configurable {
    * when the baseLocationToNotShow is not null.
    * @param table the table to drop partitions from
    * @param baseLocationToNotShow Partition locations which are child of this path are omitted
+   * @param message postgres of this drop
    * @return list of partition locations outside baseLocationToNotShow
    * @throws MetaException something went wrong, usually in the RDBMS or storage
    * @throws InvalidInputException unable to drop all partitions due to the invalid input
    */
   List<String> dropAllPartitionsAndGetLocations(TableName table, String baseLocationToNotShow, AtomicReference<String> message)
       throws MetaException, InvalidInputException, NoSuchObjectException, InvalidObjectException;
+
   /**
    * Get a table object.
    * @param catalogName catalog the table is in.

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.handler;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -56,7 +57,10 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkTableDataShouldBeDeleted;
@@ -65,6 +69,8 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 public class DropDatabaseHandler
     extends AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DropDatabaseHandler.class);
   private String name;
   private String catalogName;
   private Database db;
@@ -75,8 +81,7 @@ public class DropDatabaseHandler
   private AtomicReference<String> progress;
   private DropDatabaseResult result;
 
-  DropDatabaseHandler(IHMSHandler handler, DropDatabaseRequest request)
-      throws TException, IOException {
+  DropDatabaseHandler(IHMSHandler handler, DropDatabaseRequest request) {
     super(handler, request.isAsyncDrop(), request);
   }
 
@@ -137,8 +142,8 @@ public class DropDatabaseHandler
         // Drop the table but not its data
         dropRequest.setDeleteData(false);
         dropRequest.setDropPartitions(true);
-        AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> dropTable =
-            AbstractOperationHandler.offer(handler, dropRequest);
+        dropRequest.setAsyncDrop(false);
+        DropTableHandler dropTable = AbstractOperationHandler.offer(handler, dropRequest);
         DropTableHandler.DropTableResult dropTableResult = dropTable.getResult();
         if (tableDataShouldBeDeleted
             && dropTableResult.success()
@@ -245,16 +250,17 @@ public class DropDatabaseHandler
   }
 
   private void checkFuncPathToCm() {
-    boolean needsCm = ReplChangeManager.isSourceOfReplication(db);
     List<Path> funcNeedCmPaths = new ArrayList<>();
-    for (Function func : functions) {
-      // if copy of jar to change management fails we fail the metastore transaction, since the
-      // user might delete the jars on HDFS externally after dropping the function, hence having
-      // a copy is required to allow incremental replication to work correctly.
-      if (func.getResourceUris() != null && !func.getResourceUris().isEmpty()) {
-        for (ResourceUri uri : func.getResourceUris()) {
-          if (uri.getUri().toLowerCase().startsWith("hdfs:") && needsCm) {
-            funcNeedCmPaths.add(new Path(uri.getUri()));
+    if (ReplChangeManager.isSourceOfReplication(db)) {
+      for (Function func : functions) {
+        // if copy of jar to change management fails we fail the metastore transaction, since the
+        // user might delete the jars on HDFS externally after dropping the function, hence having
+        // a copy is required to allow incremental replication to work correctly.
+        if (func.getResourceUris() != null && !func.getResourceUris().isEmpty()) {
+          for (ResourceUri uri : func.getResourceUris()) {
+            if (uri.getUri().toLowerCase().startsWith("hdfs:")) {
+              funcNeedCmPaths.add(new Path(uri.getUri()));
+            }
           }
         }
       }
@@ -342,7 +348,7 @@ public class DropDatabaseHandler
     return progress.get();
   }
 
-  public static class DropDatabaseResult {
+  public static class DropDatabaseResult implements Result {
     private boolean success;
     private List<Path> tablePaths;
     private List<Path> partitionPaths;
@@ -353,7 +359,7 @@ public class DropDatabaseHandler
       this.database = db;
     }
 
-    public boolean isSuccess() {
+    public boolean success() {
       return success;
     }
 
@@ -388,14 +394,75 @@ public class DropDatabaseHandler
     public Database getDatabase() {
       return database;
     }
+
+    @Override
+    public Result shrinkIfNecessary() {
+      DropDatabaseResult result = new DropDatabaseResult(null);
+      result.setSuccess(result.success);
+      return result;
+    }
   }
 
   @Override
-  protected void afterExecute() {
-    super.afterExecute();
-    tables = null;
-    functions = null;
-    procedures = null;
-    packages = null;
+  protected String getHandlerAlias() {
+    return "drop_database_req";
   }
+
+  @Override
+  protected void afterExecute(DropDatabaseResult result) throws MetaException, IOException {
+    try {
+      Warehouse wh = handler.getWh();
+      if (result != null && result.success()) {
+        for (Path funcCmPath : result.getFunctionCmPaths()) {
+          wh.addToChangeManagement(funcCmPath);
+        }
+        if (request.isDeleteData()) {
+          Database db = result.getDatabase();
+          // Delete the data in the partitions which have other locations
+          List<Path> pathsToDelete = new ArrayList<>();
+          if (result.getPartitionPaths() != null) {
+            pathsToDelete.addAll(result.getPartitionPaths());
+          }
+          pathsToDelete.addAll(result.getTablePaths());
+          for (Path pathToDelete : pathsToDelete) {
+            try {
+              wh.deleteDir(pathToDelete, false, db);
+            } catch (Exception e) {
+              LOG.error("Failed to delete directory: {}", pathToDelete, e);
+            }
+          }
+          Path path = (db.getManagedLocationUri() != null) ?
+              new Path(db.getManagedLocationUri()) : wh.getDatabaseManagedPath(db);
+          if (request.isDeleteManagedDir()) {
+            try {
+              Boolean deleted = UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Boolean>)
+                  () -> wh.deleteDir(path, true, db));
+              if (!deleted) {
+                LOG.error("Failed to delete database's managed warehouse directory: {}", path);
+              }
+            } catch (Exception e) {
+              LOG.error("Failed to delete database's managed warehouse directory: {}", path, e);
+            }
+          }
+          try {
+            Boolean deleted = UserGroupInformation.getCurrentUser().doAs((PrivilegedExceptionAction<Boolean>)
+                () -> wh.deleteDir(new Path(db.getLocationUri()), true, db));
+            if (!deleted) {
+              LOG.error("Failed to delete database external warehouse directory: {}", db.getLocationUri());
+            }
+          } catch (Exception e) {
+            LOG.error("Failed to delete the database external warehouse directory: {}", db.getLocationUri(), e);
+          }
+        }
+      }
+    } finally {
+      tables = null;
+      functions = null;
+      procedures = null;
+      packages = null;
+      db = null;
+      super.afterExecute(result);
+    }
+  }
+
 }
