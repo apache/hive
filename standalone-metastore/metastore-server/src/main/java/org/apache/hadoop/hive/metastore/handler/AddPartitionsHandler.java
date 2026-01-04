@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore.handler;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import java.io.IOException;
@@ -77,12 +78,13 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 public class AddPartitionsHandler
     extends AbstractOperationHandler<AddPartitionsRequest, AddPartitionsHandler.AddPartitionsResult> {
   private TableName tableName;
-  private Warehouse wh;
   private Table table;
   private Database db;
   private static ExecutorService threadPool;
 
-  AddPartitionsHandler(IHMSHandler handler, AddPartitionsRequest request) throws TException, IOException {
+  protected Warehouse wh;
+
+  public AddPartitionsHandler(IHMSHandler handler, AddPartitionsRequest request) throws TException, IOException {
     super(handler, false, request);
   }
 
@@ -386,7 +388,6 @@ public class AddPartitionsHandler
     return newParts;
   }
 
-
   private static class PartValEqWrapperLite {
     List<String> values;
     String location;
@@ -455,7 +456,8 @@ public class AddPartitionsHandler
     }
   }
 
-  private void initializeAddedPartition(final Table tbl, final Partition part, boolean madeDir,
+  @VisibleForTesting
+  public void initializeAddedPartition(final Table tbl, final Partition part, boolean madeDir,
       EnvironmentContext environmentContext) throws MetaException {
     initializeAddedPartition(tbl,
         new PartitionSpecProxy.SimplePartitionWrapperIterator(part), madeDir, environmentContext);
@@ -550,7 +552,6 @@ public class AddPartitionsHandler
     }
     return result;
   }
-
 
   @Override
   protected String getMessagePrefix() {

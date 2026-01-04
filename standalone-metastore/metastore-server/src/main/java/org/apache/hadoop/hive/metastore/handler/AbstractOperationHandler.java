@@ -300,7 +300,6 @@ public abstract class AbstractOperationHandler<T extends TBase, A> {
    */
   protected void afterExecute() {
     request = null;
-    handler = null;
   }
 
   @VisibleForTesting

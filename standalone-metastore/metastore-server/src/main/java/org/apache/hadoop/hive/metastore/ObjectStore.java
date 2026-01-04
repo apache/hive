@@ -2658,7 +2658,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<List<MPartitionPrivilege>> mPartPrivilegesList = new ArrayList<>();
     List<List<MPartitionColumnPrivilege>> mPartColPrivilegesList = new ArrayList<>();
     for (Partition part : parts) {
-      if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
+      if (!part.getTableName().equalsIgnoreCase(tblName) || !part.getDbName().equalsIgnoreCase(dbName)) {
         throw new MetaException("Partition does not belong to target table "
             + dbName + "." + tblName + ": " + part);
       }

@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.handler;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -91,31 +92,35 @@ public class DropDatabaseHandler
         }
         return result;
       }
+
+      int j = functions.size();
       List<Path> partitionPaths = new ArrayList<>();
       // drop any functions before dropping db
-      for (int i = 0, j = functions.size(); i < functions.size(); i++, j--) {
+      for (Iterator<Function> iter = functions.iterator(); iter.hasNext(); j--) {
         progress.set("Dropping functions from the database, " + j + " functions left");
-        Function func = functions.get(i);
+        Function func = iter.next();
         rs.dropFunction(catalogName, name, func.getFunctionName());
       }
 
-      for (int i = 0, j = procedures.size(); i < procedures.size(); i++, j--) {
+      j = procedures.size();
+      for (Iterator<String> iter = procedures.iterator(); iter.hasNext(); j--) {
         progress.set("Dropping procedures from the database, " + j + " procedures left");
-        String procName = procedures.get(i);
+        String procName = iter.next();
         rs.dropStoredProcedure(catalogName, name, procName);
       }
 
-      for (int i = 0, j = packages.size(); i < packages.size(); i++, j--) {
+      j = packages.size();
+      for (Iterator<String> iter = packages.iterator(); iter.hasNext(); j--) {
         progress.set("Dropping packages from the database, " + j + " packages left");
-        String pkgName = packages.get(i);
+        String pkgName = iter.next();
         rs.dropPackage(new DropPackageRequest(catalogName, name, pkgName));
       }
 
-      List<Table> tablesToDrop = sortTablesToDrop();
-      for (int i = 0, j = tablesToDrop.size(); i < tablesToDrop.size(); i++, j--) {
+      j = tables.size();
+      for (Iterator<Table> tablesToDrop = sortTablesToDrop().iterator(); tablesToDrop.hasNext(); j--) {
         progress.set("Dropping tables from the database, " + j + " tables left");
         checkInterrupted();
-        Table table = tablesToDrop.get(i);
+        Table table = tablesToDrop.next();
         boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, request.isSoftDelete());
         boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, request.isDeleteData())
             && !isSoftDelete;
