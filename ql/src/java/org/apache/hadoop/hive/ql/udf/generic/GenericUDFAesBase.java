@@ -22,14 +22,20 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.AlgorithmParameterSpec;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
@@ -52,6 +58,13 @@ public abstract class GenericUDFAesBase extends GenericUDF {
   protected transient boolean isKeyConstant;
   protected transient Cipher cipher;
   protected transient SecretKey secretKey;
+  private boolean isGCM;
+  private boolean isCTR;
+  private static final int GCM_IV_LENGTH = 12;
+  private static final int CTR_IV_LENGTH = 16;
+  private static final int GCM_TAG_LENGTH = 128;
+  private static final String AES_GCM_NOPADDING = "AES/GCM/NoPadding";
+  private static final String AES_CTR_NOPADDING = "AES/CTR/NoPadding";
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -104,8 +117,14 @@ public abstract class GenericUDFAesBase extends GenericUDF {
       secretKey = getSecretKey(key, keyLength);
     }
 
+    HiveConf hiveConf = SessionState.getSessionConf();
+    String cipherTransform = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_UDF_AES_CIPHER_TRANSFORMATION);
+
+    this.isGCM = AES_GCM_NOPADDING.equalsIgnoreCase(cipherTransform);
+    this.isCTR = AES_CTR_NOPADDING.equalsIgnoreCase(cipherTransform);
+    
     try {
-      cipher = Cipher.getInstance("AES");
+      cipher = Cipher.getInstance(cipherTransform);
     } catch (NoSuchPaddingException | NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }
@@ -186,9 +205,52 @@ public abstract class GenericUDFAesBase extends GenericUDF {
 
   protected byte[] aesFunction(byte[] input, int inputLength, SecretKey secretKey) {
     try {
-      cipher.init(getCipherMode(), secretKey);
-      byte[] res = cipher.doFinal(input, 0, inputLength);
-      return res;
+      if (isGCM || isCTR) {
+        int ivLen = isGCM ? GCM_IV_LENGTH : CTR_IV_LENGTH;
+
+        if (getCipherMode() == Cipher.ENCRYPT_MODE) {
+          byte[] iv = new byte[ivLen];
+          new SecureRandom().nextBytes(iv);
+            
+          AlgorithmParameterSpec paramSpec;
+          if (isGCM) {
+            paramSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+          } else {
+            paramSpec = new IvParameterSpec(iv);
+          }
+            
+          cipher.init(Cipher.ENCRYPT_MODE, secretKey, paramSpec);
+          byte[] cipherText = cipher.doFinal(input, 0, inputLength);
+            
+          byte[] output = new byte[iv.length + cipherText.length];
+          System.arraycopy(iv, 0, output, 0, iv.length);
+          System.arraycopy(cipherText, 0, output, iv.length, cipherText.length);
+
+          return output;
+
+        } else {
+          int minLen = isGCM ? (ivLen + (GCM_TAG_LENGTH / 8)) : (ivLen + 1);
+          if (inputLength < minLen) {
+            return null;
+          }
+            
+          byte[] iv = new byte[ivLen];
+          System.arraycopy(input, 0, iv, 0, ivLen);
+            
+          AlgorithmParameterSpec paramSpec;
+          if (isGCM) {
+            paramSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
+          } else {
+            paramSpec = new IvParameterSpec(iv);
+          }
+            
+          cipher.init(Cipher.DECRYPT_MODE, secretKey, paramSpec);
+          return cipher.doFinal(input, ivLen, inputLength - ivLen);
+        }
+      } else {
+        cipher.init(getCipherMode(), secretKey);
+        return cipher.doFinal(input, 0, inputLength);
+      }
     } catch (GeneralSecurityException e) {
       return null;
     }
