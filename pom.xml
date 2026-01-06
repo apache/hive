@@ -544,12 +544,6 @@
         <groupId>org.apache.accumulo</groupId>
         <artifactId>accumulo-fate</artifactId>
         <version>${accumulo.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.accumulo</groupId>
@@ -1350,12 +1344,6 @@
         <groupId>org.apache.tez</groupId>
         <artifactId>tez-runtime-internals</artifactId>
         <version>${tez.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.tez</groupId>
@@ -1365,10 +1353,6 @@
           <exclusion>
             <groupId>io.netty</groupId>
             <artifactId>netty</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -1384,10 +1368,6 @@
           <exclusion>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-client</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -1429,10 +1409,6 @@
           <exclusion>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-yarn-client</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
           </exclusion>
         </exclusions>
       </dependency>

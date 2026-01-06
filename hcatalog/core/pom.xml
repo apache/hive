@@ -303,10 +303,6 @@
           <groupId>ch.qos.reload4j</groupId>
           <artifactId>reload4j</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>commons-lang</groupId>
-          <artifactId>commons-lang</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>

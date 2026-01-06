@@ -503,10 +503,6 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
           </exclusion>
-          <exclusion>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-          </exclusion>
         </exclusions>
       </dependency>
       <dependency>

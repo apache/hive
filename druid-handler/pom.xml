@@ -118,10 +118,6 @@
           <groupId>org.glassfish</groupId>
           <artifactId>javax.el</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>commons-lang</groupId>
-          <artifactId>commons-lang</artifactId>
-        </exclusion>
       </exclusions>
       <optional>true</optional>
     </dependency>
@@ -154,10 +150,6 @@
           <!--LGPL licenced library-->
           <groupId>com.google.code.findbugs</groupId>
           <artifactId>annotations</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-lang</groupId>
-          <artifactId>commons-lang</artifactId>
         </exclusion>
       </exclusions>
       <optional>true</optional>

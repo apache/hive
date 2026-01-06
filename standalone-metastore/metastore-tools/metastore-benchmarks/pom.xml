@@ -115,10 +115,6 @@
           <groupId>org.codehaus.plexus</groupId>
           <artifactId>plexus-utils</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>commons-lang</groupId>
-          <artifactId>commons-lang</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
