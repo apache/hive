@@ -379,6 +379,12 @@ public final class HiveSchemaUtil {
           return "timestamp with local time zone";
         }
         return "timestamp";
+      case TIMESTAMP_NANO:
+        Types.TimestampNanoType timestampNanoType = (Types.TimestampNanoType) type;
+        if (timestampNanoType.shouldAdjustToUTC()) {
+          return "timestamp with local time zone(9)";
+        }
+        return "timestamp(9)";
       case FIXED:
       case BINARY:
         return "binary";

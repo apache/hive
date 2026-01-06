@@ -28,25 +28,41 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
   private static final long serialVersionUID = 1L;
 
   private ZoneId timeZone;
+  private final int precision;
 
   public TimestampLocalTZTypeInfo() {
-    super(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
+    this(6, ZoneId.systemDefault());
   }
 
   public TimestampLocalTZTypeInfo(String timeZoneStr) {
-    super(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
-    this.timeZone = TimestampTZUtil.parseTimeZone(timeZoneStr);
+    this(6, TimestampTZUtil.parseTimeZone(timeZoneStr));
   }
 
-  @Override
-  public String getTypeName() {
-    return serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME;
+  public TimestampLocalTZTypeInfo(int precision, ZoneId timeZone) {
+    super(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
+    if (precision != 6 && precision != 9) {
+      throw new RuntimeException("Unsupported value for precision: " + precision);
+    }
+    this.precision = precision;
+    this.timeZone = timeZone;
+  }
+
+  public int getPrecision() {
+    return precision;
   }
 
   @Override
   public void setTypeName(String typeName) {
     // No need to set type name, it should always be {@link serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME}
     return;
+  }
+
+  @Override
+  public String getTypeName() {
+    if (precision == 9) {
+      return serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME + "(9)";
+    }
+    return super.getTypeName();
   }
 
   @Override
@@ -58,9 +74,8 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
       return false;
     }
 
-    TimestampLocalTZTypeInfo dti = (TimestampLocalTZTypeInfo) other;
-
-    return this.timeZone().equals(dti.timeZone());
+    TimestampLocalTZTypeInfo that = (TimestampLocalTZTypeInfo) other;
+    return precision == that.precision && Objects.equals(timeZone, that.timeZone);
   }
 
   /**
@@ -68,27 +83,36 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
    */
   @Override
   public int hashCode() {
-    return Objects.hash(typeName, timeZone);
+    return Objects.hash(typeName, precision, timeZone);
   }
 
   @Override
   public String toString() {
-    return getQualifiedName(timeZone);
+    return getQualifiedName(timeZone, precision);
   }
 
   @Override
   public String getQualifiedName() {
-    return getQualifiedName(null);
+    return getQualifiedName(null, precision);
   }
 
-  public static String getQualifiedName(ZoneId timeZone) {
+  static String getQualifiedName(ZoneId timeZone, int precision) {
     StringBuilder sb = new StringBuilder(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
     if (timeZone != null) {
       sb.append("('");
       sb.append(timeZone);
       sb.append("')");
     }
+    if (precision > 6) {
+      sb.append("(");
+      sb.append(precision);
+      sb.append(")");
+    }
     return sb.toString();
+  }
+
+  public static String getQualifiedName(ZoneId timeZone) {
+    return getQualifiedName(timeZone, 6);
   }
 
   public ZoneId timeZone() {
