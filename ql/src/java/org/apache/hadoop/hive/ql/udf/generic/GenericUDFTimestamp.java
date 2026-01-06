@@ -105,6 +105,9 @@ public class GenericUDFTimestamp extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
+    if (tsConvertors[0] instanceof ObjectInspectorConverters.IdentityConverter) {
+      return arguments[0].get();
+    }
     PrimitiveObjectInspectorConverter.TimestampConverter ts =
         (PrimitiveObjectInspectorConverter.TimestampConverter) tsConvertors[0];
     ts.setIntToTimestampInSeconds(intToTimestampInSeconds);

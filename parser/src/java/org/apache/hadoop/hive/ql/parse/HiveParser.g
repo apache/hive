@@ -2434,9 +2434,16 @@ primitiveType
     | KW_DOUBLE KW_PRECISION?       ->    TOK_DOUBLE
     | KW_DATE          ->    TOK_DATE
     | KW_DATETIME      ->    TOK_DATETIME
-    | KW_TIMESTAMP     ->    TOK_TIMESTAMP
     | KW_TIMESTAMPLOCALTZ   ->    TOK_TIMESTAMPLOCALTZ
-    | KW_TIMESTAMP KW_WITH KW_LOCAL KW_TIME KW_ZONE -> TOK_TIMESTAMPLOCALTZ
+    | KW_TIMESTAMP
+      (
+        KW_WITH KW_LOCAL KW_TIME KW_ZONE
+          (LPAREN p=Number RPAREN)?
+            -> ^(TOK_TIMESTAMPLOCALTZ $p?)
+        |
+          (LPAREN p=Number RPAREN)?
+            -> ^(TOK_TIMESTAMP $p?)
+      )
     // Uncomment to allow intervals as table column types
     //| KW_INTERVAL KW_YEAR KW_TO KW_MONTH -> TOK_INTERVAL_YEAR_MONTH
     //| KW_INTERVAL KW_DAY KW_TO KW_SECOND -> TOK_INTERVAL_DAY_TIME
