@@ -1085,8 +1085,9 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         }
         return FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, new_parts);
       }
+      return new ArrayList<>();
     }
-    return Collections.emptyList();
+    return null;
   }
 
   @Override

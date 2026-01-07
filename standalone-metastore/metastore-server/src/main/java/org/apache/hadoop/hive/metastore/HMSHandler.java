@@ -3572,19 +3572,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       request.getParts().forEach(p -> p.setCatName(catName));
       request.setCatName(catName);
       AddPartitionsHandler addPartsOp = AbstractOperationHandler.offer(this, request);
-      AbstractOperationHandler.OperationStatus status = addPartsOp.getOperationStatus();
-      if (status.isFinished() && addPartsOp.success()) {
+      if (addPartsOp.success() && request.isNeedResult()) {
         AddPartitionsHandler.AddPartitionsResult addPartsResult = addPartsOp.getResult();
-        if (request.isNeedResult()) {
-          if (isColSkippedForPartitions) {
-            if (addPartsResult.newParts() != null && !addPartsResult.newParts().isEmpty()) {
-              StorageDescriptor sd = addPartsResult.newParts().get(0).getSd().deepCopy();
-              result.setPartitionColSchema(sd.getCols());
-            }
-            addPartsResult.newParts().stream().forEach(partition -> partition.getSd().getCols().clear());
+        if (isColSkippedForPartitions) {
+          if (addPartsResult.newParts() != null && !addPartsResult.newParts().isEmpty()) {
+            StorageDescriptor sd = addPartsResult.newParts().get(0).getSd().deepCopy();
+            result.setPartitionColSchema(sd.getCols());
           }
-          result.setPartitions(addPartsResult.newParts());
+          addPartsResult.newParts().stream().forEach(partition -> partition.getSd().getCols().clear());
         }
+        result.setPartitions(addPartsResult.newParts());
       }
     } catch (Exception e) {
       ex = e;
@@ -3941,11 +3938,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     try {
       DropPartitionsResult resp = new DropPartitionsResult();
       DropPartitionsHandler dropPartsOp = AbstractOperationHandler.offer(this, request);
-      AbstractOperationHandler.OperationStatus status = dropPartsOp.getOperationStatus();
-      if (status.isFinished() && dropPartsOp.success()) {
-        if (request.isNeedResult()) {
-          resp.setPartitions(dropPartsOp.getResult().getPartitions());
-        }
+      if (dropPartsOp.success() && request.isNeedResult()) {
+        resp.setPartitions(dropPartsOp.getResult().getPartitions());
       }
       return resp;
     } catch (Exception e) {

@@ -189,20 +189,19 @@ public class DropTableHandler
   @Override
   protected void afterExecute(DropTableResult result) throws MetaException, IOException {
     try {
-      if (result != null && result.success()) {
-        if (result.tableDataShouldBeDeleted()) {
-          boolean ifPurge = result.ifPurge();
-          boolean shouldEnableCm = result.shouldEnableCm();
-          // Data needs deletion. Check if trash may be skipped.
-          // Delete the data in the partitions which have other locations
-          List<Path> pathsToDelete = new ArrayList<>();
-          if (result.partPaths != null) {
-            pathsToDelete.addAll(result.partPaths);
-          }
-          pathsToDelete.add(result.tablePath);
-          for (Path path : pathsToDelete) {
-            deleteDataExcludeCmroot(path, ifPurge, shouldEnableCm);
-          }
+      if (result != null && result.success() &&
+          result.tableDataShouldBeDeleted()) {
+        boolean ifPurge = result.ifPurge();
+        boolean shouldEnableCm = result.shouldEnableCm();
+        // Data needs deletion. Check if trash may be skipped.
+        // Delete the data in the partitions which have other locations
+        List<Path> pathsToDelete = new ArrayList<>();
+        if (result.partPaths != null) {
+          pathsToDelete.addAll(result.partPaths);
+        }
+        pathsToDelete.add(result.tablePath);
+        for (Path path : pathsToDelete) {
+          deleteDataExcludeCmroot(path, ifPurge, shouldEnableCm);
         }
       }
     } finally {
@@ -256,6 +255,10 @@ public class DropTableHandler
                                 boolean ifPurge,
                                 List<Path> partPaths,
                                 boolean shouldEnableCm) implements Result {
-
+    @Override
+    public Result shrinkIfNecessary() {
+      return new DropTableResult(null, success,
+          tableDataShouldBeDeleted, ifPurge, null, shouldEnableCm);
+    }
   }
 }

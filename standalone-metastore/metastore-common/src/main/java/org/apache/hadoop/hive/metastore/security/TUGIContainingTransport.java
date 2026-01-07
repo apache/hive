@@ -60,6 +60,10 @@ public class TUGIContainingTransport extends TFilterTransport {
     return null;
   }
 
+  public TTransport getWrapped() {
+    return wrapped;
+  }
+
   /** Factory to create TUGIContainingTransport.
    */
 

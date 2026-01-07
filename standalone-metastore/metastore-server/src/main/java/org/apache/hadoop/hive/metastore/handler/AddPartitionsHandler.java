@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -409,32 +410,12 @@ public class AddPartitionsHandler
       if (this == obj) {
         return true;
       }
-      if (obj == null || !(obj instanceof PartValEqWrapperLite)) {
+      if (!(obj instanceof PartValEqWrapperLite)) {
         return false;
       }
-
       List<String> lhsValues = this.values;
       List<String> rhsValues = ((PartValEqWrapperLite)obj).values;
-
-      if (lhsValues == null || rhsValues == null) {
-        return lhsValues == rhsValues;
-      }
-
-      if (lhsValues.size() != rhsValues.size()) {
-        return false;
-      }
-
-      for (int i=0; i<lhsValues.size(); ++i) {
-        String lhsValue = lhsValues.get(i);
-        String rhsValue = rhsValues.get(i);
-
-        if ((lhsValue == null && rhsValue != null)
-            || (lhsValue != null && !lhsValue.equals(rhsValue))) {
-          return false;
-        }
-      }
-
-      return true;
+      return Objects.equals(lhsValues, rhsValues);
     }
   }
 

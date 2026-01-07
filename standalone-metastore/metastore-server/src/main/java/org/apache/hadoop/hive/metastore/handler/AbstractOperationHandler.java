@@ -138,23 +138,23 @@ public abstract class AbstractOperationHandler<T extends TBase, A extends Abstra
     }
 
     this.future =  executor.submit(() -> {
-      A result = null;
+      A resultV = null;
       beforeExecute();
       try {
-        result = execute();
+        resultV = execute();
       } finally {
         try {
           if (async) {
             OPID_CLEANER.schedule(() -> OPID_TO_HANDLER.remove(id), 1, TimeUnit.HOURS);
           }
-          afterExecute(result);
+          afterExecute(resultV);
         } finally {
           if (timerContext != null) {
             timerContext.stop();
           }
         }
       }
-      return result.shrinkIfNecessary();
+      return async ? resultV.shrinkIfNecessary() : resultV;
     });
     this.executor.shutdown();
   }
@@ -337,8 +337,9 @@ public abstract class AbstractOperationHandler<T extends TBase, A extends Abstra
    */
   protected abstract String getProgress();
 
-  public boolean success() {
-    return result != null && result.success();
+  public boolean success() throws TException {
+    OperationStatus status = getOperationStatus();
+    return status.isFinished() && result != null && result.success();
   }
 
   /**
@@ -356,8 +357,8 @@ public abstract class AbstractOperationHandler<T extends TBase, A extends Abstra
   }
 
   /**
-   * Method after the operation is done,
-   * can be used to free the resources this handler holds
+   * Method after the operation is done.
+   * Can be used to free the resources this handler holds
    */
   protected void afterExecute(A result) throws MetaException, IOException {
     handler = null;
@@ -370,7 +371,7 @@ public abstract class AbstractOperationHandler<T extends TBase, A extends Abstra
   }
 
   public interface HandlerFactory {
-    AbstractOperationHandler create(IHMSHandler base, TBase req) throws TException, IOException ;
+    AbstractOperationHandler create(IHMSHandler base, TBase req) throws TException, IOException;
   }
 
   public interface Result {

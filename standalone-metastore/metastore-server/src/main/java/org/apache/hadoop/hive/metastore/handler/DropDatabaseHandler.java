@@ -144,11 +144,12 @@ public class DropDatabaseHandler
         dropRequest.setDropPartitions(true);
         dropRequest.setAsyncDrop(false);
         DropTableHandler dropTable = AbstractOperationHandler.offer(handler, dropRequest);
-        DropTableHandler.DropTableResult dropTableResult = dropTable.getResult();
         if (tableDataShouldBeDeleted
-            && dropTableResult.success()
-            && dropTableResult.partPaths() != null) {
-          partitionPaths.addAll(dropTableResult.partPaths());
+            && dropTable.success()) {
+          DropTableHandler.DropTableResult dropTableResult = dropTable.getResult();
+          if (dropTableResult.partPaths() != null) {
+            partitionPaths.addAll(dropTableResult.partPaths());
+          }
         }
       }
 
@@ -464,5 +465,4 @@ public class DropDatabaseHandler
       super.afterExecute(result);
     }
   }
-
 }

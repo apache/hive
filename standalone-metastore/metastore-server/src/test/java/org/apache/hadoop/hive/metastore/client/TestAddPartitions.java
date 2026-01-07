@@ -1365,7 +1365,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
     partitions.add(partition3);
 
     List<Partition> addedPartitions = client.add_partitions(partitions, false, false);
-    Assert.assertTrue(addedPartitions.isEmpty());
+    Assert.assertNull(addedPartitions);
     verifyPartition(table, "year=2017", Lists.newArrayList("2017"), 1);
     verifyPartition(table, "year=2016", Lists.newArrayList("2016"), 2);
     verifyPartition(table, "year=2015", Lists.newArrayList("2015"), 3);
