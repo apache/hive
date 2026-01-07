@@ -50,8 +50,8 @@ import org.apache.hadoop.io.Text;
  *
  */
 public abstract class GenericUDFAesBase extends GenericUDF {
-  protected transient Converter[] converters = new Converter[2];
-  protected transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[2];
+  protected transient Converter[] converters = new Converter[3];
+  protected transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[3];
   protected final BytesWritable output = new BytesWritable();
   protected transient boolean isStr0;
   protected transient boolean isStr1;
@@ -68,7 +68,7 @@ public abstract class GenericUDFAesBase extends GenericUDF {
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
-    checkArgsSize(arguments, 2, 2);
+    checkArgsSize(arguments, 2, 3);
 
     checkArgPrimitive(arguments, 0);
     checkArgPrimitive(arguments, 1);
@@ -117,8 +117,18 @@ public abstract class GenericUDFAesBase extends GenericUDF {
       secretKey = getSecretKey(key, keyLength);
     }
 
-    HiveConf hiveConf = SessionState.getSessionConf();
-    String cipherTransform = HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_UDF_AES_CIPHER_TRANSFORMATION);
+    String cipherTransform = "AES";
+    
+    if (arguments.length == 3) {
+      checkArgPrimitive(arguments, 2);
+      checkArgGroups(arguments, 2, inputTypes, STRING_GROUP);
+      
+      String userDefinedMode = getConstantStringValue(arguments, 2);
+      if (userDefinedMode != null) {
+        cipherTransform = userDefinedMode;
+      }
+
+    }
 
     this.isGCM = AES_GCM_NOPADDING.equalsIgnoreCase(cipherTransform);
     this.isCTR = AES_CTR_NOPADDING.equalsIgnoreCase(cipherTransform);

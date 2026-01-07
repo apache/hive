@@ -5860,14 +5860,7 @@ public class HiveConf extends Configuration {
 
     HIVE_OTEL_RETRY_BACKOFF_MULTIPLIER("hive.otel.retry.backoff.multiplier", 5f,
         "The multiplier applied to the backoff interval for retries in the OTEL exporter."
-            + "This determines how much the backoff interval increases after each failed attempt, following an exponential backoff strategy."),
-
-    HIVE_UDF_AES_CIPHER_TRANSFORMATION("hive.udf.aes.cipher.transformation", "AES", 
-        new StringSet("AES", "AES/CTR/NoPadding", "AES/GCM/NoPadding"),
-        "This specifies the cipher transformation used by AES UDFs."
-            + "The default is the Electronic Codebook transformation (AES/ECB/PKCS5Padding) which encrypts each block " 
-            + "independently whereas Counter (CTR) & Galois/Counter Mode (GCM) provide stronger security using a " 
-            + "generated Initialization Vector (IV).");
+            + "This determines how much the backoff interval increases after each failed attempt, following an exponential backoff strategy.");
 
     public final String varname;
     public final String altName;
