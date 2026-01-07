@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.mapjoin.fast;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinLongHashUtil;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.slf4j.Logger;
@@ -77,7 +78,7 @@ public abstract class VectorMapJoinFastLongHashTable
       throw new HiveException("DeserializeRead details: " +
           keyBinarySortableDeserializeRead.getDetailedReadPositionString(), e);
     }
-    long key = VectorMapJoinFastLongHashUtil.deserializeLongKey(keyBinarySortableDeserializeRead, hashTableKeyType);
+    long key = VectorMapJoinLongHashUtil.deserializeLongKey(keyBinarySortableDeserializeRead, hashTableKeyType);
     add(hashCode, key, currentValue);
     return true;
   }
