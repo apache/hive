@@ -68,6 +68,10 @@ id                  	string
 key                 	int                 	                    
 value               	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+key                 	int                 	Transform: bucket[8]
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 key                 	BUCKET[8]           	 
@@ -181,6 +185,10 @@ POSTHOOK: Input: default@srcbucket_big
 id                  	string              	                    
 key                 	int                 	                    
 value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+key                 	int                 	Transform: bucket[8]
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 

@@ -37,6 +37,11 @@ equality_delete_record_count	bigint              	Count of records in equality d
 equality_delete_file_count	int                 	Count of equality delete files
 last_updated_at     	timestamp with local time zone	Commit time of snapshot that last updated this partition
 last_updated_snapshot_id	bigint              	Id of snapshot that last updated this partition
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d_part              	int                 	Transform: identity 
+e_part              	int                 	Transform: identity 
 PREHOOK: query: select * from default.ice1.partitions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@ice1

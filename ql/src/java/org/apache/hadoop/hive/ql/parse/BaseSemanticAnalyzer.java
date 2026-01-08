@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.QueryProperties.QueryType;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -1759,7 +1760,7 @@ public abstract class BaseSemanticAnalyzer {
    * @param partitionClausePresent Whether a partition clause is present in the query (e.g. PARTITION(last_name='Don'))
    */
   protected static void validateUnsupportedPartitionClause(Table tbl, boolean partitionClausePresent) {
-    if (partitionClausePresent && tbl.hasNonNativePartitionSupport()) {
+    if (partitionClausePresent && tbl.hasNonNativePartitionSupport() && !DDLUtils.isIcebergTable(tbl)) {
       throw new UnsupportedOperationException("Using partition spec in query is unsupported for non-native table" +
           " backed by: " + tbl.getStorageHandler().toString());
     }

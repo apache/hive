@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.info.desc;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -172,7 +174,7 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
       if (partitionSpec != null) {
         Partition part = null;
         try {
-          part = db.getPartition(tab, partitionSpec, false);
+          part = getPartition(tab, partitionSpec);
         } catch (HiveException e) {
           // if get exception in finding partition it could be DESCRIBE table key
           // return null, continue processing for DESCRIBE table key
@@ -187,5 +189,17 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return null;
+  }
+
+  private Partition getPartition(Table tab, Map<String, String> partitionSpec) throws HiveException {
+    boolean isIcebergTable = DDLUtils.isIcebergTable(tab);
+    if (isIcebergTable) {
+      List<FieldSchema> partKeys = tab.getStorageHandler().getPartitionKeys(tab);
+      if (partKeys.size() != partitionSpec.size()) return null;
+      List<Partition> partList = tab.getStorageHandler().getPartitions(tab, partitionSpec, false);
+      if (partList.isEmpty()) return null;
+      return partList.getFirst();
+    }
+    return db.getPartition(tab, partitionSpec, false);
   }
 }
