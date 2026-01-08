@@ -3564,17 +3564,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Exception ex = null;
     try {
-      if (!request.isSetCatName()) {
-        request.setCatName(catName);
-      }
-      boolean isColSkippedForPartitions = request.isSkipColumnSchemaForPartition();
       // Make sure all the partitions have the catalog set as well
-      request.getParts().forEach(p -> p.setCatName(catName));
-      request.setCatName(catName);
       AddPartitionsHandler addPartsOp = AbstractOperationHandler.offer(this, request);
       if (addPartsOp.success() && request.isNeedResult()) {
         AddPartitionsHandler.AddPartitionsResult addPartsResult = addPartsOp.getResult();
-        if (isColSkippedForPartitions) {
+        if (request.isSkipColumnSchemaForPartition()) {
           if (addPartsResult.newParts() != null && !addPartsResult.newParts().isEmpty()) {
             StorageDescriptor sd = addPartsResult.newParts().get(0).getSd().deepCopy();
             result.setPartitionColSchema(sd.getCols());

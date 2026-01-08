@@ -224,6 +224,7 @@ public class AddPartitionsHandler
     this.tableName = new TableName(
         normalizeIdentifier(request.isSetCatName() ? request.getCatName() : getDefaultCatalog(handler.getConf())),
         normalizeIdentifier(request.getDbName()), normalizeIdentifier(request.getTblName()));
+    request.getParts().forEach(p -> p.setCatName(tableName.getCat()));
     this.wh = handler.getWh();
     RawStore ms = handler.getMS();
     table = ms.getTable(tableName.getCat(), tableName.getDb(), tableName.getTable(), null);

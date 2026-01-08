@@ -179,12 +179,6 @@ public abstract class AbstractOperationHandler<T extends TBase, A extends Abstra
               resp.setFinished(true);
               return resp;
             }
-
-            @Override
-            protected void beforeExecute() throws TException, IOException {
-              throw new UnsupportedOperationException();
-            }
-
             @Override
             protected A execute() throws TException, IOException {
               throw new UnsupportedOperationException();
@@ -313,7 +307,9 @@ public abstract class AbstractOperationHandler<T extends TBase, A extends Abstra
    * executed at the same thread as the caller.
    * @throws TException
    */
-  protected abstract void beforeExecute() throws TException, IOException;
+  protected void beforeExecute() throws TException, IOException {
+    // noop
+  }
 
   /**
    * Run this operation.
