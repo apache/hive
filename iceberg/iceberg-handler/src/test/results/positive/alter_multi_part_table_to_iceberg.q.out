@@ -180,6 +180,11 @@ a                   	int
 b                   	string              	                    
 c                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+c                   	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -451,6 +456,11 @@ a                   	int
 b                   	string              	                    
 c                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+c                   	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -721,6 +731,11 @@ POSTHOOK: Input: default@tbl_avro
 a                   	int                 	                    
 b                   	string              	                    
 c                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+c                   	string              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -1054,6 +1069,12 @@ a                   	int
 b                   	double              	                    
 c                   	int                 	                    
 d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	double              	Transform: identity 
+c                   	int                 	Transform: identity 
+d                   	string              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -1496,6 +1517,12 @@ b                   	double
 c                   	int                 	                    
 d                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	double              	Transform: identity 
+c                   	int                 	Transform: identity 
+d                   	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -1936,6 +1963,12 @@ a                   	int
 b                   	double              	                    
 c                   	int                 	                    
 d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	double              	Transform: identity 
+c                   	int                 	Transform: identity 
+d                   	string              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 

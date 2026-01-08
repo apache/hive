@@ -50,6 +50,10 @@ POSTHOOK: Input: default@mat1
 c                   	int                 	                    
 b                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -137,6 +141,10 @@ POSTHOOK: Input: default@mat2
 # col_name            	data_type           	comment             
 c                   	int                 	                    
 b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
