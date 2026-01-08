@@ -56,6 +56,7 @@ public class DummyPartition extends Partition {
         new org.apache.hadoop.hive.metastore.api.Partition();
     tPart.setSd(tbl.getSd().deepCopy());
     tPart.setParameters(Maps.newHashMap());
+    tPart.setDbName(tbl.getDbName());
     
     this.partSpec = Maps.newLinkedHashMap(partSpec);
     setTPartition(tPart);
@@ -80,8 +81,9 @@ public class DummyPartition extends Partition {
 
   @Override
   public List<String> getValues() {
+    Table table = this.getTable();
     List<String> values = new ArrayList<String>();
-    for (FieldSchema fs : this.getTable().getPartCols()) {
+    for (FieldSchema fs : table.getStorageHandler().getPartitionKeys(table)) {
       values.add(partSpec.get(fs.getName()));
     }
     return values;
