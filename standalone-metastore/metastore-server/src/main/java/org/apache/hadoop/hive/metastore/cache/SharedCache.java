@@ -80,7 +80,8 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
-import org.eclipse.jetty.util.ConcurrentHashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +117,7 @@ public class SharedCache {
   private AtomicLong cacheUpdateCount = new AtomicLong(0);
   private long maxCacheSizeInBytes = -1;
   private HashMap<Class<?>, ObjectEstimator> sizeEstimators = null;
-  private Set<String> tableToUpdateSize = new ConcurrentHashSet<>();
+  private Set<String> tableToUpdateSize = ConcurrentHashMap.newKeySet();
   private ScheduledExecutorService executor = null;
   private Map<String, Integer> tableSizeMap = null;
 

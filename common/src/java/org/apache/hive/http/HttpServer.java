@@ -661,7 +661,7 @@ public class HttpServer {
     if (!b.useSSL) {
       connector = new ServerConnector(webServer, http);
     } else {
-      SslContextFactory sslContextFactory = new SslContextFactory.Server();
+      SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setKeyStorePath(b.keyStorePath);
       sslContextFactory.setKeyStoreType(b.keyStoreType == null || b.keyStoreType.isEmpty() ?
           KeyStore.getDefaultType(): b.keyStoreType);

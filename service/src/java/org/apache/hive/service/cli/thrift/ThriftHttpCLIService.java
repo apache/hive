@@ -126,22 +126,18 @@ public class ThriftHttpCLIService extends ThriftCLIService {
       conf.setResponseHeaderSize(responseHeaderSize);
       conf.setSendServerVersion(false);
       conf.setSendXPoweredBy(false);
-      final HttpConnectionFactory http = new HttpConnectionFactory(conf) {
-        public Connection newConnection(Connector connector, EndPoint endPoint) {
-          Connection connection = super.newConnection(connector, endPoint);
-          connection.addListener(new Connection.Listener() {
-            public void onOpened(Connection connection) {
-              openConnection();
-            }
-
-            public void onClosed(Connection connection) {
-              closeConnection();
-            }
-          });
-          return connection;
+      final HttpConnectionFactory http = new HttpConnectionFactory(conf);
+      http.addBean(new Connection.Listener() {
+        @Override
+        public void onOpened(Connection connection) {
+          openConnection();
         }
-      };
 
+        @Override
+        public void onClosed(Connection connection) {
+          closeConnection();
+        }
+      });
       boolean useSsl = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_USE_SSL);
       String schemeName = useSsl ? "https" : "http";
 
@@ -163,7 +159,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         if (keyStoreAlgorithm.isEmpty()) {
           keyStoreAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
         }
-        SslContextFactory sslContextFactory = new SslContextFactory.Server();
+        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
         String[] excludedProtocols = hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",");
         LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
         sslContextFactory.addExcludeProtocols(excludedProtocols);

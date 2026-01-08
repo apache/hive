@@ -68,12 +68,8 @@ import org.apache.thrift.transport.TTransportFactory;
 
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.server.HttpChannel;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.security.Constraint;
@@ -380,9 +376,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     final HttpConnectionFactory http = new HttpConnectionFactory(httpServerConf);
 
-    final SslContextFactory sslContextFactory = ServletSecurity.createSslContextFactory(conf);
+    final SslContextFactory.Server sslContextFactory = ServletSecurity.createSslContextFactory(conf);
     if (sslContextFactory != null) {
-      connector = new ServerConnector(server, sslContextFactory, http);
+      connector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()), http);
     } else {
       connector = new ServerConnector(server, http);
     }

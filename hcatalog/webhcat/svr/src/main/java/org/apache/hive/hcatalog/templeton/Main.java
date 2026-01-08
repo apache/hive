@@ -26,6 +26,8 @@ import com.sun.jersey.spi.container.servlet.ServletContainer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -35,6 +37,7 @@ import java.util.Set;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
 import org.apache.hadoop.hive.common.IPStackUtils;
+import org.eclipse.jetty.util.resource.PathResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -63,6 +66,7 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -204,9 +208,11 @@ public class Main {
     if (StringUtils.isEmpty(conf.jettyConfiguration())) {
       server = new Server(port);
     } else {
-        FileInputStream jettyConf = new FileInputStream(conf.jettyConfiguration());
-        XmlConfiguration configuration = new XmlConfiguration(jettyConf);
-        server = (Server)configuration.configure();
+        Path configPath = Paths.get(conf.jettyConfiguration());
+        PathResource jettyResource = new PathResource(configPath);
+
+        XmlConfiguration configuration = new XmlConfiguration(jettyResource);
+        server = (Server) configuration.configure();
     }
 
     ServletContextHandler root = new ServletContextHandler(server, "/");
@@ -289,7 +295,7 @@ public class Main {
 
     if (conf.getBoolean(AppConfig.USE_SSL, false)) {
       LOG.info("Using SSL for templeton.");
-      SslContextFactory sslContextFactory = new SslContextFactory.Server();
+      SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
       sslContextFactory.setKeyStorePath(conf.get(AppConfig.KEY_STORE_PATH, DEFAULT_KEY_STORE_PATH));
       sslContextFactory.setKeyStorePassword(conf.get(AppConfig.KEY_STORE_PASSWORD, DEFAULT_KEY_STORE_PASSWORD));
       Set<String> excludedSSLProtocols = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings()

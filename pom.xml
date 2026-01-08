@@ -160,7 +160,7 @@
     <javax-servlet.version>3.1.0</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
-    <jetty.version>9.4.57.v20241219</jetty.version>
+    <jetty.version>10.0.24</jetty.version>
     <jersey.version>1.19.4</jersey.version>
     <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
     <jline.version>3.25.0</jline.version>
