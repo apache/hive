@@ -1,0 +1,5973 @@
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "store_sales"
+        ],
+        "table:alias": "store_sales",
+        "inputs": [],
+        "rowCount": 82510879939,
+        "avgRowSize": 261,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_sold_time_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ss_item_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_customer_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_cdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_hdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_addr_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_store_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_promo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ss_ticket_number"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "ss_quantity"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_discount_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_sales_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_wholesale_cost"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_list_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_ext_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_coupon_amt"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_net_paid"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_net_paid_inc_tax"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "ss_net_profit"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "ss_sold_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "partitionColumns": [
+          "ss_sold_date_sk"
+        ],
+        "colStats": [
+          {
+            "name": "ss_store_sk",
+            "ndv": 870,
+            "minValue": 1,
+            "maxValue": 1702
+          },
+          {
+            "name": "ss_net_profit",
+            "ndv": 1466906,
+            "minValue": -10000,
+            "maxValue": 9986
+          },
+          {
+            "name": "ss_sold_date_sk",
+            "ndv": 1823,
+            "minValue": 2450816,
+            "maxValue": 2452642
+          },
+          {
+            "name": "ss_sold_time_sk",
+            "ndv": 45279,
+            "minValue": 28800,
+            "maxValue": 75599
+          },
+          {
+            "name": "ss_item_sk",
+            "ndv": 462000,
+            "minValue": 1,
+            "maxValue": 462000
+          },
+          {
+            "name": "ss_customer_sk",
+            "ndv": 78525965,
+            "minValue": 1,
+            "maxValue": 80000000
+          },
+          {
+            "name": "ss_cdemo_sk",
+            "ndv": 1920801,
+            "minValue": 1,
+            "maxValue": 1920800
+          },
+          {
+            "name": "ss_hdemo_sk",
+            "ndv": 7201,
+            "minValue": 1,
+            "maxValue": 7200
+          },
+          {
+            "name": "ss_addr_sk",
+            "ndv": 40000001,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "ss_promo_sk",
+            "ndv": 2301,
+            "minValue": 1,
+            "maxValue": 2300
+          },
+          {
+            "name": "ss_ticket_number",
+            "ndv": 7200000000,
+            "minValue": 1,
+            "maxValue": 7200000000
+          },
+          {
+            "name": "ss_quantity",
+            "ndv": 101,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "ss_wholesale_cost",
+            "ndv": 9382,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "ss_list_price",
+            "ndv": 20258,
+            "minValue": 1,
+            "maxValue": 200
+          },
+          {
+            "name": "ss_sales_price",
+            "ndv": 20315,
+            "minValue": 0,
+            "maxValue": 200
+          },
+          {
+            "name": "ss_ext_discount_amt",
+            "ndv": 1219691,
+            "minValue": 0,
+            "maxValue": 19778
+          },
+          {
+            "name": "ss_ext_sales_price",
+            "ndv": 738605,
+            "minValue": 0,
+            "maxValue": 19972
+          },
+          {
+            "name": "ss_ext_wholesale_cost",
+            "ndv": 381232,
+            "minValue": 1,
+            "maxValue": 10000
+          },
+          {
+            "name": "ss_ext_list_price",
+            "ndv": 759913,
+            "minValue": 1,
+            "maxValue": 20000
+          },
+          {
+            "name": "ss_ext_tax",
+            "ndv": 158652,
+            "minValue": 0,
+            "maxValue": 1797.48
+          },
+          {
+            "name": "ss_coupon_amt",
+            "ndv": 1219691,
+            "minValue": 0,
+            "maxValue": 19778
+          },
+          {
+            "name": "ss_net_paid",
+            "ndv": 1330581,
+            "minValue": 0,
+            "maxValue": 19972
+          },
+          {
+            "name": "ss_net_paid_inc_tax",
+            "ndv": 1755573,
+            "minValue": 0,
+            "maxValue": 21769.48
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "$6"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 22,
+                  "name": "$22"
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 6.6833812750590004E10
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "ss_store_sk",
+          "ss_net_profit",
+          "ss_sold_date_sk"
+        ],
+        "exprs": [
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 21,
+            "name": "$21"
+          },
+          {
+            "input": 22,
+            "name": "$22"
+          }
+        ],
+        "rowCount": 6.6833812750590004E10
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "date_dim"
+        ],
+        "table:alias": "date_dim",
+        "inputs": [],
+        "rowCount": 73049,
+        "avgRowSize": 347,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "d_date_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "d_date_id"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "d_date"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_month_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_week_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dow"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_moy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_qoy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_week_seq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 9,
+              "name": "d_day_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 6,
+              "name": "d_quarter_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_holiday"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_weekend"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_following_holiday"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_first_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_last_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_ly"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_lq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_day"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_week"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_month"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_quarter"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_year"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "d_date_sk",
+            "ndv": 67850,
+            "minValue": 2415022,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_qoy",
+            "ndv": 4,
+            "minValue": 1,
+            "maxValue": 4
+          },
+          {
+            "name": "d_date_id",
+            "ndv": 71022
+          },
+          {
+            "name": "d_date",
+            "ndv": 0,
+            "minValue": -25566,
+            "maxValue": 47482
+          },
+          {
+            "name": "d_month_seq",
+            "ndv": 2439,
+            "minValue": 0,
+            "maxValue": 2400
+          },
+          {
+            "name": "d_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_dow",
+            "ndv": 7,
+            "minValue": 0,
+            "maxValue": 6
+          },
+          {
+            "name": "d_moy",
+            "ndv": 12,
+            "minValue": 1,
+            "maxValue": 12
+          },
+          {
+            "name": "d_dom",
+            "ndv": 31,
+            "minValue": 1,
+            "maxValue": 31
+          },
+          {
+            "name": "d_fy_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_fy_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_fy_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_day_name",
+            "ndv": 7
+          },
+          {
+            "name": "d_quarter_name",
+            "ndv": 800
+          },
+          {
+            "name": "d_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_weekend",
+            "ndv": 2
+          },
+          {
+            "name": "d_following_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_first_dom",
+            "ndv": 2332,
+            "minValue": 2415021,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_last_dom",
+            "ndv": 2401,
+            "minValue": 2415020,
+            "maxValue": 2488372
+          },
+          {
+            "name": "d_same_day_ly",
+            "ndv": 67791,
+            "minValue": 2414657,
+            "maxValue": 2487705
+          },
+          {
+            "name": "d_same_day_lq",
+            "ndv": 67904,
+            "minValue": 2414930,
+            "maxValue": 2487978
+          },
+          {
+            "name": "d_current_day",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_week",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_month",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_quarter",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_year",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "$6"
+                },
+                {
+                  "literal": 2002,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 10,
+                  "name": "$10"
+                },
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 1643.6025
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "d_date_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1643.6025
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 2,
+              "name": "$2"
+            },
+            {
+              "input": 3,
+              "name": "$3"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "2",
+          "5"
+        ],
+        "rowCount": 1.647723325821024E13
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "customer_address"
+        ],
+        "table:alias": "customer_address",
+        "inputs": [],
+        "rowCount": 40000000,
+        "avgRowSize": 607,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ca_address_sk"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 16,
+              "name": "ca_address_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "ca_street_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "ca_street_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 15,
+              "name": "ca_street_type"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "ca_suite_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "ca_city"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 30,
+              "name": "ca_county"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 2,
+              "name": "ca_state"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "ca_zip"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "ca_country"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 5,
+              "scale": 2,
+              "name": "ca_gmt_offset"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "ca_location_type"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "ca_address_sk",
+            "ndv": 40618307,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "ca_zip",
+            "ndv": 9538
+          },
+          {
+            "name": "ca_address_id",
+            "ndv": 39667899
+          },
+          {
+            "name": "ca_street_number",
+            "ndv": 1014
+          },
+          {
+            "name": "ca_street_name",
+            "ndv": 8358
+          },
+          {
+            "name": "ca_street_type",
+            "ndv": 21
+          },
+          {
+            "name": "ca_suite_number",
+            "ndv": 76
+          },
+          {
+            "name": "ca_city",
+            "ndv": 985
+          },
+          {
+            "name": "ca_county",
+            "ndv": 1930
+          },
+          {
+            "name": "ca_state",
+            "ndv": 53
+          },
+          {
+            "name": "ca_country",
+            "ndv": 2
+          },
+          {
+            "name": "ca_gmt_offset",
+            "ndv": 6,
+            "minValue": -10,
+            "maxValue": -5
+          },
+          {
+            "name": "ca_location_type",
+            "ndv": 4
+          }
+        ]
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "IN",
+                "kind": "OTHER_FUNCTION",
+                "syntax": "SPECIAL"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "substr",
+                    "kind": "OTHER_FUNCTION",
+                    "syntax": "FUNCTION"
+                  },
+                  "operands": [
+                    {
+                      "input": 9,
+                      "name": "$9"
+                    },
+                    {
+                      "literal": 1,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "literal": 5,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
+                    }
+                  ],
+                  "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": true,
+                    "precision": 2147483647
+                  },
+                  "deterministic": true,
+                  "dynamic": false
+                },
+                {
+                  "literal": "89436",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "30868",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "65085",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "22977",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "83927",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "77557",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "58429",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "40697",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "80614",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "10502",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "32779",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "91137",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "61265",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "98294",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "17921",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18427",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21203",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "59362",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "87291",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "84093",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21505",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "17184",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "10866",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "67898",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "25797",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "28055",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18377",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "80332",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "74535",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21757",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "29742",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "90885",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "29898",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "17819",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "40811",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "25990",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "47513",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "89531",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "91068",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "10391",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18846",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "99223",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "82637",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "41368",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "83658",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "86199",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "81625",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "26696",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "89338",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "88425",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "32200",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "81427",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "19053",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "77471",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "36610",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "99823",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "43276",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "41249",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "48584",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "83550",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "82276",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18842",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "78890",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14090",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "38123",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "40936",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "34425",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "19850",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "43286",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "80072",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "79188",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "54191",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "11395",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "50497",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "84861",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "90733",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21068",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "57666",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "37119",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "25004",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "57835",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "70067",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "62878",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "95806",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "19303",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18840",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "19124",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "29785",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "16737",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "16022",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "49613",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "89977",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "68310",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "60069",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "98360",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "48649",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "39050",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "41793",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "25002",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "27413",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "39736",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "47208",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "16515",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "94808",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "57648",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "15009",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "80015",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "42961",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "63982",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21744",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "71853",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "81087",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "67468",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "34175",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "64008",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "20261",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "11201",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "51799",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "48043",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "45645",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "61163",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "48375",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "36447",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "57042",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21218",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "41100",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "89951",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "22745",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "35851",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "83326",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "61125",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "78298",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "80752",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "49858",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "52940",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "96976",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "63792",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "11376",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "53582",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18717",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "90226",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "50530",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "94203",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "99447",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "27670",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "96577",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "57856",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "56372",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "16165",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "23427",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "54561",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "28806",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "44439",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "22926",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "30123",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "61451",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "92397",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "56979",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "92309",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "70873",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "13355",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21801",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "46346",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "37562",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "56458",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "28286",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "47306",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "99555",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "69399",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "26234",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "47546",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "49661",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "88601",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "35943",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "39936",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "25632",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "24611",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "44166",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "56648",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "30379",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "59785",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "11110",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14329",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "93815",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "52226",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "71381",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "13842",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "25612",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "63294",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14664",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21077",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "82626",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18799",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "60915",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "81020",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "56447",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "76619",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "11433",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "13414",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "42548",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "92713",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "70467",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "30884",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "47484",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "16072",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "38936",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "13036",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "88376",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "45539",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "35901",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "19506",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "65690",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "73957",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "71850",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "49231",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14276",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "20005",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18384",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "76615",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "11635",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "38177",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "55607",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "41369",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "95447",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "58581",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "58149",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "91946",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "33790",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "76232",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "75692",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "95464",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "22246",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "51061",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "56692",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "53121",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "77209",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "15482",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "10688",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14868",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "45907",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "73520",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "72666",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "25734",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "17959",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "24677",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "66446",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "94627",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "53535",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "15560",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "41967",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "69297",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "11929",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "59403",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "33283",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "52232",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "57350",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "43933",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "40921",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "36635",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "10827",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "71286",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "19736",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "80619",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "25251",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "95042",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "15526",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "36496",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "55854",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "49124",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "81980",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "35375",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "49157",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "63512",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "28944",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14946",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "36503",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "54010",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18767",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "23969",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "43905",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "66979",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "33113",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21286",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "58471",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "59080",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "13395",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "79144",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "70373",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "67031",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "38360",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "26705",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "50906",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "52406",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "26066",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "73146",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "15884",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "31897",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "30045",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "61068",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "45550",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "92454",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "13376",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14354",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "19770",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "22928",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "97790",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "50723",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "46081",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "30202",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14410",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "20223",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "88500",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "67298",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "13261",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14172",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "81410",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "93578",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "83583",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "46047",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "94167",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "82564",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21156",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "15799",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "86709",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "37931",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "74703",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "83103",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "23054",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "70470",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "72008",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "49247",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "91911",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "69998",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "20961",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "70070",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "63197",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "54853",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "88191",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "91830",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "49521",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "19454",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "81450",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "89091",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "62378",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "25683",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "61869",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "51744",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "36580",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "85778",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "36871",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "48121",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "28810",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "83712",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "45486",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "67393",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "26935",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "42393",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "20132",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "55349",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "86057",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21309",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "80218",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "10094",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "11357",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "48819",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "39734",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "40758",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "30432",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21204",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "29467",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "30214",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "61024",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "55307",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "74621",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "11622",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "68908",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "33032",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "52868",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "99194",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "99900",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "84936",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "69036",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "99149",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "45013",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "32895",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "59004",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "32322",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "14933",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "32936",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "33562",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "72550",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "27385",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "58049",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "58200",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "16808",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "21360",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "32961",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "18586",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "79307",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                },
+                {
+                  "literal": "15492",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": false,
+                    "precision": 2147483647
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "substr",
+                    "kind": "OTHER_FUNCTION",
+                    "syntax": "FUNCTION"
+                  },
+                  "operands": [
+                    {
+                      "op": {
+                        "name": "substr",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "FUNCTION"
+                      },
+                      "operands": [
+                        {
+                          "input": 9,
+                          "name": "$9"
+                        },
+                        {
+                          "literal": 1,
+                          "type": {
+                            "type": "INTEGER",
+                            "nullable": false
+                          }
+                        },
+                        {
+                          "literal": 5,
+                          "type": {
+                            "type": "INTEGER",
+                            "nullable": false
+                          }
+                        }
+                      ],
+                      "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+                      "type": {
+                        "type": "VARCHAR",
+                        "nullable": true,
+                        "precision": 2147483647
+                      },
+                      "deterministic": true,
+                      "dynamic": false
+                    },
+                    {
+                      "literal": 1,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "literal": 2,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
+                    }
+                  ],
+                  "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": true,
+                    "precision": 2147483647
+                  },
+                  "deterministic": true,
+                  "dynamic": false
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 9000000
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "substr",
+              "kind": "OTHER_FUNCTION",
+              "syntax": "FUNCTION"
+            },
+            "operands": [
+              {
+                "input": 9,
+                "name": "$9"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              },
+              {
+                "literal": 5,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ],
+            "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+            "type": {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647
+            },
+            "deterministic": true,
+            "dynamic": false
+          }
+        ],
+        "rowCount": 9000000
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          0
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [],
+            "name": null
+          }
+        ],
+        "rowCount": 899918.3009814302
+      },
+      {
+        "id": "11",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 899918.3009814302
+      },
+      {
+        "id": "12",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "customer_address"
+        ],
+        "table:alias": "customer_address",
+        "inputs": [],
+        "rowCount": 40000000,
+        "avgRowSize": 607,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "ca_address_sk"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 16,
+              "name": "ca_address_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "ca_street_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "ca_street_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 15,
+              "name": "ca_street_type"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "ca_suite_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "ca_city"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 30,
+              "name": "ca_county"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 2,
+              "name": "ca_state"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "ca_zip"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "ca_country"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 5,
+              "scale": 2,
+              "name": "ca_gmt_offset"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "ca_location_type"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "ca_address_sk",
+            "ndv": 40618307,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "ca_address_id",
+            "ndv": 39667899
+          },
+          {
+            "name": "ca_street_number",
+            "ndv": 1014
+          },
+          {
+            "name": "ca_street_name",
+            "ndv": 8358
+          },
+          {
+            "name": "ca_street_type",
+            "ndv": 21
+          },
+          {
+            "name": "ca_suite_number",
+            "ndv": 76
+          },
+          {
+            "name": "ca_city",
+            "ndv": 985
+          },
+          {
+            "name": "ca_county",
+            "ndv": 1930
+          },
+          {
+            "name": "ca_state",
+            "ndv": 53
+          },
+          {
+            "name": "ca_zip",
+            "ndv": 9538
+          },
+          {
+            "name": "ca_country",
+            "ndv": 2
+          },
+          {
+            "name": "ca_gmt_offset",
+            "ndv": 6,
+            "minValue": -10,
+            "maxValue": -5
+          },
+          {
+            "name": "ca_location_type",
+            "ndv": 4
+          }
+        ]
+      },
+      {
+        "id": "13",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IS NOT NULL",
+            "kind": "IS_NOT_NULL",
+            "syntax": "POSTFIX"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "substr",
+                "kind": "OTHER_FUNCTION",
+                "syntax": "FUNCTION"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "substr",
+                    "kind": "OTHER_FUNCTION",
+                    "syntax": "FUNCTION"
+                  },
+                  "operands": [
+                    {
+                      "input": 9,
+                      "name": "$9"
+                    },
+                    {
+                      "literal": 1,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
+                    },
+                    {
+                      "literal": 5,
+                      "type": {
+                        "type": "INTEGER",
+                        "nullable": false
+                      }
+                    }
+                  ],
+                  "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+                  "type": {
+                    "type": "VARCHAR",
+                    "nullable": true,
+                    "precision": 2147483647
+                  },
+                  "deterministic": true,
+                  "dynamic": false
+                },
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                },
+                {
+                  "literal": 2,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ],
+              "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+              "type": {
+                "type": "VARCHAR",
+                "nullable": true,
+                "precision": 2147483647
+              },
+              "deterministic": true,
+              "dynamic": false
+            }
+          ]
+        },
+        "rowCount": 36000000
+      },
+      {
+        "id": "14",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "ca_address_sk",
+          "ca_zip"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 9,
+            "name": "$9"
+          }
+        ],
+        "rowCount": 36000000
+      },
+      {
+        "id": "15",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "customer"
+        ],
+        "table:alias": "customer",
+        "inputs": [],
+        "rowCount": 80000000,
+        "avgRowSize": 517,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "c_customer_sk"
+            },
+            {
+              "type": "CHAR",
+              "nullable": false,
+              "precision": 16,
+              "name": "c_customer_id"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "c_current_cdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "c_current_hdemo_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "c_current_addr_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "c_first_shipto_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "c_first_sales_date_sk"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "c_salutation"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "c_first_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 30,
+              "name": "c_last_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "c_preferred_cust_flag"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "c_birth_day"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "c_birth_month"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "c_birth_year"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "c_birth_country"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 13,
+              "name": "c_login"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "c_email_address"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "c_last_review_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "c_current_addr_sk",
+            "ndv": 33825344,
+            "minValue": 1,
+            "maxValue": 40000000
+          },
+          {
+            "name": "c_preferred_cust_flag",
+            "ndv": 3
+          },
+          {
+            "name": "c_customer_sk",
+            "ndv": 78525965,
+            "minValue": 1,
+            "maxValue": 80000000
+          },
+          {
+            "name": "c_customer_id",
+            "ndv": 80610928
+          },
+          {
+            "name": "c_current_cdemo_sk",
+            "ndv": 1993369,
+            "minValue": 1,
+            "maxValue": 1920800
+          },
+          {
+            "name": "c_current_hdemo_sk",
+            "ndv": 7225,
+            "minValue": 1,
+            "maxValue": 7200
+          },
+          {
+            "name": "c_first_shipto_date_sk",
+            "ndv": 3646,
+            "minValue": 2449028,
+            "maxValue": 2452678
+          },
+          {
+            "name": "c_first_sales_date_sk",
+            "ndv": 3643,
+            "minValue": 2448998,
+            "maxValue": 2452648
+          },
+          {
+            "name": "c_salutation",
+            "ndv": 7
+          },
+          {
+            "name": "c_first_name",
+            "ndv": 5158
+          },
+          {
+            "name": "c_last_name",
+            "ndv": 5123
+          },
+          {
+            "name": "c_birth_day",
+            "ndv": 31,
+            "minValue": 1,
+            "maxValue": 31
+          },
+          {
+            "name": "c_birth_month",
+            "ndv": 12,
+            "minValue": 1,
+            "maxValue": 12
+          },
+          {
+            "name": "c_birth_year",
+            "ndv": 67,
+            "minValue": 1924,
+            "maxValue": 1992
+          },
+          {
+            "name": "c_birth_country",
+            "ndv": 216
+          },
+          {
+            "name": "c_login",
+            "ndv": 1
+          },
+          {
+            "name": "c_email_address",
+            "ndv": 75301330
+          },
+          {
+            "name": "c_last_review_date_sk",
+            "ndv": 364,
+            "minValue": 2452283,
+            "maxValue": 2452648
+          }
+        ]
+      },
+      {
+        "id": "16",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 10,
+                  "name": "$10"
+                },
+                {
+                  "literal": "Y",
+                  "type": {
+                    "type": "CHAR",
+                    "nullable": false,
+                    "precision": 1
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "IS NOT NULL",
+                "kind": "IS_NOT_NULL",
+                "syntax": "POSTFIX"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 10800000
+      },
+      {
+        "id": "17",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "c_current_addr_sk"
+        ],
+        "exprs": [
+          {
+            "input": 4,
+            "name": "$4"
+          }
+        ],
+        "rowCount": 10800000
+      },
+      {
+        "id": "18",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 2,
+              "name": "$2"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "14",
+          "17"
+        ],
+        "rowCount": 58320000000000
+      },
+      {
+        "id": "19",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          1
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [],
+            "name": null
+          }
+        ],
+        "rowCount": 5832000000000
+      },
+      {
+        "id": "20",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": ">",
+            "kind": "GREATER_THAN",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "literal": 10,
+              "type": {
+                "type": "BIGINT",
+                "nullable": false
+              }
+            }
+          ]
+        },
+        "rowCount": 2916000000000
+      },
+      {
+        "id": "21",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "substr",
+              "kind": "OTHER_FUNCTION",
+              "syntax": "FUNCTION"
+            },
+            "operands": [
+              {
+                "input": 0,
+                "name": "$0"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              },
+              {
+                "literal": 5,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ],
+            "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+            "type": {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647
+            },
+            "deterministic": true,
+            "dynamic": false
+          }
+        ],
+        "rowCount": 2916000000000
+      },
+      {
+        "id": "22",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          0
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [],
+            "name": null
+          }
+        ],
+        "rowCount": 2.9157352937095514E11
+      },
+      {
+        "id": "23",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 2.9157352937095514E11
+      },
+      {
+        "id": "24",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion",
+        "all": true,
+        "inputs": [
+          "11",
+          "23"
+        ],
+        "rowCount": 2.915744292892561E11
+      },
+      {
+        "id": "25",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 2.915744292892561E11
+      },
+      {
+        "id": "26",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          0
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              1
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 2.915744292892561E11
+      },
+      {
+        "id": "27",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "literal": 2,
+              "type": {
+                "type": "BIGINT",
+                "nullable": false
+              }
+            }
+          ]
+        },
+        "rowCount": 4.373616439338841E10
+      },
+      {
+        "id": "28",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "EXPR$0"
+        ],
+        "exprs": [
+          {
+            "op": {
+              "name": "substr",
+              "kind": "OTHER_FUNCTION",
+              "syntax": "FUNCTION"
+            },
+            "operands": [
+              {
+                "input": 0,
+                "name": "$0"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              },
+              {
+                "literal": 2,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ],
+            "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+            "type": {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647
+            },
+            "deterministic": true,
+            "dynamic": false
+          }
+        ],
+        "rowCount": 4.373616439338841E10
+      },
+      {
+        "id": "29",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "store"
+        ],
+        "table:alias": "store",
+        "inputs": [],
+        "rowCount": 1704,
+        "avgRowSize": 1375,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "s_store_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "s_store_id"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "s_rec_start_date"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "s_rec_end_date"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "s_closed_date_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "s_store_name"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "s_number_employees"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "s_floor_space"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "s_hours"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 40,
+              "name": "s_manager"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "s_market_id"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 100,
+              "name": "s_geography_class"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 100,
+              "name": "s_market_desc"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 40,
+              "name": "s_market_manager"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "s_division_id"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "s_division_name"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "s_company_id"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "s_company_name"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "s_street_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "s_street_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 15,
+              "name": "s_street_type"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "s_suite_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "s_city"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 30,
+              "name": "s_county"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 2,
+              "name": "s_state"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "s_zip"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "s_country"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 5,
+              "scale": 2,
+              "name": "s_gmt_offset"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 5,
+              "scale": 2,
+              "name": "s_tax_percentage"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "s_store_sk",
+            "ndv": 1736,
+            "minValue": 1,
+            "maxValue": 1704
+          },
+          {
+            "name": "s_store_name",
+            "ndv": 11
+          },
+          {
+            "name": "s_zip",
+            "ndv": 983
+          },
+          {
+            "name": "s_store_id",
+            "ndv": 879
+          },
+          {
+            "name": "s_rec_start_date",
+            "ndv": 0,
+            "minValue": 9933,
+            "maxValue": 11394
+          },
+          {
+            "name": "s_rec_end_date",
+            "ndv": 0,
+            "minValue": 10663,
+            "maxValue": 11393
+          },
+          {
+            "name": "s_closed_date_sk",
+            "ndv": 263,
+            "minValue": 2450820,
+            "maxValue": 2451314
+          },
+          {
+            "name": "s_number_employees",
+            "ndv": 100,
+            "minValue": 200,
+            "maxValue": 300
+          },
+          {
+            "name": "s_floor_space",
+            "ndv": 1289,
+            "minValue": 5000201,
+            "maxValue": 9997773
+          },
+          {
+            "name": "s_hours",
+            "ndv": 4
+          },
+          {
+            "name": "s_manager",
+            "ndv": 1245
+          },
+          {
+            "name": "s_market_id",
+            "ndv": 10,
+            "minValue": 1,
+            "maxValue": 10
+          },
+          {
+            "name": "s_geography_class",
+            "ndv": 2
+          },
+          {
+            "name": "s_market_desc",
+            "ndv": 1311
+          },
+          {
+            "name": "s_market_manager",
+            "ndv": 1236
+          },
+          {
+            "name": "s_division_id",
+            "ndv": 1,
+            "minValue": 1,
+            "maxValue": 1
+          },
+          {
+            "name": "s_division_name",
+            "ndv": 2
+          },
+          {
+            "name": "s_company_id",
+            "ndv": 1,
+            "minValue": 1,
+            "maxValue": 1
+          },
+          {
+            "name": "s_company_name",
+            "ndv": 2
+          },
+          {
+            "name": "s_street_number",
+            "ndv": 736
+          },
+          {
+            "name": "s_street_name",
+            "ndv": 851
+          },
+          {
+            "name": "s_street_type",
+            "ndv": 21
+          },
+          {
+            "name": "s_suite_number",
+            "ndv": 76
+          },
+          {
+            "name": "s_city",
+            "ndv": 267
+          },
+          {
+            "name": "s_county",
+            "ndv": 128
+          },
+          {
+            "name": "s_state",
+            "ndv": 44
+          },
+          {
+            "name": "s_country",
+            "ndv": 2
+          },
+          {
+            "name": "s_gmt_offset",
+            "ndv": 5,
+            "minValue": -9,
+            "maxValue": -5
+          },
+          {
+            "name": "s_tax_percentage",
+            "ndv": 12,
+            "minValue": 0,
+            "maxValue": 0.11
+          }
+        ]
+      },
+      {
+        "id": "30",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IS NOT NULL",
+            "kind": "IS_NOT_NULL",
+            "syntax": "POSTFIX"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "substr",
+                "kind": "OTHER_FUNCTION",
+                "syntax": "FUNCTION"
+              },
+              "operands": [
+                {
+                  "input": 25,
+                  "name": "$25"
+                },
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                },
+                {
+                  "literal": 2,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ],
+              "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+              "type": {
+                "type": "VARCHAR",
+                "nullable": true,
+                "precision": 2147483647
+              },
+              "deterministic": true,
+              "dynamic": false
+            }
+          ]
+        },
+        "rowCount": 1533.6000000000001
+      },
+      {
+        "id": "31",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "s_store_sk",
+          "s_store_name",
+          "EXPR$0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "op": {
+              "name": "substr",
+              "kind": "OTHER_FUNCTION",
+              "syntax": "FUNCTION"
+            },
+            "operands": [
+              {
+                "input": 25,
+                "name": "$25"
+              },
+              {
+                "literal": 1,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              },
+              {
+                "literal": 2,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ],
+            "class": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction",
+            "type": {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647
+            },
+            "deterministic": true,
+            "dynamic": false
+          }
+        ],
+        "rowCount": 1533.6000000000001
+      },
+      {
+        "id": "32",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 3,
+              "name": "$3"
+            },
+            {
+              "input": 0,
+              "name": "$0"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "28",
+          "31"
+        ],
+        "rowCount": 1.006106725705507E13
+      },
+      {
+        "id": "33",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "EXPR$0",
+          "s_store_sk",
+          "s_store_name",
+          "EXPR$00"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ],
+        "rowCount": 1.006106725705507E13
+      },
+      {
+        "id": "34",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 5,
+              "name": "$5"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "6",
+          "33"
+        ],
+        "rowCount": 2.4866782803155682E25
+      },
+      {
+        "id": "35",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          6
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 17,
+              "scale": 2
+            },
+            "distinct": false,
+            "operands": [
+              1
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 2.486678280315568E24
+      },
+      {
+        "id": "36",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "s_store_name",
+          "_c1"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 2.486678280315568E24
+      },
+      {
+        "id": "37",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit",
+        "collation": [
+          {
+            "field": 0,
+            "direction": "ASCENDING",
+            "nulls": "LAST"
+          }
+        ],
+        "fetch": {
+          "literal": 100,
+          "type": {
+            "type": "INTEGER",
+            "nullable": false
+          }
+        },
+        "rowCount": 100
+      }
+    ]
+  }
+}

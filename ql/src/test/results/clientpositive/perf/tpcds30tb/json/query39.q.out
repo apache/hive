@@ -1,0 +1,2665 @@
+{
+  "CBOPlan": {
+    "rels": [
+      {
+        "id": "0",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "inventory"
+        ],
+        "table:alias": "inventory",
+        "inputs": [],
+        "rowCount": 1627857000,
+        "avgRowSize": 157,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "inv_date_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "inv_item_sk"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "inv_warehouse_sk"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "inv_quantity_on_hand"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "inv_date_sk",
+            "ndv": 258,
+            "minValue": 2450815,
+            "maxValue": 2452635
+          },
+          {
+            "name": "inv_item_sk",
+            "ndv": 464811,
+            "minValue": 1,
+            "maxValue": 462000
+          },
+          {
+            "name": "inv_warehouse_sk",
+            "ndv": 27,
+            "minValue": 1,
+            "maxValue": 27
+          },
+          {
+            "name": "inv_quantity_on_hand",
+            "ndv": 987,
+            "minValue": 0,
+            "maxValue": 1000
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "inv_date_sk",
+          "inv_warehouse_sk",
+          "inv_quantity_on_hand",
+          "inv_item_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "rowCount": 1627857000
+      },
+      {
+        "id": "2",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "date_dim"
+        ],
+        "table:alias": "date_dim",
+        "inputs": [],
+        "rowCount": 73049,
+        "avgRowSize": 347,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "d_date_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "d_date_id"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "d_date"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_month_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_week_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dow"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_moy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_qoy"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_year"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_quarter_seq"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_fy_week_seq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 9,
+              "name": "d_day_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 6,
+              "name": "d_quarter_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_holiday"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_weekend"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_following_holiday"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_first_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_last_dom"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_ly"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "d_same_day_lq"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_day"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_week"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_month"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_quarter"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 1,
+              "name": "d_current_year"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "d_date_sk",
+            "ndv": 67850,
+            "minValue": 2415022,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_moy",
+            "ndv": 12,
+            "minValue": 1,
+            "maxValue": 12
+          },
+          {
+            "name": "d_date_id",
+            "ndv": 71022
+          },
+          {
+            "name": "d_date",
+            "ndv": 0,
+            "minValue": -25566,
+            "maxValue": 47482
+          },
+          {
+            "name": "d_month_seq",
+            "ndv": 2439,
+            "minValue": 0,
+            "maxValue": 2400
+          },
+          {
+            "name": "d_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_dow",
+            "ndv": 7,
+            "minValue": 0,
+            "maxValue": 6
+          },
+          {
+            "name": "d_dom",
+            "ndv": 31,
+            "minValue": 1,
+            "maxValue": 31
+          },
+          {
+            "name": "d_qoy",
+            "ndv": 4,
+            "minValue": 1,
+            "maxValue": 4
+          },
+          {
+            "name": "d_fy_year",
+            "ndv": 199,
+            "minValue": 1900,
+            "maxValue": 2100
+          },
+          {
+            "name": "d_fy_quarter_seq",
+            "ndv": 808,
+            "minValue": 1,
+            "maxValue": 801
+          },
+          {
+            "name": "d_fy_week_seq",
+            "ndv": 11297,
+            "minValue": 1,
+            "maxValue": 10436
+          },
+          {
+            "name": "d_day_name",
+            "ndv": 7
+          },
+          {
+            "name": "d_quarter_name",
+            "ndv": 800
+          },
+          {
+            "name": "d_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_weekend",
+            "ndv": 2
+          },
+          {
+            "name": "d_following_holiday",
+            "ndv": 2
+          },
+          {
+            "name": "d_first_dom",
+            "ndv": 2332,
+            "minValue": 2415021,
+            "maxValue": 2488070
+          },
+          {
+            "name": "d_last_dom",
+            "ndv": 2401,
+            "minValue": 2415020,
+            "maxValue": 2488372
+          },
+          {
+            "name": "d_same_day_ly",
+            "ndv": 67791,
+            "minValue": 2414657,
+            "maxValue": 2487705
+          },
+          {
+            "name": "d_same_day_lq",
+            "ndv": 67904,
+            "minValue": 2414930,
+            "maxValue": 2487978
+          },
+          {
+            "name": "d_current_day",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_week",
+            "ndv": 1
+          },
+          {
+            "name": "d_current_month",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_quarter",
+            "ndv": 2
+          },
+          {
+            "name": "d_current_year",
+            "ndv": 2
+          }
+        ]
+      },
+      {
+        "id": "3",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "$6"
+                },
+                {
+                  "literal": 1999,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 8,
+                  "name": "$8"
+                },
+                {
+                  "literal": 5,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 1643.6025
+      },
+      {
+        "id": "4",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "d_date_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1643.6025
+      },
+      {
+        "id": "5",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 4,
+              "name": "$4"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "1",
+          "4"
+        ],
+        "rowCount": 4.01332475226375E11
+      },
+      {
+        "id": "6",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "warehouse"
+        ],
+        "table:alias": "warehouse",
+        "inputs": [],
+        "rowCount": 27,
+        "avgRowSize": 679,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "w_warehouse_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "w_warehouse_id"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "w_warehouse_name"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "w_warehouse_sq_ft"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "w_street_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "w_street_name"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 15,
+              "name": "w_street_type"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "w_suite_number"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 60,
+              "name": "w_city"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 30,
+              "name": "w_county"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 2,
+              "name": "w_state"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "w_zip"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "w_country"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 5,
+              "scale": 2,
+              "name": "w_gmt_offset"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "w_warehouse_sk",
+            "ndv": 27,
+            "minValue": 1,
+            "maxValue": 27
+          },
+          {
+            "name": "w_warehouse_name",
+            "ndv": 27
+          },
+          {
+            "name": "w_warehouse_id",
+            "ndv": 27
+          },
+          {
+            "name": "w_warehouse_sq_ft",
+            "ndv": 26,
+            "minValue": 73065,
+            "maxValue": 977787
+          },
+          {
+            "name": "w_street_number",
+            "ndv": 26
+          },
+          {
+            "name": "w_street_name",
+            "ndv": 27
+          },
+          {
+            "name": "w_street_type",
+            "ndv": 16
+          },
+          {
+            "name": "w_suite_number",
+            "ndv": 21
+          },
+          {
+            "name": "w_city",
+            "ndv": 18
+          },
+          {
+            "name": "w_county",
+            "ndv": 14
+          },
+          {
+            "name": "w_state",
+            "ndv": 12
+          },
+          {
+            "name": "w_zip",
+            "ndv": 24
+          },
+          {
+            "name": "w_country",
+            "ndv": 1
+          },
+          {
+            "name": "w_gmt_offset",
+            "ndv": 4,
+            "minValue": -8,
+            "maxValue": -5
+          }
+        ]
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "w_warehouse_sk",
+          "w_warehouse_name"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "rowCount": 27
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 5,
+              "name": "$5"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "5",
+          "7"
+        ],
+        "rowCount": 1.6253965246668186E12
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1",
+          "$f2",
+          "$f4",
+          "$f40",
+          "$f6"
+        ],
+        "exprs": [
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 2,
+                "name": "$2"
+              }
+            ],
+            "type": {
+              "type": "DOUBLE",
+              "nullable": true
+            }
+          },
+          {
+            "op": {
+              "name": "*",
+              "kind": "TIMES",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 2,
+                    "name": "$2"
+                  }
+                ],
+                "type": {
+                  "type": "DOUBLE",
+                  "nullable": true
+                }
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 2,
+                    "name": "$2"
+                  }
+                ],
+                "type": {
+                  "type": "DOUBLE",
+                  "nullable": true
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 1.6253965246668186E12
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          1,
+          2
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DOUBLE",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              5
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DOUBLE",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              4
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              4
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              3
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              3
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 1.6253965246668185E11
+      },
+      {
+        "id": "11",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "CASE",
+            "kind": "CASE",
+            "syntax": "SPECIAL"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "/",
+                    "kind": "DIVIDE",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "op": {
+                        "name": "CAST",
+                        "kind": "CAST",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 5,
+                          "name": "$5"
+                        }
+                      ],
+                      "type": {
+                        "type": "DOUBLE",
+                        "nullable": true
+                      }
+                    },
+                    {
+                      "input": 6,
+                      "name": "$6"
+                    }
+                  ]
+                },
+                {
+                  "literal": 0,
+                  "type": {
+                    "type": "DOUBLE",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "literal": false,
+              "type": {
+                "type": "BOOLEAN",
+                "nullable": false
+              }
+            },
+            {
+              "op": {
+                "name": ">",
+                "kind": "GREATER_THAN",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "/",
+                    "kind": "DIVIDE",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "op": {
+                        "name": "POWER",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "FUNCTION"
+                      },
+                      "operands": [
+                        {
+                          "op": {
+                            "name": "/",
+                            "kind": "DIVIDE",
+                            "syntax": "BINARY"
+                          },
+                          "operands": [
+                            {
+                              "op": {
+                                "name": "-",
+                                "kind": "MINUS",
+                                "syntax": "BINARY"
+                              },
+                              "operands": [
+                                {
+                                  "input": 2,
+                                  "name": "$2"
+                                },
+                                {
+                                  "op": {
+                                    "name": "/",
+                                    "kind": "DIVIDE",
+                                    "syntax": "BINARY"
+                                  },
+                                  "operands": [
+                                    {
+                                      "op": {
+                                        "name": "*",
+                                        "kind": "TIMES",
+                                        "syntax": "BINARY"
+                                      },
+                                      "operands": [
+                                        {
+                                          "input": 3,
+                                          "name": "$3"
+                                        },
+                                        {
+                                          "input": 3,
+                                          "name": "$3"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "input": 4,
+                                      "name": "$4"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "op": {
+                                "name": "CASE",
+                                "kind": "CASE",
+                                "syntax": "SPECIAL"
+                              },
+                              "operands": [
+                                {
+                                  "op": {
+                                    "name": "=",
+                                    "kind": "EQUALS",
+                                    "syntax": "BINARY"
+                                  },
+                                  "operands": [
+                                    {
+                                      "input": 4,
+                                      "name": "$4"
+                                    },
+                                    {
+                                      "literal": 1,
+                                      "type": {
+                                        "type": "INTEGER",
+                                        "nullable": false
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "literal": null,
+                                  "type": {
+                                    "type": "BIGINT",
+                                    "nullable": true
+                                  }
+                                },
+                                {
+                                  "op": {
+                                    "name": "-",
+                                    "kind": "MINUS",
+                                    "syntax": "BINARY"
+                                  },
+                                  "operands": [
+                                    {
+                                      "input": 4,
+                                      "name": "$4"
+                                    },
+                                    {
+                                      "literal": 1,
+                                      "type": {
+                                        "type": "INTEGER",
+                                        "nullable": false
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "literal": 0.5,
+                          "type": {
+                            "type": "DECIMAL",
+                            "nullable": false,
+                            "precision": 2,
+                            "scale": 1
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "/",
+                        "kind": "DIVIDE",
+                        "syntax": "BINARY"
+                      },
+                      "operands": [
+                        {
+                          "op": {
+                            "name": "CAST",
+                            "kind": "CAST",
+                            "syntax": "SPECIAL"
+                          },
+                          "operands": [
+                            {
+                              "input": 5,
+                              "name": "$5"
+                            }
+                          ],
+                          "type": {
+                            "type": "DOUBLE",
+                            "nullable": true
+                          }
+                        },
+                        {
+                          "input": 6,
+                          "name": "$6"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "DOUBLE",
+                    "nullable": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 4.063491311667046E10
+      },
+      {
+        "id": "12",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "w_warehouse_sk",
+          "i_item_sk",
+          "mean",
+          "cov"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 5,
+                    "name": "$5"
+                  }
+                ],
+                "type": {
+                  "type": "DOUBLE",
+                  "nullable": true
+                }
+              },
+              {
+                "input": 6,
+                "name": "$6"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "=",
+                  "kind": "EQUALS",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "op": {
+                      "name": "/",
+                      "kind": "DIVIDE",
+                      "syntax": "BINARY"
+                    },
+                    "operands": [
+                      {
+                        "op": {
+                          "name": "CAST",
+                          "kind": "CAST",
+                          "syntax": "SPECIAL"
+                        },
+                        "operands": [
+                          {
+                            "input": 5,
+                            "name": "$5"
+                          }
+                        ],
+                        "type": {
+                          "type": "DOUBLE",
+                          "nullable": true
+                        }
+                      },
+                      {
+                        "input": 6,
+                        "name": "$6"
+                      }
+                    ]
+                  },
+                  {
+                    "literal": 0,
+                    "type": {
+                      "type": "DOUBLE",
+                      "nullable": false
+                    }
+                  }
+                ]
+              },
+              {
+                "literal": null,
+                "type": {
+                  "type": "DOUBLE",
+                  "nullable": true
+                }
+              },
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "op": {
+                      "name": "POWER",
+                      "kind": "OTHER_FUNCTION",
+                      "syntax": "FUNCTION"
+                    },
+                    "operands": [
+                      {
+                        "op": {
+                          "name": "/",
+                          "kind": "DIVIDE",
+                          "syntax": "BINARY"
+                        },
+                        "operands": [
+                          {
+                            "op": {
+                              "name": "-",
+                              "kind": "MINUS",
+                              "syntax": "BINARY"
+                            },
+                            "operands": [
+                              {
+                                "input": 2,
+                                "name": "$2"
+                              },
+                              {
+                                "op": {
+                                  "name": "/",
+                                  "kind": "DIVIDE",
+                                  "syntax": "BINARY"
+                                },
+                                "operands": [
+                                  {
+                                    "op": {
+                                      "name": "*",
+                                      "kind": "TIMES",
+                                      "syntax": "BINARY"
+                                    },
+                                    "operands": [
+                                      {
+                                        "input": 3,
+                                        "name": "$3"
+                                      },
+                                      {
+                                        "input": 3,
+                                        "name": "$3"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "input": 4,
+                                    "name": "$4"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "op": {
+                              "name": "CASE",
+                              "kind": "CASE",
+                              "syntax": "SPECIAL"
+                            },
+                            "operands": [
+                              {
+                                "op": {
+                                  "name": "=",
+                                  "kind": "EQUALS",
+                                  "syntax": "BINARY"
+                                },
+                                "operands": [
+                                  {
+                                    "input": 4,
+                                    "name": "$4"
+                                  },
+                                  {
+                                    "literal": 1,
+                                    "type": {
+                                      "type": "INTEGER",
+                                      "nullable": false
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "literal": null,
+                                "type": {
+                                  "type": "BIGINT",
+                                  "nullable": true
+                                }
+                              },
+                              {
+                                "op": {
+                                  "name": "-",
+                                  "kind": "MINUS",
+                                  "syntax": "BINARY"
+                                },
+                                "operands": [
+                                  {
+                                    "input": 4,
+                                    "name": "$4"
+                                  },
+                                  {
+                                    "literal": 1,
+                                    "type": {
+                                      "type": "INTEGER",
+                                      "nullable": false
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "literal": 0.5,
+                        "type": {
+                          "type": "DECIMAL",
+                          "nullable": false,
+                          "precision": 2,
+                          "scale": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "op": {
+                      "name": "/",
+                      "kind": "DIVIDE",
+                      "syntax": "BINARY"
+                    },
+                    "operands": [
+                      {
+                        "op": {
+                          "name": "CAST",
+                          "kind": "CAST",
+                          "syntax": "SPECIAL"
+                        },
+                        "operands": [
+                          {
+                            "input": 5,
+                            "name": "$5"
+                          }
+                        ],
+                        "type": {
+                          "type": "DOUBLE",
+                          "nullable": true
+                        }
+                      },
+                      {
+                        "input": 6,
+                        "name": "$6"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "rowCount": 4.063491311667046E10
+      },
+      {
+        "id": "13",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "inv_date_sk",
+          "inv_warehouse_sk",
+          "inv_quantity_on_hand",
+          "inv_item_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          }
+        ],
+        "inputs": [
+          "0"
+        ],
+        "rowCount": 1627857000
+      },
+      {
+        "id": "14",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 6,
+                  "name": "$6"
+                },
+                {
+                  "literal": 1999,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 8,
+                  "name": "$8"
+                },
+                {
+                  "literal": 4,
+                  "type": {
+                    "type": "INTEGER",
+                    "nullable": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "inputs": [
+          "2"
+        ],
+        "rowCount": 1643.6025
+      },
+      {
+        "id": "15",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "d_date_sk"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          }
+        ],
+        "rowCount": 1643.6025
+      },
+      {
+        "id": "16",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 4,
+              "name": "$4"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "13",
+          "15"
+        ],
+        "rowCount": 4.01332475226375E11
+      },
+      {
+        "id": "17",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "w_warehouse_sk",
+          "w_warehouse_name"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          }
+        ],
+        "inputs": [
+          "6"
+        ],
+        "rowCount": 27
+      },
+      {
+        "id": "18",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 1,
+              "name": "$1"
+            },
+            {
+              "input": 5,
+              "name": "$5"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "16",
+          "17"
+        ],
+        "rowCount": 1.6253965246668186E12
+      },
+      {
+        "id": "19",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "$f0",
+          "$f1",
+          "$f2",
+          "$f4",
+          "$f40",
+          "$f6"
+        ],
+        "exprs": [
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "input": 2,
+                "name": "$2"
+              }
+            ],
+            "type": {
+              "type": "DOUBLE",
+              "nullable": true
+            }
+          },
+          {
+            "op": {
+              "name": "*",
+              "kind": "TIMES",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 2,
+                    "name": "$2"
+                  }
+                ],
+                "type": {
+                  "type": "DOUBLE",
+                  "nullable": true
+                }
+              },
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 2,
+                    "name": "$2"
+                  }
+                ],
+                "type": {
+                  "type": "DOUBLE",
+                  "nullable": true
+                }
+              }
+            ]
+          }
+        ],
+        "rowCount": 1.6253965246668186E12
+      },
+      {
+        "id": "20",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
+        "group": [
+          1,
+          2
+        ],
+        "aggs": [
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DOUBLE",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              5
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "DOUBLE",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              4
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              4
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "sum",
+              "kind": "SUM",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              3
+            ],
+            "name": null
+          },
+          {
+            "agg": {
+              "name": "count",
+              "kind": "COUNT",
+              "syntax": "FUNCTION_STAR"
+            },
+            "type": {
+              "type": "BIGINT",
+              "nullable": true
+            },
+            "distinct": false,
+            "operands": [
+              3
+            ],
+            "name": null
+          }
+        ],
+        "rowCount": 1.6253965246668185E11
+      },
+      {
+        "id": "21",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "CASE",
+            "kind": "CASE",
+            "syntax": "SPECIAL"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "/",
+                    "kind": "DIVIDE",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "op": {
+                        "name": "CAST",
+                        "kind": "CAST",
+                        "syntax": "SPECIAL"
+                      },
+                      "operands": [
+                        {
+                          "input": 5,
+                          "name": "$5"
+                        }
+                      ],
+                      "type": {
+                        "type": "DOUBLE",
+                        "nullable": true
+                      }
+                    },
+                    {
+                      "input": 6,
+                      "name": "$6"
+                    }
+                  ]
+                },
+                {
+                  "literal": 0,
+                  "type": {
+                    "type": "DOUBLE",
+                    "nullable": false
+                  }
+                }
+              ]
+            },
+            {
+              "literal": false,
+              "type": {
+                "type": "BOOLEAN",
+                "nullable": false
+              }
+            },
+            {
+              "op": {
+                "name": ">",
+                "kind": "GREATER_THAN",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "op": {
+                    "name": "/",
+                    "kind": "DIVIDE",
+                    "syntax": "BINARY"
+                  },
+                  "operands": [
+                    {
+                      "op": {
+                        "name": "POWER",
+                        "kind": "OTHER_FUNCTION",
+                        "syntax": "FUNCTION"
+                      },
+                      "operands": [
+                        {
+                          "op": {
+                            "name": "/",
+                            "kind": "DIVIDE",
+                            "syntax": "BINARY"
+                          },
+                          "operands": [
+                            {
+                              "op": {
+                                "name": "-",
+                                "kind": "MINUS",
+                                "syntax": "BINARY"
+                              },
+                              "operands": [
+                                {
+                                  "input": 2,
+                                  "name": "$2"
+                                },
+                                {
+                                  "op": {
+                                    "name": "/",
+                                    "kind": "DIVIDE",
+                                    "syntax": "BINARY"
+                                  },
+                                  "operands": [
+                                    {
+                                      "op": {
+                                        "name": "*",
+                                        "kind": "TIMES",
+                                        "syntax": "BINARY"
+                                      },
+                                      "operands": [
+                                        {
+                                          "input": 3,
+                                          "name": "$3"
+                                        },
+                                        {
+                                          "input": 3,
+                                          "name": "$3"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "input": 4,
+                                      "name": "$4"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "op": {
+                                "name": "CASE",
+                                "kind": "CASE",
+                                "syntax": "SPECIAL"
+                              },
+                              "operands": [
+                                {
+                                  "op": {
+                                    "name": "=",
+                                    "kind": "EQUALS",
+                                    "syntax": "BINARY"
+                                  },
+                                  "operands": [
+                                    {
+                                      "input": 4,
+                                      "name": "$4"
+                                    },
+                                    {
+                                      "literal": 1,
+                                      "type": {
+                                        "type": "INTEGER",
+                                        "nullable": false
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "literal": null,
+                                  "type": {
+                                    "type": "BIGINT",
+                                    "nullable": true
+                                  }
+                                },
+                                {
+                                  "op": {
+                                    "name": "-",
+                                    "kind": "MINUS",
+                                    "syntax": "BINARY"
+                                  },
+                                  "operands": [
+                                    {
+                                      "input": 4,
+                                      "name": "$4"
+                                    },
+                                    {
+                                      "literal": 1,
+                                      "type": {
+                                        "type": "INTEGER",
+                                        "nullable": false
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "literal": 0.5,
+                          "type": {
+                            "type": "DECIMAL",
+                            "nullable": false,
+                            "precision": 2,
+                            "scale": 1
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "op": {
+                        "name": "/",
+                        "kind": "DIVIDE",
+                        "syntax": "BINARY"
+                      },
+                      "operands": [
+                        {
+                          "op": {
+                            "name": "CAST",
+                            "kind": "CAST",
+                            "syntax": "SPECIAL"
+                          },
+                          "operands": [
+                            {
+                              "input": 5,
+                              "name": "$5"
+                            }
+                          ],
+                          "type": {
+                            "type": "DOUBLE",
+                            "nullable": true
+                          }
+                        },
+                        {
+                          "input": 6,
+                          "name": "$6"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "literal": 1,
+                  "type": {
+                    "type": "DOUBLE",
+                    "nullable": false
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "rowCount": 4.063491311667046E10
+      },
+      {
+        "id": "22",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "w_warehouse_sk",
+          "i_item_sk",
+          "mean",
+          "cov"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "op": {
+              "name": "/",
+              "kind": "DIVIDE",
+              "syntax": "BINARY"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "CAST",
+                  "kind": "CAST",
+                  "syntax": "SPECIAL"
+                },
+                "operands": [
+                  {
+                    "input": 5,
+                    "name": "$5"
+                  }
+                ],
+                "type": {
+                  "type": "DOUBLE",
+                  "nullable": true
+                }
+              },
+              {
+                "input": 6,
+                "name": "$6"
+              }
+            ]
+          },
+          {
+            "op": {
+              "name": "CASE",
+              "kind": "CASE",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "op": {
+                  "name": "=",
+                  "kind": "EQUALS",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "op": {
+                      "name": "/",
+                      "kind": "DIVIDE",
+                      "syntax": "BINARY"
+                    },
+                    "operands": [
+                      {
+                        "op": {
+                          "name": "CAST",
+                          "kind": "CAST",
+                          "syntax": "SPECIAL"
+                        },
+                        "operands": [
+                          {
+                            "input": 5,
+                            "name": "$5"
+                          }
+                        ],
+                        "type": {
+                          "type": "DOUBLE",
+                          "nullable": true
+                        }
+                      },
+                      {
+                        "input": 6,
+                        "name": "$6"
+                      }
+                    ]
+                  },
+                  {
+                    "literal": 0,
+                    "type": {
+                      "type": "DOUBLE",
+                      "nullable": false
+                    }
+                  }
+                ]
+              },
+              {
+                "literal": null,
+                "type": {
+                  "type": "DOUBLE",
+                  "nullable": true
+                }
+              },
+              {
+                "op": {
+                  "name": "/",
+                  "kind": "DIVIDE",
+                  "syntax": "BINARY"
+                },
+                "operands": [
+                  {
+                    "op": {
+                      "name": "POWER",
+                      "kind": "OTHER_FUNCTION",
+                      "syntax": "FUNCTION"
+                    },
+                    "operands": [
+                      {
+                        "op": {
+                          "name": "/",
+                          "kind": "DIVIDE",
+                          "syntax": "BINARY"
+                        },
+                        "operands": [
+                          {
+                            "op": {
+                              "name": "-",
+                              "kind": "MINUS",
+                              "syntax": "BINARY"
+                            },
+                            "operands": [
+                              {
+                                "input": 2,
+                                "name": "$2"
+                              },
+                              {
+                                "op": {
+                                  "name": "/",
+                                  "kind": "DIVIDE",
+                                  "syntax": "BINARY"
+                                },
+                                "operands": [
+                                  {
+                                    "op": {
+                                      "name": "*",
+                                      "kind": "TIMES",
+                                      "syntax": "BINARY"
+                                    },
+                                    "operands": [
+                                      {
+                                        "input": 3,
+                                        "name": "$3"
+                                      },
+                                      {
+                                        "input": 3,
+                                        "name": "$3"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "input": 4,
+                                    "name": "$4"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "op": {
+                              "name": "CASE",
+                              "kind": "CASE",
+                              "syntax": "SPECIAL"
+                            },
+                            "operands": [
+                              {
+                                "op": {
+                                  "name": "=",
+                                  "kind": "EQUALS",
+                                  "syntax": "BINARY"
+                                },
+                                "operands": [
+                                  {
+                                    "input": 4,
+                                    "name": "$4"
+                                  },
+                                  {
+                                    "literal": 1,
+                                    "type": {
+                                      "type": "INTEGER",
+                                      "nullable": false
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "literal": null,
+                                "type": {
+                                  "type": "BIGINT",
+                                  "nullable": true
+                                }
+                              },
+                              {
+                                "op": {
+                                  "name": "-",
+                                  "kind": "MINUS",
+                                  "syntax": "BINARY"
+                                },
+                                "operands": [
+                                  {
+                                    "input": 4,
+                                    "name": "$4"
+                                  },
+                                  {
+                                    "literal": 1,
+                                    "type": {
+                                      "type": "INTEGER",
+                                      "nullable": false
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "literal": 0.5,
+                        "type": {
+                          "type": "DECIMAL",
+                          "nullable": false,
+                          "precision": 2,
+                          "scale": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "op": {
+                      "name": "/",
+                      "kind": "DIVIDE",
+                      "syntax": "BINARY"
+                    },
+                    "operands": [
+                      {
+                        "op": {
+                          "name": "CAST",
+                          "kind": "CAST",
+                          "syntax": "SPECIAL"
+                        },
+                        "operands": [
+                          {
+                            "input": 5,
+                            "name": "$5"
+                          }
+                        ],
+                        "type": {
+                          "type": "DOUBLE",
+                          "nullable": true
+                        }
+                      },
+                      {
+                        "input": 6,
+                        "name": "$6"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "rowCount": 4.063491311667046E10
+      },
+      {
+        "id": "23",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "AND",
+            "kind": "AND",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 4,
+                  "name": "$4"
+                },
+                {
+                  "input": 0,
+                  "name": "$0"
+                }
+              ]
+            },
+            {
+              "op": {
+                "name": "=",
+                "kind": "EQUALS",
+                "syntax": "BINARY"
+              },
+              "operands": [
+                {
+                  "input": 5,
+                  "name": "$5"
+                },
+                {
+                  "input": 1,
+                  "name": "$1"
+                }
+              ]
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "12",
+          "22"
+        ],
+        "rowCount": 3.715191368998553E19
+      },
+      {
+        "id": "24",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "w_warehouse_sk",
+          "i_item_sk",
+          "mean",
+          "cov",
+          "w_warehouse_sk0",
+          "i_item_sk0",
+          "mean0",
+          "cov0"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          },
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          }
+        ],
+        "rowCount": 3.715191368998553E19
+      },
+      {
+        "id": "25",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit",
+        "collation": [
+          {
+            "field": 0,
+            "direction": "ASCENDING",
+            "nulls": "LAST"
+          },
+          {
+            "field": 1,
+            "direction": "ASCENDING",
+            "nulls": "LAST"
+          },
+          {
+            "field": 2,
+            "direction": "ASCENDING",
+            "nulls": "LAST"
+          },
+          {
+            "field": 3,
+            "direction": "ASCENDING",
+            "nulls": "LAST"
+          },
+          {
+            "field": 6,
+            "direction": "ASCENDING",
+            "nulls": "LAST"
+          },
+          {
+            "field": 7,
+            "direction": "ASCENDING",
+            "nulls": "LAST"
+          }
+        ],
+        "rowCount": 3.715191368998553E19
+      },
+      {
+        "id": "26",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "inv1.w_warehouse_sk",
+          "inv1.i_item_sk",
+          "inv1.d_moy",
+          "inv1.mean",
+          "inv1.cov",
+          "inv2.w_warehouse_sk",
+          "inv2.i_item_sk",
+          "inv2.d_moy",
+          "inv2.mean",
+          "inv2.cov"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "literal": 4,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
+          },
+          {
+            "input": 2,
+            "name": "$2"
+          },
+          {
+            "input": 3,
+            "name": "$3"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "op": {
+              "name": "CAST",
+              "kind": "CAST",
+              "syntax": "SPECIAL"
+            },
+            "operands": [
+              {
+                "literal": 5,
+                "type": {
+                  "type": "INTEGER",
+                  "nullable": false
+                }
+              }
+            ],
+            "type": {
+              "type": "INTEGER",
+              "nullable": true
+            }
+          },
+          {
+            "input": 6,
+            "name": "$6"
+          },
+          {
+            "input": 7,
+            "name": "$7"
+          }
+        ],
+        "rowCount": 3.715191368998553E19
+      }
+    ]
+  }
+}
