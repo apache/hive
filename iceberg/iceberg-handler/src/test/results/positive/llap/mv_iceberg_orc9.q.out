@@ -81,6 +81,7 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"b","required":false,"type":"string"},{"id":2,"name":"c","required":false,"type":"int"}]}', 
   'format-version'='1', 
   'iceberg.materialized.view'='true', 
   'iceberg.materialized.view.original.text'='select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52', 
@@ -89,7 +90,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
 #### A masked pattern was here ####
-  'uuid'='e925ecb8-f081-45a4-a7d9-ed0696fae3df')
+  'uuid'='c0234ed7-9d84-48f1-8479-378eaa98744b')
 PREHOOK: query: describe formatted mat1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mat1
@@ -108,6 +109,7 @@ Retention:          	0
 Table Type:         	EXTERNAL_MATERIALIZED_VIEW	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"c\",\"required\":false,\"type\":\"int\"}]}
 	format-version      	1                   
 	iceberg.materialized.view	true                
 	iceberg.materialized.view.original.text	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
@@ -117,7 +119,7 @@ Table Parameters:
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
-	uuid                	e925ecb8-f081-45a4-a7d9-ed0696fae3df
+	uuid                	c0234ed7-9d84-48f1-8479-378eaa98744b
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -134,7 +136,7 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=4760242717864999345}	 
+default.tbl_ice     	SnapshotContext{snapshotId=2493704645391374183}	 
 PREHOOK: query: select 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -232,4 +234,4 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=4760242717864999345}	 
+default.tbl_ice     	SnapshotContext{snapshotId=2493704645391374183}	 

@@ -191,18 +191,18 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       String metadataLocation = hmsTable.getParameters().get(BaseMetastoreTableOperations.METADATA_LOCATION_PROP);
       Table table;
       if (metadataLocation != null) {
-        table = Catalogs.registerTable(conf, catalogProperties, metadataLocation);
+        table = Catalogs.registerTable(conf, tableProperties, metadataLocation);
       } else if ("MATERIALIZED_VIEW".equals(hmsTable.getTableType()) ||
               TableType.EXTERNAL_MATERIALIZED_VIEW.name().equals(hmsTable.getTableType())
       ) {
         Catalogs.MaterializedView mv =
                 Catalogs.createMaterializedView(
                         conf,
-                        catalogProperties,
+                        tableProperties,
                         hmsTable.getViewOriginalText(),
                         hmsTable.getViewExpandedText());
 
-        String tableIdentifier = catalogProperties.getProperty(Catalogs.NAME);
+        String tableIdentifier = tableProperties.getProperty(Catalogs.NAME);
         SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);
         SessionStateUtil.addResource(conf, tableIdentifier, mv);
 
