@@ -30,7 +30,6 @@ import org.eclipse.jetty.server.UserIdentity;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import org.eclipse.jetty.util.StringUtil;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;

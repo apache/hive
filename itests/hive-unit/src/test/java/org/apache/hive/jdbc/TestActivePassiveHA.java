@@ -60,7 +60,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.jetty.http.HttpHeader;
 import java.util.Base64;
-import org.eclipse.jetty.util.StringUtil;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

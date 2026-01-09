@@ -24,7 +24,6 @@ import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -66,7 +65,6 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -208,11 +206,11 @@ public class Main {
     if (StringUtils.isEmpty(conf.jettyConfiguration())) {
       server = new Server(port);
     } else {
-        Path configPath = Paths.get(conf.jettyConfiguration());
-        PathResource jettyResource = new PathResource(configPath);
+      Path configPath = Paths.get(conf.jettyConfiguration());
+      PathResource jettyResource = new PathResource(configPath);
 
-        XmlConfiguration configuration = new XmlConfiguration(jettyResource);
-        server = (Server) configuration.configure();
+      XmlConfiguration configuration = new XmlConfiguration(jettyResource);
+      server = (Server) configuration.configure();
     }
 
     ServletContextHandler root = new ServletContextHandler(server, "/");

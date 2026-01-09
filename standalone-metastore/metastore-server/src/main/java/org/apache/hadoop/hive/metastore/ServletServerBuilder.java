@@ -24,7 +24,12 @@ import org.eclipse.jetty.http.HttpVersion;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
@@ -180,7 +185,8 @@ public class ServletServerBuilder {
       httpConf.setSecureScheme(HTTPS);
       httpConf.setSecurePort(port);
       httpConf.addCustomizer(new SecureRequestCustomizer());
-      connector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(httpConf));
+      connector = new ServerConnector(server,
+          new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(httpConf));
       connector.setName(HTTPS);
     } else {
       connector = new ServerConnector(server, new HttpConnectionFactory(httpConf));
@@ -206,7 +212,7 @@ public class ServletServerBuilder {
     ServletContextHandler handler = handlersMap.computeIfAbsent(key, p -> {
       ServletContextHandler servletHandler = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
       servletHandler.setContextPath("/");
-      servletHandler.setGzipHandler(new GzipHandler());
+      servletHandler.insertHandler(new GzipHandler());
       return servletHandler;
     });
     ServletHolder servletHolder = new ServletHolder(servlet);

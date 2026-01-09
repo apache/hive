@@ -25,7 +25,6 @@ import org.eclipse.jetty.security.authentication.LoginAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
 import java.util.Base64;
-import java.nio.charset.StandardCharsets;
 
 import javax.security.sasl.AuthenticationException;
 import javax.servlet.ServletRequest;
