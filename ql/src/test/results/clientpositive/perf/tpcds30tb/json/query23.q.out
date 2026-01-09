@@ -2748,7 +2748,7 @@ Warning: Map Join MAPJOIN[318][bigTable=?] in task 'Reducer 7' is a cross produc
             "agg": {
               "name": "sum",
               "kind": "SUM",
-              "syntax": "FUNCTION_STAR"
+              "syntax": "FUNCTION"
             },
             "type": {
               "type": "DECIMAL",
@@ -3696,7 +3696,7 @@ Warning: Map Join MAPJOIN[318][bigTable=?] in task 'Reducer 7' is a cross produc
             "agg": {
               "name": "sum",
               "kind": "SUM",
-              "syntax": "FUNCTION_STAR"
+              "syntax": "FUNCTION"
             },
             "type": {
               "type": "DECIMAL",
@@ -5027,7 +5027,7 @@ Warning: Map Join MAPJOIN[318][bigTable=?] in task 'Reducer 7' is a cross produc
             "agg": {
               "name": "sum",
               "kind": "SUM",
-              "syntax": "FUNCTION_STAR"
+              "syntax": "FUNCTION"
             },
             "type": {
               "type": "DECIMAL",
@@ -5292,7 +5292,7 @@ Warning: Map Join MAPJOIN[318][bigTable=?] in task 'Reducer 7' is a cross produc
             "agg": {
               "name": "sum",
               "kind": "SUM",
-              "syntax": "FUNCTION_STAR"
+              "syntax": "FUNCTION"
             },
             "type": {
               "type": "DECIMAL",
@@ -5563,7 +5563,7 @@ Warning: Map Join MAPJOIN[318][bigTable=?] in task 'Reducer 7' is a cross produc
             "agg": {
               "name": "sum",
               "kind": "SUM",
-              "syntax": "FUNCTION_STAR"
+              "syntax": "FUNCTION"
             },
             "type": {
               "type": "DECIMAL",

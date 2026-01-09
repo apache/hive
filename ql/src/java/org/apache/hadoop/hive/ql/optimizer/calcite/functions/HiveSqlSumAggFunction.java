@@ -131,11 +131,6 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
   }
 
   @Override
-  public SqlSyntax getSyntax() {
-    return SqlSyntax.FUNCTION_STAR;
-  }
-
-  @Override
   public SqlAggFunction getRollup() {
     return this;
   }
