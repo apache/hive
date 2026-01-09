@@ -173,9 +173,10 @@ class TextDescTableFormatter extends DescTableFormatter {
     String partitionData = "";
     if (columnPath == null) {
       boolean isIcebergTable = DDLUtils.isIcebergTable(table);
-      List<FieldSchema> partitionColumns = table.isPartitioned()
-              ? (isIcebergTable ? table.getStorageHandler().getPartitionKeys(table) : table.getPartCols())
-              : null;
+      List<FieldSchema> partitionColumns = null;
+      if (table.isPartitioned()) {
+        partitionColumns = isIcebergTable ? table.getStorageHandler().getPartitionKeys(table) : table.getPartCols();
+      }
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();
