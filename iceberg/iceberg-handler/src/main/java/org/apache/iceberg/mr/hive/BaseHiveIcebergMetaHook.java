@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
+import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
