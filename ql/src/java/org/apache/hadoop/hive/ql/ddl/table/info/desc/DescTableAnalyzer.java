@@ -195,9 +195,13 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
     boolean isIcebergTable = DDLUtils.isIcebergTable(tab);
     if (isIcebergTable) {
       List<FieldSchema> partKeys = tab.getStorageHandler().getPartitionKeys(tab);
-      if (partKeys.size() != partitionSpec.size()) return null;
+      if (partKeys.size() != partitionSpec.size()) {
+        return null;
+      }
       List<Partition> partList = tab.getStorageHandler().getPartitions(tab, partitionSpec, false);
-      if (partList.isEmpty()) return null;
+      if (partList.isEmpty()) {
+        return null;
+      }
       return partList.getFirst();
     }
     return db.getPartition(tab, partitionSpec, false);
