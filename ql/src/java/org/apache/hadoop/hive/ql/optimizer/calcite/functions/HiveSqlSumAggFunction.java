@@ -30,7 +30,6 @@ import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
 import org.apache.calcite.sql.SqlSplittableAggFunction.SumSplitter;
-import org.apache.calcite.sql.SqlSyntax;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.type.SqlOperandTypeChecker;
@@ -128,11 +127,6 @@ public class HiveSqlSumAggFunction extends SqlAggFunction {
           aggregateCall.type,
           aggregateCall.name);
     }
-  }
-
-  @Override
-  public SqlSyntax getSyntax() {
-    return SqlSyntax.FUNCTION_STAR;
   }
 
   @Override

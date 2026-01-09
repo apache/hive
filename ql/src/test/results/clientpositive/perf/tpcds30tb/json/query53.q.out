@@ -1764,7 +1764,7 @@
             "agg": {
               "name": "sum",
               "kind": "SUM",
-              "syntax": "FUNCTION_STAR"
+              "syntax": "FUNCTION"
             },
             "type": {
               "type": "DECIMAL",
@@ -1826,7 +1826,7 @@
             "op": {
               "name": "avg",
               "kind": "AVG",
-              "syntax": "FUNCTION_STAR"
+              "syntax": "FUNCTION"
             },
             "operands": [
               {
