@@ -21165,17 +21165,23 @@ class DropTableRequest(object):
      - deleteData
      - envContext
      - dropPartitions
+     - id
+     - asyncDrop
+     - cancel
 
     """
 
 
-    def __init__(self, catalogName=None, dbName=None, tableName=None, deleteData=None, envContext=None, dropPartitions=None,):
+    def __init__(self, catalogName=None, dbName=None, tableName=None, deleteData=None, envContext=None, dropPartitions=None, id=None, asyncDrop=None, cancel=None,):
         self.catalogName = catalogName
         self.dbName = dbName
         self.tableName = tableName
         self.deleteData = deleteData
         self.envContext = envContext
         self.dropPartitions = dropPartitions
+        self.id = id
+        self.asyncDrop = asyncDrop
+        self.cancel = cancel
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -21217,6 +21223,21 @@ class DropTableRequest(object):
                     self.dropPartitions = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRING:
+                    self.id = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 8:
+                if ftype == TType.BOOL:
+                    self.asyncDrop = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.BOOL:
+                    self.cancel = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -21251,6 +21272,18 @@ class DropTableRequest(object):
             oprot.writeFieldBegin('dropPartitions', TType.BOOL, 6)
             oprot.writeBool(self.dropPartitions)
             oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.STRING, 7)
+            oprot.writeString(self.id.encode('utf-8') if sys.version_info[0] == 2 else self.id)
+            oprot.writeFieldEnd()
+        if self.asyncDrop is not None:
+            oprot.writeFieldBegin('asyncDrop', TType.BOOL, 8)
+            oprot.writeBool(self.asyncDrop)
+            oprot.writeFieldEnd()
+        if self.cancel is not None:
+            oprot.writeFieldBegin('cancel', TType.BOOL, 9)
+            oprot.writeBool(self.cancel)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -21259,6 +21292,87 @@ class DropTableRequest(object):
             raise TProtocolException(message='Required field dbName is unset!')
         if self.tableName is None:
             raise TProtocolException(message='Required field tableName is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class AsyncOperationResp(object):
+    """
+    Attributes:
+     - id
+     - message
+     - finished
+
+    """
+
+
+    def __init__(self, id=None, message=None, finished=None,):
+        self.id = id
+        self.message = message
+        self.finished = finished
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.id = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.message = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.BOOL:
+                    self.finished = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('AsyncOperationResp')
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.STRING, 1)
+            oprot.writeString(self.id.encode('utf-8') if sys.version_info[0] == 2 else self.id)
+            oprot.writeFieldEnd()
+        if self.message is not None:
+            oprot.writeFieldBegin('message', TType.STRING, 2)
+            oprot.writeString(self.message.encode('utf-8') if sys.version_info[0] == 2 else self.message)
+            oprot.writeFieldEnd()
+        if self.finished is not None:
+            oprot.writeFieldBegin('finished', TType.BOOL, 3)
+            oprot.writeBool(self.finished)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.id is None:
+            raise TProtocolException(message='Required field id is unset!')
         return
 
     def __repr__(self):
@@ -21455,11 +21569,14 @@ class DropDatabaseRequest(object):
      - softDelete
      - txnId
      - deleteManagedDir
+     - id
+     - asyncDrop
+     - cancel
 
     """
 
 
-    def __init__(self, name=None, catalogName=None, ignoreUnknownDb=None, deleteData=None, cascade=None, softDelete=False, txnId=0, deleteManagedDir=True,):
+    def __init__(self, name=None, catalogName=None, ignoreUnknownDb=None, deleteData=None, cascade=None, softDelete=False, txnId=0, deleteManagedDir=True, id=None, asyncDrop=None, cancel=None,):
         self.name = name
         self.catalogName = catalogName
         self.ignoreUnknownDb = ignoreUnknownDb
@@ -21468,6 +21585,9 @@ class DropDatabaseRequest(object):
         self.softDelete = softDelete
         self.txnId = txnId
         self.deleteManagedDir = deleteManagedDir
+        self.id = id
+        self.asyncDrop = asyncDrop
+        self.cancel = cancel
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -21518,6 +21638,21 @@ class DropDatabaseRequest(object):
                     self.deleteManagedDir = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.id = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 10:
+                if ftype == TType.BOOL:
+                    self.asyncDrop = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 11:
+                if ftype == TType.BOOL:
+                    self.cancel = iprot.readBool()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -21559,6 +21694,18 @@ class DropDatabaseRequest(object):
         if self.deleteManagedDir is not None:
             oprot.writeFieldBegin('deleteManagedDir', TType.BOOL, 8)
             oprot.writeBool(self.deleteManagedDir)
+            oprot.writeFieldEnd()
+        if self.id is not None:
+            oprot.writeFieldBegin('id', TType.STRING, 9)
+            oprot.writeString(self.id.encode('utf-8') if sys.version_info[0] == 2 else self.id)
+            oprot.writeFieldEnd()
+        if self.asyncDrop is not None:
+            oprot.writeFieldBegin('asyncDrop', TType.BOOL, 10)
+            oprot.writeBool(self.asyncDrop)
+            oprot.writeFieldEnd()
+        if self.cancel is not None:
+            oprot.writeFieldBegin('cancel', TType.BOOL, 11)
+            oprot.writeBool(self.cancel)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -33975,6 +34122,16 @@ DropTableRequest.thrift_spec = (
     (4, TType.BOOL, 'deleteData', None, None, ),  # 4
     (5, TType.STRUCT, 'envContext', [EnvironmentContext, None], None, ),  # 5
     (6, TType.BOOL, 'dropPartitions', None, None, ),  # 6
+    (7, TType.STRING, 'id', 'UTF8', None, ),  # 7
+    (8, TType.BOOL, 'asyncDrop', None, None, ),  # 8
+    (9, TType.BOOL, 'cancel', None, None, ),  # 9
+)
+all_structs.append(AsyncOperationResp)
+AsyncOperationResp.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'id', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'message', 'UTF8', None, ),  # 2
+    (3, TType.BOOL, 'finished', None, None, ),  # 3
 )
 all_structs.append(GetDatabaseRequest)
 GetDatabaseRequest.thrift_spec = (
@@ -34001,6 +34158,9 @@ DropDatabaseRequest.thrift_spec = (
     (6, TType.BOOL, 'softDelete', None, False, ),  # 6
     (7, TType.I64, 'txnId', None, 0, ),  # 7
     (8, TType.BOOL, 'deleteManagedDir', None, True, ),  # 8
+    (9, TType.STRING, 'id', 'UTF8', None, ),  # 9
+    (10, TType.BOOL, 'asyncDrop', None, None, ),  # 10
+    (11, TType.BOOL, 'cancel', None, None, ),  # 11
 )
 all_structs.append(GetFunctionsRequest)
 GetFunctionsRequest.thrift_spec = (

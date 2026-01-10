@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.jdo.PersistenceManager;
@@ -111,6 +113,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -2864,6 +2867,59 @@ class MetaStoreDirectSql {
     });
   }
 
+  /** 
+   * Drop partitions by the given table id, and return the locations that outside of the baseLocationToNotShow.
+   * @param tableId the table id
+   * @param baseLocationToNotShow the parent directory
+   * @return locations that outside of the parent directory
+   */
+  public List<String> dropAllPartitionsAndGetLocations(Long tableId, String baseLocationToNotShow,
+      AtomicReference<String> message) throws MetaException {
+    String queryText = "select " + PARTITIONS + ".\"PART_ID\"" +
+        (baseLocationToNotShow != null ? ", " + SDS + ".\"LOCATION\"" : "") + " from " + PARTITIONS +
+        (baseLocationToNotShow != null ? " join " + SDS + " on " + PARTITIONS + ".\"SD_ID\" = " + SDS + ".\"SD_ID\"" : "") +
+        " where \"TBL_ID\" = " + tableId;
+    List<Long> partIds = new ArrayList<>();
+    List<String> locations = new ArrayList<>();
+    final boolean doTrace = LOG.isDebugEnabled();
+    try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
+      long start = doTrace ? System.nanoTime() : 0;
+      List<Object> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
+      long queryTime = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+      for (Object result : sqlResult) {
+        partIds.add(MetastoreDirectSqlUtils.extractSqlLong(((Object[])result)[0]));
+        String partitionLocation;
+        if (baseLocationToNotShow != null &&
+            (partitionLocation = MetastoreDirectSqlUtils.extractSqlString(((Object[])result)[1])) != null &&
+            !FileUtils.isSubdirectory(baseLocationToNotShow, partitionLocation)) {
+          locations.add(partitionLocation);
+        }
+      }
+    }
+
+    int batch = batchSize == NO_BATCHING ? 1 : (partIds.size() + batchSize) / batchSize;
+    AtomicLong batchIdx = new AtomicLong(1);
+    AtomicLong timeSpent = new AtomicLong(0);
+    Batchable.runBatched(batchSize, partIds, new Batchable<Long, Void>() {
+      @Override
+      public List<Void> run(List<Long> input) throws Exception {
+        StringBuilder progress = new StringBuilder("Dropping partitions, batch: ");
+        long start = System.currentTimeMillis();
+        progress.append(batchIdx.get()).append("/").append(batch);
+        if (batchIdx.get() > 1) {
+          long leftTime = (batch - batchIdx.get()) * timeSpent.get() / batchIdx.get();
+          progress.append(", time left: ").append(leftTime).append("ms");
+        }
+        message.set(progress.toString());
+        dropPartitionsByPartitionIds(input);
+        timeSpent.addAndGet(System.currentTimeMillis() - start);
+        batchIdx.incrementAndGet();
+        return Collections.emptyList();
+      }
+    });
+    return locations;
+  }
 
   /**
    * Drops Partition-s. Should be called with the list short enough to not trip up Oracle/etc.

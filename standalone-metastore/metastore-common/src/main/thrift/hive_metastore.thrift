@@ -1770,7 +1770,16 @@ struct DropTableRequest {
  3: required string tableName,
  4: optional bool deleteData,
  5: optional EnvironmentContext envContext,
- 6: optional bool dropPartitions
+ 6: optional bool dropPartitions,
+ 7: optional string id,
+ 8: optional bool asyncDrop,
+ 9: optional bool cancel
+}
+
+struct AsyncOperationResp {
+ 1: required string id,
+ 2: optional string message,
+ 3: optional bool finished
 }
 
 struct GetDatabaseRequest {
@@ -1793,7 +1802,10 @@ struct DropDatabaseRequest {
   5: required bool cascade,
   6: optional bool softDelete=false,
   7: optional i64 txnId=0,
-  8: optional bool deleteManagedDir=true
+  8: optional bool deleteManagedDir=true,
+  9: optional string id,
+  10: optional bool asyncDrop,
+  11: optional bool cancel
 }
 
 struct GetFunctionsRequest {
@@ -2614,7 +2626,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   Database get_database_req(1:GetDatabaseRequest request) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
-  void drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+  AsyncOperationResp drop_database_req(1:DropDatabaseRequest req) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
   list<string> get_databases(1:string pattern) throws(1:MetaException o1)
   list<string> get_all_databases() throws(1:MetaException o1)
   GetDatabaseObjectsResponse get_databases_req (1:GetDatabaseObjectsRequest request) throws(1:MetaException o1)
@@ -2695,7 +2707,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void drop_table_with_environment_context(1:string dbname, 2:string name, 3:bool deleteData,
       4:EnvironmentContext environment_context)
                        throws(1:NoSuchObjectException o1, 2:MetaException o3)
-  void drop_table_req(1:DropTableRequest dropTableReq)
+  AsyncOperationResp drop_table_req(1:DropTableRequest dropTableReq)
         throws(1:NoSuchObjectException o1, 2:MetaException o3)
   void truncate_table(1:string dbName, 2:string tableName, 3:list<string> partNames)
                           throws(1:MetaException o1)

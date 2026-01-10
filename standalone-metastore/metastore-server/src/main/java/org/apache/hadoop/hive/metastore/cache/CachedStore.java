@@ -33,6 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1289,6 +1290,23 @@ public class CachedStore implements RawStore, Configurable {
     return succ;
   }
 
+  @Override
+  public List<String> dropAllPartitionsAndGetLocations(TableName table,
+      String baseLocationToNotShow, AtomicReference<String> message)
+      throws MetaException, InvalidInputException, NoSuchObjectException, InvalidObjectException {
+    List<String> locations = rawStore.dropAllPartitionsAndGetLocations(table, baseLocationToNotShow, message);
+    String catName = table.getCat();
+    String dbName = table.getDb();
+    String tabName = table.getTable();
+    if (!canUseEvents && shouldCacheTable(catName, dbName, tabName)) {
+      sharedCache.removeAllPartitionColStatsFromCache(catName, dbName, tabName);
+      List<Partition> cachedParts = sharedCache.listCachedPartitions(catName, dbName, tabName, -1);
+      List<List<String>> partVals = cachedParts.stream().map(Partition::getValues).toList();
+      sharedCache.removePartitionsFromCache(table.getCat(), table.getDb(), table.getTable(), partVals);
+    }
+    return locations;
+  }
+
   @Override public Table getTable(String catName, String dbName, String tblName) throws MetaException {
     return getTable(catName, dbName, tblName, null);
   }
@@ -1575,7 +1593,6 @@ public class CachedStore implements RawStore, Configurable {
       if (tbl != null) {
         tables.add(tbl);
       }
-      tables.add(tbl);
     }
     return tables;
   }

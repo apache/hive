@@ -41,6 +41,8 @@ import java.lang.reflect.*;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Sets;
+
+import org.apache.hadoop.hive.metastore.api.AddPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.DeleteColumnStatisticsRequest;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnectorProvider;
+import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -101,7 +104,6 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 import org.junit.Test;
@@ -3697,27 +3699,36 @@ public abstract class TestHiveMetaStore {
     part.setSd(tbl.getSd().deepCopy());
     part.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo());
     part.getSd().setLocation(tbl.getSd().getLocation() + "/partCol=1");
-    Warehouse wh = mock(Warehouse.class);
+    Warehouse warehouse = mock(Warehouse.class);
     //Execute initializeAddedPartition() and it should not trigger updatePartitionStatsFast() as DO_NOT_UPDATE_STATS is true
     HMSHandler hms = new HMSHandler("", conf);
-    Method m = hms.getClass().getDeclaredMethod("initializeAddedPartition", Table.class, Partition.class,
-            boolean.class, EnvironmentContext.class);
-    m.setAccessible(true);
+    AddPartitionsRequest request = new AddPartitionsRequest(DB_NAME, TABLE_NAME, Arrays.asList(part), true);
+    AddPartitionsHandler addPartsHandler = new AddPartitionsHandler(hms, request) {
+      @Override
+      protected void beforeExecute() throws TException, IOException {
+        // just check the initializeAddedPartition
+        this.wh = warehouse;
+      }
+      @Override
+      protected void afterExecute(AddPartitionsResult result) {
+        // noop
+      }
+    };
     //Invoke initializeAddedPartition();
-    m.invoke(hms, tbl, part, false, null);
-    verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
+    addPartsHandler.initializeAddedPartition(tbl, part, false, null);
+    verify(warehouse, never()).getFileStatusesForLocation(part.getSd().getLocation());
 
     //Remove tbl's DO_NOT_UPDATE_STATS & set STATS_AUTO_GATHER = false
     tbl.unsetParameters();
-    MetastoreConf.setBoolVar(conf, ConfVars.STATS_AUTO_GATHER, false);
-    m.invoke(hms, tbl, part, false, null);
-    verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
+    MetastoreConf.setBoolVar(hms.getConf(), ConfVars.STATS_AUTO_GATHER, false);
+    addPartsHandler.initializeAddedPartition(tbl, part, false, null);
+    verify(warehouse, never()).getFileStatusesForLocation(part.getSd().getLocation());
 
     //Set STATS_AUTO_GATHER = true and set tbl as a VIRTUAL_VIEW
-    MetastoreConf.setBoolVar(conf, ConfVars.STATS_AUTO_GATHER, true);
+    MetastoreConf.setBoolVar(hms.getConf(), ConfVars.STATS_AUTO_GATHER, true);
     tbl.setTableType("VIRTUAL_VIEW");
-    m.invoke(hms, tbl, part, false, null);
-    verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
+    addPartsHandler.initializeAddedPartition(tbl, part, false, null);
+    verify(warehouse, never()).getFileStatusesForLocation(part.getSd().getLocation());
   }
 
 

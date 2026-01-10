@@ -2157,14 +2157,14 @@ public class SessionHiveMetaStoreClient extends MetaStoreClientWrapper {
       }
 
       // check that all new partitions are belonging to tables located in the same database
-      if (dbName != null && !dbName.equals(p.getDbName())) {
+      if (dbName != null && !dbName.equalsIgnoreCase(p.getDbName())) {
         throw new MetaException("Partition tables doesn't belong to the same database "
             + Arrays.toString(partitions.toArray()));
       } else {
         dbName = p.getDbName();
       }
       // check if all new partitions are part of the same table
-      if (tableName != null && !tableName.equals(p.getTableName())) {
+      if (tableName != null && !tableName.equalsIgnoreCase(p.getTableName())) {
         throw new MetaException("New partitions doesn't belong to the same table "
             + Arrays.toString(partitions.toArray()));
       } else {

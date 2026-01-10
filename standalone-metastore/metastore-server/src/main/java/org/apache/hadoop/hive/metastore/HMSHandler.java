@@ -27,7 +27,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Striped;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -48,6 +47,11 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
 import org.apache.hadoop.hive.metastore.events.*;
+import org.apache.hadoop.hive.metastore.handler.AbstractOperationHandler;
+import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.DropDatabaseHandler;
+import org.apache.hadoop.hive.metastore.handler.DropPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.DropTableHandler;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -81,11 +85,6 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Matcher;
@@ -115,6 +114,8 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTLT;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.canUpdateStats;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -176,8 +177,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       HMSHandlerContext.clear();
     }
   }
-
-  private static ExecutorService threadPool;
 
   static final Logger auditLog = LoggerFactory.getLogger(
       HiveMetaStore.class.getName() + ".audit");
@@ -265,12 +264,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     super(name);
     this.conf = conf;
     isInTest = MetastoreConf.getBoolVar(this.conf, HIVE_IN_TEST);
-    if (threadPool == null) {
+    if (tablelocks == null) {
       synchronized (HMSHandler.class) {
-        if (threadPool == null) {
-          int numThreads = MetastoreConf.getIntVar(conf, ConfVars.FS_HANDLER_THREADS_COUNT);
-          threadPool = Executors.newFixedThreadPool(numThreads,
-              new ThreadFactoryBuilder().setDaemon(true).setNameFormat("HMSHandler #%d").build());
+        if (tablelocks == null) {
           int numTableLocks = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_NUM_STRIPED_TABLE_LOCKS);
           tablelocks = Striped.lock(numTableLocks);
         }
@@ -369,8 +365,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     endFunctionListeners = MetaStoreServerUtils.getMetaStoreListeners(
         MetaStoreEndFunctionListener.class, conf, MetastoreConf.getVar(conf, ConfVars.END_FUNCTION_LISTENERS));
-
-
 
     expressionProxy = PartFilterExprUtil.createExpressionProxy(conf);
     fileMetadataManager = new FileMetadataManager(this.getMS(), conf);
@@ -1104,17 +1098,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             req.setCatalogName(catName);
             req.setDeleteData(true);
             req.setCascade(false);
-            
-            drop_database_core(ms, req);
+            drop_database_req(req);
           } catch (InvalidOperationException e) {
             // This means there are tables of something in the database
             throw new InvalidOperationException("There are still objects in the default " +
                 "database for catalog " + catName);
-          } catch (InvalidObjectException|IOException|InvalidInputException e) {
-            MetaException me = new MetaException("Error attempt to drop default database for " +
-                "catalog " + catName);
-            me.initCause(e);
-            throw me;
           }
         } else {
           throw new InvalidOperationException("There are non-default databases in the catalog " +
@@ -1152,11 +1140,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             transactionalListenerResponses, ms);
       }
     }
-  }
-
-  static boolean isDbReplicationTarget(Database db) {
-    String dbCkptStatus = (db.getParameters() == null) ? null : db.getParameters().get(ReplConst.REPL_TARGET_DB_PROPERTY);
-    return dbCkptStatus != null && !dbCkptStatus.trim().isEmpty();
   }
 
   // Assumes that the catalog has already been set.
@@ -1583,263 +1566,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return newReplId != null && !newReplId.equalsIgnoreCase(oldReplId);
   }
 
-  private void drop_database_core(RawStore ms, DropDatabaseRequest req) throws NoSuchObjectException, 
-      InvalidOperationException, MetaException, IOException, InvalidObjectException, InvalidInputException {
-    boolean success = false;
-    Database db = null;
-    List<Path> tablePaths = new ArrayList<>();
-    List<Path> partitionPaths = new ArrayList<>();
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    if (req.getName() == null) {
-      throw new MetaException("Database name cannot be null.");
-    }
-    boolean isReplicated = false;
-    try {
-      ms.openTransaction();
-      db = ms.getDatabase(req.getCatalogName(), req.getName());
-      if (MetaStoreUtils.isDatabaseRemote(db)) {
-        success = drop_remote_database_core(ms, db);
-        return;
-      }
-      isReplicated = isDbReplicationTarget(db);
-
-      if (!isInTest && ReplChangeManager.isSourceOfReplication(db)) {
-        throw new InvalidOperationException("can not drop a database which is a source of replication");
-      }
-
-      firePreEvent(new PreDropDatabaseEvent(db, this));
-      String catPrependedName = MetaStoreUtils.prependCatalogToDbName(req.getCatalogName(), req.getName(), conf);
-
-      Set<String> uniqueTableNames = new HashSet<>(get_all_tables(catPrependedName));
-      List<String> allFunctions = get_functions(catPrependedName, "*");
-      ListStoredProcedureRequest request = new ListStoredProcedureRequest(req.getCatalogName());
-      request.setDbName(req.getName());
-      List<String> allProcedures = get_all_stored_procedures(request);
-      ListPackageRequest pkgRequest = new ListPackageRequest(req.getCatalogName());
-      pkgRequest.setDbName(req.getName());
-      List<String> allPackages = get_all_packages(pkgRequest);
-
-      if (!req.isCascade()) {
-        if (!uniqueTableNames.isEmpty()) {
-          throw new InvalidOperationException(
-              "Database " + db.getName() + " is not empty. One or more tables exist.");
-        }
-        if (!allFunctions.isEmpty()) {
-          throw new InvalidOperationException(
-              "Database " + db.getName() + " is not empty. One or more functions exist.");
-        }
-        if (!allProcedures.isEmpty()) {
-          throw new InvalidOperationException(
-              "Database " + db.getName() + " is not empty. One or more stored procedures exist.");
-        }
-        if (!allPackages.isEmpty()) {
-          throw new InvalidOperationException(
-                  "Database " + db.getName() + " is not empty. One or more packages exist.");
-        }
-      }
-      Path path = new Path(db.getLocationUri()).getParent();
-      if (!wh.isWritable(path)) {
-        throw new MetaException("Database not dropped since its external warehouse location " + path + " is not writable by " +
-            SecurityUtils.getUser());
-      }
-      path = wh.getDatabaseManagedPath(db).getParent();
-      if (!wh.isWritable(path)) {
-        throw new MetaException("Database not dropped since its managed warehouse location " + path + " is not writable by " +
-            SecurityUtils.getUser());
-      }
-
-      Path databasePath = wh.getDnsPath(wh.getDatabasePath(db));
-
-      // drop any functions before dropping db
-      for (String funcName : allFunctions) {
-        drop_function(catPrependedName, funcName);
-      }
-
-      for (String procName : allProcedures) {
-        drop_stored_procedure(new StoredProcedureRequest(req.getCatalogName(), req.getName(), procName));
-      }
-      for (String pkgName : allPackages) {
-        drop_package(new DropPackageRequest(req.getCatalogName(), req.getName(), pkgName));
-      }
-
-      final int tableBatchSize = MetastoreConf.getIntVar(conf,
-          ConfVars.BATCH_RETRIEVE_MAX);
-
-      // First pass will drop the materialized views
-      List<String> materializedViewNames = getTablesByTypeCore(req.getCatalogName(), req.getName(), ".*",
-          TableType.MATERIALIZED_VIEW.toString());
-      int startIndex = 0;
-      // retrieve the tables from the metastore in batches to alleviate memory constraints
-      while (startIndex < materializedViewNames.size()) {
-        int endIndex = Math.min(startIndex + tableBatchSize, materializedViewNames.size());
-
-        List<Table> materializedViews;
-        try {
-          materializedViews = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), materializedViewNames.subList(startIndex, endIndex));
-        } catch (UnknownDBException e) {
-          throw new MetaException(e.getMessage());
-        }
-
-        if (materializedViews != null && !materializedViews.isEmpty()) {
-          for (Table materializedView : materializedViews) {
-            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(materializedView, req.isSoftDelete());
-            
-            if (materializedView.getSd().getLocation() != null && !isSoftDelete) {
-              Path materializedViewPath = wh.getDnsPath(new Path(materializedView.getSd().getLocation()));
-              
-              if (!FileUtils.isSubdirectory(databasePath.toString(), materializedViewPath.toString()) || req.isSoftDelete()) {
-                if (!wh.isWritable(materializedViewPath.getParent())) {
-                  throw new MetaException("Database metadata not deleted since table: " +
-                      materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
-                      " which is not writable by " + SecurityUtils.getUser());
-                }
-                tablePaths.add(materializedViewPath);
-              }
-            }
-            EnvironmentContext context = null;
-            if (isSoftDelete) {
-              context = new EnvironmentContext();
-              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
-            }
-            // Drop the materialized view but not its data
-            drop_table_with_environment_context(
-                req.getName(), materializedView.getTableName(), false, context);
-            
-            // Remove from all tables
-            uniqueTableNames.remove(materializedView.getTableName());
-          }
-        }
-        startIndex = endIndex;
-      }
-
-      // drop tables before dropping db
-      List<String> allTables = new ArrayList<>(uniqueTableNames);
-      startIndex = 0;
-      
-      // retrieve the tables from the metastore in batches to alleviate memory constraints
-      while (startIndex < allTables.size()) {
-        int endIndex = Math.min(startIndex + tableBatchSize, allTables.size());
-
-        List<Table> tables;
-        try {
-          tables = ms.getTableObjectsByName(req.getCatalogName(), req.getName(), allTables.subList(startIndex, endIndex));
-        } catch (UnknownDBException e) {
-          throw new MetaException(e.getMessage());
-        }
-
-        if (tables != null && !tables.isEmpty()) {
-          for (Table table : tables) {
-            // If the table is not external and it might not be in a subdirectory of the database
-            // add it's locations to the list of paths to delete
-            boolean isSoftDelete = TxnUtils.isTableSoftDeleteEnabled(table, req.isSoftDelete());
-            Path tablePath = null;
-            
-            boolean tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(table, req.isDeleteData()) 
-              && !isSoftDelete;
-            
-            boolean isManagedTable = table.getTableType().equals(TableType.MANAGED_TABLE.toString());
-            if (table.getSd().getLocation() != null && tableDataShouldBeDeleted) {
-              tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
-              if (!isManagedTable || req.isSoftDelete()) {
-                if (!wh.isWritable(tablePath.getParent())) {
-                  throw new MetaException(
-                      "Database metadata not deleted since table: " + table.getTableName() + " has a parent location "
-                          + tablePath.getParent() + " which is not writable by " + SecurityUtils.getUser());
-                }
-                tablePaths.add(tablePath);
-              }
-            }
-            // For each partition in each table, drop the partitions and get a list of
-            // partitions' locations which might need to be deleted
-            partitionPaths.addAll(dropPartitionsAndGetLocations(ms, req.getCatalogName(), req.getName(), table.getTableName(),
-                tablePath, tableDataShouldBeDeleted));
-            
-            EnvironmentContext context = null;
-            if (isSoftDelete) {
-              context = new EnvironmentContext();
-              context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
-              req.setDeleteManagedDir(false);
-            }
-            // Drop the table but not its data
-            drop_table_with_environment_context(
-                MetaStoreUtils.prependCatalogToDbName(table.getCatName(), table.getDbName(), conf),
-                table.getTableName(), false, context, false);
-          }
-        }
-        startIndex = endIndex;
-      }
-
-      if (ms.dropDatabase(req.getCatalogName(), req.getName())) {
-        if (!transactionalListeners.isEmpty()) {
-          DropDatabaseEvent dropEvent = new DropDatabaseEvent(db, true, this, isReplicated);
-          EnvironmentContext context = null;
-          if (!req.isDeleteManagedDir()) {
-            context = new EnvironmentContext();
-            context.putToProperties(hive_metastoreConstants.TXN_ID, String.valueOf(req.getTxnId()));
-          }
-          dropEvent.setEnvironmentContext(context);
-          transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.DROP_DATABASE, dropEvent);
-        }
-        success = ms.commitTransaction();
-      }
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      } else if (req.isDeleteData()) {
-        // Delete the data in the partitions which have other locations
-        deletePartitionData(partitionPaths, false, db);
-        // Delete the data in the tables which have other locations or soft-delete is enabled
-        for (Path tablePath : tablePaths) {
-          deleteTableData(tablePath, false, db);
-        }
-        final Database dbFinal = db;
-        final Path path = (dbFinal.getManagedLocationUri() != null) ?
-            new Path(dbFinal.getManagedLocationUri()) : wh.getDatabaseManagedPath(dbFinal);
-        if (req.isDeleteManagedDir()) {
-          try {
-            Boolean deleted = UserGroupInformation.getLoginUser().doAs((PrivilegedExceptionAction<Boolean>)
-              () -> wh.deleteDir(path, true, dbFinal));
-            if (!deleted) {
-              LOG.error("Failed to delete database's managed warehouse directory: " + path);
-            }
-          } catch (Exception e) {
-            LOG.error("Failed to delete database's managed warehouse directory: " + path + " " + e.getMessage());
-          }
-        }
-        try {
-          Boolean deleted = UserGroupInformation.getCurrentUser().doAs((PrivilegedExceptionAction<Boolean>) 
-              () -> wh.deleteDir(new Path(dbFinal.getLocationUri()), true, dbFinal));
-          if (!deleted) {
-            LOG.error("Failed to delete database external warehouse directory " + db.getLocationUri());
-          }
-        } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-          LOG.error("Failed to delete the database external warehouse directory: " + db.getLocationUri() + " " + e
-            .getMessage());
-        }
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.DROP_DATABASE,
-            new DropDatabaseEvent(db, success, this, isReplicated),
-            null,
-            transactionalListenerResponses, ms);
-      }
-    }
-  }
-
-  private boolean drop_remote_database_core(RawStore ms, final Database db) throws MetaException, NoSuchObjectException {
-    boolean success = false;
-    firePreEvent(new PreDropDatabaseEvent(db, this));
-
-    if (ms.dropDatabase(db.getCatalogName(), db.getName())) {
-      success = ms.commitTransaction();
-    }
-    return success;
-  }
-
   @Override
   @Deprecated
   public void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
@@ -1855,28 +1581,29 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public void drop_database_req(final DropDatabaseRequest req)
+  public AsyncOperationResp drop_database_req(final DropDatabaseRequest req)
       throws NoSuchObjectException, InvalidOperationException, MetaException {
-    startFunction("drop_database", ": " + req.getName());
-    
-    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(req.getCatalogName()) 
+    logAndAudit("drop_database: " + req.getName() + ", async: " + req.isAsyncDrop() + ", id: " + req.getId());
+
+    if (DEFAULT_CATALOG_NAME.equalsIgnoreCase(req.getCatalogName())
           && DEFAULT_DATABASE_NAME.equalsIgnoreCase(req.getName())) {
-      endFunction("drop_database", false, null);
-      throw new MetaException("Can not drop " + DEFAULT_DATABASE_NAME + " database in catalog " 
+      throw new MetaException("Can not drop " + DEFAULT_DATABASE_NAME + " database in catalog "
         + DEFAULT_CATALOG_NAME);
     }
-    boolean success = false;
     Exception ex = null;
     try {
-      drop_database_core(getMS(), req);
-      success = true;
+      DropDatabaseHandler dropDatabaseOp = AbstractOperationHandler.offer(this, req);
+      AbstractOperationHandler.OperationStatus status = dropDatabaseOp.getOperationStatus();
+      return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
           .throwIfInstance(NoSuchObjectException.class, InvalidOperationException.class, MetaException.class)
           .defaultMetaException();
     } finally {
-      endFunction("drop_database", success, ex);
+      for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
+        listener.onEndFunction("drop_database_req", new MetaStoreEndFunctionContext(ex == null, ex, null));
+      }
     }
   }
 
@@ -2952,380 +2679,50 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return (ms.getTable(catName, dbname, name, null) != null);
   }
 
-  private boolean drop_table_core(final RawStore ms, final String catName, final String dbname,
-                                  final String name, final boolean deleteData,
-                                  final EnvironmentContext envContext, final String indexName, boolean dropPartitions)
-    throws TException, IOException {
-    boolean success = false;
-    boolean tableDataShouldBeDeleted = false;
-    Path tblPath = null;
-    List<Path> partPaths = null;
-    Table tbl = null;
-    boolean ifPurge = false;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    Database db = null;
-    boolean isReplicated = false;
-    try {
-      ms.openTransaction();
-
-      // HIVE-25282: Drop/Alter table in REMOTE db should fail
-      db = ms.getDatabase(catName, dbname);
-      if (MetaStoreUtils.isDatabaseRemote(db)) {
-        throw new MetaException("Drop table in REMOTE database " + db.getName() + " is not allowed");
-      }
-      isReplicated = isDbReplicationTarget(db);
-
-      // drop any partitions
-      GetTableRequest req = new GetTableRequest(dbname,name);
-      req.setCatName(catName);
-      tbl = get_table_core(req);
-      if (tbl == null) {
-        throw new NoSuchObjectException(name + " doesn't exist");
-      }
-
-      // Check if table is part of a materialized view.
-      // If it is, it cannot be dropped.
-      List<String> isPartOfMV = ms.isPartOfMaterializedView(catName, dbname, name);
-      if (!isPartOfMV.isEmpty()) {
-        throw new MetaException(String.format("Cannot drop table as it is used in the following materialized" +
-            " views %s%n", isPartOfMV));
-      }
-
-      if (tbl.getSd() == null) {
-        throw new MetaException("Table metadata is corrupted");
-      }
-      ifPurge = isMustPurge(envContext, tbl);
-
-      firePreEvent(new PreDropTableEvent(tbl, deleteData, this));
-
-      tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
-      if (tableDataShouldBeDeleted && tbl.getSd().getLocation() != null) {
-        tblPath = new Path(tbl.getSd().getLocation());
-        String target = indexName == null ? "Table" : "Index table";
-	 // HIVE-28804 drop table user should have table path and parent path permission
-        if (!wh.isWritable(tblPath.getParent())) {
-          throw new MetaException("%s metadata not deleted since %s is not writable by %s"
-              .formatted(target, tblPath.getParent(), SecurityUtils.getUser()));
-        } else if (!wh.isWritable(tblPath)) {
-          throw new MetaException("%s metadata not deleted since %s is not writable by %s"
-              .formatted(target, tblPath, SecurityUtils.getUser()));
-        }
-      }
-
-      // Drop the partitions and get a list of locations which need to be deleted
-      // In case of drop database cascade we need not to drop the partitions, they are already dropped.
-      if (dropPartitions) {
-        partPaths = dropPartitionsAndGetLocations(ms, catName, dbname, name, tblPath, tableDataShouldBeDeleted);
-      }
-      // Drop any constraints on the table
-      ms.dropConstraint(catName, dbname, name, null, true);
-
-      if (!ms.dropTable(catName, dbname, name)) {
-        String tableName = TableName.getQualified(catName, dbname, name);
-        throw new MetaException(indexName == null ? "Unable to drop table " + tableName:
-            "Unable to drop index table " + tableName + " for index " + indexName);
-      } else {
-        if (!transactionalListeners.isEmpty()) {
-          transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.DROP_TABLE,
-                  new DropTableEvent(tbl, true, deleteData,
-                      this, isReplicated),
-                  envContext);
-        }
-        success = ms.commitTransaction();
-      }
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      } else if (tableDataShouldBeDeleted) {
-        // Data needs deletion. Check if trash may be skipped.
-        // Delete the data in the partitions which have other locations
-        deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
-        // Delete the data in the table
-        deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.DROP_TABLE,
-            new DropTableEvent(tbl, success, deleteData, this, isReplicated),
-            envContext,
-            transactionalListenerResponses, ms);
-      }
-    }
-    return success;
-  }
-
-  private boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
-    if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
-      // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
-      return MetaStoreUtils.isExternalTablePurge(tbl);
-    }
-    return deleteData;
-  }
-
-  /**
-   * Deletes the data in a table's location, if it fails logs an error
-   *
-   * @param tablePath
-   * @param ifPurge completely purge the table (skipping trash) while removing
-   *                data from warehouse
-   * @param shouldEnableCm If cm should be enabled
-   */
-  private void deleteTableData(Path tablePath, boolean ifPurge, boolean shouldEnableCm) {
-    if (tablePath != null) {
-      deleteDataExcludeCmroot(tablePath, ifPurge, shouldEnableCm);
-    }
-  }
-
-  /**
-   * Deletes the data in a table's location, if it fails logs an error.
-   *
-   * @param tablePath
-   * @param ifPurge completely purge the table (skipping trash) while removing
-   *                data from warehouse
-   * @param db Database
-   */
-  private void deleteTableData(Path tablePath, boolean ifPurge, Database db) {
-    if (tablePath != null) {
-      try {
-        wh.deleteDir(tablePath, ifPurge, db);
-      } catch (Exception e) {
-        LOG.error("Failed to delete table directory: " + tablePath +
-            " " + e.getMessage());
-      }
-    }
-  }
-
-  /**
-   * Give a list of partitions' locations, tries to delete each one
-   * and for each that fails logs an error.
-   *
-   * @param partPaths
-   * @param ifPurge completely purge the partition (skipping trash) while
-   *                removing data from warehouse
-   * @param shouldEnableCm If cm should be enabled
-   */
-  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, boolean shouldEnableCm) {
-    if (partPaths != null && !partPaths.isEmpty()) {
-      for (Path partPath : partPaths) {
-        deleteDataExcludeCmroot(partPath, ifPurge, shouldEnableCm);
-      }
-    }
-  }
-
-  /**
-   * Give a list of partitions' locations, tries to delete each one
-   * and for each that fails logs an error.
-   *
-   * @param partPaths
-   * @param ifPurge completely purge the partition (skipping trash) while
-   *                removing data from warehouse
-   * @param db Database
-   */
-  private void deletePartitionData(List<Path> partPaths, boolean ifPurge, Database db) {
-    if (partPaths != null && !partPaths.isEmpty()) {
-      for (Path partPath : partPaths) {
-        try {
-          wh.deleteDir(partPath, ifPurge, db);
-        } catch (Exception e) {
-          LOG.error("Failed to delete partition directory: " + partPath +
-              " " + e.getMessage());
-        }
-      }
-    }
-  }
-
-  /**
-   * Delete data from path excluding cmdir
-   * and for each that fails logs an error.
-   *
-   * @param path
-   * @param ifPurge completely purge the partition (skipping trash) while
-   *                removing data from warehouse
-   * @param shouldEnableCm If cm should be enabled
-   */
-  private void deleteDataExcludeCmroot(Path path, boolean ifPurge, boolean shouldEnableCm) {
-    try {
-      if (shouldEnableCm) {
-        //Don't delete cmdir if its inside the partition path
-        FileStatus[] statuses = path.getFileSystem(conf).listStatus(path,
-            ReplChangeManager.CMROOT_PATH_FILTER);
-        for (final FileStatus status : statuses) {
-          wh.deleteDir(status.getPath(), ifPurge, shouldEnableCm);
-        }
-        //Check if table directory is empty, delete it
-        FileStatus[] statusWithoutFilter = path.getFileSystem(conf).listStatus(path);
-        if (statusWithoutFilter.length == 0) {
-          wh.deleteDir(path, ifPurge, shouldEnableCm);
-        }
-      } else {
-        //If no cm delete the complete table directory
-        wh.deleteDir(path, ifPurge, shouldEnableCm);
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to delete directory: {}", path, e);
-    }
-  }
-
-  /**
-   * Deletes the partitions specified by catName, dbName, tableName. If checkLocation is true, for
-   * locations of partitions which may not be subdirectories of tablePath checks to make sure the
-   * locations are writable.
-   *
-   * Drops the metadata for each partition.
-   *
-   * Provides a list of locations of partitions which may not be subdirectories of tablePath.
-   *
-   * @param ms RawStore to use for metadata retrieval and delete
-   * @param catName The catName
-   * @param dbName The dbName
-   * @param tableName The tableName
-   * @param tablePath The tablePath of which subdirectories does not have to be checked
-   * @param checkLocation Should we check the locations at all
-   * @return The list of the Path objects to delete (only in case checkLocation is true)
-   * @throws MetaException
-   * @throws IOException
-   * @throws NoSuchObjectException
-   */
-  private List<Path> dropPartitionsAndGetLocations(RawStore ms, String catName, String dbName,
-                                                   String tableName, Path tablePath, boolean checkLocation)
-      throws MetaException, IOException, NoSuchObjectException {
-    int batchSize = MetastoreConf.getIntVar(conf, ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
-    String tableDnsPath = null;
-    if (tablePath != null) {
-      tableDnsPath = wh.getDnsPath(tablePath).toString();
-    }
-
-    List<Path> partPaths = new ArrayList<>();
-    while (true) {
-      List<String> partNames;
-      if (checkLocation) {
-        Map<String, String> partitionLocations = ms.getPartitionLocations(catName, dbName, tableName,
-                tableDnsPath, batchSize);
-        partNames = new ArrayList<>(partitionLocations.keySet());
-        for (String partName : partNames) {
-          String pathString = partitionLocations.get(partName);
-          if (pathString != null) {
-            Path partPath = wh.getDnsPath(new Path(pathString));
-            // Double check here. Maybe Warehouse.getDnsPath revealed relationship between the
-            // path objects
-            if (tableDnsPath == null ||
-                !FileUtils.isSubdirectory(tableDnsPath, partPath.toString())) {
-              if (!wh.isWritable(partPath.getParent())) {
-                throw new MetaException("Table metadata not deleted since the partition "
-                    + partName + " has parent location " + partPath.getParent()
-                    + " which is not writable by " + SecurityUtils.getUser());
-              }
-              partPaths.add(partPath);
-            }
-          }
-        }
-      } else {
-        partNames = ms.listPartitionNames(catName, dbName, tableName, (short) batchSize);
-      }
-
-      if (partNames == null || partNames.isEmpty()) {
-        // No more partitions left to drop. Return with the collected path list to delete.
-        return partPaths;
-      }
-
-      for (MetaStoreEventListener listener : listeners) {
-        //No drop part listener events fired for public listeners historically, for drop table case.
-        //Limiting to internal listeners for now, to avoid unexpected calls for public listeners.
-        if (listener instanceof HMSMetricsListener) {
-          for (@SuppressWarnings("unused") String partName : partNames) {
-            listener.onDropPartition(null);
-          }
-        }
-      }
-
-      ms.dropPartitions(catName, dbName, tableName, partNames);
-    }
-  }
-
   @Override
   @Deprecated
   public void drop_table(final String dbname, final String name, final boolean deleteData)
       throws NoSuchObjectException, MetaException {
-    startFunction("drop_table", ": " + dbname + ":" + name);
-    boolean success = false;
-    Exception ex = null;
-    try {
     String[] parsedDbName = parseDbName(dbname, conf);
     DropTableRequest dropTableReq = new DropTableRequest(parsedDbName[DB_NAME], name);
     dropTableReq.setDeleteData(deleteData);
     dropTableReq.setCatalogName(parsedDbName[CAT_NAME]);
     dropTableReq.setDropPartitions(true);
     drop_table_req(dropTableReq);
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
-              .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
-    } finally {
-      endFunction("drop_table", success, ex, name);
-    }
   }
 
   @Override
   @Deprecated
   public void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
       final EnvironmentContext envContext) throws NoSuchObjectException, MetaException {
-    startFunction("drop_table_with_environment_context", ": " + dbname + ":" + name);
-    boolean success = false;
-    Exception ex = null;
-    try {
-      String[] parsedDbName = parseDbName(dbname, conf);
-      DropTableRequest dropTableReq = new DropTableRequest(parsedDbName[DB_NAME], name);
-      dropTableReq.setDeleteData(deleteData);
-      dropTableReq.setCatalogName(parsedDbName[CAT_NAME]);
-      dropTableReq.setDropPartitions(true);
-      dropTableReq.setEnvContext(envContext);
-      drop_table_req(dropTableReq);
-      success = true;
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
-              .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
-    } finally {
-      endFunction("drop_table_with_environment_context", success, ex, name);
-    }
-  }
-
-  private void drop_table_with_environment_context(final String dbname, final String name, final boolean deleteData,
-      final EnvironmentContext envContext, boolean dropPartitions) throws MetaException, NoSuchObjectException {
     String[] parsedDbName = parseDbName(dbname, conf);
-    startTableFunction("drop_table", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name);
-
-    boolean success = false;
-    Exception ex = null;
-    try {
-      success =
-          drop_table_core(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], name, deleteData, envContext, null, dropPartitions);
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
-          .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
-    } finally {
-      endFunction("drop_table", success, ex, name);
-    }
+    DropTableRequest dropTableReq = new DropTableRequest(parsedDbName[DB_NAME], name);
+    dropTableReq.setDeleteData(deleteData);
+    dropTableReq.setCatalogName(parsedDbName[CAT_NAME]);
+    dropTableReq.setDropPartitions(true);
+    dropTableReq.setEnvContext(envContext);
+    drop_table_req(dropTableReq);
   }
 
   @Override
-  public void drop_table_req(final DropTableRequest dropTableReq) throws MetaException, NoSuchObjectException {
-    startFunction("drop_table_req", ": " + dropTableReq.getTableName());
-    boolean success = false;
+  public AsyncOperationResp drop_table_req(DropTableRequest dropReq)
+      throws MetaException, NoSuchObjectException {
+    logAndAudit("drop_table_req: " + dropReq.getTableName() +
+        ", async: " + dropReq.isAsyncDrop() + ", id: " + dropReq.getId());
     Exception ex = null;
     try {
-      success = drop_table_core(getMS(), dropTableReq.getCatalogName(), dropTableReq.getDbName(), dropTableReq.getTableName(),
-              dropTableReq.isDeleteData(), dropTableReq.getEnvContext(), null, dropTableReq.isDropPartitions());
+      DropTableHandler dropTableOp = AbstractOperationHandler.offer(this, dropReq);
+      AbstractOperationHandler.OperationStatus status = dropTableOp.getOperationStatus();
+      return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
               .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
     } finally {
-      endFunction("drop_table_req", success, ex, dropTableReq.getTableName());
+      for (MetaStoreEndFunctionListener listener : endFunctionListeners) {
+        listener.onEndFunction("drop_table_req", new MetaStoreEndFunctionContext(ex == null, ex,
+            TableName.getQualified(dropReq.getCatalogName(), dropReq.getDbName(), dropReq.getTableName())));
+      }
     }
   }
 
@@ -3525,7 +2922,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
    * @param writeId allocated writeId
    * @throws MetaException
    */
-  static void addTruncateBaseFile(Path location, long writeId, Configuration conf, DataFormat dataFormat) 
+  public static void addTruncateBaseFile(Path location, long writeId, Configuration conf, DataFormat dataFormat)
       throws MetaException {
     if (location == null) 
       return;
@@ -4023,7 +3420,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       part.setCreateTime((int) time);
       part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
 
-      if (canUpdateStats(tbl)) {
+      if (canUpdateStats(getConf(), tbl)) {
         MetaStoreServerUtils.updatePartitionStatsFast(part, tbl, wh, madeDir, false, envContext, true);
       }
 
@@ -4057,7 +3454,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return part;
   }
 
-  private void firePreEvent(PreEventContext event) throws MetaException {
+  public void firePreEvent(PreEventContext event) throws MetaException {
     for (MetaStorePreEventListener listener : preListeners) {
       try {
         listener.onEvent(event);
@@ -4147,362 +3544,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return ret;
   }
 
-  private static class PartValEqWrapperLite {
-    List<String> values;
-    String location;
-
-    PartValEqWrapperLite(Partition partition) {
-      this.values = partition.isSetValues()? partition.getValues() : null;
-      if (partition.getSd() != null) {
-        this.location = partition.getSd().getLocation();
-      }
-    }
-
-    @Override
-    public int hashCode() {
-      return values == null ? 0 : values.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (obj == null || !(obj instanceof PartValEqWrapperLite)) {
-        return false;
-      }
-
-      List<String> lhsValues = this.values;
-      List<String> rhsValues = ((PartValEqWrapperLite)obj).values;
-
-      if (lhsValues == null || rhsValues == null) {
-        return lhsValues == rhsValues;
-      }
-
-      if (lhsValues.size() != rhsValues.size()) {
-        return false;
-      }
-
-      for (int i=0; i<lhsValues.size(); ++i) {
-        String lhsValue = lhsValues.get(i);
-        String rhsValue = rhsValues.get(i);
-
-        if ((lhsValue == null && rhsValue != null)
-            || (lhsValue != null && !lhsValue.equals(rhsValue))) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-  }
-
-  private List<Partition> add_partitions_core(final RawStore ms,
-      AddPartitionsRequest request) throws TException {
-    String catName = request.getCatName();
-    String dbName = request.getDbName();
-    String tblName = request.getTblName();
-    if (dbName == null || tblName == null) {
-      throw new MetaException("The database and table name cannot be null.");
-    }
-    EnvironmentContext envContext = request.getEnvironmentContext();
-    boolean success = false;
-    // Ensures that the list doesn't have dups, and keeps track of directories we have created.
-    final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
-    final List<Partition> newParts = new ArrayList<>();
-    final List<Partition> existingParts = new ArrayList<>();
-    Table tbl = null;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    Database db = null;
-
-    List<ColumnStatistics> partsColStats = new ArrayList<>();
-    List<Long> partsWriteIds = new ArrayList<>();
-
-    throwUnsupportedExceptionIfRemoteDB(dbName, "add_partitions");
-
-    Lock tableLock = getTableLockFor(dbName, tblName);
-    tableLock.lock();
-    try {
-      ms.openTransaction();
-      tbl = ms.getTable(catName, dbName, tblName, null);
-      if (tbl == null) {
-        throw new InvalidObjectException("Unable to add partitions because "
-            + TableName.getQualified(catName, dbName, tblName) + " does not exist");
-      }
-      MTable mTable = getMS().ensureGetMTable(catName, dbName, tblName);
-      db = ms.getDatabase(catName, dbName);
-
-      Set<PartValEqWrapperLite> partsToAdd = new HashSet<>();
-      List<FieldSchema> partitionKeys = tbl.getPartitionKeys();
-      Map<String, Partition> nameToPart = new LinkedHashMap<>();
-      for (final Partition part : request.getParts()) {
-        if (request.isSkipColumnSchemaForPartition()) {
-          part.getSd().setCols(tbl.getSd().getCols());
-        }
-        // Collect partition column stats to be updated if present. Partition objects passed down
-        // here at the time of replication may have statistics in them, which is required to be
-        // updated in the metadata. But we don't want it to be part of the Partition object when
-        // it's being created or altered, lest it becomes part of the notification event.
-        if (part.isSetColStats()) {
-          partsColStats.add(part.getColStats());
-          part.unsetColStats();
-          partsWriteIds.add(part.getWriteId());
-        }
-
-        // Iterate through the partitions and validate them. If one of the partitions is
-        // incorrect, an exception will be thrown before the threads which create the partition
-        // folders are submitted. This way we can be sure that no partition and no partition
-        // folder will be created if the list contains an invalid partition.
-        validatePartition(part, catName, tblName, dbName, partsToAdd);
-        nameToPart.put(Warehouse.makePartName(partitionKeys, part.getValues()), part);
-      }
-
-      List<Partition> existedParts =
-          ms.getPartitionsByNames(catName, dbName, tblName,
-              new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(new ArrayList<>(nameToPart.keySet())).build());
-      List<String> existedPartNames = new ArrayList<>();
-      for (Partition part : existedParts) {
-        String partName = Warehouse.makePartName(partitionKeys, part.getValues());
-        existedPartNames.add(partName);
-        existingParts.add(nameToPart.remove(partName));
-      }
-      if (!request.isIfNotExists() && !existedPartNames.isEmpty()) {
-        throw new AlreadyExistsException("Partition(s) already exist, partition name(s): " + existedPartNames);
-      }
-
-      if (nameToPart.isEmpty()) {
-        return Collections.emptyList();
-      }
-      List<Partition> partitionsToAdd = new ArrayList<>(nameToPart.values());
-      // Only authorize on newly created partitions
-      firePreEvent(new PreAddPartitionEvent(tbl, partitionsToAdd, this));
-
-      newParts.addAll(createPartitionFolders(partitionsToAdd, tbl, addedPartitions, envContext));
-
-      if (!newParts.isEmpty()) {
-        ms.addPartitions(catName, dbName, tblName, newParts);
-      }
-
-      // Notification is generated for newly created partitions only. The subset of partitions
-      // that already exist (existingParts), will not generate notifications.
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.ADD_PARTITION,
-                new AddPartitionEvent(tbl, newParts, true, this), envContext);
-      }
-
-      // Update partition column statistics if available. We need a valid writeId list to
-      // update column statistics for a transactional table. But during bootstrap replication,
-      // where we use this feature, we do not have a valid writeId list which was used to
-      // update the stats. But we know for sure that the writeId associated with the stats was
-      // valid then (otherwise stats update would have failed on the source). So, craft a valid
-      // transaction list with only that writeId and use it to update the stats.
-      int cnt = 0;
-      for (ColumnStatistics partColStats: partsColStats) {
-        long writeId = partsWriteIds.get(cnt++);
-        String validWriteIds = null;
-        if (writeId > 0) {
-          ValidWriteIdList validWriteIdList =
-              new ValidReaderWriteIdList(TableName.getDbTable(tbl.getDbName(),
-                  tbl.getTableName()),
-                  new long[0], new BitSet(), writeId);
-          validWriteIds = validWriteIdList.toString();
-        }
-        updatePartitonColStatsInternal(tbl, mTable, partColStats, validWriteIds, writeId);
-      }
-
-      success = ms.commitTransaction();
-    } finally {
-      try {
-        if (!success) {
-          ms.rollbackTransaction();
-          cleanupPartitionFolders(addedPartitions, db);
-        }
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.ADD_PARTITION,
-              new AddPartitionEvent(tbl, newParts, success, this),
-              envContext, transactionalListenerResponses, ms);
-
-          if (!existingParts.isEmpty()) {
-            // The request has succeeded but we failed to add these partitions.
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                EventType.ADD_PARTITION,
-                new AddPartitionEvent(tbl, existingParts, false, this),
-                envContext, null, ms);
-          }
-        }
-      } finally {
-        tableLock.unlock();
-      }
-    }
-
-    return newParts;
-  }
-
-  private Lock getTableLockFor(String dbName, String tblName) {
+  public Lock getTableLockFor(String dbName, String tblName) {
     return tablelocks.get(dbName + "." + tblName);
-  }
-
-  /**
-   * Remove the newly created partition folders. The values in the addedPartitions map indicates
-   * whether or not the location of the partition was newly created. If the value is false, the
-   * partition folder will not be removed.
-   * @param addedPartitions
-   * @throws MetaException
-   * @throws IllegalArgumentException
-   */
-  private void cleanupPartitionFolders(final Map<PartValEqWrapperLite, Boolean> addedPartitions,
-                                       Database db) throws MetaException, IllegalArgumentException {
-    for (Map.Entry<PartValEqWrapperLite, Boolean> e : addedPartitions.entrySet()) {
-      if (e.getValue()) {
-        // we just created this directory - it's not a case of pre-creation, so we nuke.
-        wh.deleteDir(new Path(e.getKey().location), true, db);
-      }
-    }
-  }
-
-  /**
-   * Validate a partition before creating it. The validation checks
-   * <ul>
-   * <li>if the database and table names set in the partition are not null and they are matching
-   * with the expected values set in the tblName and dbName parameters.</li>
-   * <li>if the partition values are set.</li>
-   * <li>if none of the partition values is null.</li>
-   * <li>if the partition values are matching with the pattern set in the
-   * 'metastore.partition.name.whitelist.pattern' configuration property.</li>
-   * <li>if the partition doesn't already exist. If the partition already exists, an exception
-   * will be thrown if the ifNotExists parameter is false, otherwise it will be just ignored.</li>
-   * <li>if the partsToAdd set doesn't contain the partition. The partsToAdd set contains the
-   * partitions which are already validated. If the set contains the current partition, it means
-   * that the partition is tried to be added multiple times in the same batch. Please note that
-   * the set will be updated with the current partition if the validation was successful.</li>
-   * </ul>
-   * @param part
-   * @param catName
-   * @param tblName
-   * @param dbName
-   * @param partsToAdd
-   * @throws MetaException
-   * @throws TException
-   */
-  private void validatePartition(final Partition part, final String catName,
-                                    final String tblName, final String dbName, final Set<PartValEqWrapperLite> partsToAdd)
-      throws MetaException, TException {
-    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(), getConf());
-    if (part.getDbName() == null || part.getTableName() == null) {
-      throw new MetaException("The database and table name must be set in the partition.");
-    }
-
-    if (!part.getTableName().equalsIgnoreCase(tblName)
-        || !part.getDbName().equalsIgnoreCase(dbName)) {
-      String errorMsg = String.format(
-          "Partition does not belong to target table %s. It belongs to the table %s.%s : %s",
-          TableName.getQualified(catName, dbName, tblName), part.getDbName(),
-          part.getTableName(), part.toString());
-      throw new MetaException(errorMsg);
-    }
-
-    if (part.getValues() == null || part.getValues().isEmpty()) {
-      throw new MetaException("The partition values cannot be null or empty.");
-    }
-
-    if (part.getValues().contains(null)) {
-      throw new MetaException("Partition value cannot be null.");
-    }
-
-    if (!partsToAdd.add(new PartValEqWrapperLite(part))) {
-      // Technically, for ifNotExists case, we could insert one and discard the other
-      // because the first one now "exists", but it seems better to report the problem
-      // upstream as such a command doesn't make sense.
-      throw new MetaException("Duplicate partitions in the list: " + part);
-    }
-  }
-
-  /**
-   * Create the location folders for the partitions. For each partition a separate thread will be
-   * started to create the folder. The method will wait until all threads are finished and returns
-   * the partitions whose folders were created successfully. If an error occurs during the
-   * execution of a thread, a MetaException will be thrown.
-   * @param partitionsToAdd
-   * @param table
-   * @param addedPartitions
-   * @return
-   * @throws MetaException
-   */
-  private List<Partition> createPartitionFolders(final List<Partition> partitionsToAdd,
-      final Table table, final Map<PartValEqWrapperLite, Boolean> addedPartitions,
-      EnvironmentContext envContext) throws MetaException {
-    final AtomicBoolean failureOccurred = new AtomicBoolean(false);
-    final List<Future<Partition>> partFutures = new ArrayList<>(partitionsToAdd.size());
-    final Map<PartValEqWrapperLite, Boolean> addedParts = new ConcurrentHashMap<>();
-
-    final UserGroupInformation ugi;
-    try {
-      ugi = UserGroupInformation.getCurrentUser();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    for (final Partition partition : partitionsToAdd) {
-      initializePartitionParameters(table, partition);
-
-      partFutures.add(threadPool.submit(() -> {
-        if (failureOccurred.get()) {
-          return null;
-        }
-        ugi.doAs((PrivilegedExceptionAction<Partition>) () -> {
-          try {
-            boolean madeDir = createLocationForAddedPartition(table, partition);
-            addedParts.put(new PartValEqWrapperLite(partition), madeDir);
-            initializeAddedPartition(table, partition, madeDir, envContext);
-          } catch (MetaException e) {
-            throw new IOException(e.getMessage(), e);
-          }
-          return null;
-        });
-        return partition;
-      }));
-    }
-
-    List<Partition> newParts = new ArrayList<>(partitionsToAdd.size());
-    String errorMessage = null;
-    for (Future<Partition> partFuture : partFutures) {
-      try {
-        Partition part = partFuture.get();
-        if (part != null && !failureOccurred.get()) {
-          newParts.add(part);
-        }
-      } catch (ExecutionException e) {
-        // If an exception is thrown in the execution of a task, set the failureOccurred flag to
-        // true. This flag is visible in the tasks and if its value is true, the partition
-        // folders won't be created.
-        // Then iterate through the remaining tasks and wait for them to finish. The tasks which
-        // are started before the flag got set will then finish creating the partition folders.
-        // The tasks which are started after the flag got set, won't create the partition
-        // folders, to avoid unnecessary work.
-        // This way it is sure that all tasks are finished, when entering the finally part where
-        // the partition folders are cleaned up. It won't happen that a task is still running
-        // when cleaning up the folders, so it is sure we won't have leftover folders.
-        // Canceling the other tasks would be also an option but during testing it turned out
-        // that it is not a trustworthy solution to avoid leftover folders.
-        failureOccurred.compareAndSet(false, true);
-        errorMessage = e.getMessage();
-      } catch (InterruptedException e) {
-        failureOccurred.compareAndSet(false, true);
-        errorMessage = e.getMessage();
-        // Restore interruption status of the corresponding thread
-        Thread.currentThread().interrupt();
-      }
-    }
-
-    addedPartitions.putAll(addedParts);
-    if (failureOccurred.get()) {
-      throw new MetaException(errorMessage);
-    }
-
-    return newParts;
   }
 
   @Override
@@ -4521,29 +3564,30 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
     Exception ex = null;
     try {
-      if (!request.isSetCatName()) {
-        request.setCatName(catName);
-      }
-      boolean isColSkippedForPartitions = request.isSkipColumnSchemaForPartition();
       // Make sure all the partitions have the catalog set as well
-      request.getParts().forEach(p -> p.setCatName(catName));
-      request.setCatName(catName);
-      List<Partition> parts = add_partitions_core(getMS(), request);
-      if (request.isNeedResult()) {
-        if (isColSkippedForPartitions) {
-          if (!parts.isEmpty()) {
-            StorageDescriptor sd = parts.get(0).getSd().deepCopy();
+      AddPartitionsHandler addPartsOp = AbstractOperationHandler.offer(this, request);
+      if (addPartsOp.success() && request.isNeedResult()) {
+        AddPartitionsHandler.AddPartitionsResult addPartsResult = addPartsOp.getResult();
+        if (request.isSkipColumnSchemaForPartition()) {
+          if (addPartsResult.newParts() != null && !addPartsResult.newParts().isEmpty()) {
+            StorageDescriptor sd = addPartsResult.newParts().get(0).getSd().deepCopy();
             result.setPartitionColSchema(sd.getCols());
           }
-          parts.stream().forEach(partition -> partition.getSd().getCols().clear());
+          addPartsResult.newParts().stream().forEach(partition -> partition.getSd().getCols().clear());
         }
-        result.setPartitions(parts);
+        result.setPartitions(addPartsResult.newParts());
       }
     } catch (Exception e) {
       ex = e;
       throw handleException(e).throwIfInstance(TException.class).defaultMetaException();
     } finally {
       endFunction("add_partitions_req", ex == null, ex, tblName);
+    }
+
+    if (!result.isSetPartitions() && request.isNeedResult()) {
+      // This is mainly for backwards compatibility,
+      // old client may ask for the added partitions even if it fails.
+      result.setPartitions(request.getParts());
     }
     return result;
   }
@@ -4629,7 +3673,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       AddPartitionsRequest request = new AddPartitionsRequest(dbName, tableName, partitionsToAdd, false);
       request.setCatName(catName);
-      ret = add_partitions_core(getMS(), request).size();
+      return add_partitions_req(request).getPartitionsSize();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -4637,124 +3681,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           .defaultMetaException();
     } finally {
       endFunction("add_partitions_pspec", ret != null, ex, tableName);
-    }
-    return ret;
-  }
-
-  /**
-   * Handles the location for a partition being created.
-   * @param tbl Table.
-   * @param part Partition.
-   * @return Whether the partition SD location is set to a newly created directory.
-   */
-  private boolean createLocationForAddedPartition(
-      final Table tbl, final Partition part) throws MetaException {
-    Path partLocation = null;
-    String partLocationStr = null;
-    if (part.getSd() != null) {
-      partLocationStr = part.getSd().getLocation();
-    }
-
-    if (partLocationStr == null || partLocationStr.isEmpty()) {
-      // set default location if not specified and this is
-      // a physical table partition (not a view)
-      if (tbl.getSd().getLocation() != null) {
-        partLocation = new Path(tbl.getSd().getLocation(), Warehouse
-            .makePartName(tbl.getPartitionKeys(), part.getValues()));
-      }
-    } else {
-      if (tbl.getSd().getLocation() == null) {
-        throw new MetaException("Cannot specify location for a view partition");
-      }
-      partLocation = wh.getDnsPath(new Path(partLocationStr));
-    }
-
-    boolean result = false;
-    if (partLocation != null) {
-      part.getSd().setLocation(partLocation.toString());
-
-      // Check to see if the directory already exists before calling
-      // mkdirs() because if the file system is read-only, mkdirs will
-      // throw an exception even if the directory already exists.
-      if (!wh.isDir(partLocation)) {
-        if (!wh.mkdirs(partLocation)) {
-          throw new MetaException(partLocation
-              + " is not a directory or unable to create one");
-        }
-        result = true;
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Verify if update stats while altering partition(s)
-   * For the following three cases HMS will not update partition stats
-   * 1) Table property 'DO_NOT_UPDATE_STATS' = True
-   * 2) HMS configuration property 'STATS_AUTO_GATHER' = False
-   * 3) Is View
-   */
-  private boolean canUpdateStats(Table tbl) {
-    Map<String,String> tblParams = tbl.getParameters();
-    boolean updateStatsTbl = true;
-    if ((tblParams != null) && tblParams.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)) {
-      updateStatsTbl = !Boolean.valueOf(tblParams.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
-    }
-    if (!MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) ||
-        MetaStoreUtils.isView(tbl) ||
-        !updateStatsTbl) {
-      return false;
-    }
-    return true;
-  }
-
-  private void initializeAddedPartition(final Table tbl, final Partition part, boolean madeDir,
-                                        EnvironmentContext environmentContext) throws MetaException {
-    initializeAddedPartition(tbl,
-        new PartitionSpecProxy.SimplePartitionWrapperIterator(part), madeDir, environmentContext);
-  }
-
-  private void initializeAddedPartition(
-      final Table tbl, final PartitionSpecProxy.PartitionIterator part, boolean madeDir,
-      EnvironmentContext environmentContext) throws MetaException {
-    if (canUpdateStats(tbl)) {
-      MetaStoreServerUtils.updatePartitionStatsFast(part, tbl, wh, madeDir,
-          false, environmentContext, true);
-    }
-
-    // set create time
-    long time = System.currentTimeMillis() / 1000;
-    part.setCreateTime((int) time);
-    if (part.getParameters() == null ||
-        part.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
-      part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
-    }
-  }
-
-  private void initializePartitionParameters(final Table tbl, final Partition part)
-      throws MetaException {
-    initializePartitionParameters(tbl,
-        new PartitionSpecProxy.SimplePartitionWrapperIterator(part));
-  }
-
-  private void initializePartitionParameters(final Table tbl,
-                                             final PartitionSpecProxy.PartitionIterator part) throws MetaException {
-
-    // Inherit table properties into partition properties.
-    Map<String, String> tblParams = tbl.getParameters();
-    String inheritProps = MetastoreConf.getVar(conf, ConfVars.PART_INHERIT_TBL_PROPS).trim();
-    // Default value is empty string in which case no properties will be inherited.
-    // * implies all properties needs to be inherited
-    Set<String> inheritKeys = new HashSet<>(Arrays.asList(inheritProps.split(",")));
-    if (inheritKeys.contains("*")) {
-      inheritKeys = tblParams.keySet();
-    }
-
-    for (String key : inheritKeys) {
-      String paramVal = tblParams.get(key);
-      if (null != paramVal) { // add the property only if it exists in table properties
-        part.putToParameters(key, paramVal);
-      }
     }
   }
 
@@ -4972,126 +3898,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  private boolean drop_partition_common(RawStore ms, String catName, String db_name, String tbl_name, 
-      List<String> part_vals, boolean deleteData, final EnvironmentContext envContext)
-      throws MetaException, NoSuchObjectException, IOException, InvalidObjectException, InvalidInputException {
-    Path partPath = null;
-    boolean isArchived = false;
-    Path archiveParentDir = null;
-    boolean success = false;
-
-    Table tbl = null;
-    Partition part = null;
-    boolean mustPurge = false;
-    boolean tableDataShouldBeDeleted = false;
-    long writeId = 0;
-    
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    boolean needsCm = false;
-
-    if (db_name == null) {
-      throw new MetaException("The DB name cannot be null.");
-    }
-    if (tbl_name == null) {
-      throw new MetaException("The table name cannot be null.");
-    }
-    if (part_vals == null) {
-      throw new MetaException("The partition values cannot be null.");
-    }
-
-    try {
-      ms.openTransaction();
-      
-      part = ms.getPartition(catName, db_name, tbl_name, part_vals);
-      GetTableRequest request = new GetTableRequest(db_name,tbl_name);
-      request.setCatName(catName);
-      tbl = get_table_core(request);
-      firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
-
-      tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
-      mustPurge = isMustPurge(envContext, tbl);
-      writeId = getWriteId(envContext);
-            
-      if (part == null) {
-        throw new NoSuchObjectException("Partition doesn't exist. " + part_vals);
-      }
-      isArchived = MetaStoreUtils.isArchived(part);
-      if (tableDataShouldBeDeleted) {
-        if (isArchived) {
-          // Archived partition is only able to delete original location.
-          archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-          verifyIsWritablePath(archiveParentDir);
-        } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
-          partPath = new Path(part.getSd().getLocation());
-          verifyIsWritablePath(partPath);
-        }
-      }
-
-      String partName = Warehouse.makePartName(tbl.getPartitionKeys(), part_vals);
-      ms.dropPartition(catName, db_name, tbl_name, partName);
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.DROP_PARTITION,
-                new DropPartitionEvent(tbl, part, true, deleteData, this),
-                envContext);
-      }
-      needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, db_name), tbl);
-      success = ms.commitTransaction();
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      } else if (tableDataShouldBeDeleted && (partPath != null || archiveParentDir != null)) {
-        LOG.info(mustPurge ?
-          "dropPartition() will purge " + partPath + " directly, skipping trash." :
-          "dropPartition() will move " + partPath + " to trash-directory.");
-          
-        // Archived partitions have har:/to_har_file as their location.
-        // The original directory was saved in params
-        if (isArchived) {
-          wh.deleteDir(archiveParentDir, mustPurge, needsCm);
-        } else {
-          wh.deleteDir(partPath, mustPurge, needsCm);
-          deleteParentRecursive(partPath.getParent(), part_vals.size() - 1, mustPurge, needsCm);
-        }
-        // ok even if the data is not deleted
-      } else if (TxnUtils.isTransactionalTable(tbl) && writeId > 0) {
-        addTruncateBaseFile(partPath, writeId, conf, DataFormat.DROPPED);
-      }
-    
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.DROP_PARTITION,
-            new DropPartitionEvent(tbl, part, success, deleteData, this),
-            envContext,
-            transactionalListenerResponses, ms);
-      }
-    }
-    return true;
-  }
-
-  static boolean isMustPurge(EnvironmentContext envContext, Table tbl) {
-    // Data needs deletion. Check if trash may be skipped.
-    // Trash may be skipped iff:
-    //  1. deleteData == true, obviously.
-    //  2. tbl is external.
-    //  3. Either
-    //    3.1. User has specified PURGE from the commandline, and if not,
-    //    3.2. User has set the table to auto-purge.
-    return (envContext != null && envContext.getProperties() != null
-            && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
-        || MetaStoreUtils.isSkipTrash(tbl.getParameters());
-  }
-
-  static long getWriteId(EnvironmentContext context){
-    return Optional.ofNullable(context)
-      .map(EnvironmentContext::getProperties)
-      .map(prop -> prop.get(hive_metastoreConstants.WRITE_ID))
-      .map(Long::parseLong)
-      .orElse(0L);
-  }
-
   private void throwUnsupportedExceptionIfRemoteDB(String dbName, String operationName) throws MetaException {
     if (isDatabaseRemote(dbName)) {
       throw new MetaException("Operation " + operationName + " not supported for REMOTE database " + dbName);
@@ -5108,14 +3914,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  private void deleteParentRecursive(Path parent, int depth, boolean mustPurge, boolean needRecycle)
-      throws IOException, MetaException {
-    if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmptyDir(parent)) {
-      wh.deleteDir(parent, mustPurge, needRecycle);
-      deleteParentRecursive(parent.getParent(), depth - 1, mustPurge, needRecycle);
-    }
-  }
-
   @Deprecated
   @Override
   public boolean drop_partition(final String db_name, final String tbl_name,
@@ -5125,257 +3923,25 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         null);
   }
 
-  /** Stores a path and its size. */
-  private static class PathAndDepth implements Comparable<PathAndDepth> {
-    final Path path;
-    final int depth;
-
-    public PathAndDepth(Path path, int depth) {
-      this.path = path;
-      this.depth = depth;
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(path.hashCode(), depth);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      PathAndDepth that = (PathAndDepth) o;
-      return depth == that.depth && Objects.equals(path, that.path);
-    }
-
-    /** The largest {@code depth} is processed first in a {@link PriorityQueue}. */
-    @Override
-    public int compareTo(PathAndDepth o) {
-      return o.depth - depth;
-    }
-  }
-
   @Override
   public DropPartitionsResult drop_partitions_req(
       DropPartitionsRequest request) throws TException {
-    RawStore ms = getMS();
-    String dbName = request.getDbName(), tblName = request.getTblName();
-    String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
-    
-    boolean ifExists = request.isSetIfExists() && request.isIfExists();
-    boolean deleteData = request.isSetDeleteData() && request.isDeleteData();
-    boolean ignoreProtection = request.isSetIgnoreProtection() && request.isIgnoreProtection();
-    boolean needResult = !request.isSetNeedResult() || request.isNeedResult();
-
-    List<PathAndDepth> dirsToDelete = new ArrayList<>();
-    List<Path> archToDelete = new ArrayList<>();
-    EnvironmentContext envContext = 
-        request.isSetEnvironmentContext() ? request.getEnvironmentContext() : null;
-    boolean success = false;
-    
-    Table tbl = null;
-    List<Partition> parts = null;
-    boolean mustPurge = false;
-    boolean tableDataShouldBeDeleted = false;
-    long writeId = 0;
-    
-    Map<String, String> transactionalListenerResponses = null;
-    boolean needsCm = false;
-
+    startFunction("drop_partitions_req",
+        ": db=" + request.getDbName() + " tab=" + request.getTblName());
+    Exception ex = null;
     try {
-      ms.openTransaction();
-      // We need Partition-s for firing events and for result; DN needs MPartition-s to drop.
-      // Great... Maybe we could bypass fetching MPartitions by issuing direct SQL deletes.
-      GetTableRequest getTableRequest = new GetTableRequest(dbName, tblName);
-      getTableRequest.setCatName(catName);
-      tbl = get_table_core(getTableRequest);
-      mustPurge = isMustPurge(envContext, tbl);
-      tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, deleteData);
-      writeId = getWriteId(envContext);
-      
-      boolean hasMissingParts = false;
-      RequestPartsSpec spec = request.getParts();
-      List<String> partNames = null;
-      
-      if (spec.isSetExprs()) {
-        // Dropping by expressions.
-        parts = new ArrayList<>(spec.getExprs().size());
-        for (DropPartitionsExpr expr : spec.getExprs()) {
-          List<Partition> result = new ArrayList<>();
-          boolean hasUnknown = ms.getPartitionsByExpr(catName, dbName, tblName, result,
-              new GetPartitionsArgs.GetPartitionsArgsBuilder()
-                  .expr(expr.getExpr()).skipColumnSchemaForPartition(request.isSkipColumnSchemaForPartition())
-                  .build());
-          if (hasUnknown) {
-            // Expr is built by DDLSA, it should only contain part cols and simple ops
-            throw new MetaException("Unexpected unknown partitions to drop");
-          }
-          // this is to prevent dropping archived partition which is archived in a
-          // different level the drop command specified.
-          if (!ignoreProtection && expr.isSetPartArchiveLevel()) {
-            for (Partition part : parts) {
-              if (MetaStoreUtils.isArchived(part)
-                  && MetaStoreUtils.getArchivingLevel(part) < expr.getPartArchiveLevel()) {
-                throw new MetaException("Cannot drop a subset of partitions "
-                    + " in an archive, partition " + part);
-              }
-            }
-          }
-          if (result.isEmpty()) {
-            hasMissingParts = true;
-            if (!ifExists) {
-              // fail-fast for missing partition expr
-              break;
-            }
-          }
-          parts.addAll(result);
-        }
-      } else if (spec.isSetNames()) {
-        partNames = spec.getNames();
-        parts = ms.getPartitionsByNames(catName, dbName, tblName,
-            new GetPartitionsArgs.GetPartitionsArgsBuilder()
-                .partNames(partNames).skipColumnSchemaForPartition(request.isSkipColumnSchemaForPartition())
-                .build());
-        hasMissingParts = (parts.size() != partNames.size());
-      } else {
-        throw new MetaException("Partition spec is not set");
+      DropPartitionsResult resp = new DropPartitionsResult();
+      DropPartitionsHandler dropPartsOp = AbstractOperationHandler.offer(this, request);
+      if (dropPartsOp.success() && request.isNeedResult()) {
+        resp.setPartitions(dropPartsOp.getResult().getPartitions());
       }
-
-      if (hasMissingParts && !ifExists) {
-        throw new NoSuchObjectException("Some partitions to drop are missing");
-      }
-
-      List<String> colNames = null;
-      if (partNames == null) {
-        partNames = new ArrayList<>(parts.size());
-        colNames = new ArrayList<>(tbl.getPartitionKeys().size());
-        for (FieldSchema col : tbl.getPartitionKeys()) {
-          colNames.add(col.getName());
-        }
-      }
-
-      for (Partition part : parts) {
-        // TODO - we need to speed this up for the normal path where all partitions are under
-        // the table and we don't have to stat every partition
-
-        firePreEvent(new PreDropPartitionEvent(tbl, part, deleteData, this));
-        if (colNames != null) {
-          partNames.add(FileUtils.makePartName(colNames, part.getValues()));
-        }
-        if (tableDataShouldBeDeleted) {
-          if (MetaStoreUtils.isArchived(part)) {
-            // Archived partition is only able to delete original location.
-            Path archiveParentDir = MetaStoreUtils.getOriginalLocation(part);
-            verifyIsWritablePath(archiveParentDir);
-            archToDelete.add(archiveParentDir);
-          } else if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
-            Path partPath = new Path(part.getSd().getLocation());
-            verifyIsWritablePath(partPath);
-            dirsToDelete.add(new PathAndDepth(partPath, part.getValues().size()));
-          }
-        }
-      }
-
-      ms.dropPartitions(catName, dbName, tblName, partNames);
-      if (!parts.isEmpty() && !transactionalListeners.isEmpty()) {
-        transactionalListenerResponses = MetaStoreListenerNotifier
-            .notifyEvent(transactionalListeners, EventType.DROP_PARTITION,
-                new DropPartitionEvent(tbl, parts, true, deleteData, this), envContext);
-      }
-      success = ms.commitTransaction();
-      needsCm = ReplChangeManager.shouldEnableCm(ms.getDatabase(catName, dbName), tbl);
-      
-      DropPartitionsResult result = new DropPartitionsResult();
-      if (needResult) {
-        result.setPartitions(parts);
-      }
-      return result;
+      return resp;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(TException.class).defaultMetaException();
     } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-      } else if (tableDataShouldBeDeleted) {
-        LOG.info(mustPurge ?
-            "dropPartition() will purge partition-directories directly, skipping trash."
-            :  "dropPartition() will move partition-directories to trash-directory.");
-        // Archived partitions have har:/to_har_file as their location.
-        // The original directory was saved in params
-        for (Path path : archToDelete) {
-          wh.deleteDir(path, mustPurge, needsCm);
-        }
-
-        // Uses a priority queue to delete the parents of deleted directories if empty.
-        // Parents with the deepest path are always processed first. It guarantees that the emptiness
-        // of a parent won't be changed once it has been processed. So duplicated processing can be
-        // avoided.
-        PriorityQueue<PathAndDepth> parentsToDelete = new PriorityQueue<>();
-        for (PathAndDepth p : dirsToDelete) {
-          wh.deleteDir(p.path, mustPurge, needsCm);
-          addParentForDel(parentsToDelete, p);
-        }
-
-        HashSet<PathAndDepth> processed = new HashSet<>();
-        while (!parentsToDelete.isEmpty()) {
-          try {
-            PathAndDepth p = parentsToDelete.poll();
-            if (processed.contains(p)) {
-              continue;
-            }
-            processed.add(p);
-
-            Path path = p.path;
-            if (wh.isWritable(path) && wh.isEmptyDir(path)) {
-              wh.deleteDir(path, mustPurge, needsCm);
-              addParentForDel(parentsToDelete, p);
-            }
-          } catch (IOException ex) {
-            LOG.warn("Error from recursive parent deletion", ex);
-            throw new MetaException("Failed to delete parent: " + ex.getMessage());
-          }
-        }
-      } else if (TxnUtils.isTransactionalTable(tbl) && writeId > 0) {
-        for (Partition part : parts) {
-          if ((part.getSd() != null) && (part.getSd().getLocation() != null)) {
-            Path partPath = new Path(part.getSd().getLocation());
-            verifyIsWritablePath(partPath);
-            
-            addTruncateBaseFile(partPath, writeId, conf, DataFormat.DROPPED);
-          }
-        }
-      }
-
-      if (parts != null) {
-        if (!parts.isEmpty() && !listeners.isEmpty()) {
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                EventType.DROP_PARTITION,
-                new DropPartitionEvent(tbl, parts, success, deleteData, this),
-                envContext,
-                transactionalListenerResponses, ms);
-        }
-      }
-    }
-  }
-
-  private static void addParentForDel(PriorityQueue<PathAndDepth> parentsToDelete, PathAndDepth p) {
-    Path parent = p.path.getParent();
-    if (parent != null && p.depth - 1 > 0) {
-      parentsToDelete.add(new PathAndDepth(parent, p.depth - 1));
-    }
-  }
-
-  private void verifyIsWritablePath(Path dir) throws MetaException {
-    try {
-      if (!wh.isWritable(dir.getParent())) {
-        throw new MetaException("Table partition not deleted since " + dir.getParent()
-            + " is not writable by " + SecurityUtils.getUser());
-      }
-    } catch (IOException ex) {
-      LOG.warn("Error from isWritable", ex);
-      throw new MetaException("Table partition not deleted since " + dir.getParent()
-          + " access cannot be checked: " + ex.getMessage());
+      endFunction("drop_partition_req", ex == null, ex,
+          TableName.getQualified(request.getCatName(), request.getDbName(), request.getTblName()));
     }
   }
 
@@ -5401,13 +3967,27 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean ret = false;
     Exception ex = null;
     try {
-      if (part_vals == null || part_vals.isEmpty()) {
-        part_vals = getPartValsFromName(getMS(), catName, dbName, tbl_name, dropPartitionReq.getPartName());
+      Table t = getMS().getTable(catName, dbName, tbl_name,  null);
+      if (t == null) {
+        throw new InvalidObjectException(dbName + "." + tbl_name
+            + " table not found");
       }
+      List<String> partNames = new ArrayList<>();
+      if (part_vals == null || part_vals.isEmpty()) {
+        part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
+      }
+      partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
       startPartitionFunction("drop_partition_req", catName, dbName, tbl_name, part_vals);
-      LOG.info("Partition values:" + part_vals);
-      ret = drop_partition_common(getMS(), catName, dbName,
-              tbl_name, part_vals, dropPartitionReq.isDeleteData(), dropPartitionReq.getEnvironmentContext());
+      LOG.info("Partition values: {}", part_vals);
+      RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
+      DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
+      request.setCatName(catName);
+      request.setIfExists(false);
+      request.setNeedResult(false);
+      request.setDeleteData(dropPartitionReq.isDeleteData());
+      request.setEnvironmentContext(dropPartitionReq.getEnvironmentContext());
+      drop_partitions_req(request);
+      return true;
     } catch (Exception e) {
       ex = e;
       handleException(e).convertIfInstance(InvalidObjectException.class, NoSuchObjectException.class)
@@ -7128,7 +5708,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     colStats.setStatsObj(colStats.getStatsObj());
   }
 
-  private boolean updatePartitonColStatsInternal(Table tbl, MTable mTable, ColumnStatistics colStats,
+  public boolean updatePartitonColStatsInternal(Table tbl, MTable mTable, ColumnStatistics colStats,
                                                  String validWriteIds, long writeId)
       throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     normalizeColStatsInput(colStats);
