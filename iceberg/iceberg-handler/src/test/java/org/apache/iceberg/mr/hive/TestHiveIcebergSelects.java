@@ -242,7 +242,7 @@ public class TestHiveIcebergSelects extends HiveIcebergStorageHandlerWithEngineB
    */
   @Test
   public void testVectorizedOrcMultipleSplits() throws Exception {
-    assumeTrue(isVectorized && FileFormat.ORC.equals(fileFormat));
+    assumeTrue(isVectorized && FileFormat.ORC == fileFormat);
 
     // This data will be held by a ~870kB ORC file
     List<Record> records = TestHelper.generateRandomRecords(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,

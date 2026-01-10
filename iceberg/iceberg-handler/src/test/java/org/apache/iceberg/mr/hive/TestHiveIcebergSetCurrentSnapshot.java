@@ -25,6 +25,7 @@ import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -36,8 +37,10 @@ public class TestHiveIcebergSetCurrentSnapshot extends HiveIcebergStorageHandler
 
   @Override
   protected void validateTestParams() {
-    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+    Assume.assumeTrue(
+        fileFormat == FileFormat.PARQUET &&
+        testTableType == TestTableType.HIVE_CATALOG &&
+        isVectorized && formatVersion == 2);
   }
 
   @Test

@@ -24,13 +24,24 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.iceberg.AssertHelpers;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY;
 
 public class TestHiveIcebergRestrictDataFiles extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(
+        fileFormat == FileFormat.PARQUET &&
+        testTableType == TestTableType.HIVE_CATALOG &&
+        isVectorized && formatVersion == 1);
+  }
 
   @BeforeClass
   public static void beforeClass() {

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -33,14 +34,20 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.concurrent.HiveIcebergStorageHandlerStub;
+import org.apache.iceberg.mr.hive.test.concurrent.TestUtilPhaser;
+import org.apache.iceberg.mr.hive.test.concurrent.WithMockedStorageHandler;
+import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.Tasks;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -52,7 +59,10 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
 import static org.apache.iceberg.mr.hive.TestTables.ALL_TABLE_TYPES;
 import static org.apache.iceberg.mr.hive.TestTables.TestTableType.HIVE_CATALOG;
 import static org.apache.iceberg.types.Types.NestedField.optional;
@@ -63,6 +73,8 @@ import static org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
 public abstract class HiveIcebergStorageHandlerWithEngineBase {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandlerWithEngineBase.class);
 
   public static final String RETRY_STRATEGIES =
       "overlay,reoptimize,reexecute_lost_am,dagsubmit,recompile_without_cbo,write_conflict";
@@ -114,7 +126,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
     // Run tests with every FileFormat for a single Catalog (HiveCatalog)
     for (FileFormat fileFormat : HiveIcebergStorageHandlerTestUtils.FILE_FORMATS) {
-      IntStream.of(2, 1).forEach(formatVersion -> {
+      IntStream.rangeClosed(1, 3).forEach(formatVersion -> {
         testParams.add(new Object[]{fileFormat, HIVE_CATALOG, false, formatVersion});
         // test for vectorization=ON in case of ORC and PARQUET format
         if (fileFormat != FileFormat.METADATA) {
@@ -155,6 +167,9 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   @Rule
   public Timeout timeout = new Timeout(500_000, TimeUnit.MILLISECONDS);
 
+  @Rule
+  public WithMockedStorageHandler.Rule mockedStorageHandlerRule = new WithMockedStorageHandler.Rule();
+
   @BeforeClass
   public static void beforeClass() {
     shell = HiveIcebergStorageHandlerTestUtils.shell();
@@ -173,11 +188,8 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
     // Fetch task conversion might kick in for certain queries preventing vectorization code path to be used, so
     // we turn it off explicitly to achieve better coverage.
-    if (isVectorized) {
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-    } else {
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "more");
-    }
+    HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION,
+        isVectorized ? "none" : "more");
   }
 
   protected void validateTestParams() {
@@ -208,6 +220,85 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
     for (Map.Entry<String, String> entry : STATS_MAPPING.entrySet()) {
       Assert.assertEquals(summary.get(entry.getValue()), hmsParams.get(entry.getKey()));
+    }
+  }
+
+  /**
+   * Executes multiple SQL queries concurrently with controlled synchronization for testing.
+   *
+   * <p>This method supports two synchronization modes:
+   * <ul>
+   *   <li><b>Ext-locking mode</b> ({@code useExtLocking=true}): Queries execute in strict sequential
+   *       order (sql[0], then sql[1], then sql[2], ...) to verify that external table locking prevents
+   *       concurrent execution. Each query waits for its turn before starting.</li>
+   *   <li><b>Barrier synchronization mode</b> ({@code useExtLocking=false}): Queries execute concurrently,
+   *       then commit in order to test optimistic concurrency control and retry on write conflicts.</li>
+   * </ul>
+   *
+   * <p>Uses {@link TestUtilPhaser} and {@link HiveIcebergStorageHandlerStub} to coordinate thread
+   * execution order deterministically.
+   *
+   * @param useExtLocking if true, enables external locking mode with sequential execution;
+   *                      if false, enables concurrent execution with ordered commits
+   * @param retryStrategies comma-separated list of Hive query retry strategies to enable
+   * @param sql array of SQL queries to execute. If single query provided, it's executed by all threads.
+   *            If multiple queries provided, each thread executes sql[i] where i is the thread index.
+   * @throws Exception if any query execution fails
+   */
+  protected void executeConcurrently(
+      boolean useExtLocking, String retryStrategies, String... sql) throws Exception {
+
+    int nThreads = sql.length > 1 ? sql.length : 2;
+    TestUtilPhaser testUtilPhaser = TestUtilPhaser.getInstance();
+
+    try {
+      Tasks.range(nThreads)
+          .executeWith(Executors.newFixedThreadPool(nThreads))
+          .run(i -> {
+            LOG.debug("Thread {} started for query index {}", Thread.currentThread().getName(), i);
+
+            TestUtilPhaser.ThreadContext.setQueryIndex(i);
+
+            if (useExtLocking) {
+              TestUtilPhaser.ThreadContext.setUseExtLocking(true);
+            } else {
+              testUtilPhaser.register();
+            }
+
+            init(shell, testTables, temp);
+            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_DELETE, false);
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
+                retryStrategies);
+
+            if (useExtLocking) {
+              HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
+              shell.getHiveConf().setBoolean(ConfigProperties.LOCK_HIVE_ENABLED, false);
+
+              // Wait for turn: sql[0] waits for phase 0 -> 1, sql[1] for 1 -> 2, etc.
+              // Phase advances when previous query validates snapshot.
+              LOG.debug("Thread {} (queryIndex={}) waiting for turn",
+                  Thread.currentThread().getName(), i);
+              testUtilPhaser.awaitTurn();
+            }
+
+            try {
+              shell.executeStatement(sql.length > 1 ? sql[i] : sql[0]);
+              LOG.debug("Thread {} (queryIndex={}) completed statement execution",
+                  Thread.currentThread().getName(), i);
+            } finally {
+              shell.closeSession();
+            }
+          });
+    } catch (Exception ex) {
+      Throwable root = Throwables.getRootCause(ex);
+      if (root instanceof Exception) {
+        throw (Exception) root;
+      }
+      throw new RuntimeException(root);
+    } finally {
+      TestUtilPhaser.destroyInstance();
     }
   }
 }

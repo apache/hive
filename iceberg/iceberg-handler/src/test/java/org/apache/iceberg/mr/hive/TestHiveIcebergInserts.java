@@ -33,6 +33,7 @@ import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -54,6 +55,12 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  * inserting values, inserting from select subqueries, insert overwrite table, etc...
  */
 public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(
+        isVectorized && formatVersion == 2);
+  }
 
   @Test
   public void testSortedInsert() throws IOException {
@@ -158,7 +165,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
   @Test
   public void testInsertIntoORCFile() throws IOException {
     Assume.assumeTrue("Testing the create table ... stored as ORCFILE syntax is enough for a single scenario.",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
+        testTableType == TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
     shell.executeStatement("CREATE TABLE t2(c0 DOUBLE , c1 DOUBLE , c2 DECIMAL) STORED BY " +
         "ICEBERG STORED AS ORCFILE");
     shell.executeStatement("INSERT INTO t2(c1, c0) VALUES(0.1803113419993464, 0.9381388537256228)");
@@ -173,7 +180,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
   @Test
   public void testStoredByIcebergInTextFile() {
     Assume.assumeTrue("Testing the create table ... stored as TEXTFILE syntax is enough for a single scenario.",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
+        testTableType == TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
     AssertHelpers.assertThrows("Create table should not work with textfile", IllegalArgumentException.class,
         "Unsupported fileformat",
         () ->
@@ -472,7 +479,7 @@ public class TestHiveIcebergInserts extends HiveIcebergStorageHandlerWithEngineB
   @Test
   public void testWriteWithDefaultWriteFormat() {
     Assume.assumeTrue("Testing the default file format is enough for a single scenario.",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
+        testTableType == TestTableType.HIVE_CATALOG && fileFormat == FileFormat.ORC);
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 

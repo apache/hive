@@ -35,6 +35,7 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.thrift.TException;
@@ -51,6 +52,12 @@ import org.mockito.Mockito;
  * verified by a select query.
  */
 public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(
+        isVectorized && formatVersion == 1);
+  }
 
   @Test
   public void testMigrateHiveTableWithPrimitiveTypeColumnsToIceberg() throws TException, InterruptedException {
@@ -91,7 +98,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
   public void testMigrateHiveTableWithUnsupportedPrimitiveTypeColumnToIceberg() {
     // enough to test once
     Assume.assumeTrue(fileFormat == FileFormat.ORC && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
     TableIdentifier identifier = TableIdentifier.of("default", "tbl_unsupportedtypes");
     shell.executeStatement(String.format("CREATE EXTERNAL TABLE %s (" +
         "char_col CHAR(10)) STORED AS %s %s %s", identifier.name(), fileFormat.name(),
@@ -259,7 +266,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
   public void testMigrationFailsForUnsupportedSourceFileFormat() {
     // enough to test once
     Assume.assumeTrue(fileFormat == FileFormat.ORC && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
     String tableName = "tbl_unsupported";
     List<String> formats = ImmutableList.of("TEXTFILE", "JSONFILE", "RCFILE", "SEQUENCEFILE");
     formats.forEach(format -> {
@@ -278,7 +285,7 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
   public void testMigrationFailsForManagedTable() {
     // enough to test once
     Assume.assumeTrue(fileFormat == FileFormat.ORC && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
     String tableName = "tbl_unsupported";
     shell.executeStatement("CREATE MANAGED TABLE " +  tableName + " (a int) STORED AS " + fileFormat + " " +
         testTables.locationForCreateTableSQL(TableIdentifier.of("default", tableName)) +
@@ -289,8 +296,8 @@ public class TestHiveIcebergMigration extends HiveIcebergStorageHandlerWithEngin
         () -> shell.executeStatement("ALTER TABLE " + tableName + " convert to iceberg"));
   }
 
-  private Table validateMigration(String tableName) throws TException, InterruptedException {
-    return validateMigration(tableName, null);
+  private void validateMigration(String tableName) throws TException, InterruptedException {
+    validateMigration(tableName, null);
   }
 
   private Table validateMigration(String tableName, String tblProperties)

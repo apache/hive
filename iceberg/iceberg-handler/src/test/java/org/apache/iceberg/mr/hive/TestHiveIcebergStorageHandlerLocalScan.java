@@ -35,6 +35,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.InputFormatConfig;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -64,12 +65,12 @@ public class TestHiveIcebergStorageHandlerLocalScan {
 
     // Run tests with every FileFormat for a single Catalog (HiveCatalog)
     for (FileFormat fileFormat : HiveIcebergStorageHandlerTestUtils.FILE_FORMATS) {
-      testParams.add(new Object[] {fileFormat, TestTables.TestTableType.HIVE_CATALOG});
+      testParams.add(new Object[] {fileFormat, TestTableType.HIVE_CATALOG});
     }
 
     // Run tests for every Catalog for a single FileFormat (PARQUET) - skip HiveCatalog tests as they are added before
-    for (TestTables.TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
-      if (!TestTables.TestTableType.HIVE_CATALOG.equals(testTableType)) {
+    for (TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
+      if (!TestTableType.HIVE_CATALOG.equals(testTableType)) {
         testParams.add(new Object[]{FileFormat.PARQUET, testTableType});
       }
     }
@@ -85,7 +86,7 @@ public class TestHiveIcebergStorageHandlerLocalScan {
   public FileFormat fileFormat;
 
   @Parameter(1)
-  public TestTables.TestTableType testTableType;
+  public TestTableType testTableType;
 
   @Rule
   public TemporaryFolder temp = new TemporaryFolder();

@@ -33,6 +33,7 @@ import org.apache.iceberg.TableMetadataParser;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.IcebergTableProperties;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -71,7 +72,7 @@ public class TestHiveIcebergWriteMetadataCleanup {
 
   @Before
   public void before() throws IOException {
-    testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, TestTables.TestTableType.HIVE_CATALOG, temp);
+    testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, TestTableType.HIVE_CATALOG, temp);
     HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
   }
