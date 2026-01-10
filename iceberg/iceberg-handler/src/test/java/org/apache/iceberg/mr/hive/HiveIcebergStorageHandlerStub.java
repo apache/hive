@@ -19,9 +19,12 @@
 
 package org.apache.iceberg.mr.hive;
 
-import java.util.concurrent.Phaser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.util.List;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.iceberg.mr.hive.TestUtilPhaser.ThreadContext;
 
 /**
  * HiveIcebergStorageHandlerStub is used only for unit tests.
@@ -29,25 +32,59 @@ import org.slf4j.LoggerFactory;
  * deterministically.
  */
 public class HiveIcebergStorageHandlerStub extends HiveIcebergStorageHandler {
-  private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergStorageHandlerStub.class);
 
   @Override
   public HiveIcebergOutputCommitter getOutputCommitter() {
+    return new HiveIcebergOutputCommitter() {
+      @Override
+      public void commitJobs(List<JobContext> originalContextList, Context.Operation operation) throws IOException {
+        waitForAllWritesToComplete();
 
-    try {
-      LOG.debug(" Using HiveIcebergStorageHandlerStub for unit tests");
-      if (TestUtilPhaser.isInstantiated()) {
-        Phaser testUtilPhaser = TestUtilPhaser.getInstance().getPhaser();
-        LOG.debug("Activating the Phaser Barrier for thread: {} ", Thread.currentThread().getName());
-        testUtilPhaser.arriveAndAwaitAdvance();
-        LOG.debug("Breaking the Phaser Barrier and deregistering the phaser for thread: {} ",
-            Thread.currentThread().getName());
+        super.commitJobs(originalContextList, operation);
       }
-    } catch (Exception e) {
-      throw new RuntimeException("Phaser failed: ", e);
-    }
 
-    return new HiveIcebergOutputCommitter();
+      private static void waitForAllWritesToComplete() {
+        if (!TestUtilPhaser.isInstantiated()) {
+          return;
+        }
+
+        int index = ThreadContext.getIndex();
+        try {
+          if (index < 0) {
+            TestUtilPhaser.getInstance().getPhaser().arriveAndAwaitAdvance();
+          } else {
+            // For execution with ext-locking: verify next thread hasn't arrived due to present lock on a table
+            int currentPhase = TestUtilPhaser.getInstance().getPhaser().getPhase();
+            int nextThreadIndex = index + 1;
+
+            // Wait 200ms for next thread to potentially arrive
+            Thread.sleep(200);
+
+            // Check if next thread has arrived (would advance phase to nextThreadIndex)
+            int phaseAfterWait = TestUtilPhaser.getInstance().getPhaser().getPhase();
+            if (phaseAfterWait >= nextThreadIndex) {
+              throw new IllegalStateException(
+                  String.format("Locking violation: thread %d arrived before thread %d committed. " +
+                      "Phase before wait: %d, phase after wait: %d",
+                      nextThreadIndex, index, currentPhase, phaseAfterWait));
+            }
+          }
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    };
+  }
+
+  @Override
+  public void validateCurrentSnapshot(TableDesc tableDesc) {
+    super.validateCurrentSnapshot(tableDesc);
+
+    if (!TestUtilPhaser.isInstantiated() || ThreadContext.getIndex() < 0) {
+      return;
+    }
+    // Signal next thread ONLY when ext-locking is enabled
+    TestUtilPhaser.getInstance().completeTurn();
   }
 
 }

@@ -31,12 +31,19 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.thrift.TException;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 /**
  * Tests truncate table feature on Iceberg tables.
  */
 public class TestHiveIcebergTruncateTable extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(
+        isVectorized && formatVersion == 1);
+  }
 
   @Test
   public void testTruncateTable() throws IOException, TException, InterruptedException {

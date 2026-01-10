@@ -20,12 +20,9 @@
 package org.apache.iceberg.mr.hive;
 
 import java.util.concurrent.Phaser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestUtilPhaser {
 
-  private static final Logger LOG = LoggerFactory.getLogger(TestUtilPhaser.class);
   private static TestUtilPhaser instance;
   private final Phaser phaser;
 
@@ -35,7 +32,6 @@ public class TestUtilPhaser {
 
   public static synchronized TestUtilPhaser getInstance() {
     if (instance == null) {
-      LOG.info("UnitTestConcurrency: Instantiating the Phaser barrier");
       instance = new TestUtilPhaser();
     }
     return instance;
@@ -49,11 +45,53 @@ public class TestUtilPhaser {
     return instance != null;
   }
 
+  /**
+   * Registers this thread for barrier-style synchronization.
+   * Used only when commit synchronization is required.
+   */
+  public void register() {
+    phaser.register();
+  }
+
+  /**
+   * Wait until it's this thread's turn.
+   * Uses Phaser phase as a monotonic sequence number.
+   */
+  public void awaitTurn(int index) {
+    int phase;
+    while ((phase = phaser.getPhase()) < index) {
+      phaser.awaitAdvance(phase);
+    }
+  }
+
+  /** Signal completion of this turn (advance to next phase) */
+  public void completeTurn() {
+    phaser.arriveAndAwaitAdvance();
+  }
+
   public static synchronized void destroyInstance() {
     if (instance != null) {
       instance.getPhaser().forceTermination();
-      LOG.info("UnitTestConcurrency: Destroying the Phaser barrier");
       instance = null;
+    }
+    ThreadContext.clear();
+  }
+
+  /** Thread-scoped test context */
+  public static final class ThreadContext {
+    private static final ThreadLocal<Integer> INDEX = new ThreadLocal<>();
+
+    public static void setIndex(int index) {
+      INDEX.set(index);
+    }
+
+    public static int getIndex() {
+      Integer idx = INDEX.get();
+      return idx != null ? idx : -1;
+    }
+
+    private static void clear() {
+      INDEX.remove();
     }
   }
 }

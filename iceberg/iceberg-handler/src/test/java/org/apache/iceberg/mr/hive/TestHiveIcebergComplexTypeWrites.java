@@ -31,6 +31,7 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -39,6 +40,12 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  * Runs insert queries against Iceberg tables with complex type columns, such as arrays, structs and maps.
  */
 public class TestHiveIcebergComplexTypeWrites extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(
+        isVectorized && formatVersion == 1);
+  }
 
   @Test
   public void testWriteArrayOfPrimitivesInTable() throws IOException {

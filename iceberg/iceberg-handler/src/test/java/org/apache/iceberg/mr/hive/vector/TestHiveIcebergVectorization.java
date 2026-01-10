@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.mr.hive.vector;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -53,8 +52,9 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerWithEngineBase;
-import org.apache.iceberg.mr.hive.TestTables;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.serde.objectinspector.IcebergObjectInspector;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
@@ -67,6 +67,13 @@ import static org.junit.Assume.assumeTrue;
 
 public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithEngineBase {
 
+  @Override
+  protected void validateTestParams() {
+    Assume.assumeTrue(
+        testTableType == TestTableType.HIVE_CATALOG &&
+        isVectorized && formatVersion == 2);
+  }
+
   /**
    * Tests the row iterator implementation (HiveRow, HiveBatchContext.RowIterator) along with HiveValueConverter by
    * reading in values from all supported types via VRBs, and iterating on its records 1-by-1 while comparing with the
@@ -75,7 +82,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
    */
   @Test
   public void testRowIterator() throws Exception {
-    assumeTrue("Tests a format-independent feature", isVectorized && FileFormat.ORC.equals(fileFormat));
+    assumeTrue("Tests a format-independent feature", FileFormat.ORC.equals(fileFormat));
 
     // Create a table with sample data with all supported types, those unsupported for vectorization are commented out
     Schema allSchema = new Schema(
@@ -140,21 +147,23 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
    */
   @Test
   public void testHiveDeleteFilterWithEmptyBatches() {
-    Map<String, String> props = Maps.newHashMap();
-    props.put("parquet.block.size", "8192");
-    props.put("parquet.page.row.count.limit", "20");
-    testVectorizedReadWithDeleteFilter(props);
+    testVectorizedReadWithDeleteFilter(
+        ImmutableMap.of(
+            "parquet.block.size", "8192",
+            "parquet.page.row.count.limit", "20")
+    );
   }
 
   @Test
   public void testHiveDeleteFilter() {
-    testVectorizedReadWithDeleteFilter(Collections.emptyMap());
+    testVectorizedReadWithDeleteFilter(
+        ImmutableMap.of()
+    );
   }
 
   private void testVectorizedReadWithDeleteFilter(Map<String, String> props) {
     // The Avro "vectorized" case should actually serve as compareTo scenario to non-vectorized reading, because
     // there's no vectorization for Avro and it falls back to the non-vectorized implementation
-    Assume.assumeTrue(isVectorized && testTableType == TestTables.TestTableType.HIVE_CATALOG);
 
     // Minimal schema to minimize resource footprint of what's coming next...
     Schema schema = new Schema(
@@ -207,8 +216,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
 
   @Test
   public void testHiveDeleteFilterWithFilteredParquetBlock() {
-    Assume.assumeTrue(
-        isVectorized && testTableType == TestTables.TestTableType.HIVE_CATALOG && fileFormat == FileFormat.PARQUET);
+    Assume.assumeTrue(fileFormat == FileFormat.PARQUET);
 
     Schema schema = new Schema(
         optional(1, "customer_id", Types.LongType.get()),

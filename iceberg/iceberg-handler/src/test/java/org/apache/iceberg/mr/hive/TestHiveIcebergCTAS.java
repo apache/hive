@@ -35,6 +35,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
@@ -52,7 +53,11 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
 
   @Override
   protected void validateTestParams() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG &&
+    Assume.assumeTrue(
+        HiveIcebergSerDe.CTAS_EXCEPTION_MSG,
+        testTableType == TestTableType.HIVE_CATALOG);
+
+    Assume.assumeTrue(
         isVectorized && formatVersion == 1);
   }
 
