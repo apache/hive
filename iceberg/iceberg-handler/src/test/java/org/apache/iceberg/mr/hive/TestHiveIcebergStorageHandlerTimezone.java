@@ -37,6 +37,7 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.common.DynFields;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.types.Types;
 import org.junit.After;
@@ -109,7 +110,7 @@ public class TestHiveIcebergStorageHandlerTimezone {
     dateFormat.ifPresent(ThreadLocal::remove);
     localTimeZone.ifPresent(ThreadLocal::remove);
 
-    this.testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, TestTables.TestTableType.HIVE_CATALOG, temp);
+    this.testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, TestTableType.HIVE_CATALOG, temp);
     HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
   }
 

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -33,14 +34,18 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.hadoop.ConfigProperties;
 import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.mr.hive.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.junit.WithMockedStorageHandler;
+import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
+import org.apache.iceberg.util.Tasks;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -53,6 +58,7 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
 import static org.apache.iceberg.mr.hive.TestTables.ALL_TABLE_TYPES;
 import static org.apache.iceberg.mr.hive.TestTables.TestTableType.HIVE_CATALOG;
 import static org.apache.iceberg.types.Types.NestedField.optional;
@@ -114,7 +120,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
     // Run tests with every FileFormat for a single Catalog (HiveCatalog)
     for (FileFormat fileFormat : HiveIcebergStorageHandlerTestUtils.FILE_FORMATS) {
-      IntStream.of(2, 1).forEach(formatVersion -> {
+      IntStream.rangeClosed(1, 3).forEach(formatVersion -> {
         testParams.add(new Object[]{fileFormat, HIVE_CATALOG, false, formatVersion});
         // test for vectorization=ON in case of ORC and PARQUET format
         if (fileFormat != FileFormat.METADATA) {
@@ -154,6 +160,9 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
   @Rule
   public Timeout timeout = new Timeout(500_000, TimeUnit.MILLISECONDS);
+
+  @Rule
+  public WithMockedStorageHandler.Rule mockedStorageHandlerRule = new WithMockedStorageHandler.Rule();
 
   @BeforeClass
   public static void beforeClass() {
@@ -208,6 +217,48 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
     for (Map.Entry<String, String> entry : STATS_MAPPING.entrySet()) {
       Assert.assertEquals(summary.get(entry.getValue()), hmsParams.get(entry.getKey()));
+    }
+  }
+
+  protected void executeConcurrently(
+      boolean useExtLocking, String retryStrategies, String... sql) {
+
+    int nThreads = sql.length > 1 ? sql.length : 2;
+    TestUtilPhaser testUtilPhaser = TestUtilPhaser.getInstance();
+
+    try {
+      Tasks.range(nThreads)
+          .executeWith(Executors.newFixedThreadPool(nThreads))
+          .run(i -> {
+            if (useExtLocking) {
+              // ordering needs index, but NOT registration
+              TestUtilPhaser.ThreadContext.setIndex(i);
+            } else {
+              // barrier participation only
+              testUtilPhaser.register();
+            }
+
+            init(shell, testTables, temp);
+            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
+            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
+                retryStrategies);
+
+            if (useExtLocking) {
+              HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
+              shell.getHiveConf().setBoolean(ConfigProperties.LOCK_HIVE_ENABLED, false);
+
+              // Ordered entry
+              testUtilPhaser.awaitTurn(i);
+            }
+            shell.executeStatement(sql.length > 1 ? sql[i] : sql[0]);
+            shell.closeSession();
+          });
+    } catch (Throwable ex) {
+      Throwable cause = Throwables.getRootCause(ex);
+      Assert.fail(String.valueOf(cause));
+    } finally {
+      TestUtilPhaser.destroyInstance();
     }
   }
 }

@@ -36,6 +36,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.TestTables.TestTableType;
 import org.apache.iceberg.relocated.com.google.common.base.Throwables;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -605,7 +606,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   @Test
   public void testConcurrent2Deletes() {
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
 
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
@@ -637,7 +638,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   @Test
   public void testConcurrent2Updates() {
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
 
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
@@ -667,7 +668,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   @Test
   public void testConcurrentUpdateAndDelete() {
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+        testTableType == TestTableType.HIVE_CATALOG && formatVersion == 2);
 
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
@@ -703,7 +704,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   @Test
   public void testConcurrent2MergeInserts() {
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
 
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1);
@@ -737,7 +738,7 @@ public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase
   @Test
   public void testMultiInsert() {
     Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
 
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
