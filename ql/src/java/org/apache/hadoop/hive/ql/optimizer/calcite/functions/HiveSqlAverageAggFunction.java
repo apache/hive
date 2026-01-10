@@ -52,9 +52,4 @@ public class HiveSqlAverageAggFunction extends SqlAggFunction {
     }
     return super.unwrap(clazz);
   }
-
-  @Override
-  public SqlSyntax getSyntax() {
-    return SqlSyntax.FUNCTION_STAR;
-  }
 }
