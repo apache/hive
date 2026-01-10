@@ -139,6 +139,10 @@ POSTHOOK: Input: default@tbl_orc
 a                   	int                 	                    
 b                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -412,6 +416,10 @@ POSTHOOK: Input: default@tbl_parquet
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
@@ -764,6 +772,10 @@ POSTHOOK: Input: default@tbl_parquet_int
 a                   	int                 	                    
 b                   	int                 	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	int                 	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -1115,6 +1127,10 @@ POSTHOOK: Input: default@tbl_parquet_double
 a                   	int                 	                    
 b                   	double              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	double              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	IDENTITY            	 
@@ -1411,6 +1427,10 @@ POSTHOOK: Input: default@tbl_avro
 # col_name            	data_type           	comment             
 a                   	int                 	                    
 b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 

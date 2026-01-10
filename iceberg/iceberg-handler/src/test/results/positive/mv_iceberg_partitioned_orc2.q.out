@@ -50,6 +50,11 @@ POSTHOOK: Input: default@mat1
 b                   	string              	                    
 c                   	int                 	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: bucket[16]
+c                   	int                 	Transform: truncate[3]
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	BUCKET[16]          	 
@@ -138,6 +143,11 @@ POSTHOOK: Input: default@mat2
 # col_name            	data_type           	comment             
 b                   	string              	                    
 c                   	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: bucket[16]
+c                   	int                 	Transform: truncate[3]
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 

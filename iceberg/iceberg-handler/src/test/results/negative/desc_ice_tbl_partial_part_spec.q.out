@@ -1,0 +1,23 @@
+PREHOOK: query: drop table if exists ice_t
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists ice_t
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table ice_t (a int, b string) partitioned by (c int, d string) write locally ordered by a desc stored by iceberg
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: create external table ice_t (a int, b string) partitioned by (c int, d string) write locally ordered by a desc stored by iceberg
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: insert into table ice_t values( 5, "hello5" ,6, "hello6")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: insert into table ice_t values( 5, "hello5" ,6, "hello6")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t
+FAILED: SemanticException [Error 10006]: Partition not found {c=6}

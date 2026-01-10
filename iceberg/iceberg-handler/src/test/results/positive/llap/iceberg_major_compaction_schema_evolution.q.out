@@ -211,6 +211,10 @@ last_name           	string
 dept_id             	bigint              	                    
 address             	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dept_id             	bigint              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 dept_id             	IDENTITY            	 
@@ -310,6 +314,10 @@ fname               	string
 last_name           	string              	                    
 dept_id             	bigint              	                    
 address             	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+dept_id             	bigint              	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
