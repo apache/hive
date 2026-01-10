@@ -86,7 +86,7 @@ class HiveFileWriterFactory extends BaseFileWriterFactory<Record> {
   protected void configureDataWrite(Parquet.DataWriteBuilder builder) {
     builder.createWriterFunc(GenericParquetWriter::create);
     // Configure variant shredding if enabled and a sample record is available
-    if (VariantUtil.shouldUseVariantShredding(properties::get, dataSchema())) {
+    if (VariantUtil.shouldUseVariantShredding(properties, dataSchema())) {
       setVariantShreddingFunc(builder, VariantUtil.variantShreddingFunc(sampleRecord, dataSchema()));
     }
   }
