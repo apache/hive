@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.conf.Constants.JDBC_USERNAME;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 import java.io.ByteArrayOutputStream;
@@ -74,6 +75,7 @@ import org.apache.hadoop.hive.ql.plan.ExplainLockDesc;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -107,6 +109,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final String CBO_INFO_JSON_LABEL = "cboInfo";
   private static final String CBO_PLAN_JSON_LABEL = "CBOPlan";
   private static final String CBO_PLAN_TEXT_LABEL = "CBO PLAN:";
+  public static final String JOB_PROPERTIES = "jobProperties";
   private final Map<Operator<?>, Integer> operatorVisits = new HashMap<>();
   private boolean isLogical = false;
 
@@ -1161,15 +1164,20 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           }
 
           // Try this as a map
-          if (val instanceof Map) {
-            // Go through the map and print out the stuff
-            Map<?, ?> mp = (Map<?, ?>) val;
+          if (val instanceof Map<?, ?> mp) {
+            
+            // Remove JDBC username from job properties
+            // Not handled in TableDesc because getJobProperties() is used in other places too.
+            if (header.strip().contains(JOB_PROPERTIES)) {
+              mp = PlanUtils.getPropertiesForExplain((Map<String, String>) mp, JDBC_USERNAME);
+            }
 
-            if (out != null && !skipHeader && mp != null && !mp.isEmpty()) {
+            if (out != null && !skipHeader && !mp.isEmpty()) {
               out.print(header);
             }
 
             JSONObject jsonOut = outputMap(mp, !skipHeader && !emptyHeader, out, extended, jsonOutput, ind);
+            // Go through the map and print out the stuff
             if (jsonOutput && !mp.isEmpty()) {
               json.put(header, jsonOut);
             }
