@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.create.show;
 
-import java.util.Map.Entry;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -46,17 +46,21 @@ public class ShowCreateTableAnalyzer extends BaseSemanticAnalyzer {
   public void analyzeInternal(ASTNode root) throws SemanticException {
     ctx.setResFile(ctx.getLocalTmpPath());
 
-    Entry<String, String> tableIdentifier = getDbTableNamePair((ASTNode) root.getChild(0));
-    if (tableIdentifier.getValue().contains(".")) {
+    Triple<String, String, String> tableIdentifier = getCatDbTableNameTriple((ASTNode) root.getChild(0));
+    if (tableIdentifier.toString().contains(".")) {
       throw new SemanticException("The SHOW CREATE TABLE command is not supported for metadata tables.");
     }
-    Table table = getTable(tableIdentifier.getKey(), tableIdentifier.getValue(), true);
+    String catName = tableIdentifier.getLeft();
+    String dbName = tableIdentifier.getMiddle();
+    String tblName = tableIdentifier.getRight();
+    TableName tableName = new TableName(catName, dbName, tblName);
+    Table table = getTable(tableName, true);
 
     inputs.add(new ReadEntity(table));
 
     // If no DB was specified in statement, do not include it in the final output
-    ShowCreateTableDesc desc = new ShowCreateTableDesc(table.getDbName(), table.getTableName(),
-        ctx.getResFile().toString(), StringUtils.isBlank(tableIdentifier.getKey()));
+    ShowCreateTableDesc desc = new ShowCreateTableDesc(table.getCatName(), table.getDbName(), table.getTableName(),
+        ctx.getResFile().toString(), StringUtils.isBlank(tableIdentifier.getMiddle()));
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 
