@@ -1528,7 +1528,11 @@ class MetaStoreDirectSql {
       String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
 
       if (node.isReverseOrder && nodeValue != null) {
-        params.add(nodeValue);
+        if (node.operator == Operator.LIKE) {
+          params.add(makeDirectFilterForLike(nodeValue.toString()));
+        } else {
+          params.add(nodeValue);
+        }
       }
       String tableColumn = tableValue;
       if ((colType != FilterType.String) && (!isDefaultPartition)) {
@@ -1560,12 +1564,16 @@ class MetaStoreDirectSql {
       }
 
       if (!node.isReverseOrder && nodeValue != null) {
-        params.add(nodeValue);
+        if (node.operator == Operator.LIKE) {
+          params.add(makeDirectFilterForLike(nodeValue.toString()));
+        } else {
+          params.add(nodeValue);
+        }
       }
 
       // The following syntax is required for using LIKE clause wildcards '_' and '%' as literals.
       if (node.operator == Operator.LIKE) {
-        nodeValue0 = nodeValue0 + " ESCAPE '\\' ";
+        nodeValue0 = nodeValue0 + dbType.escapeClause();
       }
       String filter = node.isReverseOrder
               ? nodeValue0 + " " + node.operator.getSqlOp() + " " + tableValue
@@ -1606,6 +1614,30 @@ class MetaStoreDirectSql {
       }
 
       filterBuffer.append("(" + filter + ")");
+    }
+
+    private String makeDirectFilterForLike(String likePattern) {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < likePattern.length(); i++) {
+        char n = likePattern.charAt(i);
+        // MySQL default ESCAPE is "\\\\", but prepared statement parameters
+        // are transmitted as raw values, so only "\\" is needed.
+        if (dbType.isMYSQL() && n == '\\' && i + 1 < likePattern.length()
+                && likePattern.charAt(i + 1) == '\\') {
+          i++;
+        }
+        if (n == '.') {
+          if (i + 1 < likePattern.length() && likePattern.charAt(i + 1) == '*') {
+            sb.append("%");
+            i++;
+          } else {
+            sb.append("_");
+          }
+          continue;
+        }
+        sb.append(n);
+      }
+      return sb.toString();
     }
   }
 
