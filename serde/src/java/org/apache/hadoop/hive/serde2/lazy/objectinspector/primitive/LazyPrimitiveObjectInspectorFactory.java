@@ -118,6 +118,8 @@ public final class LazyPrimitiveObjectInspectorFactory {
         LAZY_INTERVAL_DAY_TIME_OBJECT_INSPECTOR);
     cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         LAZY_BINARY_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_NS_TYPE_NAME),
+        LAZY_TIMESTAMP_OBJECT_INSPECTOR);
   }
 
   public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(

@@ -99,6 +99,10 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableBinaryObjectInspector();
   public static final WritableHiveDecimalObjectInspector writableHiveDecimalObjectInspector =
       new WritableHiveDecimalObjectInspector(TypeInfoFactory.decimalTypeInfo);
+  public static final WritableTimestampObjectInspector writableTimestampNanoObjectInspector =
+      new WritableTimestampObjectInspector(TypeInfoFactory.timestampNanoTypeInfo);
+  public static final WritableTimestampLocalTZObjectInspector writableTimestampNanoTZObjectInspector =
+      new WritableTimestampLocalTZObjectInspector(TypeInfoFactory.timestampNanosTZTypeInfo);
 
   // Map from PrimitiveTypeInfo to AbstractPrimitiveWritableObjectInspector.
   private static ConcurrentHashMap<PrimitiveTypeInfo, AbstractPrimitiveWritableObjectInspector>
@@ -139,6 +143,8 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         writableBinaryObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.decimalTypeInfo, writableHiveDecimalObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.timestampNanoTypeInfo, writableTimestampNanoObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.timestampNanosTZTypeInfo, writableTimestampNanoTZObjectInspector);
   }
 
   private static Map<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>
@@ -165,6 +171,8 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToWritableOI.put(PrimitiveCategory.INTERVAL_DAY_TIME, writableHiveIntervalDayTimeObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.BINARY, writableBinaryObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DECIMAL, writableHiveDecimalObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMP_NS, writableTimestampNanoObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMPTZ_NS, writableTimestampNanoTZObjectInspector);
   }
 
   public static final JavaBooleanObjectInspector javaBooleanObjectInspector =
@@ -240,6 +248,10 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         javaByteArrayObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.decimalTypeInfo, javaHiveDecimalObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.timestampNanoTypeInfo,
+        new JavaTimestampObjectInspector(TypeInfoFactory.timestampNanoTypeInfo));
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.timestampNanosTZTypeInfo,
+        new JavaTimestampLocalTZObjectInspector(TypeInfoFactory.timestampNanosTZTypeInfo));
   }
 
   private static Map<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> primitiveCategoryToJavaOI =
@@ -263,6 +275,10 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToJavaOI.put(PrimitiveCategory.INTERVAL_DAY_TIME, javaHiveIntervalDayTimeObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.BINARY, javaByteArrayObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.DECIMAL, javaHiveDecimalObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.TIMESTAMP_NS,
+        new JavaTimestampObjectInspector(TypeInfoFactory.timestampNanoTypeInfo));
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.TIMESTAMPTZ_NS,
+        new JavaTimestampLocalTZObjectInspector(TypeInfoFactory.timestampNanosTZTypeInfo));
   }
 
   /**
@@ -302,6 +318,7 @@ public final class PrimitiveObjectInspectorFactory {
       result = new WritableHiveVarcharObjectInspector((VarcharTypeInfo) typeInfo);
       break;
     case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:
       result = new WritableTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo) typeInfo);
       break;
     case DECIMAL:
@@ -410,6 +427,7 @@ public final class PrimitiveObjectInspectorFactory {
       result = new JavaHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
       break;
     case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:
       result = new JavaTimestampLocalTZObjectInspector((TimestampLocalTZTypeInfo)typeInfo);
       break;
     case DECIMAL:

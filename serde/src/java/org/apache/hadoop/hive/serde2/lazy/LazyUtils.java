@@ -303,12 +303,14 @@ public final class LazyUtils {
           ((DateObjectInspector) oi).getPrimitiveWritableObject(o));
       break;
     }
-    case TIMESTAMP: {
+    case TIMESTAMP:
+    case TIMESTAMP_NS: {
       LazyTimestamp.writeUTF8(out,
           ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o));
       break;
     }
-    case TIMESTAMPLOCALTZ: {
+    case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS: {
       LazyTimestampLocalTZ.writeUTF8(out, ((TimestampLocalTZObjectInspector) oi).
           getPrimitiveWritableObject(o));
       break;
