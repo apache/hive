@@ -355,7 +355,7 @@ public class TypeConverter {
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }
-      return TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone());
+      return TypeInfoFactory.getTimestampTZTypeInfo(conf.getLocalTimeZone(), 6);
     case INTERVAL_YEAR:
     case INTERVAL_MONTH:
     case INTERVAL_YEAR_MONTH:
