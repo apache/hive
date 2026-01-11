@@ -263,9 +263,7 @@ public class Msck {
             partFetchBatch = Batchable.NO_BATCHING;
           }
           final Map<String, Partition> byName = new HashMap<>(names.size() * 2);
-          List<Partition> allParts = Batchable.runBatched(
-            partFetchBatch,
-            names,
+          List<Partition> allParts =
             new Batchable<String, Partition>() {
               @Override
               public List<Partition> run(List<String> batch) throws Exception {
@@ -280,7 +278,7 @@ public class Msck {
                   return Collections.emptyList();
                 }
               }
-            });
+            }.runBatched(partFetchBatch, names);
 
           for (Partition p : allParts) {
             final String pName = Warehouse.makePartName(table.getPartitionKeys(), p.getValues());

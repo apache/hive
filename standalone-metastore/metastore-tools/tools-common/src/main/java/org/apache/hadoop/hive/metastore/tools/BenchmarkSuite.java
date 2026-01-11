@@ -71,7 +71,7 @@ public final class BenchmarkSuite {
   // mean +/- MARGIN * stddev
   private static final double MARGIN = 2;
   // Collection of benchmarks
-  private final Map<String, Supplier<DescriptiveStatistics>> suite = new HashMap<>();
+  private final Map<String, Supplier<Map<String, DescriptiveStatistics>>> suite = new HashMap<>();
   // List of benchmarks. All benchmarks are executed in the order
   // they are inserted
   private final List<String> benchmarks = new ArrayList<>();
@@ -120,17 +120,13 @@ public final class BenchmarkSuite {
    * @return this to allow chaining
    */
   private BenchmarkSuite runAll(List<String> names) {
-    if (doSanitize) {
-      names.forEach(name -> {
-        LOG.info("Running benchmark {}", name);
-        result.put(name, sanitize(suite.get(name).get()));
-      });
-    } else {
-      names.forEach(name -> {
-        LOG.info("Running benchmark {}", name);
-        result.put(name, suite.get(name).get());
-      });
-    }
+    names.forEach(name -> {
+      LOG.info("Running benchmark {}", name);
+      for (Map.Entry<String, DescriptiveStatistics> entry : suite.get(name).get().entrySet()) {
+        DescriptiveStatistics stats = doSanitize ? sanitize(entry.getValue()) : entry.getValue();
+        result.put(name + entry.getKey(), stats);
+      }
+    });
     return this;
   }
 
@@ -164,7 +160,7 @@ public final class BenchmarkSuite {
    * @param b benchmark corresponding to name
    * @return this
    */
-  public BenchmarkSuite add(@NotNull String name, @NotNull Supplier<DescriptiveStatistics> b) {
+  public BenchmarkSuite add(@NotNull String name, @NotNull Supplier<Map<String, DescriptiveStatistics>> b) {
     suite.put(name, b);
     benchmarks.add(name);
     return this;

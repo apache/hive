@@ -375,7 +375,7 @@ public class HiveAlterHandler implements AlterHandler {
               part.setTableName(newTblName);
             }
 
-            Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
+            new Batchable<Partition, Void>() {
               @Override
               public List<Void> run(List<Partition> input) throws Exception {
                 msdb.alterPartitions(catalogName, newDbName, newTblName,
@@ -383,7 +383,7 @@ public class HiveAlterHandler implements AlterHandler {
                     input, newt.getWriteId(), writeIdList);
                 return Collections.emptyList();
               }
-            });
+            }.runBatched(partitionBatchSize, parts);
           }
           Deadline.checkTimeout();
         } else {
@@ -422,7 +422,7 @@ public class HiveAlterHandler implements AlterHandler {
               int partitionBatchSize = MetastoreConf.getIntVar(handler.getConf(),
                   MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
               Map<List<String>, List<List<String>>> changedColsToPartNames = new HashMap<>();
-              Batchable.runBatched(partitionBatchSize, parts, new Batchable<Partition, Void>() {
+              new Batchable<Partition, Void>() {
                 @Override
                 public List<Void> run(List<Partition> input) throws Exception {
                   List<Partition> oldParts = new ArrayList<>(input.size());
@@ -452,7 +452,7 @@ public class HiveAlterHandler implements AlterHandler {
                       partVals, (cascade) ? input : oldParts, newt.getWriteId(), writeIdList);
                   return Collections.emptyList();
                 }
-              });
+              }.runBatched(partitionBatchSize, parts);
 
               for (Map.Entry<List<String>, List<List<String>>> entry : changedColsToPartNames.entrySet()) {
                 List<String> partNames = new ArrayList<>();
