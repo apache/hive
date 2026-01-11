@@ -26,6 +26,8 @@
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <wiremock-jre8.version>2.32.0</wiremock-jre8.version>
+    <iceberg.version>1.10.0</iceberg.version>
+    <assertj.version>3.27.3</assertj.version>
   </properties>
   <modules>
     <module>custom-serde</module>
@@ -44,6 +46,7 @@
     <module>qtest-druid</module>
     <module>qtest-kudu</module>
     <module>qtest-iceberg</module>
+    <module>test-docker</module>
     <module>hive-iceberg</module>
   </modules>
   <dependencyManagement>
@@ -68,6 +71,11 @@
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-metastore</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.hive</groupId>
+        <artifactId>hive-standalone-metastore-client</artifactId>
+        <version>${standalone-metastore.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
@@ -496,6 +504,12 @@
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-iceberg-handler</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>${assertj.version}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
