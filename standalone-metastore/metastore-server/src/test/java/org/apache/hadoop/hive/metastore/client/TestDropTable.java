@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.handler.AbstractOperationHandler;
+import org.apache.hadoop.hive.metastore.handler.AbstractRequestHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
@@ -221,7 +221,7 @@ public class TestDropTable extends MetaStoreClientTest {
     assertNotNull(resp.getMessage());
     dropTableReq.setId(resp.getId());
     while (!resp.isFinished()) {
-      assertTrue(AbstractOperationHandler.containsOp(dropTableReq.getId()));
+      assertTrue(AbstractRequestHandler.containsRequest(dropTableReq.getId()));
       resp = iface.drop_table_req(dropTableReq);
       assertNotNull(resp.getMessage());
     }
@@ -258,7 +258,7 @@ public class TestDropTable extends MetaStoreClientTest {
     // cancel the request
     dropTableReq.setId(resp.getId());
     dropTableReq.setCancel(true);
-    assertTrue(AbstractOperationHandler.containsOp(dropTableReq.getId()));
+    assertTrue(AbstractRequestHandler.containsRequest(dropTableReq.getId()));
     resp = iface.drop_table_req(dropTableReq);
     assertTrue(resp.isFinished());
     assertTrue(resp.getMessage().contains("table " + table.getCatName() + "."+ tableName + ": Canceled"));

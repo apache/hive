@@ -29,12 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.AcidConstants;
-import org.apache.hadoop.hive.common.AcidMetaDataFile;
-import org.apache.hadoop.hive.common.AcidMetaDataFile.DataFormat;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -47,11 +42,12 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
 import org.apache.hadoop.hive.metastore.events.*;
-import org.apache.hadoop.hive.metastore.handler.AbstractOperationHandler;
+import org.apache.hadoop.hive.metastore.handler.AbstractRequestHandler;
 import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.DropDatabaseHandler;
 import org.apache.hadoop.hive.metastore.handler.DropPartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.DropTableHandler;
+import org.apache.hadoop.hive.metastore.handler.TruncateTableHandler;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -67,7 +63,6 @@ import org.apache.hadoop.hive.metastore.txn.*;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
-import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -101,7 +96,6 @@ import static org.apache.hadoop.hive.common.AcidConstants.DELTA_DIGITS;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
-import static org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_LEGACY_CONFIG;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
@@ -1592,8 +1586,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     Exception ex = null;
     try {
-      DropDatabaseHandler dropDatabaseOp = AbstractOperationHandler.offer(this, req);
-      AbstractOperationHandler.OperationStatus status = dropDatabaseOp.getOperationStatus();
+      DropDatabaseHandler dropDatabaseOp = AbstractRequestHandler.offer(this, req);
+      AbstractRequestHandler.RequestStatus status = dropDatabaseOp.getRequestStatus();
       return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
@@ -2711,8 +2705,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ", async: " + dropReq.isAsyncDrop() + ", id: " + dropReq.getId());
     Exception ex = null;
     try {
-      DropTableHandler dropTableOp = AbstractOperationHandler.offer(this, dropReq);
-      AbstractOperationHandler.OperationStatus status = dropTableOp.getOperationStatus();
+      DropTableHandler dropTableOp = AbstractRequestHandler.offer(this, dropReq);
+      AbstractRequestHandler.RequestStatus status = dropTableOp.getRequestStatus();
       return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
@@ -2724,119 +2718,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             TableName.getQualified(dropReq.getCatalogName(), dropReq.getDbName(), dropReq.getTableName())));
       }
     }
-  }
-
-  private void updateStatsForTruncate(Map<String,String> props, EnvironmentContext environmentContext) {
-    if (null == props) {
-      return;
-    }
-    for (String stat : StatsSetupConst.SUPPORTED_STATS) {
-      String statVal = props.get(stat);
-      if (statVal != null) {
-        //In the case of truncate table, we set the stats to be 0.
-        props.put(stat, "0");
-      }
-    }
-    //first set basic stats to true
-    StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
-    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-    environmentContext.putToProperties(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS, StatsSetupConst.TRUE);
-    //then invalidate column stats
-    StatsSetupConst.clearColumnStatsState(props);
-    return;
-  }
-
-  private void alterPartitionsForTruncate(RawStore ms, String catName, String dbName, String tableName,
-      Table table, List<Partition> partitions, String validWriteIds, long writeId) throws Exception {
-    EnvironmentContext environmentContext = new EnvironmentContext();
-    if (partitions.isEmpty()) {
-      return;
-    }
-    List<List<String>> partValsList = new ArrayList<>();
-    for (Partition partition: partitions) {
-      updateStatsForTruncate(partition.getParameters(), environmentContext);
-      if (writeId > 0) {
-        partition.setWriteId(writeId);
-      }
-      partition.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
-          .currentTimeMillis() / 1000));
-      partValsList.add(partition.getValues());
-    }
-    ms.alterPartitions(catName, dbName, tableName, partValsList, partitions, writeId, validWriteIds);
-    if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(this.getConf(),
-          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
-      if (shouldSendSingleEvent) {
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
-            new AlterPartitionsEvent(partitions, partitions, table, true, true, this), environmentContext);
-      } else {
-        for (Partition partition : partitions) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), this),
-              environmentContext);
-        }
-      }
-    }
-    if (listeners != null && !listeners.isEmpty()) {
-      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(this.getConf(),
-          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
-      if (shouldSendSingleEvent) {
-        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_PARTITIONS,
-            new AlterPartitionsEvent(partitions, partitions, table, true, true, this), environmentContext);
-      } else {
-        for (Partition partition : partitions) {
-          MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), this),
-              environmentContext);
-        }
-      }
-    }
-  }
-
-  private void alterTableStatsForTruncate(RawStore ms, String catName, String dbName,
-      String tableName, Table table, List<Partition> partitionsList,
-      String validWriteIds, long writeId) throws Exception {
-    if (0 != table.getPartitionKeysSize()) {
-      alterPartitionsForTruncate(ms, catName, dbName, tableName, table, partitionsList,
-          validWriteIds, writeId);
-    } else {
-      EnvironmentContext environmentContext = new EnvironmentContext();
-      updateStatsForTruncate(table.getParameters(), environmentContext);
-      boolean isReplicated = isDbReplicationTarget(ms.getDatabase(catName, dbName));
-      if (!transactionalListeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-            EventType.ALTER_TABLE,
-            new AlterTableEvent(table, table, true, true,
-                writeId, this, isReplicated));
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ALTER_TABLE,
-            new AlterTableEvent(table, table, true, true,
-                writeId, this, isReplicated));
-      }
-      // TODO: this should actually pass thru and set writeId for txn stats.
-      if (writeId > 0) {
-        table.setWriteId(writeId);
-      }
-      ms.alterTable(catName, dbName, tableName, table, validWriteIds);
-    }
-    return;
-  }
-
-  private List<Path> getLocationsForTruncate(final RawStore ms, final String catName,
-      final String dbName, final String tableName, final Table table,
-      List<Partition> partitionsList)  throws Exception {
-    List<Path> locations = new ArrayList<>();
-    if (0 != table.getPartitionKeysSize()) {
-      for (Partition partition : partitionsList) {
-        locations.add(new Path(partition.getSd().getLocation()));
-      }
-    } else {
-      locations.add(new Path(table.getSd().getLocation()));
-    }
-    return locations;
   }
 
   @Override
@@ -2857,109 +2738,23 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public TruncateTableResponse truncate_table_req(TruncateTableRequest req)
       throws NoSuchObjectException, MetaException {
-    truncateTableInternal(req.getDbName(), req.getTableName(), req.getPartNames(),
-        req.getValidWriteIdList(), req.getWriteId(), req.getEnvironmentContext());
-    return new TruncateTableResponse();
-  }
-
-  private void truncateTableInternal(String dbName, String tableName, List<String> partNames,
-      String validWriteIds, long writeId, EnvironmentContext context) throws MetaException, NoSuchObjectException {
-    boolean isSkipTrash = false, needCmRecycle = false;
+    String[] parsedDbName = parseDbName(req.getDbName(), getConf());
+    startFunction("truncate_table_req",
+        ": db=" + parsedDbName[DB_NAME] + " tab=" + req.getTableName());
+    Exception ex = null;
+    boolean success = false;
     try {
-      String[] parsedDbName = parseDbName(dbName, conf);
-      GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], tableName);
-      getTableRequest.setCatName(parsedDbName[CAT_NAME]);
-      Table tbl = get_table_core(getTableRequest);
-
-      boolean skipDataDeletion = Optional.ofNullable(context)
-          .map(EnvironmentContext::getProperties)
-          .map(prop -> prop.get(TRUNCATE_SKIP_DATA_DELETION))
-          .map(Boolean::parseBoolean)
-          .orElse(false);
-      List<Partition> partitionsList = new ArrayList<>();
-      if (partNames == null) {
-        if (0 != tbl.getPartitionKeysSize()) {
-          partitionsList = getMS().getPartitions(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-              tableName, GetPartitionsArgs.getAllPartitions());
-        }
-      } else {
-        partitionsList = getMS().getPartitionsByNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-            tableName, partNames);
-      }
-      if (TxnUtils.isTransactionalTable(tbl) || !skipDataDeletion) {
-        if (!skipDataDeletion) {
-          isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
-          
-          Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-          needCmRecycle = ReplChangeManager.shouldEnableCm(db, tbl);
-        }
-        // This is not transactional
-        for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-            tbl, partitionsList)) {
-          if (!skipDataDeletion) {
-            truncateDataFiles(location, isSkipTrash, needCmRecycle);
-          } else {
-            // For Acid tables we don't need to delete the old files, only write an empty baseDir.
-            // Compaction and cleaner will take care of the rest
-            addTruncateBaseFile(location, writeId, conf, DataFormat.TRUNCATED);
-          }
-        }
-      }
-
-      // Alter the table/partition stats and also notify truncate table event
-      alterTableStatsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-          tableName, tbl, partitionsList, validWriteIds, writeId);
+      TruncateTableHandler truncateTable = AbstractRequestHandler.offer(this, req);
+      success = truncateTable.success();
+      return new TruncateTableResponse();
     } catch (Exception e) {
+      ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
           .convertIfInstance(IOException.class, MetaException.class)
           .defaultMetaException();
-    }
-  }
-
-  /**
-   * Add an empty baseDir with a truncate metadatafile
-   * @param location partition or table directory
-   * @param writeId allocated writeId
-   * @throws MetaException
-   */
-  public static void addTruncateBaseFile(Path location, long writeId, Configuration conf, DataFormat dataFormat)
-      throws MetaException {
-    if (location == null) 
-      return;
-    
-    Path basePath = new Path(location, AcidConstants.baseDir(writeId));
-    try {
-      FileSystem fs = location.getFileSystem(conf);
-      fs.mkdirs(basePath);
-      // We can not leave the folder empty, otherwise it will be skipped at some file listing in AcidUtils
-      // No need for a data file, a simple metadata is enough
-      AcidMetaDataFile.writeToFile(fs, basePath, dataFormat);
-    } catch (Exception e) {
-      throw newMetaException(e);
-    }
-  }
-
-  private void truncateDataFiles(Path location, boolean isSkipTrash, boolean needCmRecycle)
-      throws IOException, MetaException {
-    FileSystem fs = location.getFileSystem(getConf());
-    
-    if (!HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
-        !FileUtils.pathHasSnapshotSubDir(location, fs)) {
-      HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
-      FileStatus targetStatus = fs.getFileStatus(location);
-      String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-      
-      wh.deleteDir(location, isSkipTrash, needCmRecycle);
-      fs.mkdirs(location);
-      HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
-    } else {
-      FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
-      if (statuses == null || statuses.length == 0) {
-        return;
-      }
-      for (final FileStatus status : statuses) {
-        wh.deleteDir(status.getPath(), isSkipTrash, needCmRecycle);
-      }
+    } finally {
+      endFunction("truncate_table_req", success, ex,
+          TableName.getQualified(parsedDbName[CAT_NAME],parsedDbName[DB_NAME], req.getTableName()));
     }
   }
 
@@ -3565,7 +3360,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       // Make sure all the partitions have the catalog set as well
-      AddPartitionsHandler addPartsOp = AbstractOperationHandler.offer(this, request);
+      AddPartitionsHandler addPartsOp = AbstractRequestHandler.offer(this, request);
       if (addPartsOp.success() && request.isNeedResult()) {
         AddPartitionsHandler.AddPartitionsResult addPartsResult = addPartsOp.getResult();
         if (request.isSkipColumnSchemaForPartition()) {
@@ -3931,7 +3726,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       DropPartitionsResult resp = new DropPartitionsResult();
-      DropPartitionsHandler dropPartsOp = AbstractOperationHandler.offer(this, request);
+      DropPartitionsHandler dropPartsOp = AbstractRequestHandler.offer(this, request);
       if (dropPartsOp.success() && request.isNeedResult()) {
         resp.setPartitions(dropPartsOp.getResult().getPartitions());
       }

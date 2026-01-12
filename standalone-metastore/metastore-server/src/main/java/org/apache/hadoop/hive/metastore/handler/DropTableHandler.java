@@ -56,8 +56,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMust
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+@RequestHandler(requestBody = DropTableRequest.class, supportAsync = true, metricAlias = "drop_table_req")
 public class DropTableHandler
-    extends AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> {
+    extends AbstractRequestHandler<DropTableRequest, DropTableHandler.DropTableResult> {
   private static final Logger LOG = LoggerFactory.getLogger(DropTableHandler.class);
   private Table tbl;
   private Path tblPath;
@@ -179,7 +180,7 @@ public class DropTableHandler
   }
 
   @Override
-  public String getProgress() {
+  public String getRequestProgress() {
     if (progress == null) {
       return getMessagePrefix() + " hasn't started yet";
     }
@@ -242,11 +243,6 @@ public class DropTableHandler
     } catch (Exception e) {
       LOG.error("Failed to delete directory: {}", path, e);
     }
-  }
-
-  @Override
-  protected String getHandlerAlias() {
-    return "drop_table_req";
   }
 
   public record DropTableResult(Path tablePath,

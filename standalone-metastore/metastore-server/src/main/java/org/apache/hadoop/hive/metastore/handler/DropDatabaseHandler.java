@@ -67,8 +67,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkT
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+@RequestHandler(requestBody = DropDatabaseRequest.class, supportAsync = true, metricAlias = "drop_database_req")
 public class DropDatabaseHandler
-    extends AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
+    extends AbstractRequestHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
 
   private static final Logger LOG = LoggerFactory.getLogger(DropDatabaseHandler.class);
   private String name;
@@ -92,7 +93,7 @@ public class DropDatabaseHandler
     rs.openTransaction();
     try {
       if (MetaStoreUtils.isDatabaseRemote(db)) {
-        if (rs.dropDatabase(db.getCatalogName(), db.getName())) {
+        if (rs.dropDatabase(catalogName, name)) {
           success = rs.commitTransaction();
         }
         return result;
@@ -143,7 +144,7 @@ public class DropDatabaseHandler
         dropRequest.setDeleteData(false);
         dropRequest.setDropPartitions(true);
         dropRequest.setAsyncDrop(false);
-        DropTableHandler dropTable = AbstractOperationHandler.offer(handler, dropRequest);
+        DropTableHandler dropTable = AbstractRequestHandler.offer(handler, dropRequest);
         if (tableDataShouldBeDeleted
             && dropTable.success()) {
           DropTableHandler.DropTableResult dropTableResult = dropTable.getResult();
@@ -342,7 +343,7 @@ public class DropDatabaseHandler
   }
 
   @Override
-  protected String getProgress() {
+  protected String getRequestProgress() {
     if (progress == null) {
       return getMessagePrefix() + " hasn't started yet";
     }
@@ -402,11 +403,6 @@ public class DropDatabaseHandler
       result.setSuccess(result.success);
       return result;
     }
-  }
-
-  @Override
-  protected String getHandlerAlias() {
-    return "drop_database_req";
   }
 
   @Override
