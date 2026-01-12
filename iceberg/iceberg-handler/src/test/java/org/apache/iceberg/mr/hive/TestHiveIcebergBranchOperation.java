@@ -24,13 +24,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.mr.hive.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergTestUtils.timestampAfterSnapshot;
+import static org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils.timestampAfterSnapshot;
 
 public class TestHiveIcebergBranchOperation extends HiveIcebergStorageHandlerWithEngineBase {
 

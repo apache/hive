@@ -35,7 +35,9 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
-import org.apache.iceberg.mr.hive.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
@@ -382,7 +384,7 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
   public void testCTASAndCTLTWithAuth() {
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
-            "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+            "org.apache.iceberg.mr.hive.test.CustomTestHiveAuthorizerFactory");
     shell.setHiveSessionValue("hive.security.authorization.tables.on.storagehandlers", true);
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     String query = String.format("CREATE EXTERNAL TABLE customers (" +

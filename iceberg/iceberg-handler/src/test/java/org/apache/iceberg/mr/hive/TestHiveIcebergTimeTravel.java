@@ -24,13 +24,14 @@ import java.util.List;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.HistoryEntry;
 import org.apache.iceberg.Table;
-import org.apache.iceberg.mr.hive.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergTestUtils.timestampAfterSnapshot;
+import static org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils.timestampAfterSnapshot;
 
 /**
  * Tests covering the time travel feature, aka reading from a table as of a certain snapshot.

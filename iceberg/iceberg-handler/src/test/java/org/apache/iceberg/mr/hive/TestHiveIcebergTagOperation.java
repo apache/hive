@@ -26,13 +26,14 @@ import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.SnapshotRef;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.TableIdentifier;
-import org.apache.iceberg.mr.hive.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergTestUtils.timestampAfterSnapshot;
+import static org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils.timestampAfterSnapshot;
 
 public class TestHiveIcebergTagOperation extends HiveIcebergStorageHandlerWithEngineBase {
 

@@ -71,7 +71,12 @@ import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
-import org.apache.iceberg.mr.hive.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.CustomTestHiveAuthorizerFactory;
+import org.apache.iceberg.mr.hive.test.TestHiveShell;
+import org.apache.iceberg.mr.hive.test.TestTables;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
@@ -500,8 +505,9 @@ public class TestHiveIcebergStorageHandlerNoScan {
   public void testCreateDropTableNonDefaultCatalog() {
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     String catalogName = "nondefaultcatalog";
-    testTables.properties().entrySet()
-        .forEach(e -> shell.setHiveSessionValue(e.getKey().replace(testTables.catalog, catalogName), e.getValue()));
+    testTables.properties().forEach((key, value) -> shell.setHiveSessionValue(
+        key.replace(testTables.getCatalog(), catalogName),
+        value));
     String createSql = "CREATE EXTERNAL TABLE " + identifier +
         " (customer_id BIGINT, first_name STRING COMMENT 'This is first name'," +
         " last_name STRING COMMENT 'This is last name')" +
@@ -1559,7 +1565,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
-        "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+        "org.apache.iceberg.mr.hive.test.CustomTestHiveAuthorizerFactory");
     TableIdentifier source = TableIdentifier.of("default", "source");
     Table sourceTable = testTables.createTable(shell, source.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());
@@ -1605,7 +1611,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.getHiveConf().setBoolean(HIVE_ICEBERG_MASK_DEFAULT_LOCATION.varname, masked);
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
-        "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+        "org.apache.iceberg.mr.hive.test.CustomTestHiveAuthorizerFactory");
     TableIdentifier target = TableIdentifier.of("default", "target");
     Table table = testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), FileFormat.PARQUET, ImmutableList.of());

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.test;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +56,7 @@ import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestCatalogs;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
 import org.apache.iceberg.relocated.com.google.common.base.Joiner;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -77,6 +78,7 @@ public abstract class TestTables {
 
   private final Tables tables;
   protected final TemporaryFolder temp;
+
   protected final String catalog;
 
   protected TestTables(Tables tables, TemporaryFolder temp, String catalogName) {
@@ -87,6 +89,10 @@ public abstract class TestTables {
 
   protected TestTables(Catalog catalog, TemporaryFolder temp, String catalogName) {
     this(new CatalogToTables(catalog), temp, catalogName);
+  }
+
+  public String getCatalog() {
+    return catalog;
   }
 
   public Map<String, String> properties() {

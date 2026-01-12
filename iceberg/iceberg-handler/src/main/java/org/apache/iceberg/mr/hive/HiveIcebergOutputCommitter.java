@@ -84,7 +84,6 @@ import org.apache.iceberg.mr.hive.compaction.IcebergCompactionService;
 import org.apache.iceberg.mr.hive.compaction.IcebergCompactionUtil;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.WriterRegistry;
-import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -795,8 +794,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @param jobId The JobID for the task
    * @return The file to store the results
    */
-  @VisibleForTesting
-  static String generateJobLocation(String location, Configuration conf, JobID jobId) {
+  private static String generateJobLocation(String location, Configuration conf, JobID jobId) {
     String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
     return location + "/temp/" + queryId + "-" + jobId;
   }

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.test;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +37,7 @@ import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.server.HiveServer2;
 import org.apache.iceberg.hive.TestHiveMetastore;
+import org.apache.iceberg.mr.hive.HiveIcebergQueryLifeTimeHook;
 import org.apache.iceberg.relocated.com.google.common.base.Joiner;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;

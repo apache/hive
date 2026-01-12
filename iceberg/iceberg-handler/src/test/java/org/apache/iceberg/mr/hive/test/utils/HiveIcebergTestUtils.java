@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.test.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +46,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.common.type.TimestampUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -77,6 +78,7 @@ import org.apache.iceberg.encryption.EncryptedOutputFile;
 import org.apache.iceberg.hadoop.HadoopOutputFile;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.mr.hive.test.TestHiveShell;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ArrayUtil;
@@ -296,7 +298,12 @@ public class HiveIcebergTestUtils {
 
     Assert.assertEquals(dataFileNum, dataFiles.size());
     Assert.assertFalse(
-        new File(HiveIcebergOutputCommitter.generateJobLocation(table.location(), conf, jobId)).exists());
+        new File(generateJobLocation(table.location(), conf, jobId)).exists());
+  }
+
+  private static String generateJobLocation(String location, Configuration conf, JobID jobId) {
+    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
+    return location + "/temp/" + queryId + "-" + jobId;
   }
 
   /**
