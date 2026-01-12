@@ -59,7 +59,7 @@ public class StatisticsManagementTask implements MetastoreTaskThread {
     @Override
     public void setConf(Configuration configuration) {
         // we modify conf in setupConf(), so we make a copy
-        conf = new Configuration(configuration);
+        this.conf = configuration;
     }
 
     @Override
@@ -72,62 +72,69 @@ public class StatisticsManagementTask implements MetastoreTaskThread {
     // delete all column stats
     @Override
     public void run() {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Auto statistics deletion started. Cleaning up table/partition column statistics over the retention period.");
-        }
+        LOG.debug("Auto statistics deletion started. Cleaning up table/partition column statistics over the retention period.");
         long retentionMillis = MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars. STATISTICS_RETENTION_PERIOD, TimeUnit.MILLISECONDS);
         if (retentionMillis <= 0 || !MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATISTICS_AUTO_DELETION)) {
             LOG.info("Statistics auto deletion is set to off currently.");
             return;
         }
-        if (lock.tryLock()) {
-            IMetaStoreClient msc;
-            try {
-                // Get retention period in conf in milliseconds; default is 365 days.
-                long now = System.currentTimeMillis();
-                long lastAnalyzedThreshold = (now - retentionMillis) / 1000;
-                String filter = "lastAnalyzed < threshold";
-                String paramStr = "long threshold";
+        if (!lock.tryLock()) {
+            return;
+        }
+        try {
+            long now = System.currentTimeMillis();
+            long lastAnalyzedThreshold = (now - retentionMillis) / 1000;
 
-                // Get all databases from metastore
-                msc = new HiveMetaStoreClient(conf);
+            String filter = "lastAnalyzed < threshold";
+            String paramStr = "long threshold";
+            try (IMetaStoreClient msc = new HiveMetaStoreClient(conf)) {
                 RawStore ms = HMSHandler.getMSForConf(conf);
                 PersistenceManager pm = ((ObjectStore) ms).getPersistenceManager();
-                Query q = pm.newQuery(MTableColumnStatistics.class);
-                q.setFilter(filter);
-                q.declareParameters(paramStr);
-                @SuppressWarnings("unchecked")
-                List<MTableColumnStatistics> results =
-                        (List<MTableColumnStatistics>) q.execute(lastAnalyzedThreshold);
 
-                for (MTableColumnStatistics stat : results) {
-                    String dbName = stat.getTable().getDatabase().getName();
-                    String tblName = stat.getTable().getTableName();
-                    Map<String, String> tblParams = stat.getTable().getParameters();
-                    if (tblParams != null && tblParams.getOrDefault(STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY, null) != null) {
-                        LOG.info("Skipping table {}.{} due to exclude property.", dbName, tblName);
-                        continue;
+                Query q = null;
+                try {
+                    q = pm.newQuery(MTableColumnStatistics.class);
+                    q.setFilter(filter);
+                    q.declareParameters(paramStr);
+                    // only fetch required fields, avoid loading heavy MTable objects
+                    q.setResult(
+                            "table.database.name, " +
+                                    "table.tableName, " +
+                                    "partitionName, " +
+                                    "table.parameters.get(\"" + STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY + "\")"
+                    );
+                    @SuppressWarnings("unchecked")
+                    List<Object[]> rows = (List<Object[]>) q.execute(lastAnalyzedThreshold);
+
+                    for (Object[] row : rows) {
+                        String dbName = (String) row[0];
+                        String tblName = (String) row[1];
+                        String partName = (String) row[2];     // can be null for table-level stats
+                        String excludeVal = (String) row[3];   // can be null
+
+                        // exclude check uses projected param value
+                        if (excludeVal != null) {
+                            LOG.info("Skipping auto deletion of stats for table {}.{} due to STATISTICS_AUTO_DELETION_EXCLUDE_TBLPROPERTY property being set on the table.", dbName, tblName);
+                            continue;
+                        }
+                        DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tblName);
+                        request.setEngine("hive");
+
+                        // decide tableLevel based on whether this stat row is table-level or partition-level
+                        // avoids loading table partition keys / MTable
+                        request.setTableLevel(partName == null);
+                        msc.deleteColumnStatistics(request);
                     }
-                    /**
-                    * if this table contains "lastAnalyzed" in table property, we process the auto stats deletion
-                    * long lastAnalyzed = stat.getLastAnalyzed();
-                    * lastAnalyzed is in unit seconds, switch it to milliseconds
-                    * lastAnalyzed *= 1000;
-                    **/
-                    DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tblName);
-                    request.setEngine("hive");
-                    boolean isPartitioned = stat.getTable().getPartitionKeys() != null && !stat.getTable().getPartitionKeys().isEmpty();
-                    // Delete table-level column statistics
-                    if (!isPartitioned) {
-                        request.setTableLevel(true);
-                    } else {
-                        request.setTableLevel(false);
+                } finally {
+                    if (q != null) {
+                        q.closeAll();
                     }
-                    msc.deleteColumnStatistics(request);
                 }
-            } catch (Exception e) {
-                LOG.error("Error during statistics auto deletion", e);
             }
+        } catch (Exception e) {
+            LOG.error("Error during statistics auto deletion", e);
+        } finally {
+            lock.unlock();
         }
     }
 

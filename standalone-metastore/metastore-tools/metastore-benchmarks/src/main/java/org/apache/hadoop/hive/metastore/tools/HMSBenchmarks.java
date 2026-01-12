@@ -705,9 +705,7 @@ final class HMSBenchmarks {
     String tableNamePrefix = data.tableName;
     final HMSClient client = data.getClient();
     final StatisticsManagementTask statsTask = new StatisticsManagementTask();
-    final FileSystem fs;
     try {
-      fs = FileSystem.get(client.getHadoopConf());
       client.getHadoopConf().set("hive.metastore.uris", client.getServerURI().toString());
       client.getHadoopConf().set("metastore.statistics.management.database.pattern", dbName);
       statsTask.setConf(client.getHadoopConf());
@@ -730,16 +728,14 @@ final class HMSBenchmarks {
           Map<String, String> params = partition.getParameters();
           // to manually change the "lastAnalyzed" to an old time, ex. 400 days
           params.put("lastAnalyzed", String.valueOf(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(400)));
-          client.alterPartition(dbName, tableName, partition);
         }
+        client.alterPartitions(dbName, tableName, partitions);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
 
-    Runnable preRun = () -> {
-      System.out.println("Preparing for benchmark...");
-    };
+    Runnable preRun = () -> LOG.debug("Preparing for benchmark...");
 
     try {
       DescriptiveStatistics stats = bench.measure(preRun, statsTask, null);
