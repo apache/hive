@@ -41,7 +41,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
@@ -287,7 +286,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             final Collection<JobContext> jobContexts = outputs.get(output);
             final Table table = output.table;
             jobContexts.forEach(jobContext -> jobLocations.add(
-                generateJobLocation(table.location(), jobConf, jobContext.getJobID()))
+                TezUtil.generateJobLocation(table.location(), jobConf, jobContext.getJobID()))
             );
             commitTable(table.io(), fileExecutor, output, jobContexts, operation);
           });
@@ -359,7 +358,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             for (JobContext jobContext : outputs.get(output)) {
               LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
               Table table = output.table;
-              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              String jobLocation = TezUtil.generateJobLocation(table.location(), jobConf, jobContext.getJobID());
               jobLocations.add(jobLocation);
               // list jobLocation to get number of forCommit files
               // we do this because map/reduce num in jobConf is unreliable and we have no access to vertex status info
@@ -450,7 +449,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       }
 
       LOG.info("Committing job has started for table: {}, using location: {}",
-          table, generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
+          table, TezUtil.generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 
       int numTasks = SessionStateUtil.getCommitInfo(conf, name)
           .map(info -> info.get(jobContext.getJobID().toString()))
@@ -787,19 +786,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   }
 
   /**
-   * Generates the job temp location based on the job configuration.
-   * Currently it uses TABLE_LOCATION/temp/QUERY_ID-jobId.
-   * @param location The location of the table
-   * @param conf The job's configuration
-   * @param jobId The JobID for the task
-   * @return The file to store the results
-   */
-  private static String generateJobLocation(String location, Configuration conf, JobID jobId) {
-    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
-    return location + "/temp/" + queryId + "-" + jobId;
-  }
-
-  /**
    * Generates file location based on the task configuration and a specific task id.
    * This file will be used to store the data required to generate the Iceberg commit.
    * Currently it uses TABLE_LOCATION/temp/QUERY_ID-jobId/task-[0..numTasks).forCommit.
@@ -810,7 +796,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    * @return The file to store the results
    */
   private static String generateFileForCommitLocation(String location, Configuration conf, JobID jobId, int taskId) {
-    return generateJobLocation(location, conf, jobId) + "/task-" + taskId + FOR_COMMIT_EXTENSION;
+    return TezUtil.generateJobLocation(location, conf, jobId) + "/task-" + taskId + FOR_COMMIT_EXTENSION;
   }
 
   private static void createFileForCommit(FilesForCommit writeResult, String location, FileIO io) throws IOException {
@@ -853,7 +839,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             for (JobContext jobContext : outputs.get(output)) {
               Table table = output.table;
               FileSystem fileSystem = new Path(table.location()).getFileSystem(jobConf);
-              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              String jobLocation = TezUtil.generateJobLocation(table.location(), jobConf, jobContext.getJobID());
               // list jobLocation to get number of forCommit files
               // we do this because map/reduce num in jobConf is unreliable
               // and we have no access to vertex status info
@@ -901,7 +887,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             for (JobContext jobContext : outputs.get(output)) {
               Table table = output.table;
-              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              String jobLocation = TezUtil.generateJobLocation(table.location(), jobConf, jobContext.getJobID());
               // list jobLocation to get number of forCommit files
               // we do this because map/reduce num in jobConf is unreliable
               // and we have no access to vertex status info

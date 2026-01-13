@@ -40,13 +40,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.common.type.TimestampUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -78,6 +76,7 @@ import org.apache.iceberg.encryption.EncryptedOutputFile;
 import org.apache.iceberg.hadoop.HadoopOutputFile;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.mr.hive.TezUtil;
 import org.apache.iceberg.mr.hive.test.TestHiveShell;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
@@ -208,7 +207,7 @@ public class HiveIcebergTestUtils {
         record.set(i, row[i]);
       }
       return record;
-    }).collect(Collectors.toList());
+    }).toList();
   }
 
   /**
@@ -293,17 +292,12 @@ public class HiveIcebergTestUtils {
           files
               .filter(Files::isRegularFile)
               .filter(path -> !path.getFileName().toString().startsWith("."))
-              .collect(Collectors.toList());
+              .toList();
     }
 
     Assert.assertEquals(dataFileNum, dataFiles.size());
     Assert.assertFalse(
-        new File(generateJobLocation(table.location(), conf, jobId)).exists());
-  }
-
-  private static String generateJobLocation(String location, Configuration conf, JobID jobId) {
-    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
-    return location + "/temp/" + queryId + "-" + jobId;
+        new File(TezUtil.generateJobLocation(table.location(), conf, jobId)).exists());
   }
 
   /**
@@ -353,7 +347,7 @@ public class HiveIcebergTestUtils {
       FileFormat fileFormat, List<Record> rowsToDelete) throws IOException {
     List<Integer> equalityFieldIds = equalityFields.stream()
         .map(id -> table.schema().findField(id).fieldId())
-        .collect(Collectors.toList());
+        .toList();
     Schema eqDeleteRowSchema = table.schema().select(equalityFields.toArray(new String[]{}));
 
     FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),

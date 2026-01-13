@@ -233,8 +233,9 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         () -> executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql));
     Assert.assertTrue(ex.getMessage().startsWith("Found new conflicting delete files"));
 
-    List<Object[]> res = shell.executeStatement("SELECT * FROM customers WHERE last_name='Changed'");
-    Assert.assertEquals(0, res.size());
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM customers " +
+        "WHERE customer_id != 3 and first_name != 'Joanna'");
+    Assert.assertEquals(6L, res.getFirst()[0]);
   }
 
   @Test
@@ -246,15 +247,16 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
         formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    String sql = "MERGE INTO target t USING source src on t.customer_id = src.customer_id WHEN NOT MATCHED THEN " +
+    String sql = "MERGE INTO target t USING source src ON t.customer_id = src.customer_id " +
+        "WHEN NOT MATCHED THEN " +
         "INSERT values (src.customer_id, src.first_name, src.last_name)";
 
     Throwable ex = Assert.assertThrows(ValidationException.class,
         () -> executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql));
     Assert.assertTrue(ex.getMessage().startsWith("Found conflicting files"));
 
-    List<Object[]> res = shell.executeStatement("SELECT * FROM target");
-    Assert.assertEquals(6, res.size());
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM target");
+    Assert.assertEquals(6L, res.getFirst()[0]);
   }
 
   @Test

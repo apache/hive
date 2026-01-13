@@ -20,6 +20,8 @@
 package org.apache.iceberg.mr.hive;
 
 import java.util.Objects;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.JobContextImpl;
@@ -77,6 +79,19 @@ public class TezUtil {
     } else {
       return jobID;
     }
+  }
+
+  /**
+   * Generates the job temp location based on the job configuration.
+   * Currently it uses TABLE_LOCATION/temp/QUERY_ID-jobId.
+   * @param location The location of the table
+   * @param conf The job's configuration
+   * @param jobId The JobID for the task
+   * @return The file to store the results
+   */
+  public static String generateJobLocation(String location, Configuration conf, JobID jobId) {
+    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
+    return location + "/temp/" + queryId + "-" + jobId;
   }
 
   private TezUtil() {

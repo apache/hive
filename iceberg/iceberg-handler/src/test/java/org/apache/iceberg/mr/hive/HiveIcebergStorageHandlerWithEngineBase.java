@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
@@ -254,9 +255,10 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
     int nThreads = sql.length > 1 ? sql.length : 2;
     TestUtilPhaser testUtilPhaser = TestUtilPhaser.getInstance();
 
-    try {
+    try (ExecutorService executor =
+             Executors.newVirtualThreadPerTaskExecutor()) {
       Tasks.range(nThreads)
-          .executeWith(Executors.newFixedThreadPool(nThreads))
+          .executeWith(executor)
           .run(i -> {
             LOG.debug("Thread {} started for query index {}", Thread.currentThread().getName(), i);
 

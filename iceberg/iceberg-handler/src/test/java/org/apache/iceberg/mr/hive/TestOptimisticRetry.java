@@ -53,8 +53,8 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
     String sql = "UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'";
     executeConcurrently(false, RETRY_STRATEGIES, sql);
 
-    List<Object[]> res = shell.executeStatement("SELECT * FROM customers WHERE last_name='Changed'");
-    Assert.assertEquals(5, res.size());
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM customers WHERE last_name='Changed'");
+    Assert.assertEquals(5L, res.getFirst()[0]);
   }
 
   @Test
@@ -64,10 +64,16 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
         formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
     String[] sql = new String[] {
-        "INSERT OVERWRITE table customers SELECT * FROM customers where last_name='Taylor'",
-        "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor'"
+        "INSERT OVERWRITE table customers SELECT * FROM customers WHERE last_name='Taylor'",
+        "UPDATE customers SET first_name='Changed' WHERE last_name='Taylor'"
     };
     executeConcurrently(false, RETRY_STRATEGIES, sql);
+
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM customers");
+    Assert.assertEquals(1L, res.getFirst()[0]);
+
+    shell.executeStatement("SELECT count(*) FROM customers WHERE first_name='Changed'");
+    Assert.assertEquals(1L, res.getFirst()[0]);
   }
 
   @Test
@@ -82,11 +88,11 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
     };
     executeConcurrently(false, RETRY_STRATEGIES, sql);
 
-    List<Object[]> res = shell.executeStatement("SELECT * FROM customers WHERE last_name='Changed'");
-    Assert.assertEquals(5, res.size());
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM customers WHERE last_name='Changed'");
+    Assert.assertEquals(5, res.getFirst()[0]);
 
-    res = shell.executeStatement("SELECT * FROM customers WHERE last_name='Changed2'");
-    Assert.assertEquals(1, res.size());
+    res = shell.executeStatement("SELECT count(*) FROM customers WHERE last_name='Changed2'");
+    Assert.assertEquals(1, res.getFirst()[0]);
   }
 
   @Test
@@ -98,12 +104,13 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
         formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    String sql = "MERGE INTO target t USING source s on t.customer_id = s.customer_id WHEN Not MATCHED THEN " +
-        "INSERT values (s.customer_id, s.first_name, s.last_name)";
+    String sql = "MERGE INTO target t USING source s on t.customer_id = s.customer_id " +
+        "WHEN NOT MATCHED THEN " +
+        "INSERT VALUES (s.customer_id, s.first_name, s.last_name)";
     executeConcurrently(false, RETRY_STRATEGIES, sql);
 
-    List<Object[]> res = shell.executeStatement("SELECT * FROM target");
-    Assert.assertEquals(6, res.size());
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM target");
+    Assert.assertEquals(6L, res.getFirst()[0]);
   }
 
   @Test
@@ -118,15 +125,18 @@ public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase
         fileFormat, HiveIcebergStorageHandlerTestUtils.USER_CLICKS_RECORDS_2,
         formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    String query1 = "merge into target t using source src on t.name = src.name " +
-        "when matched then update set age=15";
-    String query2 = "merge into target t using source src on t.age = src.age " +
-        "when matched then update set age=15";
+    String query1 = "MERGE INTO target t USING source src ON t.name = src.name " +
+        "WHEN MATCHED THEN " +
+        "UPDATE SET age=15";
+
+    String query2 = "MERGE INTO target t USING source src ON t.age = src.age " +
+        "WHEN MATCHED THEN " +
+        "UPDATE SET age=15";
 
     String[] sql = new String[] {query1, query2};
     executeConcurrently(false, RETRY_STRATEGIES, sql);
 
-    List<Object[]> res = shell.executeStatement("SELECT * FROM target where age = 15");
-    Assert.assertEquals(2, res.size());
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM target where age = 15");
+    Assert.assertEquals(2L, res.getFirst()[0]);
   }
 }
