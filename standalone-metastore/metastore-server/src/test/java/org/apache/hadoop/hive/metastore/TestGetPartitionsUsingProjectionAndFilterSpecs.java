@@ -113,7 +113,6 @@ public class TestGetPartitionsUsingProjectionAndFilterSpecs {
     tbl = client.getTable(dbName, tblName);
     // set directSQL to true explicitly
     client.setMetaConf(ConfVars.TRY_DIRECT_SQL.getVarname(), "true");
-    client.setMetaConf(ConfVars.TRY_DIRECT_SQL_DDL.getVarname(), "true");
   }
 
   @After

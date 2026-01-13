@@ -60,7 +60,6 @@ public class TestHiveMetaStoreGetMetaConf {
     Configuration metastoreConf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setClass(metastoreConf, ConfVars.EXPRESSION_PROXY_CLASS,
       MockPartitionExpressionForMetastore.class, PartitionExpressionProxy.class);
-    MetastoreConf.setBoolVar(metastoreConf, ConfVars.TRY_DIRECT_SQL_DDL, false);
     MetaStoreTestUtils.setConfForStandloneMode(metastoreConf);
     int msPort = MetaStoreServerUtils.startMetaStore(metastoreConf);
     conf = MetastoreConf.newMetastoreConf();
@@ -93,14 +92,6 @@ public class TestHiveMetaStoreGetMetaConf {
   public void testGetMetaConfDefaultEmptyString() throws TException {
     ConfVars metaConfVar = ConfVars.PARTITION_NAME_WHITELIST_PATTERN;
     String expected = "";
-    String actual = hmsc.getMetaConf(metaConfVar.toString());
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  public void testGetMetaConfOverridden() throws TException {
-    ConfVars metaConfVar = ConfVars.TRY_DIRECT_SQL_DDL;
-    String expected = "false";
     String actual = hmsc.getMetaConf(metaConfVar.toString());
     assertEquals(expected, actual);
   }

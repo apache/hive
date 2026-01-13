@@ -4174,11 +4174,7 @@ public class ObjectStore implements RawStore, Configurable {
       this.doTrace = LOG.isDebugEnabled();
       this.isInTxn = isActiveTransaction();
 
-      // SQL usage inside a larger transaction (e.g. droptable) may not be desirable because
-      // some databases (e.g. Postgres) abort the entire transaction when any query fails, so
-      // the fallback from failed SQL to JDO is not possible.
-      boolean isConfigEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)
-          && (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL_DDL) || !isInTxn);
+      boolean isConfigEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL);
       if (isConfigEnabled && directSql == null) {
         directSql = new MetaStoreDirectSql(pm, getConf(), "");
       }
