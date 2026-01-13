@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -414,7 +415,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         partitionSpec, location, partition.getParameters(), sd.getInputFormat(), sd.getOutputFormat(),
         sd.getNumBuckets(), sd.getCols(), sd.getSerdeInfo().getSerializationLib(), sd.getSerdeInfo().getParameters(),
         sd.getBucketCols(), sd.getSortCols(), null, writeId);
-    return new AlterTableAddPartitionDesc(dbName, tblDesc.getTableName(), true, ImmutableList.of(partitionDesc));
+    return new AlterTableAddPartitionDesc(dbName, tblDesc.getTableName(), true, ImmutableList.of(partitionDesc), conf.get(MetaStoreServerUtils.HCAT_CUSTOM_DYNAMIC_PATTERN));
   }
 
   private static ImportTableDesc getBaseCreateTableDescFromTable(String dbName,

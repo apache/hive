@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.HCAT_CUSTOM_DYNAMIC_PATTERN;
 
 public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
 
@@ -125,7 +126,7 @@ public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
     generateWriteRecords(NUM_RECORDS, NUM_TOP_PARTITIONS, 0);
     HashMap<String, String> properties = new HashMap<String, String>();
     if (customDynamicPathPattern != null) {
-      properties.put(HCatConstants.HCAT_DYNAMIC_CUSTOM_PATTERN, customDynamicPathPattern);
+      properties.put(HCAT_CUSTOM_DYNAMIC_PATTERN, customDynamicPathPattern);
     }
     runMRCreate(null, dataColumns, writeRecords.subList(0,NUM_RECORDS/2), NUM_RECORDS/2,
         true, asSingleMapTask, properties);

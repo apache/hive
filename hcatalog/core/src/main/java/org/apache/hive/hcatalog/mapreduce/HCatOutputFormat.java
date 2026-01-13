@@ -53,6 +53,8 @@ import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.HCAT_CUSTOM_DYNAMIC_PATTERN;
+
 /** The OutputFormat to use to write data to HCatalog. The key value is ignored and
  *  should be given as null. The value is the HCatRecord to write.*/
 @InterfaceAudience.Public
@@ -163,7 +165,7 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
           conf.set(HCatConstants.HCAT_DYNAMIC_PTN_JOBID, dynHash);
 
           // if custom pattern is set in case of dynamic partitioning, configure custom path
-          String customPattern = conf.get(HCatConstants.HCAT_DYNAMIC_CUSTOM_PATTERN);
+          String customPattern = conf.get(HCAT_CUSTOM_DYNAMIC_PATTERN);
           if (customPattern != null) {
             HCatFileUtil.setCustomPath(customPattern, outputJobInfo);
           }

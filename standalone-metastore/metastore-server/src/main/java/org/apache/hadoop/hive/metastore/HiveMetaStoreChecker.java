@@ -30,6 +30,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPar
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionColtoTypeMap;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPartitionsByProjectSpec;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPath;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.HCAT_CUSTOM_DYNAMIC_PATTERN;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isPartitioned;
 
 import java.io.IOException;
@@ -50,6 +51,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
@@ -61,6 +63,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
+import org.apache.hadoop.hive.metastore.utils.DynamicPartitioningCustomPattern;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -574,14 +577,27 @@ public class HiveMetaStoreChecker {
     private final ConcurrentLinkedQueue<PathDepthInfo> pendingPaths;
     private final boolean throwException;
     private final PathDepthInfo pd;
+    private final DynamicPartitioningCustomPattern compiledCustomPattern;
+    private final int maxDepth;
 
     private PathDepthInfoCallable(PathDepthInfo pd, List<String> partColNames, FileSystem fs,
-        ConcurrentLinkedQueue<PathDepthInfo> basePaths) {
+        ConcurrentLinkedQueue<PathDepthInfo> basePaths, String customPattern) {
       this.partColNames = partColNames;
       this.pd = pd;
       this.fs = fs;
       this.pendingPaths = basePaths;
       this.throwException = "throw".equals(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.MSCK_PATH_VALIDATION));
+      if (customPattern != null) {
+        String[] parts = customPattern.split(Path.SEPARATOR);
+        this.compiledCustomPattern = new DynamicPartitioningCustomPattern.Builder()
+                .setCustomPattern(customPattern)
+                .build();
+        this.maxDepth = parts.length;
+      }
+      else {
+        this.compiledCustomPattern = null;
+        this.maxDepth = partColNames.size();
+      }
     }
 
     @Override
@@ -593,7 +609,15 @@ public class HiveMetaStoreChecker {
         throws IOException, MetastoreException {
       final Path currentPath = pd.p;
       final int currentDepth = pd.depth;
-      if (currentDepth == partColNames.size()) {
+      if (currentDepth == maxDepth) {
+        if (compiledCustomPattern != null) { //validate path against pattern
+          Pattern fullPattern = compiledCustomPattern.getPartitionCapturePattern();
+          String[] parts = currentPath.toString().split(Path.SEPARATOR);
+          String relPath = String.join(Path.SEPARATOR, Arrays.copyOfRange(parts, parts.length - maxDepth, parts.length));
+          if (!fullPattern.matcher(relPath).matches()) {
+            logOrThrowExceptionWithMsg("File path " + currentPath + " does not match custom partitioning pattern" + compiledCustomPattern.getCustomPattern());
+          }
+        }
         return currentPath;
       }
       List<FileStatus> fileStatuses = new ArrayList<>();
@@ -605,7 +629,7 @@ public class HiveMetaStoreChecker {
       }
       // found no files under a sub-directory under table base path; it is possible that the table
       // is empty and hence there are no partition sub-directories created under base path
-      if (fileStatuses.size() == 0 && currentDepth > 0) {
+      if (fileStatuses.isEmpty() && currentDepth > 0 && currentDepth < maxDepth) {
         // since maxDepth is not yet reached, we are missing partition
         // columns in currentPath
         logOrThrowExceptionWithMsg(
@@ -618,7 +642,14 @@ public class HiveMetaStoreChecker {
             logOrThrowExceptionWithMsg(
                 "MSCK finds a file rather than a directory when it searches for "
                     + fileStatus.getPath().toString());
-          } else {
+          } else if (fileStatus.isDirectory() && compiledCustomPattern != null) {
+            //since this is a restricted custom pattern, it could be almost anything
+            //when we hit max depth we can perform a validation check of entire path against pattern, to avoid creating regexen
+            //at every depth
+            Path nextPath = fileStatus.getPath();
+            pendingPaths.add(new PathDepthInfo(nextPath, currentDepth + 1));
+          }
+          else {
             // found a sub-directory at a depth less than number of partition keys
             // validate if the partition directory name matches with the corresponding
             // partition colName at currentDepth
@@ -677,7 +708,7 @@ public class HiveMetaStoreChecker {
         //process each level in parallel
         while(!nextLevel.isEmpty()) {
           futures.add(
-              executor.submit(new PathDepthInfoCallable(nextLevel.poll(), partColNames, fs, tempQueue)));
+              executor.submit(new PathDepthInfoCallable(nextLevel.poll(), partColNames, fs, tempQueue, conf.get(HCAT_CUSTOM_DYNAMIC_PATTERN))));
         }
         while(!futures.isEmpty()) {
           Path p = futures.poll().get();

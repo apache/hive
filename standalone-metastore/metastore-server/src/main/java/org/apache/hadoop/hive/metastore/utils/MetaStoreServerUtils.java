@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -135,6 +136,8 @@ public class MetaStoreServerUtils {
   };
 
   private static final String DELEGATION_TOKEN_STORE_CLS = "hive.cluster.delegation.token.store.class";
+
+  public static final String HCAT_CUSTOM_DYNAMIC_PATTERN = "hcat.dynamic.partitioning.custom.pattern";
 
   private static final char DOT = '.';
 
@@ -1610,41 +1613,62 @@ public class MetaStoreServerUtils {
    * @return Partition name, for example partitiondate=2008-01-01
    */
   public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols,
-                                        Map<String, String> partitionColToTypeMap, Configuration conf) {
+                                        Map<String, String> partitionColToTypeMap, Configuration conf) throws MetastoreException {
     StringBuilder result = null;
+    String customPattern = conf.get(HCAT_CUSTOM_DYNAMIC_PATTERN);
     Path currPath = partitionPath;
     LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
-
-    while (currPath != null && !tablePath.equals(currPath)) {
-      // format: partition=p_val
-      // Add only when table partition colName matches
-      String[] parts = currPath.getName().split("=");
-      if (parts.length > 0) {
-        if (parts.length != 2) {
-          LOG.warn(currPath.getName() + " is not a valid partition name");
-          return result.toString();
-        }
-
-        // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
-        // it should be converted to lower case
-        String partitionName = parts[0].toLowerCase();
-        // Do not convert the partitionValue to lowercase
-        String partitionValue = parts[1];
-        if (partCols.contains(partitionName)) {
-          String normalisedPartitionValue = getNormalisedPartitionValue(partitionValue,
-                  partitionColToTypeMap.get(partitionName), conf);
-          if (normalisedPartitionValue == null) {
-            return null;
-          }
-          if (result == null) {
-            result = new StringBuilder(partitionName + "=" + normalisedPartitionValue);
-          } else {
-            result.insert(0, partitionName + "=" + normalisedPartitionValue + Path.SEPARATOR);
-          }
-        }
+    if (customPattern != null) {
+      DynamicPartitioningCustomPattern compiledCustomPattern = new DynamicPartitioningCustomPattern.Builder()
+              .setCustomPattern(customPattern)
+              .build();
+      Pattern customPathPattern = compiledCustomPattern.getPartitionCapturePattern();
+      List<String> patternPartCols = compiledCustomPattern.getPartitionColumns(); //partition columns in order that they appear in the pattern
+      String relPath = partitionPath.toString().substring(tablePath.toString().length() + 1); //start after tablepath and the / afterwards
+      Matcher pathMatcher = customPathPattern.matcher(relPath);
+      boolean didMatch = pathMatcher.matches();
+      if (!didMatch) { //partition path doesn't match the pattern, should have been detected at an earlier step
+        throw new MetastoreException("Path " + relPath + "doesn't match custom partition pattern " + customPathPattern + "partitionPathFull: " + partitionPath);
       }
-      currPath = currPath.getParent();
-      LOG.debug("currPath=" + currPath);
+      if (patternPartCols.size() > 0) {
+          result = new StringBuilder(patternPartCols.get(0) + "=" + pathMatcher.group(1));
+      }
+      for (int i = 1; i < patternPartCols.size(); i++) {
+        result.append(Path.SEPARATOR).append(patternPartCols.get(i)).append("=").append(pathMatcher.group(i+1));
+      }
+    }
+    else {
+      while (currPath != null && !tablePath.equals(currPath)) {
+        // format: partition=p_val
+        // Add only when table partition colName matches
+        String[] parts = currPath.getName().split("=");
+        if (parts.length > 0) {
+          if (parts.length != 2) {
+            LOG.warn(currPath.getName() + " is not a valid partition name");
+            return result.toString();
+          }
+
+          // Since hive stores partitions keys in lower case, if the hdfs path contains mixed case,
+          // it should be converted to lower case
+          String partitionName = parts[0].toLowerCase();
+          // Do not convert the partitionValue to lowercase
+          String partitionValue = parts[1];
+          if (partCols.contains(partitionName)) {
+            String normalisedPartitionValue = getNormalisedPartitionValue(partitionValue,
+                    partitionColToTypeMap.get(partitionName), conf);
+            if (normalisedPartitionValue == null) {
+              return null;
+            }
+            if (result == null) {
+              result = new StringBuilder(partitionName + "=" + normalisedPartitionValue);
+            } else {
+              result.insert(0, partitionName + "=" + normalisedPartitionValue + Path.SEPARATOR);
+            }
+          }
+        }
+        currPath = currPath.getParent();
+        LOG.debug("currPath=" + currPath);
+      }
     }
     return (result == null) ? null : result.toString();
   }

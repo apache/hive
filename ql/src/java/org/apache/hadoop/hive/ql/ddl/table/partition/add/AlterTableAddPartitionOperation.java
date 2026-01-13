@@ -80,7 +80,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
   private List<Partition> getPartitions(Table table, long writeId) throws HiveException {
     List<Partition> partitions = new ArrayList<>(desc.getPartitions().size());
     for (AlterTableAddPartitionDesc.PartitionDesc partitionDesc : desc.getPartitions()) {
-      Partition partition = convertPartitionSpecToMetaPartition(table, partitionDesc);
+      Partition partition = convertPartitionSpecToMetaPartition(table, partitionDesc, desc.getCustomPattern());
       if (partition != null && writeId > 0) {
         partition.setWriteId(writeId);
       }
@@ -91,7 +91,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
   }
 
   private Partition convertPartitionSpecToMetaPartition(Table table,
-      AlterTableAddPartitionDesc.PartitionDesc partitionSpec) throws HiveException {
+      AlterTableAddPartitionDesc.PartitionDesc partitionSpec, String customPattern) throws HiveException {
     Path location = partitionSpec.getLocation() != null ? new Path(table.getPath(), partitionSpec.getLocation()) : null;
     if (location != null) {
       // Ensure that it is a full qualified path (in most cases it will be since tbl.getPath() is full qualified)
@@ -99,7 +99,7 @@ public class AlterTableAddPartitionOperation extends DDLOperation<AlterTableAddP
     }
 
     Partition partition = org.apache.hadoop.hive.ql.metadata.Partition.createMetaPartitionObject(
-        table, partitionSpec.getPartSpec(), location);
+        table, partitionSpec.getPartSpec(), location, customPattern);
 
     if (partitionSpec.getPartParams() != null) {
       partition.setParameters(partitionSpec.getPartParams());
