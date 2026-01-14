@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_args;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.set_ugi_result;
@@ -117,7 +116,6 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
      };
      try {
        clientUgi.doAs(pvea);
-       return;
      } catch (RuntimeException rte) {
        if (rte.getCause() instanceof TException) {
          throw (TException)rte.getCause();
@@ -127,12 +125,6 @@ public class TUGIBasedProcessor<I extends Iface> extends TSetIpAddressProcessor<
        throw new RuntimeException(ie); // unexpected!
      } catch (IOException ioe) {
        throw new RuntimeException(ioe); // unexpected!
-     } finally {
-         try {
-           FileSystem.closeAllForUGI(clientUgi);
-         } catch (IOException e) {
-           LOG.error("Could not clean up file-system handles for UGI: " + clientUgi, e);
-         }
      }
    }
   }
