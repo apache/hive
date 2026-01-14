@@ -593,8 +593,7 @@ public class HiveMetaStoreChecker {
                 .setCustomPattern(customPattern)
                 .build();
         this.maxDepth = parts.length;
-      }
-      else {
+      } else {
         this.compiledCustomPattern = null;
         this.maxDepth = partColNames.size();
       }
@@ -613,9 +612,11 @@ public class HiveMetaStoreChecker {
         if (compiledCustomPattern != null) { //validate path against pattern
           Pattern fullPattern = compiledCustomPattern.getPartitionCapturePattern();
           String[] parts = currentPath.toString().split(Path.SEPARATOR);
-          String relPath = String.join(Path.SEPARATOR, Arrays.copyOfRange(parts, parts.length - maxDepth, parts.length));
+          String relPath = String.join(Path.SEPARATOR,
+                  Arrays.copyOfRange(parts, parts.length - maxDepth, parts.length));
           if (!fullPattern.matcher(relPath).matches()) {
-            logOrThrowExceptionWithMsg("File path " + currentPath + " does not match custom partitioning pattern" + compiledCustomPattern.getCustomPattern());
+            logOrThrowExceptionWithMsg("File path " + currentPath + " does not match custom partitioning pattern"
+                    + compiledCustomPattern.getCustomPattern());
           }
         }
         return currentPath;
@@ -644,12 +645,11 @@ public class HiveMetaStoreChecker {
                     + fileStatus.getPath().toString());
           } else if (fileStatus.isDirectory() && compiledCustomPattern != null) {
             //since this is a restricted custom pattern, it could be almost anything
-            //when we hit max depth we can perform a validation check of entire path against pattern, to avoid creating regexen
-            //at every depth
+            //when we hit max depth we can perform a validation check of entire path against pattern,
+            //to avoid creating regexen at every depth
             Path nextPath = fileStatus.getPath();
             pendingPaths.add(new PathDepthInfo(nextPath, currentDepth + 1));
-          }
-          else {
+          } else {
             // found a sub-directory at a depth less than number of partition keys
             // validate if the partition directory name matches with the corresponding
             // partition colName at currentDepth
@@ -708,7 +708,8 @@ public class HiveMetaStoreChecker {
         //process each level in parallel
         while(!nextLevel.isEmpty()) {
           futures.add(
-              executor.submit(new PathDepthInfoCallable(nextLevel.poll(), partColNames, fs, tempQueue, conf.get(HCAT_CUSTOM_DYNAMIC_PATTERN))));
+              executor.submit(new PathDepthInfoCallable(nextLevel.poll(), partColNames, fs, tempQueue,
+                      conf.get(HCAT_CUSTOM_DYNAMIC_PATTERN))));
         }
         while(!futures.isEmpty()) {
           Path p = futures.poll().get();

@@ -1613,7 +1613,8 @@ public class MetaStoreServerUtils {
    * @return Partition name, for example partitiondate=2008-01-01
    */
   public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols,
-                                        Map<String, String> partitionColToTypeMap, Configuration conf) throws MetastoreException {
+                                        Map<String, String> partitionColToTypeMap, Configuration conf)
+          throws MetastoreException {
     StringBuilder result = null;
     String customPattern = conf.get(HCAT_CUSTOM_DYNAMIC_PATTERN);
     Path currPath = partitionPath;
@@ -1623,21 +1624,23 @@ public class MetaStoreServerUtils {
               .setCustomPattern(customPattern)
               .build();
       Pattern customPathPattern = compiledCustomPattern.getPartitionCapturePattern();
-      List<String> patternPartCols = compiledCustomPattern.getPartitionColumns(); //partition columns in order that they appear in the pattern
-      String relPath = partitionPath.toString().substring(tablePath.toString().length() + 1); //start after tablepath and the / afterwards
+      //partition columns in order that they appear in the pattern
+      List<String> patternPartCols = compiledCustomPattern.getPartitionColumns();
+      //relative path starts after tablepath and the / afterwards
+      String relPath = partitionPath.toString().substring(tablePath.toString().length() + 1);
       Matcher pathMatcher = customPathPattern.matcher(relPath);
       boolean didMatch = pathMatcher.matches();
       if (!didMatch) { //partition path doesn't match the pattern, should have been detected at an earlier step
-        throw new MetastoreException("Path " + relPath + "doesn't match custom partition pattern " + customPathPattern + "partitionPathFull: " + partitionPath);
+        throw new MetastoreException("Path " + relPath + "doesn't match custom partition pattern "
+                + customPathPattern + "partitionPathFull: " + partitionPath);
       }
-      if (patternPartCols.size() > 0) {
-          result = new StringBuilder(patternPartCols.get(0) + "=" + pathMatcher.group(1));
+      if (!patternPartCols.isEmpty()) {
+        result = new StringBuilder(patternPartCols.get(0) + "=" + pathMatcher.group(1));
       }
       for (int i = 1; i < patternPartCols.size(); i++) {
         result.append(Path.SEPARATOR).append(patternPartCols.get(i)).append("=").append(pathMatcher.group(i+1));
       }
-    }
-    else {
+    } else {
       while (currPath != null && !tablePath.equals(currPath)) {
         // format: partition=p_val
         // Add only when table partition colName matches

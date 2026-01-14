@@ -111,9 +111,9 @@ public class TestHiveMetaStoreChecker {
     partCols.add(new FieldSchema(partCityName, serdeConstants.STRING_TYPE_NAME, ""));
 
     partColsExt = new ArrayList<FieldSchema>();
-    partColsExt.add(new FieldSchema(partCityName,serdeConstants.STRING_TYPE_NAME,""));
-    partColsExt.add(new FieldSchema(partStateName,serdeConstants.STRING_TYPE_NAME,""));
-    partColsExt.add(new FieldSchema(partIdName,serdeConstants.STRING_TYPE_NAME,""));
+    partColsExt.add(new FieldSchema(partCityName, serdeConstants.STRING_TYPE_NAME, ""));
+    partColsExt.add(new FieldSchema(partStateName, serdeConstants.STRING_TYPE_NAME, ""));
+    partColsExt.add(new FieldSchema(partIdName, serdeConstants.STRING_TYPE_NAME, ""));
 
     parts = new ArrayList<>();
     Map<String, String> part1 = new HashMap<>();
@@ -362,24 +362,25 @@ public class TestHiveMetaStoreChecker {
   }
 
   @Test
-  public void testCustomPartitionPatternCheck() throws HiveException, AlreadyExistsException, IOException, MetastoreException {
+  public void testCustomPartitionPatternCheck()
+          throws HiveException, AlreadyExistsException, IOException, MetastoreException {
     Table table = createTestExternalTable();
     Path tablePath = table.getDataLocation();
     fs = tablePath.getFileSystem(hive.getConf());
-    fs.mkdirs(new Path(tablePath,"const/CO/const2/1-denver"));
-    fs.mkdirs(new Path(tablePath,"const/CA/const2/1-sanjose"));
-    fs.mkdirs(new Path(tablePath,"const/CA/const2/2-sanfrancisco"));
-    fs.mkdirs(new Path(tablePath,"const/IL/const2/1-chicago"));
-    fs.mkdirs(new Path(tablePath,"const/TX/const2/1-dallas"));
-    fs.mkdirs(new Path(tablePath,"const/TX/const2/2-austin"));
-    fs.mkdirs(new Path(tablePath,"const/NY/const2/1-newyork"));
-    fs.createNewFile(new Path(tablePath,"const/CO/const2/1-denver/datafile"));
-    fs.createNewFile(new Path(tablePath,"const/CA/const2/1-sanjose/datafile"));
-    fs.createNewFile(new Path(tablePath,"const/CA/const2/2-sanfrancisco/datafile"));
-    fs.createNewFile(new Path(tablePath,"const/IL/const2/1-chicago/datafile"));
-    fs.createNewFile(new Path(tablePath,"const/TX/const2/1-dallas/datafile"));
-    fs.createNewFile(new Path(tablePath,"const/TX/const2/2-austin/datafile"));
-    fs.createNewFile(new Path(tablePath,"const/NY/const2/1-newyork/datafile"));
+    fs.mkdirs(new Path(tablePath, "const/CO/const2/1-denver"));
+    fs.mkdirs(new Path(tablePath, "const/CA/const2/1-sanjose"));
+    fs.mkdirs(new Path(tablePath, "const/CA/const2/2-sanfrancisco"));
+    fs.mkdirs(new Path(tablePath, "const/IL/const2/1-chicago"));
+    fs.mkdirs(new Path(tablePath, "const/TX/const2/1-dallas"));
+    fs.mkdirs(new Path(tablePath, "const/TX/const2/2-austin"));
+    fs.mkdirs(new Path(tablePath, "const/NY/const2/1-newyork"));
+    fs.createNewFile(new Path(tablePath, "const/CO/const2/1-denver/datafile"));
+    fs.createNewFile(new Path(tablePath, "const/CA/const2/1-sanjose/datafile"));
+    fs.createNewFile(new Path(tablePath, "const/CA/const2/2-sanfrancisco/datafile"));
+    fs.createNewFile(new Path(tablePath, "const/IL/const2/1-chicago/datafile"));
+    fs.createNewFile(new Path(tablePath, "const/TX/const2/1-dallas/datafile"));
+    fs.createNewFile(new Path(tablePath, "const/TX/const2/2-austin/datafile"));
+    fs.createNewFile(new Path(tablePath, "const/NY/const2/1-newyork/datafile"));
     CheckResult result = customChecker.checkMetastore(null, dbName, externalTableName, null, null);
     assertEquals(7, result.getPartitionsNotInMs().size());
     //cleanup

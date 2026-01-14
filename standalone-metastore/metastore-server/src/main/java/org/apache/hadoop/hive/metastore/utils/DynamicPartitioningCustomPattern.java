@@ -26,65 +26,66 @@ import java.util.regex.Pattern;
  * When using msck repair table with custom partitioning patterns, we need to capture
  * the partition keys from the pattern, and use those to construct a regex which will
  * match the paths and extract the partition key values.*/
-public class DynamicPartitioningCustomPattern {
+public final class DynamicPartitioningCustomPattern {
 
-    private final String customPattern;
-    private final Pattern partitionCapturePattern;
-    private final List<String> partitionColumns;
+  private final String customPattern;
+  private final Pattern partitionCapturePattern;
+  private final List<String> partitionColumns;
 
     // regex of the form: ${column name}. Following characters are not allowed in column name:
     // whitespace characters, /, {, }, \
-    public static final Pattern customPathPattern = Pattern.compile("(\\$\\{)([^\\s/\\{\\}\\\\]+)(\\})");
+  public static final Pattern customPathPattern = Pattern.compile("(\\$\\{)([^\\s/\\{\\}\\\\]+)(\\})");
 
-    private DynamicPartitioningCustomPattern(String customPattern, Pattern partitionCapturePattern, List<String> partitionColumns) {
-        this.customPattern = customPattern;
-        this.partitionCapturePattern = partitionCapturePattern;
-        this.partitionColumns = partitionColumns;
+  private DynamicPartitioningCustomPattern(String customPattern, Pattern partitionCapturePattern,
+                                           List<String> partitionColumns) {
+    this.customPattern = customPattern;
+    this.partitionCapturePattern = partitionCapturePattern;
+    this.partitionColumns = partitionColumns;
+  }
+
+  /**
+   * @return stored custom pattern string
+   * */
+  public String getCustomPattern() {
+    return customPattern;
+  }
+
+  /**
+   * @return stored custom pattern regex matcher
+   * */
+  public Pattern getPartitionCapturePattern() {
+    return partitionCapturePattern;
+  }
+
+  /**
+   * @return list of partition key columns
+   * */
+  public List<String> getPartitionColumns() {
+    return partitionColumns;
+  }
+
+  public static class Builder {
+    private String customPattern;
+
+    public Builder setCustomPattern(String customPattern) {
+      this.customPattern = customPattern;
+      return this;
     }
 
     /**
-     * @return stored custom pattern string
-     * */
-    public String getCustomPattern() {
-        return customPattern;
+     * Constructs the regex to match the partition values in a path based on the custom pattern.
+     *
+     * @return custom partition pattern matcher */
+    public DynamicPartitioningCustomPattern build() {
+      StringBuffer sb = new StringBuffer();
+      Matcher m = customPathPattern.matcher(customPattern);
+      List<String> partColumns = new ArrayList<>();
+      while (m.find()) {
+        m.appendReplacement(sb, "(.*)");
+        partColumns.add(m.group(2));
+      }
+      m.appendTail(sb);
+      return new DynamicPartitioningCustomPattern(customPattern, Pattern.compile(sb.toString()), partColumns);
     }
-
-    /**
-     * @return stored custom pattern regex matcher
-     * */
-    public Pattern getPartitionCapturePattern() {
-        return partitionCapturePattern;
-    }
-
-    /**
-     * @return list of partition key columns
-     * */
-    public List<String> getPartitionColumns() {
-        return partitionColumns;
-    }
-
-    public static class Builder {
-        private String customPattern;
-
-        public Builder setCustomPattern(String customPattern) {
-            this.customPattern = customPattern;
-            return this;
-        }
-
-        /**
-         * Constructs the regex to match the partition values in a path based on the custom pattern.
-         *
-         * @return custom partition pattern matcher */
-        public DynamicPartitioningCustomPattern build() {
-            StringBuffer sb = new StringBuffer();
-            Matcher m = customPathPattern.matcher(customPattern);
-            List<String> partColumns = new ArrayList<>();
-            while (m.find()) {
-                m.appendReplacement(sb, "(.*)");
-                partColumns.add(m.group(2));
-            }
-            m.appendTail(sb);
-            return new DynamicPartitioningCustomPattern(customPattern, Pattern.compile(sb.toString()), partColumns);
-        }
-    }
+  }
 }
