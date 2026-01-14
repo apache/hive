@@ -84,12 +84,12 @@ public class Derby extends AbstractExternalDB {
     CREATE {
       @Override
       String of(String dbPath) {
-        return "jdbc:derby:;databaseName=" + dbPath + ";create=true";
+        return "jdbc:derby:memory:" + dbPath + ";create=true";
       }
     }, SHUTDOWN {
       @Override
       String of(String dbPath) {
-        return "jdbc:derby:;databaseName=" + dbPath + ";shutdown=true";
+        return "jdbc:derby:memory:" + dbPath + ";drop=true";
       }
     };
 
