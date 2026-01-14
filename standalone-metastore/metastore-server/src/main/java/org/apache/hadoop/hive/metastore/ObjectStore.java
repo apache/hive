@@ -10063,14 +10063,14 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        MetaStoreDirectSql d = directSql;                // snapshot the directSql
+        MetaStoreDirectSql d = directSql; // snapshot
+        if (d == null) {
+          // Initialize the directSql again in case it became null in-between
+          String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
+          schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
+          d = new MetaStoreDirectSql(pm, conf, schema);
+        }
         if (d.deleteTableColumnStatistics(getTable().getId(), colNames, engine)) {
-          if (d == null) {
-            // Initialize the directSql again in case it became null in-between
-            String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
-            schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
-            d = new MetaStoreDirectSql(pm, conf, schema);
-          }
           d.updateColumnStatsAccurateForTable(getTable(), colNames);
           return true;
         }

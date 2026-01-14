@@ -3334,7 +3334,9 @@ class MetaStoreDirectSql {
         } else {
           // Remove only the dropped columns
           for (String col : droppedCols) {
-            columnStats.remove(col.toLowerCase());
+            if (col != null) {
+              columnStats.remove(col.toLowerCase());
+            }
           }
           if (columnStats.isEmpty()) {
             statsMap.remove("COLUMN_STATS");
