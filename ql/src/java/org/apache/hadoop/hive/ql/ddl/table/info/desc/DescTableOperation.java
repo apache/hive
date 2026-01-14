@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.table.info.desc.formatter.DescTableFormatter;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -128,14 +127,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private Partition getPartition(Table table) throws HiveException {
     Partition part = null;
     if (desc.getPartitionSpec() != null) {
-      boolean isIcebergTable = DDLUtils.isIcebergTable(table);
-      if (isIcebergTable) {
-        List<Partition> partList = table.getStorageHandler().getPartitions(table, desc.getPartitionSpec(), false);
-        part = (partList.isEmpty()) ? null : partList.getFirst();
-
-      } else {
-        part = context.getDb().getPartition(table, desc.getPartitionSpec(), false);
-      }
+      part = context.getDb().getPartition(table, desc.getPartitionSpec());
       if (part == null) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION,
             StringUtils.join(desc.getPartitionSpec().keySet(), ','), desc.getDbTableName());

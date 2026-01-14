@@ -987,6 +987,11 @@ public interface HiveStorageHandler extends Configurable {
     return false;
   }
 
+  default boolean isPartitionPresent(org.apache.hadoop.hive.ql.metadata.Table table,
+                                     Map<String, String> partitionSpec) throws SemanticException {
+    return false;
+  }
+
   default boolean hasUndergonePartitionEvolution(org.apache.hadoop.hive.ql.metadata.Table table) {
     throw new UnsupportedOperationException("Storage handler does not support checking if table " +
         "undergone partition evolution.");

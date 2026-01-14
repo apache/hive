@@ -2076,6 +2076,13 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public boolean isPartitionPresent(org.apache.hadoop.hive.ql.metadata.Table table,
+                                    Map<String, String> partitionSpec) throws SemanticException {
+    return getPartitionKeys(table).size() == partitionSpec.size() &&
+            !getPartitions(table, partitionSpec, false).isEmpty();
+  }
+
+  @Override
   public Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec, RewritePolicy policy) throws SemanticException {
     validatePartSpec(table, partitionSpec, policy);

@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils;
 import org.apache.hadoop.hive.ql.ddl.ShowUtils.TextMetaDataTable;
 import org.apache.hadoop.hive.ql.ddl.table.info.desc.DescTableDesc;
@@ -172,10 +171,11 @@ class TextDescTableFormatter extends DescTableFormatter {
       boolean isFormatted, boolean isOutputPadded) throws IOException {
     String partitionData = "";
     if (columnPath == null) {
-      boolean isIcebergTable = DDLUtils.isIcebergTable(table);
       List<FieldSchema> partitionColumns = null;
       if (table.isPartitioned()) {
-        partitionColumns = isIcebergTable ? table.getStorageHandler().getPartitionKeys(table) : table.getPartCols();
+        partitionColumns = table.isNonNative() ?
+                table.getStorageHandler().getPartitionKeys(table) :
+                table.getPartCols();
       }
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {
