@@ -53,10 +53,6 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  */
 public class TestHiveIcebergCRUD extends HiveIcebergStorageHandlerWithEngineBase {
 
-  @Override
-  protected void validateTestParams() {
-  }
-
   @Test
   public void testReadAndWriteFormatV2UnpartitionedWithEqDelete() throws IOException {
     Assume.assumeTrue("Reading V2 tables with eq delete files are only supported currently in " +

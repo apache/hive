@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.collections4.ListUtils;
@@ -29,20 +30,21 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_ICEBERG_ALLOW_DATAFILES_IN_TABLE_LOCATION_ONLY;
 
 public class TestHiveIcebergRestrictDataFiles extends HiveIcebergStorageHandlerWithEngineBase {
 
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(
-        fileFormat == FileFormat.PARQUET &&
-        testTableType == TestTableType.HIVE_CATALOG &&
-        isVectorized && formatVersion == 1);
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.fileFormat() == FileFormat.PARQUET &&
+        p.testTableType() == TestTableType.HIVE_CATALOG &&
+        p.isVectorized() &&
+        p.formatVersion() == 2);
   }
 
   @BeforeClass

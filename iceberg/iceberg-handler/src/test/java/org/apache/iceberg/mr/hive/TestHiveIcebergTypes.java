@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.apache.iceberg.Schema;
@@ -30,6 +31,7 @@ import org.apache.iceberg.mr.TestHelper;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
 
@@ -37,6 +39,12 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  * Creates tables with some more exotic data types and verifies proper table content read by select queries.
  */
 public class TestHiveIcebergTypes extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.formatVersion() == 2);
+  }
 
   @Test
   public void testDecimalTableWithPredicateLiterals() throws IOException {

@@ -76,7 +76,7 @@ import org.apache.iceberg.encryption.EncryptedOutputFile;
 import org.apache.iceberg.hadoop.HadoopOutputFile;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileAppenderFactory;
-import org.apache.iceberg.mr.hive.TezUtil;
+import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.mr.hive.test.TestHiveShell;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
@@ -297,7 +297,7 @@ public class HiveIcebergTestUtils {
 
     Assert.assertEquals(dataFileNum, dataFiles.size());
     Assert.assertFalse(
-        new File(TezUtil.generateJobLocation(table.location(), conf, jobId)).exists());
+        new File(HiveTableUtil.jobLocation(table.location(), conf, jobId)).exists());
   }
 
   /**

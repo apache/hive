@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -41,6 +42,7 @@ import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -52,6 +54,12 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  *  - when schema changes were originally done on the Iceberg table
  */
 public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.formatVersion() == 2);
+  }
 
   @Test
   public void testDescribeTable() throws IOException {
@@ -93,7 +101,6 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     Assert.assertArrayEquals(new Object[]{0L, "Brown"}, result.get(0));
     Assert.assertArrayEquals(new Object[]{1L, "Green"}, result.get(1));
     Assert.assertArrayEquals(new Object[]{2L, "Pink"}, result.get(2));
-
   }
 
   @Test

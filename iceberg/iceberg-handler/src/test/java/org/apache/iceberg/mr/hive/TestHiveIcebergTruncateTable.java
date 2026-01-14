@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.apache.iceberg.AssertHelpers;
@@ -33,18 +34,18 @@ import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.thrift.TException;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Tests truncate table feature on Iceberg tables.
  */
 public class TestHiveIcebergTruncateTable extends HiveIcebergStorageHandlerWithEngineBase {
 
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(
-        isVectorized && formatVersion == 1);
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.isVectorized() && p.formatVersion() == 2);
   }
 
   @Test

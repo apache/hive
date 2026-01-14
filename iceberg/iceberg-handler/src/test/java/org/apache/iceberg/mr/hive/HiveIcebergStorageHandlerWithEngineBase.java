@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
+import java.util.function.Predicate;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -36,7 +36,7 @@ import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hadoop.ConfigProperties;
-import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.TestHelper.RecordsBuilder;
 import org.apache.iceberg.mr.hive.test.TestHiveShell;
 import org.apache.iceberg.mr.hive.test.TestTables;
 import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
@@ -66,12 +66,8 @@ import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.iceberg.mr.hive.test.TestTables.ALL_TABLE_TYPES;
-import static org.apache.iceberg.mr.hive.test.TestTables.TestTableType.HIVE_CATALOG;
-import static org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils.init;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
-import static org.junit.Assume.assumeTrue;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
 
@@ -86,67 +82,126 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
   public static final String RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT =
       "overlay,reoptimize,reexecute_lost_am," + "dagsubmit,recompile_without_cbo";
 
-  protected static final Schema ORDER_SCHEMA = new Schema(
+  protected static final Schema ORDER_SCHEMA =
+      new Schema(
           required(1, "order_id", Types.LongType.get()),
           required(2, "customer_id", Types.LongType.get()),
           required(3, "total", Types.DoubleType.get()),
           required(4, "product_id", Types.LongType.get())
-  );
+      );
 
-  protected static final List<Record> ORDER_RECORDS = TestHelper.RecordsBuilder.newInstance(ORDER_SCHEMA)
+  protected static final List<Record> ORDER_RECORDS =
+      RecordsBuilder.newInstance(ORDER_SCHEMA)
           .add(100L, 0L, 11.11d, 1L)
           .add(101L, 0L, 22.22d, 2L)
           .add(102L, 1L, 33.33d, 3L)
           .build();
 
-  protected static final Schema PRODUCT_SCHEMA = new Schema(
+  protected static final Schema PRODUCT_SCHEMA =
+      new Schema(
           optional(1, "id", Types.LongType.get()),
           optional(2, "name", Types.StringType.get()),
           optional(3, "price", Types.DoubleType.get())
-  );
+      );
 
-  protected static final List<Record> PRODUCT_RECORDS = TestHelper.RecordsBuilder.newInstance(PRODUCT_SCHEMA)
+  protected static final List<Record> PRODUCT_RECORDS =
+      RecordsBuilder.newInstance(PRODUCT_SCHEMA)
           .add(1L, "skirt", 11.11d)
           .add(2L, "tee", 22.22d)
           .add(3L, "watch", 33.33d)
           .build();
 
   protected static final List<Type> SUPPORTED_TYPES =
-          ImmutableList.of(Types.BooleanType.get(), Types.IntegerType.get(), Types.LongType.get(),
-                  Types.FloatType.get(), Types.DoubleType.get(), Types.DateType.get(), Types.TimestampType.withZone(),
-                  Types.TimestampType.withoutZone(), Types.StringType.get(), Types.BinaryType.get(),
-                  Types.DecimalType.of(3, 1), Types.UUIDType.get(), Types.FixedType.ofLength(5),
-                  Types.TimeType.get());
+      ImmutableList.of(
+          Types.BooleanType.get(), Types.IntegerType.get(), Types.LongType.get(),
+          Types.FloatType.get(), Types.DoubleType.get(), Types.DateType.get(), Types.TimestampType.withZone(),
+          Types.TimestampType.withoutZone(), Types.StringType.get(), Types.BinaryType.get(),
+          Types.DecimalType.of(3, 1), Types.UUIDType.get(), Types.FixedType.ofLength(5),
+          Types.TimeType.get()
+      );
 
-  protected static final Map<String, String> STATS_MAPPING = ImmutableMap.of(
-      StatsSetupConst.NUM_FILES, SnapshotSummary.TOTAL_DATA_FILES_PROP,
-      StatsSetupConst.ROW_COUNT, SnapshotSummary.TOTAL_RECORDS_PROP,
-      StatsSetupConst.TOTAL_SIZE, SnapshotSummary.TOTAL_FILE_SIZE_PROP
-  );
+  protected static final Map<String, String> STATS_MAPPING =
+      ImmutableMap.of(
+          StatsSetupConst.NUM_FILES, SnapshotSummary.TOTAL_DATA_FILES_PROP,
+          StatsSetupConst.ROW_COUNT, SnapshotSummary.TOTAL_RECORDS_PROP,
+          StatsSetupConst.TOTAL_SIZE, SnapshotSummary.TOTAL_FILE_SIZE_PROP
+      );
 
   @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
   public static Collection<Object[]> parameters() {
     Collection<Object[]> testParams = Lists.newArrayList();
 
-    // Run tests with every FileFormat for a single Catalog (HiveCatalog)
+    // HiveCatalog combinations
     for (FileFormat fileFormat : HiveIcebergStorageHandlerTestUtils.FILE_FORMATS) {
-      IntStream.rangeClosed(1, 3).forEach(formatVersion -> {
-        testParams.add(new Object[]{fileFormat, HIVE_CATALOG, false, formatVersion});
-        // test for vectorization=ON in case of ORC and PARQUET format
-        if (fileFormat != FileFormat.METADATA) {
-          testParams.add(new Object[]{fileFormat, HIVE_CATALOG, true, formatVersion});
-        }
-      });
+      addHiveCatalogParams(testParams, fileFormat);
     }
 
-    // Run tests for every Catalog for a single FileFormat (PARQUET), skip HiveCatalog tests as they are added before
-    for (TestTableType testTableType : ALL_TABLE_TYPES) {
-      if (testTableType != HIVE_CATALOG) {
-        testParams.add(new Object[]{FileFormat.PARQUET, testTableType, false, 1});
+    // Other catalogs (PARQUET only)
+    for (TestTableType testTableType : TestTables.ALL_TABLE_TYPES) {
+      addNonHiveCatalogParams(testParams, testTableType);
+    }
+
+    return testParams;
+  }
+
+  private static void addHiveCatalogParams(
+      Collection<Object[]> params, FileFormat fileFormat) {
+
+    List<Boolean> vectorizationModes =
+        fileFormat == FileFormat.METADATA ?
+            List.of(false) :
+            List.of(false, true);
+
+    for (int formatVersion = 1; formatVersion <= 3; formatVersion++) {
+      for (boolean isVectorized : vectorizationModes) {
+        params.add(new Object[]{
+            fileFormat, TestTableType.HIVE_CATALOG, isVectorized, formatVersion
+        });
+      }
+    }
+  }
+
+  private static void addNonHiveCatalogParams(
+      Collection<Object[]> params, TestTableType testTableType) {
+
+    if (testTableType == TestTableType.HIVE_CATALOG) {
+      return;
+    }
+    // Non-Hive catalogs: PARQUET, non-vectorized, formatVersion=1
+    params.add(new Object[]{
+        FileFormat.PARQUET, testTableType, false, 1
+    });
+  }
+
+  /**
+   * Helper method for child test classes to filter the base parameters.
+   * @param filter predicate to filter test parameters
+   * @return filtered collection of test parameters
+   */
+  protected static Collection<Object[]> getParameters(Predicate<TestParams> filter) {
+    Collection<Object[]> testParams = Lists.newArrayList();
+
+    for (Object[] params : parameters()) {
+      TestParams tp = TestParams.from(params);
+      if (filter.test(tp)) {
+        testParams.add(params);
       }
     }
 
     return testParams;
+  }
+
+  public record TestParams(
+      FileFormat fileFormat, TestTableType testTableType, boolean isVectorized, int formatVersion) {
+
+    public static TestParams from(Object[] params) {
+      return new TestParams(
+          (FileFormat) params[0],
+          (TestTableType) params[1],
+          (boolean) params[2],
+          (int) params[3]
+      );
+    }
   }
 
   protected static TestHiveShell shell;
@@ -186,7 +241,6 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
 
   @Before
   public void before() throws IOException {
-    validateTestParams();
     testTables = HiveIcebergStorageHandlerTestUtils.testTables(shell, testTableType, temp);
     HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
     HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
@@ -194,10 +248,6 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
     // we turn it off explicitly to achieve better coverage.
     HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION,
         isVectorized ? "none" : "more");
-  }
-
-  protected void validateTestParams() {
-    assumeTrue(formatVersion == 1);
   }
 
   @After
@@ -270,7 +320,7 @@ public abstract class HiveIcebergStorageHandlerWithEngineBase {
               testUtilPhaser.register();
             }
 
-            init(shell, testTables, temp);
+            HiveIcebergStorageHandlerTestUtils.init(shell, testTables, temp);
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
             HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
             HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_DELETE, false);

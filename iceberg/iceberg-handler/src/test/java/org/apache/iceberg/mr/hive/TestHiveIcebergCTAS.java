@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +44,8 @@ import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 
@@ -53,14 +54,12 @@ import static org.apache.iceberg.types.Types.NestedField.optional;
  */
 public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase {
 
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(
-        HiveIcebergSerDe.CTAS_EXCEPTION_MSG,
-        testTableType == TestTableType.HIVE_CATALOG);
-
-    Assume.assumeTrue(
-        isVectorized && formatVersion == 1);
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.testTableType() == TestTableType.HIVE_CATALOG &&
+        p.isVectorized() &&
+        p.formatVersion() == 2);
   }
 
   @Test

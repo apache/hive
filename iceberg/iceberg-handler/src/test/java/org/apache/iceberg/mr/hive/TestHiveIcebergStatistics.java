@@ -46,6 +46,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 
 /**
@@ -57,23 +58,17 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   @Parameterized.Parameter(4)
   public String statsSource;
 
-  @Parameterized.Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}, statsSource={4}")
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}, statsSource={4}")
   public static Collection<Object[]> parameters() {
-    Collection<Object[]> baseParams = HiveIcebergStorageHandlerWithEngineBase.parameters();
-
     Collection<Object[]> testParams = Lists.newArrayList();
-    for (String statsSource : new String[]{"iceberg", "metastore"}) {
-      for (Object[] params : baseParams) {
+
+    for (Object[] params : HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.isVectorized() && p.formatVersion() == 2)) {
+      for (String statsSource : new String[]{"iceberg", "metastore"}) {
         testParams.add(ArrayUtils.add(params, statsSource));
       }
     }
     return testParams;
-  }
-
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(
-        isVectorized && formatVersion == 2);
   }
 
   @Before

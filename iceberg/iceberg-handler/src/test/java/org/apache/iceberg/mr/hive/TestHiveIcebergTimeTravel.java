@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.HistoryEntry;
@@ -28,8 +29,8 @@ import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
 import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils.timestampAfterSnapshot;
 
@@ -38,12 +39,13 @@ import static org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils.timesta
  */
 public class TestHiveIcebergTimeTravel extends HiveIcebergStorageHandlerWithEngineBase {
 
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(
-        fileFormat == FileFormat.PARQUET &&
-        testTableType == TestTableType.HIVE_CATALOG &&
-        isVectorized && formatVersion == 2);
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.fileFormat() == FileFormat.PARQUET &&
+        p.testTableType() == TestTableType.HIVE_CATALOG &&
+        p.isVectorized() &&
+        p.formatVersion() == 2);
   }
 
   @Test

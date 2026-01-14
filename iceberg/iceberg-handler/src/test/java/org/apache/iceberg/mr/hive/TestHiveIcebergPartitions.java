@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.List;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
@@ -39,6 +40,7 @@ import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -48,6 +50,12 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  * writing content into partitioned tables and by reading it back.
  */
 public class TestHiveIcebergPartitions extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.formatVersion() == 2);
+  }
 
   @Test
   public void testPartitionPruning() throws IOException {

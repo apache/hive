@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.mr.hive.vector;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -61,17 +62,19 @@ import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.junit.Assume.assumeTrue;
 
 public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithEngineBase {
 
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(
-        testTableType == TestTableType.HIVE_CATALOG &&
-        isVectorized && formatVersion == 2);
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.testTableType() == TestTableType.HIVE_CATALOG &&
+        p.isVectorized() &&
+        p.formatVersion() == 2);
   }
 
   /**
@@ -82,7 +85,7 @@ public class TestHiveIcebergVectorization extends HiveIcebergStorageHandlerWithE
    */
   @Test
   public void testRowIterator() throws Exception {
-    assumeTrue("Tests a format-independent feature", FileFormat.ORC.equals(fileFormat));
+    assumeTrue("Tests a format-independent feature", fileFormat == FileFormat.ORC);
 
     // Create a table with sample data with all supported types, those unsupported for vectorization are commented out
     Schema allSchema = new Schema(
