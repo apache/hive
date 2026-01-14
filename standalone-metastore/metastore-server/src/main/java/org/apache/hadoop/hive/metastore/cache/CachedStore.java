@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFa
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.messaging.*;
+import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -1494,11 +1495,6 @@ public class CachedStore implements RawStore, Configurable {
     return parts;
   }
 
-  @Override public Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
-      String baseLocationToNotShow, int max) {
-    return rawStore.getPartitionLocations(catName, dbName, tblName, baseLocationToNotShow, max);
-  }
-
   @Override public Table alterTable(String catName, String dbName, String tblName, Table newTable, String validWriteIds)
       throws InvalidObjectException, MetaException {
     newTable = rawStore.alterTable(catName, dbName, tblName, newTable, validWriteIds);
@@ -1531,37 +1527,9 @@ public class CachedStore implements RawStore, Configurable {
     return newTable;
   }
 
-  @Override public void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException {
+  @Override
+  public void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException {
     rawStore.updateTableParams(updates);
-  }
-
-  @Override public void updateCreationMetadata(String catName, String dbname, String tablename, CreationMetadata cm)
-      throws MetaException {
-    rawStore.updateCreationMetadata(catName, dbname, tablename, cm);
-  }
-
-  @Override public List<String> getTables(String catName, String dbName, String pattern) throws MetaException {
-    return rawStore.getTables(catName, dbName, pattern);
-  }
-
-  @Override public List<String> getTables(String catName, String dbName, String pattern, TableType tableType, int limit)
-      throws MetaException {
-    return rawStore.getTables(catName, dbName, pattern, tableType, limit);
-  }
-
-  @Override public List<Table> getAllMaterializedViewObjectsForRewriting(String catName) throws MetaException {
-    // TODO functionCache
-    return rawStore.getAllMaterializedViewObjectsForRewriting(catName);
-  }
-
-  @Override public List<String> getMaterializedViewsForRewriting(String catName, String dbName)
-      throws MetaException, NoSuchObjectException {
-    return rawStore.getMaterializedViewsForRewriting(catName, dbName);
-  }
-
-  @Override public List<TableMeta> getTableMeta(String catName, String dbNames, String tableNames,
-      List<String> tableTypes) throws MetaException {
-    return rawStore.getTableMeta(catName, dbNames, tableNames, tableTypes);
   }
 
   @Override public List<Table> getTableObjectsByName(String catName, String dbName, List<String> tblNames)
@@ -1601,25 +1569,8 @@ public class CachedStore implements RawStore, Configurable {
     return tables;
   }
 
-  @Override
-  public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
-          GetProjectionsSpec projectionsSpec, String tablePattern) throws MetaException, UnknownDBException {
-    return rawStore.getTableObjectsByName(catName, db, tbl_names, projectionsSpec, tablePattern);
-  }
-
-  @Override public List<String> getAllTables(String catName, String dbName) throws MetaException {
-    return rawStore.getAllTables(catName, dbName);
-  }
-
-  @Override
-  // TODO: implement using SharedCache
-  public List<String> listTableNamesByFilter(String catName, String dbName, String filter, short maxTables)
-      throws MetaException, UnknownDBException {
-    return rawStore.listTableNamesByFilter(catName, dbName, filter, maxTables);
-  }
-
   @Override public List<String> listPartitionNames(String catName, String dbName, String tblName, short maxParts)
-      throws MetaException {
+      throws MetaException  {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
@@ -1639,24 +1590,6 @@ public class CachedStore implements RawStore, Configurable {
       }
     }
     return partitionNames;
-  }
-
-  @Override
-  public List<String> listPartitionNames(String catName, String dbName, String tblName, String defaultPartName,
-      byte[] exprBytes, String order, int maxParts) throws MetaException, NoSuchObjectException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<String> listPartitionNamesByFilter(String catName, String dbName, String tblName,
-      GetPartitionsArgs args) throws MetaException, NoSuchObjectException {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override public PartitionValuesResponse listPartitionValues(String catName, String dbName, String tblName,
-      List<FieldSchema> cols, boolean applyDistinct, String filter, boolean ascending, List<FieldSchema> order,
-      long maxParts) throws MetaException {
-    throw new UnsupportedOperationException();
   }
 
   @Override public Partition alterPartition(String catName, String dbName, String tblName, List<String> partVals,
@@ -1708,22 +1641,6 @@ public class CachedStore implements RawStore, Configurable {
     return expressionProxy.filterPartitionsByExpr(table.getPartitionKeys(), expr, defaultPartName, result);
   }
 
-  @Override
-  // TODO: implement using SharedCache
-  public List<Partition> getPartitionsByFilter(String catName, String dbName, String tblName, GetPartitionsArgs args)
-      throws MetaException, NoSuchObjectException {
-    return rawStore.getPartitionsByFilter(catName, dbName, tblName, args);
-  }
-
-  @Override
-  /**
-   * getPartitionSpecsByFilterAndProjection interface is currently non-cacheable.
-   */ public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
-      GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
-      throws MetaException, NoSuchObjectException {
-    return rawStore.getPartitionSpecsByFilterAndProjection(table, projectionSpec, filterSpec);
-  }
-
   @Override public boolean getPartitionsByExpr(String catName, String dbName, String tblName,
       List<Partition> result, GetPartitionsArgs args) throws TException {
     catName = StringUtils.normalizeIdentifier(catName);
@@ -1747,11 +1664,6 @@ public class CachedStore implements RawStore, Configurable {
       result.add(part);
     }
     return hasUnknownPartitions;
-  }
-
-  @Override public int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
-      throws MetaException, NoSuchObjectException {
-    return rawStore.getNumPartitionsByFilter(catName, dbName, tblName, filter);
   }
 
   @VisibleForTesting public static List<String> partNameToVals(String name) {
@@ -1787,18 +1699,6 @@ public class CachedStore implements RawStore, Configurable {
       }
     }
     return partitions;
-  }
-
-  @Override public Table markPartitionForEvent(String catName, String dbName, String tblName,
-      Map<String, String> partVals, PartitionEventType evtType)
-      throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException {
-    return rawStore.markPartitionForEvent(catName, dbName, tblName, partVals, evtType);
-  }
-
-  @Override public boolean isPartitionMarkedForEvent(String catName, String dbName, String tblName,
-      Map<String, String> partName, PartitionEventType evtType)
-      throws MetaException, UnknownTableException, InvalidPartitionException, UnknownPartitionException {
-    return rawStore.isPartitionMarkedForEvent(catName, dbName, tblName, partName, evtType);
   }
 
   @Override public boolean addRole(String rowName, String ownerName)
@@ -1977,12 +1877,6 @@ public class CachedStore implements RawStore, Configurable {
       }
     }
     return partitionNames;
-  }
-
-  @Override
-  public int getNumPartitionsByPs(String catName, String dbName, String tblName, List<String> partSpecs)
-      throws MetaException, NoSuchObjectException {
-    return rawStore.getNumPartitionsByPs(catName, dbName, tblName, partSpecs);
   }
 
   @Override public List<Partition> listPartitionsPsWithAuth(String catName, String dbName, String tblName,
@@ -2625,38 +2519,6 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getFunctionsRequest(catName, dbName, pattern, isReturnNames);
   }
 
-  @Override public NotificationEventResponse getNextNotification(NotificationEventRequest rqst) {
-    return rawStore.getNextNotification(rqst);
-  }
-
-  @Override public void addNotificationEvent(NotificationEvent event) throws MetaException {
-    rawStore.addNotificationEvent(event);
-  }
-
-  @Override public void cleanNotificationEvents(int olderThan) {
-    rawStore.cleanNotificationEvents(olderThan);
-  }
-
-  @Override public CurrentNotificationEventId getCurrentNotificationEventId() {
-    return rawStore.getCurrentNotificationEventId();
-  }
-
-  @Override public NotificationEventsCountResponse getNotificationEventsCount(NotificationEventsCountRequest rqst) {
-    return rawStore.getNotificationEventsCount(rqst);
-  }
-
-  @Override public int getTableCount() throws MetaException {
-    return rawStore.getTableCount();
-  }
-
-  @Override public int getPartitionCount() throws MetaException {
-    return rawStore.getPartitionCount();
-  }
-
-  @Override public int getDatabaseCount() throws MetaException {
-    return rawStore.getDatabaseCount();
-  }
-
   @Override
   public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request) throws MetaException {
     String catName = StringUtils.normalizeIdentifier(request.getCatName());
@@ -3045,14 +2907,6 @@ public class CachedStore implements RawStore, Configurable {
     return sharedCache.getUpdateCount();
   }
 
-  @Override public void cleanWriteNotificationEvents(int olderThan) {
-    rawStore.cleanWriteNotificationEvents(olderThan);
-  }
-
-  @Override public List<WriteEventInfo> getAllWriteEventInfo(long txnId, String dbName, String tableName)
-      throws MetaException {
-    return rawStore.getAllWriteEventInfo(txnId, dbName, tableName);
-  }
 
   static boolean isNotInBlackList(String catName, String dbName, String tblName) {
     String str = TableName.getQualified(catName, dbName, tblName);
@@ -3248,13 +3102,18 @@ public class CachedStore implements RawStore, Configurable {
     rawStore.dropPackage(request);
   }
 
-  @Override
-  public MTable ensureGetMTable(String catName, String dbName, String tblName) throws NoSuchObjectException {
-    return rawStore.ensureGetMTable(catName, dbName, tblName);
-  }
-
   private boolean shouldGetConstraintFromRawStore(String catName, String dbName, String tblName) {
     return !shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())
         || !sharedCache.isTableConstraintValid(catName, dbName, tblName);
+  }
+
+  @Override
+  public MDatabase ensureGetMDatabase(String catName, String dbName) throws NoSuchObjectException {
+    return rawStore.ensureGetMDatabase(catName, dbName);
+  }
+
+  @Override
+  public <T> T unwrap(Class<T> iface) {
+    return rawStore.unwrap(iface);
   }
 }

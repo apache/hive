@@ -61,12 +61,10 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnectorProvider;
 import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
-import org.apache.orc.impl.OrcAcidUtils;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
 import org.datanucleus.api.jdo.JDOPersistenceManagerFactory;
 import org.junit.Assert;
@@ -1663,7 +1661,7 @@ public abstract class TestHiveMetaStore {
       }
       assertNotNull(udbe);
       assertTrue("DB not found",
-          udbe.getMessage().contains("not find database hive.db_that_doesnt_exist"));
+          udbe.getMessage().contains("There is no database hive.db_that_doesnt_exist"));
 
       udbe = null;
       try {
