@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.info.desc;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
@@ -35,7 +33,6 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -151,20 +148,18 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
     if (node.getChild(1).getType() == HiveParser.TOK_PARTSPEC) {
       ASTNode partNode = (ASTNode) node.getChild(1);
 
-      Table tab = null;
+      Table table;
       try {
-        tab = db.getTable(tableName.getNotEmptyDbTable());
+        table = db.getTable(tableName.getNotEmptyDbTable());
       } catch (InvalidTableException e) {
         throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName.getNotEmptyDbTable()), e);
       } catch (HiveException e) {
         throw new SemanticException(e.getMessage(), e);
       }
 
-      Map<String, String> partitionSpec = null;
+      Map<String, String> partitionSpec;
       try {
-        partitionSpec = getPartSpec(partNode);
-        validateUnsupportedPartitionClause(tab, partitionSpec != null && !partitionSpec.isEmpty());
-        partitionSpec = getValidatedPartSpec(tab, partNode, db.getConf(), false);
+        partitionSpec = getValidatedPartSpec(table, partNode, db.getConf(), false);
       } catch (SemanticException e) {
         // get exception in resolving partition it could be DESCRIBE table key
         // return null, continue processing for DESCRIBE table key
@@ -172,16 +167,18 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (partitionSpec != null) {
-        Partition part = null;
+        boolean isPartitionPresent;
         try {
-          part = getPartition(tab, partitionSpec);
+          isPartitionPresent = table.isNonNative() ?
+                  table.getStorageHandler().isPartitionPresent(table, partitionSpec) :
+                  db.getPartition(table, partitionSpec) != null;
         } catch (HiveException e) {
           // if get exception in finding partition it could be DESCRIBE table key
           // return null, continue processing for DESCRIBE table key
           return null;
         }
 
-        if (part == null) {
+        if (!isPartitionPresent) {
           throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partitionSpec.toString()));
         }
 
@@ -189,21 +186,5 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     return null;
-  }
-
-  private Partition getPartition(Table tab, Map<String, String> partitionSpec) throws HiveException {
-    boolean isIcebergTable = DDLUtils.isIcebergTable(tab);
-    if (isIcebergTable) {
-      List<FieldSchema> partKeys = tab.getStorageHandler().getPartitionKeys(tab);
-      if (partKeys.size() != partitionSpec.size()) {
-        return null;
-      }
-      List<Partition> partList = tab.getStorageHandler().getPartitions(tab, partitionSpec, false);
-      if (partList.isEmpty()) {
-        return null;
-      }
-      return partList.getFirst();
-    }
-    return db.getPartition(tab, partitionSpec, false);
   }
 }
