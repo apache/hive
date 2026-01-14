@@ -744,7 +744,7 @@ public class CreateTableAnalyzer extends CalcitePlanner {
           isExt = true;
         }
         CreateTableLikeDesc crtTblLikeDesc =
-            new CreateTableLikeDesc(dbDotTab, isExt, isTemporary, storageFormat.getInputFormat(),
+            new CreateTableLikeDesc(qualifiedTabName, isExt, isTemporary, storageFormat.getInputFormat(),
                 storageFormat.getOutputFormat(), location, storageFormat.getSerde(), storageFormat.getSerdeProps(),
                 tblProps, ifNotExists, likeTableName, isUserStorageFormat);
         tblLocation = getDefaultLocation(qualifiedTabName, isExt);

@@ -22,3 +22,7 @@ show create table test1;
 
 -- show create table use cat.db.tbl syntax
 show create table testcat.testdb1.test2;
+
+
+-- drop table use cat.db.tbl syntax
+drop table testcat.testdb1.test2;

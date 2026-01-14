@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.ddl.table.drop;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
@@ -34,8 +33,6 @@ import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-
-import com.google.common.collect.Iterables;
 
 import java.util.Map;
 
@@ -103,7 +100,7 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
             }
           }
         }
-        LOG.debug("DDLTask: Drop Table is skipped as table {} is newer than update", desc.getTableName());
+        LOG.debug("DDLTask: Drop Table is skipped as table {} is newer than update", desc.getTableName().toString());
         return 0; // table is newer, leave it be.
       }
     }

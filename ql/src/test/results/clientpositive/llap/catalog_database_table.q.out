@@ -79,3 +79,13 @@ LOCATION
 TBLPROPERTIES (
   'bucketing_version'='2', 
 #### A masked pattern was here ####
+PREHOOK: query: drop table testcat.testdb1.test2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: testdb1@test2
+PREHOOK: Output: database:testdb1
+PREHOOK: Output: testdb1@test2
+POSTHOOK: query: drop table testcat.testdb1.test2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: testdb1@test2
+POSTHOOK: Output: database:testdb1
+POSTHOOK: Output: testdb1@test2

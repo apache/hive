@@ -85,7 +85,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
   }
 
   private Table createViewLikeTable(Table oldTable) throws HiveException {
-    Table table = context.getDb().newTable(desc.getTableName());
+    Table table = context.getDb().getTable(desc.getTableName());
 
     if (desc.getTblProps() != null) {
       table.getTTable().getParameters().putAll(desc.getTblProps());
@@ -115,9 +115,8 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
 
   private Table createTableLikeTable(Table table, Map<String, String> originalProperties)
       throws SemanticException, HiveException {
-    String[] names = Utilities.getDbTableName(desc.getTableName());
-    table.setDbName(names[0]);
-    table.setTableName(names[1]);
+    table.setDbName(desc.getTableName().getDb());
+    table.setTableName(desc.getTableName().getTable());
     table.setOwner(SessionState.getUserFromAuthenticator());
 
     setUserSpecifiedLocation(table);
