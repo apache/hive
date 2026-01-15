@@ -1864,6 +1864,7 @@
             <!-- required by a few tests to find the derby jar -->
             <derby.version>${derby.version}</derby.version>
             <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+            <derby.system.durability>test</derby.system.durability>
             <hadoop.bin.path>${hadoop.bin.path}</hadoop.bin.path>
             <!-- required by Hadoop's JobHistory -->
             <hadoop.log.dir>${test.tmp.dir}</hadoop.log.dir>
