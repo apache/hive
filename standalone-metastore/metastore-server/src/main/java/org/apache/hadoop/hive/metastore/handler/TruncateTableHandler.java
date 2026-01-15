@@ -180,11 +180,13 @@ public class TruncateTableHandler
       boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(handler.getConf(),
           MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
       if (shouldSendSingleEvent) {
-        MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(), EventMessage.EventType.ALTER_PARTITIONS,
+        MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
+            EventMessage.EventType.ALTER_PARTITIONS,
             new AlterPartitionsEvent(partitions, partitions, table, true, true, handler), environmentContext);
       } else {
         for (Partition partition : partitions) {
-          MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(), EventMessage.EventType.ALTER_PARTITION,
+          MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
+              EventMessage.EventType.ALTER_PARTITION,
               new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), handler),
               environmentContext);
         }
@@ -260,15 +262,16 @@ public class TruncateTableHandler
   }
 
   /**
-   * Add an empty baseDir with a truncate metadatafile
+   * Add an empty baseDir with a truncate metadatafile.
    * @param location partition or table directory
    * @param writeId allocated writeId
    * @throws MetaException
    */
   public static void addTruncateBaseFile(Path location, long writeId, Configuration conf,
       AcidMetaDataFile.DataFormat dataFormat) throws MetaException {
-    if (location == null)
+    if (location == null) {
       return;
+    }
 
     Path basePath = new Path(location, AcidConstants.baseDir(writeId));
     try {

@@ -2754,7 +2754,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           .defaultMetaException();
     } finally {
       endFunction("truncate_table_req", success, ex,
-          TableName.getQualified(parsedDbName[CAT_NAME],parsedDbName[DB_NAME], req.getTableName()));
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], req.getTableName()));
     }
   }
 

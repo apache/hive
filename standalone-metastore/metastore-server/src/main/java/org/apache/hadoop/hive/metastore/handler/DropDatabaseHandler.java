@@ -81,6 +81,7 @@ public class DropDatabaseHandler
   private List<String> packages;
   private AtomicReference<String> progress;
   private DropDatabaseResult result;
+  private RawStore rs;
 
   DropDatabaseHandler(IHMSHandler handler, DropDatabaseRequest request) {
     super(handler, request.isAsyncDrop(), request);
@@ -89,7 +90,6 @@ public class DropDatabaseHandler
   public DropDatabaseResult execute() throws TException, IOException {
     boolean success = false;
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    RawStore rs = handler.getMS();
     rs.openTransaction();
     try {
       if (MetaStoreUtils.isDatabaseRemote(db)) {
@@ -154,6 +154,7 @@ public class DropDatabaseHandler
         }
       }
 
+      progress.set("Dropping the database");
       if (rs.dropDatabase(catalogName, name)) {
         if (!handler.getTransactionalListeners().isEmpty()) {
           checkInterrupted();
@@ -196,7 +197,7 @@ public class DropDatabaseHandler
     this.catalogName = normalizeIdentifier(
         request.isSetCatalogName() ? request.getCatalogName() : MetaStoreUtils.getDefaultCatalog(handler.getConf()));
 
-    RawStore rs = handler.getMS();
+    this.rs = handler.getMS();
     db = rs.getDatabase(catalogName, name);
     if (!MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST) && ReplChangeManager.isSourceOfReplication(db)) {
       throw new InvalidOperationException("can not drop a database which is a source of replication");
@@ -414,6 +415,9 @@ public class DropDatabaseHandler
           wh.addToChangeManagement(funcCmPath);
         }
         if (request.isDeleteData()) {
+          progress.set(String.format("Deleting %d partition paths and %d table paths from the database",
+              result.getPartitionPaths() != null ? result.getPartitionPaths().size() : 0,
+              result.getTablePaths().size()));
           Database db = result.getDatabase();
           // Delete the data in the partitions which have other locations
           List<Path> pathsToDelete = new ArrayList<>();
@@ -453,12 +457,16 @@ public class DropDatabaseHandler
         }
       }
     } finally {
+      super.afterExecute(result);
+      if (async) {
+        rs.shutdown();
+      }
+      rs = null;
       tables = null;
       functions = null;
       procedures = null;
       packages = null;
       db = null;
-      super.afterExecute(result);
     }
   }
 }

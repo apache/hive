@@ -65,6 +65,7 @@ public class DropTableHandler
   private TableName tableName;
   private boolean tableDataShouldBeDeleted;
   private AtomicReference<String> progress;
+  private RawStore ms;
 
   DropTableHandler(IHMSHandler handler, DropTableRequest request) {
     super(handler, request.isAsyncDrop(), request);
@@ -74,9 +75,8 @@ public class DropTableHandler
     boolean success = false;
     List<Path> partPaths = null;
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    Database db = null;
+    Database db;
     boolean isReplicated = false;
-    RawStore ms = handler.getMS();
     try {
       ms.openTransaction();
       String catName = tableName.getCat();
@@ -145,6 +145,7 @@ public class DropTableHandler
         request.isSetCatalogName() ? request.getCatalogName() : getDefaultCatalog(handler.getConf()));
     String name = normalizeIdentifier(request.getTableName());
     String dbname = normalizeIdentifier(request.getDbName());
+    this.ms = handler.getMS();
     tableName = new TableName(catName, dbname, name);
     progress = new AtomicReference<>("Starting to drop the table: " + tableName);
     GetTableRequest req = new GetTableRequest(tableName.getDb(), tableName.getTable());
@@ -197,6 +198,8 @@ public class DropTableHandler
         // Data needs deletion. Check if trash may be skipped.
         // Delete the data in the partitions which have other locations
         List<Path> pathsToDelete = new ArrayList<>();
+        progress.set(String.format("Deleting %d partition paths from the table",
+            result.partPaths != null ? result.partPaths.size() : 0));
         if (result.partPaths != null) {
           pathsToDelete.addAll(result.partPaths);
         }
@@ -207,6 +210,10 @@ public class DropTableHandler
       }
     } finally {
       super.afterExecute(result);
+      if (async) {
+        ms.shutdown();
+      }
+      ms = null;
       tbl = null;
     }
   }

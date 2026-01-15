@@ -60,7 +60,7 @@ import static org.apache.hadoop.hive.metastore.utils.JavaUtils.newInstance;
 public abstract class AbstractRequestHandler<T extends TBase, A extends AbstractRequestHandler.Result> {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractRequestHandler.class);
   private static final Map<String, AbstractRequestHandler> ID_TO_HANDLER = new ConcurrentHashMap<>();
-  private static final AtomicLong ID = new AtomicLong(0);
+  private static final AtomicLong ID_GEN = new AtomicLong(0);
   private static final ScheduledExecutorService REQUEST_CLEANER = Executors.newScheduledThreadPool(1, r -> {
     Thread thread = new Thread(r);
     thread.setDaemon(true);
@@ -113,7 +113,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
   }
 
   AbstractRequestHandler(IHMSHandler handler, boolean async, T request) {
-    this.id = UUID.randomUUID() + "-" + ID.incrementAndGet();
+    this.id = UUID.randomUUID() + "-" + ID_GEN.incrementAndGet();
     this.handler = handler;
     this.request = request;
     this.async = async;
@@ -337,8 +337,8 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
    * @return the alias, null or empty if no need to measure the operation.
    */
   private String getMetricAlias() {
-    RequestHandler handler = getClass().getAnnotation(RequestHandler.class);
-    return handler != null ? handler.metricAlias() : null;
+    RequestHandler rh = getClass().getAnnotation(RequestHandler.class);
+    return rh != null ? rh.metricAlias() : null;
   }
 
   public void checkInterrupted() throws MetaException {
