@@ -1051,14 +1051,17 @@ public class SessionState implements ISessionAuthState {
     if (sessionConf.get(CONFIG_AUTHZ_SETTINGS_APPLIED_MARKER, "").equals(Boolean.TRUE.toString())) {
       return;
     }
-    String metastoreHook = sessionConf.getVar(ConfVars.METASTORE_FILTER_HOOK);
-    if (!ConfVars.METASTORE_FILTER_HOOK.getDefaultValue().equals(metastoreHook) &&
-        !AuthorizationMetaStoreFilterHook.class.getName().equals(metastoreHook)) {
-      LOG.warn(ConfVars.METASTORE_FILTER_HOOK.varname +
-          " will be ignored, since hive.security.authorization.manager" +
-          " is set to instance of HiveAuthorizerFactory.");
+
+    String metastoreHook = MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.FILTER_HOOK);
+    if (!MetastoreConf.ConfVars.FILTER_HOOK.getDefaultVal().equals(metastoreHook)
+        && !AuthorizationMetaStoreFilterHook.class.getName().equals(metastoreHook)) {
+      LOG.warn(
+          "{} will be ignored, since hive.security.authorization.manager is set to instance of HiveAuthorizerFactory.",
+          MetastoreConf.ConfVars.FILTER_HOOK.getHiveName());
     }
-    sessionConf.setVar(ConfVars.METASTORE_FILTER_HOOK,
+    MetastoreConf.setVar(
+        sessionConf,
+        MetastoreConf.ConfVars.FILTER_HOOK,
         AuthorizationMetaStoreFilterHook.class.getName());
 
     authorizerV2.applyAuthorizationConfigPolicy(sessionConf);

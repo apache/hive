@@ -29,6 +29,7 @@ import java.net.URL;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.service.server.HiveServer2;
 import org.junit.Before;
 import org.junit.Test;
@@ -181,7 +182,7 @@ public class TestServerSpecificConfig {
     FileOutputStream out = new FileOutputStream(hiveSite);
     HiveConf.setHiveSiteLocation(oldDefaultHiveSite);
     HiveConf defaultHiveConf = new HiveConf();
-    defaultHiveConf.setVar(ConfVars.METASTORE_URIS, "dummyvalue");
+    MetastoreConf.setVar(defaultHiveConf, MetastoreConf.ConfVars.THRIFT_URIS, "dummyvalue");
     // reset to the hive-site.xml values for following param
     defaultHiveConf.set("hive.dummyparam.test.server.specific.config.override",
         "from.hive-site.xml");

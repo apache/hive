@@ -4557,7 +4557,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     List<Partition> partitions = new ArrayList<Partition>(partNames.size());
 
-    int batchSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
+    int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     // TODO: might want to increase the default batch size. 1024 is viable; MS gets OOM if too high.
     int nParts = partNames.size();
     int nBatches = nParts / batchSize;
@@ -4693,7 +4693,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
     List<Partition> partitions = new ArrayList<Partition>(partNames.size());
 
-    int batchSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
+    int batchSize = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX);
     // I do not want to modify the original request when implementing batching, hence we will know what actual request was being made
     GetPartitionsRequest req = request;
     if (!req.isSetFilterSpec()) {

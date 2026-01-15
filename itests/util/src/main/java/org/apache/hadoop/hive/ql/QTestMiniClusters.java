@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
@@ -420,7 +421,7 @@ public class QTestMiniClusters {
     // Create remote dirs once.
     if (getMr() != null) {
       assert fs != null;
-      Path warehousePath = fs.makeQualified(new Path(conf.getVar(ConfVars.METASTORE_WAREHOUSE)));
+      Path warehousePath = fs.makeQualified(new Path(MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE)));
       assert warehousePath != null;
       Path hiveJarPath = fs.makeQualified(new Path(conf.getVar(ConfVars.HIVE_JAR_DIRECTORY)));
       assert hiveJarPath != null;
@@ -570,7 +571,7 @@ public class QTestMiniClusters {
     conf.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fsUriString);
 
     // Remote dirs
-    conf.setVar(ConfVars.METASTORE_WAREHOUSE, warehousePath.toString());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, warehousePath.toString());
     conf.setVar(ConfVars.HIVE_JAR_DIRECTORY, jarPath.toString());
     conf.setVar(ConfVars.HIVE_USER_INSTALL_DIR, userInstallPath.toString());
     // ConfVars.SCRATCH_DIR - {test.tmp.dir}/scratchdir

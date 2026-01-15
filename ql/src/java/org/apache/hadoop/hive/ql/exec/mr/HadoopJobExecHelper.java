@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
@@ -556,14 +557,14 @@ public class HadoopJobExecHelper {
 
     // remove the pwd from conf file so that job tracker doesn't show this
     // logs
-    String pwd = HiveConf.getVar(job, HiveConf.ConfVars.METASTORE_PWD);
+    String pwd = MetastoreConf.getVar(job, MetastoreConf.ConfVars.PWD);
     if (pwd != null) {
-      HiveConf.setVar(job, HiveConf.ConfVars.METASTORE_PWD, "HIVE");
+      MetastoreConf.setVar(job, MetastoreConf.ConfVars.PWD, "HIVE");
     }
 
     // replace it back
     if (pwd != null) {
-      HiveConf.setVar(job, HiveConf.ConfVars.METASTORE_PWD, pwd);
+      MetastoreConf.setVar(job, MetastoreConf.ConfVars.PWD, pwd);
     }
 
     // add to list of running jobs to kill in case of abnormal shutdown

@@ -17,6 +17,7 @@
 package org.apache.hive.minikdc;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 
 import org.junit.AfterClass;
@@ -42,7 +43,7 @@ public class TestJdbcWithMiniKdcDoAsHttp {
     MiniHiveKdc kdc = new MiniHiveKdc();
     HiveConf conf = new HiveConf();
     // Set connection retries to 1 to fail fast.
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 1);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 1);
     conf.setVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE, "http");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
     hs2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMSWithKerb(kdc, conf);

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.contrib.metastore.hooks;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.hooks.JDOConnectionURLHook;
 
 /**
@@ -33,7 +34,7 @@ public class SampleURLHook implements JDOConnectionURLHook {
   @Override
   public String getJdoConnectionUrl(Configuration conf) throws Exception {
     if (originalUrl == null) {
-      originalUrl = conf.get(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname, "");
+      originalUrl = conf.get(MetastoreConf.ConfVars.CONNECT_URL_KEY.getHiveName(), "");
       return "jdbc:derby:;databaseName=target/tmp/junit_metastore_db_blank;create=true";
     } else {
       return originalUrl;

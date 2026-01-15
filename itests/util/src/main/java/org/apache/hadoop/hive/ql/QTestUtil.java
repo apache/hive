@@ -179,7 +179,7 @@ public class QTestUtil {
     }
 
     // Plug verifying metastore in for testing DirectSQL.
-    conf.setVar(ConfVars.METASTORE_RAW_STORE_IMPL, "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL, "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
 
     miniClusters.initConf(conf);
 
@@ -583,7 +583,7 @@ public class QTestUtil {
 
     sem = new SemanticAnalyzer(new QueryState.Builder().withHiveConf(conf).build());
 
-    testWarehouse = conf.getVar(HiveConf.ConfVars.METASTORE_WAREHOUSE);
+    testWarehouse = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE);
 
     db = Hive.get(conf);
     pd = new ParseDriver();
@@ -799,11 +799,14 @@ public class QTestUtil {
       commandArgs = StringUtils.chop(commandArgs);
     }
 
-    //replace ${hiveconf:hive.metastore.warehouse.dir} with actual dir if existed.
-    //we only want the absolute path, so remove the header, such as hdfs://localhost:57145
+    // replace ${hiveconf:hive.metastore.warehouse.dir} with actual dir if existed.
+    // we only want the absolute path, so remove the header, such as hdfs://localhost:57145
     String wareHouseDir =
-        SessionState.get().getConf().getVar(ConfVars.METASTORE_WAREHOUSE).replaceAll("^[a-zA-Z]+://.*?:\\d+", "");
-    commandArgs = commandArgs.replaceAll("\\$\\{hiveconf:hive\\.metastore\\.warehouse\\.dir\\}", wareHouseDir);
+        MetastoreConf.getVar(SessionState.get().getConf(), MetastoreConf.ConfVars.WAREHOUSE)
+            .replaceAll("^[a-zA-Z]+://.*?:\\d+", "");
+    commandArgs =
+        commandArgs.replaceAll(
+            "\\$\\{hiveconf:hive\\.metastore\\.warehouse\\.dir\\}", wareHouseDir);
 
     if (SessionState.get() != null) {
       SessionState.get().setLastCommand(commandName + " " + commandArgs.trim());

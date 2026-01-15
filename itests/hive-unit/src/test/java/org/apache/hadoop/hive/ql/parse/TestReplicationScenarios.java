@@ -220,7 +220,7 @@ public class TestReplicationScenarios {
     hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hconf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-    hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
+    hconf.set(MetastoreConf.ConfVars.RAW_STORE_IMPL.getHiveName(),
         "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     hconf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, "/tmp/warehouse/external");
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_METADATA_QUERIES, true);
@@ -249,7 +249,9 @@ public class TestReplicationScenarios {
 
     FileUtils.deleteDirectory(new File("metastore_db2"));
     HiveConf hconfMirrorServer = new HiveConf();
-    hconfMirrorServer.set(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
+    hconfMirrorServer.set(
+        MetastoreConf.ConfVars.CONNECT_URL_KEY.getHiveName(),
+        "jdbc:derby:;databaseName=metastore_db2;create=true");
     MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
     MetastoreConf.setBoolVar(hconfMirror, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);

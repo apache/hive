@@ -71,7 +71,7 @@ public class TestDbNotificationCleanup {
                 "org.apache.hive.hcatalog.listener.DbNotificationListener");
         conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
         conf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
-        conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
+        MetastoreConf.setVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
         MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class.getName());
         MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANUP_SLEEP_TIME, TimeUnit.SECONDS);
         MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, EVENTS_TTL, TimeUnit.SECONDS);

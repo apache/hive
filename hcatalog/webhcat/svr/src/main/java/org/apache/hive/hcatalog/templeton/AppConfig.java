@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -252,9 +253,9 @@ public class AppConfig extends Configuration {
   private void handleHiveProperties() {
     HiveConf hiveConf = new HiveConf();//load hive-site.xml from classpath
     List<String> interestingPropNames = Arrays.asList(
-        HiveConf.ConfVars.METASTORE_URIS.varname,
-        HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
-        HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI.varname,
+        MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(),
+        MetastoreConf.ConfVars.USE_THRIFT_SASL.getHiveName(),
+        MetastoreConf.ConfVars.EXECUTE_SET_UGI.getHiveName(),
         HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname,
         HiveConf.ConfVars.HIVE_CONF_HIDDEN_LIST.varname);
 
