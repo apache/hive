@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.test.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -77,6 +76,8 @@ import org.apache.iceberg.encryption.EncryptedOutputFile;
 import org.apache.iceberg.hadoop.HadoopOutputFile;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileAppenderFactory;
+import org.apache.iceberg.mr.hive.HiveTableUtil;
+import org.apache.iceberg.mr.hive.test.TestHiveShell;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ArrayUtil;
@@ -206,7 +207,7 @@ public class HiveIcebergTestUtils {
         record.set(i, row[i]);
       }
       return record;
-    }).collect(Collectors.toList());
+    }).toList();
   }
 
   /**
@@ -291,12 +292,12 @@ public class HiveIcebergTestUtils {
           files
               .filter(Files::isRegularFile)
               .filter(path -> !path.getFileName().toString().startsWith("."))
-              .collect(Collectors.toList());
+              .toList();
     }
 
     Assert.assertEquals(dataFileNum, dataFiles.size());
     Assert.assertFalse(
-        new File(HiveIcebergOutputCommitter.generateJobLocation(table.location(), conf, jobId)).exists());
+        new File(HiveTableUtil.jobLocation(table.location(), conf, jobId)).exists());
   }
 
   /**
@@ -346,7 +347,7 @@ public class HiveIcebergTestUtils {
       FileFormat fileFormat, List<Record> rowsToDelete) throws IOException {
     List<Integer> equalityFieldIds = equalityFields.stream()
         .map(id -> table.schema().findField(id).fieldId())
-        .collect(Collectors.toList());
+        .toList();
     Schema eqDeleteRowSchema = table.schema().select(equalityFields.toArray(new String[]{}));
 
     FileAppenderFactory<Record> appenderFactory = new GenericAppenderFactory(table.schema(), table.spec(),

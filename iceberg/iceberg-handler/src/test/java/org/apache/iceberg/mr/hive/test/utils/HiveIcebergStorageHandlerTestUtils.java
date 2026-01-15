@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.iceberg.mr.hive;
+package org.apache.iceberg.mr.hive.test.utils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -30,46 +30,48 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.test.TestHiveShell;
+import org.apache.iceberg.mr.hive.test.TestTables;
 import org.apache.iceberg.types.Types;
 import org.junit.rules.TemporaryFolder;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 
 public class HiveIcebergStorageHandlerTestUtils {
-  static final FileFormat[] FILE_FORMATS =
+  public static final FileFormat[] FILE_FORMATS =
       new FileFormat[] {FileFormat.AVRO, FileFormat.ORC, FileFormat.PARQUET};
 
-  static final Schema CUSTOMER_SCHEMA = new Schema(
+  public static final Schema CUSTOMER_SCHEMA = new Schema(
           optional(1, "customer_id", Types.LongType.get()),
           optional(2, "first_name", Types.StringType.get(), "This is first name"),
           optional(3, "last_name", Types.StringType.get(), "This is last name")
   );
 
-  static final Schema CUSTOMER_SCHEMA_WITH_UPPERCASE = new Schema(
+  public static final Schema CUSTOMER_SCHEMA_WITH_UPPERCASE = new Schema(
           optional(1, "CustomER_Id", Types.LongType.get()),
           optional(2, "First_name", Types.StringType.get()),
           optional(3, "Last_name", Types.StringType.get())
   );
 
-  static final Schema USER_CLICKS_SCHEMA = new Schema(
+  public static final Schema USER_CLICKS_SCHEMA = new Schema(
           optional(1, "name", Types.StringType.get()),
           optional(2, "age", Types.IntegerType.get()),
           optional(3, "num_clicks", Types.IntegerType.get())
   );
 
-  static final List<Record> CUSTOMER_RECORDS = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+  public static final List<Record> CUSTOMER_RECORDS = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
           .add(0L, "Alice", "Brown")
           .add(1L, "Bob", "Green")
           .add(2L, "Trudy", "Pink")
           .build();
 
-  static final List<Record> OTHER_CUSTOMER_RECORDS_1 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+  public static final List<Record> OTHER_CUSTOMER_RECORDS_1 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
           .add(3L, "Marci", "Barna")
           .add(4L, "Laci", "Zold")
           .add(5L, "Peti", "Rozsaszin")
           .build();
 
-  static final List<Record> OTHER_CUSTOMER_RECORDS_2 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
+  public static final List<Record> OTHER_CUSTOMER_RECORDS_2 = TestHelper.RecordsBuilder.newInstance(CUSTOMER_SCHEMA)
       .add(1L, "Joanna", "Pierce")
       .add(1L, "Sharon", "Taylor")
       .add(2L, "Joanna", "Silver")
@@ -81,14 +83,14 @@ public class HiveIcebergStorageHandlerTestUtils {
       .add(3L, "Trudy", "Henderson")
       .build();
 
-  static final List<Record> USER_CLICKS_RECORDS_1 = TestHelper.RecordsBuilder
+  public static final List<Record> USER_CLICKS_RECORDS_1 = TestHelper.RecordsBuilder
           .newInstance(USER_CLICKS_SCHEMA)
           .add("amy", 35, 12341234)
           .add("bob", 66, 123471)
           .add("cal", 21, 431)
           .build();
 
-  static final List<Record> USER_CLICKS_RECORDS_2 = TestHelper.RecordsBuilder
+  public static final List<Record> USER_CLICKS_RECORDS_2 = TestHelper.RecordsBuilder
           .newInstance(USER_CLICKS_SCHEMA)
           .add("amy", 52, 22323)
           .add("drake", 44, 34222)
@@ -99,11 +101,11 @@ public class HiveIcebergStorageHandlerTestUtils {
     // Empty constructor for the utility class
   }
 
-  static TestHiveShell shell() {
+  public static TestHiveShell shell() {
     return shell(Collections.emptyMap());
   }
 
-  static TestHiveShell shell(Map<String, String> configs) {
+  public static TestHiveShell shell(Map<String, String> configs) {
     TestHiveShell shell = new TestHiveShell();
     shell.setHiveConfValue("hive.notification.event.poll.interval", "-1");
     shell.setHiveConfValue("hive.tez.exec.print.summary", "true");
@@ -116,21 +118,21 @@ public class HiveIcebergStorageHandlerTestUtils {
     return shell;
   }
 
-  static TestTables testTables(TestHiveShell shell, TestTables.TestTableType testTableType, TemporaryFolder temp)
+  public static TestTables testTables(TestHiveShell shell, TestTables.TestTableType testTableType, TemporaryFolder temp)
           throws IOException {
     return testTables(shell, testTableType, temp, Catalogs.ICEBERG_DEFAULT_CATALOG_NAME);
   }
 
-  static TestTables testTables(TestHiveShell shell, TestTables.TestTableType testTableType, TemporaryFolder temp,
+  public static TestTables testTables(TestHiveShell shell, TestTables.TestTableType testTableType, TemporaryFolder temp,
                                String catalogName) throws IOException {
     return testTableType.instance(shell.metastore().hiveConf(), temp, catalogName);
   }
 
-  static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp) {
+  public static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp) {
     init(shell, testTables, temp, "tez");
   }
 
-  static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp, String engine) {
+  public static void init(TestHiveShell shell, TestTables testTables, TemporaryFolder temp, String engine) {
     shell.getSession();
 
     for (Map.Entry<String, String> property : testTables.properties().entrySet()) {
@@ -146,7 +148,7 @@ public class HiveIcebergStorageHandlerTestUtils {
     DefaultMetricsSystem.instance().init("TestMetrics");
   }
 
-  static void close(TestHiveShell shell) throws Exception {
+  public static void close(TestHiveShell shell) throws Exception {
     shell.closeSession();
     shell.metastore().reset();
 

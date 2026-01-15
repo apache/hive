@@ -20,190 +20,124 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executors;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
-import org.apache.iceberg.exceptions.ValidationException;
-import org.apache.iceberg.relocated.com.google.common.base.Throwables;
-import org.apache.iceberg.util.Tasks;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.concurrent.WithMockedStorageHandler;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
+import static org.apache.iceberg.mr.hive.TestConflictingDataFiles.STORAGE_HANDLER_STUB;
 
+@WithMockedStorageHandler
 public class TestOptimisticRetry extends HiveIcebergStorageHandlerWithEngineBase {
 
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(fileFormat == FileFormat.PARQUET && isVectorized &&
-        testTableType == TestTables.TestTableType.HIVE_CATALOG && formatVersion == 2);
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.fileFormat() == FileFormat.PARQUET &&
+        p.testTableType() == TestTableType.HIVE_CATALOG &&
+        p.isVectorized());
   }
 
   @Test
-  public void testConcurrentOverlappingUpdates() {
+  public void testConcurrentOverlappingUpdates() throws Exception {
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
-        formatVersion);
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
+
     String sql = "UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'";
+    executeConcurrently(false, RETRY_STRATEGIES, sql);
 
-    try {
-      Tasks.range(2)
-          .executeWith(Executors.newFixedThreadPool(2))
-          .run(i -> {
-            init(shell, testTables, temp);
-            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                RETRY_STRATEGIES);
-            shell.executeStatement(sql);
-            shell.closeSession();
-          });
-    } catch (Throwable ex) {
-      // If retry succeeds then it should not throw an ValidationException.
-      Throwable cause = Throwables.getRootCause(ex);
-      if (cause instanceof ValidationException && cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
-        Assert.fail();
-      }
-    }
-
-    List<Object[]> res = shell.executeStatement("SELECT * FROM customers WHERE last_name='Changed'");
-    Assert.assertEquals(5, res.size());
-
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM customers WHERE last_name='Changed'");
+    Assert.assertEquals(5L, res.getFirst()[0]);
   }
 
   @Test
-  public void testConcurrentOverwriteAndUpdate() {
-    TestUtilPhaser.getInstance();
+  public void testConcurrentOverwriteAndUpdate() throws Exception {
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
-        formatVersion);
-    String[] sql =
-        new String[] {"INSERT OVERWRITE table customers SELECT * FROM customers where last_name='Taylor'",
-            "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor'"};
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    // The query shouldn't throw exception but rather retry & commit.
-    Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
-      TestUtilPhaser.getInstance().getPhaser().register();
-      init(shell, testTables, temp);
-      HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES, RETRY_STRATEGIES);
-      shell.executeStatement(sql[i]);
-      shell.closeSession();
-    });
-    TestUtilPhaser.destroyInstance();
+    String[] sql = new String[] {
+        "INSERT OVERWRITE table customers SELECT * FROM customers WHERE last_name='Taylor'",
+        "UPDATE customers SET first_name='Changed' WHERE last_name='Taylor'"
+    };
+    executeConcurrently(false, RETRY_STRATEGIES, sql);
+
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM customers");
+    Assert.assertEquals(1L, res.getFirst()[0]);
+
+    res = shell.executeStatement("SELECT count(*) FROM customers WHERE first_name='Changed'");
+    Assert.assertEquals(1L, res.getFirst()[0]);
   }
 
-
   @Test
-  public void testNonOverlappingConcurrent2Updates() {
+  public void testNonOverlappingConcurrent2Updates() throws Exception {
     testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
-        formatVersion);
-    String[] sql = new String[]{"UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'",
-        "UPDATE customers SET last_name='Changed2' WHERE customer_id=2 and first_name='Jake'"};
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    try {
-      Tasks.range(2)
-          .executeWith(Executors.newFixedThreadPool(2))
-          .run(i -> {
-            init(shell, testTables, temp);
-            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                RETRY_STRATEGIES);
-            shell.executeStatement(sql[i]);
-            shell.closeSession();
-          });
-    } catch (Throwable ex) {
-      // If retry succeeds then it should not throw an ValidationException.
-      Throwable cause = Throwables.getRootCause(ex);
-      if (cause instanceof ValidationException && cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
-        Assert.fail();
-      }
-    }
+    String[] sql = new String[]{
+        "UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'",
+        "UPDATE customers SET last_name='Changed2' WHERE customer_id=2 and first_name='Jake'"
+    };
+    executeConcurrently(false, RETRY_STRATEGIES, sql);
 
-    List<Object[]> res = shell.executeStatement("SELECT * FROM customers WHERE last_name='Changed'");
-    Assert.assertEquals(5, res.size());
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM customers WHERE last_name='Changed'");
+    Assert.assertEquals(5L, res.getFirst()[0]);
 
-    res = shell.executeStatement("SELECT * FROM customers WHERE last_name='Changed2'");
-    Assert.assertEquals(1, res.size());
+    res = shell.executeStatement("SELECT count(*) FROM customers WHERE last_name='Changed2'");
+    Assert.assertEquals(1L, res.getFirst()[0]);
   }
 
   @Test
-  public void testConcurrent2MergeInserts() {
+  public void testConcurrent2MergeInserts() throws Exception {
     testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1);
+
     testTables.createTable(shell, "target", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
-        formatVersion);
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    String sql = "MERGE INTO target t USING source s on t.customer_id = s.customer_id WHEN Not MATCHED THEN " +
-        "INSERT values (s.customer_id, s.first_name, s.last_name)";
-    try {
-      Tasks.range(2)
-          .executeWith(Executors.newFixedThreadPool(2))
-          .run(i -> {
-            init(shell, testTables, temp);
-            HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-            HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                RETRY_STRATEGIES);
-            shell.executeStatement(sql);
-            shell.closeSession();
-          });
-    } catch (Throwable ex) {
-      // If retry succeeds then it should not throw an ValidationException.
-      Throwable cause = Throwables.getRootCause(ex);
-      if (cause instanceof ValidationException && cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
-        Assert.fail();
-      }
-    }
-    List<Object[]> res = shell.executeStatement("SELECT * FROM target");
-    Assert.assertEquals(6, res.size());
+    String sql = "MERGE INTO target t USING source s on t.customer_id = s.customer_id " +
+        "WHEN NOT MATCHED THEN " +
+        "INSERT VALUES (s.customer_id, s.first_name, s.last_name)";
+    executeConcurrently(false, RETRY_STRATEGIES, sql);
+
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM target");
+    Assert.assertEquals(6L, res.getFirst()[0]);
   }
 
   @Test
-  public void testConcurrent2MergeUpdates() {
-    testTables.createTable(shell, "merge_update_source",
-            HiveIcebergStorageHandlerTestUtils.USER_CLICKS_SCHEMA,  PartitionSpec.unpartitioned(),
-            fileFormat, HiveIcebergStorageHandlerTestUtils.USER_CLICKS_RECORDS_1,
-            2);
-    testTables.createTable(shell, "merge_update_target",
-            HiveIcebergStorageHandlerTestUtils.USER_CLICKS_SCHEMA,  PartitionSpec.unpartitioned(),
-            fileFormat, HiveIcebergStorageHandlerTestUtils.USER_CLICKS_RECORDS_2,
-            2);
+  public void testConcurrent2MergeUpdates() throws Exception {
+    testTables.createTable(shell, "source",
+        HiveIcebergStorageHandlerTestUtils.USER_CLICKS_SCHEMA,  PartitionSpec.unpartitioned(),
+        fileFormat, HiveIcebergStorageHandlerTestUtils.USER_CLICKS_RECORDS_1,
+        formatVersion);
 
-    String query1 = "merge into merge_update_target using ( select * from merge_update_source) " +
-            "sub on sub.name = merge_update_target.name when matched then update set age=15";
-    String query2 = "merge into merge_update_target using ( select * from merge_update_source) " +
-            "sub on sub.age = merge_update_target.age when matched then update set age=15";
+    testTables.createTable(shell, "target",
+        HiveIcebergStorageHandlerTestUtils.USER_CLICKS_SCHEMA,  PartitionSpec.unpartitioned(),
+        fileFormat, HiveIcebergStorageHandlerTestUtils.USER_CLICKS_RECORDS_2,
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    String[] mergeQueryList = new String[] {query1, query2};
-    try {
-      Tasks.range(2)
-              .executeWith(Executors.newFixedThreadPool(2))
-              .run(i -> {
-                init(shell, testTables, temp);
-                HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-                HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-                HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-                        RETRY_STRATEGIES);
-                shell.executeStatement(mergeQueryList[i]);
-                shell.closeSession();
-              });
-    } catch (Throwable ex) {
-      // If retry succeeds then it should not throw an ValidationException.
-      Throwable cause = Throwables.getRootCause(ex);
-      if (cause instanceof ValidationException && cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
-        Assert.fail();
-      }
-    }
-    List<Object[]> res = shell.executeStatement("SELECT * FROM merge_update_target where age = 15");
-    Assert.assertEquals(2, res.size());
+    String query1 = "MERGE INTO target t USING source src ON t.name = src.name " +
+        "WHEN MATCHED THEN " +
+        "UPDATE SET age=15";
+
+    String query2 = "MERGE INTO target t USING source src ON t.age = src.age " +
+        "WHEN MATCHED THEN " +
+        "UPDATE SET age=15";
+
+    String[] sql = new String[] {query1, query2};
+    executeConcurrently(false, RETRY_STRATEGIES, sql);
+
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM target where age = 15");
+    Assert.assertEquals(2L, res.getFirst()[0]);
   }
-
 }
