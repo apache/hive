@@ -1587,6 +1587,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
+      // Reset the id of the request in case of RetryingHMSHandler retries
+      if (req.getId() != null && req.isAsyncDrop() && !req.isCancel()) {
+        req.setId(null);
+      }
       throw handleException(e)
           .throwIfInstance(NoSuchObjectException.class, InvalidOperationException.class, MetaException.class)
           .defaultMetaException();
@@ -2429,6 +2433,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
+      // Here we get an exception, the RetryingHMSHandler might retry the call,
+      // need to clear the id from the request, so AbstractRequestHandler can
+      // start a new execution other than reuse the cached failed handler.
+      if (dropReq.getId() != null && dropReq.isAsyncDrop() && !dropReq.isCancel()) {
+        dropReq.setId(null);
+      }
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
               .convertIfInstance(IOException.class, MetaException.class).defaultMetaException();
     } finally {
