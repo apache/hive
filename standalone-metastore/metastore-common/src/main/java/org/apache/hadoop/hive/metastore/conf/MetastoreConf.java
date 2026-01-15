@@ -1790,7 +1790,7 @@ public class MetastoreConf {
     WAREHOUSE_CATALOG_EXTERNAL("metastore.warehouse.catalog.external.dir",
             "hive.metastore.warehouse.catalog.external.dir", "",
             "Default location for external tables created in the warehouse. " +
-                    "If not set or null, then the normal warehouse location(MetastoreConf.WAREHOUSE_CATALOG) " +
+                    "If not set or null, then the normal warehouse location (MetastoreConf.WAREHOUSE_CATALOG) " +
                     "will be used as the default location."),
     WM_DEFAULT_POOL_SIZE("metastore.wm.default.pool.size",
         "hive.metastore.wm.default.pool.size", 4,

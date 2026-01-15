@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.stringtemplate.v4.ST;
 
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
@@ -203,7 +202,7 @@ public class Warehouse {
   }
 
   public Path getWhRootExternal(String catalogName) throws MetaException {
-    boolean isDefault = DEFAULT_CATALOG_NAME.equals(catalogName);
+    boolean isDefault = DEFAULT_CATALOG_NAME.equals(catalogName.trim());
 
     Path rootExDir = isDefault ? whRootExternal : whCatRootExternal;
     if (rootExDir != null) {

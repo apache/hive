@@ -928,7 +928,7 @@ public class HiveConf extends Configuration {
 
     HIVE_METASTORE_CATALOG_WAREHOUSE_EXTERNAL("hive.metastore.warehouse.catalog.external.dir", null,
             "Default location for external tables created in the warehouse. " +
-                    "If not set or null, then the normal warehouse location(MetastoreConf.METASTORE_CATALOG_WAREHOUSE)" +
+                    "If not set or null, then the normal warehouse location (MetastoreConf.METASTORE_CATALOG_WAREHOUSE) " +
                     "will be used as the default location."),
 
     /**

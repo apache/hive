@@ -393,10 +393,9 @@ public class EximUtil {
       String whLocation = MetastoreConf.getVar(conf,
               isDefaultCatalog ? MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL : MetastoreConf.ConfVars.WAREHOUSE_CATALOG_EXTERNAL,
               MetastoreConf.getVar(conf,
-                      isDefaultCatalog ? MetastoreConf.ConfVars.WAREHOUSE : MetastoreConf.ConfVars.WAREHOUSE_CATALOG
-              )
-      );
+                      isDefaultCatalog ? MetastoreConf.ConfVars.WAREHOUSE : MetastoreConf.ConfVars.WAREHOUSE_CATALOG));
 
+      whLocation  = isDefaultCatalog ? whLocation : whLocation + "/" + database.getCatalogName();
       Path dbDerivedLoc = new Path(whLocation, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
       String defaultDbLoc = Utilities.getQualifiedPath((HiveConf) conf, dbDerivedLoc);
       database.putToParameters(ReplConst.REPL_IS_CUSTOM_DB_LOC,

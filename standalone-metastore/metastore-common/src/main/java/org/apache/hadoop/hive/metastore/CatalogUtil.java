@@ -29,11 +29,13 @@ public class CatalogUtil {
         ICEBERG
     }
 
-    public static final Set<CatalogType> VALID_CATALOG_TYPES = EnumSet.of(CatalogType.NATIVE, CatalogType.ICEBERG);
-
     public static boolean isValidCatalogType(String name) {
-        CatalogType type = EnumUtils.getEnumIgnoreCase(CatalogType.class, name);
-        return type != null && VALID_CATALOG_TYPES.contains(type);
+        try {
+            CatalogType.valueOf(name.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }
 

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.PartitionTransform;
 import org.apache.hadoop.hive.ql.parse.TransformSpec;
@@ -39,6 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 public abstract class AbstractRepository implements QueryHistoryRepository {
   protected Logger LOG = LoggerFactory.getLogger(getClass());
@@ -82,7 +85,11 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
       db = hive.getDatabase(QUERY_HISTORY_DB_NAME);
       if (db == null) {
         LOG.warn("Database ({}) for query history table hasn't been found, auto-creating one", QUERY_HISTORY_DB_NAME);
-        String location = getDatabaseLocation(db);
+        db = new Database();
+        // TODO catalog. The Hive Query History functionality is currently limited to the default catalog.
+        db.setCatalogName(getDefaultCatalog(conf));
+        db.setName(QUERY_HISTORY_DB_NAME);
+        String location = getDatabaseLocation(new Database());
         db = new Database(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_DB_COMMENT,
             location, null);
         hive.createDatabase(db, false);
