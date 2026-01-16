@@ -118,13 +118,6 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
     this.request = request;
     this.async = async;
     this.timeout = MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST) ? 10 : 5000;
-    final Timer.Context timerContext;
-    if (StringUtils.isNotEmpty(getMetricAlias())) {
-      Timer timer = Metrics.getOrCreateTimer(MetricsConstants.API_PREFIX + getMetricAlias());
-      timerContext = timer != null ? timer.time() : null;
-    } else {
-      timerContext = null;
-    }
 
     if (async) {
       ID_TO_HANDLER.put(id, this);
@@ -137,8 +130,19 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
     } else {
       this.executor = MoreExecutors.newDirectExecutorService();
     }
+    this.future = executeRequest();
+  }
 
-    this.future = executor.submit(() -> {
+  private Future<Result> executeRequest() {
+    Timer.Context timerContext;
+    if (StringUtils.isNotEmpty(getMetricAlias())) {
+      Timer timer = Metrics.getOrCreateTimer(MetricsConstants.API_PREFIX + getMetricAlias());
+      timerContext = timer != null ? timer.time() : null;
+    } else {
+      timerContext = null;
+    }
+
+    Future<Result> resultFuture = executor.submit(() -> {
       A resultV = null;
       beforeExecute();
       try {
@@ -157,7 +161,8 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
       }
       return async ? resultV.shrinkIfNecessary() : resultV;
     });
-    this.executor.shutdown();
+    executor.shutdown();
+    return resultFuture;
   }
 
   private static <T extends TBase, A extends Result> AbstractRequestHandler<T, A>

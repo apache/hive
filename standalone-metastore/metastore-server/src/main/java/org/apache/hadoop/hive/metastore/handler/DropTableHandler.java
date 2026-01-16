@@ -145,8 +145,8 @@ public class DropTableHandler
         request.isSetCatalogName() ? request.getCatalogName() : getDefaultCatalog(handler.getConf()));
     String name = normalizeIdentifier(request.getTableName());
     String dbname = normalizeIdentifier(request.getDbName());
-    this.ms = handler.getMS();
     tableName = new TableName(catName, dbname, name);
+    this.ms = handler.getMS();
     progress = new AtomicReference<>("Starting to drop the table: " + tableName);
     GetTableRequest req = new GetTableRequest(tableName.getDb(), tableName.getTable());
     req.setCatName(tableName.getCat());
