@@ -352,19 +352,16 @@ public class Warehouse {
   }
 
   public Path getDefaultDatabasePath(Database db, boolean inExternalWH) throws MetaException {
-    String catalogName = db.getCatalogName();
+    String catalogName = db.getCatalogName() != null ? db.getCatalogName() : DEFAULT_CATALOG_NAME;
     String dbName = db.getName();
-    if (inExternalWH) {
-      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-        return getWhRootExternal(catalogName);
-      }
-      return new Path(getWhRootExternal(catalogName), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
-    } else {
-      if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
-        return getWhRoot(catalogName);
-      }
-      return new Path(getWhRoot(catalogName), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
+
+    Path whRoot = inExternalWH ? getWhRootExternal(catalogName) : getWhRoot(catalogName);
+
+    if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+      return whRoot;
     }
+
+    return new Path(whRoot, dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
   }
 
   /**

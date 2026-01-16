@@ -588,10 +588,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } catch (NoSuchObjectException e) {
       LOG.info("Started creating a default database with name: "+DEFAULT_DATABASE_NAME);
       Database db = new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT, null, null);
+      db.setCatalogName(DEFAULT_CATALOG_NAME);
       db.setLocationUri(wh.getDefaultDatabasePath(db, true).toString());
       db.setOwnerName(PUBLIC);
       db.setOwnerType(PrincipalType.ROLE);
-      db.setCatalogName(DEFAULT_CATALOG_NAME);
       long time = System.currentTimeMillis() / 1000;
       db.setCreateTime((int) time);
       db.setType(DatabaseType.NATIVE);
