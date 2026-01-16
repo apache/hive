@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -167,18 +168,16 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (partitionSpec != null) {
-        boolean isPartitionPresent;
+        Partition part;
         try {
-          isPartitionPresent = table.isNonNative() ?
-                  table.getStorageHandler().isPartitionPresent(table, partitionSpec) :
-                  db.getPartition(table, partitionSpec) != null;
+          part = db.getPartition(table, partitionSpec);
         } catch (HiveException e) {
           // if get exception in finding partition it could be DESCRIBE table key
           // return null, continue processing for DESCRIBE table key
           return null;
         }
 
-        if (!isPartitionPresent) {
+        if (part == null) {
           throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partitionSpec.toString()));
         }
 
