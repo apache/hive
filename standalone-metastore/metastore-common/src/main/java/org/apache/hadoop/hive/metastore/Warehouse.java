@@ -206,7 +206,7 @@ public class Warehouse {
 
     Path rootExDir = isDefault ? whRootExternal : whCatRootExternal;
     if (rootExDir != null) {
-      return isDefault ? rootExDir : new Path(rootExDir, catalogName);
+      return rootExDir;
     }
 
     if (isDefault) {
@@ -229,7 +229,8 @@ public class Warehouse {
    * Build the database path based on catalog name and database name.  This should only be used
    * when a database is being created or altered.  If you just want to find out the path a
    * database is already using call {@link #getDatabasePath(Database)}.  If the passed in
-   * database already has a path set that will be used.
+   * database already has a path set that will be used.  If not the location will be built using
+   * catalog's path and the database name.
    * @param cat catalog the database is in
    * @param db database object
    * @return Path representing the directory for the database
@@ -246,7 +247,7 @@ public class Warehouse {
     if (db.getName().equals(DEFAULT_DATABASE_NAME)){
       return getWhRootExternal(cat.getName());
     } else {
-      return new Path(getWhRootExternal(cat.getName()), dbDirFromDbName(db));
+      return new Path(getDnsPath(new Path(cat.getLocationUri())), dbDirFromDbName(db));
     }
   }
 
