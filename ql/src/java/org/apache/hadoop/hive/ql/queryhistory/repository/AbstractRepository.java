@@ -89,7 +89,7 @@ public abstract class AbstractRepository implements QueryHistoryRepository {
         // TODO catalog. The Hive Query History functionality is currently limited to the default catalog.
         db.setCatalogName(getDefaultCatalog(conf));
         db.setName(QUERY_HISTORY_DB_NAME);
-        String location = getDatabaseLocation(new Database());
+        String location = getDatabaseLocation(db);
         db = new Database(QUERY_HISTORY_DB_NAME, QUERY_HISTORY_DB_COMMENT,
             location, null);
         hive.createDatabase(db, false);

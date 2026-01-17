@@ -29,11 +29,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.CatalogUtil;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.TableType;
-import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
@@ -294,12 +291,5 @@ public final class DDLUtils {
     }
 
     return Pair.of(catName, dbName);
-  }
-
-  public static boolean doesCatalogSupportCreateDB(Catalog catalog) {
-    if (catalog.getName().equals(Warehouse.DEFAULT_CATALOG_NAME)) {
-      return true;
-    }
-    return CatalogUtil.CatalogType.NATIVE.toString().toLowerCase().equals(catalog.getParameters().get("type"));
   }
 }

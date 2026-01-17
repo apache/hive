@@ -22,12 +22,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -57,13 +55,6 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
     String catalogName = Optional.ofNullable(catDbNamePair.getLeft())
             .orElse(HiveUtils.getCurrentCatalogOrDefault(conf));
 
-    Catalog catalog = getCatalog(catalogName);
-    if (catalog == null) {
-      throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catalogName);
-    }
-    if (!DDLUtils.doesCatalogSupportCreateDB(catalog)) {
-      throw new SemanticException("Catalog %s does not support creating database".formatted(catalogName));
-    }
     String databaseName = catDbNamePair.getRight();
 
     boolean ifNotExists = false;

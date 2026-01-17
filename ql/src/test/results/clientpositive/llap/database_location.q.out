@@ -160,6 +160,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Create Database
+      catalogName: hive
       database type:
 #### A masked pattern was here ####
       name: db3

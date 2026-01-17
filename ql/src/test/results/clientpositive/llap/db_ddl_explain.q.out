@@ -10,6 +10,7 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Create Database
+      catalogName: hive
       database type:
       name: d
 

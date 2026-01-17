@@ -244,8 +244,12 @@ public class Warehouse {
     if (db.isSetLocationUri()) {
       return getDnsPath(new Path(db.getLocationUri()));
     }
-    if (db.getName().equals(DEFAULT_DATABASE_NAME)){
-      return getWhRootExternal(cat.getName());
+    if (cat.getName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
+      if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+        return getWhRootExternal(cat.getName());
+      } else {
+        return new Path(getWhRootExternal(cat.getName()), dbDirFromDbName(db));
+      }
     } else {
       return new Path(getDnsPath(new Path(cat.getLocationUri())), dbDirFromDbName(db));
     }
