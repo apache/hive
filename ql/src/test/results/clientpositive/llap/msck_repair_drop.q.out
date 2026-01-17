@@ -48,7 +48,7 @@ STAGE PLANS:
     Metastore Check
       table name: default.repairtable_n1
       add partition: true
-      repair partition: true
+      repair: true
 
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1
 PREHOOK: type: MSCK
@@ -113,7 +113,7 @@ STAGE PLANS:
     Metastore Check
       table name: default.repairtable_n1
       drop partition: true
-      repair partition: true
+      repair: true
 
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 DROP PARTITIONS
 PREHOOK: type: MSCK
@@ -335,7 +335,7 @@ STAGE PLANS:
     Metastore Check
       table name: default.repairtable_n1
       add partition: true
-      repair partition: true
+      repair: true
 
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 ADD PARTITIONS
 PREHOOK: type: MSCK
@@ -426,7 +426,7 @@ STAGE PLANS:
       table name: default.repairtable_n1
       add partition: true
       drop partition: true
-      repair partition: true
+      repair: true
 
 PREHOOK: query: MSCK REPAIR TABLE default.repairtable_n1 SYNC PARTITIONS
 PREHOOK: type: MSCK

@@ -76,6 +76,8 @@ import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.misc.msck.MsckDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.msck.MsckResult;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
@@ -185,6 +187,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.actions.HiveIcebergDeleteOrphanFiles;
+import org.apache.iceberg.mr.hive.actions.HiveIcebergRepairTable;
 import org.apache.iceberg.mr.hive.plan.IcebergBucketFunction;
 import org.apache.iceberg.mr.hive.udf.GenericUDFIcebergZorder;
 import org.apache.iceberg.parquet.VariantUtil;
@@ -1138,7 +1141,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
             (AlterTableExecuteSpec.ExpireSnapshotsSpec) executeSpec.getOperationParams();
         int numThreads = conf.getInt(ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.varname,
             ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
-        expireSnapshot(icebergTable, expireSnapshotsSpec, numThreads);
+        expireSnapshots(icebergTable, expireSnapshotsSpec, numThreads);
         break;
       case SET_CURRENT_SNAPSHOT:
         AlterTableExecuteSpec.SetCurrentSnapshotSpec setSnapshotVersionSpec =
@@ -1182,8 +1185,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     try {
       if (numThreads > 0) {
         LOG.info("Executing delete orphan files on iceberg table {} with {} threads", icebergTable.name(), numThreads);
-        deleteExecutorService = IcebergTableUtil.newDeleteThreadPool(icebergTable.name(),
-            numThreads);
+        deleteExecutorService = IcebergTableUtil.newFixedThreadPool(
+            "delete-orphan-files" + icebergTable.name(), numThreads);
       }
 
       HiveIcebergDeleteOrphanFiles deleteOrphanFiles = new HiveIcebergDeleteOrphanFiles(conf, icebergTable);
@@ -1200,13 +1203,14 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     }
   }
 
-  private void expireSnapshot(Table icebergTable, AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec,
+  private void expireSnapshots(Table icebergTable, AlterTableExecuteSpec.ExpireSnapshotsSpec expireSnapshotsSpec,
       int numThreads) {
     ExecutorService deleteExecutorService = null;
     try {
       if (numThreads > 0) {
         LOG.info("Executing expire snapshots on iceberg table {} with {} threads", icebergTable.name(), numThreads);
-        deleteExecutorService = IcebergTableUtil.newDeleteThreadPool(icebergTable.name(), numThreads);
+        deleteExecutorService = IcebergTableUtil.newFixedThreadPool(
+            "expire-snapshots-" + icebergTable.name(), numThreads);
       }
       if (expireSnapshotsSpec == null) {
         expireSnapshotWithDefaultParams(icebergTable, deleteExecutorService);
@@ -2304,6 +2308,23 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public boolean supportsDefaultColumnValues(Map<String, String> tblProps) {
     return IcebergTableUtil.formatVersion(tblProps) >= 3;
+  }
+
+  @Override
+  public MsckResult repair(org.apache.hadoop.hive.ql.metadata.Table hmsTable, HiveConf conf, MsckDesc desc)
+      throws HiveException {
+    LOG.info("Starting Iceberg table repair{} for {}", desc.isRepair() ? "" : " (dry-run)",
+        hmsTable.getFullyQualifiedName());
+    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
+
+    HiveIcebergRepairTable repair = new HiveIcebergRepairTable(table, desc);
+    try {
+      return repair.execute();
+    } catch (Exception e) {
+      String errorMsg = String.format("Failed to repair Iceberg table %s: %s",
+          hmsTable.getFullyQualifiedName(), e.getMessage());
+      throw new HiveException(errorMsg, e);
+    }
   }
 
 

@@ -34,16 +34,16 @@ public class MsckDesc implements DDLDesc, Serializable {
   private final String tableName;
   private final byte[] filterExp;
   private final String resFile;
-  private final boolean repairPartitions;
+  private final boolean repair;
   private final boolean addPartitions;
   private final boolean dropPartitions;
 
   public MsckDesc(String tableName, byte[] filterExp, Path resFile,
-                  boolean repairPartitions, boolean addPartitions, boolean dropPartitions) {
+        boolean repair, boolean addPartitions, boolean dropPartitions) {
     this.tableName = tableName;
     this.filterExp = filterExp;
     this.resFile = resFile.toString();
-    this.repairPartitions = repairPartitions;
+    this.repair = repair;
     this.addPartitions = addPartitions;
     this.dropPartitions = dropPartitions;
   }
@@ -62,10 +62,10 @@ public class MsckDesc implements DDLDesc, Serializable {
     return resFile;
   }
 
-  @Explain(displayName = "repair partition", displayOnlyOnTrue = true,
+  @Explain(displayName = "repair", displayOnlyOnTrue = true,
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public boolean isRepairPartitions() {
-    return repairPartitions;
+  public boolean isRepair() {
+    return repair;
   }
 
   @Explain(displayName = "add partition", displayOnlyOnTrue = true,

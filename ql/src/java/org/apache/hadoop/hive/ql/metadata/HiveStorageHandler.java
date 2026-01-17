@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.ddl.misc.msck.MsckDesc;
+import org.apache.hadoop.hive.ql.ddl.misc.msck.MsckResult;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.ddl.table.create.CreateTableDesc;
@@ -1023,4 +1025,20 @@ public interface HiveStorageHandler extends Configurable {
   default boolean supportsDefaultColumnValues(Map<String, String> tblProps) {
     return false;
   }
+
+  /**
+   * Repair table metadata by removing dangling references or fixing inconsistencies.
+   * This is called by MSCK REPAIR TABLE command for non-native tables.
+   * 
+   * @param table the table to repair
+   * @param conf the Hive configuration
+   * @param desc the msckDesc
+   * @return MsckResult containing repair statistics and details
+   * @throws HiveException if the repair operation fails
+   */
+  default MsckResult repair(org.apache.hadoop.hive.ql.metadata.Table table, HiveConf conf, MsckDesc desc)
+      throws HiveException {
+    return new MsckResult(0, "Repair not supported for this table type");
+  }
+
 }

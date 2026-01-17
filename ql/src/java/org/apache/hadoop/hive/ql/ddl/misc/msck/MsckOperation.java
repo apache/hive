@@ -23,25 +23,28 @@ import static org.apache.hadoop.hive.metastore.Msck.getProxyClass;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Iterables;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Msck;
 import org.apache.hadoop.hive.metastore.MsckInfo;
 import org.apache.hadoop.hive.metastore.PartitionManagementTask;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetastoreException;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Operation process of metastore check.
@@ -50,12 +53,33 @@ import org.apache.thrift.TException;
  * and partitions that are either missing on disk on in the metastore.
  */
 public class MsckOperation extends DDLOperation<MsckDesc> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(MsckOperation.class);
+  private static final SessionState.LogHelper CONSOLE = SessionState.getConsole();
+
   public MsckOperation(DDLOperationContext context, MsckDesc desc) {
     super(context, desc);
   }
 
   @Override
   public int execute() throws HiveException, IOException, TException, MetastoreException {
+    Table table = context.getDb().getTable(desc.getTableName());
+
+    if (DDLUtils.isIcebergTable(table)) {
+      MsckResult result =
+          table.getStorageHandler().repair(table, context.getConf(), desc);
+
+      CONSOLE.printInfo(result.message());
+
+      // Print details (file paths) if available
+      if (!result.details().isEmpty()) {
+        String filesLog = formatFilesForConsole(result.details());
+        CONSOLE.printInfo("[MSCK] Details: " + filesLog);
+      }
+
+      return 0;
+    }
+
     try {
       Msck msck = new Msck(false, false);
       msck.init(Msck.getMsckConf(context.getDb().getConf()));
@@ -64,39 +88,30 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
       TableName tableName = HiveTableName.of(desc.getTableName());
 
       long partitionExpirySeconds = -1L;
-      try (HiveMetaStoreClient msc = new HiveMetaStoreClient(context.getConf())) {
-        boolean msckEnablePartitionRetention = MetastoreConf.getBoolVar(context.getConf(),
-            MetastoreConf.ConfVars.MSCK_REPAIR_ENABLE_PARTITION_RETENTION);
-        if (msckEnablePartitionRetention) {
-          Table table = msc.getTable(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable());
-          String qualifiedTableName = Warehouse.getCatalogQualifiedTableName(table);
-          partitionExpirySeconds = PartitionManagementTask.getRetentionPeriodInSeconds(table);
-          LOG.info("{} - Retention period ({}s) for partition is enabled for MSCK REPAIR..", qualifiedTableName,
-              partitionExpirySeconds);
-        }
+      boolean msckEnablePartitionRetention = MetastoreConf.getBoolVar(context.getConf(),
+          MetastoreConf.ConfVars.MSCK_REPAIR_ENABLE_PARTITION_RETENTION);
+      if (msckEnablePartitionRetention) {
+        org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
+        String qualifiedTableName = Warehouse.getCatalogQualifiedTableName(tTable);
+        partitionExpirySeconds = PartitionManagementTask.getRetentionPeriodInSeconds(tTable);
+        LOG.info("{} - Retention period ({}s) for partition is enabled for MSCK REPAIR..", qualifiedTableName,
+            partitionExpirySeconds);
       }
       MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable(),
-          desc.getFilterExp(), desc.getResFile(), desc.isRepairPartitions(),
+          desc.getFilterExp(), desc.getResFile(), desc.isRepair(),
           desc.isAddPartitions(), desc.isDropPartitions(), partitionExpirySeconds);
       int result = msck.repair(msckInfo);
       Map<String, String> smallFilesStats = msckInfo.getSmallFilesStats();
       if (smallFilesStats != null && !smallFilesStats.isEmpty()) {
         // keep the small files information in logInfo
         List<String> logInfo = smallFilesStats.entrySet().stream()
-                .map(entry -> String.format(
-                        "Average file size is too small, small files exist. %n Partition name: %s. %s",
-                        entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+            .map(entry -> String.format(
+                "Average file size is too small, small files exist. %n Partition name: %s. %s",
+                entry.getKey(), entry.getValue()))
+            .toList();
         // print out the small files information on console to end users
-        SessionState ss = SessionState.get();
-        if (ss != null && ss.getConsole() != null) {
-          ss.getConsole().printInfo("[MSCK] Small files detected.");
-          ss.getConsole().printInfo(""); // add a blank line for separation
-          logInfo.forEach(line -> ss.getConsole().printInfo("[MSCK] " + line));
-        } else {
-          // if there is no console to print out, keep the small files info in logs
-          LOG.info("There are small files exist.\n{}", String.join("\n", logInfo));
-        }
+        CONSOLE.printInfo("[MSCK] Small files detected.\n");
+        logInfo.forEach(line -> CONSOLE.printInfo("[MSCK] " + line));
       }
       return result;
     } catch (MetaException | MetastoreException e) {
@@ -108,4 +123,20 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
     }
   }
 
+  /**
+   * Format list of files for console output.
+   */
+  private static String formatFilesForConsole(List<String> files) {
+    int numPathsToLog = LOG.isTraceEnabled() ? 100 : 3;
+    int total = files.size();
+    String fileNames = Joiner.on(", ").join(Iterables.limit(files, numPathsToLog));
+
+    if (total > numPathsToLog) {
+      int remaining = total - numPathsToLog;
+      fileNames += String.format(" (and %d more)", remaining);
+    }
+    return fileNames;
+  }
+
 }
+

@@ -114,7 +114,7 @@ public class IcebergHouseKeeperService implements MetastoreTaskThread {
         HiveConf.ConfVars.HIVE_ICEBERG_EXPIRE_SNAPSHOT_NUMTHREADS.defaultIntVal);
     if (numThreads > 0) {
       LOG.info("Will expire Iceberg snapshots using an executor service with {} threads", numThreads);
-      deleteExecutorService = IcebergTableUtil.newDeleteThreadPool("iceberg-housekeeper-service", numThreads);
+      deleteExecutorService = IcebergTableUtil.newFixedThreadPool("iceberg-housekeeper-service", numThreads);
     }
   }
 }
