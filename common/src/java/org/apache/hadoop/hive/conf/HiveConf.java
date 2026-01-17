@@ -923,11 +923,11 @@ public class HiveConf extends Configuration {
         "If not set or null, then the normal warehouse location will be used as the default location."),
 
     METASTORE_CATALOG_WAREHOUSE("hive.metastore.warehouse.catalog.dir", "/user/hive/catalog/warehouse",
-            "location of default database for the warehouse. If the name of the catalog to which the db belongs is testcat," +
+            "Base location for databases in non-default catalogs. If the name of the catalog to which the db belongs is testcat, " +
                     "then the default path prefix for the db is /user/hive/catalog/warehouse/testcat"),
 
     HIVE_METASTORE_CATALOG_WAREHOUSE_EXTERNAL("hive.metastore.warehouse.catalog.external.dir", null,
-            "Default location for external tables created in the warehouse. " +
+            "Base location for external tables created in the warehouse of non-default catalogs. " +
                     "If not set or null, then the normal warehouse location (MetastoreConf.METASTORE_CATALOG_WAREHOUSE) " +
                     "will be used as the default location."),
 

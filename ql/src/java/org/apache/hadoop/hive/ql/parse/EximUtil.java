@@ -400,7 +400,7 @@ public class EximUtil {
                       isDefaultCatalog ? MetastoreConf.ConfVars.WAREHOUSE : MetastoreConf.ConfVars.WAREHOUSE_CATALOG));
 
       if (!isDefaultCatalog) {
-        whLocation += "/" + catName;
+        whLocation = new Path(whLocation, catName).toString();
       }
 
       Path dbDerivedLoc = new Path(whLocation, dbName + DATABASE_PATH_SUFFIX);
@@ -414,7 +414,7 @@ public class EximUtil {
                       : MetastoreConf.ConfVars.WAREHOUSE_CATALOG);
 
       if (!isDefaultCatalog) {
-        whManagedLocatoion += "/" + catName;
+        whManagedLocatoion = new Path(whManagedLocatoion, catName).toString();
       }
       Path dbDerivedManagedLoc = new Path(whManagedLocatoion, dbName
               + DATABASE_PATH_SUFFIX);
