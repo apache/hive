@@ -153,13 +153,17 @@ public class UnparseTranslator {
       return;
     }
     assert (tableName.getToken().getType() == HiveParser.TOK_TABNAME);
-    assert (tableName.getChildCount() <= 3);
+    assert (tableName.getChildCount() <= 4);
 
-    if (tableName.getChildCount() == 2 || tableName.getChildCount() == 3) {
+    if (tableName.getChildCount() == 2 || tableName.getChildCount() == 3 || tableName.getChildCount() == 4) {
       addIdentifierTranslation((ASTNode)tableName.getChild(0));
       addIdentifierTranslation((ASTNode)tableName.getChild(1));
       if (tableName.getChildCount() == 3) {
         addIdentifierTranslation((ASTNode)tableName.getChild(2));
+      }
+      if (tableName.getChildCount() == 4) {
+        addIdentifierTranslation((ASTNode)tableName.getChild(2));
+        addIdentifierTranslation((ASTNode)tableName.getChild(3));
       }
     }
     else {
