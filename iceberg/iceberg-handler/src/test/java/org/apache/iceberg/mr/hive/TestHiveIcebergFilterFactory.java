@@ -34,11 +34,13 @@ import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.expressions.Not;
 import org.apache.iceberg.expressions.Or;
 import org.apache.iceberg.expressions.UnboundPredicate;
+import org.apache.iceberg.expressions.UnboundTerm;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.DateTimeUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestHiveIcebergFilterFactory {
 
@@ -194,6 +196,22 @@ public class TestHiveIcebergFilterFactory {
   }
 
   @Test
+  public void testShreddedVariantPredicate() {
+    SearchArgument.Builder builder = SearchArgumentFactory.newBuilder();
+    SearchArgument arg = builder
+        .startAnd()
+        .equals("payload.typed_value.age", PredicateLeaf.Type.LONG, 30L)
+        .end()
+        .build();
+
+    UnboundPredicate expected =
+        Expressions.equal(Expressions.extract("payload", "$.age", "long"), 30L);
+    UnboundPredicate actual = (UnboundPredicate) HiveIcebergFilterFactory.generateFilterExpression(arg);
+
+    assertPredicatesMatch(expected, actual);
+  }
+
+  @Test
   public void testFloatType() {
     SearchArgument.Builder builder = SearchArgumentFactory.newBuilder();
     SearchArgument arg = builder.startAnd().equals("float", PredicateLeaf.Type.FLOAT, 1200D).end().build();
@@ -254,9 +272,20 @@ public class TestHiveIcebergFilterFactory {
     assertPredicatesMatch(expected, actual);
   }
 
-  private void assertPredicatesMatch(UnboundPredicate expected, UnboundPredicate actual) {
+  private void assertPredicatesMatch(UnboundPredicate<?> expected, UnboundPredicate<?> actual) {
     assertEquals(expected.op(), actual.op());
     assertEquals(expected.literal(), actual.literal());
     assertEquals(expected.ref().name(), actual.ref().name());
+
+    // For extract(...) terms, also verify the extracted path matches.
+    UnboundTerm<?> expectedTerm = expected.term();
+    UnboundTerm<?> actualTerm = actual.term();
+    if (expectedTerm instanceof org.apache.iceberg.expressions.UnboundExtract<?> expectedExtract) {
+      assertTrue(actualTerm instanceof org.apache.iceberg.expressions.UnboundExtract<?>);
+      org.apache.iceberg.expressions.UnboundExtract<?> actualExtract =
+          (org.apache.iceberg.expressions.UnboundExtract<?>) actualTerm;
+      assertEquals(expectedExtract.path(), actualExtract.path());
+      assertEquals(expectedExtract.type(), actualExtract.type());
+    }
   }
 }

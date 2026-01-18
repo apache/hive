@@ -36,7 +36,7 @@ import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
-class HiveIcebergCopyOnWriteRecordWriter extends SchemaInferringDefaultsWriter {
+class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultValuesWriter {
 
   private final GenericRecord rowDataTemplate;
   private final List<DataFile> replacedDataFiles;
@@ -66,7 +66,7 @@ class HiveIcebergCopyOnWriteRecordWriter extends SchemaInferringDefaultsWriter {
             .build();
       replacedDataFiles.add(dataFile);
     } else {
-      writeOrBuffer(rowData);
+      write(rowData);
     }
   }
 

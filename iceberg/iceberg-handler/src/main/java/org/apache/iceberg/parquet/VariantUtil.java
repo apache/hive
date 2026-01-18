@@ -21,7 +21,6 @@ package org.apache.iceberg.parquet;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.UnaryOperator;
 import org.apache.iceberg.Accessor;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
@@ -60,8 +59,8 @@ public class VariantUtil {
   /**
    * Check if variant shredding is enabled via table properties.
    */
-  public static boolean isVariantShreddingEnabled(UnaryOperator<String> propertyLookup) {
-    String shreddingEnabled = propertyLookup.apply(InputFormatConfig.VARIANT_SHREDDING_ENABLED);
+  public static boolean isVariantShreddingEnabled(Map<String, String> properties) {
+    String shreddingEnabled = properties.get(InputFormatConfig.VARIANT_SHREDDING_ENABLED);
     return Boolean.parseBoolean(shreddingEnabled);
   }
 
@@ -74,7 +73,7 @@ public class VariantUtil {
 
   public static List<VariantField> variantFieldsForShredding(
       Map<String, String> properties, Schema schema) {
-    if (!isVariantShreddingEnabled(properties::get)) {
+    if (!isVariantShreddingEnabled(properties)) {
       return List.of();
     }
     return variantFieldsForShredding(schema);
@@ -90,8 +89,8 @@ public class VariantUtil {
     return results;
   }
 
-  public static boolean shouldUseVariantShredding(UnaryOperator<String> propertyLookup, Schema schema) {
-    return isVariantShreddingEnabled(propertyLookup) && hasVariantFields(schema);
+  public static boolean shouldUseVariantShredding(Map<String, String> properties, Schema schema) {
+    return isVariantShreddingEnabled(properties) && hasVariantFields(schema);
   }
 
   private static boolean hasVariantFields(Schema schema) {
