@@ -149,20 +149,18 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
     if (node.getChild(1).getType() == HiveParser.TOK_PARTSPEC) {
       ASTNode partNode = (ASTNode) node.getChild(1);
 
-      Table tab = null;
+      Table table;
       try {
-        tab = db.getTable(tableName.getNotEmptyDbTable());
+        table = db.getTable(tableName.getNotEmptyDbTable());
       } catch (InvalidTableException e) {
         throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName.getNotEmptyDbTable()), e);
       } catch (HiveException e) {
         throw new SemanticException(e.getMessage(), e);
       }
 
-      Map<String, String> partitionSpec = null;
+      Map<String, String> partitionSpec;
       try {
-        partitionSpec = getPartSpec(partNode);
-        validateUnsupportedPartitionClause(tab, partitionSpec != null && !partitionSpec.isEmpty());
-        partitionSpec = getValidatedPartSpec(tab, partNode, db.getConf(), false);
+        partitionSpec = getValidatedPartSpec(table, partNode, db.getConf(), false);
       } catch (SemanticException e) {
         // get exception in resolving partition it could be DESCRIBE table key
         // return null, continue processing for DESCRIBE table key
@@ -170,9 +168,9 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (partitionSpec != null) {
-        Partition part = null;
+        Partition part;
         try {
-          part = db.getPartition(tab, partitionSpec, false);
+          part = db.getPartition(table, partitionSpec);
         } catch (HiveException e) {
           // if get exception in finding partition it could be DESCRIBE table key
           // return null, continue processing for DESCRIBE table key

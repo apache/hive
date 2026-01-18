@@ -127,7 +127,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private Partition getPartition(Table table) throws HiveException {
     Partition part = null;
     if (desc.getPartitionSpec() != null) {
-      part = context.getDb().getPartition(table, desc.getPartitionSpec(), false);
+      part = context.getDb().getPartition(table, desc.getPartitionSpec());
       if (part == null) {
         throw new HiveException(ErrorMsg.INVALID_PARTITION,
             StringUtils.join(desc.getPartitionSpec().keySet(), ','), desc.getDbTableName());

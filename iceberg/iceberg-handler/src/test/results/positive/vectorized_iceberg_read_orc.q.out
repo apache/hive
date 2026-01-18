@@ -531,6 +531,11 @@ b                   	string
 a                   	int                 	                    
 p2                  	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p1                  	string              	Transform: identity 
+p2                  	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 p1                  	IDENTITY            	 

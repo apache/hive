@@ -2080,6 +2080,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       Map<String, String> partitionSpec, RewritePolicy policy) throws SemanticException {
     validatePartSpec(table, partitionSpec, policy);
     try {
+      Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
+      if (!IcebergTableUtil.hasPartition(icebergTable, partitionSpec)) {
+        return null;
+      }
       String partName = Warehouse.makePartName(partitionSpec, false);
       return new DummyPartition(table, partName, partitionSpec);
     } catch (MetaException e) {
