@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.druid.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.druid.indexing.seekablestream.SeekableStreamIndexTaskTuningConfig;
 import org.joda.time.Duration;
 import org.joda.time.Period;
 
@@ -26,16 +27,21 @@ import org.joda.time.Period;
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-public interface SeekableStreamSupervisorTuningConfig {
-
+public interface SeekableStreamSupervisorTuningConfig
+{
+  boolean DEFAULT_ASYNC = true;
+  String DEFAULT_OFFSET_FETCH_PERIOD = "PT30S";
   int DEFAULT_CHAT_RETRIES = 8;
   String DEFAULT_HTTP_TIMEOUT = "PT10S";
   String DEFAULT_SHUTDOWN_TIMEOUT = "PT80S";
   String DEFAULT_REPARTITION_TRANSITION_DURATION = "PT2M";
 
-  static Duration defaultDuration(final Period period, final String theDefault) {
+  static Duration defaultDuration(final Period period, final String theDefault)
+  {
     return (period == null ? new Period(theDefault) : period).toStandardDuration();
   }
+
+  boolean getChatAsync();
 
   @JsonProperty
   Integer getWorkerThreads();
@@ -54,6 +60,9 @@ public interface SeekableStreamSupervisorTuningConfig {
 
   @JsonProperty
   Duration getRepartitionTransitionDuration();
+
+  @JsonProperty
+  Duration getOffsetFetchPeriod();
 
   SeekableStreamIndexTaskTuningConfig convertToTaskTuningConfig();
 }

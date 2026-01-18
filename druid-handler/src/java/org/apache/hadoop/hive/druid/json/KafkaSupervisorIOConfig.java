@@ -19,220 +19,134 @@ package org.apache.hadoop.hive.druid.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
+import org.apache.druid.data.input.InputFormat;
+import org.apache.druid.indexing.seekablestream.extension.KafkaConfigOverrides;
+import org.apache.druid.indexing.seekablestream.supervisor.IdleConfig;
+import org.apache.druid.indexing.seekablestream.supervisor.SeekableStreamSupervisorIOConfig;
+import org.apache.druid.indexing.seekablestream.supervisor.autoscaler.AutoScalerConfig;
 import org.apache.druid.java.util.common.StringUtils;
-import org.joda.time.Duration;
+import org.joda.time.DateTime;
 import org.joda.time.Period;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-public class KafkaSupervisorIOConfig {
+public class KafkaSupervisorIOConfig extends SeekableStreamSupervisorIOConfig
+{
+  public static final String DRUID_DYNAMIC_CONFIG_PROVIDER_KEY = "druid.dynamic.config.provider";
   public static final String BOOTSTRAP_SERVERS_KEY = "bootstrap.servers";
+  public static final String TRUST_STORE_PASSWORD_KEY = "ssl.truststore.password";
+  public static final String KEY_STORE_PASSWORD_KEY = "ssl.keystore.password";
+  public static final String KEY_PASSWORD_KEY = "ssl.key.password";
+  public static final long DEFAULT_POLL_TIMEOUT_MILLIS = 100;
 
-  private final String topic;
-  private final Integer replicas;
-  private final Integer taskCount;
-  private final Duration taskDuration;
-  private final Map<String, String> consumerProperties;
-  private final Duration startDelay;
-  private final Duration period;
-  private final boolean useEarliestOffset;
-  private final Duration completionTimeout;
-  @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "Guava" }) private final Optional<Duration>
-      lateMessageRejectionPeriod;
-  @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "Guava" }) private final Optional<Duration>
-      earlyMessageRejectionPeriod;
-  private final boolean skipOffsetGaps;
+  private final Map<String, Object> consumerProperties;
+  private final long pollTimeout;
+  private final KafkaConfigOverrides configOverrides;
 
-  @JsonCreator public KafkaSupervisorIOConfig(@JsonProperty("topic") String topic,
+  @JsonCreator
+  public KafkaSupervisorIOConfig(
+      @JsonProperty("topic") String topic,
+      @JsonProperty("inputFormat") InputFormat inputFormat,
       @JsonProperty("replicas") Integer replicas,
       @JsonProperty("taskCount") Integer taskCount,
       @JsonProperty("taskDuration") Period taskDuration,
-      @JsonProperty("consumerProperties") Map<String, String> consumerProperties,
+      @JsonProperty("consumerProperties") Map<String, Object> consumerProperties,
+      @Nullable @JsonProperty("autoScalerConfig") AutoScalerConfig autoScalerConfig,
+      @JsonProperty("pollTimeout") Long pollTimeout,
       @JsonProperty("startDelay") Period startDelay,
       @JsonProperty("period") Period period,
       @JsonProperty("useEarliestOffset") Boolean useEarliestOffset,
       @JsonProperty("completionTimeout") Period completionTimeout,
       @JsonProperty("lateMessageRejectionPeriod") Period lateMessageRejectionPeriod,
       @JsonProperty("earlyMessageRejectionPeriod") Period earlyMessageRejectionPeriod,
-      @JsonProperty("skipOffsetGaps") Boolean skipOffsetGaps) {
-    this.topic = Preconditions.checkNotNull(topic, "topic");
+      @JsonProperty("lateMessageRejectionStartDateTime") DateTime lateMessageRejectionStartDateTime,
+      @JsonProperty("configOverrides") KafkaConfigOverrides configOverrides,
+      @JsonProperty("idleConfig") IdleConfig idleConfig
+  )
+  {
+    super(
+        Preconditions.checkNotNull(topic, "topic"),
+        inputFormat,
+        replicas,
+        taskCount,
+        taskDuration,
+        startDelay,
+        period,
+        useEarliestOffset,
+        completionTimeout,
+        lateMessageRejectionPeriod,
+        earlyMessageRejectionPeriod,
+        autoScalerConfig,
+        lateMessageRejectionStartDateTime,
+        idleConfig
+    );
+
     this.consumerProperties = Preconditions.checkNotNull(consumerProperties, "consumerProperties");
-    Preconditions.checkNotNull(consumerProperties.get(BOOTSTRAP_SERVERS_KEY),
-        StringUtils.format("consumerProperties must contain entry for [%s]", BOOTSTRAP_SERVERS_KEY));
-
-    this.replicas = replicas != null ? replicas : 1;
-    this.taskCount = taskCount != null ? taskCount : 1;
-    this.taskDuration = defaultDuration(taskDuration, "PT1H");
-    this.startDelay = defaultDuration(startDelay, "PT5S");
-    this.period = defaultDuration(period, "PT30S");
-    this.useEarliestOffset = useEarliestOffset != null ? useEarliestOffset : false;
-    this.completionTimeout = defaultDuration(completionTimeout, "PT30M");
-    //noinspection Guava
-    this.lateMessageRejectionPeriod =
-        lateMessageRejectionPeriod == null ?
-            Optional.absent() :
-            Optional.of(lateMessageRejectionPeriod.toStandardDuration());
-    //noinspection Guava
-    this.earlyMessageRejectionPeriod =
-        earlyMessageRejectionPeriod == null ?
-            Optional.absent() :
-            Optional.of(earlyMessageRejectionPeriod.toStandardDuration());
-    this.skipOffsetGaps = skipOffsetGaps != null ? skipOffsetGaps : false;
+    Preconditions.checkNotNull(
+        consumerProperties.get(BOOTSTRAP_SERVERS_KEY),
+        StringUtils.format("consumerProperties must contain entry for [%s]", BOOTSTRAP_SERVERS_KEY)
+    );
+    this.pollTimeout = pollTimeout != null ? pollTimeout : DEFAULT_POLL_TIMEOUT_MILLIS;
+    this.configOverrides = configOverrides;
   }
 
-  @JsonProperty public String getTopic() {
-    return topic;
+  @JsonProperty
+  public String getTopic()
+  {
+    return getStream();
   }
 
-  @JsonProperty public Integer getReplicas() {
-    return replicas;
-  }
-
-  @JsonProperty public Integer getTaskCount() {
-    return taskCount;
-  }
-
-  @JsonProperty public Duration getTaskDuration() {
-    return taskDuration;
-  }
-
-  @JsonProperty public Map<String, String> getConsumerProperties() {
+  @JsonProperty
+  public Map<String, Object> getConsumerProperties()
+  {
     return consumerProperties;
   }
 
-  @JsonProperty public Duration getStartDelay() {
-    return startDelay;
+  @JsonProperty
+  public long getPollTimeout()
+  {
+    return pollTimeout;
   }
 
-  @JsonProperty public Duration getPeriod() {
-    return period;
+  @JsonProperty
+  public boolean isUseEarliestOffset()
+  {
+    return isUseEarliestSequenceNumber();
   }
 
-  @JsonProperty public boolean isUseEarliestOffset() {
-    return useEarliestOffset;
+  @JsonProperty
+  public KafkaConfigOverrides getConfigOverrides()
+  {
+    return configOverrides;
   }
 
-  @JsonProperty public Duration getCompletionTimeout() {
-    return completionTimeout;
+  @Override
+  public String toString()
+  {
+    return "KafkaSupervisorIOConfig{" +
+           "topic='" + getTopic() + '\'' +
+           ", replicas=" + getReplicas() +
+           ", taskCount=" + getTaskCount() +
+           ", taskDuration=" + getTaskDuration() +
+           ", consumerProperties=" + consumerProperties +
+           ", autoScalerConfig=" + getAutoScalerConfig() +
+           ", pollTimeout=" + pollTimeout +
+           ", startDelay=" + getStartDelay() +
+           ", period=" + getPeriod() +
+           ", useEarliestOffset=" + isUseEarliestOffset() +
+           ", completionTimeout=" + getCompletionTimeout() +
+           ", earlyMessageRejectionPeriod=" + getEarlyMessageRejectionPeriod() +
+           ", lateMessageRejectionPeriod=" + getLateMessageRejectionPeriod() +
+           ", lateMessageRejectionStartDateTime=" + getLateMessageRejectionStartDateTime() +
+           ", configOverrides=" + getConfigOverrides() +
+           ", idleConfig=" + getIdleConfig() +
+           '}';
   }
 
-  @SuppressWarnings("Guava") @JsonProperty public Optional<Duration> getEarlyMessageRejectionPeriod() {
-    return earlyMessageRejectionPeriod;
-  }
-
-  @SuppressWarnings("Guava") @JsonProperty public Optional<Duration> getLateMessageRejectionPeriod() {
-    return lateMessageRejectionPeriod;
-  }
-
-  @JsonProperty public boolean isSkipOffsetGaps() {
-    return skipOffsetGaps;
-  }
-
-  @Override public String toString() {
-    return "KafkaSupervisorIOConfig{"
-        + "topic='"
-        + topic
-        + '\''
-        + ", replicas="
-        + replicas
-        + ", taskCount="
-        + taskCount
-        + ", taskDuration="
-        + taskDuration
-        + ", consumerProperties="
-        + consumerProperties
-        + ", startDelay="
-        + startDelay
-        + ", period="
-        + period
-        + ", useEarliestOffset="
-        + useEarliestOffset
-        + ", completionTimeout="
-        + completionTimeout
-        + ", lateMessageRejectionPeriod="
-        + lateMessageRejectionPeriod
-        + ", skipOffsetGaps="
-        + skipOffsetGaps
-        + '}';
-  }
-
-  private static Duration defaultDuration(final Period period, final String theDefault) {
-    return (period == null ? new Period(theDefault) : period).toStandardDuration();
-  }
-
-  @Override public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    KafkaSupervisorIOConfig that = (KafkaSupervisorIOConfig) o;
-
-    if (useEarliestOffset != that.useEarliestOffset) {
-      return false;
-    }
-    if (skipOffsetGaps != that.skipOffsetGaps) {
-      return false;
-    }
-    if (topic != null ? !topic.equals(that.topic) : that.topic != null) {
-      return false;
-    }
-    if (replicas != null ? !replicas.equals(that.replicas) : that.replicas != null) {
-      return false;
-    }
-    if (taskCount != null ? !taskCount.equals(that.taskCount) : that.taskCount != null) {
-      return false;
-    }
-    if (taskDuration != null ? !taskDuration.equals(that.taskDuration) : that.taskDuration != null) {
-      return false;
-    }
-    if (consumerProperties != null ?
-        !consumerProperties.equals(that.consumerProperties) :
-        that.consumerProperties != null) {
-      return false;
-    }
-    if (startDelay != null ? !startDelay.equals(that.startDelay) : that.startDelay != null) {
-      return false;
-    }
-    if (period != null ? !period.equals(that.period) : that.period != null) {
-      return false;
-    }
-    if (completionTimeout != null ?
-        !completionTimeout.equals(that.completionTimeout) :
-        that.completionTimeout != null) {
-      return false;
-    }
-    if (lateMessageRejectionPeriod.isPresent() ?
-        !lateMessageRejectionPeriod.equals(that.lateMessageRejectionPeriod) :
-        that.lateMessageRejectionPeriod.isPresent()) {
-      return false;
-    }
-    return earlyMessageRejectionPeriod.isPresent() ?
-        earlyMessageRejectionPeriod.equals(that.earlyMessageRejectionPeriod) :
-        !that.earlyMessageRejectionPeriod.isPresent();
-  }
-
-  @Override public int hashCode() {
-    int result = topic != null ? topic.hashCode() : 0;
-    result = 31 * result + (replicas != null ? replicas.hashCode() : 0);
-    result = 31 * result + (taskCount != null ? taskCount.hashCode() : 0);
-    result = 31 * result + (taskDuration != null ? taskDuration.hashCode() : 0);
-    result = 31 * result + (consumerProperties != null ? consumerProperties.hashCode() : 0);
-    result = 31 * result + (startDelay != null ? startDelay.hashCode() : 0);
-    result = 31 * result + (period != null ? period.hashCode() : 0);
-    result = 31 * result + (useEarliestOffset ? 1 : 0);
-    result = 31 * result + (completionTimeout != null ? completionTimeout.hashCode() : 0);
-    result = 31 * result + (lateMessageRejectionPeriod.isPresent() ? lateMessageRejectionPeriod.hashCode() : 0);
-    result = 31 * result + (earlyMessageRejectionPeriod.isPresent() ? earlyMessageRejectionPeriod.hashCode() : 0);
-    result = 31 * result + (skipOffsetGaps ? 1 : 0);
-    return result;
-  }
 }
