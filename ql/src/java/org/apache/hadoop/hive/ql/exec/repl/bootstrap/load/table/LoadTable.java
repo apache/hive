@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -318,7 +319,8 @@ public class LoadTable {
 
   private Task<?> dropTableTask(Table table) {
     assert(table != null);
-    DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), true, false, event.replicationSpec());
+    TableName tableName = TableName.fromString(table.getTableName(), table.getCatalogName(), table.getDbName());
+    DropTableDesc dropTblDesc = new DropTableDesc(tableName, true, false, event.replicationSpec());
     return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc,
                                       true, (new Path(context.dumpDirectory)).getParent().toString(),
                                       this.metricCollector), context.hiveConf);
