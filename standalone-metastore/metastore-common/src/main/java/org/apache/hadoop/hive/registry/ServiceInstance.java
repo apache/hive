@@ -45,3 +45,6 @@ public interface ServiceInstance {
   Map<String, String> getProperties();
 
 }
+
+
+

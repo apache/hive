@@ -49,4 +49,25 @@ public class RegistryUtilities {
   public static String getUUID() {
     return String.valueOf(UUID.randomUUID());
   }
+
+  /**
+   * Extract username from Kerberos principal.
+   * Example: "user@REALM" -> "user"
+   * 
+   * @param principal Kerberos principal
+   * @return username part of principal
+   */
+  public static String getUserNameFromPrincipal(String principal) {
+    if (principal == null || principal.isEmpty()) {
+      return null;
+    }
+    int atIndex = principal.indexOf('@');
+    if (atIndex > 0) {
+      return principal.substring(0, atIndex);
+    }
+    return principal;
+  }
 }
+
+
+

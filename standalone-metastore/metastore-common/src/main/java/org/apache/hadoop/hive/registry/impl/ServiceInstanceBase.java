@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.registry.ServiceInstance;
+import org.apache.hadoop.hive.metastore.registry.impl.ZkRegistryBase;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.types.AddressTypes;
 import org.apache.hadoop.registry.client.types.Endpoint;
@@ -40,10 +41,12 @@ public class ServiceInstanceBase implements ServiceInstance {
   public ServiceInstanceBase(ServiceRecord srv, String rpcName) throws IOException {
     LOG.trace("Working with ServiceRecord: {}", srv);
     final Endpoint rpc = srv.getInternalEndpoint(rpcName);
-    this.host = RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
-        AddressTypes.ADDRESS_HOSTNAME_FIELD);
-    this.rpcPort = Integer.parseInt(RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
-        AddressTypes.ADDRESS_PORT_FIELD));
+    if (rpc != null && !rpc.addresses.isEmpty()) {
+      this.host = RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
+          AddressTypes.ADDRESS_HOSTNAME_FIELD);
+      this.rpcPort = Integer.parseInt(RegistryTypeUtils.getAddressField(rpc.addresses.get(0),
+          AddressTypes.ADDRESS_PORT_FIELD));
+    }
     this.workerIdentity = srv.get(ZkRegistryBase.UNIQUE_IDENTIFIER);
     this.properties = srv.attributes();
   }
@@ -110,3 +113,4 @@ public class ServiceInstanceBase implements ServiceInstance {
       + host + ":" + rpcPort + "]";
   }
 }
+
