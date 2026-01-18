@@ -100,9 +100,7 @@ public class RawStoreProxy implements InvocationHandler {
           Deadline.stopTimer();
         }
       }
-    } catch (UndeclaredThrowableException e) {
-      throw e.getCause();
-    } catch (InvocationTargetException e) {
+    } catch (UndeclaredThrowableException | InvocationTargetException e) {
       throw e.getCause();
     }
   }
