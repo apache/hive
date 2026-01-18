@@ -41,22 +41,22 @@ public class TestJdbcWithDBTokenStore extends TestJdbcWithMiniKdc{
     miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();
     //using old config value tests backwards compatibility
-    hiveConf.setVar(ConfVars.METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.DELEGATION_TOKEN_STORE_CLS, "org.apache.hadoop.hive.thrift.DBTokenStore");
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerbWithRemoteHMSWithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(confOverlay);
-    String metastorePrincipal = miniHS2.getConfProperty(ConfVars.METASTORE_KERBEROS_PRINCIPAL.varname);
+    String metastorePrincipal = miniHS2.getConfProperty(MetastoreConf.ConfVars.KERBEROS_PRINCIPAL.getHiveName());
     String hs2Principal = miniHS2.getConfProperty(ConfVars.HIVE_SERVER2_KERBEROS_PRINCIPAL.varname);
     String hs2KeyTab = miniHS2.getConfProperty(ConfVars.HIVE_SERVER2_KERBEROS_KEYTAB.varname);
     System.out.println("HS2 principal : " + hs2Principal + " HS2 keytab : " + hs2KeyTab + " Metastore principal : " + metastorePrincipal);
-    System.setProperty(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
+    System.setProperty(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
         MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE));
-    System.setProperty(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname,
+    System.setProperty(MetastoreConf.ConfVars.CONNECT_URL_KEY.getHiveName(),
         MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
-    System.setProperty(ConfVars.METASTORE_USE_THRIFT_SASL.varname,
+    System.setProperty(MetastoreConf.ConfVars.USE_THRIFT_SASL.getHiveName(),
         String.valueOf(MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.USE_THRIFT_SASL)));
-    System.setProperty(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL.varname,
+    System.setProperty(MetastoreConf.ConfVars.KERBEROS_PRINCIPAL.getHiveName(),
         MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.KERBEROS_PRINCIPAL));
-    System.setProperty(ConfVars.METASTORE_KERBEROS_KEYTAB_FILE.varname,
+    System.setProperty(MetastoreConf.ConfVars.KERBEROS_KEYTAB_FILE.getHiveName(),
         MetastoreConf.getVar(hiveConf, MetastoreConf.ConfVars.KERBEROS_KEYTAB_FILE));
   }
 }

@@ -28,6 +28,8 @@ import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.conf.SystemVariables;
+import org.apache.hadoop.hive.metastore.Metastore;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,13 +68,13 @@ public class TestSetProcessor {
   public void testHiddenConfig() throws Exception {
     runSetProcessor("");
     String output = baos.toString();
-    Assert.assertFalse(output.contains(HiveConf.ConfVars.METASTORE_PWD.varname + "="));
+    Assert.assertFalse(output.contains(MetastoreConf.ConfVars.PWD.getHiveName() + "="));
     Assert.assertFalse(output.contains(HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname + "="));
   }
 
   @Test
   public void testHiddenConfigSetVarName() throws CommandProcessorException {
-    runSetProcessor(HiveConf.ConfVars.METASTORE_PWD.varname);
+    runSetProcessor(MetastoreConf.ConfVars.PWD.getHiveName());
     String output = baos.toString();
     Assert.assertTrue(output.contains("hidden"));
   }

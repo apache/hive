@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 
 
 import static org.junit.Assert.assertTrue;
+
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Test;
 
 
@@ -43,9 +45,9 @@ public class TestMetaStoreAuthorization {
   private int port;
 
   public void setup() throws Exception {
-    conf.setBoolVar(HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS, true);
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
-    conf.setTimeVar(ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY, 60, TimeUnit.SECONDS);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.AUTHORIZATION_STORAGE_AUTH_CHECKS, true);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 3);
+    MetastoreConf.setTimeVar( conf, MetastoreConf.ConfVars.CLIENT_CONNECT_RETRY_DELAY, 60, TimeUnit.SECONDS);
   }
 
   @Test

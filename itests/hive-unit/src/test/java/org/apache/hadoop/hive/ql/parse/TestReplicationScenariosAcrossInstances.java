@@ -707,10 +707,17 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   @Test
   public void testReplLoadFromSourceUsingWithClause() throws Throwable {
     HiveConf replicaConf = replica.getConf();
-    List<String> withConfigs = Arrays.asList(
-            "'hive.metastore.warehouse.dir'='" + replicaConf.getVar(HiveConf.ConfVars.METASTORE_WAREHOUSE) + "'",
-            "'hive.metastore.uris'='" + replicaConf.getVar(HiveConf.ConfVars.METASTORE_URIS) + "'",
-            "'hive.repl.replica.functions.root.dir'='" + replicaConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR) + "'");
+    List<String> withConfigs =
+        Arrays.asList(
+            "'hive.metastore.warehouse.dir'='"
+                + MetastoreConf.getVar(replicaConf, MetastoreConf.ConfVars.WAREHOUSE)
+                + "'",
+            "'hive.metastore.uris'='"
+                + MetastoreConf.getVar(replicaConf, MetastoreConf.ConfVars.THRIFT_URIS)
+                + "'",
+            "'hive.repl.replica.functions.root.dir'='"
+                + replicaConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR)
+                + "'");
 
     ////////////  Bootstrap   ////////////
     WarehouseInstance.Tuple bootstrapTuple = primary

@@ -103,15 +103,15 @@ public class TestPermsGrp {
     ExitUtil.resetFirstHaltException();
     Policy.setPolicy(new DerbyPolicy());
 
-    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
-    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_FAILURE_RETRIES, 3);
-    hcatConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 60, TimeUnit.SECONDS);
+    MetastoreConf.setLongVar(hcatConf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 3);
+      MetastoreConf.setLongVar(hcatConf, MetastoreConf.ConfVars.THRIFT_FAILURE_RETRIES, 3);
+      MetastoreConf.setTimeVar(hcatConf, MetastoreConf.ConfVars.CLIENT_SOCKET_TIMEOUT, 60, TimeUnit.SECONDS);
     hcatConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    hcatConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
+    hcatConf.set(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.WAREHOUSE));
-    hcatConf.set(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname,
+    hcatConf.set(MetastoreConf.ConfVars.CONNECT_URL_KEY.getHiveName(),
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
-    hcatConf.set(HiveConf.ConfVars.METASTORE_URIS.varname,
+    hcatConf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(),
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS));
     clientWH = new Warehouse(hcatConf);
     msc = new HiveMetaStoreClient(hcatConf);
@@ -203,14 +203,14 @@ public class TestPermsGrp {
     argsList.add("-Dhive.support.concurrency=false");
     argsList
         .add("-Dhive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    argsList.add("-D" + HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES.varname + "=3");
-    argsList.add("-D" + HiveConf.ConfVars.METASTORE_THRIFT_FAILURE_RETRIES.varname + "=3");
-    argsList.add("-D" + HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT.varname + "=60");
-    argsList.add("-D" + HiveConf.ConfVars.METASTORE_WAREHOUSE.varname + "="
+    argsList.add("-D" + MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES.getHiveName() + "=3");
+    argsList.add("-D" + MetastoreConf.ConfVars.THRIFT_FAILURE_RETRIES.getHiveName() + "=3");
+    argsList.add("-D" + MetastoreConf.ConfVars.CLIENT_SOCKET_TIMEOUT.getHiveName() + "=60");
+    argsList.add("-D" + MetastoreConf.ConfVars.WAREHOUSE.getHiveName() + "="
         + MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.WAREHOUSE));
-    argsList.add("-D" + HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname + "="
+    argsList.add("-D" + MetastoreConf.ConfVars.CONNECT_URL_KEY.getHiveName() + "="
         + MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
-    argsList.add("-D" + HiveConf.ConfVars.METASTORE_URIS.varname + "="
+    argsList.add("-D" + MetastoreConf.ConfVars.THRIFT_URIS.getHiveName() + "="
         + MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS));
     argsList.add("-D" + HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname + "=" + HCatSemanticAnalyzer.class.getName());
     argsList.add("-D" + HiveConf.ConfVars.PRE_EXEC_HOOKS.varname + "=");

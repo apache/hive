@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -98,8 +99,11 @@ public class TestReplChangeManager {
     configuration.set("dfs.client.use.datanode.hostname", "true");
     permDdfs = new MiniDFSCluster.Builder(configuration).numDataNodes(2).format(true).build();
     permhiveConf = new HiveConf(TestReplChangeManager.class);
-    permhiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
-      "hdfs://" + permDdfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    permhiveConf.set(
+        MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
+        "hdfs://"
+            + permDdfs.getNameNode().getHostAndPort()
+            + MetastoreConf.ConfVars.WAREHOUSE.getDefaultVal().toString());
     permhiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     permCmroot = "hdfs://" + permDdfs.getNameNode().getHostAndPort() + "/cmroot";
     permhiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, permCmroot);
@@ -110,8 +114,11 @@ public class TestReplChangeManager {
   private static void internalSetUp() throws Exception {
     m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(2).format(true).build();
     hiveConf = new HiveConf(TestReplChangeManager.class);
-    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
-      "hdfs://" + m_dfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTORE_WAREHOUSE.defaultStrVal);
+    hiveConf.set(
+        MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
+        "hdfs://"
+            + m_dfs.getNameNode().getHostAndPort()
+            + MetastoreConf.ConfVars.WAREHOUSE.getDefaultVal().toString());
     hiveConf.setBoolean(HiveConf.ConfVars.REPL_CM_ENABLED.varname, true);
     cmroot = "hdfs://" + m_dfs.getNameNode().getHostAndPort() + "/cmroot";
     hiveConf.set(HiveConf.ConfVars.REPL_CM_DIR.varname, cmroot);

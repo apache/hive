@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
@@ -642,7 +643,7 @@ public class HCatUtil {
     }
 
     if (conf.get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
-      hiveConf.setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE,
+      MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.TOKEN_SIGNATURE,
         conf.get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE));
     }
 

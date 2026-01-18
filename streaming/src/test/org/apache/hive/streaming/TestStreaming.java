@@ -202,7 +202,7 @@ public class TestStreaming {
     conf.set("fs.raw.impl", RawFileSystem.class.getName());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
       "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    conf.setBoolVar(HiveConf.ConfVars.METASTORE_EXECUTE_SET_UGI, true);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
 
     dbFolder.create();
@@ -1292,7 +1292,7 @@ public class TestStreaming {
 
     HiveConf houseKeeperConf = new HiveConf(conf);
     //ensure txn timesout
-    houseKeeperConf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 100, TimeUnit.MILLISECONDS);
+    MetastoreConf.setTimeVar(houseKeeperConf, MetastoreConf.ConfVars.TXN_TIMEOUT, 100, TimeUnit.MILLISECONDS);
     AcidHouseKeeperService houseKeeperService = new AcidHouseKeeperService();
     houseKeeperService.setConf(houseKeeperConf);
 
@@ -1330,7 +1330,7 @@ public class TestStreaming {
   @Test
   public void testHeartbeat() throws Exception {
     int transactionBatch = 20;
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 200, TimeUnit.MILLISECONDS);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 200, TimeUnit.MILLISECONDS);
     StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
       .withFieldDelimiter(',')
       .build();
@@ -1368,7 +1368,7 @@ public class TestStreaming {
         Thread.sleep(10);
       }
     } finally {
-      conf.unset(HiveConf.ConfVars.HIVE_TXN_TIMEOUT.varname);
+      conf.unset(MetastoreConf.ConfVars.TXN_TIMEOUT.getHiveName());
       connection.close();
     }
   }

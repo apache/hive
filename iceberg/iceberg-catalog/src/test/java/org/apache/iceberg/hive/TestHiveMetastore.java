@@ -166,7 +166,7 @@ public class TestHiveMetastore {
       this.executorService.submit(() -> server.serve());
 
       // in Hive3, setting this as a system prop ensures that it will be picked up whenever a new HiveConf is created
-      System.setProperty(HiveConf.ConfVars.METASTORE_URIS.varname, hiveConf.getVar(HiveConf.ConfVars.METASTORE_URIS));
+      System.setProperty(ConfVars.THRIFT_URIS.getHiveName(), MetastoreConf.getVar(hiveConf, ConfVars.THRIFT_URIS));
 
       this.clientPool = new HiveClientPool(1, hiveConf);
     } catch (Exception e) {
@@ -244,7 +244,7 @@ public class TestHiveMetastore {
 
   private TServer newThriftServer(TServerSocket socket, int poolSize, HiveConf conf) throws Exception {
     HiveConf serverConf = new HiveConf(conf);
-    serverConf.set(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname, "jdbc:derby:" + DERBY_PATH + ";create=true");
+    serverConf.set(MetastoreConf.ConfVars.CONNECT_URL_KEY.getHiveName(), "jdbc:derby:" + DERBY_PATH + ";create=true");
     baseHandler = HMS_HANDLER_CTOR.newInstance("new db based metaserver", serverConf);
     IHMSHandler handler = GET_BASE_HMS_HANDLER.invoke(serverConf, baseHandler, false);
 
@@ -268,12 +268,12 @@ public class TestHiveMetastore {
   }
 
   private void initConf(HiveConf conf, int port, boolean directSql) {
-    conf.set(HiveConf.ConfVars.METASTORE_URIS.varname, "thrift://localhost:" + port);
-    conf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, "file:" + HIVE_WAREHOUSE_DIR.getAbsolutePath());
+    conf.set(ConfVars.THRIFT_URIS.getHiveName(), "thrift://localhost:" + port);
+    conf.set(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(), "file:" + HIVE_WAREHOUSE_DIR.getAbsolutePath());
     conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname,
         "file:" + HIVE_EXTERNAL_WAREHOUSE_DIR.getAbsolutePath());
-    conf.set(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL.varname, String.valueOf(directSql));
-    conf.set(HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES.varname, "false");
+    conf.set(MetastoreConf.ConfVars.TRY_DIRECT_SQL.getHiveName(), String.valueOf(directSql));
+    conf.set(MetastoreConf.ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES.getHiveName(), "false");
     conf.set("iceberg.hive.client-pool-size", "2");
     // set to false so that TxnManager#checkLock does not throw exception when using UNSET data type operation
     // in the requested lock component
