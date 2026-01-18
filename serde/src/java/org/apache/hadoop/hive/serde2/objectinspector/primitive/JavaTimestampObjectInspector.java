@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class JavaTimestampObjectInspector
@@ -27,6 +28,10 @@ public class JavaTimestampObjectInspector
 
   protected JavaTimestampObjectInspector() {
     super(TypeInfoFactory.timestampTypeInfo);
+  }
+
+  protected JavaTimestampObjectInspector(PrimitiveTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   public TimestampWritableV2 getPrimitiveWritableObject(Object o) {

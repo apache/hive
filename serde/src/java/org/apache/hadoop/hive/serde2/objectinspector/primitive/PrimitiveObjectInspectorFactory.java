@@ -89,8 +89,12 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableDateObjectInspector();
   public static final WritableTimestampObjectInspector writableTimestampObjectInspector =
       new WritableTimestampObjectInspector();
+  public static final WritableTimestampObjectInspector writableNanoTimestampObjectInspector =
+      new WritableTimestampObjectInspector(TypeInfoFactory.nanoTimestampTypeInfo);
   public static final WritableTimestampLocalTZObjectInspector writableTimestampTZObjectInspector =
       new WritableTimestampLocalTZObjectInspector(TypeInfoFactory.timestampLocalTZTypeInfo);
+  public static final WritableTimestampLocalTZObjectInspector writableNanoTimestampTZObjectInspector =
+      new WritableTimestampLocalTZObjectInspector(TypeInfoFactory.timestampNanoLocalTZTypeInfo);
   public static final WritableHiveIntervalYearMonthObjectInspector writableHiveIntervalYearMonthObjectInspector =
       new WritableHiveIntervalYearMonthObjectInspector();
   public static final WritableHiveIntervalDayTimeObjectInspector writableHiveIntervalDayTimeObjectInspector =
@@ -139,6 +143,10 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         writableBinaryObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.decimalTypeInfo, writableHiveDecimalObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.nanoTimestampTypeInfo,
+        writableNanoTimestampObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.timestampNanoLocalTZTypeInfo,
+        writableNanoTimestampTZObjectInspector);
   }
 
   private static Map<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>
@@ -193,8 +201,12 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaDateObjectInspector();
   public static final JavaTimestampObjectInspector javaTimestampObjectInspector =
       new JavaTimestampObjectInspector();
+  public static final JavaTimestampObjectInspector javaNanoTimestampObjectInspector =
+      new JavaTimestampObjectInspector(TypeInfoFactory.nanoTimestampTypeInfo);
   public static final JavaTimestampLocalTZObjectInspector javaTimestampTZObjectInspector =
       new JavaTimestampLocalTZObjectInspector(TypeInfoFactory.timestampLocalTZTypeInfo);
+  public static final JavaTimestampLocalTZObjectInspector javaNanoTimestampTZObjectInspector =
+      new JavaTimestampLocalTZObjectInspector(TypeInfoFactory.timestampNanoLocalTZTypeInfo);
   public static final JavaHiveIntervalYearMonthObjectInspector javaHiveIntervalYearMonthObjectInspector =
       new JavaHiveIntervalYearMonthObjectInspector();
   public static final JavaHiveIntervalDayTimeObjectInspector javaHiveIntervalDayTimeObjectInspector =
@@ -232,7 +244,10 @@ public final class PrimitiveObjectInspectorFactory {
         javaDateObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME),
         javaTimestampObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.nanoTimestampTypeInfo, javaNanoTimestampObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.timestampLocalTZTypeInfo, javaTimestampTZObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.timestampNanoLocalTZTypeInfo,
+        javaNanoTimestampTZObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME),
         javaHiveIntervalYearMonthObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME),

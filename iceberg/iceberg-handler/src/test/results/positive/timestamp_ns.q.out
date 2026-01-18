@@ -1,0 +1,110 @@
+PREHOOK: query: CREATE TABLE t (
+  ts_us     timestamp,
+  ts_ns     timestamp(9),
+  ts_tz_us  timestamp with local time zone,
+  ts_tz_ns  timestamp with local time zone(9)
+)
+STORED BY ICEBERG
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (
+  ts_us     timestamp,
+  ts_ns     timestamp(9),
+  ts_tz_us  timestamp with local time zone,
+  ts_tz_ns  timestamp with local time zone(9)
+)
+STORED BY ICEBERG
+TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: INSERT INTO t VALUES (
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789'
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: INSERT INTO t VALUES (
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789'
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+PREHOOK: query: SELECT ts_ns FROM t ORDER BY ts_ns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT ts_ns FROM t ORDER BY ts_ns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789
+PREHOOK: query: SELECT ts_tz_ns FROM t ORDER BY ts_tz_ns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT ts_tz_ns FROM t ORDER BY ts_tz_ns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789 US/Pacific
+PREHOOK: query: SELECT CAST(ts_ns AS STRING) FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(ts_ns AS STRING) FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789
+PREHOOK: query: SELECT CAST(ts_tz_ns AS STRING) FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(ts_tz_ns AS STRING) FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789 US/Pacific
+PREHOOK: query: SELECT * FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456	2025-12-18 10:15:30.123456789	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific
+PREHOOK: query: CREATE TABLE tgt STORED BY ICEBERG TBLPROPERTIES ('format-version'='3') AS SELECT * FROM t
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tgt
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE TABLE tgt STORED BY ICEBERG TBLPROPERTIES ('format-version'='3') AS SELECT * FROM t
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tgt
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: tgt.ts_ns SIMPLE [(t)t.FieldSchema(name:ts_ns, type:timestamp(9), comment:null), ]
+POSTHOOK: Lineage: tgt.ts_tz_ns SIMPLE [(t)t.FieldSchema(name:ts_tz_ns, type:timestamp with local time zone(9), comment:null), ]
+POSTHOOK: Lineage: tgt.ts_tz_us SIMPLE [(t)t.FieldSchema(name:ts_tz_us, type:timestamp with local time zone, comment:null), ]
+POSTHOOK: Lineage: tgt.ts_us SIMPLE [(t)t.FieldSchema(name:ts_us, type:timestamp, comment:null), ]
+PREHOOK: query: SELECT * FROM tgt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM tgt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456	2025-12-18 10:15:30.123456789	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific

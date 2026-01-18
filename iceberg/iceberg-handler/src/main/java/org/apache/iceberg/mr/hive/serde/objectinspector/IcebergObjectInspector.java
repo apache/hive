@@ -133,6 +133,11 @@ public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectI
       case TIMESTAMP:
         boolean adjustToUTC = ((Types.TimestampType) primitiveType).shouldAdjustToUTC();
         return adjustToUTC ? TIMESTAMP_INSPECTOR_WITH_TZ : TIMESTAMP_INSPECTOR;
+      case TIMESTAMP_NANO:
+        boolean adjustUTC = ((Types.TimestampNanoType) primitiveType).shouldAdjustToUTC();
+        return adjustUTC ?
+            IcebergTimestampWithZoneObjectInspectorHive3.get(9) :
+            IcebergTimestampObjectInspectorHive3.get(9);
       case TIME:
         return IcebergTimeObjectInspector.get();
       default:
