@@ -726,19 +726,17 @@ Stage-0
     limit:5
     Stage-1
       Reducer 2 vectorized
-      File Output Operator [FS_12]
-        Limit [LIM_11] (rows=5/5 width=178)
+      File Output Operator [FS_10]
+        Limit [LIM_9] (rows=5/5 width=178)
           Number of rows:5
-          Select Operator [SEL_10] (rows=500/8 width=178)
+          Select Operator [SEL_8] (rows=500/5 width=178)
             Output:["_col0","_col1"]
           <-Map 1 [SIMPLE_EDGE] vectorized
-            SHUFFLE [RS_9]
-              Select Operator [SEL_8] (rows=500/36 width=178)
+            SHUFFLE [RS_7]
+              Select Operator [SEL_6] (rows=500/500 width=178)
                 Output:["_col0","_col1"]
-                Top N Key Operator [TNK_7] (rows=500/36 width=178)
-                  keys:key,top n:5
-                  TableScan [TS_0] (rows=500/500 width=178)
-                    default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
+                TableScan [TS_0] (rows=500/500 width=178)
+                  default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: create table orc_merge5_n1 (userid bigint, string1 string, subtype double, decimal1 decimal(38,0), ts timestamp) stored as orc
 PREHOOK: type: CREATETABLE
