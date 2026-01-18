@@ -352,6 +352,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
 
       case TIMESTAMP:
+      case TIMESTAMP_NS:
         TimestampWritableV2 t = (reuse == null ? new TimestampWritableV2() :
             (TimestampWritableV2) reuse);
         byte[] bytes = new byte[TimestampWritableV2.BINARY_SORTABLE_LENGTH];
@@ -362,6 +363,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
         t.setBinarySortable(bytes, 0);
         return t;
       case TIMESTAMPLOCALTZ:
+      case TIMESTAMPTZ_NS:
         TimestampLocalTZWritable tstz = (reuse == null ? new TimestampLocalTZWritable() :
             (TimestampLocalTZWritable) reuse);
         byte[] data = new byte[TimestampLocalTZWritable.BINARY_SORTABLE_LENGTH];
@@ -733,13 +735,15 @@ public class BinarySortableSerDe extends AbstractSerDe {
         serializeInt(buffer, v, invert);
         return;
       }
-      case TIMESTAMP: {
+      case TIMESTAMP:
+      case TIMESTAMP_NS:{
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
         TimestampWritableV2 t = toi.getPrimitiveWritableObject(o);
         serializeTimestampWritable(buffer, t, invert);
         return;
       }
-      case TIMESTAMPLOCALTZ: {
+      case TIMESTAMPLOCALTZ:
+      case TIMESTAMPTZ_NS:{
         TimestampLocalTZObjectInspector toi = (TimestampLocalTZObjectInspector) poi;
         TimestampLocalTZWritable t = toi.getPrimitiveWritableObject(o);
         serializeTimestampTZWritable(buffer, t, invert);

@@ -84,6 +84,12 @@ public class ColumnType {
 
   public static final String VARIANT_TYPE_NAME = "variant";
 
+  public static final String TIMESTAMP_NS = "nanosecond timestamp";
+
+  public static final String TIMESTAMPTZ_NS = "nanosecond timestamp with local time zone";
+
+  public static final String NANOSECOND = "nanosecond";
+
   public static final String LIST_COLUMNS = "columns";
 
   public static final String LIST_COLUMN_TYPES = "columns.types";
@@ -109,7 +115,9 @@ public class ColumnType {
     INTERVAL_DAY_TIME_TYPE_NAME,
     DECIMAL_TYPE_NAME,
     BINARY_TYPE_NAME,
-    TIMESTAMPTZ_TYPE_NAME);
+    TIMESTAMPTZ_TYPE_NAME,
+    TIMESTAMPTZ_NS,
+    TIMESTAMP_NS);
 
   public static final Set<String> StringTypes = StringUtils.asSet(
       STRING_TYPE_NAME,
@@ -200,6 +208,7 @@ public class ColumnType {
     STRUCT_TYPE_NAME,
     UNION_TYPE_NAME,
     VARIANT_TYPE_NAME,
+    NANOSECOND,
     LIST_COLUMNS,
     LIST_COLUMN_TYPES,
     COLUMN_NAME_DELIMITER

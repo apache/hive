@@ -59,6 +59,7 @@ public final class TypeInfoFactory {
   public static final PrimitiveTypeInfo intervalYearMonthTypeInfo = new PrimitiveTypeInfo(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME);
   public static final PrimitiveTypeInfo intervalDayTimeTypeInfo = new PrimitiveTypeInfo(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME);
   public static final PrimitiveTypeInfo binaryTypeInfo = new PrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME);
+  public static final PrimitiveTypeInfo timestampNanoTypeInfo = new PrimitiveTypeInfo(serdeConstants.TIMESTAMP_NS_TYPE_NAME);
 
   /**
    * A DecimalTypeInfo instance that has max precision and max scale.
@@ -71,6 +72,9 @@ public final class TypeInfoFactory {
    */
   public static final TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo(
       ZoneId.systemDefault().getId());
+
+  public static final TimestampLocalTZTypeInfo timestampNanosTZTypeInfo =
+      new TimestampLocalTZTypeInfo(serdeConstants.TIMESTAMPTZ_NS_TYPE_NAME, ZoneId.systemDefault().getId());
 
   public static final PrimitiveTypeInfo unknownTypeInfo = new PrimitiveTypeInfo("unknown");
 
@@ -98,6 +102,8 @@ public final class TypeInfoFactory {
     cachedPrimitiveTypeInfo.put(serdeConstants.BINARY_TYPE_NAME, binaryTypeInfo);
     cachedPrimitiveTypeInfo.put(decimalTypeInfo.getQualifiedName(), decimalTypeInfo);
     cachedPrimitiveTypeInfo.put("unknown", unknownTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMP_NS_TYPE_NAME, timestampNanoTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMPTZ_NS_TYPE_NAME, timestampNanosTZTypeInfo);
   }
 
   /**
