@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.tools;
 
 import com.google.common.base.Joiner;
 import com.google.common.net.HostAndPort;
+
+import org.apache.hadoop.hive.metastore.Batchable;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -632,7 +634,14 @@ public final class Util {
                                   @NotNull List<String> arguments,
                                   int npartitions) throws TException {
     Table table = client.getTable(dbName, tableName);
-    client.addPartitions(createManyPartitions(table, parameters, arguments, npartitions));
+    List<Partition> partitions = createManyPartitions(table, parameters, arguments, npartitions);
+    new Batchable<Partition, Void>() {
+      @Override
+      public List<Void> run(List<Partition> input) throws Exception {
+        client.addPartitions(input);
+        return null;
+      }
+    }.runBatched(1000, partitions);
     return null;
   }
 
@@ -675,7 +684,14 @@ public final class Util {
                                            List<List<String>> values) {
     throwingSupplierWrapper(() -> {
       Table table = client.getTable(dbName, tableName);
-      client.addPartitions(createManyPartitions(table, parameters, values));
+      List<Partition> partitions = createManyPartitions(table, parameters, values);
+      new Batchable<Partition, Void>() {
+        @Override
+        public List<Void> run(List<Partition> input) throws Exception {
+          client.addPartitions(input);
+          return null;
+        }
+      }.runBatched(1000, partitions);
       return null;
     });
   }

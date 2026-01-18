@@ -62,10 +62,8 @@ import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetP
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsByPs;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetPartitionsStat;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkGetTable;
-import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListAllTables;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListDatabases;
-import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListManyPartitions;
-import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListPartition;
+import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListPartitions;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkListTables;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkOpenTxns;
 import static org.apache.hadoop.hive.metastore.tools.HMSBenchmarks.benchmarkPartitionManagement;
@@ -271,82 +269,42 @@ public class BenchmarkTool implements Runnable {
         .doSanitize(doSanitize)
         .add("getNid", () -> benchmarkGetNotificationId(bench, bData))
         .add("listDatabases", () -> benchmarkListDatabases(bench, bData))
-        .add("listTables", () -> benchmarkListAllTables(bench, bData))
+        .add("listTables", () -> benchmarkListTables(bench, bData, instances))
         .add("getTable", () -> benchmarkGetTable(bench, bData))
         .add("createTable", () -> benchmarkTableCreate(bench, bData))
         .add("dropTable", () -> benchmarkDeleteCreate(bench, bData))
         .add("dropTableWithPartitions",
-            () -> benchmarkDeleteWithPartitions(bench, bData, 1, nParameters[0]))
-        .add("dropTableMetadataWithPartitions",
-            () -> benchmarkDeleteMetaOnlyWithPartitions(bench, bData, 1, nParameters[0]))
-        .add("addPartition", () -> benchmarkCreatePartition(bench, bData, 1))
-        .add("dropPartition", () -> benchmarkDropPartition(bench, bData, 1))
-        .add("listPartition", () -> benchmarkListPartition(bench, bData))
-        .add("getPartition",
-            () -> benchmarkGetPartitions(bench, bData, 1))
+            () -> benchmarkDeleteWithPartitions(bench, bData, instances, nParameters[0]))
+        .add("dropTableMetaOnlyWithPartitions",
+            () -> benchmarkDeleteMetaOnlyWithPartitions(bench, bData, instances, nParameters[0]))
+        .add("addPartition", () -> benchmarkCreatePartition(bench, bData, instances))
+        .add("addPartitions", () -> benchmarkCreatePartitions(bench, bData, instances))
+        .add("dropPartition", () -> benchmarkDropPartition(bench, bData, instances))
+        .add("dropPartitions", () -> benchmarkDropPartitions(bench, bData, instances))
+        .add("listPartitions", () -> benchmarkListPartitions(bench, bData, instances))
+        .add("alterPartitions", () -> benchmarkAlterPartitions(bench, bData, instances))
+        .add("getPartitions",
+            () -> benchmarkGetPartitions(bench, bData, instances))
         .add("getPartitionNames",
-            () -> benchmarkGetPartitionNames(bench, bData, 1))
+            () -> benchmarkGetPartitionNames(bench, bData, instances))
         .add("getPartitionsByNames",
-            () -> benchmarkGetPartitionsByName(bench, bData, 1))
+            () -> benchmarkGetPartitionsByName(bench, bData, instances))
         .add("getPartitionsByFilter",
-            () -> benchmarkGetPartitionsByFilter(bench, bData, 1))
+            () -> benchmarkGetPartitionsByFilter(bench, bData, instances))
         .add("getPartitionsByPs",
-            () -> benchmarkGetPartitionsByPs(bench, bData, 1))
+            () -> benchmarkGetPartitionsByPs(bench, bData, instances))
         .add("getPartitionsStat",
-            () -> benchmarkGetPartitionsStat(bench, bData, 1))
+            () -> benchmarkGetPartitionsStat(bench, bData, instances))
         .add("updatePartitionsStat",
-            () -> benchmarkUpdatePartitionsStat(bench, bData, 1))
+            () -> benchmarkUpdatePartitionsStat(bench, bData, instances))
         .add("renameTable",
-            () -> benchmarkRenameTable(bench, bData, 1))
+            () -> benchmarkRenameTable(bench, bData, instances))
         .add("dropDatabase",
-            () -> benchmarkDropDatabase(bench, bData, 1))
-        .add("openTxn",
-            () -> benchmarkOpenTxns(bench, bData, 1))
+            () -> benchmarkDropDatabase(bench, bData, instances))
+        .add("openTxns",
+            () -> benchmarkOpenTxns(bench, bData, instances))
         .add("PartitionManagementTask",
-            () -> benchmarkPartitionManagement(bench, bData, 1));
-
-    for (int howMany: instances) {
-      suite.add("listTables" + '.' + howMany,
-          () -> benchmarkListTables(bench, bData, howMany))
-          .add("dropTableWithPartitions" + '.' + howMany,
-              () -> benchmarkDeleteWithPartitions(bench, bData, howMany, nParameters[0]))
-          .add("dropTableMetaOnlyWithPartitions" + '.' + howMany,
-              () -> benchmarkDeleteMetaOnlyWithPartitions(bench, bData, howMany, nParameters[0]))
-          .add("listPartitions" + '.' + howMany,
-              () -> benchmarkListManyPartitions(bench, bData, howMany))
-          .add("getPartitions" + '.' + howMany,
-              () -> benchmarkGetPartitions(bench, bData, howMany))
-          .add("getPartitionNames" + '.' + howMany,
-              () -> benchmarkGetPartitionNames(bench, bData, howMany))
-          .add("getPartitionsByNames" + '.' + howMany,
-              () -> benchmarkGetPartitionsByName(bench, bData, howMany))
-          .add("getPartitionsByFilter" + '.' + howMany,
-              () -> benchmarkGetPartitionsByFilter(bench, bData, howMany))
-          .add("getPartitionsByPs" + '.' + howMany,
-              () -> benchmarkGetPartitionsByPs(bench, bData, howMany))
-          .add("getPartitionsStat" + '.' + howMany,
-              () -> benchmarkGetPartitionsStat(bench, bData, howMany))
-          .add("updatePartitionsStat" + '.' + howMany,
-              () -> benchmarkUpdatePartitionsStat(bench, bData, howMany))
-          .add("addPartitions" + '.' + howMany,
-              () -> benchmarkCreatePartitions(bench, bData, howMany))
-          .add("dropPartitions" + '.' + howMany,
-              () -> benchmarkDropPartitions(bench, bData, howMany))
-          .add("alterPartitions" + '.' + howMany,
-              () -> benchmarkAlterPartitions(bench, bData, howMany))
-          .add("renameTable" + '.' + howMany,
-              () -> benchmarkRenameTable(bench, bData, howMany))
-          .add("dropDatabase" + '.' + howMany,
-              () -> benchmarkDropDatabase(bench, bData, howMany))
-          .add("addPartition" + '.' + howMany,
-              () -> benchmarkCreatePartition(bench, bData, howMany))
-          .add("dropPartition" + '.' + howMany,
-              () -> benchmarkDropPartition(bench, bData, howMany))
-          .add("openTxns" + '.' + howMany,
-              () -> benchmarkOpenTxns(bench, bData, howMany))
-          .add("PartitionManagementTask" + "." + howMany,
-              () -> benchmarkPartitionManagement(bench, bData, howMany));
-    }
+            () -> benchmarkPartitionManagement(bench, bData, instances));
 
     List<String> toRun = suite.listMatching(matches, exclude);
     if (toRun.isEmpty()) {
