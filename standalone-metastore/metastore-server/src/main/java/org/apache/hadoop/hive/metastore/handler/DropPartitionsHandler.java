@@ -60,15 +60,16 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.metastore.HMSHandler.addTruncateBaseFile;
+import static org.apache.hadoop.hive.metastore.handler.TruncateTableHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkTableDataShouldBeDeleted;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getWriteId;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMustPurge;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+@RequestHandler(requestBody = DropPartitionsRequest.class)
 public class DropPartitionsHandler
-    extends AbstractOperationHandler<DropPartitionsRequest, DropPartitionsHandler.DropPartitionsResult> {
+    extends AbstractRequestHandler<DropPartitionsRequest, DropPartitionsHandler.DropPartitionsResult> {
   private static final Logger LOG = LoggerFactory.getLogger(DropPartitionsHandler.class);
   private TableName tableName;
   private Table table;
@@ -290,7 +291,7 @@ public class DropPartitionsHandler
   }
 
   @Override
-  protected String getProgress() {
+  protected String getRequestProgress() {
     return "Dropping partitions";
   }
 

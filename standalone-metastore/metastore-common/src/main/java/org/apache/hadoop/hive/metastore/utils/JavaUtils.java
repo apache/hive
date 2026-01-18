@@ -128,6 +128,18 @@ public class JavaUtils {
     }
   }
 
+  public static <T> T getField(Object payload, String methodName) {
+    try {
+      Method method = payload.getClass().getDeclaredMethod(methodName);
+      method.setAccessible(true);
+      return (T) method.invoke(payload);
+    } catch (Exception e) {
+      LOG.error("Unable to invoke the method: {} of the instance: {}, message: {}",
+          methodName, payload, e.getMessage());
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * Utility method for ACID to normalize logging info.  Matches
    * org.apache.hadoop.hive.metastore.api.LockRequest#toString
