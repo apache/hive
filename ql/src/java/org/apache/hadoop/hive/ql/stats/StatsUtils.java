@@ -832,6 +832,7 @@ public class StatsUtils {
       cs.setNumNulls(csd.getBinaryStats().getNumNulls());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
+      cs.setCountDistint(csd.getTimestampStats().getNumDVs());
       cs.setNumNulls(csd.getTimestampStats().getNumNulls());
       Long lowVal = (csd.getTimestampStats().getLowValue() != null) ? csd.getTimestampStats().getLowValue()
           .getSecondsSinceEpoch() : null;
@@ -862,6 +863,7 @@ public class StatsUtils {
       cs.setHistogram(csd.getDecimalStats().getHistogram());
     } else if (colTypeLowerCase.equals(serdeConstants.DATE_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfDate());
+      cs.setCountDistint(csd.getDateStats().getNumDVs());
       cs.setNumNulls(csd.getDateStats().getNumNulls());
       Long lowVal = (csd.getDateStats().getLowValue() != null) ? csd.getDateStats().getLowValue()
           .getDaysSinceEpoch() : null;
@@ -2086,11 +2088,7 @@ public class StatsUtils {
     // compute product of distinct values of grouping columns
     for (ColStatistics cs : colStats) {
       if (cs != null) {
-        long ndv = cs.getCountDistint();
-        if (cs.getNumNulls() > 0) {
-          ndv = StatsUtils.safeAdd(ndv, 1);
-        }
-        ndvValues.add(ndv);
+        ndvValues.add(getGroupingColumnNdv(cs, parentStats));
       } else {
         if (parentStats.getColumnStatsState().equals(Statistics.State.COMPLETE)) {
           // the column must be an aggregate column inserted by GBY. We
@@ -2108,5 +2106,21 @@ public class StatsUtils {
     }
 
     return ndvValues;
+  }
+
+  private static long getGroupingColumnNdv(ColStatistics cs, Statistics parentStats) {
+    long ndv = cs.getCountDistint();
+
+    if (ndv == 0L) {
+      // Typically, ndv == 0 means "NDV unknown", and no safe GROUPBY adjustments are possible
+      // However, there is a special exception for "constant NULL" columns. They are intentionally generated
+      // with NDV values of 0 and numNulls == numRows, while their actual NDV is 1
+      if (cs.getNumNulls() >= parentStats.getNumRows()) {
+        ndv = 1L;
+      }
+    } else if (cs.getNumNulls() > 0L) {
+      ndv = StatsUtils.safeAdd(ndv, 1L);
+    }
+    return ndv;
   }
 }

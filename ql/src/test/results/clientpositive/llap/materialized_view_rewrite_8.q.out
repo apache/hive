@@ -335,7 +335,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: my_date (type: date), my_id2 (type: bigint), environment (type: string)
-                      minReductionHashAggr: 0.99
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
