@@ -567,6 +567,17 @@ public class IcebergTableUtil {
     }
   }
 
+  public static boolean hasPartition(Table icebergTable,
+                                     Map<String, String> partitionSpec) throws MetaException {
+    try {
+      List<String> partNames = getPartitionNames(icebergTable, partitionSpec, false);
+      return !partNames.isEmpty() &&
+              Warehouse.makePartName(partitionSpec, false).equals(partNames.getFirst());
+    } catch (HiveException e) {
+      return false;
+    }
+  }
+
   public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
       throws MetaException, HiveException {
     if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {

@@ -2075,29 +2075,13 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     return table.spec().isPartitioned();
   }
 
-  private boolean isPartitionPresent(org.apache.hadoop.hive.ql.metadata.Table table,
-                                     Map<String, String> partitionSpec) throws SemanticException {
-    try {
-      List<String> partNames = getPartitionNames(table, partitionSpec);
-      for (String partName : partNames) {
-        if (Warehouse.makeSpecFromName(partName).size() == partitionSpec.size()) {
-          return true;
-        }
-      }
-    } catch (HiveException e) {
-      return false;
-    } catch (MetaException e) {
-      throw new SemanticException("Unable to construct spec for partition name due to: ", e);
-    }
-    return false;
-  }
-
   @Override
   public Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec, RewritePolicy policy) throws SemanticException {
     validatePartSpec(table, partitionSpec, policy);
     try {
-      if (!isPartitionPresent(table, partitionSpec)) {
+      Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
+      if (!IcebergTableUtil.hasPartition(icebergTable, partitionSpec)) {
         return null;
       }
       String partName = Warehouse.makePartName(partitionSpec, false);
