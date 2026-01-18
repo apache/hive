@@ -592,24 +592,24 @@ public class MetastoreConf {
         "InetAddress#getLocalHost#getCanonicalHostName(). Given the uncertainty in the later " +
         "it is desirable to configure metastore.thrift.bind.host on the intended leader HMS."),
     METASTORE_HOUSEKEEPING_LEADER_ELECTION("metastore.housekeeping.leader.election",
-        "metastore.housekeeping.leader.election",
+        "hive.metastore.housekeeping.leader.election",
         "lock", new StringSetValidator("host", "lock"),
         "Set to host, HMS will choose the leader by the configured metastore.housekeeping.leader.hostname.\n" +
         "Set to lock, HMS will use the Hive lock to elect the leader."),
     METASTORE_HOUSEKEEPING_LEADER_AUDITTABLE("metastore.housekeeping.leader.auditTable",
-        "metastore.housekeeping.leader.auditTable", "",
+        "hive.metastore.housekeeping.leader.auditTable", "",
         "Audit the leader election event to a plain json table when configured."),
     METASTORE_HOUSEKEEPING_LEADER_NEW_AUDIT_FILE("metastore.housekeeping.leader.newAuditFile",
-        "metastore.housekeeping.leader.newAuditFile", false,
+        "hive.metastore.housekeeping.leader.newAuditFile", false,
         "Whether to create a new audit file in response to the new election event " +
         "when the metastore.housekeeping.leader.auditTable is not empty.\n" +
         "True for creating a new file, false otherwise."),
     METASTORE_HOUSEKEEPING_LEADER_AUDIT_FILE_LIMIT("metastore.housekeeping.leader.auditFiles.limit",
-        "metastore.housekeeping.leader.auditFiles.limit", 10,
+        "hive.metastore.housekeeping.leader.auditFiles.limit", 10,
         "Limit the number of small audit files when metastore.housekeeping.leader.newAuditFile is true.\n" +
         "If the number of audit files exceeds the limit, then the oldest will be deleted."),
     METASTORE_HOUSEKEEPING_LEADER_LOCK_NAMESPACE("metastore.housekeeping.leader.lock.namespace",
-        "metastore.housekeeping.leader.lock.namespace", "",
+        "hive.metastore.housekeeping.leader.lock.namespace", "",
         "The database where the Hive lock sits when metastore.housekeeping.leader.election is set to lock."),
     METASTORE_HOUSEKEEPING_THREADS_ON("metastore.housekeeping.threads.on",
         "hive.metastore.housekeeping.threads.on", true,
