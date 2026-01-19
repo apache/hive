@@ -727,10 +727,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     // optionally create and start the property and Iceberg REST server
     ServletServerBuilder builder = new ServletServerBuilder(conf);
     ServletServerBuilder.Descriptor properties = builder.addServlet(PropertyServlet.createServlet(conf));
-    builder.addServlet(createCatalogServlet(conf));
+    ServletServerBuilder.Descriptor catalogDescriptor = builder.addServlet(createCatalogServlet(conf));
+    
     servletServer = builder.start(LOG);
     if (servletServer != null && properties != null) {
       propertyServletPort = properties.getPort();
+    }
+    
+    // If REST Catalog server was required but failed to start, fail HMS startup
+    int servletPort = MetastoreConf.getIntVar(conf, ConfVars.CATALOG_SERVLET_PORT);
+    boolean restCatalogRequired = catalogDescriptor != null && servletPort >= 0;
+    
+    if (restCatalogRequired && servletServer == null) {
+      throw new IllegalStateException(String.format(
+          "Failed to start embedded REST Catalog server on port %d. Port may already be in use.", servletPort));
     }
 
     // main server
