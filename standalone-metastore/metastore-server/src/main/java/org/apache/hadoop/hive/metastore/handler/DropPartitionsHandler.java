@@ -226,7 +226,7 @@ public class DropPartitionsHandler
   }
 
   @Override
-  protected void afterExecute(DropPartitionsResult result) throws MetaException, IOException {
+  protected void afterExecute(DropPartitionsResult result) throws TException, IOException {
     if (result != null && result.success()) {
       Warehouse wh = handler.getWh();
       long writeId = getWriteId(request.getEnvironmentContext());

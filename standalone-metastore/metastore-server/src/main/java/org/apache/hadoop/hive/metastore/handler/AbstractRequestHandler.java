@@ -315,7 +315,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
    * Method after the operation is done.
    * Can be used to free the resources this handler holds
    */
-  protected void afterExecute(A result) throws MetaException, IOException {
+  protected void afterExecute(A result) throws TException, IOException {
     handler = null;
     request = null;
   }

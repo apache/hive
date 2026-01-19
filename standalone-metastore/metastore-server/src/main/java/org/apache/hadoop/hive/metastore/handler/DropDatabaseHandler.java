@@ -407,7 +407,7 @@ public class DropDatabaseHandler
   }
 
   @Override
-  protected void afterExecute(DropDatabaseResult result) throws MetaException, IOException {
+  protected void afterExecute(DropDatabaseResult result) throws TException, IOException {
     try {
       Warehouse wh = handler.getWh();
       if (result != null && result.success()) {

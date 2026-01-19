@@ -189,7 +189,7 @@ public class DropTableHandler
   }
 
   @Override
-  protected void afterExecute(DropTableResult result) throws MetaException, IOException {
+  protected void afterExecute(DropTableResult result) throws TException, IOException {
     try {
       if (result != null && result.success() &&
           result.tableDataShouldBeDeleted()) {
