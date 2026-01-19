@@ -23,7 +23,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -41,6 +43,7 @@ import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.view.View;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -71,6 +74,7 @@ public final class Catalogs {
   public static final String NAME = "name";
   public static final String LOCATION = "location";
   public static final String SNAPSHOT_REF = "snapshot_ref";
+  public static final String MAX_STALENESS_MS = "max-staleness-ms";
 
   private static final String NO_CATALOG_TYPE = "no catalog";
 
@@ -320,14 +324,27 @@ public final class Catalogs {
     viewProperties.put(MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY, storageTableIdentifier);
     viewProperties.put(MATERIALIZED_VIEW_ORIGINAL_TEXT, viewOriginalText);
 
+    Long maxStalenessMs = getMaxStalenessMs(conf, props);
+
     TableIdentifier viewIdentifier = TableIdentifier.parse(name);
     View mv = viewCatalog.buildView(viewIdentifier).withLocation(location)
             .withDefaultNamespace(viewIdentifier.namespace())
             .withQuery("hive", viewExpandedText)
             .withSchema(schema)
-            .withProperties(viewProperties).create();
+            .withProperties(viewProperties)
+            .withMaxStalenessMs(maxStalenessMs)
+            .create();
 
     return new MaterializedView(mv, storageTable);
+  }
+
+  private static @NotNull Long getMaxStalenessMs(Configuration conf, Properties props) {
+    if (!props.containsKey(MAX_STALENESS_MS)) {
+      return HiveConf.getTimeVar(conf,
+              HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW, TimeUnit.MINUTES);
+    }
+
+    return Long.parseLong(props.getProperty(MAX_STALENESS_MS));
   }
 
   public static class MaterializedView {

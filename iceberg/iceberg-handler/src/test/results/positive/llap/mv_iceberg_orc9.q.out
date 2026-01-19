@@ -24,14 +24,14 @@ POSTHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 51), (3, 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@tbl_ice
-PREHOOK: query: create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1') as
+PREHOOK: query: create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat1
 #### A masked pattern was here ####
-POSTHOOK: query: create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1') as
+POSTHOOK: query: create materialized view mat1 stored by iceberg stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@tbl_ice
@@ -87,10 +87,11 @@ TBLPROPERTIES (
   'iceberg.materialized.view.original.text'='select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52', 
   'iceberg.materialized.view.storage.table'='default.mat1_storage_table', 
   'iceberg.orc.files.only'='true', 
+  'max-staleness-ms'='1000', 
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
 #### A masked pattern was here ####
-  'uuid'='c0234ed7-9d84-48f1-8479-378eaa98744b')
+  'uuid'='a27f3f6f-76a6-4e6b-a6b6-1320a8f3ca41')
 PREHOOK: query: describe formatted mat1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mat1
@@ -115,11 +116,12 @@ Table Parameters:
 	iceberg.materialized.view.original.text	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 	iceberg.materialized.view.storage.table	default.mat1_storage_table
 	iceberg.orc.files.only	true                
+	max-staleness-ms    	1000                
 #### A masked pattern was here ####
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
-	uuid                	c0234ed7-9d84-48f1-8479-378eaa98744b
+	uuid                	a27f3f6f-76a6-4e6b-a6b6-1320a8f3ca41
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -136,7 +138,7 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=2493704645391374183}	 
+default.tbl_ice     	SnapshotContext{snapshotId=6696434139986518852}	 
 PREHOOK: query: select 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -234,4 +236,4 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=2493704645391374183}	 
+default.tbl_ice     	SnapshotContext{snapshotId=6696434139986518852}	 
