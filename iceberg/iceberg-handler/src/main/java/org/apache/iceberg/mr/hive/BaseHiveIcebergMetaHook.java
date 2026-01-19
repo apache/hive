@@ -100,6 +100,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   protected Properties tableProperties;
   protected boolean createHMSTableInHook = false;
 
+  protected String viewOriginalText;
+  protected String viewExpandedText;
+
   public enum FileFormat {
     ORC("orc"), PARQUET("parquet"), AVRO("avro");
 
@@ -132,9 +135,11 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     }
     this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
+    TableType tableType = Enum.valueOf(TableType.class, hmsTable.getTableType());
+
     // Set the table type even for non HiveCatalog based tables
     // Set the table type even for non HiveCatalog based tables
-    switch (Enum.valueOf(TableType.class, hmsTable.getTableType())) {
+    switch (tableType) {
       case EXTERNAL_TABLE:
       case MANAGED_TABLE:
         hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
@@ -150,6 +155,8 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
         throw new UnsupportedOperationException("The database object type " + hmsTable.getTableType() +
                 " is not supported as an Iceberg object type");
     }
+
+    storeViewTextInfoForMaterializedView(request, tableType);
 
     if (!Catalogs.hiveCatalog(conf, tableProperties)) {
       if (Boolean.parseBoolean(this.tableProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
@@ -220,6 +227,18 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
     setSortOrder(hmsTable, schema, tableProperties);
+  }
+
+  private void storeViewTextInfoForMaterializedView(CreateTableRequest request, TableType tableType) {
+    if (TableType.EXTERNAL_MATERIALIZED_VIEW.equals(tableType)) {
+
+      org.apache.hadoop.hive.metastore.api.Table tbl = request.getTable();
+      viewOriginalText = tbl.getViewOriginalText();
+      viewExpandedText = tbl.getViewExpandedText();
+
+      tbl.setViewOriginalText(null);
+      tbl.setViewExpandedText(null);
+    }
   }
 
   /**

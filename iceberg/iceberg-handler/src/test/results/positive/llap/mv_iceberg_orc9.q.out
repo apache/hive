@@ -91,7 +91,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
 #### A masked pattern was here ####
-  'uuid'='a27f3f6f-76a6-4e6b-a6b6-1320a8f3ca41')
+  'uuid'='f499353f-8a36-4efd-81f7-8522364a47d2')
 PREHOOK: query: describe formatted mat1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mat1
@@ -121,7 +121,7 @@ Table Parameters:
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
-	uuid                	a27f3f6f-76a6-4e6b-a6b6-1320a8f3ca41
+	uuid                	f499353f-8a36-4efd-81f7-8522364a47d2
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -138,7 +138,7 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=6696434139986518852}	 
+default.tbl_ice     	SnapshotContext{snapshotId=7841179926915636266}	 
 PREHOOK: query: select 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -236,4 +236,4 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=6696434139986518852}	 
+default.tbl_ice     	SnapshotContext{snapshotId=7841179926915636266}	 
