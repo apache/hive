@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.AsyncOperationResp;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -52,9 +53,9 @@ import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.commons.lang3.reflect.MethodUtils.invokeMethod;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
-import static org.apache.hadoop.hive.metastore.utils.JavaUtils.getField;
 import static org.apache.hadoop.hive.metastore.utils.JavaUtils.newInstance;
 
 public abstract class AbstractRequestHandler<T extends TBase, A extends AbstractRequestHandler.Result> {
@@ -73,27 +74,22 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
     Set<Class<? extends AbstractRequestHandler>> handlerClasses =
         new Reflections("org.apache.hadoop.hive.metastore.handler").getSubTypesOf(AbstractRequestHandler.class);
     for (Class<? extends AbstractRequestHandler> clz : handlerClasses) {
-      if (Modifier.isAbstract(clz.getModifiers())) {
-        continue;
+      if (validateHandler(clz)) {
+        RequestHandler handler = clz.getAnnotation(RequestHandler.class);
+        Class<? extends TBase> requestBody = handler.requestBody();
+        REQ_FACTORIES.put(requestBody, (base, request) -> {
+          AbstractRequestHandler opHandler = null;
+          if (handler.supportAsync()) {
+            opHandler = ofCache((String) invokeMethod(request, handler.id()),
+                (boolean) invokeMethod(request, handler.cancel()));
+          }
+          if (opHandler == null) {
+            opHandler = newInstance(clz, new Class[] { IHMSHandler.class, requestBody },
+                new Object[] { base, request });
+          }
+          return opHandler;
+        });
       }
-      RequestHandler handler = clz.getAnnotation(RequestHandler.class);
-      Class<? extends TBase> requestBody;
-      if (handler == null || (requestBody = handler.requestBody()) == null) {
-        continue;
-      }
-      validateHandler(clz, handler);
-      REQ_FACTORIES.put(requestBody, (base, request) -> {
-        AbstractRequestHandler opHandler = null;
-        if (handler.supportAsync()) {
-          opHandler =
-              ofCache(getField(request, handler.id()), getField(request, handler.cancel()));
-        }
-        if (opHandler == null) {
-          opHandler =
-              newInstance(clz, new Class[]{IHMSHandler.class, requestBody}, new Object[]{base, request});
-        }
-        return opHandler;
-      });
     }
   }
 
@@ -208,7 +204,13 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
       throws TException, IOException {
     HandlerFactory factory = REQ_FACTORIES.get(req.getClass());
     if (factory != null) {
-      return (T) factory.create(handler, req);
+      try {
+        return (T) factory.create(handler, req);
+      } catch (Exception e) {
+        throw handleException(e)
+            .throwIfInstance(TException.class, IOException.class)
+            .defaultTException();
+      }
     }
     throw new UnsupportedOperationException("Not yet implemented");
   }
@@ -358,7 +360,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
   }
 
   interface HandlerFactory {
-    AbstractRequestHandler create(IHMSHandler base, TBase req) throws TException, IOException;
+    AbstractRequestHandler create(IHMSHandler base, TBase req) throws Exception;
   }
 
   public interface Result {
@@ -378,18 +380,30 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
     }
   }
 
-  private static void validateHandler(Class<? extends AbstractRequestHandler> clz,
-      RequestHandler handler) {
+  private static boolean validateHandler(Class<? extends AbstractRequestHandler> clz) {
+    if (Modifier.isAbstract(clz.getModifiers())) {
+      return false;
+    }
+    RequestHandler handler = clz.getAnnotation(RequestHandler.class);
+    if (handler == null) {
+      LOG.info("Ignore this Handler: {} as it cannot handle the request", clz);
+      return false;
+    }
+    Class<? extends TBase> requestBody = handler.requestBody();
+    if (requestBody == null) {
+      LOG.info("Ignore this Handler: {} as it hasn't declared the request body", clz);
+      return false;
+    }
+    // check the definition of the handler
     try {
-      Class<? extends TBase> requestBody = handler.requestBody();
-      // Check the constructor
       clz.getDeclaredConstructor(IHMSHandler.class, requestBody);
       if (handler.supportAsync()) {
-        requestBody.getMethod(handler.id());
-        requestBody.getMethod(handler.cancel());
+        MethodUtils.getMatchingAccessibleMethod(requestBody, handler.id());
+        MethodUtils.getMatchingAccessibleMethod(requestBody, handler.cancel());
       }
     } catch (Exception e) {
       throw new RuntimeException(clz + " is not a satisfied handler as it's declared to be", e);
     }
+    return true;
   }
 }
