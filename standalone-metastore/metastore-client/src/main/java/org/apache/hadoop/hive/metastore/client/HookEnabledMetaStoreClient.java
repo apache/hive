@@ -116,11 +116,7 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
     try {
       // Subclasses can override this step (for example, for temporary tables)
       if (hook == null || !hook.createHMSTableInHook()) {
-        if (TableType.EXTERNAL_MATERIALIZED_VIEW.name().equalsIgnoreCase(tbl.getTableType())) {
-          createExternalIcebergView(request);
-        } else {
-          delegate.createTable(request);
-        }
+        delegate.createTable(request);
       }
       if (hook != null) {
         hook.commitCreateTable(tbl);
@@ -135,22 +131,6 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
         }
       }
     }
-  }
-
-  private void createExternalIcebergView(CreateTableRequest request) throws TException {
-    // HMS shouldn't store the view text info in case of external materialized views.
-
-    Table tbl = request.getTable();
-    String viewOriginalText = tbl.getViewOriginalText();
-    String viewExpandedText = tbl.getViewExpandedText();
-
-    tbl.setViewOriginalText(null);
-    tbl.setViewExpandedText(null);
-
-    delegate.createTable(request);
-
-    tbl.setViewOriginalText(viewOriginalText);
-    tbl.setViewExpandedText(viewExpandedText);
   }
 
   @Override
