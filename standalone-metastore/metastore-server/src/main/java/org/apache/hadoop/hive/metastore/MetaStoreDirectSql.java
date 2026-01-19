@@ -1954,7 +1954,7 @@ class MetaStoreDirectSql {
       return aggrStatsUseJava(catName, dbName, tableName, partNames, colNames, engine, areAllPartsFound,
           useDensityFunctionForNDVEstimation, ndvTuner, enableBitVector, enableKll);
     } else {
-      return aggrStatsUseDB(catName, dbName, tableName, partNames, colNames, engine, areAllPartsFound,
+      return aggrStatsUseDB(catName, dbName, tableName, partNames, colNames, engine,
           useDensityFunctionForNDVEstimation, ndvTuner);
     }
   }
@@ -2011,290 +2011,148 @@ class MetaStoreDirectSql {
   }
 
   private List<ColumnStatisticsObj> aggrStatsUseDB(String catName, String dbName, String tableName,
-      List<String> partNames, List<String> colNames, String engine, boolean areAllPartsFound,
-      boolean useDensityFunctionForNDVEstimation, double ndvTuner)
-      throws MetaException {
+                                                   List<String> partNames, List<String> colNames, String engine,
+                                                   boolean useDensityFunctionForNDVEstimation, double ndvTuner)
+          throws MetaException {
     // TODO: all the extrapolation logic should be moved out of this class,
     // only mechanical data retrieval should remain here.
-    String commonPrefix = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", "
-        + "min(\"LONG_LOW_VALUE\"), max(\"LONG_HIGH_VALUE\"), min(\"DOUBLE_LOW_VALUE\"), max(\"DOUBLE_HIGH_VALUE\"), "
-        + "min(cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal)), max(cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)), "
-        + "sum(\"NUM_NULLS\"), max(\"NUM_DISTINCTS\"), "
-        + "max(\"AVG_COL_LEN\"), max(\"MAX_COL_LEN\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\"), "
-        // The following data is used to compute a partitioned table's NDV based
-        // on partitions' NDV when useDensityFunctionForNDVEstimation = true. Global NDVs cannot be
-        // accurately derived from partition NDVs, because the domain of column value two partitions
-        // can overlap. If there is no overlap then global NDV is just the sum
-        // of partition NDVs (UpperBound). But if there is some overlay then
-        // global NDV can be anywhere between sum of partition NDVs (no overlap)
-        // and same as one of the partition NDV (domain of column value in all other
-        // partitions is subset of the domain value in one of the partition)
-        // (LowerBound).But under uniform distribution, we can roughly estimate the global
-        // NDV by leveraging the min/max values.
-        // And, we also guarantee that the estimation makes sense by comparing it to the
-        // UpperBound (calculated by "sum(\"NUM_DISTINCTS\")")
-        // and LowerBound (calculated by "max(\"NUM_DISTINCTS\")")
-        + "sum((\"LONG_HIGH_VALUE\"-\"LONG_LOW_VALUE\")/cast(\"NUM_DISTINCTS\" as decimal)),"
-        + "sum((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
-        + "sum((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
-        + "count(1),"
-        + "sum(\"NUM_DISTINCTS\")" + " from " + PART_COL_STATS + ""
-        + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
-        + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
-        + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
-        + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? ";
-    String queryText;
-
-    boolean doTrace = LOG.isDebugEnabled();
-    // Check if the status of all the columns of all the partitions exists
-    // Extrapolation is not needed.
-    if (areAllPartsFound) {
-      queryText = commonPrefix + " and \"COLUMN_NAME\" in (%1$s)" + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
-          + " and \"ENGINE\" = ? " + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
-      List<ColumnStatisticsObj> colStats = new ArrayList<>(colNames.size());
-      columnWiseStatsMerger(queryText, catName, dbName, tableName,
-              colNames, partNames, colStats, engine, useDensityFunctionForNDVEstimation, ndvTuner, doTrace);
-      return colStats;
-    } else {
-      // Extrapolation is needed for some columns.
-      // In this case, at least a column status for a partition is missing.
-      // We need to extrapolate this partition based on the other partitions
-      List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>(colNames.size());
-      queryText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", count(1) "
-          + " from " + PART_COL_STATS
-          + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
-          + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
-          + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
-          + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
-          + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
-          + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
-          + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
-          + " group by " + PART_COL_STATS + ".\"COLUMN_NAME\", " + PART_COL_STATS + ".\"COLUMN_TYPE\"";
-
-      Batchable<String, Object[]> columnWisePartitionBatches =
-              columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
-      List<String> noExtraColumnNames = new ArrayList<String>();
-      Map<String, String[]> extraColumnNameTypeParts = new HashMap<String, String[]>();
-      try {
-        List<Object[]> unmergedList = Batchable.runBatched(batchSize, colNames, columnWisePartitionBatches);
-        Map<String, Integer> partsCountMap = new HashMap<>();
-        for (Object[] row : unmergedList) {
-          String colName = (String) row[0];
-          String colType = (String) row[1];
-          Integer count = (Integer) row[2] + partsCountMap.getOrDefault(colName, 0);
-          partsCountMap.put(colName, count);
-          extraColumnNameTypeParts.put(colName, new String[]{colType, String.valueOf(count)});
-        }
-        for (Map.Entry<String, Integer> entry : partsCountMap.entrySet()) {
-          String colName = entry.getKey();
-          Integer count = entry.getValue();
-          // Extrapolation is not needed for this column if
-          // count(\"PARTITION_NAME\")==partNames.size()
-          // Or, extrapolation is not possible for this column if
-          // count(\"PARTITION_NAME\")<2
-          if (count == partNames.size() || count < 2) {
-            noExtraColumnNames.add(colName);
-            extraColumnNameTypeParts.remove(colName);
-          }
-          Deadline.checkTimeout();
-        }
-      } finally {
-        columnWisePartitionBatches.closeAllQueries();
-      }
-      // Extrapolation is not needed for columns noExtraColumnNames
-      List<Object[]> list;
-      if (noExtraColumnNames.size() != 0) {
-        queryText = commonPrefix + " and \"COLUMN_NAME\" in (%1$s)" + " and \"PARTITION_NAME\" in (%2$s)"
-            + " and \"ENGINE\" = ? " + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
-        columnWiseStatsMerger(queryText, catName, dbName, tableName,
-                noExtraColumnNames, partNames, colStats, engine, useDensityFunctionForNDVEstimation, ndvTuner, doTrace);
-      }
-      // Extrapolation is needed for extraColumnNames.
-      // give a sequence number for all the partitions
-      if (extraColumnNameTypeParts.size() != 0) {
-        Map<String, Integer> indexMap = new HashMap<String, Integer>();
-        for (int index = 0; index < partNames.size(); index++) {
-          indexMap.put(partNames.get(index), index);
-        }
-        // get sum for all columns to reduce the number of queries
-        Map<String, Map<Integer, Object>> sumMap = new HashMap<String, Map<Integer, Object>>();
-        queryText = "select \"COLUMN_NAME\", sum(\"NUM_NULLS\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\"), sum(\"NUM_DISTINCTS\")"
-            + " from " + PART_COL_STATS
+    String queryText = "select \"COLUMN_NAME\", \"COLUMN_TYPE\", "
+            + "min(\"LONG_LOW_VALUE\"), max(\"LONG_HIGH_VALUE\"), min(\"DOUBLE_LOW_VALUE\"), max(\"DOUBLE_HIGH_VALUE\"), "
+            + "min(cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal)), max(cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)), "
+            + "sum(\"NUM_NULLS\"), max(\"NUM_DISTINCTS\"), "
+            + "max(\"AVG_COL_LEN\"), max(\"MAX_COL_LEN\"), sum(\"NUM_TRUES\"), sum(\"NUM_FALSES\"), "
+            // The following data is used to compute a partitioned table's NDV based
+            // on partitions' NDV when useDensityFunctionForNDVEstimation = true. Global NDVs cannot be
+            // accurately derived from partition NDVs, because the domain of column value two partitions
+            // can overlap. If there is no overlap then global NDV is just the sum
+            // of partition NDVs (UpperBound). But if there is some overlay then
+            // global NDV can be anywhere between sum of partition NDVs (no overlap)
+            // and same as one of the partition NDV (domain of column value in all other
+            // partitions is subset of the domain value in one of the partition)
+            // (LowerBound).But under uniform distribution, we can roughly estimate the global
+            // NDV by leveraging the min/max values.
+            // And, we also guarantee that the estimation makes sense by comparing it to the
+            // UpperBound (calculated by "sum(\"NUM_DISTINCTS\")")
+            // and LowerBound (calculated by "max(\"NUM_DISTINCTS\")")
+            + "sum((\"LONG_HIGH_VALUE\"-\"LONG_LOW_VALUE\")/cast(\"NUM_DISTINCTS\" as decimal)),"
+            + "sum((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
+            + "sum((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
+            + "count(1),"
+            + "sum(\"NUM_DISTINCTS\")" + " from " + PART_COL_STATS + ""
             + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
             + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
             + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
             + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
-            + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
-            + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
-            + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
-            + " group by " + PART_COL_STATS + ".\"COLUMN_NAME\"";
+            + " and \"COLUMN_NAME\" in (%1$s)" + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
+            + " and \"ENGINE\" = ? " + " group by \"COLUMN_NAME\", \"COLUMN_TYPE\"";
 
-        columnWisePartitionBatches =
-                columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
-        try {
-          List<String> extraColumnNames = new ArrayList<>();
-          extraColumnNames.addAll(extraColumnNameTypeParts.keySet());
-          List<Object[]> unmergedList = Batchable.runBatched(batchSize, extraColumnNames, columnWisePartitionBatches);
-          Map<String, Object[]> colSumStatsMap = new HashMap<>();
-          for (Object[] row : unmergedList) {
-            String colName = (String) row[0];
-            Object[] mergedRow = colSumStatsMap.getOrDefault(colName, new Object[4]);
-            mergedRow[0] = MetastoreDirectSqlUtils.sum(mergedRow[0], row[1]);
-            mergedRow[1] = MetastoreDirectSqlUtils.sum(mergedRow[1], row[2]);
-            mergedRow[2] = MetastoreDirectSqlUtils.sum(mergedRow[2], row[3]);
-            mergedRow[3] = MetastoreDirectSqlUtils.sum(mergedRow[3], row[4]);
-            colSumStatsMap.put(colName, mergedRow);
-          }
+    boolean doTrace = LOG.isDebugEnabled();
 
-          // see the indexes for colstats in IExtrapolatePartStatus
-          Integer[] sumIndex = new Integer[]{6, 10, 11, 15};
+    List<ColumnStatisticsObj> colStats = new ArrayList<>(colNames.size());
+    List<Object[]> partialStatsRows = new ArrayList<>(colNames.size());
+    columnWiseStatsMerger(queryText, catName, dbName, tableName,
+            colNames, partNames, colStats, partialStatsRows,
+            engine, useDensityFunctionForNDVEstimation, ndvTuner, doTrace);
 
-          for (Map.Entry<String, Object[]> entry : colSumStatsMap.entrySet()) {
-            String colName = entry.getKey();
-            Object[] row = entry.getValue();
-            Map<Integer, Object> indexToObject = new HashMap<Integer, Object>();
-            for (int ind = 0; ind < row.length; ind++) {
-              indexToObject.put(sumIndex[ind], row[ind]);
-            }
-            sumMap.put(colName, indexToObject);
-            Deadline.checkTimeout();
-          }
-        } finally {
-          columnWisePartitionBatches.closeAllQueries();
+    // Extrapolation is needed for partialStatsRows.
+    if (partialStatsRows.size() != 0) {
+      Map<String, Integer> indexMap = new HashMap<String, Integer>();
+      for (int index = 0; index < partNames.size(); index++) {
+        indexMap.put(partNames.get(index), index);
+      }
+
+      for (Object[] row : partialStatsRows) {
+        String colName = row[COLNAME.idx()].toString();
+        String colType = row[COLTYPE.idx()].toString();
+        BigDecimal countVal = new BigDecimal(row[COUNT_ROWS.idx()].toString());
+
+        // use linear extrapolation. more complicated one can be added in the
+        // future.
+        IExtrapolatePartStatus extrapolateMethod = new LinearExtrapolatePartStatus();
+        // fill in colstatus
+        Integer[] index;
+        boolean decimal = false;
+        if (colType.toLowerCase().startsWith("decimal")) {
+          index = IExtrapolatePartStatus.indexMaps.get("decimal");
+          decimal = true;
+        } else {
+          index = IExtrapolatePartStatus.indexMaps.get(colType.toLowerCase());
+        }
+        // if the colType is not the known type, long, double, etc, then get
+        // all index.
+        if (index == null) {
+          index = IExtrapolatePartStatus.indexMaps.get("default");
         }
 
-        for (Map.Entry<String, String[]> entry : extraColumnNameTypeParts.entrySet()) {
-          // +3 => 1 extra index for count required for sumNdvIndices to calculate avg + 2 for colname and coltype
-          Object[] row = new Object[IExtrapolatePartStatus.colStatNames.length + 3];
-          String colName = entry.getKey();
-          String colType = entry.getValue()[0];
-          Long sumVal = Long.parseLong(entry.getValue()[1]);
-          // fill in colname
-          row[0] = colName;
-          // fill in coltype
-          row[1] = colType;
-          // use linear extrapolation. more complicated one can be added in the
-          // future.
-          IExtrapolatePartStatus extrapolateMethod = new LinearExtrapolatePartStatus();
-          // fill in colstatus
-          Integer[] index = null;
-          boolean decimal = false;
-          if (colType.toLowerCase().startsWith("decimal")) {
-            index = IExtrapolatePartStatus.indexMaps.get("decimal");
-            decimal = true;
-          } else {
-            index = IExtrapolatePartStatus.indexMaps.get(colType.toLowerCase());
-          }
-          // if the colType is not the known type, long, double, etc, then get
-          // all index.
-          if (index == null) {
-            index = IExtrapolatePartStatus.indexMaps.get("default");
-          }
-
-          //for avg calculation
-          queryText = "select " + "sum((\"LONG_HIGH_VALUE\"-\"LONG_LOW_VALUE\")/cast(\"NUM_DISTINCTS\" as decimal)),"
-              + "sum((\"DOUBLE_HIGH_VALUE\"-\"DOUBLE_LOW_VALUE\")/\"NUM_DISTINCTS\"),"
-              + "sum((cast(\"BIG_DECIMAL_HIGH_VALUE\" as decimal)-cast(\"BIG_DECIMAL_LOW_VALUE\" as decimal))/\"NUM_DISTINCTS\"),"
-              + "count(1)"
-              + " from " + PART_COL_STATS + ""
-              + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
-              + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
-              + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
-              + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
-              + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
-              + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
-              + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
-              + " group by \"COLUMN_NAME\"";
-
-          columnWisePartitionBatches =
-                  columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
-          Integer[] sumNdvIndices = new Integer[]{14, 15, 16};
-          try {
-            list = Batchable.runBatched(batchSize, Collections.singletonList(colName), columnWisePartitionBatches);
-            for (Object[] batch : list) {
-              // filling in ndv sums for avg calculation
-              for (int i = 0; i < 3; i++) {
-                row[sumNdvIndices[i]] = MetastoreDirectSqlUtils.sum(row[sumNdvIndices[i]], batch[i]);
-              }
-              // filling in count rows for avg calculation
-              row[17] = MetastoreDirectSqlUtils.sum(row[17], batch[3]);
+        for (int colStatIndex : index) {
+          String colStatName = IExtrapolatePartStatus.colStatNames[colStatIndex];
+          // if the aggregation type is sum, we do a scale-up
+          if (IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Sum) {
+            // +3 only for the case of SUM_NUM_DISTINCTS which is after count rows index
+            int rowIndex = (colStatIndex == 15) ? colStatIndex + 3 : colStatIndex + 2;
+            if (row[rowIndex] != null) {
+              Long val = MetastoreDirectSqlUtils.extractSqlLong(row[rowIndex]);
+              row[rowIndex] = val / countVal.longValue() * (partNames.size());
             }
-          } finally {
-            columnWisePartitionBatches.closeAllQueries();
-          }
-          for (int colStatIndex : index) {
-            String colStatName = IExtrapolatePartStatus.colStatNames[colStatIndex];
-            // if the aggregation type is sum, we do a scale-up
-            if (IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Sum) {
-              Object o = sumMap.get(colName).get(colStatIndex);
-              // +3 only for the case of SUM_NUM_DISTINCTS which is after count rows index
-              int rowIndex = (colStatIndex == 15) ? colStatIndex + 3 : colStatIndex + 2;
-              if (o == null) {
-                row[rowIndex] = null;
-              } else {
-                Long val = MetastoreDirectSqlUtils.extractSqlLong(o);
-                row[rowIndex] = val / sumVal * (partNames.size());
-              }
-            } else if (IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Min
-                || IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Max) {
-              // if the aggregation type is min/max, we extrapolate from the
-              // left/right borders
-              String orderByExpr = decimal ? "cast(\"" + colStatName + "\" as decimal)" : "\"" + colStatName + "\"";
+          } else if (IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Min ||
+                  IExtrapolatePartStatus.aggrTypes[colStatIndex] == IExtrapolatePartStatus.AggrType.Max) {
+            // if the aggregation type is min/max, we extrapolate from the
+            // left/right borders
+            String orderByExpr = decimal ? "cast(\"" + colStatName + "\" as decimal)" : "\"" + colStatName + "\"";
 
-              queryText = "select \"" + colStatName + "\",\"PART_NAME\" from " + PART_COL_STATS
-                  + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
-                  + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
-                  + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
-                  + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
-                  + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
-                  + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
-                  + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
-                  + " order by " + orderByExpr;
+            queryText = "select \"" + colStatName + "\",\"PART_NAME\" from " + PART_COL_STATS
+                    + " inner join " + PARTITIONS + " on " + PART_COL_STATS + ".\"PART_ID\" = " + PARTITIONS + ".\"PART_ID\""
+                    + " inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\""
+                    + " inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\""
+                    + " where " + DBS + ".\"CTLG_NAME\" = ? and " + DBS + ".\"NAME\" = ? and " + TBLS + ".\"TBL_NAME\" = ? "
+                    + " and " + PART_COL_STATS + ".\"COLUMN_NAME\" in (%1$s)"
+                    + " and " + PARTITIONS + ".\"PART_NAME\" in (%2$s)"
+                    + " and " + PART_COL_STATS + ".\"ENGINE\" = ? "
+                    + " order by " + orderByExpr;
 
-              columnWisePartitionBatches =
-                      columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
-              try {
-                list = Batchable.runBatched(batchSize, Collections.singletonList(colName), columnWisePartitionBatches);
-                Object[] min = list.getFirst();
-                Object[] max = list.getLast();
-                if(batchSize>0){
-                  for (int i = Math.min(batchSize - 1, list.size() - 1); i < list.size(); i += batchSize) {
-                    Object[] posMax = list.get(i);
-                    if (new BigDecimal(max[0].toString()).compareTo(new BigDecimal(posMax[0].toString())) < 0) {
-                      max = posMax;
-                    }
-                    int j = i + 1;
-                    if (j < list.size()) {
-                      Object[] posMin = list.get(j);
-                      if (new BigDecimal(min[0].toString()).compareTo(new BigDecimal(posMin[0].toString())) > 0) {
-                        min = posMin;
-                      }
+            Batchable<String, Object[]> columnWisePartitionBatches =
+                    columnWisePartitionBatcher(queryText, catName, dbName, tableName, partNames, engine, doTrace);
+            try {
+              List<Object[]> list = Batchable.runBatched(batchSize, Collections.singletonList(colName), columnWisePartitionBatches);
+              Object[] min = list.getFirst();
+              Object[] max = list.getLast();
+              if (batchSize > 0) {
+                for (int i = Math.min(batchSize - 1, list.size() - 1); i < list.size(); i += batchSize) {
+                  Object[] posMax = list.get(i);
+                  if (new BigDecimal(max[0].toString()).compareTo(new BigDecimal(posMax[0].toString())) < 0) {
+                    max = posMax;
+                  }
+                  int j = i + 1;
+                  if (j < list.size()) {
+                    Object[] posMin = list.get(j);
+                    if (new BigDecimal(min[0].toString()).compareTo(new BigDecimal(posMin[0].toString())) > 0) {
+                      min = posMin;
                     }
                   }
                 }
-                if (min[0] == null || max[0] == null) {
-                  row[2 + colStatIndex] = null;
-                } else {
-                  row[2 + colStatIndex] = extrapolateMethod.extrapolate(min, max, colStatIndex, indexMap);
-                }
-              } finally {
-                columnWisePartitionBatches.closeAllQueries();
               }
+              if (min[0] == null || max[0] == null) {
+                row[2 + colStatIndex] = null;
+              } else {
+                row[2 + colStatIndex] = extrapolateMethod.extrapolate(min, max, colStatIndex, indexMap);
+              }
+            } finally {
+              columnWisePartitionBatches.closeAllQueries();
             }
           }
-          colStats.add(prepareCSObjWithAdjustedNDV
-                  (row, useDensityFunctionForNDVEstimation, ndvTuner));
-          Deadline.checkTimeout();
         }
+        colStats.add(prepareCSObjWithAdjustedNDV
+                (row, useDensityFunctionForNDVEstimation, ndvTuner));
+        Deadline.checkTimeout();
       }
-      return colStats;
     }
+    return colStats;
   }
 
   private void columnWiseStatsMerger(
           final String queryText, final String catName, final String dbName,
           final String tableName, final List<String> colNames, final List<String> partNames,
-          final List<ColumnStatisticsObj> colStats, final String engine,
+          final List<ColumnStatisticsObj> colStats, final List<Object[]> partialStatsRows, final String engine,
           final boolean useDensityFunctionForNDVEstimation, final double ndvTuner,
           final boolean doTrace
   ) throws MetaException {
@@ -2309,9 +2167,15 @@ class MetaStoreDirectSql {
         mergeBackendDBStats(mergedRow, unmergedRow);
         mergedColStatsMap.put(colName, mergedRow);
       }
+
       for (Map.Entry<String, Object[]> entry : mergedColStatsMap.entrySet()) {
-        colStats.add(
-                prepareCSObjWithAdjustedNDV(entry.getValue(), useDensityFunctionForNDVEstimation, ndvTuner));
+        BigDecimal partCount = new BigDecimal(entry.getValue()[COUNT_ROWS.idx()].toString());
+        if (partCount.equals(new BigDecimal(partNames.size()))) {
+          colStats.add(
+                  prepareCSObjWithAdjustedNDV(entry.getValue(), useDensityFunctionForNDVEstimation, ndvTuner));
+        } else {
+          partialStatsRows.add(entry.getValue());
+        }
         Deadline.checkTimeout();
       }
     } finally {
