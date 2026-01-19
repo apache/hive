@@ -199,8 +199,8 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
                 Catalogs.createMaterializedView(
                         conf,
                         tableProperties,
-                        hmsTable.getViewOriginalText(),
-                        hmsTable.getViewExpandedText());
+                        viewOriginalText,
+                        viewExpandedText);
 
         String tableIdentifier = tableProperties.getProperty(Catalogs.NAME);
         SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);
