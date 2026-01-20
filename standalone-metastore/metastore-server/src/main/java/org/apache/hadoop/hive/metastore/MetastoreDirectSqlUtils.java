@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static org.apache.commons.lang3.StringUtils.repeat;
+
 /**
  * Helper utilities used by DirectSQL code in HiveMetastore.
  */
@@ -646,6 +648,34 @@ class MetastoreDirectSqlUtils {
     } else {
       throw new RuntimeException(e);
     }
+  }
+
+  public static Object[] prepareParams(String catName, String dbName, String tableName,
+                                 List<String> partNames, List<String> colNames, String engine) throws MetaException {
+    Object[] params = new Object[colNames.size() + partNames.size() + 4];
+    int paramI = 0;
+    params[paramI++] = catName;
+    params[paramI++] = dbName;
+    params[paramI++] = tableName;
+    for (String colName : colNames) {
+      params[paramI++] = colName;
+    }
+    for (String partName : partNames) {
+      params[paramI++] = partName;
+    }
+    params[paramI] = engine;
+
+    return params;
+  }
+
+  public static String getFullyQualifiedName(String schema, String tblName) {
+    return ((schema == null || schema.isEmpty()) ? "" : "\"" + schema + "\".\"")
+            + "\"" + tblName + "\"";
+  }
+
+  public static String makeParams(int size) {
+    // W/ size 0, query will fail, but at least we'd get to see the query in debug output.
+    return (size == 0) ? "" : repeat(",?", size).substring(1);
   }
 
   public static Object sum(Object first, Object second) {

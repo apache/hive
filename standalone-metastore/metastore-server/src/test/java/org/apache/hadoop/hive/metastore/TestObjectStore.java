@@ -1094,7 +1094,7 @@ public class TestObjectStore {
 
   @Test
   public void testMissingPartsStatsAggrWithBackendDB() throws Exception {
-    setAggrConf(true, false, 2);
+    setAggrConf(false, false, 2);
     createPartitionedTable(true, true, new HashSet<>(Collections.singletonList(1)));
     AggrStats aggrStats = runStatsAggregation();
     ColumnStatisticsData computedStats = aggrStats.getColStats().get(0).getStatsData();
