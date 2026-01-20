@@ -2079,16 +2079,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec, RewritePolicy policy) throws SemanticException {
     validatePartSpec(table, partitionSpec, policy);
-    try {
-      Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
-      if (!IcebergTableUtil.hasPartition(icebergTable, partitionSpec)) {
-        return null;
-      }
-      String partName = Warehouse.makePartName(partitionSpec, false);
-      return new DummyPartition(table, partName, partitionSpec);
-    } catch (MetaException e) {
-      throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
-    }
+    return IcebergTableUtil.getPartition(conf, table, partitionSpec);
   }
 
   /**
