@@ -649,13 +649,27 @@ public class IcebergTableUtil {
             .anyMatch(id -> id != table.spec().specId());
   }
 
+  public static Partition getPartition(Configuration conf,
+                                       org.apache.hadoop.hive.ql.metadata.Table table,
+                                       Map<String, String> partitionSpec) throws SemanticException {
+    Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
+    try {
+      if (!IcebergTableUtil.hasPartition(icebergTable, partitionSpec)) {
+        return null;
+      }
+      String partName = Warehouse.makePartName(partitionSpec, false);
+      return new DummyPartition(table, partName, partitionSpec);
+    } catch (MetaException e) {
+      throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
+    }
+  }
+
   public static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
       Boolean latestSpecOnly) {
     Set<String> partitions = Sets.newHashSet();
     int tableSpecId = icebergTable.spec().specId();
     for (T file : files) {
-      if (latestSpecOnly == null || Boolean.TRUE.equals(latestSpecOnly) && file.specId() == tableSpecId ||
-          Boolean.FALSE.equals(latestSpecOnly) && file.specId() != tableSpecId) {
+      if (latestSpecOnly == null || latestSpecOnly.equals(file.specId() == tableSpecId)) {
         String partName = icebergTable.specs().get(file.specId()).partitionToPath(file.partition());
         partitions.add(partName);
       }
