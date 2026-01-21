@@ -527,6 +527,27 @@ public class IcebergTableUtil {
         .collect(Collectors.toList());
   }
 
+  public static Partition getPartition(Configuration conf,
+      org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec)
+      throws SemanticException {
+    List<String> partNames =
+        getPartitionNames(conf, table, partitionSpec, false);
+
+    if (partNames.isEmpty()) {
+      return null;
+    }
+
+    try {
+      String expectedName = Warehouse.makePartName(partitionSpec, false);
+      if (!expectedName.equals(partNames.getFirst())) {
+        return null;
+      }
+      return new DummyPartition(table, expectedName, partitionSpec);
+    } catch (MetaException e) {
+      throw new SemanticException("Unable to construct dummy partition", e);
+    }
+  }
+
   /**
    * Returns a list of partition names satisfying the provided partition spec.
    * @param table Iceberg table
@@ -534,29 +555,31 @@ public class IcebergTableUtil {
    * @param latestSpecOnly when True, returns partitions with the current spec only, else - any specs
    * @return List of partition names
    */
-  public static List<String> getPartitionNames(Table table, Map<String, String> partSpecMap,
+  public static List<String> getPartitionNames(Configuration conf,
+      org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partSpecMap,
       boolean latestSpecOnly) throws SemanticException {
+    Table icebergTable = getTable(conf, table.getTTable());
     Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(
-        table, partSpecMap, latestSpecOnly);
+        icebergTable, partSpecMap, latestSpecOnly);
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(
-        table, MetadataTableType.PARTITIONS);
+        icebergTable, MetadataTableType.PARTITIONS);
 
     try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
       return FluentIterable.from(fileScanTasks)
           .transformAndConcat(task -> task.asDataTask().rows())
           .transform(row -> {
             StructLike data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
-            PartitionSpec spec = table.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
+            PartitionSpec spec = icebergTable.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
             return Maps.immutableEntry(
                 IcebergTableUtil.toPartitionData(
-                    data, Partitioning.partitionType(table), spec.partitionType()),
+                    data, Partitioning.partitionType(icebergTable), spec.partitionType()),
                 spec);
           }).filter(e -> {
             ResidualEvaluator resEval = ResidualEvaluator.of(e.getValue(),
                 expression, false);
             return e.getValue().isPartitioned() &&
               resEval.residualFor(e.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
-                (e.getValue().specId() == table.spec().specId() || !latestSpecOnly);
+                (e.getValue().specId() == icebergTable.spec().specId() || !latestSpecOnly);
 
           }).transform(e -> e.getValue().partitionToPath(e.getKey())).toSortedList(
             Comparator.naturalOrder());
@@ -638,40 +661,13 @@ public class IcebergTableUtil {
             .anyMatch(id -> id != table.spec().specId());
   }
 
-  public static Partition getPartition(Configuration conf,
-                                       org.apache.hadoop.hive.ql.metadata.Table table,
-                                       Map<String, String> partitionSpec) throws SemanticException {
-    try {
-      List<String> partNames = getPartitionNames(conf, table, partitionSpec, false);
-      if (partNames.isEmpty()) {
-        return null;
-      }
-      String expectedName = Warehouse.makePartName(partitionSpec, false);
-      if (!expectedName.equals(partNames.getFirst())) {
-        return null;
-      }
-      return new DummyPartition(table, expectedName, partitionSpec);
-    } catch (SemanticException e) {
-      return null;
-    } catch (MetaException e) {
-      throw new SemanticException("Unable to construct dummy partition", e);
-    }
-  }
-
-  public static List<String> getPartitionNames(Configuration conf,
-                                               org.apache.hadoop.hive.ql.metadata.Table table,
-                                               Map<String, String> partitionSpec,
-                                               boolean latestSpecOnly) throws SemanticException {
-    Table icebergTable = getTable(conf, table.getTTable());
-    return getPartitionNames(icebergTable, partitionSpec, latestSpecOnly);
-  }
-
   public static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
       Boolean latestSpecOnly) {
     Set<String> partitions = Sets.newHashSet();
     int tableSpecId = icebergTable.spec().specId();
     for (T file : files) {
-      if (latestSpecOnly == null || latestSpecOnly.equals(file.specId() == tableSpecId)) {
+      if (latestSpecOnly == null || latestSpecOnly && file.specId() == tableSpecId ||
+          !latestSpecOnly && file.specId() != tableSpecId) {
         String partName = icebergTable.specs().get(file.specId()).partitionToPath(file.partition());
         partitions.add(partName);
       }

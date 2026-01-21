@@ -2056,8 +2056,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
-    Table table = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    List<String> partNames = IcebergTableUtil.getPartitionNames(table, partitionSpec, latestSpecOnly);
+    List<String> partNames = IcebergTableUtil.getPartitionNames(conf, hmsTable, partitionSpec, latestSpecOnly);
     return IcebergTableUtil.convertNameToMetastorePartition(hmsTable, partNames);
   }
 
