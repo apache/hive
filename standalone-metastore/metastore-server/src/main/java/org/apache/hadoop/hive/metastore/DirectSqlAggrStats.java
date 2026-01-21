@@ -70,6 +70,7 @@ class DirectSqlAggrStats {
   private static final Logger LOG = LoggerFactory.getLogger(DirectSqlAggrStats.class);
   private final PersistenceManager pm;
   private final int batchSize;
+  private final boolean timestampAsLong;
 
   @java.lang.annotation.Target(java.lang.annotation.ElementType.FIELD)
   @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
@@ -88,6 +89,7 @@ class DirectSqlAggrStats {
       configBatchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = configBatchSize;
+    this.timestampAsLong = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_STATS_LEGACY_TIMESTAMP_AS_LONG);
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
         new ImmutableMap.Builder<>();
 
@@ -446,8 +448,8 @@ class DirectSqlAggrStats {
     StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, row[LONG_LOW_VALUE.idx()],
         row[LONG_HIGH_VALUE.idx()], row[DOUBLE_LOW_VALUE.idx()], row[DOUBLE_HIGH_VALUE.idx()], row[BIG_DECIMAL_LOW_VALUE.idx()], row[BIG_DECIMAL_HIGH_VALUE.idx()],
         row[NUM_NULLS.idx()], row[NUM_DISTINCTS.idx()], row[AVG_COL_LEN.idx()], row[MAX_COL_LEN.idx()], row[NUM_TRUES.idx()], row[NUM_FALSES.idx()],
-        avgLong, avgDouble, avgDecimal, row[SUM_NUM_DISTINCTS.idx()],
-        useDensityFunctionForNDVEstimation, ndvTuner);
+        avgLong, avgDouble, avgDecimal, row[SUM_NUM_DISTINCTS.idx()], useDensityFunctionForNDVEstimation, ndvTuner,
+        timestampAsLong);
     return cso;
   }
 
@@ -457,8 +459,8 @@ class DirectSqlAggrStats {
     Object llow = row[i++], lhigh = row[i++], dlow = row[i++], dhigh = row[i++],
         declow = row[i++], dechigh = row[i++], nulls = row[i++], dist = row[i++], bitVector = row[i++],
         histogram = row[i++], avglen = row[i++], maxlen = row[i++], trues = row[i++], falses = row[i];
-    StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data,
-        llow, lhigh, dlow, dhigh, declow, dechigh, nulls, dist, bitVector, histogram, avglen, maxlen, trues, falses);
+    StatObjectConverter.fillColumnStatisticsData(cso.getColType(), data, llow, lhigh, dlow, dhigh, declow, dechigh,
+        nulls, dist, bitVector, histogram, avglen, maxlen, trues, falses, timestampAsLong);
     return cso;
   }
 

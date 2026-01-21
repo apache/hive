@@ -20,9 +20,15 @@ package org.apache.hadoop.hive.ql.plan.mapping;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -31,6 +37,7 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.testutils.HiveTestEnvSetup;
+import org.apache.thrift.TException;
 import org.hamcrest.Matchers;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -54,9 +61,12 @@ public class TestStatEstimations {
     dropTables(driver);
     String cmds[] = {
         // @formatter:off
-        "create table t2(a integer, b string) STORED AS ORC",
-        "insert into t2 values (1, 'A1'),(2, 'A2'),(3, 'A3'),(4, 'A4'),(5, 'A5')," +
-                              "(6, 'B1'),(7, 'B2'),(8, 'B3'),(9, 'B4'),(10, 'B5')",
+        "create table t2(a integer, b string, c timestamp) STORED AS ORC",
+        "insert into t2 values " +
+            "(1, 'A1', '2000-01-01'),(2, 'A2', '2000-01-02'),(3, 'A3', '2000-01-03')," +
+            "(4, 'A4', '2000-01-04'),(5, 'A5', '2000-01-05')," +
+            "(6, 'B1', '2000-01-06'),(7, 'B2', '2000-01-07'),(8, 'B3', '2000-01-08')," +
+            "(9, 'B4', '2000-01-09'),(10, 'B5', '2000-01-10')",
         "analyze table t2 compute statistics for columns"
         // @formatter:on
     };
@@ -132,6 +142,37 @@ public class TestStatEstimations {
     // all outside elements should be ignored from stat estimation
     assertEquals(3, fop.getStatistics().getNumRows());
 
+  }
+
+  /** Test case for HIVE-29398. */
+  @Test
+  public void testTimestampAsLong() throws TException {
+    readStatsAndCheckTimestampField(true);
+  }
+
+  /** Test case for HIVE-29398. */
+  @Test
+  public void testTimestampAsTimestamp() throws TException {
+    readStatsAndCheckTimestampField(false);
+  }
+
+  private static void readStatsAndCheckTimestampField(boolean timestampAsLong) throws TException {
+    HiveConf conf = env_setup.getTestCtx().hiveConf;
+    boolean oldSetting = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_STATS_LEGACY_TIMESTAMP_AS_LONG);
+    try {
+      MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_STATS_LEGACY_TIMESTAMP_AS_LONG, timestampAsLong);
+
+      try (IMetaStoreClient client = new HiveMetaStoreClient(conf)) {
+        List<ColumnStatisticsObj> tableColumnStatistics =
+            client.getTableColumnStatistics("default", "t2", Collections.singletonList("c"), "hive");
+        ColumnStatisticsObj columnStatisticsObj = tableColumnStatistics.getFirst();
+        ColumnStatisticsData statsData = columnStatisticsObj.getStatsData();
+        assertEquals(timestampAsLong, statsData.isSetLongStats());
+        assertEquals(!timestampAsLong, statsData.isSetTimestampStats());
+      }
+    } finally {
+      MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_STATS_LEGACY_TIMESTAMP_AS_LONG, oldSetting);
+    }
   }
 
   private static IDriver createDriver() {

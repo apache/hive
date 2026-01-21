@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataI
 import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -100,12 +101,16 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
 
     statsObj.setColType(columnType);
 
+    boolean timestampAsLong =
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_STATS_LEGACY_TIMESTAMP_AS_LONG);
+
     ColumnStatisticsData statsData = new ColumnStatisticsData();
 
     if (columnType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)
         || columnType.equalsIgnoreCase(serdeConstants.SMALLINT_TYPE_NAME)
         || columnType.equalsIgnoreCase(serdeConstants.INT_TYPE_NAME)
-        || columnType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)) {
+        || columnType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME)
+        || (timestampAsLong && columnType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME))) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNullsIsSet(false);
       longStats.setNumDVsIsSet(false);
@@ -272,7 +277,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       }
       statsData.setDateStats(dateStats);
       statsObj.setStatsData(statsData);
-    } else if (columnType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+    } else if (!timestampAsLong && columnType.equalsIgnoreCase(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
       Map<String, String> mapProp = work.getMapProp();
       for (Entry<String, String> entry : mapProp.entrySet()) {

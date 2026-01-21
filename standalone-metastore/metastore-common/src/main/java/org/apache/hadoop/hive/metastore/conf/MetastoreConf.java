@@ -1505,6 +1505,11 @@ public class MetastoreConf {
     STATS_AUTO_UPDATE_WORKER_COUNT("metastore.stats.auto.analyze.worker.count",
         "hive.metastore.stats.auto.analyze.worker.count", 1,
         "Number of parallel analyze commands to run for background stats update."),
+    HIVE_STATS_LEGACY_TIMESTAMP_AS_LONG("metastore.stats.legacy.timestamp.as.long",
+        "hive.metastore.stats.legacy.timestamp.as.long", false,
+        "If true, store the timestamp stats in the long stats field, " +
+            "instead of the newer timestamp stats field.\nUse only if a dependent client" +
+            " (e.g. Impala) does not yet support the timestamp stats field.\nThe default value is false."),
     STORAGE_SCHEMA_READER_IMPL("metastore.storage.schema.reader.impl", "metastore.storage.schema.reader.impl",
         SERDE_STORAGE_SCHEMA_READER_CLASS,
         "The class to use to read schemas from storage.  It must implement " +

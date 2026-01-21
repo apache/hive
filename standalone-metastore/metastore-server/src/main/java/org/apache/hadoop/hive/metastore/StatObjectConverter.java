@@ -341,7 +341,7 @@ public class StatObjectConverter {
   }
 
   public static ColumnStatisticsObj getTableColumnStatisticsObj(
-      MTableColumnStatistics mStatsObj, boolean enableBitVector, boolean enableKll) {
+      MTableColumnStatistics mStatsObj, boolean enableBitVector, boolean enableKll, boolean timestampAsLong) {
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
     statsObj.setColType(mStatsObj.getColType());
     statsObj.setColName(mStatsObj.getColName());
@@ -370,7 +370,8 @@ public class StatObjectConverter {
       binaryStats.setMaxColLen(mStatsObj.getMaxColLen());
       colStatsData.setBinaryStats(binaryStats);
     } else if (colType.equals("bigint") || colType.equals("int") ||
-        colType.equals("smallint") || colType.equals("tinyint")) {
+        colType.equals("smallint") || colType.equals("tinyint") ||
+        (timestampAsLong && colType.equals("timestamp"))) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNulls(mStatsObj.getNumNulls());
       Long longHighValue = mStatsObj.getLongHighValue();
@@ -430,7 +431,7 @@ public class StatObjectConverter {
       dateStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
       dateStats.setHistogram((mStatsObj.getHistogram()==null||!enableKll)? null : mStatsObj.getHistogram());
       colStatsData.setDateStats(dateStats);
-    } else if (colType.equals("timestamp")) {
+    } else if ((!timestampAsLong && colType.equals("timestamp"))) {
       TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
       timestampStats.setNumNulls(mStatsObj.getNumNulls());
       Long highValue = mStatsObj.getLongHighValue();
@@ -546,7 +547,7 @@ public class StatObjectConverter {
   }
 
   public static ColumnStatisticsObj getPartitionColumnStatisticsObj(
-      MPartitionColumnStatistics mStatsObj, boolean enableBitVector, boolean enableKll) {
+      MPartitionColumnStatistics mStatsObj, boolean enableBitVector, boolean enableKll, boolean timestampAsLong) {
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
     statsObj.setColType(mStatsObj.getColType());
     statsObj.setColName(mStatsObj.getColName());
@@ -575,7 +576,8 @@ public class StatObjectConverter {
       binaryStats.setMaxColLen(mStatsObj.getMaxColLen());
       colStatsData.setBinaryStats(binaryStats);
     } else if (colType.equals("tinyint") || colType.equals("smallint") ||
-        colType.equals("int") || colType.equals("bigint")) {
+        colType.equals("int") || colType.equals("bigint") ||
+        (timestampAsLong && colType.equals("timestamp"))) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNulls(mStatsObj.getNumNulls());
       if (mStatsObj.getLongHighValue() != null) {
@@ -629,7 +631,7 @@ public class StatObjectConverter {
       dateStats.setBitVectors((mStatsObj.getBitVector()==null||!enableBitVector)? null : mStatsObj.getBitVector());
       dateStats.setHistogram((mStatsObj.getHistogram()==null||!enableKll)? null : mStatsObj.getHistogram());
       colStatsData.setDateStats(dateStats);
-    } else if (colType.equals("timestamp")) {
+    } else if (!timestampAsLong && colType.equals("timestamp")) {
       TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
       timestampStats.setNumNulls(mStatsObj.getNumNulls());
       Long highValue = mStatsObj.getLongHighValue();
@@ -682,18 +684,18 @@ public class StatObjectConverter {
   }
 
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
-      Object lowValue, Object highValue, Object nulls, Object dist, Object bitVector,
-      Object histogram, Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
+      Object lowValue, Object highValue, Object nulls, Object dist, Object bitVector, Object histogram, Object avglen,
+      Object maxlen, Object trues, Object falses, boolean timestampAsLong) throws MetaException {
     String decLowStr = Objects.toString(lowValue, null);
     String decHighStr = Objects.toString(highValue, null);
     fillColumnStatisticsData(colType, data, lowValue, highValue, lowValue, highValue, decLowStr, decHighStr,
-        nulls, dist, bitVector, histogram, avglen, maxlen, trues, falses);
+        nulls, dist, bitVector, histogram, avglen, maxlen, trues, falses, timestampAsLong);
   }
 
   public static void fillColumnStatisticsData(String colType, ColumnStatisticsData data,
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
       Object nulls, Object dist, Object bitVector, Object histogram,
-      Object avglen, Object maxlen, Object trues, Object falses) throws MetaException {
+      Object avglen, Object maxlen, Object trues, Object falses, boolean timestampAsLong) throws MetaException {
     colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
@@ -717,7 +719,8 @@ public class StatObjectConverter {
       binaryStats.setMaxColLen(MetastoreDirectSqlUtils.extractSqlLong(maxlen));
       data.setBinaryStats(binaryStats);
     } else if (colType.equals("bigint") || colType.equals("int") ||
-        colType.equals("smallint") || colType.equals("tinyint")) {
+        colType.equals("smallint") || colType.equals("tinyint") ||
+        (timestampAsLong && colType.equals("timestamp"))) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (lhigh != null) {
@@ -769,7 +772,7 @@ public class StatObjectConverter {
       dateStats.setBitVectors(getBitVector(MetastoreDirectSqlUtils.extractSqlBlob(bitVector)));
       dateStats.setHistogram(getHistogram(MetastoreDirectSqlUtils.extractSqlBlob(histogram)));
       data.setDateStats(dateStats);
-    } else if (colType.equals("timestamp")) {
+    } else if (!timestampAsLong && colType.equals("timestamp")) {
       TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
       timestampStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (lhigh != null) {
@@ -790,7 +793,7 @@ public class StatObjectConverter {
       Object llow, Object lhigh, Object dlow, Object dhigh, Object declow, Object dechigh,
       Object nulls, Object dist, Object avglen, Object maxlen, Object trues, Object falses,
       Object avgLong, Object avgDouble, Object avgDecimal, Object sumDist,
-      boolean useDensityFunctionForNDVEstimation, double ndvTuner) throws MetaException {
+      boolean useDensityFunctionForNDVEstimation, double ndvTuner, boolean timestampAsLong) throws MetaException {
     colType = colType.toLowerCase();
     if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
@@ -813,7 +816,7 @@ public class StatObjectConverter {
       binaryStats.setMaxColLen(MetastoreDirectSqlUtils.extractSqlLong(maxlen));
       data.setBinaryStats(binaryStats);
     } else if (colType.equals("bigint") || colType.equals("int") || colType.equals("smallint")
-        || colType.equals("tinyint")) {
+        || colType.equals("tinyint") || (timestampAsLong && colType.equals("timestamp"))) {
       LongColumnStatsDataInspector longStats = new LongColumnStatsDataInspector();
       longStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (lhigh != null) {
@@ -883,7 +886,7 @@ public class StatObjectConverter {
       estimation = Math.min(estimation, rangeBound);
       dateStats.setNumDVs(estimation);
       data.setDateStats(dateStats);
-    } else if (colType.equals("timestamp")) {
+    } else if (!timestampAsLong && colType.equals("timestamp")) {
       TimestampColumnStatsDataInspector timestampStats = new TimestampColumnStatsDataInspector();
       timestampStats.setNumNulls(MetastoreDirectSqlUtils.extractSqlLong(nulls));
       if (lhigh != null) {
