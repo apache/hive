@@ -95,6 +95,9 @@ public class serdeConstants {
 
   public static final java.lang.String VARIANT_TYPE_NAME = "variant";
 
+  public static final String TIMESTAMP_NS_TYPE_NAME = "nanosecond timestamp";
+  public static final String TIMESTAMPTZ_NS_TYPE_NAME = "nanosecond timestamp with local time zone";
+
   public static final java.lang.String LIST_COLUMNS = "columns";
 
   public static final java.lang.String LIST_COLUMN_TYPES = "columns.types";

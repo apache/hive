@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 
@@ -40,6 +41,10 @@ public class IcebergTimestampObjectInspectorHive3 extends AbstractPrimitiveJavaO
 
   private IcebergTimestampObjectInspectorHive3() {
     super(TypeInfoFactory.timestampTypeInfo);
+  }
+
+  protected IcebergTimestampObjectInspectorHive3(PrimitiveTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override

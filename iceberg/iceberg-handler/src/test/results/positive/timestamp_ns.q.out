@@ -1,0 +1,202 @@
+PREHOOK: query: CREATE TABLE t (
+  ts_us     timestamp,
+  ts_ns     nanosecond timestamp,
+  ts_tz_us  timestamp with local time zone,
+  ts_tz_ns  nanosecond timestamp with local time zone
+)
+STORED BY ICEBERG
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (
+  ts_us     timestamp,
+  ts_ns     nanosecond timestamp,
+  ts_tz_us  timestamp with local time zone,
+  ts_tz_ns  nanosecond timestamp with local time zone
+)
+STORED BY ICEBERG
+TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: SHOW CREATE TABLE t
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: SHOW CREATE TABLE t
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@t
+CREATE EXTERNAL TABLE `t`(
+  `ts_us` timestamp, 
+  `ts_ns` nanosecond timestamp, 
+  `ts_tz_us` timestamp with local time zone, 
+  `ts_tz_ns` nanosecond timestamp with local time zone)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"ts_us","required":false,"type":"timestamp"},{"id":2,"name":"ts_ns","required":false,"type":"timestamp_ns"},{"id":3,"name":"ts_tz_us","required":false,"type":"timestamptz"},{"id":4,"name":"ts_tz_ns","required":false,"type":"timestamptz_ns"}]}', 
+  'format-version'='3', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: DESCRIBE t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@t
+POSTHOOK: query: DESCRIBE t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@t
+ts_us               	timestamp           	                    
+ts_ns               	nanosecond timestamp	                    
+ts_tz_us            	timestamp with local time zone	                    
+ts_tz_ns            	nanosecond timestamp with local time zone	                    
+PREHOOK: query: INSERT INTO t VALUES (
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789'
+)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t
+POSTHOOK: query: INSERT INTO t VALUES (
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789',
+  '2025-12-18 10:15:30.123456789'
+)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t
+PREHOOK: query: SELECT ts_ns FROM t ORDER BY ts_ns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT ts_ns FROM t ORDER BY ts_ns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789
+PREHOOK: query: SELECT ts_tz_ns FROM t ORDER BY ts_tz_ns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT ts_tz_ns FROM t ORDER BY ts_tz_ns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789 US/Pacific
+PREHOOK: query: SELECT CAST(ts_ns AS STRING) FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(ts_ns AS STRING) FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789
+PREHOOK: query: SELECT CAST(ts_tz_ns AS STRING) FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT CAST(ts_tz_ns AS STRING) FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456789 US/Pacific
+PREHOOK: query: SELECT * FROM t
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM t
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456	2025-12-18 10:15:30.123456789	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific
+PREHOOK: query: CREATE TABLE tgt STORED BY ICEBERG TBLPROPERTIES ('format-version'='3') AS SELECT * FROM t
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@t
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tgt
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: CREATE TABLE tgt STORED BY ICEBERG TBLPROPERTIES ('format-version'='3') AS SELECT * FROM t
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@t
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tgt
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Lineage: tgt.ts_ns SIMPLE [(t)t.FieldSchema(name:ts_ns, type:nanosecond timestamp, comment:null), ]
+POSTHOOK: Lineage: tgt.ts_tz_ns SIMPLE [(t)t.FieldSchema(name:ts_tz_ns, type:nanosecond timestamp with local time zone, comment:null), ]
+POSTHOOK: Lineage: tgt.ts_tz_us SIMPLE [(t)t.FieldSchema(name:ts_tz_us, type:timestamp with local time zone, comment:null), ]
+POSTHOOK: Lineage: tgt.ts_us SIMPLE [(t)t.FieldSchema(name:ts_us, type:timestamp, comment:null), ]
+PREHOOK: query: SHOW CREATE TABLE tgt
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@tgt
+POSTHOOK: query: SHOW CREATE TABLE tgt
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@tgt
+CREATE EXTERNAL TABLE `tgt`(
+  `ts_us` timestamp, 
+  `ts_ns` nanosecond timestamp, 
+  `ts_tz_us` timestamp with local time zone, 
+  `ts_tz_ns` nanosecond timestamp with local time zone)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"ts_us","required":false,"type":"timestamp"},{"id":2,"name":"ts_ns","required":false,"type":"timestamp_ns"},{"id":3,"name":"ts_tz_us","required":false,"type":"timestamptz"},{"id":4,"name":"ts_tz_ns","required":false,"type":"timestamptz_ns"}]}', 
+  'current-snapshot-id'='#SnapshotId#', 
+  'current-snapshot-summary'='{"added-data-files":"1","added-records":"1","added-files-size":"#Masked#","changed-partition-count":"1","total-records":"1","total-files-size":"#Masked#","total-data-files":"1","total-delete-files":"0","total-position-deletes":"0","total-equality-deletes":"0","iceberg-version":"#Masked#"}', 
+  'current-snapshot-timestamp-ms'='#Masked#', 
+  'format-version'='3', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'previous_metadata_location'='hdfs://### HDFS PATH ###', 
+  'serialization.format'='1', 
+  'snapshot-count'='1', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: DESCRIBE tgt
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tgt
+POSTHOOK: query: DESCRIBE tgt
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tgt
+ts_us               	timestamp           	                    
+ts_ns               	nanosecond timestamp	                    
+ts_tz_us            	timestamp with local time zone	                    
+ts_tz_ns            	nanosecond timestamp with local time zone	                    
+PREHOOK: query: SELECT * FROM tgt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tgt
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT * FROM tgt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tgt
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2025-12-18 10:15:30.123456	2025-12-18 10:15:30.123456789	2025-12-18 10:15:30.123456 US/Pacific	2025-12-18 10:15:30.123456789 US/Pacific

@@ -133,10 +133,12 @@ public final class ObjectInspectorConverters {
           inputOI,
           (SettableDateObjectInspector) outputOI);
     case TIMESTAMP:
+    case TIMESTAMP_NS:
       return new PrimitiveObjectInspectorConverter.TimestampConverter(
           inputOI,
           (SettableTimestampObjectInspector) outputOI);
     case TIMESTAMPLOCALTZ:
+    case TIMESTAMPTZ_NS:
       return new PrimitiveObjectInspectorConverter.TimestampLocalTZConverter(
           inputOI,
           (SettableTimestampLocalTZObjectInspector) outputOI);

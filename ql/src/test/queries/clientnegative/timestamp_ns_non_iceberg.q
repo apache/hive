@@ -1,0 +1,1 @@
+CREATE EXTERNAL TABLE variant_test_basic (id INT, t nanosecond timestamp with local time zone);

@@ -390,6 +390,7 @@ public class ColStatsProcessor implements IStatsProcessor {
       case INT:
       case LONG:
       case TIMESTAMPLOCALTZ:
+      case TIMESTAMPTZ_NS:
         return LONG;
       case FLOAT:
       case DOUBLE:
@@ -399,6 +400,7 @@ public class ColStatsProcessor implements IStatsProcessor {
       case DATE:
         return DATE;
       case TIMESTAMP:
+      case TIMESTAMP_NS:
         return TIMESTAMP;
       case STRING:
       case CHAR:

@@ -136,6 +136,10 @@ class HiveSchemaConverter {
           case DECIMAL:
             DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
             return Types.DecimalType.of(decimalTypeInfo.precision(), decimalTypeInfo.scale());
+          case TIMESTAMP_NS:
+            return Types.TimestampNanoType.withoutZone();
+          case TIMESTAMPTZ_NS:
+            return Types.TimestampNanoType.withZone();
           case INTERVAL_YEAR_MONTH:
           case INTERVAL_DAY_TIME:
           default:

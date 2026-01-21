@@ -453,6 +453,8 @@ constant
     | dateLiteral
     | timestampLiteral
     | timestampLocalTZLiteral
+    | timestampNsLiteral
+    | timestampTzNsLiteral
     | StringLiteral
     | stringLiteralSequence
     | charSetStringLiteral
@@ -520,6 +522,16 @@ timestampLocalTZLiteral
       adaptor.create(TOK_TIMESTAMPLOCALTZLITERAL, $StringLiteral.text)
     }
     ;
+
+timestampNsLiteral
+  : KW_NANOSECOND KW_TIMESTAMP StringLiteral
+    -> ^(TOK_TIMESTAMP_NSLITERAL StringLiteral)
+  ;
+
+timestampTzNsLiteral
+  : KW_NANOSECOND KW_TIMESTAMP KW_WITH KW_LOCAL KW_TIME KW_ZONE StringLiteral
+    -> ^(TOK_TIMESTAMPTZ_NSLITERAL StringLiteral)
+  ;
 
 intervalValue
     :

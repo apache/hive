@@ -399,6 +399,12 @@ public final class HiveSchemaUtil {
         return String.format("map<%s,%s>", convert(mapType.keyType()), convert(mapType.valueType()));
       case VARIANT:
         return "variant";
+      case TIMESTAMP_NANO:
+        Types.TimestampNanoType nanoType = (Types.TimestampNanoType) type;
+        if (nanoType.shouldAdjustToUTC()) {
+          return "nanosecond timestamp with local time zone";
+        }
+        return "nanosecond timestamp";
       default:
         throw new UnsupportedOperationException(type + " is not supported");
     }
