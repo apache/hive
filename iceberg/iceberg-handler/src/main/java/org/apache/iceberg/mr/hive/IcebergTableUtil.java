@@ -91,6 +91,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
+import org.apache.iceberg.expressions.UnboundTerm;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
@@ -102,8 +103,8 @@ import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
 import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.transforms.Transform;
 import org.apache.iceberg.types.Conversions;
-import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
@@ -260,41 +261,15 @@ public class IcebergTableUtil {
    * @return iceberg partition spec, always non-null
    */
   public static PartitionSpec spec(Configuration configuration, Schema schema) {
-    List<TransformSpec> partitionTransformSpecList = SessionStateUtil
+    List<TransformSpec> partitionBy = SessionStateUtil
         .getResource(configuration, hive_metastoreConstants.PARTITION_TRANSFORM_SPEC)
         .map(o -> (List<TransformSpec>) o).orElse(null);
 
-    if (partitionTransformSpecList == null) {
+    if (partitionBy == null) {
       LOG.warn(PARTITION_TRANSFORM_SPEC_NOT_FOUND);
       return null;
     }
-    PartitionSpec.Builder builder = PartitionSpec.builderFor(schema);
-    partitionTransformSpecList.forEach(spec -> {
-      switch (spec.getTransformType()) {
-        case IDENTITY:
-          builder.identity(spec.getColumnName().toLowerCase());
-          break;
-        case YEAR:
-          builder.year(spec.getColumnName());
-          break;
-        case MONTH:
-          builder.month(spec.getColumnName());
-          break;
-        case DAY:
-          builder.day(spec.getColumnName());
-          break;
-        case HOUR:
-          builder.hour(spec.getColumnName());
-          break;
-        case TRUNCATE:
-          builder.truncate(spec.getColumnName(), spec.getTransformParam());
-          break;
-        case BUCKET:
-          builder.bucket(spec.getColumnName(), spec.getTransformParam());
-          break;
-      }
-    });
-    return builder.build();
+    return SchemaUtils.createPartitionSpec(schema, partitionBy);
   }
 
   public static void updateSpec(Configuration configuration, Table table) {
@@ -317,32 +292,8 @@ public class IcebergTableUtil {
       LOG.warn(PARTITION_TRANSFORM_SPEC_NOT_FOUND);
       return;
     }
-    partitionTransformSpecList.forEach(spec -> {
-      switch (spec.getTransformType()) {
-        case IDENTITY:
-          updatePartitionSpec.addField(spec.getColumnName());
-          break;
-        case YEAR:
-          updatePartitionSpec.addField(Expressions.year(spec.getColumnName()));
-          break;
-        case MONTH:
-          updatePartitionSpec.addField(Expressions.month(spec.getColumnName()));
-          break;
-        case DAY:
-          updatePartitionSpec.addField(Expressions.day(spec.getColumnName()));
-          break;
-        case HOUR:
-          updatePartitionSpec.addField(Expressions.hour(spec.getColumnName()));
-          break;
-        case TRUNCATE:
-          updatePartitionSpec.addField(Expressions.truncate(spec.getColumnName(), spec.getTransformParam()));
-          break;
-        case BUCKET:
-          updatePartitionSpec.addField(Expressions.bucket(spec.getColumnName(), spec.getTransformParam()));
-          break;
-      }
-    });
-
+    partitionTransformSpecList.forEach(spec ->
+        updatePartitionSpec.addField(SchemaUtils.toTerm(spec)));
     updatePartitionSpec.commit();
   }
 
@@ -495,27 +446,37 @@ public class IcebergTableUtil {
 
   public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec,
       boolean latestSpecOnly) throws SemanticException {
-    Map<String, PartitionField> partitionFieldMap = getPartitionFields(table, latestSpecOnly).stream()
-        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
-    Expression finalExp = Expressions.alwaysTrue();
+
+    Map<String, PartitionField> partitionFieldsByName = getPartitionFields(table, latestSpecOnly).stream()
+        .collect(Collectors.toMap(
+            partitionField -> table.schema().findColumnName(partitionField.sourceId()),
+            Function.identity())
+        );
+
+    Expression predicate = Expressions.alwaysTrue();
+
     for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
-      String partColName = entry.getKey();
-      if (partitionFieldMap.containsKey(partColName)) {
-        PartitionField partitionField = partitionFieldMap.get(partColName);
-        if (partitionField.transform().isIdentity()) {
-          final Type partKeyType = table.schema().findField(partitionField.sourceId()).type();
-          final Object partKeyVal = Conversions.fromPartitionString(partKeyType, entry.getValue());
-          Expression boundPredicate = Expressions.equal(partColName, partKeyVal);
-          finalExp = Expressions.and(finalExp, boundPredicate);
-        } else {
-          throw new SemanticException(
-              String.format("Partition transforms are not supported here: %s", partColName));
-        }
-      } else {
-        throw new SemanticException(String.format("No partition column by the name: %s", partColName));
+      String partitionColumn = entry.getKey();
+      PartitionField partitionField = partitionFieldsByName.get(partitionColumn);
+
+      if (partitionField == null) {
+        throw new SemanticException(String.format("No partition column by the name: %s", partitionColumn));
       }
+      Types.NestedField sourceField = table.schema().findField(partitionField.sourceId());
+      Object sourceValue = Conversions.fromPartitionString(sourceField.type(), entry.getValue());
+      // Apply the transform to the source value
+      @SuppressWarnings("unchecked")
+      Transform<Object, Object> transform = (Transform<Object, Object>) partitionField.transform();
+      Object transformedValue = transform.bind(sourceField.type()).apply(sourceValue);
+
+      TransformSpec transformSpec = TransformSpec.fromString(transform.toString().toUpperCase(), sourceField.name());
+      UnboundTerm<Object> term = SchemaUtils.toTerm(transformSpec);
+
+      predicate = Expressions.and(
+          predicate, Expressions.equal(term, transformedValue));
     }
-    return finalExp;
+
+    return predicate;
   }
 
   public static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
@@ -527,6 +488,27 @@ public class IcebergTableUtil {
         .collect(Collectors.toList());
   }
 
+  public static Partition getPartition(Configuration conf,
+      org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec)
+      throws SemanticException {
+    List<String> partitionNames =
+        getPartitionNames(conf, table, partitionSpec, false);
+
+    if (partitionNames.isEmpty()) {
+      return null;
+    }
+
+    try {
+      String partitionName = partitionNames.getFirst();
+      if (partitionSpec.size() != Warehouse.makeSpecFromName(partitionName).size()) {
+        return null;
+      }
+      return new DummyPartition(table, partitionName, partitionSpec);
+    } catch (MetaException e) {
+      throw new SemanticException("Unable to create partition spec from name", e);
+    }
+  }
+
   /**
    * Returns a list of partition names satisfying the provided partition spec.
    * @param table Iceberg table
@@ -534,29 +516,31 @@ public class IcebergTableUtil {
    * @param latestSpecOnly when True, returns partitions with the current spec only, else - any specs
    * @return List of partition names
    */
-  public static List<String> getPartitionNames(Table table, Map<String, String> partSpecMap,
+  public static List<String> getPartitionNames(Configuration conf,
+      org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partSpecMap,
       boolean latestSpecOnly) throws SemanticException {
+    Table icebergTable = getTable(conf, table.getTTable());
     Expression expression = IcebergTableUtil.generateExpressionFromPartitionSpec(
-        table, partSpecMap, latestSpecOnly);
+        icebergTable, partSpecMap, latestSpecOnly);
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(
-        table, MetadataTableType.PARTITIONS);
+        icebergTable, MetadataTableType.PARTITIONS);
 
     try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
       return FluentIterable.from(fileScanTasks)
           .transformAndConcat(task -> task.asDataTask().rows())
           .transform(row -> {
             StructLike data = row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
-            PartitionSpec spec = table.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
+            PartitionSpec spec = icebergTable.specs().get(row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
             return Maps.immutableEntry(
                 IcebergTableUtil.toPartitionData(
-                    data, Partitioning.partitionType(table), spec.partitionType()),
+                    data, Partitioning.partitionType(icebergTable), spec.partitionType()),
                 spec);
           }).filter(e -> {
             ResidualEvaluator resEval = ResidualEvaluator.of(e.getValue(),
                 expression, false);
             return e.getValue().isPartitioned() &&
               resEval.residualFor(e.getKey()).isEquivalentTo(Expressions.alwaysTrue()) &&
-                (e.getValue().specId() == table.spec().specId() || !latestSpecOnly);
+                (e.getValue().specId() == icebergTable.spec().specId() || !latestSpecOnly);
 
           }).transform(e -> e.getValue().partitionToPath(e.getKey())).toSortedList(
             Comparator.naturalOrder());
@@ -596,7 +580,7 @@ public class IcebergTableUtil {
   public static <T> List<T> readColStats(Table table, Long snapshotId, Predicate<BlobMetadata> filter) {
     List<T> colStats = Lists.newArrayList();
 
-    String statsPath  = IcebergTableUtil.getColStatsPath(table, snapshotId);
+    String statsPath = IcebergTableUtil.getColStatsPath(table, snapshotId);
     if (statsPath == null) {
       return colStats;
     }
@@ -636,34 +620,6 @@ public class IcebergTableUtil {
         table.currentSnapshot().allManifests(table.io()).parallelStream()
             .map(ManifestFile::partitionSpecId)
             .anyMatch(id -> id != table.spec().specId());
-  }
-
-  public static Partition getPartition(Configuration conf,
-                                       org.apache.hadoop.hive.ql.metadata.Table table,
-                                       Map<String, String> partitionSpec) throws SemanticException {
-    try {
-      List<String> partNames = getPartitionNames(conf, table, partitionSpec, false);
-      if (partNames.isEmpty()) {
-        return null;
-      }
-      String expectedName = Warehouse.makePartName(partitionSpec, false);
-      if (!expectedName.equals(partNames.getFirst())) {
-        return null;
-      }
-      return new DummyPartition(table, expectedName, partitionSpec);
-    } catch (SemanticException e) {
-      return null;
-    } catch (MetaException e) {
-      throw new SemanticException("Unable to construct dummy partition", e);
-    }
-  }
-
-  public static List<String> getPartitionNames(Configuration conf,
-                                               org.apache.hadoop.hive.ql.metadata.Table table,
-                                               Map<String, String> partitionSpec,
-                                               boolean latestSpecOnly) throws SemanticException {
-    Table icebergTable = getTable(conf, table.getTTable());
-    return getPartitionNames(icebergTable, partitionSpec, latestSpecOnly);
   }
 
   public static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,

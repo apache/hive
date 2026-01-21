@@ -35,7 +35,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -1029,10 +1028,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     String columName = schema.findField(field.sourceId()).name();
     TransformSpec transformSpec = TransformSpec.fromString(field.transform().toString(), columName);
 
-    UnboundTerm<Object> partitionColumn =
-        ObjectUtils.defaultIfNull(HiveIcebergFilterFactory.toTerm(columName, transformSpec),
-            Expressions.ref(field.name()));
-
+    UnboundTerm<Object> partitionColumn = SchemaUtils.toTerm(transformSpec);
     return Expressions.equal(partitionColumn, partitionData.get(index, Object.class));
   }
 
