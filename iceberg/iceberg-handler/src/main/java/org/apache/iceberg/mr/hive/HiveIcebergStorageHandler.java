@@ -2091,8 +2091,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
    */
   public List<String> getPartitionNames(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec) throws SemanticException {
-    Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return IcebergTableUtil.getPartitionNames(icebergTable, partitionSpec, false);
+    return IcebergTableUtil.getPartitionNames(conf, hmsTable, partitionSpec, false);
   }
 
   /**

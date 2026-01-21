@@ -567,17 +567,6 @@ public class IcebergTableUtil {
     }
   }
 
-  public static boolean hasPartition(Table icebergTable,
-                                     Map<String, String> partitionSpec) throws MetaException {
-    try {
-      List<String> partNames = getPartitionNames(icebergTable, partitionSpec, false);
-      return !partNames.isEmpty() &&
-              Warehouse.makePartName(partitionSpec, false).equals(partNames.getFirst());
-    } catch (HiveException e) {
-      return false;
-    }
-  }
-
   public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
       throws MetaException, HiveException {
     if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {
@@ -652,16 +641,29 @@ public class IcebergTableUtil {
   public static Partition getPartition(Configuration conf,
                                        org.apache.hadoop.hive.ql.metadata.Table table,
                                        Map<String, String> partitionSpec) throws SemanticException {
-    Table icebergTable = IcebergTableUtil.getTable(conf, table.getTTable());
     try {
-      if (!IcebergTableUtil.hasPartition(icebergTable, partitionSpec)) {
+      List<String> partNames = getPartitionNames(conf, table, partitionSpec, false);
+      if (partNames.isEmpty()) {
         return null;
       }
-      String partName = Warehouse.makePartName(partitionSpec, false);
-      return new DummyPartition(table, partName, partitionSpec);
+      String expectedName = Warehouse.makePartName(partitionSpec, false);
+      if (!expectedName.equals(partNames.getFirst())) {
+        return null;
+      }
+      return new DummyPartition(table, expectedName, partitionSpec);
+    } catch (SemanticException e) {
+      return null;
     } catch (MetaException e) {
-      throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
+      throw new SemanticException("Unable to construct dummy partition", e);
     }
+  }
+
+  public static List<String> getPartitionNames(Configuration conf,
+                                               org.apache.hadoop.hive.ql.metadata.Table table,
+                                               Map<String, String> partitionSpec,
+                                               boolean latestSpecOnly) throws SemanticException {
+    Table icebergTable = getTable(conf, table.getTTable());
+    return getPartitionNames(icebergTable, partitionSpec, latestSpecOnly);
   }
 
   public static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
