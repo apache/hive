@@ -89,7 +89,7 @@ class DirectSqlUpdatePart {
   private final int maxBatchSize;
   private final SQLGenerator sqlGenerator;
 
-  public DirectSqlUpdatePart(PersistenceManager pm, Configuration conf,
+  DirectSqlUpdatePart(PersistenceManager pm, Configuration conf,
                              DatabaseProduct dbType, int batchSize) {
     this.pm = pm;
     this.conf = conf;

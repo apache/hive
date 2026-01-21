@@ -651,7 +651,7 @@ class MetastoreDirectSqlUtils {
   }
 
   public static Object[] prepareParams(String catName, String dbName, String tableName,
-                                 List<String> partNames, List<String> colNames, String engine) throws MetaException {
+                                 List<String> partNames, List<String> colNames, String engine) {
     Object[] params = new Object[colNames.size() + partNames.size() + 4];
     int paramI = 0;
     params[paramI++] = catName;
