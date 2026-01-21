@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,6 +56,7 @@ import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -85,13 +88,17 @@ import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
+import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.PartitionsTable;
+import org.apache.iceberg.ReplaceSortOrder;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SortOrder;
+import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
@@ -624,13 +631,63 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     Map<String, String> hmsTableParameters = hmsTable.getParameters();
     Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
     UpdateProperties icebergUpdateProperties = icebergTable.updateProperties();
+
     if (contextProperties.containsKey(SET_PROPERTIES)) {
-      splitter.splitToList(contextProperties.get(SET_PROPERTIES))
-          .forEach(k -> icebergUpdateProperties.set(k, hmsTableParameters.get(k)));
+      List<String> propertiesToSet = splitter.splitToList(contextProperties.get(SET_PROPERTIES));
+
+      // Define handlers for properties that need special processing
+      Map<String, Consumer<String>> propertyHandlers = Maps.newHashMap();
+      propertyHandlers.put(TableProperties.DEFAULT_SORT_ORDER,
+          key -> handleDefaultSortOrder(hmsTable, hmsTableParameters));
+
+      // Process each property using handlers or default behavior
+      propertiesToSet.forEach(key ->
+          propertyHandlers.getOrDefault(key,
+              k -> icebergUpdateProperties.set(k, hmsTableParameters.get(k))
+          ).accept(key)
+      );
     } else if (contextProperties.containsKey(UNSET_PROPERTIES)) {
       splitter.splitToList(contextProperties.get(UNSET_PROPERTIES)).forEach(icebergUpdateProperties::remove);
     }
+
     icebergUpdateProperties.commit();
+  }
+
+  /**
+   * Handles conversion of Hive SortFields JSON to Iceberg SortOrder.
+   * Uses Iceberg's replaceSortOrder() API to properly handle the reserved property.
+   */
+  private void handleDefaultSortOrder(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      Map<String, String> hmsTableParameters) {
+    String sortOrderJSONString = hmsTableParameters.get(TableProperties.DEFAULT_SORT_ORDER);
+
+    List<SortFieldDesc> sortFieldDescList = parseSortFieldsJSON(sortOrderJSONString);
+    if (sortFieldDescList != null) {
+      try {
+        ReplaceSortOrder replaceSortOrder = icebergTable.replaceSortOrder();
+
+        // Chain all the sort field additions
+        for (SortFieldDesc fieldDesc : sortFieldDescList) {
+          NullOrder nullOrder = convertNullOrder(fieldDesc.getNullOrdering());
+
+          BiConsumer<String, NullOrder> sortMethod =
+              fieldDesc.getDirection() == SortFieldDesc.SortDirection.ASC ?
+                  replaceSortOrder::asc : replaceSortOrder::desc;
+
+          sortMethod.accept(fieldDesc.getColumnName(), nullOrder);
+        }
+
+        replaceSortOrder.commit();
+
+        // Update HMS table parameters with the Iceberg SortOrder JSON
+        SortOrder newSortOrder = icebergTable.sortOrder();
+        hmsTableParameters.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(newSortOrder));
+
+        LOG.debug("Successfully set sort order for table {}: {}", hmsTable.getTableName(), newSortOrder);
+      } catch (Exception e) {
+        LOG.warn("Failed to apply sort order for table {}: {}", hmsTable.getTableName(), sortOrderJSONString, e);
+      }
+    }
   }
 
   private void setupAlterOperationType(org.apache.hadoop.hive.metastore.api.Table hmsTable,
