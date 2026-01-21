@@ -92,10 +92,10 @@ InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat
 OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
 Compressed:         	No                  	 
 Sort Columns:       	[FieldSchema(name:a, type:int, comment:Transform: identity, Sort direction: DESC, Null sort order: NULLS_LAST)]	 
-PREHOOK: query: alter table ice_t set partition spec ( c, d, b )
+PREHOOK: query: alter table ice_t set partition spec ( c, d, truncate(2,b) )
 PREHOOK: type: ALTERTABLE_SETPARTSPEC
 PREHOOK: Input: default@ice_t
-POSTHOOK: query: alter table ice_t set partition spec ( c, d, b )
+POSTHOOK: query: alter table ice_t set partition spec ( c, d, truncate(2,b) )
 POSTHOOK: type: ALTERTABLE_SETPARTSPEC
 POSTHOOK: Input: default@ice_t
 POSTHOOK: Output: default@ice_t
@@ -123,13 +123,13 @@ d                   	string
 # col_name            	data_type           	comment             
 c                   	int                 	Transform: identity 
 d                   	string              	Transform: identity 
-b                   	string              	Transform: identity 
+b                   	string              	Transform: truncate[2]
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 c                   	IDENTITY            	 
 d                   	IDENTITY            	 
-b                   	IDENTITY            	 
+b                   	TRUNCATE[2]         	 
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[8, hello8, hello7] 	 
@@ -159,13 +159,13 @@ d                   	string
 # col_name            	data_type           	comment             
 c                   	int                 	Transform: identity 
 d                   	string              	Transform: identity 
-b                   	string              	Transform: identity 
+b                   	string              	Transform: truncate[2]
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 c                   	IDENTITY            	 
 d                   	IDENTITY            	 
-b                   	IDENTITY            	 
+b                   	TRUNCATE[2]         	 
 	 	 
 # Detailed Partition Information	 	 
 Partition Value:    	[4, hello4, null]   	 

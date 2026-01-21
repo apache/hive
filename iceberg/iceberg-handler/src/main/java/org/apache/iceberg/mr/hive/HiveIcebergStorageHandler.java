@@ -866,8 +866,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     return table.spec().fields().stream()
       .filter(f -> !f.transform().isVoid())
       .map(f -> {
-        TransformSpec spec = IcebergTableUtil.getTransformSpec(
-            table, f.transform().toString(), f.sourceId());
+        TransformSpec spec = IcebergTableUtil.getTransformSpec(table, f.transform().toString(), f.sourceId());
         spec.setFieldName(f.name());
         return spec;
       })
@@ -882,8 +881,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       e.getValue().fields().stream()
         .filter(f -> !f.transform().isVoid())
         .map(f -> {
-          TransformSpec spec = IcebergTableUtil.getTransformSpec(
-              table, f.transform().toString(), f.sourceId());
+          TransformSpec spec = IcebergTableUtil.getTransformSpec(table, f.transform().toString(), f.sourceId());
           spec.setFieldName(f.name());
           return Pair.of(e.getKey(), spec);
         }))
@@ -893,9 +891,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   private List<TransformSpec> getSortTransformSpec(Table table) {
     return table.sortOrder().fields().stream().map(s ->
-        IcebergTableUtil.getTransformSpec(table, s.transform().toString(), s.sourceId())
-      )
-      .collect(Collectors.toList());
+            IcebergTableUtil.getTransformSpec(table, s.transform().toString(), s.sourceId()))
+        .toList();
   }
 
   @Override
