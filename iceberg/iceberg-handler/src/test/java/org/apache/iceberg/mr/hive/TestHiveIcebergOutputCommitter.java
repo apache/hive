@@ -43,6 +43,7 @@ import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder;
 import org.apache.iceberg.mr.hive.writer.WriterRegistry;

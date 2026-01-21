@@ -46,15 +46,14 @@ import com.google.common.collect.ImmutableList;
  * <code>long</code>, <code>float</code>, <code>double</code>), and the result
  * is the same type.
  */
-public class HiveSqlSumAggFunction extends SqlAggFunction implements CanAggregateDistinct{
-  final boolean isDistinct;
+public class HiveSqlSumAggFunction extends SqlAggFunction {
   final SqlReturnTypeInference returnTypeInference;
   final SqlOperandTypeInference operandTypeInference;
   final SqlOperandTypeChecker operandTypeChecker;
 
   //~ Constructors -----------------------------------------------------------
 
-  public HiveSqlSumAggFunction(boolean isDistinct, SqlReturnTypeInference returnTypeInference,
+  public HiveSqlSumAggFunction(SqlReturnTypeInference returnTypeInference,
     SqlOperandTypeInference operandTypeInference, SqlOperandTypeChecker operandTypeChecker) {
     super(
         "sum",
@@ -66,14 +65,9 @@ public class HiveSqlSumAggFunction extends SqlAggFunction implements CanAggregat
     this.returnTypeInference = returnTypeInference;
     this.operandTypeChecker = operandTypeChecker;
     this.operandTypeInference = operandTypeInference;
-    this.isDistinct = isDistinct;
   }
 
   //~ Methods ----------------------------------------------------------------
-  @Override
-  public boolean isDistinct() {
-    return isDistinct;
-  }
 
   @Override
   public <T> T unwrap(Class<T> clazz) {
@@ -89,7 +83,7 @@ public class HiveSqlSumAggFunction extends SqlAggFunction implements CanAggregat
     public AggregateCall other(RelDataTypeFactory typeFactory, AggregateCall e) {
       RelDataType countRetType = typeFactory.createTypeWithNullability(typeFactory.createSqlType(SqlTypeName.BIGINT), true);
       return AggregateCall.create(
-        new HiveSqlCountAggFunction(isDistinct, ReturnTypes.explicit(countRetType), operandTypeInference, operandTypeChecker),
+        new HiveSqlCountAggFunction(ReturnTypes.explicit(countRetType), operandTypeInference, operandTypeChecker),
         false, ImmutableIntList.of(), -1, countRetType, "count");
     }
 
@@ -120,8 +114,18 @@ public class HiveSqlSumAggFunction extends SqlAggFunction implements CanAggregat
         throw new AssertionError("unexpected count " + merges);
       }
       int ordinal = extra.register(node);
-      return AggregateCall.create(new HiveSqlSumAggFunction(isDistinct, returnTypeInference, operandTypeInference, operandTypeChecker),
-          false, ImmutableList.of(ordinal), -1, aggregateCall.type, aggregateCall.name);
+      return AggregateCall.create(new HiveSqlSumAggFunction(returnTypeInference,
+              operandTypeInference,
+              operandTypeChecker),
+          false,
+          false,
+          false,
+          ImmutableList.of(ordinal),
+          -1,
+          aggregateCall.distinctKeys,
+          aggregateCall.collation,
+          aggregateCall.type,
+          aggregateCall.name);
     }
   }
 

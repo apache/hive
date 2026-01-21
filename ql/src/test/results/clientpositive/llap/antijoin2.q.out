@@ -235,18 +235,19 @@ POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[sum($1)])
-  HiveAntiJoin(condition=[=($0, $4)], joinType=[anti])
-    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[sum($1)])
+    HiveAntiJoin(condition=[=($0, $4)], joinType=[anti])
+      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, tt1]], table:alias=[ws1])
+        HiveProject(ws_order_number=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, tt2]], table:alias=[ws2])
+      HiveProject(literalTrue=[true], wr_order_number=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])
-          HiveTableScan(table=[[default, tt1]], table:alias=[ws1])
-      HiveProject(ws_order_number=[$0])
-        HiveFilter(condition=[IS NOT NULL($0)])
-          HiveTableScan(table=[[default, tt2]], table:alias=[ws2])
-    HiveProject(literalTrue=[true], wr_order_number=[$0])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, tt3]], table:alias=[wr1])
+          HiveTableScan(table=[[default, tt3]], table:alias=[wr1])
 
 PREHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
@@ -364,12 +365,13 @@ POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
-  HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
-    HiveTableScan(table=[[default, tt1]], table:alias=[tt1])
-  HiveProject(literalTrue=[true], ws_order_number=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, tt2]], table:alias=[tt2])
+HiveProject(tt1.ws_order_number=[$0], tt1.ws_ext_ship_cost=[$1])
+  HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
+    HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+      HiveTableScan(table=[[default, tt1]], table:alias=[tt1])
+    HiveProject(literalTrue=[true], ws_order_number=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, tt2]], table:alias=[tt2])
 
 PREHOOK: query: select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
 PREHOOK: type: QUERY
@@ -550,18 +552,19 @@ POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[sum($1)])
-  HiveAntiJoin(condition=[=($0, $4)], joinType=[anti])
-    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[sum($1)])
+    HiveAntiJoin(condition=[=($0, $4)], joinType=[anti])
+      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, tt1]], table:alias=[ws1])
+        HiveProject(ws_order_number=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, tt2]], table:alias=[ws2])
+      HiveProject(literalTrue=[true], wr_order_number=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])
-          HiveTableScan(table=[[default, tt1]], table:alias=[ws1])
-      HiveProject(ws_order_number=[$0])
-        HiveFilter(condition=[IS NOT NULL($0)])
-          HiveTableScan(table=[[default, tt2]], table:alias=[ws2])
-    HiveProject(literalTrue=[true], wr_order_number=[$0])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, tt3]], table:alias=[wr1])
+          HiveTableScan(table=[[default, tt3]], table:alias=[wr1])
 
 PREHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
@@ -679,12 +682,13 @@ POSTHOOK: Input: default@tt1
 POSTHOOK: Input: default@tt2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
-  HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
-    HiveTableScan(table=[[default, tt1]], table:alias=[tt1])
-  HiveProject(literalTrue=[true], ws_order_number=[$0])
-    HiveFilter(condition=[IS NOT NULL($0)])
-      HiveTableScan(table=[[default, tt2]], table:alias=[tt2])
+HiveProject(tt1.ws_order_number=[$0], tt1.ws_ext_ship_cost=[$1])
+  HiveAntiJoin(condition=[=($0, $3)], joinType=[anti])
+    HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+      HiveTableScan(table=[[default, tt1]], table:alias=[tt1])
+    HiveProject(literalTrue=[true], ws_order_number=[$0])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, tt2]], table:alias=[tt2])
 
 PREHOOK: query: select * from tt1 where not exists(select * from tt2 where tt1.ws_order_number = tt2.ws_order_number)
 PREHOOK: type: QUERY
@@ -858,18 +862,19 @@ POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[sum($1)])
-  HiveAntiJoin(condition=[=($0, $4)], joinType=[anti])
-    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[sum($1)])
+    HiveAntiJoin(condition=[=($0, $4)], joinType=[anti])
+      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, tt1]], table:alias=[ws1])
+        HiveProject(ws_order_number=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, tt2]], table:alias=[ws2])
+      HiveProject(literalTrue=[true], wr_order_number=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])
-          HiveTableScan(table=[[default, tt1]], table:alias=[ws1])
-      HiveProject(ws_order_number=[$0])
-        HiveFilter(condition=[IS NOT NULL($0)])
-          HiveTableScan(table=[[default, tt2]], table:alias=[ws2])
-    HiveProject(literalTrue=[true], wr_order_number=[$0])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, tt3]], table:alias=[wr1])
+          HiveTableScan(table=[[default, tt3]], table:alias=[wr1])
 
 PREHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number
@@ -1086,18 +1091,19 @@ POSTHOOK: Input: default@tt2
 POSTHOOK: Input: default@tt3
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[sum($1)])
-  HiveAntiJoin(condition=[=($0, $4)], joinType=[anti])
-    HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
-      HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[sum($1)])
+    HiveAntiJoin(condition=[=($0, $4)], joinType=[anti])
+      HiveJoin(condition=[=($0, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(ws_order_number=[$0], ws_ext_ship_cost=[$1])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, tt1]], table:alias=[ws1])
+        HiveProject(ws_order_number=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, tt2]], table:alias=[ws2])
+      HiveProject(literalTrue=[true], wr_order_number=[$0])
         HiveFilter(condition=[IS NOT NULL($0)])
-          HiveTableScan(table=[[default, tt1]], table:alias=[ws1])
-      HiveProject(ws_order_number=[$0])
-        HiveFilter(condition=[IS NOT NULL($0)])
-          HiveTableScan(table=[[default, tt2]], table:alias=[ws2])
-    HiveProject(literalTrue=[true], wr_order_number=[$0])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, tt3]], table:alias=[wr1])
+          HiveTableScan(table=[[default, tt3]], table:alias=[wr1])
 
 PREHOOK: query: select sum(ws_ext_ship_cost) from tt1 ws1, tt2 ws2
 where ws1.ws_order_number = ws2.ws_order_number

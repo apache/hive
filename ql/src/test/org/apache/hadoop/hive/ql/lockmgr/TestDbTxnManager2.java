@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnHandler;
 import org.apache.hadoop.hive.metastore.txn.service.CompactionHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.service.AcidHouseKeeperService;
 import org.apache.hadoop.hive.ql.Context;
@@ -70,7 +71,7 @@ import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runWorker;
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runCleaner;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.collections.CollectionUtils.isEqualCollection;
+import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
 
 /**
  * See additional tests in {@link org.apache.hadoop.hive.ql.lockmgr.TestDbTxnManager}
@@ -1235,6 +1236,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
    */
   @Test
   public void testWriteSetTracking5() throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, false);
+    TxnHandler.ConfVars.setUseMinHistoryWriteId(false);
+
     dropTable(new String[] {"TAB_PART"});
     Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\""));
     driver.run("create table if not exists TAB_PART (a int, b int) " +
@@ -2109,6 +2113,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
    * @param causeConflict true to make 2 operations such that they update the same entity
    */
   private void testMergeUnpartitioned(boolean causeConflict, boolean sharedWrite) throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, false);
+    TxnHandler.ConfVars.setUseMinHistoryWriteId(false);
+
     dropTable(new String[] {"target","source"});
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !sharedWrite);
 
@@ -2873,6 +2880,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
    * @param causeConflict - true to make the operations cause a Write conflict
    */
   private void testMergePartitioned(boolean causeConflict, boolean sharedWrite) throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, false);
+    TxnHandler.ConfVars.setUseMinHistoryWriteId(false);
+
     dropTable(new String[] {"target","source"});
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !sharedWrite);
 
@@ -3537,7 +3547,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
 
   @Test
   public void testInsertSnapshotIsolationMinHistoryDisabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, false);
+    TxnHandler.ConfVars.setUseMinHistoryWriteId(false);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, false);
     testInsertSnapshotIsolation();
   }
 
@@ -3555,6 +3566,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
     swapTxnManager(txnMgr);
 
     driver.run();
+    txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
     swapTxnManager(txnMgr2);
 
@@ -3566,7 +3578,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase {
 
   @Test
   public void testUpdateSnapshotIsolationMinHistoryDisabled() throws Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_LEVEL, false);
+    TxnHandler.ConfVars.setUseMinHistoryWriteId(false);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, false);
     testUpdateSnapshotIsolation();
   }
 

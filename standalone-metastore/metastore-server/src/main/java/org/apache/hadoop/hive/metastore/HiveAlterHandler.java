@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.AcidMetaDataFile.DataFormat;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -73,6 +73,7 @@ import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.findStaleColumns;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -212,7 +213,7 @@ public class HiveAlterHandler implements AlterHandler {
 
       // On a replica this alter table will be executed only if old and new both the databases are
       // available and being replicated into. Otherwise, it will be either create or drop of table.
-      isReplicated = HMSHandler.isDbReplicationTarget(olddb);
+      isReplicated = isDbReplicationTarget(olddb);
       if (oldt.getPartitionKeysSize() != 0) {
         isPartitionedTable = true;
       }
@@ -293,7 +294,7 @@ public class HiveAlterHandler implements AlterHandler {
             srcFs = wh.getFs(srcPath);
 
             // get new location
-            assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
+            assert(isReplicated == isDbReplicationTarget(db));
             if (renamedTranslatedToExternalTable) {
               if (!tableInSpecifiedLoc) {
                 destPath = new Path(newt.getSd().getLocation());
@@ -393,7 +394,7 @@ public class HiveAlterHandler implements AlterHandler {
         // operations other than table rename
         if (MetaStoreServerUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
-          assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
+          assert(isReplicated == isDbReplicationTarget(db));
           // Update table stats. For partitioned table, we update stats in alterPartition()
           MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
         }
@@ -554,15 +555,6 @@ public class HiveAlterHandler implements AlterHandler {
       return msg.substring(0, msg.indexOf('\n'));
     }
     return ex.getMessage();
-  }
-
-  @Override
-  public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
-    final String name, final List<String> part_vals, final Partition new_part,
-    EnvironmentContext environmentContext)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException, NoSuchObjectException {
-    return alterPartition(msdb, wh, MetaStoreUtils.getDefaultCatalog(conf), dbname, name, part_vals, new_part,
-        environmentContext, null, null);
   }
 
   @Override
@@ -796,16 +788,6 @@ public class HiveAlterHandler implements AlterHandler {
       }
     }
     return oldPart;
-  }
-
-  @Deprecated
-  @Override
-  public List<Partition> alterPartitions(final RawStore msdb, Warehouse wh, final String dbname,
-    final String name, final List<Partition> new_parts,
-    EnvironmentContext environmentContext)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException {
-    return alterPartitions(msdb, wh, MetaStoreUtils.getDefaultCatalog(conf), dbname, name, new_parts,
-        environmentContext, null, -1, null);
   }
 
   private Map<List<String>, Partition> getExistingPartitions(final RawStore msdb,

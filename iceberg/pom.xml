@@ -14,19 +14,19 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg</artifactId>
-  <version>4.2.0-SNAPSHOT</version>
+  <version>4.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Iceberg Modules</name>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
     <!-- Upgrade roaringbit version in parent pom.xml whenever upgrading iceberg version -->
-    <iceberg.version>1.9.1</iceberg.version>
+    <iceberg.version>1.10.0</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>5.2.0</iceberg.mockito-core.version>
     <iceberg.avro.version>1.12.0</iceberg.avro.version>
@@ -50,6 +50,12 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
       <version>${iceberg.mockito-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>error_prone_annotations</artifactId>
+      <version>${google.errorprone.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <dependencyManagement>
@@ -241,7 +247,6 @@
         <version>${spotless.maven.plugin.version}</version>
         <configuration>
           <skip>${validate.skip}</skip>
-          <argLine>--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</argLine>
           <java>
             <removeUnusedImports/>
             <importOrder>
@@ -318,17 +323,13 @@
                 <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
                 <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
               </compilerArgs>
-              <annotationProcessorPaths>
+              <proc combine.self="override">full</proc>
+              <annotationProcessorPaths combine.children="append">
                 <path>
                   <groupId>com.google.errorprone</groupId>
                   <artifactId>error_prone_core</artifactId>
                   <version>${google.errorprone.version}</version>
                 </path>
-                <dependency>
-                  <groupId>org.immutables</groupId>
-                  <artifactId>value</artifactId>
-                  <version>${immutables.value.version}</version>
-                </dependency>
               </annotationProcessorPaths>
             </configuration>
           </plugin>

@@ -1,10 +1,10 @@
 CBO PLAN:
-HiveProject(_o__c0=[$0], _o__c1=[$1], _o__c2=[$2], _o__c3=[$3])
+HiveProject(_c0=[$0], _c1=[$1], _c2=[$2], _c3=[$3])
   HiveSortLimit(sort0=[$7], sort1=[$4], sort2=[$5], sort3=[$6], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
     HiveProject(_o__c0=[substr($0, 1, 20)], _o__c1=[/(CAST($1):DOUBLE, $2)], _o__c2=[CAST(/($3, $4)):DECIMAL(11, 6)], _o__c3=[CAST(/($5, $6)):DECIMAL(11, 6)], (tok_function avg (tok_table_or_col ws_quantity))=[/(CAST($1):DOUBLE, $2)], (tok_function avg (tok_table_or_col wr_refunded_cash))=[CAST(/($3, $4)):DECIMAL(11, 6)], (tok_function avg (tok_table_or_col wr_fee))=[CAST(/($5, $6)):DECIMAL(11, 6)], (tok_function substr (tok_table_or_col r_reason_desc) 1 20)=[substr($0, 1, 20)])
       HiveAggregate(group=[{36}], agg#0=[sum($2)], agg#1=[count($2)], agg#2=[sum($18)], agg#3=[count($18)], agg#4=[sum($17)], agg#5=[count($17)])
         HiveJoin(condition=[=($35, $15)], joinType=[inner], algorithm=[none], cost=[not available])
-          HiveJoin(condition=[AND(OR(AND($26, $27, $7), AND($28, $29, $8), AND($30, $31, $9)), =($0, $11), =($1, $16), OR(AND($20, $4), AND($21, $5), AND($22, $6)))], joinType=[inner], algorithm=[none], cost=[not available])
+          HiveJoin(condition=[AND(=($0, $11), =($1, $16), OR(AND($26, $27, $7), AND($28, $29, $8), AND($30, $31, $9)), OR(AND($20, $4), AND($21, $5), AND($22, $6)))], joinType=[inner], algorithm=[none], cost=[not available])
             HiveJoin(condition=[=($3, $10)], joinType=[inner], algorithm=[none], cost=[not available])
               HiveProject(ws_item_sk=[$2], ws_order_number=[$16], ws_quantity=[$17], ws_sold_date_sk=[$33], EXPR$0=[BETWEEN(false, $32, 100:DECIMAL(12, 2), 200:DECIMAL(12, 2))], EXPR$1=[BETWEEN(false, $32, 150:DECIMAL(12, 2), 300:DECIMAL(12, 2))], EXPR$2=[BETWEEN(false, $32, 50:DECIMAL(12, 2), 250:DECIMAL(12, 2))], EXPR$3=[BETWEEN(false, $20, 100:DECIMAL(3, 0), 150:DECIMAL(3, 0))], EXPR$4=[BETWEEN(false, $20, 50:DECIMAL(3, 0), 100:DECIMAL(3, 0))], EXPR$5=[BETWEEN(false, $20, 150:DECIMAL(3, 0), 200:DECIMAL(3, 0))])
                 HiveFilter(condition=[AND(IS NOT NULL($20), IS NOT NULL($11), IS NOT NULL($32), IS NOT NULL($33))])

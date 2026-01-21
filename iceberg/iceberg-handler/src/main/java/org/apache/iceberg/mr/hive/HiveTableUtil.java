@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.mapreduce.JobID;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFiles;
@@ -81,6 +82,7 @@ public class HiveTableUtil {
   private static final Logger LOG = LoggerFactory.getLogger(HiveTableUtil.class);
 
   static final String TABLE_EXTENSION = ".table";
+  static final String FOR_COMMIT_EXTENSION = ".forCommit";
 
   private HiveTableUtil() {
   }
@@ -294,12 +296,44 @@ public class HiveTableUtil {
     }
   }
 
-  private static String generateTableObjectLocation(String tableLocation, Configuration conf) {
-    return tableLocation + "/temp/" + conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname) + TABLE_EXTENSION;
+  /**
+   * Generates the file location for the serialized table object.
+   * @param location The location of the table.
+   * @param conf The configuration containing the query ID.
+   * @return The file path for the serialized table object.
+   */
+  private static String tableObjectLocation(String location, Configuration conf) {
+    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
+    return location + "/temp/" + queryId + TABLE_EXTENSION;
+  }
+
+  /**
+   * Generates the job temp location based on the job configuration.
+   * @param location The location of the table.
+   * @param conf The job's configuration.
+   * @param jobId The JobID for the task.
+   * @return The directory path for the job's temporary location.
+   */
+  public static String jobLocation(String location, Configuration conf, JobID jobId) {
+    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
+    return location + "/temp/" + queryId + "-" + jobId;
+  }
+
+  /**
+   * Generates file location based on the task configuration and a specific task id.
+   * This file will be used to store the data required to generate the Iceberg commit.
+   * @param location The location of the table.
+   * @param conf The job's configuration.
+   * @param jobId The jobId for the task.
+   * @param taskId The taskId for the commit file.
+   * @return The file path for storing the commit data.
+   */
+  static String fileForCommitLocation(String location, Configuration conf, JobID jobId, int taskId) {
+    return jobLocation(location, conf, jobId) + "/task-" + taskId + FOR_COMMIT_EXTENSION;
   }
 
   static void createFileForTableObject(Table table, Configuration conf) {
-    String filePath = generateTableObjectLocation(table.location(), conf);
+    String filePath = tableObjectLocation(table.location(), conf);
     String bytes = serializeTable(table, conf, null, null);
     OutputFile serializedTableFile = table.io().newOutputFile(filePath);
     try (ObjectOutputStream oos = new ObjectOutputStream(serializedTableFile.createOrOverwrite())) {
@@ -311,7 +345,7 @@ public class HiveTableUtil {
   }
 
   static void cleanupTableObjectFile(String location, Configuration configuration) {
-    String filePath = generateTableObjectLocation(location, configuration);
+    String filePath = tableObjectLocation(location, configuration);
     Path toDelete = new Path(filePath);
     try {
       FileSystem fs = Util.getFs(toDelete, configuration);
@@ -322,7 +356,7 @@ public class HiveTableUtil {
   }
 
   private static Table readTableObjectFromFile(String location, Configuration config) {
-    String filePath = generateTableObjectLocation(location, config);
+    String filePath = tableObjectLocation(location, config);
     try (FileIO io = new HadoopFileIO(config)) {
       try (ObjectInputStream ois = new ObjectInputStream(io.newInputFile(filePath).newStream())) {
         return SerializationUtil.deserializeFromBase64((String) ois.readObject());

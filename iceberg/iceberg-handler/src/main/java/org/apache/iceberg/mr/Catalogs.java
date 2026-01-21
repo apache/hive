@@ -34,8 +34,8 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.HadoopTables;
-import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
@@ -187,7 +187,7 @@ public final class Catalogs {
    * @return true if the Catalog is HiveCatalog
    */
   public static boolean hiveCatalog(Configuration conf, Properties props) {
-    return CatalogUtils.assertCatalogType(conf, props, CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE, null);
+    return IcebergCatalogProperties.assertCatalogType(conf, props, CatalogUtil.ICEBERG_CATALOG_TYPE_HIVE, null);
   }
 
   /**
@@ -229,13 +229,13 @@ public final class Catalogs {
   }
 
   static Optional<Catalog> loadCatalog(Configuration conf, String catalogName) {
-    String catalogType = CatalogUtils.getCatalogType(conf, catalogName);
+    String catalogType = IcebergCatalogProperties.getCatalogType(conf, catalogName);
     if (NO_CATALOG_TYPE.equalsIgnoreCase(catalogType)) {
       return Optional.empty();
     } else {
       String name = catalogName == null ? ICEBERG_DEFAULT_CATALOG_NAME : catalogName;
       return Optional.of(CatalogUtil.buildIcebergCatalog(name,
-          CatalogUtils.getCatalogProperties(conf, name), conf));
+          IcebergCatalogProperties.getCatalogProperties(conf, name), conf));
     }
   }
 

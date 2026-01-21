@@ -41,6 +41,8 @@ public class OAuth2AuthorizationServer {
   static final String HMS_SECRET = "hive-metastore-secret";
   private static final String ICEBERG_CLIENT_ID = "iceberg-client";
   private static final String ICEBERG_CLIENT_SECRET = "iceberg-client-secret";
+  private static final String ICEBERG_CLIENT_ID_PERMISSION_TEST = "iceberg-client-permission-test";
+  private static final String ICEBERG_CLIENT_SECRET_PERMISSION_TEST = "iceberg-client-secret-permission-test";
 
   private GenericContainer<?> container;
   private Keycloak keycloak;
@@ -99,14 +101,14 @@ public class OAuth2AuthorizationServer {
     return aud;
   }
 
-  private static ProtocolMapperRepresentation createEmailClaim() {
+  private static ProtocolMapperRepresentation createEmailClaim(String username) {
     var mapper = new ProtocolMapperRepresentation();
     mapper.setName("email");
     mapper.setProtocol("openid-connect");
     mapper.setProtocolMapper("oidc-hardcoded-claim-mapper");
     mapper.setConfig(Map.of(
         "claim.name", "email",
-        "claim.value", "iceberg-user@example.com",
+        "claim.value", username + "@example.com",
         "jsonType.label", "String",
         "access.token.claim", "true"
     ));
@@ -114,10 +116,10 @@ public class OAuth2AuthorizationServer {
   }
 
   private void createClient(RealmResource realm, List<String> scopes,
-      List<ProtocolMapperRepresentation> protocolMappers) {
+      List<ProtocolMapperRepresentation> protocolMappers, String clientId, String clientSecret) {
     var client = new ClientRepresentation();
-    client.setClientId(ICEBERG_CLIENT_ID);
-    client.setSecret(ICEBERG_CLIENT_SECRET);
+    client.setClientId(clientId);
+    client.setSecret(clientSecret);
     client.setEnabled(true);
     client.setProtocol("openid-connect");
     client.setPublicClient(false);
@@ -127,6 +129,13 @@ public class OAuth2AuthorizationServer {
         Boolean.valueOf(accessTokenHeaderTypeRfc9068).toString()));
     client.setProtocolMappers(protocolMappers);
     realm.clients().create(client).close();
+  }
+
+  private void createClients(RealmResource realm, List<String> scopes, ProtocolMapperRepresentation audience) {
+    createClient(realm, scopes, List.of(audience, createEmailClaim("iceberg-user")), ICEBERG_CLIENT_ID,
+        ICEBERG_CLIENT_SECRET);
+    createClient(realm, scopes, List.of(audience, createEmailClaim(MockHiveAuthorizer.PERMISSION_TEST_USER)),
+        ICEBERG_CLIENT_ID_PERMISSION_TEST, ICEBERG_CLIENT_SECRET_PERMISSION_TEST);
   }
 
   private static String getAccessToken(String url, List<String> scopes) {
@@ -162,8 +171,7 @@ public class OAuth2AuthorizationServer {
 
     createScope(realm);
     var audience = createAudience();
-    var email = createEmailClaim();
-    createClient(realm, List.of("catalog"), List.of(audience, email));
+    createClients(realm, List.of("catalog"), audience);
     accessToken = getAccessToken(base, List.of("catalog"));
   }
 
@@ -186,10 +194,14 @@ public class OAuth2AuthorizationServer {
     return "%s:%s".formatted(ICEBERG_CLIENT_ID, ICEBERG_CLIENT_SECRET);
   }
 
+  public String getClientCredentialForPermissionTest() {
+    return "%s:%s".formatted(ICEBERG_CLIENT_ID_PERMISSION_TEST, ICEBERG_CLIENT_SECRET_PERMISSION_TEST);
+  }
+
   public String getAccessToken() {
     return accessToken;
   }
-  
+
   public String getKeycloackContainerDockerInternalHostName() {
     return container.getNetworkAliases().get(0);
   }

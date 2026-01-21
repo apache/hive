@@ -122,18 +122,10 @@ class TableOutputFormat implements OutputFormat {
 
       if (row.isMeta) {
         v = beeLine.getColorBuffer().center(row.values[i], row.sizes[i]);
-        if (beeLine.getOpts().getColor() && rows.isPrimaryKeyCol(i)) {
-          buf.cyan(v.getMono());
-        } else {
-          buf.bold(v.getMono());
-        }
+        buf.bold(v.getMono());
       } else {
         v = beeLine.getColorBuffer().pad(row.values[i], row.sizes[i]);
-        if (beeLine.getOpts().getColor() && rows.isPrimaryKeyCol(i)) {
-          buf.cyan(v.getMono());
-        } else {
-          buf.append(v.getMono());
-        }
+        buf.append(v.getMono());
       }
     }
 

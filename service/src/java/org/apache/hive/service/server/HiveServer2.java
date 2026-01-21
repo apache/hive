@@ -99,6 +99,7 @@ import org.apache.hadoop.hive.ql.txn.compactor.CompactorUtil;
 import org.apache.hadoop.hive.ql.txn.compactor.Worker;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.common.IPStackUtils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ExitUtil;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
@@ -606,7 +607,7 @@ public class HiveServer2 extends CompositeService {
 
   private ACLProvider getACLProvider(HiveConf hiveConf) {
     final boolean isSecure =
-        AuthType.isKerberosAuthMode(hiveConf) &&
+        UserGroupInformation.isSecurityEnabled() &&
         HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS);
 
     return new ACLProvider() {
@@ -683,7 +684,7 @@ public class HiveServer2 extends CompositeService {
    */
   private static void setUpZooKeeperAuth(HiveConf hiveConf) {
     try {
-      if (AuthType.isKerberosAuthMode(hiveConf) &&
+      if (UserGroupInformation.isSecurityEnabled() &&
           StringUtils.isNotEmpty(HiveConf.getVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM)) &&
           HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_ZOOKEEPER_USE_KERBEROS)) {
         // Install the JAAS Configuration for the runtime

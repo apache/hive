@@ -7217,7 +7217,7 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
+HiveProject(store_sales.ss_sold_date_sk=[$0], store_sales.ss_quantity=[$1], store_sales.ss_list_price=[$2])
   HiveJoin(condition=[>($2, $3)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
       HiveFilter(condition=[IS NOT NULL($2)])
@@ -7264,7 +7264,7 @@ POSTHOOK: Input: default@date_dim
 POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])
+HiveProject(store_sales.ss_sold_date_sk=[$0], store_sales.ss_quantity=[$1], store_sales.ss_list_price=[$2])
   HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[>($2, $3)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveProject(ss_sold_date_sk=[$0], ss_quantity=[$1], ss_list_price=[$2])

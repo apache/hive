@@ -129,7 +129,8 @@ public class AuthFactory {
         }
         serverTransportFactory = saslServer.createSaslServerTransportFactory(
                 MetaStoreUtils.getMetaStoreSaslProperties(conf, useSSL));
-        transportFactory = saslServer.wrapTransportFactoryInClientUGI(serverTransportFactory);
+        transportFactory = new ChainedTTransportFactory(
+            saslServer.wrapTransportFactoryInClientUGI(serverTransportFactory), new TUGIContainingTransport.Factory());
       } catch (TTransportException e) {
         throw new LoginException(e.getMessage());
       }

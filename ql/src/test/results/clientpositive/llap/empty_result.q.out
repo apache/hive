@@ -221,8 +221,9 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[min($0)])
-  HiveValues(tuples=[[]])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[min($0)])
+    HiveValues(tuples=[[]])
 
 PREHOOK: query: explain cbo
 select b1, count(a1) count1 from (select a1, b1 from t1) s where 1=0 group by b1

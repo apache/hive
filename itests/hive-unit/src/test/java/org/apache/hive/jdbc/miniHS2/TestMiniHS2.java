@@ -31,17 +31,11 @@ import java.util.HashMap;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.junit.After;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestMiniHS2 {
 
   private MiniHS2 miniHS2;
-
-  @BeforeClass
-  public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
-  }
 
   @After
   public void tearDown() throws Exception {

@@ -18,7 +18,7 @@
  */
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
@@ -40,9 +40,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
-import org.apache.hadoop.hive.ql.security.HiveMetastoreAuthenticationProvider;
+import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import static org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObjectUtils.TablePrivilegeLookup;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events.*;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
@@ -72,8 +71,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
-
 /**
  * HiveMetaStoreAuthorizer :  Do authorization checks on MetaStore Events in MetaStorePreEventListener
  */
@@ -84,12 +81,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   /**
    * The client configuration.
    */
-  private static final ThreadLocal<Map<String, Object>> cConfig = new ThreadLocal<Map<String, Object>>() {
-    @Override
-    protected Map<String, Object> initialValue() {
-      return null;
-    }
-  };
+  private static final ThreadLocal<Map<String, Object>> cConfig = ThreadLocal.withInitial(() -> null);
 
   public static void setClientConfig(Map<String, Object> map) {
     cConfig.set(map);
@@ -99,24 +91,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return cConfig.get();
   }
 
-  private static final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
-
-    @Override
-    protected Configuration initialValue() {
-      return null;
-    }
-  };
-
-  private static final ThreadLocal<HiveMetastoreAuthenticationProvider> tAuthenticator = new ThreadLocal<HiveMetastoreAuthenticationProvider>() {
-    @Override
-    protected HiveMetastoreAuthenticationProvider initialValue() {
-      try {
-        return (HiveMetastoreAuthenticationProvider) HiveUtils.getAuthenticator(tConfig.get(), HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER);
-      } catch (HiveException excp) {
-        throw new IllegalStateException("Authentication provider instantiation failure", excp);
-      }
-    }
-  };
+  private static final ThreadLocal<HiveAuthenticationProvider> tAuthenticator = ThreadLocal.withInitial(() -> null);
 
   public HiveMetaStoreAuthorizer(Configuration config) {
     super(config);
@@ -136,7 +111,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
       }
     } catch (Exception e) {
       LOG.error("HiveMetaStoreAuthorizer.onEvent(): failed", e);
-      throw MetaStoreUtils.newMetaException(e);
+      MetaStoreUtils.throwMetaException(e);
     }
 
     LOG.debug("<== HiveMetaStoreAuthorizer.onEvent(): EventType=" + preEventContext.getEventType());
@@ -629,18 +604,20 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
   HiveAuthorizer createHiveMetaStoreAuthorizer() throws Exception {
     HiveAuthorizer ret = null;
-    HiveConf hiveConf = (HiveConf)tConfig.get();
-    if(hiveConf == null){
-      HiveConf hiveConf1 = new HiveConf(super.getConf(), HiveConf.class);
-      tConfig.set(hiveConf1);
-      hiveConf = hiveConf1;
-    }
+    // If it's insides the HMS, getConf() should have all properties in hive-site.xml,
+    // otherwise it at least contains the information to talk with the HMS,
+    // as the call is triggered from client as a filter hook.
+    HiveConf hiveConf = HiveConf.cloneConf(getConf());
+
     HiveAuthorizerFactory authorizerFactory =
         HiveUtils.getAuthorizerFactory(hiveConf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
-
     if (authorizerFactory != null) {
-      HiveMetastoreAuthenticationProvider authenticator = tAuthenticator.get();
-
+      HiveAuthenticationProvider authenticator = tAuthenticator.get();
+      if (authenticator == null) {
+         authenticator =  HiveUtils.getAuthenticator(hiveConf,
+             HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER);
+         tAuthenticator.set(authenticator);
+      }
       authenticator.setConf(hiveConf);
 
       HiveAuthzSessionContext.Builder authzContextBuilder = new HiveAuthzSessionContext.Builder();
@@ -651,7 +628,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
       HiveAuthzSessionContext authzSessionContext = authzContextBuilder.build();
 
       ret = authorizerFactory
-          .createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(), hiveConf, authenticator, authzSessionContext);
+          .createHiveAuthorizer(new HiveMetastoreClientFactoryImpl(hiveConf), hiveConf, authenticator, authzSessionContext);
     }
 
     return ret;

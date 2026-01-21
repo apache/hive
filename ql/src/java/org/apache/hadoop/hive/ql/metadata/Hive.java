@@ -667,6 +667,9 @@ public class Hive implements AutoCloseable {
   public void createDatabase(Database db, boolean ifNotExist)
       throws AlreadyExistsException, HiveException {
     try {
+      if (db.getCatalogName() == null) {
+        db.setCatalogName(HiveUtils.getCurrentCatalogOrDefault(conf));
+      }
       getMSC().createDatabase(db);
     } catch (AlreadyExistsException e) {
       if (!ifNotExist) {
@@ -712,7 +715,9 @@ public class Hive implements AutoCloseable {
   }
 
   /**
-   * Drop a database
+   * Drop a database. This method does not have the catalog field and will default to using the current session attributes.
+   * Its use should be prohibited in Hive. The method is retained solely to avoid compatibility issues with other components
+   * such as Apache Spark, as Spark extensively utilizes public methods in Hive.java to operate on Hive databases and tables.
    * @param name
    * @param deleteData
    * @param ignoreUnknownDb if true, will ignore NoSuchObjectException
@@ -720,10 +725,14 @@ public class Hive implements AutoCloseable {
    *                        will fail if table still exists.
    * @throws HiveException
    * @throws NoSuchObjectException
+   *
+   * @deprecated since 4.2.0, will be removed in 5.0.0
+   * use {@link #dropDatabase(DropDatabaseDesc desc)} instead.
    */
+  @Deprecated
   public void dropDatabase(String name, boolean deleteData, boolean ignoreUnknownDb, boolean cascade)
       throws HiveException, NoSuchObjectException {
-    dropDatabase(new DropDatabaseDesc(name, ignoreUnknownDb, cascade, deleteData));
+    dropDatabase(new DropDatabaseDesc(HiveUtils.getCurrentCatalogOrDefault(conf) ,name, ignoreUnknownDb, cascade, deleteData));
   }
 
   public void dropDatabase(DropDatabaseDesc desc) 
@@ -735,7 +744,7 @@ public class Hive implements AutoCloseable {
       .map(HiveTxnManager::getCurrentTxnId).orElse(0L);
     
     DropDatabaseRequest req = new DropDatabaseRequest();
-    req.setCatalogName(getDefaultCatalog(conf));
+    req.setCatalogName(Optional.ofNullable(desc.getCatalogName()).orElse(HiveUtils.getCurrentCatalogOrDefault(conf)));
     req.setName(desc.getDatabaseName());
     req.setIgnoreUnknownDb(desc.getIfExists());
     req.setDeleteData(desc.isDeleteData());
@@ -1297,13 +1306,16 @@ public class Hive implements AutoCloseable {
     }
   }
 
-  // TODO: this whole path won't work with catalogs
+  /**
+   * When you call this method, you need to ensure that the catalog has been set in the db object.
+   * @param dbName The database name.
+   * @param db The database object.
+   * @throws HiveException
+   */
   public void alterDatabase(String dbName, Database db)
       throws HiveException {
     try {
       getMSC().alterDatabase(dbName, db);
-    } catch (MetaException e) {
-      throw new HiveException("Unable to alter database " + dbName + ". " + e.getMessage(), e);
     } catch (NoSuchObjectException e) {
       throw new HiveException("Database " + dbName + " does not exists.", e);
     } catch (TException e) {
@@ -1428,7 +1440,10 @@ public class Hive implements AutoCloseable {
   }
 
   public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
-   createTable(tbl, ifNotExists, null, null, null, null,
+    if (tbl.getCatalogName() == null) {
+      tbl.setCatalogName(HiveUtils.getCurrentCatalogOrDefault(conf));
+    }
+    createTable(tbl, ifNotExists, null, null, null, null,
                null, null);
  }
 
@@ -1463,6 +1478,9 @@ public class Hive implements AutoCloseable {
     long txnId = Optional.ofNullable(SessionState.get())
       .map(ss -> ss.getTxnMgr().getCurrentTxnId()).orElse(0L);
     table.getTTable().setTxnId(txnId);
+    if (table.getCatName() == null) {
+      table.setCatalogName(HiveUtils.getCurrentCatalogOrDefault(conf));
+    }
 
     dropTable(table.getTTable(), !tableWithSuffix, true, ifPurge);
   }
@@ -1869,6 +1887,17 @@ public class Hive implements AutoCloseable {
   }
 
   /**
+   * Get all tables for the specified database.
+   * @param catName
+   * @param dbName
+   * @return List of all tables
+   * @throws HiveException
+   */
+  public List<Table> getAllTableObjects(String catName, String dbName) throws HiveException {
+    return getTableObjects(catName, dbName, ".*", null);
+  }
+
+  /**
    * Get all materialized view names for the specified database.
    * @param dbName
    * @return List of materialized view table names
@@ -1908,6 +1937,16 @@ public class Hive implements AutoCloseable {
             return new Table(table);
           }
         }
+      );
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<Table> getTableObjects(String catName, String dbName, String pattern, TableType tableType) throws HiveException {
+    try {
+      return Lists.transform(getMSC().getTables(catName, dbName, getTablesByType(catName, dbName, pattern, tableType), null),
+              Table::new
       );
     } catch (Exception e) {
       throw new HiveException(e);
@@ -1964,11 +2003,34 @@ public class Hive implements AutoCloseable {
    * @param type The type of tables to return. VIRTUAL_VIEWS for views. If null, returns all tables and views.
    * @return list of table names that match the pattern.
    * @throws HiveException
+   *
+   * @deprecated since 4.2.0, will be removed in 5.0.0
+   * use {@link #getTablesByType(String catName, String dbName, String pattern, TableType type)} instead.
    */
+  @Deprecated
   public List<String> getTablesByType(String dbName, String pattern, TableType type)
       throws HiveException {
+    return getTablesByType(null, dbName, pattern, type);
+  }
+
+  /**
+   * Returns all existing tables of a type (VIRTUAL_VIEW|EXTERNAL_TABLE|MANAGED_TABLE) from the specified
+   * database which match the given pattern. The matching occurs as per Java regular expressions.
+   * @param catName catalog name to find the tables in. if null, uses the current catalog in this session.
+   * @param dbName Database name to find the tables in. if null, uses the current database in this session.
+   * @param pattern A pattern to match for the table names.If null, returns all names from this DB.
+   * @param type The type of tables to return. VIRTUAL_VIEWS for views. If null, returns all tables and views.
+   * @return list of table names that match the pattern.
+   * @throws HiveException
+   */
+  public List<String> getTablesByType(String catName, String dbName, String pattern, TableType type)
+          throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE);
+
+    if (catName == null) {
+      catName = HiveUtils.getCurrentCatalogOrDefault(conf);
+    }
 
     if (dbName == null) {
       dbName = SessionState.get().getCurrentDatabase();
@@ -1978,15 +2040,15 @@ public class Hive implements AutoCloseable {
       List<String> result;
       if (type != null) {
         if (pattern != null) {
-          result = getMSC().getTables(dbName, pattern, type);
+          result = getMSC().getTables(catName, dbName, pattern, type);
         } else {
-          result = getMSC().getTables(dbName, ".*", type);
+          result = getMSC().getTables(catName, dbName, ".*", type);
         }
       } else {
         if (pattern != null) {
-          result = getMSC().getTables(dbName, pattern);
+          result = getMSC().getTables(catName, dbName, pattern);
         } else {
-          result = getMSC().getTables(dbName, ".*");
+          result = getMSC().getTables(catName, dbName, ".*");
         }
       }
       return result;
@@ -2445,7 +2507,7 @@ public class Hive implements AutoCloseable {
    */
   public List<String> getAllDatabases() throws HiveException {
     try {
-      return getMSC().getAllDatabases();
+      return getMSC().getAllDatabases(HiveUtils.getCurrentCatalogOrDefault(conf));
     } catch (Exception e) {
       throw new HiveException(e);
     }
@@ -2530,6 +2592,7 @@ public class Hive implements AutoCloseable {
   }
 
   /**
+   * @deprecated please use {@link #databaseExists(String, String)}}
    * Query metadata to see if a database with the given name already exists.
    *
    * @param dbName
@@ -2539,6 +2602,19 @@ public class Hive implements AutoCloseable {
    */
   public boolean databaseExists(String dbName) throws HiveException {
     return getDatabase(dbName) != null;
+  }
+
+  /**
+   * Query metadata to see if a database with the given name already exists.
+   *
+   * @param catName
+   * @param dbName
+   * @return true if a database with the given name already exists, false if
+   *         does not exist.
+   * @throws HiveException
+   */
+  public boolean databaseExists(String catName, String dbName) throws HiveException {
+    return getDatabase(catName, dbName) != null;
   }
 
   /**
@@ -2572,6 +2648,9 @@ public class Hive implements AutoCloseable {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_DATABASE_2);
     try {
+      if (catName == null) {
+        catName = HiveUtils.getCurrentCatalogOrDefault(conf);
+      }
       return getMSC().getDatabase(catName, dbName);
     } catch (NoSuchObjectException e) {
       return null;
@@ -6451,11 +6530,24 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  /**
+   * @param dbName
+   * @param pattern
+   * @return
+   * @throws HiveException
+   *
+   * @deprecated since 4.2.0, will be removed in 5.0.0
+   * use {@link #getFunctionsInDb(String catName, String dbName, String pattern)} instead.
+   */
   public List<Function> getFunctionsInDb(String dbName, String pattern) throws HiveException {
+    return getFunctionsInDb(null, dbName, pattern);
+  }
+
+  public List<Function> getFunctionsInDb(String catName, String dbName, String pattern) throws HiveException {
     try {
       GetFunctionsRequest request = new GetFunctionsRequest(dbName);
       request.setPattern(pattern);
-      request.setCatalogName(getDefaultCatalog(conf));
+      request.setCatalogName(Optional.ofNullable(catName).orElse(HiveUtils.getCurrentCatalogOrDefault(conf)));
       request.setReturnNames(false);
       return getMSC().getFunctionsRequest(request).getFunctions();
     } catch (TException te) {

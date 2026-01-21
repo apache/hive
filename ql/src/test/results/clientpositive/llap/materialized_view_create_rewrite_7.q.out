@@ -82,8 +82,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{0}], agg#0=[count()])
-  HiveTableScan(table=[[default, t1]], table:alias=[t1])
+HiveProject(t1.a=[$0], _c1=[$1])
+  HiveAggregate(group=[{0}], agg#0=[count()])
+    HiveTableScan(table=[[default, t1]], table:alias=[t1])
 
 PREHOOK: query: explain cbo
 alter materialized view mat1 rebuild
@@ -100,7 +101,7 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@mat1
 POSTHOOK: Output: default@mat1
 CBO PLAN:
-HiveProject($f0=[$3], $f1=[CASE(IS NULL($1), $4, IS NULL($4), $1, +($4, $1))])
+HiveProject(t1.a=[$3], _c1=[CASE(IS NULL($1), $4, IS NULL($4), $1, +($4, $1))])
   HiveFilter(condition=[OR($2, IS NULL($2))])
     HiveJoin(condition=[IS NOT DISTINCT FROM($0, $3)], joinType=[right], algorithm=[BucketJoin], cost=[not available])
       HiveProject(a=[$0], _c1=[$1], $f2=[true])
@@ -443,7 +444,7 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(a=[$0], _c1=[$1])
+  HiveProject(t1.a=[$0], _c1=[$1])
     HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: select t1.a, count(*) from t1

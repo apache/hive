@@ -34,129 +34,129 @@ STAGE PLANS:
                   Statistics: Num rows: 86404891377 Data size: 28054250053192 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ss_quantity BETWEEN 0 AND 5 and (ss_list_price BETWEEN 11 AND 21 or ss_coupon_amt BETWEEN 460 AND 1460 or ss_wholesale_cost BETWEEN 14 AND 34)) (type: boolean)
-                    Statistics: Num rows: 1965380184 Data size: 638126687968 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1955303836 Data size: 634855063288 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
                       outputColumnNames: ss_list_price
-                      Statistics: Num rows: 1965380184 Data size: 638126687968 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 1955303836 Data size: 634855063288 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 982690092 Data size: 223025312544 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 977651918 Data size: 221881879504 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
-                          Statistics: Num rows: 982690092 Data size: 223025312544 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 977651918 Data size: 221881879504 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
                   Filter Operator
                     predicate: (ss_quantity BETWEEN 16 AND 20 and (ss_list_price BETWEEN 142 AND 152 or ss_coupon_amt BETWEEN 3054 AND 4054 or ss_wholesale_cost BETWEEN 80 AND 100)) (type: boolean)
-                    Statistics: Num rows: 2571445780 Data size: 834906239572 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2551512553 Data size: 828434247976 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
                       outputColumnNames: ss_list_price
-                      Statistics: Num rows: 2571445780 Data size: 834906239572 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2551512553 Data size: 828434247976 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1285722890 Data size: 291799776608 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1275756276 Data size: 289537815088 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
-                          Statistics: Num rows: 1285722890 Data size: 291799776608 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1275756276 Data size: 289537815088 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
                   Filter Operator
                     predicate: (ss_quantity BETWEEN 21 AND 25 and (ss_list_price BETWEEN 135 AND 145 or ss_coupon_amt BETWEEN 14180 AND 15180 or ss_wholesale_cost BETWEEN 38 AND 58)) (type: boolean)
-                    Statistics: Num rows: 3432340414 Data size: 1114424597248 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3482601258 Data size: 1130743468324 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
                       outputColumnNames: ss_list_price
-                      Statistics: Num rows: 3432340414 Data size: 1114424597248 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3482601258 Data size: 1130743468324 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1716170207 Data size: 389491457960 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1741300629 Data size: 395194904312 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
-                          Statistics: Num rows: 1716170207 Data size: 389491457960 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1741300629 Data size: 395194904312 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
                   Filter Operator
                     predicate: (ss_quantity BETWEEN 26 AND 30 and (ss_list_price BETWEEN 28 AND 38 or ss_coupon_amt BETWEEN 2513 AND 3513 or ss_wholesale_cost BETWEEN 42 AND 62)) (type: boolean)
-                    Statistics: Num rows: 2913592254 Data size: 945995583960 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2894732905 Data size: 939872262804 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
                       outputColumnNames: ss_list_price
-                      Statistics: Num rows: 2913592254 Data size: 945995583960 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2894732905 Data size: 939872262804 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1456796127 Data size: 330625508552 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1447366452 Data size: 328485407488 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
-                          Statistics: Num rows: 1456796127 Data size: 330625508552 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1447366452 Data size: 328485407488 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
                   Filter Operator
                     predicate: (ss_quantity BETWEEN 11 AND 15 and (ss_list_price BETWEEN 66 AND 76 or ss_coupon_amt BETWEEN 920 AND 1920 or ss_wholesale_cost BETWEEN 4 AND 24)) (type: boolean)
-                    Statistics: Num rows: 2457715925 Data size: 797980022328 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2445115019 Data size: 793888714924 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
                       outputColumnNames: ss_list_price
-                      Statistics: Num rows: 2457715925 Data size: 797980022328 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2445115019 Data size: 793888714924 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1228857962 Data size: 278894061568 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1222557509 Data size: 277464149464 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
-                          Statistics: Num rows: 1228857962 Data size: 278894061568 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1222557509 Data size: 277464149464 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
                   Filter Operator
                     predicate: (ss_quantity BETWEEN 6 AND 10 and (ss_list_price BETWEEN 91 AND 101 or ss_coupon_amt BETWEEN 1430 AND 2430 or ss_wholesale_cost BETWEEN 32 AND 52)) (type: boolean)
-                    Statistics: Num rows: 3193426694 Data size: 1036853233656 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3178448591 Data size: 1031990089344 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ss_list_price (type: decimal(7,2))
                       outputColumnNames: ss_list_price
-                      Statistics: Num rows: 3193426694 Data size: 1036853233656 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3178448591 Data size: 1031990089344 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: sum(ss_list_price), count(ss_list_price)
                         keys: ss_list_price (type: decimal(7,2))
                         minReductionHashAggr: 0.99
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
-                        Statistics: Num rows: 1596713347 Data size: 362380262200 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 1589224295 Data size: 360680592952 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: decimal(7,2))
                           null sort order: z
                           sort order: +
                           Map-reduce partition columns: _col0 (type: decimal(7,2))
-                          Statistics: Num rows: 1596713347 Data size: 362380262200 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 1589224295 Data size: 360680592952 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: decimal(17,2)), _col2 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
@@ -168,7 +168,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(7,2))
                 mode: partial2
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1228857962 Data size: 278894061568 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1222557509 Data size: 277464149464 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1), count(_col2), count(_col0)
                   mode: partial2
@@ -204,7 +204,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(7,2))
                 mode: partial2
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1596713347 Data size: 362380262200 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1589224295 Data size: 360680592952 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1), count(_col2), count(_col0)
                   mode: partial2
@@ -240,7 +240,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(7,2))
                 mode: partial2
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 982690092 Data size: 223025312544 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 977651918 Data size: 221881879504 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1), count(_col2), count(_col0)
                   mode: partial2
@@ -276,7 +276,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(7,2))
                 mode: partial2
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1285722890 Data size: 291799776608 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1275756276 Data size: 289537815088 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1), count(_col2), count(_col0)
                   mode: partial2
@@ -312,7 +312,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(7,2))
                 mode: partial2
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1716170207 Data size: 389491457960 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1741300629 Data size: 395194904312 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1), count(_col2), count(_col0)
                   mode: partial2
@@ -394,7 +394,7 @@ STAGE PLANS:
                 keys: KEY._col0 (type: decimal(7,2))
                 mode: partial2
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 1456796127 Data size: 330625508552 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1447366452 Data size: 328485407488 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(_col1), count(_col2), count(_col0)
                   mode: partial2

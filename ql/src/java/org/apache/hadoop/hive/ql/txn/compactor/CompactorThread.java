@@ -61,7 +61,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
     // HiveConf is moved to the standalone metastore.
     //clone the conf - compactor needs to set properties in it which we don't
     // want to bleed into the caller
-    conf = new HiveConf(configuration, HiveConf.class);
+    conf = HiveConf.cloneConf(configuration);
   }
 
   @Override

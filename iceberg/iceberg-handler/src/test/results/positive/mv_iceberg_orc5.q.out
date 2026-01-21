@@ -96,7 +96,7 @@ POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@mat2
 POSTHOOK: Output: default@mat2
 CBO PLAN:
-HiveProject(b=[$5], c=[$6], _o__c2=[CASE(IS NULL($2), $7, IS NULL($7), $2, +($7, $2))], _o__c3=[CASE(IS NULL($3), $8, IS NULL($8), $3, +($8, $3))], _o__c4=[/(CAST(CASE(IS NULL($2), $7, IS NULL($7), $2, +($7, $2))):DOUBLE, CASE(IS NULL($3), $8, IS NULL($8), $3, +($8, $3)))])
+HiveProject(tbl_ice.b=[$5], tbl_ice.c=[$6], _c2=[CASE(IS NULL($2), $7, IS NULL($7), $2, +($7, $2))], _c3=[CASE(IS NULL($3), $8, IS NULL($8), $3, +($8, $3))], _c4=[/(CAST(CASE(IS NULL($2), $7, IS NULL($7), $2, +($7, $2))):DOUBLE, CASE(IS NULL($3), $8, IS NULL($8), $3, +($8, $3)))])
   HiveFilter(condition=[OR($4, IS NULL($4))])
     HiveJoin(condition=[AND(IS NOT DISTINCT FROM($0, $5), IS NOT DISTINCT FROM($1, $6))], joinType=[right], algorithm=[BucketJoin], cost=[not available])
       HiveProject(b=[$0], c=[$1], _c2=[$2], _c3=[$3], $f4=[true])

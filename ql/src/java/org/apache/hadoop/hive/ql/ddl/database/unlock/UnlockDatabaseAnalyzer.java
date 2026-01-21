@@ -18,7 +18,10 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.unlock;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
@@ -41,14 +44,19 @@ public class UnlockDatabaseAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    String databaseName = unescapeIdentifier(root.getChild(0).getText());
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
+    String catalogName = catDbNamePair.getLeft();
+    if (catalogName != null && getCatalog(catalogName) == null) {
+      throw new SemanticException(ErrorMsg.CATALOG_NOT_EXISTS, catalogName);
+    }
+    String databaseName = catDbNamePair.getRight();
 
-    inputs.add(new ReadEntity(getDatabase(databaseName)));
+    inputs.add(new ReadEntity(getDatabase(catalogName, databaseName, true)));
     // Unlock database operation is to release the lock explicitly, the operation itself don't need to be locked.
     // Set the WriteEntity as WriteType: DDL_NO_LOCK here, otherwise it will conflict with Hive's transaction.
-    outputs.add(new WriteEntity(getDatabase(databaseName), WriteType.DDL_NO_LOCK));
+    outputs.add(new WriteEntity(getDatabase(catalogName, databaseName, true), WriteType.DDL_NO_LOCK));
 
-    UnlockDatabaseDesc desc = new UnlockDatabaseDesc(databaseName);
+    UnlockDatabaseDesc desc = new UnlockDatabaseDesc(catalogName, databaseName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
     ctx.setNeedLockMgr(true);
   }

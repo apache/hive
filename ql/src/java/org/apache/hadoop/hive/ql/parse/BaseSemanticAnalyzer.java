@@ -1913,10 +1913,21 @@ public abstract class BaseSemanticAnalyzer {
     return getDatabase(dbName, true);
   }
 
+  /**
+   * TODO catalog. this method still use by some method of table ddl.
+   *  Remove this method once we implement catalog change about table ddl, such as create cat.db.tbl. Depend on HIVE-29279
+   * @deprecated Replaced by
+   *     {@link BaseSemanticAnalyzer#getDatabase(String catalogName, String dbName, boolean throwException)}
+   * @return the database if existed.
+   */
   protected Database getDatabase(String dbName, boolean throwException) throws SemanticException {
+    return getDatabase(null, dbName, throwException);
+  }
+
+  protected Database getDatabase(String catalogName, String dbName, boolean throwException) throws SemanticException {
     Database database;
     try {
-      database = db.getDatabase(dbName);
+      database = db.getDatabase(catalogName, dbName);
     } catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }
@@ -2091,7 +2102,7 @@ public abstract class BaseSemanticAnalyzer {
   public void endAnalysis(ASTNode tree) {
     if (ctx != null){
       queryProperties.setUsedTables(
-          CacheTableHelper.getUniqueNames(ctx.getParsedTables()));
+          TableHelper.getUniqueNames(ctx.getParsedTables()));
     }
     setQueryType(tree); // at this point we know the query type for sure
   }

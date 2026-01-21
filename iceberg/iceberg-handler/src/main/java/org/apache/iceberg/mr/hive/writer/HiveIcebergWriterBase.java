@@ -80,7 +80,7 @@ abstract class HiveIcebergWriterBase implements HiveIcebergWriter {
           .retry(3)
           .suppressFailureWhenFinished()
           .onFailure((file, exception) -> LOG.debug("Failed on to remove file {} on abort", file, exception))
-          .run(file -> io.deleteFile(file.path().toString()));
+          .run(file -> io.deleteFile(file.location()));
       LOG.warn("HiveIcebergWriter is closed with abort");
     }
 

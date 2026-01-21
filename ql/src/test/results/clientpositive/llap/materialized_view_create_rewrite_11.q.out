@@ -44,7 +44,7 @@ POSTHOOK: Input: default@mv1
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0], _o__c1=[CAST(/($1, $2)):DECIMAL(7, 6)])
+HiveProject(a=[$0], _c1=[CAST(/($1, $2)):DECIMAL(7, 6)])
   HiveTableScan(table=[[default, mv1]], table:alias=[default.mv1])
 
 PREHOOK: query: select a, avg(b) from t1 group by a

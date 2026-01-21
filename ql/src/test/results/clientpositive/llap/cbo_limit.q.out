@@ -265,9 +265,10 @@ POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveFilter(condition=[>($2, 1)])
-    HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+HiveProject(cs=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveFilter(condition=[>($2, 1)])
+      HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
 
 PREHOOK: query: select count(*) cs from cbo_t1 where c_int > 1 order by cs limit 100
 PREHOOK: type: QUERY
@@ -291,9 +292,10 @@ POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveFilter(condition=[>($2, 1)])
-    HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+HiveProject(cs=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveFilter(condition=[>($2, 1)])
+      HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
 
 PREHOOK: query: select count(*) cs from cbo_t1 where c_int > 1 order by cs
 PREHOOK: type: QUERY
@@ -317,9 +319,10 @@ POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveFilter(condition=[>($2, 1)])
-    HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+HiveProject(cs=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveFilter(condition=[>($2, 1)])
+      HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
 
 PREHOOK: query: select count(*) cs from cbo_t1 where c_int > 1 LIMIT 100
 PREHOOK: type: QUERY
@@ -343,12 +346,13 @@ POSTHOOK: Input: default@cbo_t1
 POSTHOOK: Input: default@cbo_t1@dt=2014
 #### A masked pattern was here ####
 CBO PLAN:
-HiveFilter(condition=[>($0, 1)])
-  HiveProject(c_int=[$0])
-    HiveSortLimit(fetch=[1])
-      HiveProject(c_int=[$2])
-        HiveFilter(condition=[>($3, 1E0)])
-          HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+HiveProject(c_int=[$0])
+  HiveFilter(condition=[>($0, 1)])
+    HiveProject(c_int=[$0])
+      HiveSortLimit(fetch=[1])
+        HiveProject(c_int=[$2])
+          HiveFilter(condition=[>($3, 1E0)])
+            HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
 
 PREHOOK: query: select c_int from (select c_int from cbo_t1 where c_float > 1.0 limit 1) subq  where c_int > 1 order by c_int
 PREHOOK: type: QUERY
@@ -388,8 +392,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveTableScan(table=[[default, cbo_t1]], table:alias=[cbo_t1])
 
 PREHOOK: query: select count(*) from cbo_t1 order by sum(c_int), count(*)
 PREHOOK: type: QUERY

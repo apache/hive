@@ -74,7 +74,7 @@ POSTHOOK: query: explain extended select count(*) from alter_coltype where dt = 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`alter_coltype`
 WHERE `dt` = 100
 STAGE DEPENDENCIES:
@@ -128,7 +128,7 @@ POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`alter_coltype`
 WHERE `ts` = 6.30
 STAGE DEPENDENCIES:
@@ -158,7 +158,7 @@ POSTHOOK: query: explain extended select count(*) from alter_coltype where ts = 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`alter_coltype`
 WHERE `ts` = 3 AND `dt` = 100
 STAGE DEPENDENCIES:

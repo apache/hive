@@ -684,8 +684,7 @@ public class TestHplSqlViaBeeLine {
   }
 
   private void testCurrentDate(String scriptText) throws Throwable {
-    Date today = new Date(System.currentTimeMillis());
-    testScriptFile(scriptText, args(), today.toString());
+    testScriptFile(scriptText, args(), TimeCheckHelper.DATE);
   }
 
   @Test
@@ -695,9 +694,7 @@ public class TestHplSqlViaBeeLine {
   }
 
   private void testCurrentTimestamp(String scriptText) throws Throwable {
-    Timestamp today = new Timestamp(System.currentTimeMillis());
-    String timestamp = today.toString();
-    testScriptFile(scriptText, args(), timestamp.substring(0, timestamp.length() - 9));
+    testScriptFile(scriptText, args(), TimeCheckHelper.DATETIME);
   }
 
   @Test
@@ -715,7 +712,7 @@ public class TestHplSqlViaBeeLine {
   @Test
   public void testCURRENT_TIME_MILLISHplSQLFunction() throws Throwable {
     String scriptText = "SELECT CURRENT_TIME_MILLIS();";
-    testScriptFile(scriptText, args(), String.valueOf(System.currentTimeMillis() / 100000));
+    testScriptFile(scriptText, args(), TimeCheckHelper.TIMESTAMP_MILLISECONDS);
   }
 
   @Test
@@ -877,7 +874,7 @@ public class TestHplSqlViaBeeLine {
   @Test
   public void testUNIX_TIMESTAMPHplSQLFunction() throws Throwable {
     String scriptText = "SELECT UNIX_TIMESTAMP()";
-    testScriptFile(scriptText, args(), String.valueOf(System.currentTimeMillis()/1000));
+    testScriptFile(scriptText, args(), TimeCheckHelper.TIMESTAMP_SECONDS);
   }
 
   @Test
@@ -1198,9 +1195,7 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1('Bob');\n" +
             "SELECT * FROM result;" ;
-    Timestamp today = new Timestamp(System.currentTimeMillis());
-    String timestamp = today.toString();
-    testScriptFile(SCRIPT_TEXT, args(), "Bob.*" + timestamp.substring(0, timestamp.length() - 9));
+    testScriptFile(SCRIPT_TEXT, args(), TimeCheckHelper.DATE);
   }
 
   @Test
@@ -1214,8 +1209,7 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1('Bob');\n" +
             "SELECT * FROM result;" ;
-    Date today = new Date(System.currentTimeMillis());
-    testScriptFile(SCRIPT_TEXT, args(), "Bob.*" + today.toString());
+    testScriptFile(SCRIPT_TEXT, args(), TimeCheckHelper.DATE);
   }
 
   @Test
@@ -1229,9 +1223,7 @@ public class TestHplSqlViaBeeLine {
             "END;\n" +
             "p1('Bob');\n" +
             "SELECT * FROM result;" ;
-    Timestamp today = new Timestamp(System.currentTimeMillis());
-    String timestamp = today.toString();
-    testScriptFile(SCRIPT_TEXT, args(), "Bob.*" + timestamp.substring(0, timestamp.length() - 9));
+    testScriptFile(SCRIPT_TEXT, args(), TimeCheckHelper.DATETIME);
   }
 
   @Test
@@ -1348,16 +1340,16 @@ public class TestHplSqlViaBeeLine {
 
   @Test
   public void testHplSqlProcedureWithUnix_TimestampUdf() throws Throwable {
-    String SCRIPT_TEXT =
-        "DROP TABLE IF EXISTS result;\n" +
-            "CREATE TABLE result (col_millis int);\n" +
+    // UNIX_TIMESTAMP() returns number of seconds since the epoch
+    // see org.apache.hive.hplsql.functions.FunctionDatetime#unixTimestamp
+    String SCRIPT_TEXT = "DROP TABLE IF EXISTS result;\n" + "CREATE TABLE result (col_seconds int);\n" +
             "CREATE PROCEDURE p1()\n" +
             "BEGIN\n" +
             "INSERT INTO result VALUES(UNIX_TIMESTAMP());\n" +
             "END;\n" +
             "p1();\n" +
             "SELECT * FROM result;" ;
-    testScriptFile(SCRIPT_TEXT, args(), String.valueOf(System.currentTimeMillis()/100000));
+    testScriptFile(SCRIPT_TEXT, args(), TimeCheckHelper.TIMESTAMP_SECONDS);
   }
 
   @Test
@@ -1411,8 +1403,149 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(scriptText, argList, expectedPattern, OutStream.OUT);
   }
 
+  /**
+   * Checks that the pattern appears in the output.
+   * <p><b>Warning:</b> If the output depends on the time of the execution,
+   * use {@link #testScriptFile(String, List, TimeCheckHelper)}. This may be the case if
+   * the script contains CURRENT_DATE, CURRENT_TIME_MILLIS, etc.</p>
+   */
   private void testScriptFile(String scriptText, List<String> argList, String expectedPattern,
           TestBeeLineWithArgs.OutStream outStream) throws Throwable {
+    String output = runScriptFile(scriptText, argList, outStream);
+    if (!Pattern.compile(".*" + expectedPattern + ".*", Pattern.DOTALL).matcher(output).matches()) {
+      fail("Output: '" + output + "' should match " + expectedPattern);
+    }
+  }
+
+  enum TimeCheckHelper {
+
+    /** Supports timestamps in second resolution such as 1764680360. */
+    TIMESTAMP_SECONDS {
+      // works for timestamps a few hours after the epoch (1970-01-01 00:00:00 GMT)
+      private final Pattern pattern = Pattern.compile("[0-9]{5,}");
+
+      @Override
+      public long getCurrentTime() {
+        return System.currentTimeMillis() / 1000;
+      }
+
+      @Override
+      public long strToTime(String str) {
+        return Long.parseLong(str);
+      }
+
+      @Override
+      public Pattern getPattern() {
+        return pattern;
+      }
+    },
+
+    /** Supports timestamps in millisecond resolution such as 1764680360883. */
+    TIMESTAMP_MILLISECONDS {
+      // works for timestamps a few seconds after the epoch (1970-01-01 00:00:00 GMT)
+      private final Pattern pattern = Pattern.compile("[0-9]{5,}");
+
+      @Override
+      public long getCurrentTime() {
+        return System.currentTimeMillis();
+      }
+
+      @Override
+      public long strToTime(String str) {
+        return Long.parseLong(str);
+      }
+
+      @Override
+      public Pattern getPattern() {
+        return pattern;
+      }
+    },
+
+    /** Supports dates such as '2025-12-02'. */
+    DATE {
+      private final Pattern pattern = Pattern.compile("[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}");
+
+      @Override
+      public long getCurrentTime() {
+        Date date = new Date(System.currentTimeMillis());
+        return strToTime(date.toString());
+      }
+
+      @Override
+      public long strToTime(String str) {
+        return Date.valueOf(str).getTime();
+      }
+
+      @Override
+      public Pattern getPattern() {
+        return pattern;
+      }
+    },
+
+    /** Supports datetimes such as '2025-12-02 02:56:08'. */
+    DATETIME {
+      private final Pattern pattern = Pattern.compile("[0-9]{4}-[0-9]{1,2}-[0-9]{1,2} +[0-9]{2}:[0-9]{2}:[0-9]{2}");
+
+      @Override
+      public long getCurrentTime() {
+        return System.currentTimeMillis() / 1000;
+      }
+
+      @Override
+      public long strToTime(String str) {
+        return Timestamp.valueOf(str).getTime() / 1000;
+      }
+
+      @Override
+      public Pattern getPattern() {
+        return pattern;
+      }
+    };
+
+    /** The current time.
+     *
+     * <p>The resolution (e.g., milliseconds) must be the same as {@link #strToTime(String)}.</p> */
+    abstract long getCurrentTime();
+
+    /**
+     * Converts a candidate match to a time.
+     *
+     * <p>The resolution (e.g., milliseconds) must be the same as {@link #getCurrentTime()}.</p> */
+    abstract long strToTime(String str);
+
+    /** A pattern to find string representations of the time in the output. */
+    abstract Pattern getPattern();
+  }
+
+  /** Checks that the output of the script mentions a time as defined by the helper. */
+  private void testScriptFile(String scriptText, List<String> argList,
+      TimeCheckHelper helper) throws Throwable {
+    long startTime = helper.getCurrentTime();
+    String output = runScriptFile(scriptText, argList, OutStream.OUT);
+    long endTime = helper.getCurrentTime();
+
+    Matcher matcher = helper.getPattern().matcher(output);
+    StringBuilder sb = new StringBuilder();
+    int pos = 0;
+    while (matcher.find(pos)) {
+      // convert back
+      long time = helper.strToTime(matcher.group());
+      if (startTime <= time && time <= endTime) {
+        return;
+      }
+
+      sb.append("\ncandidate: string ").append(matcher.group()).append(", time ").append(time);
+      pos = matcher.end();
+    }
+    sb.append("\n\npattern:").append(helper.getPattern().pattern()).append("\n").append(output);
+
+    String errorMessage = "Could not find the expected time in the output:\n";
+    errorMessage += "start time: " + startTime + "\n";
+    errorMessage += "end time: " + endTime + "\n";
+    throw new IllegalStateException(errorMessage + sb);
+  }
+
+  private String runScriptFile(String scriptText, List<String> argList, OutStream outStream) throws Throwable {
     File scriptFile = File.createTempFile(this.getClass().getSimpleName(), "temp");
     scriptFile.deleteOnExit();
     try (PrintStream os = new PrintStream(new FileOutputStream(scriptFile))) {
@@ -1422,22 +1555,7 @@ public class TestHplSqlViaBeeLine {
     finalArgs.addAll(Arrays.asList("-f", scriptFile.getAbsolutePath()));
 
     String output = testCommandLineScript(finalArgs, outStream);
-    if (scriptText.equals("SELECT UNIX_TIMESTAMP()")) {
-      Pattern pattern = Pattern.compile("\\|\\s*(\\d+)\\s*\\|");
-      Matcher matcher = pattern.matcher(output);
-      long expected = Long.parseLong(expectedPattern), actual = 0;
-      if (matcher.find()) {
-        actual = Long.parseLong(matcher.group(1));
-        if (Math.abs(actual - expected) > 5) {
-          output = String.valueOf(actual);
-        } else {
-          output = expectedPattern;
-        }
-      }
-    }
-    if (!Pattern.compile(".*" + expectedPattern + ".*", Pattern.DOTALL).matcher(output).matches()) {
-      fail("Output: '" + output + "' should match " + expectedPattern);
-    }
     scriptFile.delete();
+    return output;
   }
 }

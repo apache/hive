@@ -227,6 +227,8 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: query: SELECT
 get_json_object('[1,2,3]', '[2]'),
 get_json_object('[1,2,3]', '$0'),
+get_json_object('[1,2,3]', '$[0 ]'),
+get_json_object('[1,2,3]', '$[ 0]'),
 get_json_object('[1,2,3]', '$[3]')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -234,8 +236,10 @@ PREHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: query: SELECT
 get_json_object('[1,2,3]', '[2]'),
 get_json_object('[1,2,3]', '$0'),
+get_json_object('[1,2,3]', '$[0 ]'),
+get_json_object('[1,2,3]', '$[ 0]'),
 get_json_object('[1,2,3]', '$[3]')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL

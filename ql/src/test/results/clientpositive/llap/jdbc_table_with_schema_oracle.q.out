@@ -35,9 +35,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country_0
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.ORACLE])
-  JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_0]], table:alias=[country_0])
+HiveProject(_c0=[$0])
+  HiveProject($f0=[$0])
+    HiveJdbcConverter(convention=[JDBC.ORACLE])
+      JdbcAggregate(group=[{}], agg#0=[count()])
+        JdbcHiveTableScan(table=[[default, country_0]], table:alias=[country_0])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_0
 PREHOOK: type: QUERY
@@ -83,9 +85,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country_1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.ORACLE])
-  JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_1]], table:alias=[country_1])
+HiveProject(_c0=[$0])
+  HiveProject($f0=[$0])
+    HiveJdbcConverter(convention=[JDBC.ORACLE])
+      JdbcAggregate(group=[{}], agg#0=[count()])
+        JdbcHiveTableScan(table=[[default, country_1]], table:alias=[country_1])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_1
 PREHOOK: type: QUERY
@@ -133,9 +137,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@country_2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJdbcConverter(convention=[JDBC.ORACLE])
-  JdbcAggregate(group=[{}], agg#0=[count()])
-    JdbcHiveTableScan(table=[[default, country_2]], table:alias=[country_2])
+HiveProject(_c0=[$0])
+  HiveProject($f0=[$0])
+    HiveJdbcConverter(convention=[JDBC.ORACLE])
+      JdbcAggregate(group=[{}], agg#0=[count()])
+        JdbcHiveTableScan(table=[[default, country_2]], table:alias=[country_2])
 
 PREHOOK: query: SELECT COUNT(*) FROM country_2
 PREHOOK: type: QUERY

@@ -293,11 +293,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
-HiveUnion(all=[true])
-  HiveProject(a=[CAST($0):INTEGER])
-    HiveTableScan(table=[[default, t]], table:alias=[t])
-  HiveProject(_o__c0=[1])
-    HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+HiveProject(a=[$0])
+  HiveUnion(all=[true])
+    HiveProject(a=[CAST($0):INTEGER])
+      HiveTableScan(table=[[default, t]], table:alias=[t])
+    HiveProject(_o__c0=[1])
+      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: explain cbo
   select cast(a as integer) from t
@@ -320,12 +321,13 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Input: default@t
 #### A masked pattern was here ####
 CBO PLAN:
-HiveUnion(all=[true])
-  HiveProject(a=[CAST($0):INTEGER])
-    HiveTableScan(table=[[default, t]], table:alias=[t])
-  HiveProject(EXPR$0=[$0])
-    HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1), ROW(2)))], rowType=[RecordType(INTEGER EXPR$0)])
-      HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+HiveProject(a=[$0])
+  HiveUnion(all=[true])
+    HiveProject(a=[CAST($0):INTEGER])
+      HiveTableScan(table=[[default, t]], table:alias=[t])
+    HiveProject(EXPR$0=[$0])
+      HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1), ROW(2)))], rowType=[RecordType(INTEGER EXPR$0)])
+        HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: explain
   select cast(a as integer) from t

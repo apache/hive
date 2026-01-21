@@ -10,8 +10,9 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 Explain
 CBO PLAN:
-HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, 2, 3), ROW(4, 5, 6), ROW(11, 12, 13)))], rowType=[RecordType(INTEGER col1, INTEGER b, INTEGER c)])
-  HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
+HiveProject(col1=[$0], b=[$1], c=[$2])
+  HiveTableFunctionScan(invocation=[inline(ARRAY(ROW(1, 2, 3), ROW(4, 5, 6), ROW(11, 12, 13)))], rowType=[RecordType(INTEGER col1, INTEGER b, INTEGER c)])
+    HiveTableScan(table=[[_dummy_database, _dummy_table]], table:alias=[_dummy_table])
 
 PREHOOK: query: VALUES(1,2 b,3 c),(4,5,6),(11,12,13)
 PREHOOK: type: QUERY

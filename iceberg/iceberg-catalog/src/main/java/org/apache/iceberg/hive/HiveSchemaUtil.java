@@ -431,6 +431,44 @@ public final class HiveSchemaUtil {
     }
   }
 
+  /**
+   * Sets a value into a {@link Record} using a struct-only field path (top-level column or nested
+   * through structs). Intermediate struct records are created as needed.
+   *
+   * <p>If the path traverses a non-struct type (e.g. list/map), the operation is ignored.
+   */
+  public static void setStructField(Record root, String[] path, Object value) {
+    if (root == null || path == null || path.length == 0) {
+      return;
+    }
+    Record current = root;
+    Types.StructType currentStruct = root.struct();
+
+    for (int i = 0; i < path.length - 1; i++) {
+      String fieldName = path[i];
+      Types.NestedField field = currentStruct.field(fieldName);
+      if (field == null || !field.type().isStructType()) {
+        return;
+      }
+      Types.StructType nestedStruct = field.type().asStructType();
+      current = getOrCreateStructRecord(current, fieldName, nestedStruct);
+      currentStruct = nestedStruct;
+    }
+
+    current.setField(path[path.length - 1], value);
+  }
+
+  private static Record getOrCreateStructRecord(
+      Record parent, String fieldName, Types.StructType structType) {
+    Object value = parent.getField(fieldName);
+    if (value instanceof Record) {
+      return (Record) value;
+    }
+    Record record = GenericRecord.create(structType);
+    parent.setField(fieldName, record);
+    return record;
+  }
+
   // Special method for nested structs that always applies defaults to null fields
   private static void setDefaultValuesForNestedStruct(Record record, List<Types.NestedField> fields) {
     for (Types.NestedField field : fields) {
@@ -501,9 +539,5 @@ public final class HiveSchemaUtil {
           Literal.of(stripQuotes(defaultValue)).to(type).value();
       default -> Conversions.fromPartitionString(type, stripQuotes(defaultValue));
     };
-  }
-
-  public static Type getStructType(TypeInfo typeInfo, String defaultValue) {
-    return HiveSchemaConverter.convert(typeInfo, false, defaultValue);
   }
 }

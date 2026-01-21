@@ -50,7 +50,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject($f0=[CAST(20):INTEGER])
+HiveProject(col0=[CAST(20):INTEGER])
   HiveFilter(condition=[=($0, 20)])
     HiveTableScan(table=[[default, t1]], table:alias=[t1])
 

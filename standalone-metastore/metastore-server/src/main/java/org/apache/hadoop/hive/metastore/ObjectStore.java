@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.Batchable.NO_BATCHING;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.COMPACTOR_USE_CUSTOM_POOL;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.newMetaException;
@@ -26,8 +27,8 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.ByteBuffer;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
@@ -48,14 +49,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -68,8 +73,7 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
-import com.google.common.util.concurrent.Striped;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -101,7 +105,6 @@ import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
@@ -249,7 +252,6 @@ import org.apache.hadoop.hive.metastore.model.MWMTrigger;
 import org.apache.hadoop.hive.metastore.model.MReplicationMetrics;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.properties.CachingPropertyStore;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
@@ -257,6 +259,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.RetryingExecutor;
 import org.apache.thrift.TException;
 import org.datanucleus.ExecutionContext;
 import org.datanucleus.api.jdo.JDOPersistenceManager;
@@ -289,7 +292,7 @@ import com.google.common.collect.Sets;
  * filestore.
  */
 public class ObjectStore implements RawStore, Configurable {
-  protected int batchSize = Batchable.NO_BATCHING;
+  protected int batchSize = NO_BATCHING;
 
   private static final DateTimeFormatter YMDHMS_FORMAT = DateTimeFormatter.ofPattern(
       "yyyy_MM_dd_HH_mm_ss");
@@ -313,20 +316,7 @@ public class ObjectStore implements RawStore, Configurable {
   public static final String TRUSTSTORE_PASSWORD_KEY = "javax.net.ssl.trustStorePassword";
   public static final String TRUSTSTORE_TYPE_KEY = "javax.net.ssl.trustStoreType";
 
-  private static final String HOSTNAME;
-  private static final String USER;
   private static final String JDO_PARAM = ":param";
-  static {
-    String hostname = "UNKNOWN";
-    try {
-      InetAddress clientAddr = InetAddress.getLocalHost();
-      hostname = clientAddr.getHostAddress();
-    } catch (IOException e) {
-    }
-    HOSTNAME = hostname;
-    String user = System.getenv("USER");
-    USER = org.apache.commons.lang3.StringUtils.defaultString(user, "UNKNOWN");
-  }
 
   /** Constant declaring a query parameter of type string and name key. */
   private static final String PTYPARAM_STR_KEY = "java.lang.String key";
@@ -346,8 +336,6 @@ public class ObjectStore implements RawStore, Configurable {
   private Counter directSqlErrors;
   private boolean areTxnStatsSupported = false;
   private PropertyStore propertyStore;
-
-  private static Striped<Lock> tablelocks;
 
   public ObjectStore() {
   }
@@ -397,15 +385,6 @@ public class ObjectStore implements RawStore, Configurable {
       throw new RuntimeException("Unable to create persistence manager. Check log for details");
     } else {
       LOG.debug("Initialized ObjectStore");
-    }
-
-    if (tablelocks == null) {
-      synchronized (ObjectStore.class) {
-        if (tablelocks == null) {
-          int numTableLocks = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_NUM_STRIPED_TABLE_LOCKS);
-          tablelocks = Striped.lazyWeakLock(numTableLocks);
-        }
-      }
     }
   }
 
@@ -1247,51 +1226,6 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
-  /*
-  public DataConnector getDataConnectorInternal(String name)
-      throws MetaException, NoSuchObjectException {
-    return new GetDcHelper(name, true, true) {
-      @Override
-      protected DataConnector getSqlResult(GetHelper<DataConnector> ctx) throws MetaException {
-        try {
-        return getJDODataConnector(name);
-      }
-
-      @Override
-      protected DataConnector getJdoResult(GetHelper<DataConnector> ctx) throws MetaException, NoSuchObjectException {
-        return getJDODataConnector(name);
-      }
-    }.run(false);
-  }
-
-  private DataConnector getDataConnectorInternal(String name) throws NoSuchObjectException {
-    MDataConnector mdc = null;
-    boolean commited = false;
-    try {
-      openTransaction();
-      mdc = getMDataConnector(name);
-      commited = commitTransaction();
-    } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
-    }
-    DataConnector connector = new DataConnector();
-    connector.setName(mdc.getName());
-    connector.setType(mdc.getType());
-    connector.setUrl(mdc.getUrl());
-    connector.setDescription(mdc.getDescription());
-    connector.setParameters(convertMap(mdc.getParameters()));
-    connector.setOwnerName(mdc.getOwnerName());
-    String type = org.apache.commons.lang3.StringUtils.defaultIfBlank(mdc.getOwnerType(), null);
-    PrincipalType principalType = (type == null) ? null : PrincipalType.valueOf(type);
-    connector.setOwnerType(principalType);
-    connector.setCreateTime(mdc.getCreateTime());
-    return connector;
-  }
-   */
-
-
   private MType getMType(Type type) {
     List<MFieldSchema> fields = new ArrayList<>();
     if (type.getFields() != null) {
@@ -1518,7 +1452,7 @@ public class ObjectStore implements RawStore, Configurable {
         }
         // delete column statistics if present
         try {
-          deleteTableColumnStatistics(catName, dbName, tableName, (String) null, null);
+          deleteTableColumnStatistics(catName, dbName, tableName, null, null);
         } catch (NoSuchObjectException e) {
           LOG.info("Found no table level column statistics associated with {} to delete",
               TableName.getQualified(catName, dbName, tableName));
@@ -1599,7 +1533,32 @@ public class ObjectStore implements RawStore, Configurable {
     return mViewList;
   }
 
-
+  @Override
+  public List<String> dropAllPartitionsAndGetLocations(TableName table,
+      String baseLocationToNotShow, AtomicReference<String> message)
+      throws MetaException, InvalidInputException, NoSuchObjectException, InvalidObjectException {
+    String catName = table.getCat();
+    String dbName = table.getDb();
+    String tableName = table.getTable();
+    return new GetHelper<List<String>>(catName, dbName, tableName, true, true) {
+      @Override
+      protected String describeResult() {
+        return "delete all partitions from " + table;
+      }
+      @Override
+      protected List<String> getSqlResult(GetHelper<List<String>> ctx) throws MetaException {
+        return directSql.dropAllPartitionsAndGetLocations(getTable().getId(), baseLocationToNotShow, message);
+      }
+      @Override
+      protected List<String> getJdoResult(GetHelper<List<String>> ctx)
+          throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
+        Map<String, String> partitionLocations =
+            getPartitionLocations(catName, dbName, tableName, baseLocationToNotShow, -1);
+        dropPartitionsViaJdo(catName, dbName, tableName, new ArrayList<>(partitionLocations.keySet()), message);
+        return partitionLocations.values().stream().filter(Objects::nonNull).toList();
+      }
+    }.run(true);
+  }
 
   private List<MConstraint> listAllTableConstraintsWithOptionalConstraintName(
       String catName, String dbName, String tableName, String constraintname) {
@@ -2699,7 +2658,7 @@ public class ObjectStore implements RawStore, Configurable {
     List<List<MPartitionPrivilege>> mPartPrivilegesList = new ArrayList<>();
     List<List<MPartitionColumnPrivilege>> mPartColPrivilegesList = new ArrayList<>();
     for (Partition part : parts) {
-      if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
+      if (!part.getTableName().equalsIgnoreCase(tblName) || !part.getDbName().equalsIgnoreCase(dbName)) {
         throw new MetaException("Partition does not belong to target table "
             + dbName + "." + tblName + ": " + part);
       }
@@ -2757,80 +2716,6 @@ public class ObjectStore implements RawStore, Configurable {
         throw newMetaException(e);
       }
     }
-  }
-
-  private boolean isValidPartition(
-      Partition part, List<FieldSchema> partitionKeys, boolean ifNotExists) throws MetaException {
-    MetaStoreServerUtils.validatePartitionNameCharacters(part.getValues(), conf);
-    boolean doesExist = doesPartitionExist(part.getCatName(),
-        part.getDbName(), part.getTableName(), partitionKeys, part.getValues());
-    if (doesExist && !ifNotExists) {
-      throw new MetaException("Partition already exists: " + part);
-    }
-    return !doesExist;
-  }
-
-  @Override
-  public boolean addPartitions(String catName, String dbName, String tblName,
-                               PartitionSpecProxy partitionSpec, boolean ifNotExists)
-      throws InvalidObjectException, MetaException {
-    boolean success = false;
-    openTransaction();
-    try {
-      List<MTablePrivilege> tabGrants = null;
-      List<MTableColumnPrivilege> tabColumnGrants = null;
-      MTable table = this.getMTable(catName, dbName, tblName);
-      if (table == null) {
-        throw new InvalidObjectException("Unable to add partitions because "
-            + TableName.getQualified(catName, dbName, tblName) +
-            " does not exist");
-      }
-      if ("TRUE".equalsIgnoreCase(table.getParameters().get("PARTITION_LEVEL_PRIVILEGE"))) {
-        tabGrants = this.listAllTableGrants(catName, dbName, tblName);
-        tabColumnGrants = this.listTableAllColumnGrants(catName, dbName, tblName);
-      }
-
-      if (!partitionSpec.getTableName().equals(tblName) || !partitionSpec.getDbName().equals(dbName)) {
-        throw new MetaException("Partition does not belong to target table "
-            + dbName + "." + tblName + ": " + partitionSpec);
-      }
-
-      PartitionSpecProxy.PartitionIterator iterator = partitionSpec.getPartitionIterator();
-
-      int now = (int) (System.currentTimeMillis() / 1000);
-
-      List<FieldSchema> partitionKeys = convertToFieldSchemas(table.getPartitionKeys());
-      while (iterator.hasNext()) {
-        Partition part = iterator.next();
-
-        if (isValidPartition(part, partitionKeys, ifNotExists)) {
-          MPartition mpart = convertToMPart(part, table);
-          pm.makePersistent(mpart);
-          if (tabGrants != null) {
-            for (MTablePrivilege tab : tabGrants) {
-              pm.makePersistent(new MPartitionPrivilege(tab.getPrincipalName(),
-                  tab.getPrincipalType(), mpart, tab.getPrivilege(), now,
-                  tab.getGrantor(), tab.getGrantorType(), tab.getGrantOption(),
-                  tab.getAuthorizer()));
-            }
-          }
-
-          if (tabColumnGrants != null) {
-            for (MTableColumnPrivilege col : tabColumnGrants) {
-              pm.makePersistent(new MPartitionColumnPrivilege(col.getPrincipalName(),
-                  col.getPrincipalType(), mpart, col.getColumnName(), col.getPrivilege(),
-                  now, col.getGrantor(), col.getGrantorType(), col.getGrantOption(),
-                  col.getAuthorizer()));
-            }
-          }
-        }
-      }
-
-      success = commitTransaction();
-    } finally {
-      rollbackAndCleanup(success, null);
-    }
-    return success;
   }
 
   @Override
@@ -3044,7 +2929,7 @@ public class ObjectStore implements RawStore, Configurable {
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
     Map<String,String> params = convertMap(mpart.getParameters(), args);
-    boolean noFS = args != null && args.length == 1 ? args[0].isSkipColumnSchemaForPartition() : false;
+    boolean noFS = args != null && args.length == 1 && args[0].isSkipColumnSchemaForPartition();
     Partition p = new Partition(convertList(mpart.getValues()), dbName, tblName,
         mpart.getCreateTime(), mpart.getLastAccessTime(),
         convertToStorageDescriptor(mpart.getSd(), noFS, isAcidTable), params);
@@ -3055,22 +2940,6 @@ public class ObjectStore implements RawStore, Configurable {
       p.setWriteId(-1L);
     }
     return p;
-  }
-
-  @Override
-  public boolean dropPartition(String catName, String dbName, String tableName,
-    List<String> part_vals) throws MetaException, NoSuchObjectException, InvalidObjectException,
-    InvalidInputException {
-    boolean success = false;
-    try {
-      openTransaction();
-      MPartition part = getMPartition(catName, dbName, tableName, part_vals, null);
-      dropPartitionCommon(part);
-      success = commitTransaction();
-    } finally {
-      rollbackAndCleanup(success, null);
-    }
-    return success;
   }
 
   @Override
@@ -3108,25 +2977,36 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected List<Void> getJdoResult(GetHelper<List<Void>> ctx) throws MetaException {
-        dropPartitionsViaJdo(catName, dbName, tblName, partNames);
+        dropPartitionsViaJdo(catName, dbName, tblName, partNames, new AtomicReference<>());
         return Collections.emptyList();
       }
     }.run(false);
   }
 
   private void dropPartitionsViaJdo(String catName, String dbName, String tblName,
-      List<String> partNames) throws MetaException {
+      List<String> partNames, AtomicReference<String> message) throws MetaException {
     boolean success = false;
 
     if (partNames.isEmpty()) {
       return;
     }
     openTransaction();
-
+    
+    int batch = batchSize == NO_BATCHING ? 1 : (partNames.size() + batchSize) / batchSize;
+    AtomicLong batchIdx = new AtomicLong(1);
+    AtomicLong timeSpent = new AtomicLong(0);
     try {
       Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
         @Override
         public List<Void> run(List<String> input) throws MetaException {
+          StringBuilder progress = new StringBuilder("Dropping partitions, batch: ");
+          long start = System.currentTimeMillis();
+          progress.append(batchIdx.get()).append("/").append(batch);
+          if (batchIdx.get() > 1) {
+            long leftTime = (batch - batchIdx.get()) * timeSpent.get() / batchIdx.get();
+            progress.append(", time left: ").append(leftTime).append("ms");
+          }
+          message.set(progress.toString());
           // Delete all things.
           dropPartitionGrantsNoTxn(catName, dbName, tblName, input);
           dropPartitionAllColumnGrantsNoTxn(catName, dbName, tblName, input);
@@ -3137,6 +3017,8 @@ public class ObjectStore implements RawStore, Configurable {
             removeUnusedColumnDescriptor(mcd);
           }
           dropPartitionsNoTxn(catName, dbName, tblName, input);
+          timeSpent.addAndGet(System.currentTimeMillis() - start);
+          batchIdx.incrementAndGet();
           return Collections.emptyList();
         }
       });
@@ -3147,63 +3029,6 @@ public class ObjectStore implements RawStore, Configurable {
     } finally {
       rollbackAndCleanup(success, null);
     }
-  }
-
-  /**
-   * Drop an MPartition and cascade deletes (e.g., delete partition privilege grants,
-   *   drop the storage descriptor cleanly, etc.)
-   */
-  private boolean dropPartitionCommon(MPartition part) throws MetaException,
-    InvalidObjectException, InvalidInputException {
-    boolean success = false;
-    try {
-      openTransaction();
-      if (part != null) {
-        List<MFieldSchema> schemas = part.getTable().getPartitionKeys();
-        List<String> colNames = new ArrayList<>();
-        for (MFieldSchema col: schemas) {
-          colNames.add(col.getName());
-        }
-        String partName = FileUtils.makePartName(colNames, part.getValues());
-
-        List<MPartitionPrivilege> partGrants = listPartitionGrants(
-            part.getTable().getDatabase().getCatalogName(),
-            part.getTable().getDatabase().getName(),
-            part.getTable().getTableName(),
-            Lists.newArrayList(partName));
-
-        if (CollectionUtils.isNotEmpty(partGrants)) {
-          pm.deletePersistentAll(partGrants);
-        }
-
-        List<MPartitionColumnPrivilege> partColumnGrants = listPartitionAllColumnGrants(
-            part.getTable().getDatabase().getCatalogName(),
-            part.getTable().getDatabase().getName(),
-            part.getTable().getTableName(),
-            Lists.newArrayList(partName));
-        if (CollectionUtils.isNotEmpty(partColumnGrants)) {
-          pm.deletePersistentAll(partColumnGrants);
-        }
-
-        String catName = part.getTable().getDatabase().getCatalogName();
-        String dbName = part.getTable().getDatabase().getName();
-        String tableName = part.getTable().getTableName();
-
-        // delete partition level column stats if it exists
-       try {
-          deletePartitionColumnStatistics(catName, dbName, tableName, partName, part.getValues(), null, null);
-        } catch (NoSuchObjectException e) {
-          LOG.info("No column statistics records found to delete");
-        }
-
-        preDropStorageDescriptor(part.getSd());
-        pm.deletePersistent(part);
-      }
-      success = commitTransaction();
-    } finally {
-      rollbackAndCleanup(success, null);
-    }
-    return success;
   }
 
   @Override
@@ -3580,7 +3405,8 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     if (partitionNames == null) {
-      partitions = getPartitionsByFilter(catName, dbName, tableName, filter, (short) maxParts);
+      partitions = getPartitionsByFilter(catName, dbName, tableName,
+          new GetPartitionsArgs.GetPartitionsArgsBuilder().filter(filter).max((short) maxParts).build());
     }
 
     if (partitions != null) {
@@ -3812,7 +3638,7 @@ public class ObjectStore implements RawStore, Configurable {
    *          you want results for.  E.g., if resultsCol is partitionName, the Collection
    *          has types of String, and if resultsCol is null, the types are MPartition.
    */
-  private Collection<String> getPartitionPsQueryResults(String catName, String dbName,
+  private <T> Collection<T> getPartitionPsQueryResults(String catName, String dbName,
                                                         String tableName, List<String> part_vals,
                                                         int max_parts, String resultsCol)
       throws MetaException, NoSuchObjectException {
@@ -3832,6 +3658,7 @@ public class ObjectStore implements RawStore, Configurable {
     String filter = getJDOFilterStrForPartitionVals(table, part_vals, params);
     try (QueryWrapper query = new QueryWrapper(pm.newQuery(MPartition.class))) {
       query.setFilter(filter);
+      query.setOrdering("partitionName ascending");
       query.declareParameters(makeParameterDeclarationString(params));
       if (max_parts >= 0) {
         // User specified a row limit, set it on the Query
@@ -3841,7 +3668,7 @@ public class ObjectStore implements RawStore, Configurable {
         query.setResult(resultsCol);
       }
 
-      Collection<String> result = (Collection<String>) query.executeWithMap(params);
+      Collection<T> result = (Collection<T>) query.executeWithMap(params);
 
       return Collections.unmodifiableCollection(new ArrayList<>(result));
     }
@@ -3913,11 +3740,11 @@ public class ObjectStore implements RawStore, Configurable {
       protected List<Partition> getJdoResult(GetHelper<List<Partition>> ctx)
           throws MetaException, NoSuchObjectException {
         List<Partition> result = new ArrayList<>();
-        Collection parts = getPartitionPsQueryResults(catName, dbName, tblName,
+        Collection<MPartition> parts = getPartitionPsQueryResults(catName, dbName, tblName,
             args.getPart_vals(), args.getMax(), null);
         boolean isAcidTable = TxnUtils.isAcidTable(ctx.getTable());
-        for (Object o : parts) {
-          Partition part = convertToPart(catName, dbName, tblName, (MPartition) o, isAcidTable, args);
+        for (MPartition o : parts) {
+          Partition part = convertToPart(catName, dbName, tblName, o, isAcidTable, args);
           result.add(part);
         }
         return result;
@@ -4376,11 +4203,7 @@ public class ObjectStore implements RawStore, Configurable {
       this.doTrace = LOG.isDebugEnabled();
       this.isInTxn = isActiveTransaction();
 
-      // SQL usage inside a larger transaction (e.g. droptable) may not be desirable because
-      // some databases (e.g. Postgres) abort the entire transaction when any query fails, so
-      // the fallback from failed SQL to JDO is not possible.
-      boolean isConfigEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)
-          && (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL_DDL) || !isInTxn);
+      boolean isConfigEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL);
       if (isConfigEnabled && directSql == null) {
         directSql = new MetaStoreDirectSql(pm, getConf(), "");
       }
@@ -4622,60 +4445,6 @@ public class ObjectStore implements RawStore, Configurable {
       protected Integer getJdoResult(
           GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
         return getNumPartitionsViaOrmFilter(catName ,dbName, tblName, exprTree, true, partitionKeys);
-      }
-    }.run(false);
-  }
-
-  @Override
-  public int getNumPartitionsByExpr(String catName, String dbName, String tblName,
-                                    byte[] expr) throws MetaException, NoSuchObjectException {
-    final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr, null, conf);
-    final byte[] tempExpr = expr; // Need to be final to pass it to an inner class
-
-    catName = normalizeIdentifier(catName);
-    dbName = normalizeIdentifier(dbName);
-    tblName = normalizeIdentifier(tblName);
-    MTable mTable = ensureGetMTable(catName, dbName, tblName);
-    List<FieldSchema> partitionKeys = convertToFieldSchemas(mTable.getPartitionKeys());
-
-    return new GetHelper<Integer>(catName, dbName, tblName, true, true) {
-      private final SqlFilterForPushdown filter = new SqlFilterForPushdown();
-
-      @Override
-      protected String describeResult() {
-        return "Partition count";
-      }
-
-      @Override
-      protected boolean canUseDirectSql(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.generateSqlFilterForPushdown(catName, dbName, tblName, partitionKeys, exprTree, null, filter);
-      }
-
-      @Override
-      protected Integer getSqlResult(GetHelper<Integer> ctx) throws MetaException {
-        return directSql.getNumPartitionsViaSqlFilter(filter);
-      }
-      @Override
-      protected Integer getJdoResult(
-          GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
-        Integer numPartitions = null;
-
-        if (exprTree != null) {
-          try {
-            numPartitions = getNumPartitionsViaOrmFilter(catName ,dbName, tblName, exprTree, true, partitionKeys);
-          } catch (MetaException e) {
-            numPartitions = null;
-          }
-        }
-
-        // if numPartitions could not be obtained from ORM filters, then get number partitions names, and count them
-        if (numPartitions == null) {
-          List<String> filteredPartNames = new ArrayList<>();
-          getPartitionNamesPrunedByExprNoTxn(catName, dbName, tblName, partitionKeys, tempExpr, "", (short) -1, filteredPartNames);
-          numPartitions = filteredPartNames.size();
-        }
-
-        return numPartitions;
       }
     }.run(false);
   }
@@ -5944,8 +5713,11 @@ public class ObjectStore implements RawStore, Configurable {
           if (parentTable.getPartitionKeys() != null) {
             parentCols.addAll(parentTable.getPartitionKeys());
           }
-          existingTablePrimaryKeys = getPrimaryKeys(catName, pkTableDB, pkTableName);
-          existingTableUniqueConstraints = getUniqueConstraints(catName, pkTableDB, pkTableName);
+          PrimaryKeysRequest primaryKeysRequest = new PrimaryKeysRequest(pkTableDB, pkTableName);
+          primaryKeysRequest.setCatName(catName);
+          existingTablePrimaryKeys = getPrimaryKeys(primaryKeysRequest);
+          existingTableUniqueConstraints =
+              getUniqueConstraints(new UniqueConstraintsRequest(catName, pkTableDB, pkTableName));
         }
 
         // Here we build an aux structure that is used to verify that the foreign key that is declared
@@ -8449,33 +8221,6 @@ public class ObjectStore implements RawStore, Configurable {
     return mSecurityColList;
   }
 
-  private List<MPartitionColumnPrivilege> listPartitionAllColumnGrants(
-      String catName, String dbName, String tableName, List<String> partNames) {
-    boolean success = false;
-    tableName = normalizeIdentifier(tableName);
-    dbName = normalizeIdentifier(dbName);
-    catName = normalizeIdentifier(catName);
-
-    List<MPartitionColumnPrivilege> mSecurityColList = null;
-    try {
-      openTransaction();
-      LOG.debug("Executing listPartitionAllColumnGrants");
-      mSecurityColList = queryByPartitionNames(catName,
-          dbName, tableName, partNames, MPartitionColumnPrivilege.class,
-          "partition.table.tableName", "partition.table.database.name", "partition.partitionName",
-          "partition.table.database.catalogName");
-      LOG.debug("Done executing query for listPartitionAllColumnGrants");
-      pm.retrieveAll(mSecurityColList);
-      success = commitTransaction();
-      LOG.debug("Done retrieving all objects for listPartitionAllColumnGrants");
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-    return mSecurityColList;
-  }
-
   private void dropPartitionAllColumnGrantsNoTxn(
       String catName, String dbName, String tableName, List<String> partNames) {
     Pair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(catName,
@@ -8547,30 +8292,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private List<MPartitionPrivilege> listPartitionGrants(String catName, String dbName, String tableName,
-      List<String> partNames) {
-    tableName = normalizeIdentifier(tableName);
-    dbName = normalizeIdentifier(dbName);
-
-    boolean success = false;
-    List<MPartitionPrivilege> mSecurityTabPartList = null;
-    try {
-      openTransaction();
-      LOG.debug("Executing listPartitionGrants");
-      mSecurityTabPartList = queryByPartitionNames(catName,
-          dbName, tableName, partNames, MPartitionPrivilege.class, "partition.table.tableName",
-          "partition.table.database.name", "partition.partitionName",
-          "partition.table.database.catalogName");
-      LOG.debug("Done executing query for listPartitionGrants");
-      pm.retrieveAll(mSecurityTabPartList);
-      success = commitTransaction();
-      LOG.debug("Done retrieving all objects for listPartitionGrants");
-    } finally {
-      rollbackAndCleanup(success, null);
-    }
-    return mSecurityTabPartList;
-  }
-
   private void dropPartitionGrantsNoTxn(String catName, String dbName, String tableName,
                                         List<String> partNames) {
     Pair<Query, Object[]> queryWithParams = makeQueryByPartitionNames(catName,
@@ -8579,18 +8300,6 @@ public class ObjectStore implements RawStore, Configurable {
           "partition.table.database.catalogName");
     try (QueryWrapper wrapper = new QueryWrapper(queryWithParams.getLeft())) {
       wrapper.deletePersistentAll(queryWithParams.getRight());
-    }
-  }
-
-  private <T> List<T> queryByPartitionNames(String catName, String dbName, String tableName,
-      List<String> partNames, Class<T> clazz, String tbCol, String dbCol, String partCol,
-      String catCol) {
-    Pair<Query, Object[]> queryAndParams = makeQueryByPartitionNames(catName,
-        dbName, tableName, partNames, clazz, tbCol, dbCol, partCol, catCol);
-    try (QueryWrapper wrapper = new QueryWrapper(queryAndParams.getLeft())) {
-      List<T> results = new ArrayList<T>(
-          (List) wrapper.executeWithArray(queryAndParams.getRight()));
-      return results;
     }
   }
 
@@ -9473,112 +9182,94 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  /**
-   * Get table's column stats
-   *
-   * @return Map of column name and its stats
-   */
-  private Map<String, MTableColumnStatistics> getPartitionColStats(Table table, List<String> colNames, String engine)
-      throws MetaException {
-    Map<String, MTableColumnStatistics> statsMap = Maps.newHashMap();
-    List<MTableColumnStatistics> stats = getMTableColumnStatistics(table, colNames, engine);
-    for (MTableColumnStatistics cStat : stats) {
-      statsMap.put(cStat.getColName(), cStat);
-    }
-    return statsMap;
-  }
-  
   @Override
   public Map<String, String> updateTableColumnStatistics(ColumnStatistics colStats, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
-
     List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
     ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-    
-    Lock tableLock = getTableLockFor(statsDesc.getDbName(), statsDesc.getTableName());
-    tableLock.lock();
+    long start = System.currentTimeMillis();
+    String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
     try {
       openTransaction();
       // DataNucleus objects get detached all over the place for no (real) reason.
       // So let's not use them anywhere unless absolutely necessary.
-      String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
       MTable mTable = ensureGetMTable(catName, statsDesc.getDbName(), statsDesc.getTableName());
-      Table table = convertToTable(mTable);
-      List<String> colNames = new ArrayList<>();
-      for (ColumnStatisticsObj statsObj : statsObjs) {
-        colNames.add(statsObj.getColName());
-      }
-
-      Map<String, MTableColumnStatistics> oldStats = getPartitionColStats(table, colNames, colStats.getEngine());
-
-      for (ColumnStatisticsObj statsObj : statsObjs) {
-        MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(
-          mTable, statsDesc,
-          statsObj, colStats.getEngine());
-        writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
-        // There is no need to add colname again, otherwise we will get duplicate colNames.
-      }
-
-      // TODO: (HIVE-20109) ideally the col stats stats should be in colstats, not in the table!
-      // Set the table properties
-      // No need to check again if it exists.
-      String dbname = table.getDbName();
-      String name = table.getTableName();
-      MTable oldt = mTable;
-      Map<String, String> newParams = new HashMap<>(table.getParameters());
-      StatsSetupConst.setColumnStatsState(newParams, colNames);
-      boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
-      if (isTxn) {
-        if (!areTxnStatsSupported) {
-          StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-        } else {
-          String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name),
-            oldt.getParameters(), newParams, writeId, validWriteIds, true);
-          if (errorMsg != null) {
-            throw new MetaException(errorMsg);
-          }
-          if (!isCurrentStatsValidForTheQuery(oldt, validWriteIds, true)) {
-            // Make sure we set the flag to invalid regardless of the current value.
-            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-            LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table "
-              + dbname + "." + name);
-          }
-          oldt.setWriteId(writeId);
+      int maxRetries = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
+      long sleepInterval = MetastoreConf.getTimeVar(conf,
+          ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
+      Map<String, String> result = new RetryingExecutor<>(maxRetries, () -> {
+        Ref<Exception> exceptionRef = new Ref<>();
+        String savePoint = "uts_" + ThreadLocalRandom.current().nextInt(10000) + "_" + System.nanoTime();
+        setTransactionSavePoint(savePoint);
+        executePlainSQL(
+            sqlGenerator.addForUpdateNoWait("SELECT \"TBL_ID\" FROM \"TBLS\" WHERE \"TBL_ID\" = " + mTable.getId()),
+            true,
+            exception -> {
+              rollbackTransactionToSavePoint(savePoint);
+              exceptionRef.t = exception;
+            });
+        if (exceptionRef.t != null) {
+          throw new RetryingExecutor.RetryException(exceptionRef.t);
         }
-      }
-      oldt.setParameters(newParams);
+        pm.refresh(mTable);
+        Table table = convertToTable(mTable);
+        List<String> colNames = new ArrayList<>();
+        for (ColumnStatisticsObj statsObj : statsObjs) {
+          colNames.add(statsObj.getColName());
+        }
 
+        Map<String, MTableColumnStatistics> oldStats = Maps.newHashMap();
+        List<MTableColumnStatistics> stats = getMTableColumnStatistics(table, colNames, colStats.getEngine());
+        for (MTableColumnStatistics cStat : stats) {
+          oldStats.put(cStat.getColName(), cStat);
+        }
+
+        for (ColumnStatisticsObj statsObj : statsObjs) {
+          MTableColumnStatistics mStatsObj = StatObjectConverter.convertToMTableColumnStatistics(mTable, statsDesc,
+              statsObj, colStats.getEngine());
+          writeMTableColumnStatistics(table, mStatsObj, oldStats.get(statsObj.getColName()));
+          // There is no need to add colname again, otherwise we will get duplicate colNames.
+        }
+
+        // Set the table properties
+        // No need to check again if it exists.
+        String dbname = table.getDbName();
+        String name = table.getTableName();
+        MTable oldt = mTable;
+        Map<String, String> newParams = new HashMap<>(table.getParameters());
+        StatsSetupConst.setColumnStatsState(newParams, colNames);
+        boolean isTxn = TxnUtils.isTransactionalTable(oldt.getParameters());
+        if (isTxn) {
+          if (!areTxnStatsSupported) {
+            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+          } else {
+            String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(dbname, name), oldt.getParameters(), newParams,
+                writeId, validWriteIds, true);
+            if (errorMsg != null) {
+              throw new MetaException(errorMsg);
+            }
+            if (!isCurrentStatsValidForTheQuery(oldt, validWriteIds, true)) {
+              // Make sure we set the flag to invalid regardless of the current value.
+              StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+              LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the table " + dbname + "." + name);
+            }
+            oldt.setWriteId(writeId);
+          }
+        }
+        oldt.setParameters(newParams);
+        return newParams;
+      }).onRetry(e -> e instanceof RetryingExecutor.RetryException)
+        .commandName("updateTableColumnStatistics").sleepInterval(sleepInterval, interval ->
+              ThreadLocalRandom.current().nextLong(sleepInterval) + 30).run();
       committed = commitTransaction();
-      // TODO: similar to update...Part, this used to do "return committed;"; makes little sense.
-      return committed ? newParams : null;
+      return committed ? result : null;
     } finally {
-      try {
-        rollbackAndCleanup(committed, null);
-      } finally {
-        tableLock.unlock();
-      }
+      LOG.debug("{} updateTableColumnStatistics took {}ms, success: {}",
+          new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()),
+          System.currentTimeMillis() - start, committed);
+      rollbackAndCleanup(committed, null);
     }
-  }
-
-  private Lock getTableLockFor(String dbName, String tblName) {
-    return tablelocks.get(dbName + "." + tblName);
-  }
-
-  /**
-   * Get partition's column stats
-   *
-   * @return Map of column name and its stats
-   */
-  private Map<String, MPartitionColumnStatistics> getPartitionColStats(Table table, String partitionName,
-      List<String> colNames, String engine) throws NoSuchObjectException, MetaException {
-    Map<String, MPartitionColumnStatistics> statsMap = Maps.newHashMap();
-    List<MPartitionColumnStatistics> stats =
-        getMPartitionColumnStatistics(table, Lists.newArrayList(partitionName), colNames, engine);
-    for (MPartitionColumnStatistics cStat : stats) {
-      statsMap.put(cStat.getColName(), cStat);
-    }
-    return statsMap;
   }
 
   @Override
@@ -9586,64 +9277,88 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partVals, String validWriteIds, long writeId)
           throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean committed = false;
-
+    long start = System.currentTimeMillis();
+    List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
+    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
+    String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
     try {
       openTransaction();
-      List<ColumnStatisticsObj> statsObjs = colStats.getStatsObj();
-      ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-      String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
-      Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(), getMPartition(
-          catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable), TxnUtils.isAcidTable(table));
-      List<String> colNames = new ArrayList<>();
-
-      for(ColumnStatisticsObj statsObj : statsObjs) {
-        colNames.add(statsObj.getColName());
-      }
-
-      Map<String, MPartitionColumnStatistics> oldStats = getPartitionColStats(table, statsDesc
-          .getPartName(), colNames, colStats.getEngine());
-
       MPartition mPartition = getMPartition(
           catName, statsDesc.getDbName(), statsDesc.getTableName(), partVals, mTable);
-      if (partition == null) {
+      if (mPartition == null) {
         throw new NoSuchObjectException("Partition for which stats is gathered doesn't exist.");
       }
 
-      for (ColumnStatisticsObj statsObj : statsObjs) {
-        MPartitionColumnStatistics mStatsObj =
-            StatObjectConverter.convertToMPartitionColumnStatistics(mPartition, statsDesc, statsObj, colStats.getEngine());
-        writeMPartitionColumnStatistics(table, partition, mStatsObj,
-            oldStats.get(statsObj.getColName()));
+      List<String> colNames = new ArrayList<>();
+      for(ColumnStatisticsObj statsObj : statsObjs) {
+        colNames.add(statsObj.getColName());
       }
-      // TODO: (HIVE-20109) the col stats stats should be in colstats, not in the partition!
-      Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
-      StatsSetupConst.setColumnStatsState(newParams, colNames);
-      boolean isTxn = TxnUtils.isTransactionalTable(table);
-      if (isTxn) {
-        if (!areTxnStatsSupported) {
-          StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-        } else {
-          String errorMsg = verifyStatsChangeCtx(TableName.getDbTable(statsDesc.getDbName(),
-                                                                      statsDesc.getTableName()),
-                  mPartition.getParameters(), newParams, writeId, validWriteIds, true);
-          if (errorMsg != null) {
-            throw new MetaException(errorMsg);
-          }
-          if (!isCurrentStatsValidForTheQuery(mPartition, validWriteIds, true)) {
-            // Make sure we set the flag to invalid regardless of the current value.
-            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
-            LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition "
-                    + statsDesc.getDbName() + "." + statsDesc.getTableName() + "." + statsDesc.getPartName());
-          }
-          mPartition.setWriteId(writeId);
+      int maxRetries = MetastoreConf.getIntVar(conf, ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES);
+      long sleepInterval = MetastoreConf.getTimeVar(conf,
+          ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
+      Map<String, String> result = new RetryingExecutor<>(maxRetries, () -> {
+        Ref<Exception> exceptionRef = new Ref<>();
+        String savePoint = "ups_" + ThreadLocalRandom.current().nextInt(10000) + "_" + System.nanoTime();
+        setTransactionSavePoint(savePoint);
+        executePlainSQL(sqlGenerator.addForUpdateNoWait(
+            "SELECT \"PART_ID\" FROM \"PARTITIONS\" WHERE \"PART_ID\" = " + mPartition.getId()),
+            true,
+            exception -> {
+              rollbackTransactionToSavePoint(savePoint);
+              exceptionRef.t = exception;
+            });
+        if (exceptionRef.t != null) {
+          throw new RetryingExecutor.RetryException(exceptionRef.t);
         }
-      }
+        pm.refresh(mPartition);
+        Partition partition = convertToPart(catName, statsDesc.getDbName(), statsDesc.getTableName(),
+            mPartition, TxnUtils.isAcidTable(table));
+        Map<String, MPartitionColumnStatistics> oldStats = Maps.newHashMap();
+        List<MPartitionColumnStatistics> stats =
+            getMPartitionColumnStatistics(table, Lists.newArrayList(statsDesc.getPartName()), colNames, colStats.getEngine());
+        for (MPartitionColumnStatistics cStat : stats) {
+          oldStats.put(cStat.getColName(), cStat);
+        }
 
-      mPartition.setParameters(newParams);
+        for (ColumnStatisticsObj statsObj : statsObjs) {
+          MPartitionColumnStatistics mStatsObj = StatObjectConverter.convertToMPartitionColumnStatistics(mPartition,
+              statsDesc, statsObj, colStats.getEngine());
+          writeMPartitionColumnStatistics(table, partition, mStatsObj, oldStats.get(statsObj.getColName()));
+        }
+
+        Map<String, String> newParams = new HashMap<>(mPartition.getParameters());
+        StatsSetupConst.setColumnStatsState(newParams, colNames);
+        boolean isTxn = TxnUtils.isTransactionalTable(table);
+        if (isTxn) {
+          if (!areTxnStatsSupported) {
+            StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+          } else {
+            String errorMsg = verifyStatsChangeCtx(
+                TableName.getDbTable(statsDesc.getDbName(), statsDesc.getTableName()), mPartition.getParameters(),
+                newParams, writeId, validWriteIds, true);
+            if (errorMsg != null) {
+              throw new MetaException(errorMsg);
+            }
+            if (!isCurrentStatsValidForTheQuery(mPartition, validWriteIds, true)) {
+              // Make sure we set the flag to invalid regardless of the current value.
+              StatsSetupConst.setBasicStatsState(newParams, StatsSetupConst.FALSE);
+              LOG.info("Removed COLUMN_STATS_ACCURATE from the parameters of the partition: {}, {} ",
+                  new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()), statsDesc.getPartName());
+            }
+            mPartition.setWriteId(writeId);
+          }
+        }
+        mPartition.setParameters(newParams);
+        return newParams;
+      }).onRetry(e -> e instanceof RetryingExecutor.RetryException)
+          .commandName("updatePartitionColumnStatistics").sleepInterval(sleepInterval, interval ->
+              ThreadLocalRandom.current().nextLong(sleepInterval) + 30).run();
       committed = commitTransaction();
-      // TODO: what is the "return committed;" about? would it ever return false without throwing?
-      return committed ? newParams : null;
+      return committed ? result : null;
     } finally {
+      LOG.debug("{} updatePartitionColumnStatistics took {}ms, success: {}",
+          new TableName(catName, statsDesc.getDbName(), statsDesc.getTableName()),
+          System.currentTimeMillis() - start, committed);
       rollbackAndCleanup(committed, null);
     }
   }
@@ -10116,11 +9831,6 @@ public class ObjectStore implements RawStore, Configurable {
     }.run(true);
   }
 
-  @Override
-  public void flushCache() {
-    // NOP as there's no caching
-  }
-
   private List<MPartitionColumnStatistics> getMPartitionColumnStatistics(Table table, List<String> partNames,
       List<String> colNames, String engine) throws MetaException {
     boolean committed = false;
@@ -10239,7 +9949,8 @@ public class ObjectStore implements RawStore, Configurable {
         @Override
         protected Integer getJdoResult(GetHelper<Integer> ctx) throws MetaException, NoSuchObjectException {
           try {
-            List<Partition> parts = getPartitions(catName, dbName, tableName, -1);
+            List<Partition> parts = getPartitions(catName, dbName, tableName,
+                GetPartitionsArgs.getAllPartitions());
             for (Partition part : parts) {
               Partition newPart = new Partition(part);
               StatsSetupConst.clearColumnStatsState(newPart.getParameters());
@@ -10670,6 +10381,13 @@ public class ObjectStore implements RawStore, Configurable {
     IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(getConf());
     String hiveSchemaVer = metastoreSchemaInfo.getHiveSchemaVersion();
 
+    String user = StringUtils.defaultString(System.getenv("USER"), "UNKNOWN");
+    String hostName = "UNKNOWN";
+    try {
+      hostName = InetAddress.getLocalHost().getHostAddress();
+    } catch (IOException e) {
+      LOG.debug("Fail to get the address of the local host", e);
+    }
     if (dbSchemaVer == null) {
       if (strictValidation) {
         throw new MetaException("Version information not found in metastore.");
@@ -10677,8 +10395,7 @@ public class ObjectStore implements RawStore, Configurable {
         LOG.warn("Version information not found in metastore. {} is not " +
           "enabled so recording the schema version {}", ConfVars.SCHEMA_VERIFICATION,
             hiveSchemaVer);
-        setMetaStoreSchemaVersion(hiveSchemaVer,
-          "Set by MetaStore " + USER + "@" + HOSTNAME);
+        setMetaStoreSchemaVersion(hiveSchemaVer, "Set by MetaStore " + user + "@" + hostName);
       }
     } else {
       if (metastoreSchemaInfo.isVersionCompatible(hiveSchemaVer, dbSchemaVer)) {
@@ -10693,8 +10410,7 @@ public class ObjectStore implements RawStore, Configurable {
           LOG.error("Version information found in metastore differs {} " +
               "from expected schema version {}. Schema verification is disabled {}",
               dbSchemaVer, hiveSchemaVer, ConfVars.SCHEMA_VERIFICATION);
-          setMetaStoreSchemaVersion(hiveSchemaVer,
-            "Set by MetaStore " + USER + "@" + HOSTNAME);
+          setMetaStoreSchemaVersion(hiveSchemaVer, "Set by MetaStore " + user + "@" + hostName);
         }
       }
     }
@@ -11028,38 +10744,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> getFunctions(String catName, String dbName, String pattern) throws MetaException {
-    boolean commited = false;
-    Query query = null;
-    List<String> funcs = null;
-    try {
-      openTransaction();
-      dbName = normalizeIdentifier(dbName);
-      // Take the pattern and split it on the | to get all the composing
-      // patterns
-      List<String> parameterVals = new ArrayList<>();
-      StringBuilder filterBuilder = new StringBuilder();
-      appendSimpleCondition(filterBuilder, "database.name", new String[] { dbName }, parameterVals);
-      appendSimpleCondition(filterBuilder, "database.catalogName", new String[] {catName}, parameterVals);
-      if(pattern != null) {
-        appendPatternCondition(filterBuilder, "functionName", pattern, parameterVals);
-      }
-      query = pm.newQuery(MFunction.class, filterBuilder.toString());
-      query.setResult("functionName");
-      query.setOrdering("functionName ascending");
-      Collection names = (Collection) query.executeWithArray(parameterVals.toArray(new String[0]));
-      funcs = new ArrayList<>();
-      for (Iterator i = names.iterator(); i.hasNext();) {
-        funcs.add((String) i.next());
-      }
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
-    }
-    return funcs;
-  }
-
-  @Override
   public <T> List<T> getFunctionsRequest(String catName, String dbName, String pattern,
       boolean isReturnNames) throws MetaException {
     boolean commited = false;
@@ -11081,18 +10765,18 @@ public class ObjectStore implements RawStore, Configurable {
         query.setResult("functionName");
       }
       query.setOrdering("functionName ascending");
-
+      List<T> result;
       if (!isReturnNames) {
-        List<MFunction> functionList = (List<MFunction>) query.executeWithArray(parameterVals.toArray(new String[0]));
+        List<MFunction> functionList =
+            (List<MFunction>) query.executeWithArray(parameterVals.toArray(new String[0]));
         pm.retrieveAll(functionList);
-        commited = commitTransaction();
-        return (List<T>)convertToFunctions(functionList);
+        result = (List<T>) convertToFunctions(functionList);
       } else {
         List<String> functionList = (List<String>) query.executeWithArray(parameterVals.toArray(new String[0]));
-        pm.retrieveAll(functionList);
-        commited = commitTransaction();
-        return (List<T>)functionList;
+        result = (List<T>) new ArrayList<>(functionList);
       }
+      commited = commitTransaction();
+      return result;
     } finally {
       rollbackAndCleanup(commited, query);
     }
@@ -11435,93 +11119,58 @@ public class ObjectStore implements RawStore, Configurable {
     return writeEventInfoList;
   }
 
-  private void prepareQuotes() throws SQLException {
+  private void executePlainSQL(String sql,
+      boolean atLeastOneRecord,
+      Consumer<Exception> exceptionConsumer)
+      throws SQLException, MetaException {
     String s = dbType.getPrepareTxnStmt();
-    if (s != null) {
-      assert pm.currentTransaction().isActive();
-      JDOConnection jdoConn = pm.getDataStoreConnection();
-      try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
+    assert pm.currentTransaction().isActive();
+    JDOConnection jdoConn = pm.getDataStoreConnection();
+    Connection conn = (Connection) jdoConn.getNativeConnection();
+    try (Statement statement = conn.createStatement()) {
+      if (s != null) {
         statement.execute(s);
-      } finally {
-        jdoConn.close();
       }
+      try {
+        statement.execute(sql);
+        try (ResultSet rs = statement.getResultSet()) {
+          // sqlserver needs rs.next for validating the s4u nowait
+          if (atLeastOneRecord && !rs.next()) {
+            throw new MetaException("At least one record but none is returned from the query: " + sql);
+          }
+        }
+      } catch (SQLException e) {
+        if (exceptionConsumer != null) {
+          exceptionConsumer.accept(e);
+        } else {
+          throw e;
+        }
+      }
+    } finally {
+      jdoConn.close();
     }
   }
 
   private void lockNotificationSequenceForUpdate() throws MetaException {
+    int maxRetries =
+        MetastoreConf.getIntVar(conf, ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES);
+    long sleepInterval = MetastoreConf.getTimeVar(conf,
+        ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
     if (sqlGenerator.getDbProduct().isDERBY() && directSql != null) {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.
-      new RetryingExecutor(conf, () -> {
+      new RetryingExecutor<Void>(maxRetries, () -> {
         directSql.lockDbTable("NOTIFICATION_SEQUENCE");
-      }).run();
+        return null;
+      }).commandName("lockNotificationSequenceForUpdate").sleepInterval(sleepInterval).run();
     } else {
       String selectQuery = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
       String lockingQuery = sqlGenerator.addForUpdateClause(selectQuery);
-      new RetryingExecutor(conf, () -> {
-        prepareQuotes();
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", lockingQuery))) {
-          query.setUnique(true);
-          // only need to execute it to get db Lock
-          query.execute();
-        }
-      }).run();
-    }
-  }
-
-  static class RetryingExecutor {
-    interface Command {
-      void process() throws Exception;
-    }
-
-    private static Logger LOG = LoggerFactory.getLogger(RetryingExecutor.class);
-    private final int maxRetries;
-    private final long sleepInterval;
-    private int currentRetries = 0;
-    private final Command command;
-
-    RetryingExecutor(Configuration config, Command command) {
-      this.maxRetries =
-          MetastoreConf.getIntVar(config, ConfVars.NOTIFICATION_SEQUENCE_LOCK_MAX_RETRIES);
-      this.sleepInterval = MetastoreConf.getTimeVar(config,
-          ConfVars.NOTIFICATION_SEQUENCE_LOCK_RETRY_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
-      this.command = command;
-    }
-
-    public void run() throws MetaException {
-      while (true) {
-        try {
-          command.process();
-          break;
-        } catch (Exception e) {
-          LOG.info(
-              "Attempting to acquire the DB log notification lock: {} out of {}" +
-                " retries", currentRetries, maxRetries, e);
-          if (currentRetries >= maxRetries) {
-            String message =
-                "Couldn't acquire the DB log notification lock because we reached the maximum"
-                    + " # of retries: " + maxRetries
-                    + " retries. If this happens too often, then is recommended to "
-                    + "increase the maximum number of retries on the"
-                    + " hive.notification.sequence.lock.max.retries configuration";
-            LOG.error(message, e);
-            throw new MetaException(message + " :: " + e.getMessage());
-          }
-          currentRetries++;
-          try {
-            Thread.sleep(sleepInterval);
-          } catch (InterruptedException e1) {
-            String msg = "Couldn't acquire the DB notification log lock on " + currentRetries
-                + " retry, because the following error: ";
-            LOG.error(msg, e1);
-            throw new MetaException(msg + e1.getMessage());
-          }
-        }
-      }
-    }
-    public long getSleepInterval() {
-      return sleepInterval;
+      new RetryingExecutor<Void>(maxRetries, () -> {
+        executePlainSQL(lockingQuery, false, null);
+        return null;
+      }).commandName("lockNotificationSequenceForUpdate").sleepInterval(sleepInterval).run();
     }
   }
 
@@ -11784,40 +11433,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public boolean isFileMetadataSupported() {
-    return false;
-  }
-
-  @Override
-  public ByteBuffer[] getFileMetadata(List<Long> fileIds) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void putFileMetadata(
-      List<Long> fileIds, List<ByteBuffer> metadata, FileMetadataExprType type) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
-      ByteBuffer[] metadatas, ByteBuffer[] stripeBitsets, boolean[] eliminated) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<SQLPrimaryKey> getPrimaryKeys(String catName, String db_name, String tbl_name) throws MetaException {
-    PrimaryKeysRequest request = new PrimaryKeysRequest(db_name, tbl_name);
-    request.setCatName(catName);
-    return getPrimaryKeys(request);
-  }
-
-  @Override
   public List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request) throws MetaException {
     try {
       return getPrimaryKeysInternal(request.getCatName(),
@@ -11912,15 +11527,6 @@ public class ObjectStore implements RawStore, Configurable {
      }
      return ret;
    }
-
-  @Override
-  public List<SQLForeignKey> getForeignKeys(String catName, String parent_db_name, String parent_tbl_name,
-      String foreign_db_name, String foreign_tbl_name) throws MetaException {
-    ForeignKeysRequest request =
-        new ForeignKeysRequest(parent_db_name, parent_tbl_name, foreign_db_name, foreign_tbl_name);
-    request.setCatName(catName);
-    return getForeignKeys(request);
-  }
 
   @Override
   public List<SQLForeignKey> getForeignKeys(ForeignKeysRequest request) throws MetaException {
@@ -12057,13 +11663,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<SQLUniqueConstraint> getUniqueConstraints(String catName, String db_name, String tbl_name)
-      throws MetaException {
-    UniqueConstraintsRequest request = new UniqueConstraintsRequest(catName, db_name, tbl_name);
-    return getUniqueConstraints(request);
-  }
-
-  @Override
   public List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException {
     try {
       return getUniqueConstraintsInternal(request.getCatName(),
@@ -12128,13 +11727,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<SQLNotNullConstraint> getNotNullConstraints(String catName, String db_name, String tbl_name)
-      throws MetaException {
-    NotNullConstraintsRequest request = new NotNullConstraintsRequest(catName, db_name, tbl_name);
-    return getNotNullConstraints(request);
-  }
-
-  @Override
   public List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException {
     try {
       return getNotNullConstraintsInternal(request.getCatName(),request.getDb_name(),request.getTbl_name(), true, true);
@@ -12144,26 +11736,12 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<SQLDefaultConstraint> getDefaultConstraints(String catName, String db_name, String tbl_name)
-      throws MetaException {
-     DefaultConstraintsRequest request = new DefaultConstraintsRequest(catName, db_name, tbl_name);
-     return getDefaultConstraints(request);
-  }
-
-  @Override
   public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException {
     try {
       return getDefaultConstraintsInternal(request.getCatName(),request.getDb_name(),request.getTbl_name(), true, true);
     } catch (NoSuchObjectException e) {
       throw new MetaException(ExceptionUtils.getStackTrace(e));
     }
-  }
-
-  @Override
-  public List<SQLCheckConstraint> getCheckConstraints(String catName, String db_name, String tbl_name)
-      throws MetaException {
-    CheckConstraintsRequest request = new CheckConstraintsRequest(catName, db_name, tbl_name);
-    return  getCheckConstraints(request);
   }
 
   @Override
@@ -12345,22 +11923,6 @@ public class ObjectStore implements RawStore, Configurable {
 
   /**
    * Api to fetch all constraints at once
-   * @param catName catalog name
-   * @param dbName database name
-   * @param tblName table name
-   * @return list of all constraint for a given table
-   * @throws MetaException
-   */
-  @Override
-  @Deprecated
-  public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
-      throws MetaException,NoSuchObjectException {
-    AllTableConstraintsRequest request = new AllTableConstraintsRequest(dbName,tblName,catName);
-    return getAllTableConstraints(request);
-  }
-
-  /**
-   * Api to fetch all constraints at once
    * @param request request object
    * @return all table constraints
    * @throws MetaException
@@ -12375,12 +11937,21 @@ public class ObjectStore implements RawStore, Configurable {
     debugLog("Get all table constraints for the table - " + catName + "." + dbName + "." + tblName
         + " in class ObjectStore.java");
     SQLAllTableConstraints sqlAllTableConstraints = new SQLAllTableConstraints();
-    sqlAllTableConstraints.setPrimaryKeys(getPrimaryKeys(catName, dbName, tblName));
-    sqlAllTableConstraints.setForeignKeys(getForeignKeys(catName, null, null, dbName, tblName));
-    sqlAllTableConstraints.setUniqueConstraints(getUniqueConstraints(catName, dbName, tblName));
-    sqlAllTableConstraints.setDefaultConstraints(getDefaultConstraints(catName, dbName, tblName));
-    sqlAllTableConstraints.setCheckConstraints(getCheckConstraints(catName, dbName, tblName));
-    sqlAllTableConstraints.setNotNullConstraints(getNotNullConstraints(catName, dbName, tblName));
+    PrimaryKeysRequest primaryKeysRequest = new PrimaryKeysRequest(dbName, tblName);
+    primaryKeysRequest.setCatName(catName);
+    sqlAllTableConstraints.setPrimaryKeys(getPrimaryKeys(primaryKeysRequest));
+    ForeignKeysRequest foreignKeysRequest =
+        new ForeignKeysRequest(null, null, dbName, tblName);
+    foreignKeysRequest.setCatName(catName);
+    sqlAllTableConstraints.setForeignKeys(getForeignKeys(foreignKeysRequest));
+    sqlAllTableConstraints.
+        setUniqueConstraints(getUniqueConstraints(new UniqueConstraintsRequest(catName, dbName, tblName)));
+    sqlAllTableConstraints.
+        setDefaultConstraints(getDefaultConstraints(new DefaultConstraintsRequest(catName, dbName, tblName)));
+    sqlAllTableConstraints.
+        setCheckConstraints(getCheckConstraints(new CheckConstraintsRequest(catName, dbName, tblName)));
+    sqlAllTableConstraints.
+        setNotNullConstraints(getNotNullConstraints(new NotNullConstraintsRequest(catName, dbName, tblName)));
     return sqlAllTableConstraints;
   }
 

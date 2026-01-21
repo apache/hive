@@ -91,7 +91,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.collections.CollectionUtils.isEqualCollection;
+import static org.apache.commons.collections4.CollectionUtils.isEqualCollection;
 import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
 
 /**
@@ -1856,7 +1856,9 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     }
     MetastoreTaskThread houseKeeperService = new AcidHouseKeeperService();
     houseKeeperService.setConf(hiveConf);
-    
+
+    Thread.sleep(MetastoreConf.getTimeVar(hiveConf,
+        MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
     houseKeeperService.run();
     count = TestTxnDbUtil.countQueryAgent(hiveConf,
       "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + tableName + "'");
@@ -1945,6 +1947,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     MetastoreTaskThread houseKeeperService = new AcidHouseKeeperService();
     houseKeeperService.setConf(hiveConf);
 
+    Thread.sleep(MetastoreConf.getTimeVar(hiveConf,
+        MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
     houseKeeperService.run();
     count = TestTxnDbUtil.countQueryAgent(hiveConf,
       "select count(*) from TXN_TO_WRITE_ID where T2W_TABLE = '" + mviewName + "'");

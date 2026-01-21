@@ -18,7 +18,6 @@
 
 package org.apache.hive.jdbc.authorization;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -45,7 +44,6 @@ public class TestJdbcWithSQLAuthorization {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    Class.forName(MiniHS2.getJdbcDriverName());
     HiveConf conf = new HiveConf();
     conf.setVar(ConfVars.HIVE_AUTHORIZATION_MANAGER, SQLStdHiveAuthorizerFactory.class.getName());
     conf.setVar(ConfVars.HIVE_AUTHENTICATOR_MANAGER, SessionStateUserAuthenticator.class.getName());

@@ -17,11 +17,11 @@
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>23</version>
+    <version>35</version>
   </parent>
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>4.2.0-SNAPSHOT</version>
+  <version>4.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive</name>
   <url>https://hive.apache.org</url>
@@ -63,8 +63,8 @@
     <module>iceberg</module>
   </modules>
   <properties>
-    <standalone-metastore.version>4.2.0-SNAPSHOT</standalone-metastore.version>
-    <hive.version.shortname>4.2.0</hive.version.shortname>
+    <standalone-metastore.version>4.3.0-SNAPSHOT</standalone-metastore.version>
+    <hive.version.shortname>4.3.0</hive.version.shortname>
     <!-- Build Properties -->
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
@@ -97,8 +97,6 @@
     <maven.build-helper.plugin.version>3.4.0</maven.build-helper.plugin.version>
     <maven.eclipse.plugin.version>2.10</maven.eclipse.plugin.version>
     <maven.exec.plugin.version>3.1.0</maven.exec.plugin.version>
-    <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
-    <maven.javadoc.plugin.version>3.11.2</maven.javadoc.plugin.version>
     <maven.versions.plugin.version>2.16.0</maven.versions.plugin.version>
     <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
     <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
@@ -122,7 +120,7 @@
     <commons-cli.version>1.5.0</commons-cli.version>
     <commons-codec.version>1.15</commons-codec.version>
     <commons-collections.version>3.2.2</commons-collections.version>
-    <commons-collections4.version>4.1</commons-collections4.version>
+    <commons-collections4.version>4.4</commons-collections4.version>
     <commons-compress.version>1.26.0</commons-compress.version>
     <commons-configuration.version>1.10</commons-configuration.version>
     <commons-exec.version>1.1</commons-exec.version>
@@ -140,7 +138,7 @@
     <guava.version>22.0</guava.version>
     <groovy.version>2.4.21</groovy.version>
     <h2database.version>2.2.220</h2database.version>
-    <hadoop.version>3.4.1</hadoop.version>
+    <hadoop.version>3.4.2</hadoop.version>
     <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
     <hamcrest.version>1.3</hamcrest.version>
     <hbase.version>2.5.6-hadoop3</hbase.version>
@@ -153,8 +151,8 @@
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <httpcomponents.core.version>4.4.13</httpcomponents.core.version>
     <immutables.version>2.9.2</immutables.version>
-    <httpcomponents5.core.version>5.3.1</httpcomponents5.core.version>
-    <httpcomponents5.client.version>5.3.1</httpcomponents5.client.version>
+    <httpcomponents5.core.version>5.3.4</httpcomponents5.core.version>
+    <httpcomponents5.client.version>5.5</httpcomponents5.client.version>
     <ivy.version>2.5.2</ivy.version>
     <jackson.version>2.16.1</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
@@ -173,7 +171,7 @@
     <junit.version>4.13.2</junit.version>
     <junit.jupiter.version>5.13.3</junit.jupiter.version>
     <junit.vintage.version>5.13.3</junit.vintage.version>
-    <kafka.version>2.5.0</kafka.version>
+    <kafka.version>3.9.1</kafka.version>
     <kryo.version>5.5.0</kryo.version>
     <reflectasm.version>1.11.9</reflectasm.version>
     <kudu.version>1.17.0</kudu.version>
@@ -197,18 +195,18 @@
     <!-- used by druid storage handler -->
     <pac4j-saml.version>4.5.8</pac4j-saml.version>
     <paranamer.version>2.8</paranamer.version>
-    <parquet.version>1.15.2</parquet.version>
+    <parquet.version>1.16.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
     <protobuf.version>3.25.5</protobuf.version>
     <protoc-jar-maven-plugin.version>3.11.4</protoc-jar-maven-plugin.version>
     <protoc.path>${env.PROTOC_PATH}</protoc.path>
     <rat.version>0.16.1</rat.version>
-    <roaringbit.version>1.2.1</roaringbit.version>
+    <roaringbit.version>1.3.0</roaringbit.version>
     <stax.version>1.0.1</stax.version>
     <slf4j.version>1.7.30</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
-    <storage-api.version>4.2.0-SNAPSHOT</storage-api.version>
+    <storage-api.version>4.3.0-SNAPSHOT</storage-api.version>
     <tez.version>0.10.5</tez.version>
     <super-csv.version>2.2.0</super-csv.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
@@ -581,7 +579,7 @@
       <dependency>
         <groupId>org.apache.httpcomponents.client5</groupId>
         <artifactId>httpclient5</artifactId>
-        <version>${httpcomponents5.core.version}</version>
+        <version>${httpcomponents5.client.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents.core5</groupId>
@@ -1532,6 +1530,13 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <proc>none</proc>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-eclipse-plugin</artifactId>
           <version>${maven.eclipse.plugin.version}</version>
           <configuration>
@@ -1591,13 +1596,11 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>${maven.compiler.plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>${maven.javadoc.plugin.version}</version>
+          <configuration>
+            <source>${maven.compiler.source}</source>
+            <outputDirectory>${project.build.directory}/site</outputDirectory>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>com.github.os72</groupId>
@@ -1673,6 +1676,7 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
+          <suppressionsLocation>${checkstyle.conf.dir}/suppressions.xml</suppressionsLocation>
           <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
           <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
@@ -1842,6 +1846,7 @@
             <!-- required by a few tests to find the derby jar -->
             <derby.version>${derby.version}</derby.version>
             <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+            <derby.system.durability>test</derby.system.durability>
             <hadoop.bin.path>${hadoop.bin.path}</hadoop.bin.path>
             <!-- required by Hadoop's JobHistory -->
             <hadoop.log.dir>${test.tmp.dir}</hadoop.log.dir>

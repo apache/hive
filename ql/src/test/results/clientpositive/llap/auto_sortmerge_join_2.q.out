@@ -101,7 +101,7 @@ POSTHOOK: Input: default@bucket_big_n3@ds=2008-04-09
 POSTHOOK: Input: default@bucket_small_n3
 POSTHOOK: Input: default@bucket_small_n3@ds=2008-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM (SELECT `key`
 FROM `default`.`bucket_big_n3`
 WHERE `key` IS NOT NULL) AS `t0`
@@ -378,7 +378,7 @@ POSTHOOK: Input: default@bucket_big_n3@ds=2008-04-09
 POSTHOOK: Input: default@bucket_small_n3
 POSTHOOK: Input: default@bucket_small_n3@ds=2008-04-08
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM (SELECT `key`
 FROM `default`.`bucket_big_n3`
 WHERE `key` IS NOT NULL) AS `t0`

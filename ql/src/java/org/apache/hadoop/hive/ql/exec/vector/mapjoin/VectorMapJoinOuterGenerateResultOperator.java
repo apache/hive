@@ -824,6 +824,7 @@ public abstract class VectorMapJoinOuterGenerateResultOperator
     case SHORT:
     case INT:
     case LONG:
+    case DATE:
       generateFullOuterLongKeySmallTableNoMatches();
       break;
     case STRING:

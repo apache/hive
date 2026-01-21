@@ -23,11 +23,14 @@ import java.nio.file.Path;
 import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStorePreEventListener;
 import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizerFactory;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.HiveMetaStoreAuthorizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +70,11 @@ public class RESTCatalogServer {
     conf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, externalPath);
 
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.SCHEMA_INFO_CLASS, schemaInfoClass.getCanonicalName());
+
+    MetastoreConf.setClass(conf, ConfVars.HIVE_AUTHORIZATION_MANAGER, MockHiveAuthorizerFactory.class,
+        HiveAuthorizerFactory.class);
+    MetastoreConf.setClass(conf, ConfVars.PRE_EVENT_LISTENERS, HiveMetaStoreAuthorizer.class,
+        MetaStorePreEventListener.class);
 
     for (int i = 0; i < MetaStoreTestUtils.RETRY_COUNT; i++) {
       try {

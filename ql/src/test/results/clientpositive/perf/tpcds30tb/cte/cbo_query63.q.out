@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$2], sort2=[$1], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
-  HiveProject((tok_table_or_col i_manager_id)=[$0], (tok_function sum (tok_table_or_col ss_sales_price))=[$1], avg_window_0=[$2])
+  HiveProject(tmp1.i_manager_id=[$0], tmp1.sum_sales=[$1], tmp1.avg_monthly_sales=[$2])
     HiveFilter(condition=[CASE(>($2, 0:DECIMAL(1, 0)), >(/(ABS(-($1, $2)), $2), 0.1:DECIMAL(1, 1)), false)])
       HiveProject((tok_table_or_col i_manager_id)=[$0], (tok_function sum (tok_table_or_col ss_sales_price))=[$2], avg_window_0=[avg($2) OVER (PARTITION BY $0 ORDER BY $0 NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
         HiveProject(i_manager_id=[$0], d_moy=[$1], $f2=[$2])

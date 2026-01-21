@@ -304,9 +304,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveFilter(condition=[IN($1, _UTF-16LE'a         ', _UTF-16LE'bb        ', _UTF-16LE'aa        ', _UTF-16LE'bbb       ', _UTF-16LE'ab        ', _UTF-16LE'ba        ', _UTF-16LE'aaa       ', _UTF-16LE'bbb       ', _UTF-16LE'abc       ', _UTF-16LE'bc        ', _UTF-16LE'ac        ', _UTF-16LE'bca       ', _UTF-16LE'cab       ', _UTF-16LE'cb        ', _UTF-16LE'ca        ', _UTF-16LE'cbc       ', _UTF-16LE'z         ')])
-    HiveTableScan(table=[[default, ax]], table:alias=[ax])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveFilter(condition=[IN($1, _UTF-16LE'a         ', _UTF-16LE'bb        ', _UTF-16LE'aa        ', _UTF-16LE'bbb       ', _UTF-16LE'ab        ', _UTF-16LE'ba        ', _UTF-16LE'aaa       ', _UTF-16LE'bbb       ', _UTF-16LE'abc       ', _UTF-16LE'bc        ', _UTF-16LE'ac        ', _UTF-16LE'bca       ', _UTF-16LE'cab       ', _UTF-16LE'cb        ', _UTF-16LE'ca        ', _UTF-16LE'cbc       ', _UTF-16LE'z         ')])
+      HiveTableScan(table=[[default, ax]], table:alias=[ax])
 
 PREHOOK: query: explain select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')
@@ -387,9 +388,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ax
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveFilter(condition=[IN($1, _UTF-16LE'a', _UTF-16LE'aa', _UTF-16LE'aaa', _UTF-16LE'ab', _UTF-16LE'abc', _UTF-16LE'ac', _UTF-16LE'ba', _UTF-16LE'bb', _UTF-16LE'bbb', _UTF-16LE'bc', _UTF-16LE'bca', _UTF-16LE'ca', _UTF-16LE'cab', _UTF-16LE'cb', _UTF-16LE'cbc', _UTF-16LE'z')])
-    HiveTableScan(table=[[default, ax]], table:alias=[ax])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveFilter(condition=[IN($1, _UTF-16LE'a', _UTF-16LE'aa', _UTF-16LE'aaa', _UTF-16LE'ab', _UTF-16LE'abc', _UTF-16LE'ac', _UTF-16LE'ba', _UTF-16LE'bb', _UTF-16LE'bbb', _UTF-16LE'bc', _UTF-16LE'bca', _UTF-16LE'ca', _UTF-16LE'cab', _UTF-16LE'cb', _UTF-16LE'cbc', _UTF-16LE'z')])
+      HiveTableScan(table=[[default, ax]], table:alias=[ax])
 
 PREHOOK: query: explain select count(*) from ax where t in
 ('a','bb','aa','bbb','ab','ba','aaa','bbb','abc','bc','ac','bca','cab','cb','ca','cbc','z')

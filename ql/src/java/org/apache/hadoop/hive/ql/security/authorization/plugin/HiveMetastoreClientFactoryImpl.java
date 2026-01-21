@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.Private;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -29,11 +30,17 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 @Private
 public class HiveMetastoreClientFactoryImpl implements HiveMetastoreClientFactory{
 
+  private final HiveConf hiveConf;
+
+  public HiveMetastoreClientFactoryImpl(HiveConf conf) {
+    this.hiveConf = conf;
+  }
+
   @Override
   public IMetaStoreClient getHiveMetastoreClient() throws HiveAuthzPluginException {
     String errMsg = "Error getting metastore client";
     try {
-      return Hive.get().getMSC();
+      return Hive.get(hiveConf, false).getMSC();
     } catch (MetaException e) {
       throw new HiveAuthzPluginException(errMsg, e);
     } catch (HiveException e) {

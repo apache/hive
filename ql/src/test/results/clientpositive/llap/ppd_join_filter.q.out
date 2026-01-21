@@ -28,7 +28,7 @@ on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t4`.`k2` AS `b.k2`, `t4`.`k3` AS `b.k3`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`
@@ -273,7 +273,7 @@ on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t4`.`k2` AS `b.k2`, `t4`.`k3` AS `b.k3`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`
@@ -518,7 +518,7 @@ on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t4`.`k2` AS `b.k2`, `t4`.`k3` AS `b.k3`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`
@@ -762,7 +762,7 @@ on a.key=b.key and b.k1 < 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `t0`.`key`, `t4`.`k2`, `t4`.`k3`
+OPTIMIZED SQL: SELECT `t0`.`key` AS `a.key`, `t4`.`k2` AS `b.k2`, `t4`.`k3` AS `b.k3`
 FROM (SELECT `key`
 FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t0`

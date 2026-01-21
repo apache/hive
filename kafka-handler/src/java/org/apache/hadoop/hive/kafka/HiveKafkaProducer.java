@@ -33,6 +33,7 @@ import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.ProducerFencedException;
+import org.apache.kafka.common.Uuid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +66,11 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
   HiveKafkaProducer(Properties properties) {
     transactionalId = properties.getProperty(ProducerConfig.TRANSACTIONAL_ID_CONFIG);
     kafkaProducer = new KafkaProducer<>(properties);
+  }
+
+  @Override
+  public Uuid clientInstanceId(Duration timeout) {
+    throw new UnsupportedOperationException();
   }
 
   @Override public void initTransactions() {
@@ -138,11 +144,11 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
 
     Object transactionManager = getValue(kafkaProducer, "transactionManager");
 
-    Object topicPartitionBookkeeper = getValue(transactionManager, "topicPartitionBookkeeper");
+    Object txnPartitionMap = getValue(transactionManager, "txnPartitionMap");
     invoke(transactionManager,
         "transitionTo",
         getEnum("org.apache.kafka.clients.producer.internals.TransactionManager$State.INITIALIZING"));
-    invoke(topicPartitionBookkeeper, "reset");
+    invoke(txnPartitionMap, "reset");
     Object producerIdAndEpoch = getValue(transactionManager, "producerIdAndEpoch");
     setValue(producerIdAndEpoch, "producerId", producerId);
     setValue(producerIdAndEpoch, "epoch", epoch);
@@ -189,14 +195,35 @@ class HiveKafkaProducer<K, V> implements Producer<K, V> {
 
   private synchronized TransactionalRequestResult enqueueNewPartitions() {
     Object transactionManager = getValue(kafkaProducer, "transactionManager");
-    Object txnRequestHandler = invoke(transactionManager, "addPartitionsToTransactionHandler");
-    invoke(transactionManager,
-        "enqueueRequest",
-        new Class[] {txnRequestHandler.getClass().getSuperclass()},
-        new Object[] {txnRequestHandler});
-    return (TransactionalRequestResult) getValue(txnRequestHandler,
-        txnRequestHandler.getClass().getSuperclass(),
-        "result");
+    synchronized (transactionManager) {
+      Object newPartitionsInTransaction =
+              getValue(transactionManager, "newPartitionsInTransaction");
+      Object newPartitionsInTransactionIsEmpty =
+              invoke(newPartitionsInTransaction, "isEmpty");
+      TransactionalRequestResult result;
+      if (newPartitionsInTransactionIsEmpty instanceof Boolean
+              && !((Boolean) newPartitionsInTransactionIsEmpty)) {
+        Object txnRequestHandler =
+                invoke(transactionManager, "addPartitionsToTransactionHandler");
+        invoke(
+                transactionManager,
+                "enqueueRequest",
+                new Class[]{txnRequestHandler.getClass().getSuperclass()},
+                new Object[]{txnRequestHandler});
+
+        result = (TransactionalRequestResult)
+                getValue(
+                        txnRequestHandler,
+                        txnRequestHandler.getClass().getSuperclass(),
+                        "result");
+      } else {
+        // we don't have an operation but this operation string is also used in
+        // addPartitionsToTransactionHandler.
+        result = new TransactionalRequestResult("AddPartitionsToTxn");
+        result.done();
+      }
+      return result;
+    }
   }
 
   @SuppressWarnings("unchecked") private static Enum<?> getEnum(String enumFullName) {

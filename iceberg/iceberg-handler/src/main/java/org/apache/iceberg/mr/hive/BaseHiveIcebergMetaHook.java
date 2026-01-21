@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.misc.sortoder.ZOrderFields;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.iceberg.BaseMetastoreTableOperations;
-import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -57,12 +56,14 @@ import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableUtil;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.exceptions.NotFoundException;
-import org.apache.iceberg.hive.CatalogUtils;
 import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.HiveSchemaUtil;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
+import org.apache.iceberg.hive.IcebergTableProperties;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
@@ -94,7 +95,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
   protected final Configuration conf;
   protected Table icebergTable = null;
-  protected Properties catalogProperties;
+  protected Properties tableProperties;
   protected boolean createHMSTableInHook = false;
 
   public enum FileFormat {
@@ -127,14 +128,14 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable.isTemporary()) {
       throw new UnsupportedOperationException("Creation of temporary iceberg tables is not supported.");
     }
-    this.catalogProperties = CatalogUtils.getCatalogProperties(hmsTable);
+    this.tableProperties = IcebergTableProperties.getTableProperties(hmsTable, conf);
 
     // Set the table type even for non HiveCatalog based tables
     hmsTable.getParameters().put(BaseMetastoreTableOperations.TABLE_TYPE_PROP,
         BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.toUpperCase());
 
-    if (!Catalogs.hiveCatalog(conf, catalogProperties)) {
-      if (Boolean.parseBoolean(this.catalogProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
+    if (!Catalogs.hiveCatalog(conf, tableProperties)) {
+      if (Boolean.parseBoolean(this.tableProperties.getProperty(hive_metastoreConstants.TABLE_IS_CTLT))) {
         throw new UnsupportedOperationException("CTLT target table must be a HiveCatalog table.");
       }
       // For non-HiveCatalog tables too, we should set the input and output format
@@ -144,15 +145,15 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
 
       // If not using HiveCatalog check for existing table
       try {
-        this.icebergTable = IcebergTableUtil.getTable(conf, catalogProperties, true);
+        this.icebergTable = IcebergTableUtil.getTable(conf, tableProperties, true);
 
-        if (CatalogUtils.hadoopCatalog(conf, catalogProperties) && hmsTable.getSd() != null &&
+        if (IcebergCatalogProperties.hadoopCatalog(conf, tableProperties) && hmsTable.getSd() != null &&
                 hmsTable.getSd().getLocation() == null) {
           hmsTable.getSd().setLocation(icebergTable.location());
         }
-        Preconditions.checkArgument(catalogProperties.getProperty(InputFormatConfig.TABLE_SCHEMA) == null,
+        Preconditions.checkArgument(tableProperties.getProperty(InputFormatConfig.TABLE_SCHEMA) == null,
             "Iceberg table already created - can not use provided schema");
-        Preconditions.checkArgument(catalogProperties.getProperty(InputFormatConfig.PARTITION_SPEC) == null,
+        Preconditions.checkArgument(tableProperties.getProperty(InputFormatConfig.PARTITION_SPEC) == null,
             "Iceberg table already created - can not use provided partition specification");
 
         LOG.info("Iceberg table already exists {}", icebergTable);
@@ -171,7 +172,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
             primaryKeys.stream().map(SQLPrimaryKey::getColumn_name).collect(Collectors.toSet()))
         .orElse(Collections.emptySet());
 
-    Schema schema = schema(catalogProperties, hmsTable, identifierFields, request.getDefaultConstraints());
+    Schema schema = schema(tableProperties, hmsTable, identifierFields, request.getDefaultConstraints());
     PartitionSpec spec = spec(conf, schema, hmsTable);
 
     // If there are partition keys specified remove them from the HMS table and add them to the column list
@@ -180,9 +181,9 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
       hmsTable.setPartitionKeysIsSet(false);
     }
 
-    catalogProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema));
+    tableProperties.put(InputFormatConfig.TABLE_SCHEMA, SchemaParser.toJson(schema));
     String specString = PartitionSpecParser.toJson(spec);
-    catalogProperties.put(InputFormatConfig.PARTITION_SPEC, specString);
+    tableProperties.put(InputFormatConfig.PARTITION_SPEC, specString);
     validateCatalogConfigsDefined();
 
     if (request.getEnvContext() == null) {
@@ -195,13 +196,13 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
       createHMSTableInHook = true;
     }
 
-    assertFileFormat(catalogProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
+    assertFileFormat(tableProperties.getProperty(TableProperties.DEFAULT_FILE_FORMAT));
 
     // Set whether the format is ORC, to be used during vectorization.
     setOrcOnlyFilesParam(hmsTable);
     // Remove hive primary key columns from table request, as iceberg doesn't support hive primary key.
     request.setPrimaryKeys(null);
-    setSortOrder(hmsTable, schema, catalogProperties);
+    setSortOrder(hmsTable, schema, tableProperties);
   }
 
   /**
@@ -214,11 +215,11 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
    *
    */
   private void validateCatalogConfigsDefined() {
-    String catalogName = catalogProperties.getProperty(InputFormatConfig.CATALOG_NAME);
+    String catalogName = tableProperties.getProperty(InputFormatConfig.CATALOG_NAME);
     if (!StringUtils.isEmpty(catalogName) && !Catalogs.ICEBERG_HADOOP_TABLE_NAME.equals(catalogName)) {
 
-      boolean configsExist = !StringUtils.isEmpty(CatalogUtils.getCatalogType(conf, catalogName)) ||
-          !StringUtils.isEmpty(CatalogUtils.getCatalogImpl(conf, catalogName));
+      boolean configsExist = !StringUtils.isEmpty(IcebergCatalogProperties.getCatalogType(conf, catalogName)) ||
+          !StringUtils.isEmpty(IcebergCatalogProperties.getCatalogImpl(conf, catalogName));
 
       Preconditions.checkArgument(configsExist, "Catalog type or impl must be set for catalog: %s", catalogName);
     }
@@ -343,12 +344,12 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected void setCommonHmsTablePropertiesForIceberg(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    if (CatalogUtils.isHadoopTable(conf, catalogProperties)) {
+    if (IcebergCatalogProperties.isHadoopTable(conf, tableProperties)) {
       String location = (hmsTable.getSd() != null) ? hmsTable.getSd().getLocation() : null;
-      if (location == null && CatalogUtils.hadoopCatalog(conf, catalogProperties)) {
+      if (location == null && IcebergCatalogProperties.hadoopCatalog(conf, tableProperties)) {
         location = IcebergTableUtil.defaultWarehouseLocation(
             TableIdentifier.of(hmsTable.getDbName(), hmsTable.getTableName()),
-            conf, catalogProperties);
+            conf, tableProperties);
         hmsTable.getSd().setLocation(location);
       }
       Preconditions.checkArgument(location != null, "Table location not set");
@@ -428,25 +429,26 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
   }
 
   protected boolean isOrcOnlyFiles(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
-    return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) &&
-        (hmsTable.getSd().getInputFormat() != null &&
-            hmsTable.getSd().getInputFormat().toUpperCase().contains(org.apache.iceberg.FileFormat.ORC.name()) ||
-            org.apache.iceberg.FileFormat.ORC.name()
-                .equalsIgnoreCase(hmsTable.getSd().getSerdeInfo().getParameters()
-                    .get(TableProperties.DEFAULT_FILE_FORMAT)) ||
-            org.apache.iceberg.FileFormat.ORC.name()
-                .equalsIgnoreCase(hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT)));
+    return !"FALSE".equalsIgnoreCase(hmsTable.getParameters().get(ORC_FILES_ONLY)) && isOrcFileFormat(hmsTable);
+  }
+
+  static boolean isOrcFileFormat(org.apache.hadoop.hive.metastore.api.Table hmsTable) {
+    return hmsTable.getSd().getInputFormat() != null && hmsTable.getSd().getInputFormat().toUpperCase()
+        .contains(org.apache.iceberg.FileFormat.ORC.name()) || org.apache.iceberg.FileFormat.ORC.name()
+        .equalsIgnoreCase(hmsTable.getSd().getSerdeInfo().getParameters().get(TableProperties.DEFAULT_FILE_FORMAT)) ||
+        org.apache.iceberg.FileFormat.ORC.name()
+        .equalsIgnoreCase(hmsTable.getParameters().get(TableProperties.DEFAULT_FILE_FORMAT));
   }
 
   protected void setWriteModeDefaults(Table icebergTbl, Map<String, String> newProps, EnvironmentContext context) {
-    if ((icebergTbl == null || ((BaseTable) icebergTbl).operations().current().formatVersion() == 1) &&
+    if ((icebergTbl == null || TableUtil.formatVersion(icebergTbl) == 1) &&
         IcebergTableUtil.isV2TableOrAbove(newProps)) {
       List<String> writeModeList = ImmutableList.of(
           TableProperties.DELETE_MODE, TableProperties.UPDATE_MODE, TableProperties.MERGE_MODE);
       writeModeList.stream()
-          .filter(writeMode -> catalogProperties.get(writeMode) == null)
+          .filter(writeMode -> tableProperties.get(writeMode) == null)
           .forEach(writeMode -> {
-            catalogProperties.put(writeMode, MERGE_ON_READ.modeName());
+            tableProperties.put(writeMode, MERGE_ON_READ.modeName());
             newProps.put(writeMode, MERGE_ON_READ.modeName());
           });
 
@@ -471,7 +473,7 @@ public class BaseHiveIcebergMetaHook implements HiveMetaHook {
     if (hmsTable != null) {
       try {
         Table tbl = IcebergTableUtil.getTable(conf, hmsTable);
-        String formatVersion = String.valueOf(((BaseTable) tbl).operations().current().formatVersion());
+        String formatVersion = String.valueOf(TableUtil.formatVersion(tbl));
         hmsTable.getParameters().put(TableProperties.FORMAT_VERSION, formatVersion);
         // Set the serde info
         hmsTable.getSd().setInputFormat(HiveIcebergInputFormat.class.getName());

@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.ddl.database.desc;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
@@ -46,12 +48,14 @@ public class DescDatabaseAnalyzer extends BaseSemanticAnalyzer {
 
     ctx.setResFile(ctx.getLocalTmpPath());
 
-    String databaseName = stripQuotes(root.getChild(0).getText());
+    Pair<String, String> catDbNamePair = DDLUtils.getCatDbNamePair((ASTNode) root.getChild(0));
+    String catName = catDbNamePair.getLeft();
+    String dbName = catDbNamePair.getRight();
     boolean isExtended = root.getChildCount() == 2;
 
-    inputs.add(new ReadEntity(getDatabase(databaseName)));
+    inputs.add(new ReadEntity(getDatabase(catName, dbName, true)));
 
-    DescDatabaseDesc desc = new DescDatabaseDesc(ctx.getResFile(), databaseName, isExtended);
+    DescDatabaseDesc desc = new DescDatabaseDesc(ctx.getResFile(), catName, dbName, isExtended);
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 

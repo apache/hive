@@ -1,6 +1,6 @@
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
-  HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], i_product_name=[$3], d_year=[$4], d_qoy=[$5], d_moy=[$6], s_store_id=[$7], sumsales=[$8], rank_window_0=[$9])
+  HiveProject(dw2.i_category=[$0], dw2.i_class=[$1], dw2.i_brand=[$2], dw2.i_product_name=[$3], dw2.d_year=[$4], dw2.d_qoy=[$5], dw2.d_moy=[$6], dw2.s_store_id=[$7], dw2.sumsales=[$8], dw2.rk=[$9])
     HiveFilter(condition=[<=($9, 100)])
       HiveProject(i_category=[$6], i_class=[$5], i_brand=[$4], i_product_name=[$7], d_year=[$0], d_qoy=[$2], d_moy=[$1], s_store_id=[$3], sumsales=[$8], rank_window_0=[rank() OVER (PARTITION BY $6 ORDER BY $8 DESC NULLS FIRST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
         HiveProject(d_year=[$0], d_moy=[$1], d_qoy=[$2], s_store_id=[$3], i_brand=[$4], i_class=[$5], i_category=[$6], i_product_name=[$7], $f8=[$8])

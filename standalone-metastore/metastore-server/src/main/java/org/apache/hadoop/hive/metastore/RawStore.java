@@ -23,9 +23,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
@@ -116,7 +116,6 @@ import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.model.MTable;
-import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
@@ -338,6 +337,19 @@ public interface RawStore extends Configurable {
       throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
 
   /**
+   * Drop all partitions from the table, and return the partition's location that not a child of baseLocationToNotShow,
+   * when the baseLocationToNotShow is not null.
+   * @param table the table to drop partitions from
+   * @param baseLocationToNotShow Partition locations which are child of this path are omitted
+   * @param message postgres of this drop
+   * @return list of partition locations outside baseLocationToNotShow
+   * @throws MetaException something went wrong, usually in the RDBMS or storage
+   * @throws InvalidInputException unable to drop all partitions due to the invalid input
+   */
+  List<String> dropAllPartitionsAndGetLocations(TableName table, String baseLocationToNotShow, AtomicReference<String> message)
+      throws MetaException, InvalidInputException, NoSuchObjectException, InvalidObjectException;
+
+  /**
    * Get a table object.
    * @param catalogName catalog the table is in.
    * @param dbName database the table is in.
@@ -399,23 +411,6 @@ public interface RawStore extends Configurable {
       throws InvalidObjectException, MetaException;
 
   /**
-   * @deprecated use {@link #addPartitions(String, String, String, List)} instead.
-   * @param catName catalog name.
-   * @param dbName database name.
-   * @param tblName table name.
-   * @param partitionSpec specification for the partition
-   * @param ifNotExists whether it is in an error if the partition already exists.  If true, then
-   *                   it is not an error if the partition exists, if false, it is.
-   * @return whether the partition was created.
-   * @throws InvalidObjectException The passed in partition spec or table specification is invalid.
-   * @throws MetaException error writing to RDBMS.
-   */
-  @Deprecated
-  boolean addPartitions(String catName, String dbName, String tblName,
-                        PartitionSpecProxy partitionSpec, boolean ifNotExists)
-      throws InvalidObjectException, MetaException;
-
-  /**
    * Get a partition.
    * @param catName catalog name.
    * @param dbName database name.
@@ -463,23 +458,6 @@ public interface RawStore extends Configurable {
    * @param catName catalog name.
    * @param dbName database name.
    * @param tableName table name.
-   * @param part_vals list of partition values.
-   * @return true if the partition was dropped.
-   * @throws MetaException Error accessing the RDBMS.
-   * @throws NoSuchObjectException no partition matching this description exists
-   * @throws InvalidObjectException error dropping the statistics for the partition
-   * @throws InvalidInputException error dropping the statistics for the partition
-   */
-  @Deprecated
-  boolean dropPartition(String catName, String dbName, String tableName,
-      List<String> part_vals) throws MetaException, NoSuchObjectException, InvalidObjectException,
-      InvalidInputException;
-
-  /**
-   * Drop a partition.
-   * @param catName catalog name.
-   * @param dbName database name.
-   * @param tableName table name.
    * @param partName partition name.
    * @return true if the partition was dropped.
    * @throws MetaException Error accessing the RDBMS.
@@ -489,23 +467,6 @@ public interface RawStore extends Configurable {
    */
   boolean dropPartition(String catName, String dbName, String tableName, String partName)
       throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException;
-
-  /**
-   * Get some or all partitions for a table.
-   * @param catName catalog name.
-   * @param dbName database name.
-   * @param tableName table name
-   * @param max maximum number of partitions, or -1 to get all partitions.
-   * @return list of partitions
-   * @throws MetaException error access the RDBMS.
-   * @throws NoSuchObjectException no such table exists
-   */
-  @Deprecated
-  default List<Partition> getPartitions(String catName, String dbName,
-      String tableName, int max) throws MetaException, NoSuchObjectException {
-    return getPartitions(catName, dbName, tableName, new GetPartitionsArgs
-        .GetPartitionsArgsBuilder().max(max).build());
-  }
 
   /**
    * Get some or all partitions for a table.
@@ -772,27 +733,6 @@ public interface RawStore extends Configurable {
    * @param catName catalog name
    * @param dbName database name
    * @param tblName table name
-   * @param filter SQL where clause filter
-   * @param maxParts maximum number of partitions to return, or -1 for all.
-   * @return list of partition objects matching the criteria
-   * @throws MetaException Error accessing the RDBMS or processing the filter.
-   * @throws NoSuchObjectException no such table.
-   */
-  @Deprecated
-  default List<Partition> getPartitionsByFilter(
-     String catName, String dbName, String tblName, String filter, short maxParts)
-     throws MetaException, NoSuchObjectException {
-    return getPartitionsByFilter(catName, dbName, tblName, new GetPartitionsArgs
-        .GetPartitionsArgsBuilder()
-        .filter(filter).max(maxParts)
-        .build());
-  }
-
-  /**
-   * Get partitions with a filter.  This is a portion of the SQL where clause.
-   * @param catName catalog name
-   * @param dbName database name
-   * @param tblName table name
    * @param args additional arguments for getting partitions
    * @return list of partition objects matching the criteria
    * @throws MetaException Error accessing the RDBMS or processing the filter.
@@ -833,27 +773,6 @@ public interface RawStore extends Configurable {
   List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
                                                          GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException;
-  /**
-   * Get partitions using an already parsed expression.
-   * @param catName catalog name.
-   * @param dbName database name
-   * @param tblName table name
-   * @param expr an already parsed Hive expression
-   * @param defaultPartitionName default name of a partition
-   * @param maxParts maximum number of partitions to return, or -1 for all
-   * @param result list to place resulting partitions in
-   * @return true if the result contains unknown partitions.
-   * @throws TException error executing the expression
-   */
-  @Deprecated
-  default boolean getPartitionsByExpr(String catName, String dbName, String tblName,
-       byte[] expr, String defaultPartitionName, short maxParts, List<Partition> result)
-       throws TException {
-    return getPartitionsByExpr(catName, dbName, tblName, result, new GetPartitionsArgs
-        .GetPartitionsArgsBuilder()
-        .expr(expr).defaultPartName(defaultPartitionName).max(maxParts)
-        .build());
-  }
 
   /**
    * Get partitions using an already parsed expression.
@@ -880,20 +799,6 @@ public interface RawStore extends Configurable {
    */
   int getNumPartitionsByFilter(String catName, String dbName, String tblName, String filter)
     throws MetaException, NoSuchObjectException;
-
-  /**
-   * Get the number of partitions that match an already parsed expression.
-   * @param catName catalog name.
-   * @param dbName database name.
-   * @param tblName table name.
-   * @param expr an already parsed Hive expression
-   * @return number of matching partitions.
-   * @throws MetaException error accessing the RDBMS or working with the expression.
-   * @throws NoSuchObjectException no such table.
-   */
-  @Deprecated
-  int getNumPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr)
-      throws MetaException, NoSuchObjectException;
 
   /**
    * Get the number of partitions that match a given partial specification.
@@ -1137,7 +1042,6 @@ public interface RawStore extends Configurable {
    */
   List<RolePrincipalGrant> listRoleMembers(String roleName);
 
-
   /**
    * Fetch a partition along with privilege information for a particular user.
    * @param catName catalog name.
@@ -1154,30 +1058,6 @@ public interface RawStore extends Configurable {
   Partition getPartitionWithAuth(String catName, String dbName, String tblName,
       List<String> partVals, String user_name, List<String> group_names)
       throws MetaException, NoSuchObjectException, InvalidObjectException;
-
-  /**
-   * Fetch some or all partitions for a table, along with privilege information for a particular
-   * user.
-   * @param catName catalog name.
-   * @param dbName database name.
-   * @param tblName table name.
-   * @param maxParts maximum number of partitions to fetch, -1 for all partitions.
-   * @param userName user to get privilege information for.
-   * @param groupNames groups to get privilege information for.
-   * @return list of partitions.
-   * @throws MetaException error access the RDBMS.
-   * @throws NoSuchObjectException no such table exists
-   * @throws InvalidObjectException error fetching privilege information.
-   */
-  @Deprecated
-  default List<Partition> getPartitionsWithAuth(String catName, String dbName,
-       String tblName, short maxParts, String userName, List<String> groupNames)
-       throws MetaException, NoSuchObjectException, InvalidObjectException {
-    return listPartitionsPsWithAuth(catName, dbName, tblName,
-        new GetPartitionsArgs.GetPartitionsArgsBuilder()
-            .max(maxParts).userName(userName).groupNames(groupNames)
-            .build());
-  }
 
   /**
    * Lists partition names that match a given partial specification
@@ -1198,38 +1078,6 @@ public interface RawStore extends Configurable {
   List<String> listPartitionNamesPs(String catName, String db_name, String tbl_name,
       List<String> part_vals, short max_parts)
       throws MetaException, NoSuchObjectException;
-
-  /**
-   * Lists partitions that match a given partial specification and sets their auth privileges.
-   *   If userName and groupNames null, then no auth privileges are set.
-   * @param catName catalog name.
-   * @param db_name
-   *          The name of the database which has the partitions
-   * @param tbl_name
-   *          The name of the table which has the partitions
-   * @param part_vals
-   *          A partial list of values for partitions in order of the table's partition keys
-   *          Entries can be empty if you need to specify latter partitions.
-   * @param max_parts
-   *          The maximum number of partitions to return
-   * @param userName
-   *          The user name for the partition for authentication privileges
-   * @param groupNames
-   *          The groupNames for the partition for authentication privileges
-   * @return A list of partitions that match the partial spec.
-   * @throws MetaException error access RDBMS
-   * @throws NoSuchObjectException No such table exists
-   * @throws InvalidObjectException error access privilege information
-   */
-  @Deprecated
-  default List<Partition> listPartitionsPsWithAuth(String catName, String db_name, String tbl_name,
-      List<String> part_vals, short max_parts, String userName, List<String> groupNames)
-      throws MetaException, InvalidObjectException, NoSuchObjectException {
-    return listPartitionsPsWithAuth(catName, db_name, tbl_name, new GetPartitionsArgs
-        .GetPartitionsArgsBuilder()
-        .part_vals(part_vals).max(max_parts).userName(userName).groupNames(groupNames)
-        .build());
-  }
 
   /**
    * Lists partitions that match a given partial specification and sets their auth privileges.
@@ -1260,6 +1108,7 @@ public interface RawStore extends Configurable {
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
 
   /** Persists the given column statistics object to the metastore
+   * @deprecated Use {@link #updatePartitionColumnStatistics(Table, MTable, ColumnStatistics, List, String, long)} instead
    * @param statsObj object to persist
    * @param partVals partition values to persist the stats for
    * @return Boolean indicating the outcome of the operation
@@ -1268,6 +1117,7 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException the stats object is invalid
    * @throws InvalidInputException unable to record the stats for the table
    */
+  @Deprecated
   Map<String, String> updatePartitionColumnStatistics(ColumnStatistics statsObj,
       List<String> partVals, String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
@@ -1378,30 +1228,6 @@ public interface RawStore extends Configurable {
       throws MetaException, NoSuchObjectException;
 
   /**
-   * Deletes column statistics if present associated with a given db, table, partition and col. If
-   * null is passed instead of a colName, stats when present for all columns associated
-   * with a given db, table and partition are deleted.
-   * @param catName catalog name.
-   * @param dbName database name.
-   * @param tableName table name.
-   * @param partName partition name.
-   * @param partVals partition values.
-   * @param colName column name.
-   * @param engine engine for which we want to delete statistics
-   * @return Boolean indicating the outcome of the operation
-   * @throws NoSuchObjectException no such partition
-   * @throws MetaException error access the RDBMS
-   * @throws InvalidObjectException error dropping the stats
-   * @throws InvalidInputException bad input, such as null table or database name.
-   */
-  default boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
-                                                  String partName, List<String> partVals, String colName, String engine)
-          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException{
-    return deletePartitionColumnStatistics(catName, dbName, tableName,
-            Arrays.asList(partName), colName != null ? Arrays.asList(colName) : null, engine);
-  }
-
-  /**
    * Deletes column statistics if present associated with a given db, table, partition and a list of cols. If
    * null is passed instead of a colName, stats when present for all columns associated
    * with a given db, table and partition are deleted.
@@ -1420,25 +1246,6 @@ public interface RawStore extends Configurable {
   boolean deletePartitionColumnStatistics(String catName, String dbName, String tableName,
     List<String> partNames, List<String> colNames, String engine)
     throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException;
-
-  /**
-   * Delete statistics for a single column or all columns in a table.
-   * @param catName catalog name
-   * @param dbName database name
-   * @param tableName table name
-   * @param colName column name.  Null to delete stats for all columns in the table.
-   * @param engine engine for which we want to delete statistics
-   * @return true if the statistics were deleted.
-   * @throws NoSuchObjectException no such table or column.
-   * @throws MetaException error access the RDBMS.
-   * @throws InvalidObjectException error dropping the stats
-   * @throws InvalidInputException bad inputs, such as null table name.
-   */
-  default boolean deleteTableColumnStatistics(String catName, String dbName, String tableName,
-    String colName, String engine)
-    throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    return deleteTableColumnStatistics(catName, dbName, tableName, colName != null ? Arrays.asList(colName) : null, engine);
-  }
 
   /**
    * Delete statistics for a single column, a list of columns or all columns in a table.
@@ -1663,16 +1470,6 @@ public interface RawStore extends Configurable {
    * @return functions that match the pattern
    * @throws MetaException incorrectly specified function
    */
-  @Deprecated
-  List<String> getFunctions(String catName, String dbName, String pattern) throws MetaException;
-
-  /**
-   * Retrieve list of function names based on name pattern.
-   * @param dbName database name
-   * @param pattern pattern to match
-   * @return functions that match the pattern
-   * @throws MetaException incorrectly specified function
-   */
   <T> List<T> getFunctionsRequest(String catName, String dbName, String pattern,
       boolean isReturnNames) throws MetaException;
 
@@ -1763,27 +1560,35 @@ public interface RawStore extends Configurable {
    * Flush any catalog objects held by the metastore implementation.  Note that this does not
    * flush statistics objects.  This should be called at the beginning of each query.
    */
-  void flushCache();
+  default void flushCache() {
+    // NOP as there's no caching
+  }
 
   /**
    * @param fileIds List of file IDs from the filesystem.
    * @return File metadata buffers from file metadata cache. The array is fileIds-sized, and
    *         the entries (or nulls, if metadata is not in cache) correspond to fileIds in the list
    */
-  ByteBuffer[] getFileMetadata(List<Long> fileIds) throws MetaException;
+  default ByteBuffer[] getFileMetadata(List<Long> fileIds) throws MetaException {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * @param fileIds List of file IDs from the filesystem.
    * @param metadata Metadata buffers corresponding to fileIds in the list.
    * @param type The type; determines the class that can do additional processing for metadata.
    */
-  void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata,
-      FileMetadataExprType type) throws MetaException;
+  default void putFileMetadata(List<Long> fileIds, List<ByteBuffer> metadata,
+      FileMetadataExprType type) throws MetaException {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * @return Whether file metadata cache is supported by this implementation.
    */
-  boolean isFileMetadataSupported();
+  default boolean isFileMetadataSupported() {
+    return false;
+  }
 
   /**
    * Gets file metadata from cache after applying a format-specific expression that can
@@ -1798,12 +1603,16 @@ public interface RawStore extends Configurable {
    * @param eliminated Output parameter; fileIds-sized array to receive the indication of whether
    *                   the corresponding files are entirely eliminated by the expression.
    */
-  void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
+  default void getFileMetadataByExpr(List<Long> fileIds, FileMetadataExprType type, byte[] expr,
       ByteBuffer[] metadatas, ByteBuffer[] exprResults, boolean[] eliminated)
-          throws MetaException;
+          throws MetaException {
+    throw new UnsupportedOperationException();
+  }
 
   /** Gets file metadata handler for the corresponding type. */
-  FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type);
+  default FileMetadataHandler getFileMetadataHandler(FileMetadataExprType type) {
+    throw new UnsupportedOperationException();
+  }
 
   /**
    * Gets total number of tables.
@@ -1824,19 +1633,6 @@ public interface RawStore extends Configurable {
   int getDatabaseCount() throws MetaException;
 
   /**
-   * Get the primary associated with a table.  Strangely enough each SQLPrimaryKey is actually a
-   * column in they key, not the key itself.  Thus the list.
-   * @param catName catalog name
-   * @param db_name database name
-   * @param tbl_name table name
-   * @return list of primary key columns or an empty list if the table does not have a primary key
-   * @throws MetaException error accessing the RDBMS
-   */
-  @Deprecated
-  List<SQLPrimaryKey> getPrimaryKeys(String catName, String db_name, String tbl_name)
-      throws MetaException;
-
-  /**
    * SQLPrimaryKey represents a single primary key column.
    * Since a table can have one or more primary keys ( in case of composite primary key ),
    * this method returns List&lt;SQLPrimaryKey&gt;
@@ -1846,24 +1642,6 @@ public interface RawStore extends Configurable {
    */
   List<SQLPrimaryKey> getPrimaryKeys(PrimaryKeysRequest request)
       throws MetaException;
-
-  /**
-   * Get the foreign keys for a table.  All foreign keys for a particular table can be fetched by
-   * passing null for the last two arguments.
-   * @param catName catalog name.
-   * @param parent_db_name Database the table referred to is in.  This can be null to match all
-   *                       databases.
-   * @param parent_tbl_name Table that is referred to.  This can be null to match all tables.
-   * @param foreign_db_name Database the table with the foreign key is in.
-   * @param foreign_tbl_name Table with the foreign key.
-   * @return List of all matching foreign key columns.  Note that if more than one foreign key
-   * matches the arguments the results here will be all mixed together into a single list.
-   * @throws MetaException error access the RDBMS.
-   */
-  @Deprecated
-  List<SQLForeignKey> getForeignKeys(String catName, String parent_db_name,
-    String parent_tbl_name, String foreign_db_name, String foreign_tbl_name)
-    throws MetaException;
 
   /**
    * SQLForeignKey represents a single foreign key column.
@@ -1878,18 +1656,6 @@ public interface RawStore extends Configurable {
       throws MetaException;
 
   /**
-   * Get unique constraints associated with a table.
-   * @param catName catalog name.
-   * @param db_name database name.
-   * @param tbl_name table name.
-   * @return list of unique constraints
-   * @throws MetaException error access the RDBMS.
-   */
-  @Deprecated
-  List<SQLUniqueConstraint> getUniqueConstraints(String catName, String db_name,
-    String tbl_name) throws MetaException;
-
-  /**
    * SQLUniqueConstraint represents a single unique constraint column.
    * Since a table can have one or more unique constraint ( in case of composite unique constraint ),
    * this method returns List&lt;SQLUniqueConstraint&gt;
@@ -1898,18 +1664,6 @@ public interface RawStore extends Configurable {
    * @throws MetaException error access the RDBMS.
    */
   List<SQLUniqueConstraint> getUniqueConstraints(UniqueConstraintsRequest request) throws MetaException;
-
-  /**
-   * Get not null constraints on a table.
-   * @param catName catalog name.
-   * @param db_name database name.
-   * @param tbl_name table name.
-   * @return list of not null constraints
-   * @throws MetaException error accessing the RDBMS.
-   */
-  @Deprecated
-  List<SQLNotNullConstraint> getNotNullConstraints(String catName, String db_name,
-    String tbl_name) throws MetaException;
 
   /**
    * SQLNotNullConstraint represents a single not null constraint column.
@@ -1922,18 +1676,6 @@ public interface RawStore extends Configurable {
   List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException;
 
   /**
-   * Get default values for columns in a table.
-   * @param catName catalog name
-   * @param db_name database name
-   * @param tbl_name table name
-   * @return list of default values defined on the table.
-   * @throws MetaException error accessing the RDBMS
-   */
-  @Deprecated
-  List<SQLDefaultConstraint> getDefaultConstraints(String catName, String db_name,
-                                                   String tbl_name) throws MetaException;
-
-  /**
    * SQLDefaultConstraint represents a single default constraint column.
    * Since a table can have one or more default constraint ( in case of composite default constraint ),
    * this method returns List&lt;SQLDefaultConstraint&gt;
@@ -1944,18 +1686,6 @@ public interface RawStore extends Configurable {
   List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException;
 
   /**
-   * Get check constraints for columns in a table.
-   * @param catName catalog name.
-   * @param db_name database name
-   * @param tbl_name table name
-   * @return ccheck constraints for this table
-   * @throws MetaException error accessing the RDBMS
-   */
-  @Deprecated
-  List<SQLCheckConstraint> getCheckConstraints(String catName, String db_name,
-                                                   String tbl_name) throws MetaException;
-
-  /**
    * SQLCheckConstraint represents a single check constraint column.
    * Since a table can have one or more check constraint ( in case of composite check constraint ),
    * this method returns List&lt;SQLCheckConstraint&gt;
@@ -1964,18 +1694,6 @@ public interface RawStore extends Configurable {
    * @throws MetaException error accessing the RDBMS
    */
   List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException;
-
-  /**
-   * Get all constraints of the table
-   * @param catName catalog name
-   * @param dbName database name
-   * @param tblName table name
-   * @return all constraints for this table
-   * @throws MetaException error accessing the RDBMS
-   */
-  @Deprecated
-  SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
-      throws MetaException, NoSuchObjectException;
 
   /**
    * Get table constraints

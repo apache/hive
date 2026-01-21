@@ -52,7 +52,9 @@ public class CorePerfCliDriver extends CliAdapter {
 
     qt = new QTestUtil(QTestArguments.QTestArgumentsBuilder.instance().withOutDir(cliConfig.getResultsDir())
         .withLogDir(cliConfig.getLogDir()).withClusterType(miniMR).withConfDir(hiveConfDir).withInitScript(initScript)
-        .withCleanupScript(cleanupScript).withLlapIo(false).build());
+        .withCleanupScript(cleanupScript).withLlapIo(false)
+        .withCustomConfigValueMap(cliConfig.getCustomConfigValueMap())
+        .build());
   }
 
   @Override

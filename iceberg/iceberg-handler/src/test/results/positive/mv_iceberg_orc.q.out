@@ -82,7 +82,8 @@ POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveProject(tbl_ice.b=[$0], tbl_ice.c=[$1], tbl_ice_v2.e=[$2])
+  HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 
 PREHOOK: query: insert into tbl_ice values (1, 'one', 50), (2, 'two', 51), (3, 'three', 52), (4, 'four', 53), (5, 'five', 54)
 PREHOOK: type: QUERY
@@ -105,7 +106,7 @@ POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveProject(b=[$1], c=[$2], e=[$4])
+HiveProject(tbl_ice.b=[$1], tbl_ice.c=[$2], tbl_ice_v2.e=[$4])
   HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(a=[$0], b=[$1], c=[$2])
       HiveFilter(condition=[AND(>($2, 52), IS NOT NULL($0))])
@@ -127,7 +128,7 @@ POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: default@mat1
 CBO PLAN:
-HiveProject(b=[$1], c=[$2], e=[$4])
+HiveProject(tbl_ice.b=[$1], tbl_ice.c=[$2], tbl_ice_v2.e=[$4])
   HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(a=[$0], b=[$1], c=[$2])
       HiveFilter(condition=[AND(>($2, 52), IS NOT NULL($0))])
@@ -174,5 +175,6 @@ POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Input: default@tbl_ice_v2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
+HiveProject(tbl_ice.b=[$0], tbl_ice.c=[$1], tbl_ice_v2.e=[$2])
+  HiveTableScan(table=[[default, mat1]], table:alias=[default.mat1])
 

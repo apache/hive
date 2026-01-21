@@ -111,7 +111,7 @@ POSTHOOK: Input: default@cmv_basetable_2_n3
 POSTHOOK: Input: default@cmv_basetable_n6
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0])
+HiveProject(cmv_basetable_n6.a=[$0])
   HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(a=[$0])
       HiveFilter(condition=[IS NOT NULL($0)])
@@ -334,7 +334,7 @@ POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Input: default@cmv_mat_view_n6
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0])
+HiveProject(cmv_basetable_n6.a=[$0])
   HiveFilter(condition=[<(10.1:DECIMAL(3, 1), $1)])
     HiveTableScan(table=[[default, cmv_mat_view_n6]], table:alias=[default.cmv_mat_view_n6])
 
@@ -566,7 +566,7 @@ POSTHOOK: Input: default@cmv_basetable_n6
 POSTHOOK: Input: default@cmv_mat_view_n6
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0])
+HiveProject(cmv_basetable_n6.a=[$0])
   HiveFilter(condition=[<(10.1:DECIMAL(3, 1), $1)])
     HiveTableScan(table=[[default, cmv_mat_view_n6]], table:alias=[default.cmv_mat_view_n6])
 

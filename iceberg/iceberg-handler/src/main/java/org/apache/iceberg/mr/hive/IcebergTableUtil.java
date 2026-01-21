@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.util.Sets;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DeleteFiles;
+import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.ManageSnapshots;
 import org.apache.iceberg.ManifestFile;
@@ -90,7 +91,7 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.ResidualEvaluator;
-import org.apache.iceberg.hive.CatalogUtils;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -440,6 +441,17 @@ public class IcebergTableUtil {
     }
   }
 
+  public static FileFormat defaultFileFormat(Table table) {
+    return defaultFileFormat(table.properties()::getOrDefault);
+  }
+
+  public static FileFormat defaultFileFormat(BinaryOperator<String> props) {
+    return FileFormat.fromString(
+        props.apply(
+            TableProperties.DEFAULT_FILE_FORMAT,
+            TableProperties.DEFAULT_FILE_FORMAT_DEFAULT));
+  }
+
   private static String getWriteModeDefault(BinaryOperator<String> props) {
     return (isV2TableOrAbove(props) ? MERGE_ON_READ : COPY_ON_WRITE).modeName();
   }
@@ -664,7 +676,7 @@ public class IcebergTableUtil {
       Configuration conf, Properties catalogProperties) {
     StringBuilder sb = new StringBuilder();
     String warehouseLocation = conf.get(String.format(
-        CatalogUtils.CATALOG_WAREHOUSE_TEMPLATE, catalogProperties.getProperty(CATALOG_NAME))
+        IcebergCatalogProperties.CATALOG_WAREHOUSE_TEMPLATE, catalogProperties.getProperty(CATALOG_NAME))
     );
     sb.append(warehouseLocation).append('/');
     for (String level : tableIdentifier.namespace().levels()) {

@@ -55,7 +55,7 @@ POSTHOOK: Input: default@l_table
 POSTHOOK: Input: default@r_table
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(string_col=[$0])
+HiveProject(l_table.string_col=[$0])
   HiveJoin(condition=[=($1, $0)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveProject(string_col=[$0])
       HiveFilter(condition=[IN($0, _UTF-16LE'AAA111':VARCHAR(30) CHARACTER SET "UTF-16LE", _UTF-16LE'BBB222':VARCHAR(30) CHARACTER SET "UTF-16LE")])
@@ -98,7 +98,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@r_table
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(string_col=[$0])
+HiveProject(r_table.string_col=[$0])
   HiveFilter(condition=[OR(IS NULL(CAST($0):TIMESTAMP(9)), IN(MINUTE(FLAG(MINUTE), CAST($0):TIMESTAMP(9)), 2, 10))])
     HiveTableScan(table=[[default, r_table]], table:alias=[r_table])
 

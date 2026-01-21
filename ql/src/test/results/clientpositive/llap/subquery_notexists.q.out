@@ -638,7 +638,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(p_name=[$0])
+HiveProject(p1.p_name=[$0])
   HiveAntiJoin(condition=[=($3, $1)], joinType=[anti])
     HiveJoin(condition=[true], joinType=[left], algorithm=[none], cost=[not available])
       HiveProject(p_name=[$1])
@@ -1484,7 +1484,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tschema
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(eid=[_UTF-16LE'empno':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], id=[$0])
+HiveProject(eid=[_UTF-16LE'empno':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], a.id=[$0])
   HiveAggregate(group=[{0}])
     HiveAntiJoin(condition=[=($0, $2)], joinType=[anti])
       HiveProject(id=[$0])

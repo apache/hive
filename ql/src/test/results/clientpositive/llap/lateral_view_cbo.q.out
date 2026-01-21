@@ -17,7 +17,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_table
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(mycol=[$6])
+HiveProject(mytable.mycol=[$6])
   HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
     HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
 
@@ -34,7 +34,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_table
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(mycol=[$6], mycol2=[$7])
+HiveProject(mytable.mycol=[$6], mytable2.mycol2=[$7])
   HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5, $6)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol, INTEGER mytable2.mycol2)])
     HiveProject(col=[$0], array_col=[$1], BLOCK__OFFSET__INSIDE__FILE=[$2], INPUT__FILE__NAME=[$3], ROW__ID=[$4], ROW__IS__DELETED=[$5], mytable.mycol=[$6])
       HiveTableFunctionScan(invocation=[LATERAL(explode(ARRAY(1, 2, 3)), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, INTEGER mytable.mycol)])
@@ -53,7 +53,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_table
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(col1=[$6], col2=[$7], col3=[$8])
+HiveProject(tf.col1=[$6], tf.col2=[$7], tf.col3=[$8])
   HiveTableFunctionScan(invocation=[inline(ARRAY(ROW($0, $1, $2, $3, $4, $5, _UTF-16LE'A':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 10, $0), ROW($0, $1, $2, $3, $4, $5, _UTF-16LE'B':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", 20, $0)))], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) tf.col1, INTEGER tf.col2, VARCHAR(2147483647) tf.col3)])
     HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
 
@@ -68,7 +68,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_table
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(mycol=[$6])
+HiveProject(mytable.mycol=[$6])
   HiveTableFunctionScan(invocation=[LATERAL(explode($1), $0, $1, $2, $3, $4, $5)], rowType=[RecordType(VARCHAR(2147483647) col, VARCHAR(2147483647) ARRAY array_col, BIGINT BLOCK__OFFSET__INSIDE__FILE, VARCHAR(2147483647) INPUT__FILE__NAME, RecordType(BIGINT writeid, INTEGER bucketid, BIGINT rowid) ROW__ID, BOOLEAN ROW__IS__DELETED, VARCHAR(2147483647) mytable.mycol)])
     HiveTableScan(table=[[default, simple_table]], table:alias=[simple_table])
 

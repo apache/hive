@@ -35,39 +35,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 public interface AlterHandler extends Configurable {
 
   /**
-   * @deprecated As of release 2.2.0. Replaced by {@link #alterTable(RawStore, Warehouse, String,
-   * String, String, Table, EnvironmentContext, IHMSHandler, String)}
-   *
-   * handles alter table, the changes could be cascaded to partitions if applicable
-   *
-   * @param msdb
-   *          object to get metadata
-   * @param wh
-   *          Hive Warehouse where table data is stored
-   * @param catName
-   *          catalog of the table being altered
-   * @param dbname
-   *          database of the table being altered
-   * @param name
-   *          original name of the table being altered. same as
-   *          <i>newTable.tableName</i> if alter op is not a rename.
-   * @param newTable
-   *          new table object
-   * @param envContext
-   *          environment context variable
-   * @throws InvalidOperationException
-   *           thrown if the newTable object is invalid
-   * @throws MetaException
-   *           thrown if there is any other error
-   */
-  @Deprecated
-  default void alterTable(RawStore msdb, Warehouse wh, String catName, String dbname,
-    String name, Table newTable, EnvironmentContext envContext)
-      throws InvalidOperationException, MetaException {
-    alterTable(msdb, wh, catName, dbname, name, newTable, envContext, null, null);
-  }
-
-  /**
    * handles alter table, the changes could be cascaded to partitions if applicable
    *
    * @param msdb
@@ -95,37 +62,6 @@ public interface AlterHandler extends Configurable {
       String name, Table newTable, EnvironmentContext envContext,
       IHMSHandler handler,  String writeIdList)
           throws InvalidOperationException, MetaException;
-
-  /**
-   * @deprecated As of release 2.2.0.  Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
-   * String, String, List, EnvironmentContext, String, long, IHMSHandler)}
-   *
-   * handles alter partition
-   *
-   * @param msdb
-   *          object to get metadata
-   * @param wh
-   *          physical warehouse class
-   * @param dbname
-   *          database of the partition being altered
-   * @param name
-   *          table of the partition being altered
-   * @param part_vals
-   *          original values of the partition being altered
-   * @param new_part
-   *          new partition object
-   * @return the altered partition
-   * @throws InvalidOperationException thrown if the operation is invalid
-   * @throws InvalidObjectException thrown if the new_part object is invalid
-   * @throws AlreadyExistsException thrown if the new_part object already exists
-   * @throws MetaException thrown if there is any other error
-   * @throws NoSuchObjectException thrown if there is no such object
-   */
-  @Deprecated
-  Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
-    final String name, final List<String> part_vals, final Partition new_part,
-    EnvironmentContext environmentContext)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException, NoSuchObjectException;
 
   /**
    * handles alter partition
@@ -158,34 +94,6 @@ public interface AlterHandler extends Configurable {
                            final Partition new_part, EnvironmentContext environmentContext,
                            IHMSHandler handler,  String validWriteIds)
       throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException, NoSuchObjectException;
-
-  /**
-   * @deprecated As of release 3.0.0. Replaced by {@link #alterPartitions(RawStore, Warehouse, String,
-   * String, String, List, EnvironmentContext, String, long, IHMSHandler)}
-   *
-   * handles alter partitions
-   *
-   * @param msdb
-   *          object to get metadata
-   * @param wh physical warehouse class
-   * @param dbname
-   *          database of the partition being altered
-   * @param name
-   *          table of the partition being altered
-   * @param new_parts
-   *          new partition list
-   * @param environmentContext environment context variable
-   * @return the altered partition list
-   * @throws InvalidOperationException thrown if the operation is invalid
-   * @throws InvalidObjectException thrown if the new_parts object is invalid
-   * @throws AlreadyExistsException thrown if the new_part object already exists
-   * @throws MetaException thrown if there is any other error
-   */
-  @Deprecated
-  List<Partition> alterPartitions(final RawStore msdb, Warehouse wh,
-    final String dbname, final String name, final List<Partition> new_parts,
-    EnvironmentContext environmentContext)
-      throws InvalidOperationException, InvalidObjectException, AlreadyExistsException, MetaException;
 
   /**
    * handles alter partitions

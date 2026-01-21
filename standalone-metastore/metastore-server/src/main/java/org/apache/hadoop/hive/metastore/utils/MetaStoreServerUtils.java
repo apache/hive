@@ -60,14 +60,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.ListUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.repl.ReplConst;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.ExceptionHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
@@ -250,6 +252,15 @@ public class MetaStoreServerUtils {
 
   public static double decimalToDouble(Decimal decimal) {
     return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
+  }
+
+  public static String decimalToString(Decimal val) {
+    if (val == null) {
+      return "";
+    }
+
+    HiveDecimal result = HiveDecimal.create(new BigInteger(val.getUnscaled()), val.getScale());
+    return (result != null) ? result.toString() : "";
   }
 
   private static Pattern getPartitionValidationRegex(Configuration conf) {
@@ -995,10 +1006,6 @@ public class MetaStoreServerUtils {
         socket2.close();
       }
     }
-  }
-
-  public static String getIndexTableName(String dbName, String baseTblName, String indexName) {
-    return dbName + "__" + baseTblName + "_" + indexName + "__";
   }
 
   static public String validateTblColumns(List<FieldSchema> cols) {
@@ -1760,4 +1767,60 @@ public class MetaStoreServerUtils {
   public static boolean isCompactionTxn(TxnType txnType) {
     return TxnType.COMPACTION.equals(txnType) || TxnType.REBALANCE_COMPACTION.equals(txnType);
   }
+
+  public static boolean isDbReplicationTarget(Database db) {
+    String dbCkptStatus = (db.getParameters() == null) ? null : db.getParameters().get(ReplConst.REPL_TARGET_DB_PROPERTY);
+    return dbCkptStatus != null && !dbCkptStatus.trim().isEmpty();
+  }
+
+  public static boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
+    if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
+      // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
+      return MetaStoreUtils.isExternalTablePurge(tbl);
+    }
+    return deleteData;
+  }
+
+  public static boolean isMustPurge(EnvironmentContext envContext, Table tbl) {
+    // Data needs deletion. Check if trash may be skipped.
+    // Trash may be skipped iff:
+    //  1. deleteData == true, obviously.
+    //  2. tbl is external.
+    //  3. Either
+    //    3.1. User has specified PURGE from the commandline, and if not,
+    //    3.2. User has set the table to auto-purge.
+    return (envContext != null && envContext.getProperties() != null
+        && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
+        || MetaStoreUtils.isSkipTrash(tbl.getParameters());
+  }
+
+  public static long getWriteId(EnvironmentContext context){
+    return Optional.ofNullable(context)
+        .map(EnvironmentContext::getProperties)
+        .map(prop -> prop.get(hive_metastoreConstants.WRITE_ID))
+        .map(Long::parseLong)
+        .orElse(0L);
+  }
+
+  /**
+   * Verify if update stats while altering partition(s).
+   * For the following three cases HMS will not update partition stats
+   * 1) Table property 'DO_NOT_UPDATE_STATS' = True
+   * 2) HMS configuration property 'STATS_AUTO_GATHER' = False
+   * 3) Is View
+   */
+  public static boolean canUpdateStats(Configuration conf, Table tbl) {
+    Map<String, String> tblParams = tbl.getParameters();
+    boolean updateStatsTbl = true;
+    if ((tblParams != null) && tblParams.containsKey(StatsSetupConst.DO_NOT_UPDATE_STATS)) {
+      updateStatsTbl = !Boolean.valueOf(tblParams.get(StatsSetupConst.DO_NOT_UPDATE_STATS));
+    }
+    if (!MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.STATS_AUTO_GATHER) ||
+        MetaStoreUtils.isView(tbl) ||
+        !updateStatsTbl) {
+      return false;
+    }
+    return true;
+  }
+
 }

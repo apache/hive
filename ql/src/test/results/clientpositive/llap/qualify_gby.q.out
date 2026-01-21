@@ -44,7 +44,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(a=[$0], b=[$1], c=[$2], _o__c3=[$3])
+HiveProject(a=[$0], b=[$1], c=[$2], _c3=[$3])
   HiveFilter(condition=[=($4, 1)])
     HiveProject((tok_table_or_col a)=[$0], (tok_table_or_col b)=[$1], (tok_table_or_col c)=[$2], (tok_functionstar count)=[$3], row_number_window_0=[row_number() OVER (PARTITION BY $1 ORDER BY $2 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)])
       HiveProject(a=[$0], b=[$1], c=[$2], $f3=[$3])

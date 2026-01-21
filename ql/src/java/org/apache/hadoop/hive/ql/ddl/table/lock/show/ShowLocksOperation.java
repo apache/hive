@@ -89,11 +89,12 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
 
   private List<HiveLock> getLocksForOldFormat(HiveLockManager lockMgr) throws LockException, HiveException {
     List<HiveLock> locks = null;
-    if (desc.getTableName() == null) {
+    if (desc.getTableName() == null && desc.getDbName() == null) {
       // TODO should be doing security check here. Users should not be able to see each other's locks.
       locks = lockMgr.getLocks(false, desc.isExt());
     } else {
-      HiveLockObject lockObject = HiveLockObject.createFrom(context.getDb(), desc.getTableName(), desc.getPartSpec());
+      HiveLockObject lockObject = HiveLockObject.createFrom(context.getDb(), desc.getDbName(), 
+              desc.getTableName(), desc.getPartSpec());
       locks = lockMgr.getLocks(lockObject, true, desc.isExt());
     }
     Collections.sort(locks, new Comparator<HiveLock>() {
@@ -160,6 +161,8 @@ public class ShowLocksOperation extends DDLOperation<ShowLocksDesc> {
       throw new HiveException("New lock format only supported with db lock manager.");
     }
 
+    // TODO catalog. Need to add catalog into ShowLocksRequest. But ShowLocksRequest doesn't have catalog field.
+    //  Maybe we need to change hive_metastore.thrift to add catalog into ShowLocksRequest struct. Depend on HIVE-29242.
     ShowLocksRequest request = new ShowLocksRequest();
     if (desc.getDbName() == null && desc.getTableName() != null) {
       request.setDbname(SessionState.get().getCurrentDatabase());

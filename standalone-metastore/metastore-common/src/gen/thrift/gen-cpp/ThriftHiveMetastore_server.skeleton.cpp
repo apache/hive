@@ -85,7 +85,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_database\n");
   }
 
-  void drop_database_req(const DropDatabaseRequest& req) {
+  void drop_database_req(AsyncOperationResp& _return, const DropDatabaseRequest& req) {
     // Your implementation goes here
     printf("drop_database_req\n");
   }
@@ -260,7 +260,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_table_with_environment_context\n");
   }
 
-  void drop_table_req(const DropTableRequest& dropTableReq) {
+  void drop_table_req(AsyncOperationResp& _return, const DropTableRequest& dropTableReq) {
     // Your implementation goes here
     printf("drop_table_req\n");
   }

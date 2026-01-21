@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.cli.control.CliConfigs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.CatalogUtil;
-import org.apache.iceberg.hive.CatalogUtils;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.client.HiveRESTCatalogClient;
 import org.apache.iceberg.rest.extension.OAuth2AuthorizationServer;
 import org.junit.After;
@@ -121,7 +121,7 @@ public class TestIcebergRESTCatalogGravitinoLlapLocalCliDriver {
 
     String host = gravitinoContainer.getHost();
     Integer port = gravitinoContainer.getMappedPort(GRAVITINO_HTTP_PORT);
-    String restCatalogPrefix = String.format("%s%s.", CatalogUtils.CATALOG_CONFIG_PREFIX, CATALOG_NAME);
+    String restCatalogPrefix = String.format("%s%s.", IcebergCatalogProperties.CATALOG_CONFIG_PREFIX, CATALOG_NAME);
 
     // Suppress IntelliJ warning about using HTTP since this is a local test container connection
     @SuppressWarnings("HttpUrlsUsage")

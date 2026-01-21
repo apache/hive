@@ -58,15 +58,15 @@ public class LatestTxnIdInConflictHandler implements QueryHandler<Long> {
         " ) \"CUR\"" +
         " ON \"COMMITTED\".\"WS_DATABASE\" = \"CUR\".\"TC_DATABASE\"" +
         "   AND \"COMMITTED\".\"WS_TABLE\" = \"CUR\".\"TC_TABLE\"" +
-        (TxnHandler.ConfVars.useMinHistoryLevel() ? "" :
-        "   AND \"COMMITTED\".\"WS_OPERATION_TYPE\" != :wsType") + 
         // For partitioned table we always track writes at partition level (never at table)
         // and for non partitioned - always at table level, thus the same table should never
         // have entries with partition key and w/o
         "   AND (\"COMMITTED\".\"WS_PARTITION\" = \"CUR\".\"TC_PARTITION\" OR" +
         "     \"CUR\".\"TC_PARTITION\" IS NULL) " +
         // txns overlap
-        " WHERE \"CUR\".\"TC_TXNID\" <= \"COMMITTED\".\"WS_COMMIT_ID\"";
+        " WHERE \"CUR\".\"TC_TXNID\" <= \"COMMITTED\".\"WS_COMMIT_ID\"" +
+        (TxnHandler.ConfVars.useMinHistoryLevel() ? "" :
+        "   AND \"COMMITTED\".\"WS_OPERATION_TYPE\" != :wsType");
   }
 
   @Override

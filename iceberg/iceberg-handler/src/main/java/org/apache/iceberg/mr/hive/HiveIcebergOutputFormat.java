@@ -72,7 +72,7 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
   }
 
   private static void setWriterLevelConfiguration(JobConf jc, Table table) {
-    final String writeFormat = table.properties().get("write.format.default");
+    final String writeFormat = table.properties().get(TableProperties.DEFAULT_FILE_FORMAT);
     if (writeFormat == null || "PARQUET".equalsIgnoreCase(writeFormat)) {
       if (table.properties().get(TableProperties.PARQUET_ROW_GROUP_SIZE_BYTES) == null &&
           jc.get(ParquetOutputFormat.BLOCK_SIZE) != null) {

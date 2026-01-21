@@ -34,7 +34,7 @@ POSTHOOK: query: explain extended select a.key from src a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`
+OPTIMIZED SQL: SELECT `key` AS `a.key`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -288,7 +288,7 @@ POSTHOOK: query: explain extended select a.key from src ('user.defined.key'='som
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-OPTIMIZED SQL: SELECT `key`
+OPTIMIZED SQL: SELECT `key` AS `a.key`
 FROM `default`.`src`
 STAGE DEPENDENCIES:
   Stage-0 is a root stage

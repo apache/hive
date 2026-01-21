@@ -3479,7 +3479,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(p_partkey=[$0])
+HiveProject(pp.p_partkey=[$0])
   HiveSemiJoin(condition=[=($1, $2)], joinType=[semi])
     HiveProject(p_partkey=[$0], p_name=[$1])
       HiveFilter(condition=[IS NOT NULL($1)])
@@ -3541,16 +3541,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{}], agg#0=[count()])
-  HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
-    HiveProject(p_partkey=[$0])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, part]], table:alias=[pp])
-    HiveProject(p_partkey=[$0])
-      HiveFilter(condition=[>($2, 1)])
-        HiveAggregate(group=[{0, 1}], agg#0=[count()])
-          HiveFilter(condition=[IS NOT NULL($0)])
-            HiveTableScan(table=[[default, part]], table:alias=[part])
+HiveProject(_c0=[$0])
+  HiveAggregate(group=[{}], agg#0=[count()])
+    HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+      HiveProject(p_partkey=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, part]], table:alias=[pp])
+      HiveProject(p_partkey=[$0])
+        HiveFilter(condition=[>($2, 1)])
+          HiveAggregate(group=[{0, 1}], agg#0=[count()])
+            HiveFilter(condition=[IS NOT NULL($0)])
+              HiveTableScan(table=[[default, part]], table:alias=[part])
 
 PREHOOK: query: with ss as
 (select count(1), p_partkey, p_name from

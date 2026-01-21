@@ -31,12 +31,19 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public abstract class AbstractAlterDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
 
+  private final String catalogName;
   private final String databaseName;
   private final ReplicationSpec replicationSpec;
 
-  public AbstractAlterDatabaseDesc(String databaseName, ReplicationSpec replicationSpec) {
+  public AbstractAlterDatabaseDesc(String catalogName, String databaseName, ReplicationSpec replicationSpec) {
+    this.catalogName = catalogName;
     this.databaseName = databaseName;
     this.replicationSpec = replicationSpec;
+  }
+
+  @Explain(displayName="catalogName", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public String getCatalogName() {
+    return catalogName;
   }
 
   @Explain(displayName="name", explainLevels = {Level.USER, Level.DEFAULT, Level.EXTENDED })

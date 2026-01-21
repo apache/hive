@@ -218,7 +218,7 @@ POSTHOOK: Input: mydb_e10@f2_tab_e10
 POSTHOOK: Input: mydb_e10@f_tab_e10
 #### A masked pattern was here ####
 CBO PLAN:
-HiveProject(c1=[$11], c5=[$13], c6=[$14], c3=[$1], c4=[$2], c51=[$3], c61=[$4], c7=[$5], c8=[$6], c9=[$7], c10=[$8], c11=[$9], c12=[$19], c41=[$21], c52=[$22], c2=[$18])
+HiveProject(c.c1=[$11], c.c5=[$13], c.c6=[$14], ca.c3=[$1], ca.c4=[$2], ca.c5=[$3], ca.c6=[$4], ca.c7=[$5], ca.c8=[$6], ca.c9=[$7], ca.c10=[$8], ca.c11=[$9], cm.c1=[$19], cm.c4=[$21], cm.c5=[$22], r.c2=[$18])
   HiveJoin(condition=[=($11, $20)], joinType=[inner], algorithm=[none], cost=[not available])
     HiveJoin(condition=[=($12, $0)], joinType=[inner], algorithm=[none], cost=[not available])
       HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])

@@ -513,7 +513,8 @@ public abstract class BaseMetaStoreClient implements IMetaStoreClient {
   @Override
   public final void alterDatabase(String name, Database db)
       throws NoSuchObjectException, MetaException, TException {
-    alterDatabase(getDefaultCatalog(conf), name, db);
+    String catName = db.getCatalogName() == null ? getDefaultCatalog(conf) : db.getCatalogName();
+    alterDatabase(catName, name, db);
   }
 
   @Override

@@ -85,6 +85,7 @@ Table Parameters:
 #### A masked pattern was here ####
 	uuid                	#Masked#
 	write.format.default	orc                 
+	write.metadata.delete-after-commit.enabled	true                
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -175,6 +176,7 @@ Table Parameters:
 	write.delete.mode   	merge-on-read       
 	write.format.default	orc                 
 	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
 	write.update.mode   	merge-on-read       
 	 	 
 # Storage Information	 	 

@@ -17,7 +17,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>4.2.0-SNAPSHOT</version>
+    <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hive-it-iceberg</artifactId>
@@ -27,7 +27,7 @@
     <hive.path.to.root>../..</hive.path.to.root>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <log4j2.debug>false</log4j2.debug>
-    <iceberg.version>1.9.1</iceberg.version>
+    <iceberg.version>1.10.0</iceberg.version>
   </properties>
   <dependencies>
     <dependency>

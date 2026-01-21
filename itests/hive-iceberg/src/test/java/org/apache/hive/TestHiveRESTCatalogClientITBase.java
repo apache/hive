@@ -43,7 +43,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.TableProperties;
-import org.apache.iceberg.hive.CatalogUtils;
+import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.rest.extension.HiveRESTCatalogServerExtension;
 import org.junit.jupiter.api.AfterEach;
@@ -70,7 +70,8 @@ public abstract class TestHiveRESTCatalogClientITBase {
   static final String TABLE_NAME = "ice_tbl";
   static final String CATALOG_NAME = "ice01";
   static final String HIVE_ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
-  static final String REST_CATALOG_PREFIX = String.format("%s%s.", CatalogUtils.CATALOG_CONFIG_PREFIX, CATALOG_NAME);
+  static final String REST_CATALOG_PREFIX = String.format("%s%s.", IcebergCatalogProperties.CATALOG_CONFIG_PREFIX, 
+      CATALOG_NAME);
 
   HiveConf hiveConf;
   Configuration conf;
@@ -154,7 +155,7 @@ public abstract class TestHiveRESTCatalogClientITBase {
 
     // --- Create Table --- with an invalid catalog name in table parameters (should fail)
     Map<String, String> tableParameters = new java.util.HashMap<>();
-    tableParameters.put(CatalogUtils.CATALOG_NAME, "some_missing_catalog");
+    tableParameters.put(IcebergCatalogProperties.CATALOG_NAME, "some_missing_catalog");
     assertThrows(IllegalArgumentException.class, () -> 
         createPartitionedTable(msClient, CATALOG_NAME, DB_NAME, TABLE_NAME + "_2", tableParameters));
 

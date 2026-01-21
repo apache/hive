@@ -1,5 +1,5 @@
 CBO PLAN:
-HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], s_store_name=[$3], s_company_name=[$4], d_moy=[$5], sum_sales=[$6], avg_monthly_sales=[$7])
+HiveProject(tmp1.i_category=[$0], tmp1.i_class=[$1], tmp1.i_brand=[$2], tmp1.s_store_name=[$3], tmp1.s_company_name=[$4], tmp1.d_moy=[$5], tmp1.sum_sales=[$6], tmp1.avg_monthly_sales=[$7])
   HiveSortLimit(sort0=[$8], sort1=[$3], dir0=[ASC], dir1=[ASC], fetch=[100])
     HiveProject(i_category=[$0], i_class=[$1], i_brand=[$2], s_store_name=[$3], s_company_name=[$4], d_moy=[$5], sum_sales=[$6], avg_monthly_sales=[$7], (- (tok_table_or_col sum_sales) (tok_table_or_col avg_monthly_sales))1=[-($6, $7)])
       HiveFilter(condition=[CASE(<>($7, 0:DECIMAL(1, 0)), >(/(ABS(-($6, $7)), $7), 0.1:DECIMAL(1, 1)), false)])

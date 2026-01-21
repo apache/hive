@@ -66,10 +66,10 @@ import org.apache.calcite.rex.RexWindow;
 import org.apache.calcite.rex.RexWindowBound;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.SqlSyntax;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
@@ -91,7 +91,6 @@ import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
@@ -131,10 +130,9 @@ public class ASTConverter {
     this.ctes = ctes;
   }
 
-  public static ASTNode convert(final RelNode relNode, List<FieldSchema> resultSchema, boolean alignColumns, PlanMapper planMapper)
+  public static ASTNode convert(final RelNode relNode, PlanMapper planMapper)
       throws CalciteSemanticException {
-    RelNode root = PlanModifierForASTConv.convertOpTree(relNode, resultSchema, alignColumns);
-    ASTConverter c = new ASTConverter(root, 0, planMapper, new ArrayList<>());
+    ASTConverter c = new ASTConverter(relNode, 0, planMapper, new ArrayList<>());
     ASTNode r = c.convert();
     for (ASTNode cte : c.ctes) {
       r.insertChild(0, cte);
@@ -1003,7 +1001,21 @@ public class ASTConverter {
       }
 
       // 1. Translate the UDAF
-      final ASTNode wUDAFAst = visitCall(over);
+      // Case for the common window function calls: e.g., MIN(salary)
+      ASTNode wUDAFAst = ASTBuilder.createAST(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+      // Case for window function calls with star syntax: e.g., COUNT(*), SUM(*), AVG(*)
+      if (over.getOperands().isEmpty() && over.op.getSyntax() == SqlSyntax.FUNCTION_STAR) {
+        wUDAFAst = ASTBuilder.createAST(HiveParser.TOK_FUNCTIONSTAR, "TOK_FUNCTIONSTAR");
+      }
+      // Case for window functions with DISTINCT: e.g., COUNT(DISTINCT deptno)
+      if (over.isDistinct()) {
+        wUDAFAst = ASTBuilder.createAST(HiveParser.TOK_FUNCTIONDI, "TOK_FUNCTIONDI");
+      }
+      wUDAFAst.addChild(ASTBuilder.createAST(HiveParser.Identifier, over.op.getName()));
+      wUDAFAst.setTypeInfo(TypeConverter.convert(over.type));
+      for (RexNode operand : over.getOperands()) {
+        wUDAFAst.addChild(operand.accept(this));
+      }
 
       // 2. Add TOK_WINDOW as child of UDAF
       ASTNode wSpec = ASTBuilder.createAST(HiveParser.TOK_WINDOWSPEC, "TOK_WINDOWSPEC");

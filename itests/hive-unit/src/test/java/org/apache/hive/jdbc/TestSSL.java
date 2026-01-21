@@ -75,7 +75,6 @@ public class TestSSL {
   @BeforeClass
   public static void beforeTest() throws Exception {
     MiniHS2.cleanupLocalDir();
-    Class.forName(MiniHS2.getJdbcDriverName());
   }
 
   @AfterClass

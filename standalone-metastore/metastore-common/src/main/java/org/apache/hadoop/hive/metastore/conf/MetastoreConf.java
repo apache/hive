@@ -250,7 +250,6 @@ public class MetastoreConf {
       ConfVars.METASTORE_PARTITIONS_PARAMETERS_EXCLUDE_PATTERN,
       // Add metaConfVars here as well
       ConfVars.TRY_DIRECT_SQL,
-      ConfVars.TRY_DIRECT_SQL_DDL,
       ConfVars.CLIENT_SOCKET_TIMEOUT,
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
       ConfVars.PARTITION_ORDER_EXPR,
@@ -264,13 +263,14 @@ public class MetastoreConf {
    */
   public static final MetastoreConf.ConfVars[] metaConfVars = {
       ConfVars.TRY_DIRECT_SQL,
-      ConfVars.TRY_DIRECT_SQL_DDL,
       ConfVars.CLIENT_SOCKET_TIMEOUT,
       ConfVars.PARTITION_NAME_WHITELIST_PATTERN,
       ConfVars.PARTITION_ORDER_EXPR,
       ConfVars.CAPABILITY_CHECK,
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-      ConfVars.EXPRESSION_PROXY_CLASS
+      ConfVars.EXPRESSION_PROXY_CLASS,
+      ConfVars.METASTORE_S4U_NOWAIT_MAX_RETRIES,
+      ConfVars.METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL
   };
 
   static {
@@ -1309,6 +1309,14 @@ public class MetastoreConf {
             + "  seqprefix: adds a 'N_' prefix to the table name to get a unique location (table,1_table,2_table,...)\n"
             + "  prohibit: do not consider alternate locations; throw error if the default is not available\n"
             + "  force: use the default location even in case the directory is already available"),
+    METASTORE_S4U_NOWAIT_MAX_RETRIES("metastore.s4u.nowait.max.retries",
+        "hive.metastore.s4u.nowait.max.retries", 100,
+        "Number of retries required to acquire a row lock immediately without waiting."),
+    METASTORE_S4U_NOWAIT_RETRY_SLEEP_INTERVAL(
+        "metastore.s4u.nowait.retry.sleep.interval",
+        "hive.metastore.s4u.nowait.retry.sleep.interval", 300, TimeUnit.MILLISECONDS,
+        "Sleep interval between retries to acquire a row lock immediately described part of property "
+            + METASTORE_S4U_NOWAIT_MAX_RETRIES.name()),
 
     MULTITHREADED("javax.jdo.option.Multithreaded", "javax.jdo.option.Multithreaded", true,
         "Set this to true if multiple threads access metastore through JDO concurrently."),
@@ -1653,12 +1661,6 @@ public class MetastoreConf {
             "work for all queries on your datastore. If all SQL queries fail (for example, your\n" +
             "metastore is backed by MongoDB), you might want to disable this to save the\n" +
             "try-and-fall-back cost."),
-    TRY_DIRECT_SQL_DDL("metastore.try.direct.sql.ddl", "hive.metastore.try.direct.sql.ddl", true,
-        "Same as hive.metastore.try.direct.sql, for read statements within a transaction that\n" +
-            "modifies metastore data. Due to non-standard behavior in Postgres, if a direct SQL\n" +
-            "select query has incorrect syntax or something similar inside a transaction, the\n" +
-            "entire transaction will fail and fall-back to DataNucleus will not be possible. You\n" +
-            "should disable the usage of direct SQL inside transactions if that happens in your case."),
     TXN_MAX_OPEN_BATCH("metastore.txn.max.open.batch", "hive.txn.max.open.batch", 1000,
         "Maximum number of transactions that can be fetched in one call to open_txns().\n" +
             "This controls how many transactions streaming agents such as Flume or Storm open\n" +
@@ -1682,10 +1684,11 @@ public class MetastoreConf {
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
     TXN_OPENTXN_TIMEOUT("metastore.txn.opentxn.timeout", "hive.txn.opentxn.timeout", 1000, TimeUnit.MILLISECONDS,
         "Time before an open transaction operation should persist, otherwise it is considered invalid and rolled back"),
+    @Deprecated
     TXN_USE_MIN_HISTORY_LEVEL("metastore.txn.use.minhistorylevel", "hive.txn.use.minhistorylevel", true,
         "Set this to false, for the TxnHandler and Cleaner to not use MIN_HISTORY_LEVEL table and take advantage of openTxn optimisation.\n"
             + "If the table is dropped HMS will switch this flag to false, any other value changes need a restart to take effect."),
-    TXN_USE_MIN_HISTORY_WRITE_ID("metastore.txn.use.minhistorywriteid", "hive.txn.use.minhistorywriteid", false,
+    TXN_USE_MIN_HISTORY_WRITE_ID("metastore.txn.use.minhistorywriteid", "hive.txn.use.minhistorywriteid", true,
       "Set this to true, to avoid global minOpenTxn check in Cleaner.\n"
             + "If the table is dropped HMS will switch this flag to false."),
     LOCK_NUMRETRIES("metastore.lock.numretries", "hive.lock.numretries", 100,

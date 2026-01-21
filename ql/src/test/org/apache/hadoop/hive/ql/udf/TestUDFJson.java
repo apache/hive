@@ -105,6 +105,9 @@ public class TestUDFJson {
     runTest("[1,2,3]", "$0", null, udf);
     runTest("[1,2,3]", "0", null, udf);
     runTest("[1,2,3]", "$.", null, udf);
+    runTest("[1,2,3]", "$[1 ]", null, udf);
+    runTest("[1,2,3]", "$[ 1]", null, udf);
+    runTest("[1,2,3]", "$[invalid]", null, udf);
 
     runTest("[1,2,3]", "$", "[1,2,3]", udf);
     runTest("{\"a\":4}", "$", "{\"a\":4}", udf);
