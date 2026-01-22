@@ -125,6 +125,12 @@
       <artifactId>hive-cli</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId> org.eclipse.jetty.toolchain</groupId>
+          <artifactId>jetty-servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>

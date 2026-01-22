@@ -67,6 +67,10 @@
       <scope>provided</scope>
       <exclusions>
         <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-server</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>com.nimbusds</groupId>
           <artifactId>nimbus-jose-jwt</artifactId>
         </exclusion>

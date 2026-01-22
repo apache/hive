@@ -185,8 +185,8 @@ public class ServletServerBuilder {
       httpConf.setSecureScheme(HTTPS);
       httpConf.setSecurePort(port);
       httpConf.addCustomizer(new SecureRequestCustomizer());
-      connector = new ServerConnector(server,
-          new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(httpConf));
+      connector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory,
+              HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory(httpConf));
       connector.setName(HTTPS);
     } else {
       connector = new ServerConnector(server, new HttpConnectionFactory(httpConf));

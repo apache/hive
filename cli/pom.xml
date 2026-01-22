@@ -50,6 +50,10 @@
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
+          <groupId>org.eclipse.jetty.toolchain</groupId>
+          <artifactId>jetty-servlet-api</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.pac4j</groupId>
           <artifactId>*</artifactId>
         </exclusion>
