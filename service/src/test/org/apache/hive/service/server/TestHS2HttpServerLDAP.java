@@ -36,8 +36,8 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.eclipse.jetty.http.HttpHeader;
 import java.util.Base64;
-import java.nio.charset.StandardCharsets;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import org.junit.AfterClass;

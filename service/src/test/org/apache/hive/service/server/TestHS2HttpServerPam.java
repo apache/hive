@@ -27,7 +27,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.UserIdentity;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import org.junit.AfterClass;
