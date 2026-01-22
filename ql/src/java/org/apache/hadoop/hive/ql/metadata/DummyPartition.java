@@ -84,9 +84,9 @@ public class DummyPartition extends Partition {
     Table table = this.getTable();
     List<String> values = new ArrayList<String>();
     for (FieldSchema fs :
-            table.hasNonNativePartitionSupport() ?
-                    table.getStorageHandler().getPartitionKeys(table) :
-                    table.getPartCols()) {
+        table.hasNonNativePartitionSupport() ?
+            table.getStorageHandler().getPartitionKeys(table) :
+            table.getPartCols()) {
       values.add(partSpec.get(fs.getName()));
     }
     return values;

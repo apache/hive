@@ -2074,8 +2074,40 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public Partition getPartition(org.apache.hadoop.hive.ql.metadata.Table table,
       Map<String, String> partitionSpec, RewritePolicy policy) throws SemanticException {
+
     validatePartSpec(table, partitionSpec, policy);
-    return IcebergTableUtil.getPartition(conf, table, partitionSpec);
+
+    boolean isDescTable = SessionStateUtil.getQueryState(conf)
+        .map(QueryState::getHiveOperation)
+        .filter(op -> op == HiveOperation.DESCTABLE)
+        .isPresent();
+
+    if (!isDescTable) {
+      return createDummyPartitionHandle(table, partitionSpec);
+    }
+
+    Partition partition = IcebergTableUtil.getPartition(conf, table, partitionSpec);
+
+    // Populate basic statistics
+    if (partition != null) {
+      Map<String, String> stats = getBasicStatistics(Partish.buildFor(table, partition));
+      if (stats != null && !stats.isEmpty()) {
+        partition.getTPartition().setParameters(stats);
+      }
+    }
+
+    return partition;
+  }
+
+  private static DummyPartition createDummyPartitionHandle(
+      org.apache.hadoop.hive.ql.metadata.Table table, Map<String, String> partitionSpec)
+      throws SemanticException {
+    try {
+      String partitionName = Warehouse.makePartName(partitionSpec, false);
+      return new DummyPartition(table, partitionName, partitionSpec);
+    } catch (MetaException e) {
+      throw new SemanticException("Unable to construct partition name", e);
+    }
   }
 
   /**

@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -60,7 +59,6 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SourceTable;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -89,7 +87,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
@@ -1357,14 +1354,7 @@ public abstract class BaseSemanticAnalyzer {
               if (partHandle == null) {
                 // if partSpec doesn't exists in DB, return a delegate one
                 // and the actual partition is created in MoveTask
-                try {
-                  partHandle = tableHandle.hasNonNativePartitionSupport() ?
-                          new DummyPartition(tableHandle, Warehouse.makePartName(partSpec, false), partSpec) :
-                          new Partition(tableHandle, partSpec, null);
-                } catch (MetaException e) {
-                  throw new SemanticException("Unable to construct name for dummy partition due to: ", e);
-                }
-
+                partHandle = new Partition(tableHandle, partSpec, null);
               } else {
                 partitions.add(partHandle);
               }
