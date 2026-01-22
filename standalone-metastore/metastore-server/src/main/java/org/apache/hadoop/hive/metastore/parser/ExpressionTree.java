@@ -19,11 +19,11 @@ package org.apache.hadoop.hive.metastore.parser;
 
 import java.sql.Timestamp;
 import java.sql.Date;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -137,8 +137,27 @@ public class ExpressionTree {
     protected void midTreeNode(TreeNode node) throws MetaException {}
     protected void endTreeNode(TreeNode node) throws MetaException {}
     protected void visit(LeafNode node) throws MetaException {}
+    protected void visit(MultiAndLeafNode node) throws MetaException {}
     protected boolean shouldStop() {
       return false;
+    }
+
+    /**
+     * Get partition column index in the table partition column list that
+     * corresponds to the key that is being filtered on by this tree node.
+     * @param partitionKeys list of partition keys.
+     * @param filterBuilder filter builder used to report error, if any.
+     * @return The index.
+     */
+    protected int getPartColIndexForFilter(String partitionKeyName,
+        List<FieldSchema> partitionKeys, FilterBuilder filterBuilder) throws MetaException {
+      int partitionColumnIndex = Iterables.indexOf(partitionKeys, key -> partitionKeyName.equalsIgnoreCase(key.getName()));
+      if( partitionColumnIndex < 0) {
+        filterBuilder.setError("Specified key <" + partitionKeyName +
+            "> is not a partitioning key for the table");
+        return -1;
+      }
+      return partitionColumnIndex;
     }
   }
 
@@ -239,17 +258,78 @@ public class ExpressionTree {
     }
   }
 
-  /**
-   * The Class representing the leaf level nodes in the ExpressionTree.
-   */
-  public static class LeafNode extends TreeNode {
-    public String keyName;
-    public Operator operator;
+  public static class Condition {
+    private final String keyName;
+    private final Operator operator;
     /**
      * Constant expression side of the operator. Can currently be a String or a Long.
      */
-    public Object value;
-    public boolean isReverseOrder = false;
+    private final Object value;
+    private final boolean isReverseOrder;
+
+    public Condition(String keyName, Operator operator, Object value) {
+      this(keyName, operator, value, false);
+    }
+
+    public Condition(String keyName, Operator operator, Object value, boolean isReverseOrder) {
+      this.keyName = keyName;
+      this.operator = operator;
+      this.value = value;
+      this.isReverseOrder = isReverseOrder;
+    }
+
+    public String getKeyName() {
+      return keyName;
+    }
+
+    public Operator getOperator() {
+      return operator;
+    }
+
+    public Object getValue() {
+      return value;
+    }
+
+    public boolean isReverseOrder() {
+      return isReverseOrder;
+    }
+
+    @Override
+    public String toString() {
+      return "{" +
+          "keyName='" + keyName + '\'' +
+          ", operator='" + operator + '\'' +
+          ", value=" + value +
+          (isReverseOrder ? ", isReverseOrder=true" : "") +
+          '}';
+    }
+  }
+
+  /**
+   * The Class representing the leaf level nodes in the ExpressionTree.
+   */
+  public static abstract class BaseLeafNode extends TreeNode {
+    public abstract List<Condition> getConditions();
+  }
+
+  /**
+   * Leaf node with a single condition.
+   */
+  public static class LeafNode extends BaseLeafNode {
+    private final Condition condition;
+
+    public LeafNode(Condition condition) {
+      this.condition = condition;
+    }
+
+    @Override
+    public List<Condition> getConditions() {
+      return Collections.singletonList(condition);
+    }
+
+    public Condition getCondition() {
+      return condition;
+    }
 
     @Override
     protected void accept(TreeVisitor visitor) throws MetaException {
@@ -258,30 +338,33 @@ public class ExpressionTree {
 
     @Override
     public String toString() {
-      return "LeafNode{" +
-          "keyName='" + keyName + '\'' +
-          ", operator='" + operator + '\'' +
-          ", value=" + value +
-          (isReverseOrder ? ", isReverseOrder=true" : "") +
-          '}';
+      return "LeafNode" + condition.toString();
+    }
+  }
+
+  /**
+   * Leaf node with multiple AND-connected conditions.
+   */
+  public static class MultiAndLeafNode extends BaseLeafNode {
+    private final List<Condition> conditions;
+
+    public MultiAndLeafNode(List<Condition> conditions) {
+      this.conditions = conditions;
     }
 
-    /**
-     * Get partition column index in the table partition column list that
-     * corresponds to the key that is being filtered on by this tree node.
-     * @param partitionKeys list of partition keys.
-     * @param filterBuilder filter builder used to report error, if any.
-     * @return The index.
-     */
-    public static int getPartColIndexForFilter(String partitionKeyName,
-        List<FieldSchema> partitionKeys, FilterBuilder filterBuilder) throws MetaException {
-      int partitionColumnIndex = Iterables.indexOf(partitionKeys, key -> partitionKeyName.equalsIgnoreCase(key.getName()));
-      if( partitionColumnIndex < 0) {
-        filterBuilder.setError("Specified key <" + partitionKeyName +
-            "> is not a partitioning key for the table");
-        return -1;
-      }
-      return partitionColumnIndex;
+    @Override
+    public List<Condition> getConditions() {
+      return conditions;
+    }
+
+    @Override
+    protected void accept(TreeVisitor visitor) throws MetaException {
+      visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+      return "MultiAndLeafNode" + conditions.toString();
     }
   }
 
@@ -339,12 +422,12 @@ public class ExpressionTree {
     @Override
     protected void visit(LeafNode node) throws MetaException {
       beforeParsing();
-      keyName = node.keyName;
-      operator = node.operator;
-      value = node.value;
-      isReverseOrder = node.isReverseOrder;
-      if (node.keyName.startsWith(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)
-          && DatabaseProduct.isDerbyOracle() && node.operator == Operator.EQUALS) {
+      keyName = node.getCondition().getKeyName();
+      operator = node.getCondition().getOperator();
+      value = node.getCondition().getValue();
+      isReverseOrder = node.getCondition().isReverseOrder();
+      if (keyName.startsWith(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)
+          && DatabaseProduct.isDerbyOracle() && operator == Operator.EQUALS) {
         // Rewrite the EQUALS operator to LIKE
         operator = Operator.LIKE;
       }
@@ -437,7 +520,7 @@ public class ExpressionTree {
     private void generateJDOFilterOverPartitions(Configuration conf,
                                                  Map<String, Object> params, FilterBuilder filterBuilder, List<FieldSchema> partitionKeys) throws MetaException {
       int partitionColumnCount = partitionKeys.size();
-      int partitionColumnIndex = LeafNode.getPartColIndexForFilter(keyName, partitionKeys, filterBuilder);
+      int partitionColumnIndex = getPartColIndexForFilter(keyName, partitionKeys, filterBuilder);
       if (filterBuilder.hasError()) return;
 
       boolean canPushDownIntegral =
@@ -619,11 +702,6 @@ public class ExpressionTree {
    */
   private TreeNode root = null;
 
-  /**
-   * The node stack used to keep track of the tree nodes during parsing.
-   */
-  private final Stack<TreeNode> nodeStack = new Stack<>();
-
   public TreeNode getRoot() {
     return this.root;
   }
@@ -631,32 +709,4 @@ public class ExpressionTree {
   public void setRoot(TreeNode tn) {
     this.root = tn;
   }
-
-
-  /**
-   * Adds a intermediate node of either type(AND/OR). Pops last two nodes from
-   * the stack and sets them as children of the new node and pushes itself
-   * onto the stack.
-   * @param andOr the operator type
-   */
-  public void addIntermediateNode(LogicalOperator andOr) {
-
-    TreeNode rhs = nodeStack.pop();
-    TreeNode lhs = nodeStack.pop();
-    TreeNode newNode = new TreeNode(lhs, andOr, rhs);
-    nodeStack.push(newNode);
-    root = newNode;
-  }
-
-  /**
-   * Adds a leaf node, pushes the new node onto the stack.
-   * @param newNode the new node
-   */
-  public void addLeafNode(LeafNode newNode) {
-    if( root == null ) {
-      root = newNode;
-    }
-    nodeStack.push(newNode);
-  }
-
 }
