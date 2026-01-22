@@ -120,7 +120,7 @@
     <httpcomponents.client.version>4.5.13</httpcomponents.client.version>
     <pac4j-core.version>4.5.8</pac4j-core.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
-    <jetty.version>9.4.57.v20241219</jetty.version>
+    <jetty.version>10.0.24</jetty.version>
     <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
     <keycloak.version>26.0.6</keycloak.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->

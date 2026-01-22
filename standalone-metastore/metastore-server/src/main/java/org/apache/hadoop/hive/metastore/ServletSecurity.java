@@ -338,7 +338,7 @@ public class ServletSecurity {
    * @return null if no ssl in config, an instance otherwise
    * @throws IOException if getting password fails
    */
-  static SslContextFactory createSslContextFactory(Configuration conf) throws IOException {
+  static SslContextFactory.Server createSslContextFactory(Configuration conf) throws IOException {
     final boolean useSsl = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     if (!useSsl) {
       return null;
@@ -359,7 +359,7 @@ public class ServletSecurity {
     if (LOG.isInfoEnabled()) {
       LOG.info("HTTP Server SSL: adding excluded protocols: {}", Arrays.toString(excludedProtocols));
     }
-    SslContextFactory factory = new SslContextFactory.Server();
+    SslContextFactory.Server factory = new SslContextFactory.Server();
     factory.addExcludeProtocols(excludedProtocols);
     if (LOG.isInfoEnabled()) {
       LOG.info("HTTP Server SSL: SslContextFactory.getExcludeProtocols = {}",
