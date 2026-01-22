@@ -174,8 +174,8 @@ class TextDescTableFormatter extends DescTableFormatter {
       List<FieldSchema> partitionColumns = null;
       if (table.isPartitioned()) {
         partitionColumns = table.hasNonNativePartitionSupport() ?
-                table.getStorageHandler().getPartitionKeys(table) :
-                table.getPartCols();
+            table.getStorageHandler().getPartitionKeys(table) :
+            table.getPartCols();
       }
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {

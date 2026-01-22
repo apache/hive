@@ -1029,7 +1029,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     TransformSpec transformSpec = TransformSpec.fromString(field.transform().toString(), columName);
 
     UnboundTerm<Object> partitionColumn = SchemaUtils.toTerm(transformSpec);
-
     return Expressions.equal(partitionColumn, partitionData.get(index, Object.class));
   }
 

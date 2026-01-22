@@ -39,15 +39,23 @@ public class SchemaUtils {
     }
 
     return switch (spec.getTransformType()) {
-      case YEAR -> Expressions.year(spec.getColumnName());
-      case MONTH -> Expressions.month(spec.getColumnName());
-      case DAY -> Expressions.day(spec.getColumnName());
-      case HOUR -> Expressions.hour(spec.getColumnName());
-      case TRUNCATE -> Expressions.truncate(spec.getColumnName(), spec.getTransformParam());
-      case BUCKET -> Expressions.bucket(spec.getColumnName(), spec.getTransformParam());
-      case IDENTITY -> Expressions.ref(spec.getColumnName());
-      default -> throw new UnsupportedOperationException(
-          UNSUPPORTED_TRANSFORM.formatted(spec.getTransformType()));
+      case YEAR ->
+          Expressions.year(spec.getColumnName());
+      case MONTH ->
+          Expressions.month(spec.getColumnName());
+      case DAY ->
+          Expressions.day(spec.getColumnName());
+      case HOUR ->
+          Expressions.hour(spec.getColumnName());
+      case TRUNCATE ->
+          Expressions.truncate(spec.getColumnName(), spec.getTransformParam());
+      case BUCKET ->
+          Expressions.bucket(spec.getColumnName(), spec.getTransformParam());
+      case IDENTITY ->
+          Expressions.ref(spec.getColumnName());
+      default ->
+          throw new UnsupportedOperationException(
+              UNSUPPORTED_TRANSFORM.formatted(spec.getTransformType()));
     };
   }
 
@@ -60,15 +68,23 @@ public class SchemaUtils {
 
     partitionBy.forEach(spec -> {
       switch (spec.getTransformType()) {
-        case IDENTITY -> specBuilder.identity(spec.getColumnName().toLowerCase());
-        case YEAR -> specBuilder.year(spec.getColumnName());
-        case MONTH -> specBuilder.month(spec.getColumnName());
-        case DAY -> specBuilder.day(spec.getColumnName());
-        case HOUR -> specBuilder.hour(spec.getColumnName());
-        case TRUNCATE -> specBuilder.truncate(spec.getColumnName(), spec.getTransformParam());
-        case BUCKET -> specBuilder.bucket(spec.getColumnName(), spec.getTransformParam());
-        default -> throw new UnsupportedOperationException(
-            UNSUPPORTED_TRANSFORM.formatted(spec.getTransformType()));
+        case IDENTITY ->
+            specBuilder.identity(spec.getColumnName().toLowerCase());
+        case YEAR ->
+            specBuilder.year(spec.getColumnName());
+        case MONTH ->
+            specBuilder.month(spec.getColumnName());
+        case DAY ->
+            specBuilder.day(spec.getColumnName());
+        case HOUR ->
+            specBuilder.hour(spec.getColumnName());
+        case TRUNCATE ->
+            specBuilder.truncate(spec.getColumnName(), spec.getTransformParam());
+        case BUCKET ->
+            specBuilder.bucket(spec.getColumnName(), spec.getTransformParam());
+        default ->
+            throw new UnsupportedOperationException(
+                UNSUPPORTED_TRANSFORM.formatted(spec.getTransformType()));
       }
     });
 

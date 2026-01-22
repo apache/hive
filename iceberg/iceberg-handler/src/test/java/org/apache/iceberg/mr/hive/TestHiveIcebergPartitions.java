@@ -258,22 +258,23 @@ public class TestHiveIcebergPartitions extends HiveIcebergStorageHandlerWithEngi
   }
 
   @Test
-  public void testShowPartitionsWithTransform() throws IOException {
+  public void testShowPartitionsWithTransform() {
     Schema schema = new Schema(
-        optional(1, "a", Types.IntegerType.get()),
-        optional(2, "b", Types.StringType.get()));
-    PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("b", 2).build();
+        optional(1, "id", Types.IntegerType.get()),
+        optional(2, "part_field", Types.StringType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("part_field", 2).build();
     List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
-        .add(1, "apple")
-        .add(2, "banana")
+        .add(1L, "Part1")
+        .add(2L, "Part2")
+        .add(3L, "Art3")
         .build();
-    testTables.createTable(shell, "test_show_parts", schema, spec, fileFormat, records);
+    testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
 
-    List<Object[]> rows = shell.executeStatement("SHOW PARTITIONS test_show_parts");
+    List<Object[]> rows = shell.executeStatement("SHOW PARTITIONS part_test");
     Assert.assertEquals(2, rows.size());
 
-    rows = shell.executeStatement("SHOW PARTITIONS test_show_parts PARTITION(b='apple')");
+    rows = shell.executeStatement("SHOW PARTITIONS part_test PARTITION(part_field='Art3')");
     Assert.assertEquals(1, rows.size());
-    Assert.assertEquals("b_trunc=ap", rows.get(0)[0]);
+    Assert.assertEquals("part_field_trunc=Ar", rows.get(0)[0]);
   }
 }

@@ -85,6 +85,10 @@ Partition Value:    	[6, hello6]
 Database:           	default             	 
 Table:              	ice_t               	 
 #### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	1                   
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -136,6 +140,10 @@ Partition Value:    	[8, hello8, hello7]
 Database:           	default             	 
 Table:              	ice_t               	 
 #### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	1                   
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -172,6 +180,10 @@ Partition Value:    	[4, hello4, null]
 Database:           	default             	 
 Table:              	ice_t               	 
 #### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	1                   
+	totalSize           	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
