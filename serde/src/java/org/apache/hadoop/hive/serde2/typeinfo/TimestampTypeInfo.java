@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
 public class TimestampTypeInfo extends PrimitiveTypeInfo {
@@ -31,7 +32,7 @@ public class TimestampTypeInfo extends PrimitiveTypeInfo {
   public TimestampTypeInfo(int precision) {
     super(serdeConstants.TIMESTAMP_TYPE_NAME);
     if (precision != 6 && precision != 9) {
-      throw new RuntimeException("Unsupported value for precision: " + precision);
+      throw new RuntimeException(ErrorMsg.UNSUPPORTED_TIMESTAMP_PRECISION.format(String.valueOf(precision)));
     }
     this.precision = precision;
   }

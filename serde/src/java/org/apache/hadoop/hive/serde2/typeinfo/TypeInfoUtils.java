@@ -500,23 +500,9 @@ public final class TypeInfoUtils {
           return TypeInfoFactory.getDecimalTypeInfo(precision, scale);
 
           case TIMESTAMP:
-            int prec = 6;
-            if (params != null && params.length == 1) {
-              prec = Integer.parseInt(params[0]);
-            } else if (params != null && params.length > 1) {
-              throw new IllegalArgumentException(
-                  "Timestamp takes only one parameter, but " + params.length + " is seen");
-            }
-            return TypeInfoFactory.getTimestampTypeInfo(prec);
+            return TypeInfoFactory.getTimestampTypeInfo(getTimestampPrecision(params));
           case TIMESTAMPLOCALTZ:
-            int precTimeZone = 6;
-            if (params != null && params.length == 1) {
-              precTimeZone = Integer.parseInt(params[0]);
-            } else if (params != null && params.length > 1) {
-              throw new IllegalArgumentException(
-                  "Timestamp takes only one parameter, but " + params.length + " is seen");
-            }
-            return TypeInfoFactory.getTimestampTZTypeInfo(ZoneId.systemDefault(), precTimeZone);
+            return TypeInfoFactory.getTimestampTZTypeInfo(ZoneId.systemDefault(), getTimestampPrecision(params));
         default:
           return TypeInfoFactory.getPrimitiveTypeInfo(typeEntry.typeName);
         }
@@ -595,6 +581,18 @@ public final class TypeInfoUtils {
 
       throw new RuntimeException("Internal error parsing position "
           + t.position + " of '" + typeInfoString + "'");
+    }
+
+    private static int getTimestampPrecision(String[] params) {
+      int prec = 6;
+      if (params != null) {
+        if (params.length == 1) {
+          prec = Integer.parseInt(params[0]);
+        } else if (params.length > 1) {
+          throw new IllegalArgumentException("Timestamp takes only one parameter, but " + params.length + " is seen");
+        }
+      }
+      return prec;
     }
 
     public PrimitiveParts parsePrimitiveParts() {

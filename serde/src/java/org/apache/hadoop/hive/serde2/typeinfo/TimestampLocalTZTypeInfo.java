@@ -22,6 +22,7 @@ import java.time.ZoneId;
 import java.util.Objects;
 
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
 public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
@@ -41,7 +42,7 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
   public TimestampLocalTZTypeInfo(int precision, ZoneId timeZone) {
     super(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME);
     if (precision != 6 && precision != 9) {
-      throw new RuntimeException("Unsupported value for precision: " + precision);
+      throw new RuntimeException(ErrorMsg.UNSUPPORTED_TIMESTAMP_PRECISION.format(String.valueOf(precision)));
     }
     this.precision = precision;
     this.timeZone = timeZone;
