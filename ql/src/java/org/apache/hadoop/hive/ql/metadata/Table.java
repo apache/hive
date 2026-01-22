@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
@@ -1160,9 +1161,10 @@ public class Table implements Serializable {
         throw new HiveException("Duplicate column name " + colName
             + " in the table definition.");
       }
-      if (!icebergTable && VARIANT_TYPE_NAME.equalsIgnoreCase(col.getType())) {
+      if (!icebergTable && isUnsupportedInNonIceberg(col.getType())) {
         throw new HiveException(
-            "Column name " + colName + " cannot be of type 'variant' as it is not supported in non-Iceberg tables.");
+            "Column name " + colName + " cannot be of type '" + col.getType() + "' as it is not supported in "
+                + "non-Iceberg tables.");
       }
       colNames.add(colName);
     }
@@ -1391,5 +1393,11 @@ public class Table implements Serializable {
     }
     
     return virtualColumns;
+  }
+
+  private static boolean isUnsupportedInNonIceberg(String columnType) {
+    return VARIANT_TYPE_NAME.equalsIgnoreCase(columnType) ||
+        TypeInfoFactory.nanoTimestampTypeInfo.getQualifiedName().equalsIgnoreCase(columnType) ||
+        TypeInfoFactory.timestampNanoLocalTZTypeInfo.getQualifiedName().equalsIgnoreCase(columnType);
   }
 }

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -33,14 +34,24 @@ public class IcebergTimestampWithZoneObjectInspectorHive3 extends AbstractPrimit
     implements TimestampLocalTZObjectInspector, WriteObjectInspector {
 
   private static final IcebergTimestampWithZoneObjectInspectorHive3 INSTANCE =
-      new IcebergTimestampWithZoneObjectInspectorHive3();
+      new IcebergTimestampWithZoneObjectInspectorHive3(TypeInfoFactory.timestampLocalTZTypeInfo);
+
+  private static final IcebergTimestampWithZoneObjectInspectorHive3 NANO_INSTANCE =
+      new IcebergTimestampWithZoneObjectInspectorHive3(TypeInfoFactory.timestampNanoLocalTZTypeInfo);
 
   public static IcebergTimestampWithZoneObjectInspectorHive3 get() {
     return INSTANCE;
   }
 
-  private IcebergTimestampWithZoneObjectInspectorHive3() {
-    super(TypeInfoFactory.timestampLocalTZTypeInfo);
+  public static IcebergTimestampWithZoneObjectInspectorHive3 get(int precision) {
+    if (precision == 9) {
+      return NANO_INSTANCE;
+    }
+    return INSTANCE;
+  }
+
+  private IcebergTimestampWithZoneObjectInspectorHive3(PrimitiveTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override

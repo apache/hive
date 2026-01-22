@@ -499,6 +499,7 @@ public enum ErrorMsg {
   CATALOG_ALREADY_EXISTS(10444, "Catalog {0} already exists", true),
   CATALOG_NOT_EXISTS(10445, "Catalog {0} does not exists:", true),
   INVALID_SCHEDULED_QUERY(10446, "Scheduled query {0} does not exist", true),
+  UNSUPPORTED_TIMESTAMP_PRECISION(10447, "Unsupported value for precision: {0}", true),
 
   //========================== 20000 range starts here ========================//
 
