@@ -1,23 +1,62 @@
-PREHOOK: query: drop table if exists ice_t
+PREHOOK: query: DROP TABLE IF EXISTS ice_t
 PREHOOK: type: DROPTABLE
 PREHOOK: Output: database:default
-POSTHOOK: query: drop table if exists ice_t
+POSTHOOK: query: DROP TABLE IF EXISTS ice_t
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: database:default
-PREHOOK: query: create external table ice_t (a int, b string) partitioned by (c int, d string) write locally ordered by a desc stored by iceberg
+PREHOOK: query: CREATE EXTERNAL TABLE ice_t (
+  a INT,
+  b STRING
+)
+PARTITIONED BY (
+  c INT,
+  d STRING
+)
+WRITE LOCALLY
+ORDERED BY a DESC
+STORED BY ICEBERG
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@ice_t
-POSTHOOK: query: create external table ice_t (a int, b string) partitioned by (c int, d string) write locally ordered by a desc stored by iceberg
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_t (
+  a INT,
+  b STRING
+)
+PARTITIONED BY (
+  c INT,
+  d STRING
+)
+WRITE LOCALLY
+ORDERED BY a DESC
+STORED BY ICEBERG
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@ice_t
-PREHOOK: query: insert into table ice_t values( 5, "hello5" ,6, "hello6")
+PREHOOK: query: ALTER TABLE ice_t
+SET PARTITION SPEC (
+  c,
+  d,
+  truncate(2, b)
+)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: ALTER TABLE ice_t
+SET PARTITION SPEC (
+  c,
+  d,
+  truncate(2, b)
+)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: INSERT INTO TABLE ice_t
+VALUES (5, "hello5", 6, "hello6")
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@ice_t
-POSTHOOK: query: insert into table ice_t values( 5, "hello5" ,6, "hello6")
+POSTHOOK: query: INSERT INTO TABLE ice_t
+VALUES (5, "hello5", 6, "hello6")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_t
-FAILED: SemanticException [Error 10006]: Partition not found {c=6}
+FAILED: SemanticException [Error 10006]: Partition not found {c=6, b=hello5}

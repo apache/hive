@@ -1,14 +1,58 @@
-drop table if exists ice_t;
-create external table ice_t (a int, b string) partitioned by (c int, d string) write locally ordered by a desc stored by iceberg;
+DROP TABLE IF EXISTS ice_t;
 
-insert into table ice_t values( 1, "hello1" ,2, "hello2" );
-insert into table ice_t values( 3, "hello3" ,4, "hello4" );
-insert into table ice_t values( 5, "hello5" ,6, "hello6" );
+CREATE EXTERNAL TABLE ice_t (
+  a INT,
+  b STRING
+)
+PARTITIONED BY (
+  c INT,
+  d STRING
+)
+WRITE LOCALLY
+ORDERED BY a DESC
+STORED BY ICEBERG;
 
-desc extended ice_t PARTITION( c=6, d="hello6" );
-desc formatted ice_t PARTITION( c=6, d="hello6" );
+INSERT INTO TABLE ice_t
+VALUES (1, "hello1", 2, "hello2");
 
-alter table ice_t set partition spec ( c, d, truncate(2,b) );
-insert into table ice_t values( 7, "hello7" , 8 , "hello8" );
-desc formatted ice_t PARTITION( c=8 , d="hello8", b="hello7" );
-desc formatted ice_t PARTITION( c=4 , d="hello4" );
+INSERT INTO TABLE ice_t
+VALUES (3, "hello3", 4, "hello4");
+
+INSERT INTO TABLE ice_t
+VALUES (5, "hello5", 6, "hello6");
+
+DESC EXTENDED ice_t
+PARTITION (c = 6, d = "hello6");
+
+DESC FORMATTED ice_t
+PARTITION (c = 6, d = "hello6");
+
+ALTER TABLE ice_t
+SET PARTITION SPEC (
+  c,
+  d,
+  truncate(2, b)
+);
+
+INSERT INTO TABLE ice_t
+VALUES (7, "hello7", 8, "hello8");
+
+ALTER TABLE ice_t
+SET PARTITION SPEC (
+  bucket(16, c),
+  d,
+  truncate(2, b)
+);
+
+INSERT INTO TABLE ice_t
+VALUES (7, "hello7", 8, "hello8");
+
+DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7");
+
+-- this will also generate a valid result as "hello10" will resolve to "he" due to truncate(2, b)
+DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello10");
+
+DESC FORMATTED ice_t
+PARTITION (c = 4, d = "hello4");
