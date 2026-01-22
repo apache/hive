@@ -21,6 +21,7 @@ package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -31,6 +32,9 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.types.Types;
@@ -38,6 +42,7 @@ import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -49,6 +54,12 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  *  - when schema changes were originally done on the Iceberg table
  */
 public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.formatVersion() == 2);
+  }
 
   @Test
   public void testDescribeTable() throws IOException {
@@ -90,7 +101,6 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     Assert.assertArrayEquals(new Object[]{0L, "Brown"}, result.get(0));
     Assert.assertArrayEquals(new Object[]{1L, "Green"}, result.get(1));
     Assert.assertArrayEquals(new Object[]{2L, "Pink"}, result.get(2));
-
   }
 
   @Test
@@ -264,7 +274,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     // drop a column
     icebergTable.updateSchema().deleteColumn("last_name").commit();
 
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+    if (testTableType != TestTableType.HIVE_CATALOG) {
       // We need to update columns for non-Hive catalogs
       shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
     }
@@ -304,7 +314,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
 
     // Add a new column (age long) to the Iceberg table.
     icebergTable.updateSchema().addColumn("age", Types.LongType.get()).commit();
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+    if (testTableType != TestTableType.HIVE_CATALOG) {
       // We need to update columns for non-Hive catalogs
       shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
     }
@@ -371,7 +381,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
 
     // Add a new required column (age long) to the Iceberg table.
     icebergTable.updateSchema().allowIncompatibleChanges().addRequiredColumn("age", Types.LongType.get()).commit();
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+    if (testTableType != TestTableType.HIVE_CATALOG) {
       // We need to update columns for non-Hive catalogs
       shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
     }
@@ -591,7 +601,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
 
     // Rename the last_name column to family_name
     icebergTable.updateSchema().renameColumn("last_name", "family_name").commit();
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+    if (testTableType != TestTableType.HIVE_CATALOG) {
       // We need to update columns for non-Hive catalogs
       shell.executeStatement("ALTER TABLE customers UPDATE COLUMNS");
     }
@@ -814,7 +824,7 @@ public class TestHiveIcebergSchemaEvolution extends HiveIcebergStorageHandlerWit
     // Do this check only for Hive catalog, as this is the only case when the column types are updated
     // in the metastore. In case of other catalog types, the table is not updated in the metastore,
     // so no point in checking the column types.
-    if (TestTables.TestTableType.HIVE_CATALOG.equals(this.testTableType)) {
+    if (TestTableType.HIVE_CATALOG.equals(this.testTableType)) {
       table = shell.metastore().getTable("default", "types_table");
       Assert.assertNotNull(table);
       Assert.assertNotNull(table.getSd());

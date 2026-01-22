@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.ServletSecurity.AuthType;
@@ -40,6 +41,7 @@ import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
+import org.apache.hadoop.hive.metastore.security.TUGIContainingTransport;
 import org.apache.hadoop.hive.metastore.utils.LogUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -609,6 +611,15 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // If the IMetaStoreClient#close was called, HMSHandler#shutdown would have already
         // cleaned up thread local RawStore. Otherwise, do it now.
         HMSHandler.cleanupHandlerContext();
+        TTransport transport = tProtocol.getTransport();
+        if (transport instanceof TUGIContainingTransport t && t.getClientUGI() != null) {
+          UserGroupInformation clientUgi = t.getClientUGI();
+          try {
+            FileSystem.closeAllForUGI(clientUgi);
+          } catch (IOException exception) {
+            LOG.error("Could not clean up file-system handles for UGI: {}", clientUgi, exception);
+          }
+        }
       }
 
       @Override

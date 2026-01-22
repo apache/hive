@@ -20,139 +20,98 @@
 
 package org.apache.iceberg.mr.hive;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executors;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.ValidationException;
-import org.apache.iceberg.hadoop.ConfigProperties;
-import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.mr.TestHelper;
-import org.apache.iceberg.relocated.com.google.common.base.Throwables;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.concurrent.WithMockedStorageHandler;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.types.Types;
-import org.apache.iceberg.util.Tasks;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.MockedStatic;
+import org.junit.runners.Parameterized.Parameters;
 
-import static org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerTestUtils.init;
 import static org.apache.iceberg.types.Types.NestedField.required;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.mockStatic;
 
+@WithMockedStorageHandler
 public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngineBase {
 
-  private final String storageHandlerStub = "'org.apache.iceberg.mr.hive.HiveIcebergStorageHandlerStub'";
+  public static final String STORAGE_HANDLER_STUB =
+      "'org.apache.iceberg.mr.hive.test.concurrent.HiveIcebergStorageHandlerStub'";
+
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.fileFormat() == FileFormat.PARQUET &&
+        p.testTableType() == TestTableType.HIVE_CATALOG &&
+        p.isVectorized());
+  }
 
   @Before
-  public void setUpTables() throws NoSuchMethodException {
+  public void setUpTables() {
     PartitionSpec spec =
         PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA).identity("last_name")
             .bucket("customer_id", 16).build();
 
-//    Method method = HiveTableOperations.class.getDeclaredMethod("setStorageHandler", Map.class, Boolean.TYPE);
-//    method.setAccessible(true);
+    // create and insert an initial batch of records
+    testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2,
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    try (MockedStatic<HiveTableOperations> tableOps = mockStatic(HiveTableOperations.class, CALLS_REAL_METHODS)) {
-//      tableOps.when(() -> method.invoke(null, anyMap(), eq(true)))
-//          .thenAnswer(invocation -> null);
-      // create and insert an initial batch of records
-      testTables.createTable(shell, "customers", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
-          fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_2, 2, Collections.emptyMap(),
-          storageHandlerStub);
-    }
     // insert one more batch so that we have multiple data files within the same partition
     shell.executeStatement(testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1,
         TableIdentifier.of("default", "customers"), false));
-    TestUtilPhaser.getInstance();
-  }
-
-  @After
-  public void destroyTestSetUp() {
-    TestUtilPhaser.destroyInstance();
-  }
-
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(fileFormat.equals(FileFormat.PARQUET) && isVectorized &&
-        testTableType.equals(TestTables.TestTableType.HIVE_CATALOG));
   }
 
   @Test
-  public void testSingleFilterUpdate() {
-    String[] singleFilterQuery = new String[] { "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor'",
-        "UPDATE customers SET first_name='Changed' WHERE  last_name='Donnel'" };
+  public void testSingleFilterUpdate() throws Exception {
+    Assume.assumeTrue(formatVersion >= 2);
 
-    try {
-      Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
-        TestUtilPhaser.getInstance().getPhaser().register();
-        init(shell, testTables, temp);
-        HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-        HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-        HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-            RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
-        shell.executeStatement(singleFilterQuery[i]);
-        shell.closeSession();
-      });
-      List<Object[]> objects =
-          shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
-      Assert.assertEquals(12, objects.size());
-      List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
-          .add(1L, "Joanna", "Pierce")
-          .add(1L, "Changed", "Taylor")
-          .add(2L, "Changed", "Donnel")
-          .add(2L, "Susan", "Morrison")
-          .add(2L, "Bob", "Silver")
-          .add(2L, "Joanna", "Silver")
-          .add(3L, "Marci", "Barna")
-          .add(3L, "Blake", "Burr")
-          .add(3L, "Trudy", "Henderson")
-          .add(3L, "Trudy", "Johnson")
-          .add(4L, "Laci", "Zold")
-          .add(5L, "Peti", "Rozsaszin").build();
-      HiveIcebergTestUtils.validateData(expected,
-          HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
+    String[] sql = new String[] {
+        "UPDATE customers SET first_name='Changed' WHERE last_name='Taylor'",
+        "UPDATE customers SET first_name='Changed' WHERE last_name='Donnel'"
+    };
+    executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
 
-    } catch (Throwable ex) {
-      Throwable cause = Throwables.getRootCause(ex);
-      Assert.fail(String.valueOf(cause));
-    }
+    List<Object[]> objects =
+        shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
+    Assert.assertEquals(12, objects.size());
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(1L, "Joanna", "Pierce")
+        .add(1L, "Changed", "Taylor")
+        .add(2L, "Changed", "Donnel")
+        .add(2L, "Susan", "Morrison")
+        .add(2L, "Bob", "Silver")
+        .add(2L, "Joanna", "Silver")
+        .add(3L, "Marci", "Barna")
+        .add(3L, "Blake", "Burr")
+        .add(3L, "Trudy", "Henderson")
+        .add(3L, "Trudy", "Johnson")
+        .add(4L, "Laci", "Zold")
+        .add(5L, "Peti", "Rozsaszin").build();
+    HiveIcebergTestUtils.validateData(expected,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
   }
 
   @Test
-  public void testMultiFiltersUpdate() {
+  public void testMultiFiltersUpdate() throws Exception {
+    Assume.assumeTrue(formatVersion >= 2);
 
-    String[] multiFilterQuery =
-        new String[] { "UPDATE customers SET first_name='Changed' WHERE  last_name='Henderson' OR last_name='Johnson'",
-            "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor' AND customer_id=1" };
-
-    try {
-      Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
-        TestUtilPhaser.getInstance().getPhaser().register();
-        init(shell, testTables, temp);
-        HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-        HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-        HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-            RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
-        shell.executeStatement(multiFilterQuery[i]);
-        shell.closeSession();
-      });
-    } catch (Throwable ex) {
-      // If retry succeeds then it should not throw an ValidationException.
-      Throwable cause = Throwables.getRootCause(ex);
-      Assert.assertTrue(cause instanceof ValidationException);
-      if (cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
-        Assert.fail();
-      }
-    }
+    String[] sql = new String[] {
+        "UPDATE customers SET first_name='Changed' WHERE last_name='Henderson' OR last_name='Johnson'",
+        "UPDATE customers SET first_name='Changed' WHERE last_name='Taylor' AND customer_id=1"
+    };
+    executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
 
     List<Object[]> objects =
         shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
@@ -176,29 +135,13 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
   }
 
   @Test
-  public void testDeleteFilters() {
-    String[] sql = new String[] { "DELETE FROM customers WHERE  last_name='Taylor'",
+  public void testDeleteFilters() throws Exception {
+    String[] sql = new String[] {
+        "DELETE FROM customers WHERE  last_name='Taylor'",
         "DELETE FROM customers WHERE last_name='Donnel'",
-        "DELETE FROM customers WHERE last_name='Henderson' OR last_name='Johnson'" };
-
-    try {
-      Tasks.range(3).executeWith(Executors.newFixedThreadPool(3)).run(i -> {
-        TestUtilPhaser.getInstance().getPhaser().register();
-        init(shell, testTables, temp);
-        HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-        HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-        HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-            RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
-        shell.executeStatement(sql[i]);
-        shell.closeSession();
-      });
-    } catch (Throwable ex) {
-      Throwable cause = Throwables.getRootCause(ex);
-      Assert.assertTrue(cause instanceof ValidationException);
-      if (cause.getMessage().matches("^Found.*conflicting.*files(.*)")) {
-        Assert.fail();
-      }
-    }
+        "DELETE FROM customers WHERE last_name='Henderson' OR last_name='Johnson'"
+    };
+    executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
 
     List<Object[]> objects =
         shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
@@ -215,31 +158,48 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
         .build();
     HiveIcebergTestUtils.validateData(expected,
         HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
-    TestUtilPhaser.destroyInstance();
+  }
+
+  @Test
+  public void testConflictingDeletes() throws Exception {
+    String[] sql = new String[]{
+        "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'",
+        "DELETE FROM customers WHERE last_name='Johnson'"
+    };
+
+    try {
+      executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
+    } catch (ValidationException ex) {
+      if (formatVersion == 2) {
+        Assert.fail("Unexpected ValidationException for format version 2");
+      }
+      Assert.assertTrue(ex.getMessage().startsWith(
+          formatVersion == 3 ? "Found concurrently added DV" : "Found conflicting files"));
+    }
+
+    List<Object[]> objects =
+        shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
+    Assert.assertEquals(6, objects.size());
+    List<Record> expected = TestHelper.RecordsBuilder.newInstance(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .add(1L, "Sharon", "Taylor")
+        .add(2L, "Jake", "Donnel")
+        .add(2L, "Susan", "Morrison")
+        .add(2L, "Bob", "Silver")
+        .add(4L, "Laci", "Zold")
+        .add(5L, "Peti", "Rozsaszin")
+        .build();
+    HiveIcebergTestUtils.validateData(expected,
+        HiveIcebergTestUtils.valueForRow(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, objects), 0);
   }
 
   @Test
   public void testConflictingUpdates() {
-    String[] singleFilterQuery = new String[] { "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor'",
-        "UPDATE customers SET first_name='Changed' WHERE  last_name='Taylor'" };
+    String sql = "UPDATE customers SET first_name='Changed' " +
+        "WHERE last_name='Taylor'";
 
-    try {
-      Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
-        TestUtilPhaser.getInstance().getPhaser().register();
-        init(shell, testTables, temp);
-        HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-        HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-        HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-            RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
-        shell.executeStatement(singleFilterQuery[i]);
-        shell.closeSession();
-      });
-    } catch (Throwable ex) {
-      // Since there is a conflict it should throw ValidationException
-      Throwable cause = Throwables.getRootCause(ex);
-      Assert.assertTrue(cause instanceof ValidationException);
-      Assert.assertTrue(cause.getMessage().matches("^Found.*conflicting" + ".*files(.*)"));
-    }
+    Throwable ex = Assert.assertThrows(ValidationException.class,
+        () -> executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql));
+    Assert.assertTrue(ex.getMessage().startsWith("Found conflicting files"));
 
     List<Object[]> objects =
         shell.executeStatement("SELECT * FROM customers ORDER BY customer_id, last_name, first_name");
@@ -263,8 +223,47 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
   }
 
   @Test
-  public void testConcurrentInsertAndInsertOverwrite() {
-    Assume.assumeTrue(formatVersion == 2);
+  public void testConflictingUpdateAndDelete() {
+    Assume.assumeTrue(formatVersion >= 2);
+
+    String[] sql = new String[]{
+        "DELETE FROM customers WHERE customer_id=3 or first_name='Joanna'",
+        "UPDATE customers SET last_name='Changed' WHERE customer_id=3 or first_name='Joanna'"
+    };
+
+    Throwable ex = Assert.assertThrows(ValidationException.class,
+        () -> executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql));
+    Assert.assertTrue(ex.getMessage().startsWith("Found new conflicting delete files"));
+
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM customers " +
+        "WHERE customer_id != 3 and first_name != 'Joanna'");
+    Assert.assertEquals(6L, res.getFirst()[0]);
+  }
+
+  @Test
+  public void testConflictingMergeInserts() {
+    testTables.createTable(shell, "source", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.OTHER_CUSTOMER_RECORDS_1);
+
+    testTables.createTable(shell, "target", HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        PartitionSpec.unpartitioned(), fileFormat, HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS,
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
+
+    String sql = "MERGE INTO target t USING source src ON t.customer_id = src.customer_id " +
+        "WHEN NOT MATCHED THEN " +
+        "INSERT values (src.customer_id, src.first_name, src.last_name)";
+
+    Throwable ex = Assert.assertThrows(ValidationException.class,
+        () -> executeConcurrently(false, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql));
+    Assert.assertTrue(ex.getMessage().startsWith("Found conflicting files"));
+
+    List<Object[]> res = shell.executeStatement("SELECT count(*) FROM target");
+    Assert.assertEquals(6L, res.getFirst()[0]);
+  }
+
+  @Test
+  public void testConcurrentInsertAndOverwrite() throws Exception {
+    Assume.assumeTrue(formatVersion >= 2);
 
     Schema schema = new Schema(
         required(1, "i", Types.IntegerType.get()),
@@ -282,31 +281,13 @@ public class TestConflictingDataFiles extends HiveIcebergStorageHandlerWithEngin
           .add(40, 40)
           .add(30, 30)
           .build(),
-        formatVersion);
+        formatVersion, Collections.emptyMap(), STORAGE_HANDLER_STUB);
 
-    String[] singleFilterQuery = new String[] { "INSERT INTO ice_t SELECT i*100, p*100 FROM ice_t",
-        "INSERT OVERWRITE TABLE ice_t SELECT i+1, p+1 FROM ice_t" };
-
-    Tasks.range(2).executeWith(Executors.newFixedThreadPool(2)).run(i -> {
-      if (i == 1) {
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      }
-      init(shell, testTables, temp);
-      HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, isVectorized);
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_FETCH_TASK_CONVERSION, "none");
-
-      HiveConf.setBoolVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_TXN_EXT_LOCKING_ENABLED, true);
-      shell.getHiveConf().setBoolean(ConfigProperties.LOCK_HIVE_ENABLED, false);
-
-      HiveConf.setVar(shell.getHiveConf(), HiveConf.ConfVars.HIVE_QUERY_REEXECUTION_STRATEGIES,
-          RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT);
-      shell.executeStatement(singleFilterQuery[i]);
-      shell.closeSession();
-    });
+    String[] sql = new String[] {
+        "INSERT INTO ice_t SELECT i*100, p*100 FROM ice_t",
+        "INSERT OVERWRITE TABLE ice_t SELECT i+1, p+1 FROM ice_t"
+    };
+    executeConcurrently(true, RETRY_STRATEGIES_WITHOUT_WRITE_CONFLICT, sql);
 
     List<Object[]> objects =
         shell.executeStatement("SELECT * FROM ice_t");

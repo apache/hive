@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -86,7 +87,8 @@ public class LogDivertAppender {
     private static final Pattern executionIncludeNamePattern = Pattern.compile(Joiner.on("|").
         join(new String[]{"org.apache.hadoop.mapreduce.JobSubmitter",
           "org.apache.hadoop.mapreduce.Job", "SessionState", "ReplState", Task.class.getName(),
-          TezTask.class.getName(), Driver.class.getName(), BasicStatsTask.class.getName()}));
+          TezTask.class.getName(), Driver.class.getName(), BasicStatsTask.class.getName(),
+          ThriftHiveMetaStoreClient.class.getName()}));
 
     /* Patterns that are included in performance logging level.
      * In performance mode, show execution and performance logger messages.

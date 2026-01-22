@@ -32,6 +32,10 @@ import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.hadoop.ConfigProperties;
+import org.apache.iceberg.mr.hive.test.TestTables;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -42,6 +46,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 
 /**
@@ -53,13 +58,13 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   @Parameterized.Parameter(4)
   public String statsSource;
 
-  @Parameterized.Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}, statsSource={4}")
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}, statsSource={4}")
   public static Collection<Object[]> parameters() {
-    Collection<Object[]> baseParams = HiveIcebergStorageHandlerWithEngineBase.parameters();
-
     Collection<Object[]> testParams = Lists.newArrayList();
-    for (String statsSource : new String[]{"iceberg", "metastore"}) {
-      for (Object[] params : baseParams) {
+
+    for (Object[] params : HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.isVectorized() && p.formatVersion() == 2)) {
+      for (String statsSource : new String[]{"iceberg", "metastore"}) {
         testParams.add(ArrayUtils.add(params, statsSource));
       }
     }
@@ -73,8 +78,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testAnalyzeTableComputeStatistics() throws IOException, TException, InterruptedException {
-    Assume.assumeTrue(statsSource.equals("iceberg") ||
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(statsSource.equals("iceberg") || testTableType == TestTableType.HIVE_CATALOG);
 
     String dbName = "default";
     String tableName = "customers";
@@ -113,7 +117,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+    if (testTableType != TestTableType.HIVE_CATALOG) {
       // If the location is set and we have to gather stats, then we have to update the table stats now
       shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
     }
@@ -133,7 +137,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testStatsWithPessimisticLockInsert() {
-    Assume.assumeTrue(testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(testTableType == TestTableType.HIVE_CATALOG);
     TableIdentifier identifier = getTableIdentifierWithPessimisticLock("false");
     String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
     shell.executeStatement(insert);
@@ -144,7 +148,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testStatsWithPessimisticLockInsertWhenHiveLockEnabled() {
-    Assume.assumeTrue(testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(testTableType == TestTableType.HIVE_CATALOG);
     TableIdentifier identifier = getTableIdentifierWithPessimisticLock("true");
     String insert = testTables.getInsertQuery(HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS, identifier, false);
     AssertHelpers.assertThrows(
@@ -191,7 +195,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA, spec,
         fileFormat, ImmutableList.of());
 
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+    if (testTableType != TestTableType.HIVE_CATALOG) {
       // If the location is set and we have to gather stats, then we have to update the table stats now
       shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
     }
@@ -206,7 +210,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testStatsWithCTAS() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTableType.HIVE_CATALOG);
 
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
     shell.executeStatement(testTables.getInsertQuery(
@@ -225,7 +229,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
 
   @Test
   public void testStatsWithPartitionedCTAS() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG);
+    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTableType.HIVE_CATALOG);
 
     shell.executeStatement("CREATE TABLE source (id bigint, name string) PARTITIONED BY (dept string) STORED AS ORC");
     shell.executeStatement(testTables.getInsertQuery(
@@ -252,7 +256,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
   @Test
   public void testStatsRemoved() throws IOException {
     Assume.assumeTrue("Only HiveCatalog can remove stats which become obsolete",
-        testTableType == TestTables.TestTableType.HIVE_CATALOG);
+        testTableType == TestTableType.HIVE_CATALOG);
 
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
 
@@ -307,7 +311,7 @@ public class TestHiveIcebergStatistics extends HiveIcebergStorageHandlerWithEngi
     testTables.createTable(shell, identifier.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         PartitionSpec.unpartitioned(), fileFormat, ImmutableList.of());
 
-    if (testTableType != TestTables.TestTableType.HIVE_CATALOG) {
+    if (testTableType != TestTableType.HIVE_CATALOG) {
       // If the location is set and we have to gather stats, then we have to update the table stats now
       shell.executeStatement("ANALYZE TABLE " + identifier + " COMPUTE STATISTICS FOR COLUMNS");
     }

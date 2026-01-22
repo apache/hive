@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.StreamSupport;
 import org.apache.hadoop.fs.Path;
@@ -35,12 +36,19 @@ import org.apache.parquet.schema.GroupType;
 import org.apache.parquet.schema.MessageType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeTrue;
 
 public class TestHiveIcebergVariant extends HiveIcebergStorageHandlerWithEngineBase {
   private static final String TYPED_VALUE_FIELD = "typed_value";
+
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.formatVersion() == 3);
+  }
 
   @Test
   public void testVariantSelectProjection() throws IOException {

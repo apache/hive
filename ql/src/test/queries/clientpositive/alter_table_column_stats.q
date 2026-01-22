@@ -266,8 +266,8 @@ use default;
 drop database statsdb1;
 drop database statsdb2;
 
--- Test for external tables with metastore.try.direct.sql.ddl as false
-set metaconf:metastore.try.direct.sql.ddl=false;
+-- Test for external tables with metastore.try.direct.sql as false
+set metaconf:metastore.try.direct.sql=false;
 
 drop database if exists statsdb1;
 create database statsdb1;

@@ -97,7 +97,6 @@ public class HiveConf extends Configuration {
   private static byte[] confVarByteArray = null;
 
   private static final Map<String, ConfVars> vars = new HashMap<String, ConfVars>();
-  private static final Map<String, ConfVars> metaConfs = new HashMap<String, ConfVars>();
   private final List<String> restrictList = new ArrayList<String>();
   private final Set<String> hiddenSet = new HashSet<String>();
   private final Set<String> lockedSet = new HashSet<>();
@@ -252,117 +251,10 @@ public class HiveConf extends Configuration {
     }
   }
 
-
-
-
   @InterfaceAudience.Private
   public static final String PREFIX_LLAP = "llap.";
   @InterfaceAudience.Private
   public static final String PREFIX_HIVE_LLAP = "hive.llap.";
-
-  /**
-   * Metastore related options that the db is initialized against. When a conf
-   * var in this is list is changed, the metastore instance for the CLI will
-   * be recreated so that the change will take effect.
-   */
-  public static final HiveConf.ConfVars[] metaVars = {
-      HiveConf.ConfVars.METASTORE_WAREHOUSE,
-      HiveConf.ConfVars.REPL_DIR,
-      HiveConf.ConfVars.METASTORE_URIS,
-      HiveConf.ConfVars.METASTORE_SELECTION,
-      HiveConf.ConfVars.METASTORE_SERVER_PORT,
-      HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES,
-      HiveConf.ConfVars.METASTORE_THRIFT_FAILURE_RETRIES,
-      HiveConf.ConfVars.METASTORE_CLIENT_CONNECT_RETRY_DELAY,
-      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
-      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_LIFETIME,
-      HiveConf.ConfVars.METASTORE_PWD,
-      HiveConf.ConfVars.METASTORE_CONNECT_URL_HOOK,
-      HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY,
-      HiveConf.ConfVars.METASTORE_SERVER_MIN_THREADS,
-      HiveConf.ConfVars.METASTORE_SERVER_MAX_THREADS,
-      HiveConf.ConfVars.METASTORE_INT_ORIGINAL,
-      HiveConf.ConfVars.METASTORE_INT_ARCHIVED,
-      HiveConf.ConfVars.METASTORE_INT_EXTRACTED,
-      HiveConf.ConfVars.METASTORE_KERBEROS_KEYTAB_FILE,
-      HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL,
-      HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL,
-      HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE,
-      HiveConf.ConfVars.METASTORE_CACHE_PINOBJTYPES,
-      HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE,
-      HiveConf.ConfVars.METASTORE_VALIDATE_TABLES,
-      HiveConf.ConfVars.METASTORE_DATANUCLEUS_INIT_COL_INFO,
-      HiveConf.ConfVars.METASTORE_VALIDATE_COLUMNS,
-      HiveConf.ConfVars.METASTORE_VALIDATE_CONSTRAINTS,
-      HiveConf.ConfVars.METASTORE_STORE_MANAGER_TYPE,
-      HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL,
-      HiveConf.ConfVars.METASTORE_TRANSACTION_ISOLATION,
-      HiveConf.ConfVars.METASTORE_CACHE_LEVEL2,
-      HiveConf.ConfVars.METASTORE_CACHE_LEVEL2_TYPE,
-      HiveConf.ConfVars.METASTORE_IDENTIFIER_FACTORY,
-      HiveConf.ConfVars.METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK,
-      HiveConf.ConfVars.METASTORE_AUTHORIZATION_STORAGE_AUTH_CHECKS,
-      HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX,
-      HiveConf.ConfVars.METASTORE_EVENT_LISTENERS,
-      HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
-      HiveConf.ConfVars.METASTORE_EVENT_CLEAN_FREQ,
-      HiveConf.ConfVars.METASTORE_EVENT_EXPIRY_DURATION,
-      HiveConf.ConfVars.METASTORE_EVENT_MESSAGE_FACTORY,
-      HiveConf.ConfVars.METASTORE_FILTER_HOOK,
-      HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
-      HiveConf.ConfVars.METASTORE_END_FUNCTION_LISTENERS,
-      HiveConf.ConfVars.METASTORE_PART_INHERIT_TBL_PROPS,
-      HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_OBJECTS_MAX,
-      HiveConf.ConfVars.METASTORE_INIT_HOOKS,
-      HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS,
-      HiveConf.ConfVars.HMS_HANDLER_ATTEMPTS,
-      HiveConf.ConfVars.HMS_HANDLER_INTERVAL,
-      HiveConf.ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF,
-      HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
-      HiveConf.ConfVars.METASTORE_ORM_RETRIEVE_MAPNULLS_AS_EMPTY_STRINGS,
-      HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
-      HiveConf.ConfVars.USERS_IN_ADMIN_ROLE,
-      HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-      HiveConf.ConfVars.HIVE_TXN_MANAGER,
-      HiveConf.ConfVars.HIVE_TXN_TIMEOUT,
-      HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES,
-      HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE,
-      HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH,
-      HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX,
-      HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_TUNER,
-      HiveConf.ConfVars.HIVE_METASTORE_STATS_NDV_DENSITY_FUNCTION,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_ENABLED,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_SIZE,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_PARTITIONS,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_FPP,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_VARIANCE,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_TTL,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_WRITER_WAIT,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_READER_WAIT,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_MAX_FULL,
-      HiveConf.ConfVars.METASTORE_AGGREGATE_STATS_CACHE_CLEAN_UNTIL,
-      HiveConf.ConfVars.METASTORE_FASTPATH,
-      HiveConf.ConfVars.METASTORE_HBASE_FILE_METADATA_THREADS,
-      HiveConf.ConfVars.METASTORE_WM_DEFAULT_POOL_SIZE
-      };
-
-  /**
-   * User configurable Metastore vars
-   */
-  static final HiveConf.ConfVars[] metaConfVars = {
-      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL,
-      HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL_DDL,
-      HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT,
-      HiveConf.ConfVars.METASTORE_PARTITION_NAME_WHITELIST_PATTERN,
-      HiveConf.ConfVars.METASTORE_CAPABILITY_CHECK,
-      HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES
-  };
-
-  static {
-    for (ConfVars confVar : metaConfVars) {
-      metaConfs.put(confVar.varname, confVar);
-    }
-  }
 
   public static final String HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME = "hive.llap.daemon.service.principal";
   public static final String HIVE_SERVER2_AUTHENTICATION_LDAP_USERMEMBERSHIPKEY_NAME =
@@ -6466,10 +6358,6 @@ public class HiveConf extends Configuration {
     return vars.get(name);
   }
 
-  public static ConfVars getMetaConf(String name) {
-    return metaConfs.get(name);
-  }
-
   public String getVar(ConfVars var) {
     return getVar(this, var);
   }
@@ -6664,12 +6552,6 @@ public class HiveConf extends Configuration {
     }
     // Overlay the values of any system properties and manual overrides
     applySystemProperties();
-
-    if ((this.get("hive.metastore.ds.retry.attempts") != null) ||
-      this.get("hive.metastore.ds.retry.interval") != null) {
-        LOG.warn("DEPRECATED: hive.metastore.ds.retry.* no longer has any effect.  " +
-        "Use hive.hmshandler.retry.* instead");
-    }
 
     // if the running class was loaded directly (through eclipse) rather than through a
     // jar then this would be needed
