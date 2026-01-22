@@ -1813,6 +1813,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   }
 
   @Override
+  public boolean isRowLineageSupported(Map<String, String> tableProperties) {
+    return tableProperties != null ? IcebergTableUtil.formatVersion(tableProperties) >= 3 : false;
+  }
+
+  @Override
   public SnapshotContext getCurrentSnapshotContext(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
     TableDesc tableDesc = Utilities.getTableDesc(hmsTable);
     Table table = IcebergTableUtil.getTable(conf, tableDesc.getProperties());

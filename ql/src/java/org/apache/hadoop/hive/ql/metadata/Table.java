@@ -1389,6 +1389,12 @@ public class Table implements Serializable {
         isBlank(getMetaTable())) {
       virtualColumns.add(VirtualColumn.SNAPSHOT_ID);
     }
+
+    if (isNonNative() && getStorageHandler().isRowLineageSupported(getParameters()) &&
+        isBlank(getMetaTable())) {
+      virtualColumns.add(VirtualColumn.ROW_ID);
+      virtualColumns.add(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER);
+    }
     
     return virtualColumns;
   }

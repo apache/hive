@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import java.util.Optional;
+
 import org.apache.hadoop.conf.Configuration;
 
 public class PositionDeleteInfo {
@@ -28,6 +30,8 @@ public class PositionDeleteInfo {
   private static final String CONF_KEY_FILE_PATH = "hive.io.context.position.delete.file.path";
   private static final String CONF_KEY_ROW_POSITION = "hive.io.context.position.delete.row.position";
   private static final String CONF_KEY_PARTITION_PROJECTION = "hive.io.context.position.delete.partition.projection";
+  private static final String CONF_KEY_ROW_ID = "hive.io.context.row.id";
+  private static final String CONF_KEY_LAST_UPDATED_SEQ = "hive.io.context.last.updated.sequence.number";
 
   public static PositionDeleteInfo parseFromConf(Configuration conf) {
     int specId = conf.getInt(CONF_KEY_SPEC_ID, -1);
@@ -35,16 +39,22 @@ public class PositionDeleteInfo {
     String filePath = conf.get(CONF_KEY_FILE_PATH);
     long rowPos = conf.getLong(CONF_KEY_ROW_POSITION, -1);
     String partitionProjection = conf.get(CONF_KEY_PARTITION_PROJECTION);
-    return new PositionDeleteInfo(specId, partHash, filePath, rowPos, partitionProjection);
+    Long rowId = Optional.ofNullable(conf.get(CONF_KEY_ROW_ID)).map(Long::parseLong).orElse(null);
+    Long lastUpdatedSequenceNumber =
+        Optional.ofNullable(conf.get(CONF_KEY_LAST_UPDATED_SEQ)).map(Long::parseLong).orElse(null);
+    return new PositionDeleteInfo(specId, partHash, filePath, rowPos, partitionProjection, rowId,
+        lastUpdatedSequenceNumber);
   }
 
-  public static void setIntoConf(Configuration conf, int specId, long partHash, String filePath,
-                                 long filePos, String partitionProjection) {
+  public static void setIntoConf(Configuration conf, int specId, long partHash, String filePath, long filePos,
+      String partitionProjection, long rowId, long lastUpdatedSequenceNumber) {
     conf.setInt(CONF_KEY_SPEC_ID, specId);
     conf.setLong(CONF_KEY_PART_HASH, partHash);
     conf.set(CONF_KEY_FILE_PATH, filePath);
     conf.setLong(CONF_KEY_ROW_POSITION, filePos);
     conf.set(CONF_KEY_PARTITION_PROJECTION, partitionProjection);
+    conf.setLong(CONF_KEY_ROW_ID, rowId);
+    conf.setLong(CONF_KEY_LAST_UPDATED_SEQ, lastUpdatedSequenceNumber);
   }
 
   private final int specId;
@@ -52,13 +62,26 @@ public class PositionDeleteInfo {
   private final String filePath;
   private final long filePos;
   private final String partitionProjection;
+  private final Long rowId;
+  private final Long lastUpdatedSequenceNumber;
 
-  public PositionDeleteInfo(int specId, long partitionHash, String filePath, long filePos, String partitionProjection) {
+  public PositionDeleteInfo(int specId, long partitionHash, String filePath, long filePos, String partitionProjection,
+      Long rowId, Long lastUpdatedSequenceNumber) {
     this.specId = specId;
     this.partitionHash = partitionHash;
     this.filePath = filePath;
     this.filePos = filePos;
     this.partitionProjection = partitionProjection;
+    this.rowId = rowId;
+    this.lastUpdatedSequenceNumber = lastUpdatedSequenceNumber;
+  }
+
+  public Long getRowId() {
+    return rowId;
+  }
+
+  public Long getLastUpdatedSequenceNumber() {
+    return lastUpdatedSequenceNumber;
   }
 
   public int getSpecId() {

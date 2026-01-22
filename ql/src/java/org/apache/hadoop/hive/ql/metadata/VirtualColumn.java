@@ -57,6 +57,8 @@ public enum VirtualColumn {
   ROW_POSITION("ROW__POSITION", TypeInfoFactory.longTypeInfo),
   SNAPSHOT_ID("SNAPSHOT__ID", TypeInfoFactory.longTypeInfo),
   PARTITION_PROJECTION("PARTITION__PROJECTION", TypeInfoFactory.stringTypeInfo),
+  ROW_ID("ROW_ID", TypeInfoFactory.longTypeInfo),
+  LAST_UPDATED_SEQUENCE_NUMBER("LAST_UPDATED_SEQUENCE_NUMBER", TypeInfoFactory.longTypeInfo),
 
   /**
    * GROUPINGID is used with GROUP BY GROUPINGS SETS, ROLLUP and CUBE.

@@ -66,11 +66,17 @@ public class IcebergAcidUtil {
     FILE_READ_META_COLS.put(PARTITION_STRUCT_META_COL, 1);
     FILE_READ_META_COLS.put(MetadataColumns.FILE_PATH, 2);
     FILE_READ_META_COLS.put(MetadataColumns.ROW_POSITION, 3);
+    FILE_READ_META_COLS.put(MetadataColumns.ROW_ID, 4);
+    FILE_READ_META_COLS.put(MetadataColumns.LAST_UPDATED_SEQUENCE_NUMBER, 5);
 
     VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.PARTITION_SPEC_ID.getName(), MetadataColumns.SPEC_ID);
     VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.PARTITION_HASH.getName(), PARTITION_STRUCT_META_COL);
     VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.FILE_PATH.getName(), MetadataColumns.FILE_PATH);
     VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.ROW_POSITION.getName(), MetadataColumns.ROW_POSITION);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName(),
+        MetadataColumns.LAST_UPDATED_SEQUENCE_NUMBER);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.ROWID.getName(),
+        MetadataColumns.ROW_ID);
   }
 
   private static final Types.NestedField PARTITION_HASH_META_COL = Types.NestedField.required(
@@ -195,6 +201,14 @@ public class IcebergAcidUtil {
     return rec.get(DELETE_FILE_META_COLS.get(MetadataColumns.ROW_POSITION), Long.class);
   }
 
+  public static long parseRowId(Record rec) {
+    return rec.get(FILE_READ_META_COLS.get(MetadataColumns.ROW_ID), Long.class);
+  }
+
+  public static long parseLastUpdatedSequenceNumber(Record rec) {
+    return rec.get(FILE_READ_META_COLS.get(MetadataColumns.LAST_UPDATED_SEQUENCE_NUMBER), Long.class);
+  }
+
   public static long computeHash(StructLike struct) {
     long partHash = -1;
     if (struct != null) {
@@ -223,7 +237,7 @@ public class IcebergAcidUtil {
         CloseableIterator<T> currentIterator, Schema expectedSchema, Configuration conf) {
       this.currentIterator = currentIterator;
       this.current = GenericRecord.create(
-          new Schema(expectedSchema.columns().subList(4, expectedSchema.columns().size())));
+          new Schema(expectedSchema.columns().subList(FILE_READ_META_COLS.size(), expectedSchema.columns().size())));
       this.conf = conf;
     }
 
@@ -247,7 +261,9 @@ public class IcebergAcidUtil {
           IcebergAcidUtil.computePartitionHash(rec),
           IcebergAcidUtil.parseFilePath(rec),
           IcebergAcidUtil.parseFilePosition(rec),
-          StringUtils.EMPTY);
+          StringUtils.EMPTY,
+          IcebergAcidUtil.parseRowId(rec),
+          IcebergAcidUtil.parseLastUpdatedSequenceNumber(rec));
       return (T) current;
     }
   }
