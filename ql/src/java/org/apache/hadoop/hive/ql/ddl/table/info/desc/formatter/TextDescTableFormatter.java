@@ -172,6 +172,7 @@ class TextDescTableFormatter extends DescTableFormatter {
     String partitionData = "";
     if (columnPath == null) {
       List<FieldSchema> partitionColumns = null;
+      // @TODO: HIVE-29413 : implement generic implemntation of getPartCols()
       if (table.isPartitioned()) {
         partitionColumns = table.hasNonNativePartitionSupport() ?
             table.getStorageHandler().getPartitionKeys(table) :
