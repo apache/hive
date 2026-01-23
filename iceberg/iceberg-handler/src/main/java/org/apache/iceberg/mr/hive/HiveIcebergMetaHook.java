@@ -574,8 +574,25 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     this.tableProperties = IcebergTableProperties.getTableProperties(table, conf);
     this.icebergTable = Catalogs.loadTable(conf, tableProperties);
 
-    Expression predicate = CollectionUtils.isEmpty(partNames) ?
-        Expressions.alwaysTrue() : Expressions.alwaysFalse();
+    Expression predicate = buildDeletePredicate(partNames);
+
+    DeleteFiles delete = icebergTable.newDelete();
+    String branchName = context.getProperties().get(Catalogs.SNAPSHOT_REF);
+    if (branchName != null) {
+      delete.toBranch(HiveUtils.getTableSnapshotRef(branchName));
+    }
+
+    delete.deleteFromRowFilter(predicate);
+    delete.commit();
+    context.putToProperties("truncateSkipDataDeletion", "true");
+  }
+
+  private Expression buildDeletePredicate(List<String> partNames) throws MetaException {
+    if (CollectionUtils.isEmpty(partNames)) {
+      return Expressions.alwaysTrue();
+    }
+
+    Expression predicate = Expressions.alwaysFalse();
 
     for (String partName : partNames) {
       try {
@@ -585,18 +602,12 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
         predicate = Expressions.or(predicate, partitionExpr);
       } catch (Exception e) {
-        throw new MetaException("Failed to generate expression for partition: " + partName + ". " + e.getMessage());
+        throw new MetaException(
+            "Failed to generate expression for partition: " + partName + ". " + e.getMessage());
       }
     }
 
-    DeleteFiles delete = icebergTable.newDelete();
-    String branchName = context.getProperties().get(Catalogs.SNAPSHOT_REF);
-    if (branchName != null) {
-      delete.toBranch(HiveUtils.getTableSnapshotRef(branchName));
-    }
-    delete.deleteFromRowFilter(predicate);
-    delete.commit();
-    context.putToProperties("truncateSkipDataDeletion", "true");
+    return predicate;
   }
 
   @Override public boolean createHMSTableInHook() {
