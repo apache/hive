@@ -2021,8 +2021,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
    * @param hmsTable A Hive table instance.
    * @param partitionSpec Map containing partition specification given by user.
    * @return true if we can perform metadata delete, otherwise false.
-   * @throws SemanticException Exception raised when a partition transform is being used
-   * or when partition column is not present in the table.
+   * @throws SemanticException Exception raised when partition column is not present in the table.
    */
   @Override
   public boolean canUseTruncate(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Map<String, String> partitionSpec)
@@ -2034,13 +2033,16 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return false;
     }
 
-    Expression finalExp = IcebergTableUtil.generateExpressionFromPartitionSpec(table, partitionSpec, true);
-    FindFiles.Builder builder = new FindFiles.Builder(table).withRecordsMatching(finalExp);
+    Expression partitionExpr = IcebergTableUtil.generateExpressionFromPartitionSpec(
+        table, partitionSpec, true);
+
+    FindFiles.Builder builder = new FindFiles.Builder(table).withRecordsMatching(partitionExpr);
     Set<DataFile> dataFiles = Sets.newHashSet(builder.collect());
+
     boolean result = true;
     for (DataFile dataFile : dataFiles) {
       PartitionData partitionData = (PartitionData) dataFile.partition();
-      Expression residual = ResidualEvaluator.of(table.spec(), finalExp, false)
+      Expression residual = ResidualEvaluator.of(table.spec(), partitionExpr, false)
           .residualFor(partitionData);
       if (!residual.isEquivalentTo(Expressions.alwaysTrue())) {
         result = false;

@@ -466,11 +466,12 @@ public class IcebergTableUtil {
 
       // When there are multiple partition fields for the same source column (due to partition evolution),
       // create an OR expression that matches any of the transforms
+      Types.NestedField sourceField = table.schema().findField(partitionFields.getFirst().sourceId());
+      Object sourceValue = Conversions.fromPartitionString(sourceField.type(), entry.getValue());
+
       Expression columnPredicate = Expressions.alwaysFalse();
 
       for (PartitionField partitionField : partitionFields) {
-        Types.NestedField sourceField = table.schema().findField(partitionField.sourceId());
-        Object sourceValue = Conversions.fromPartitionString(sourceField.type(), entry.getValue());
         // Apply the transform to the source value
         @SuppressWarnings("unchecked")
         Transform<Object, Object> transform = (Transform<Object, Object>) partitionField.transform();
@@ -512,7 +513,7 @@ public class IcebergTableUtil {
       throws SemanticException {
     // Get partitions sorted by spec ID descending
     List<String> partitionNames = getPartitionNames(conf, table, partitionSpec, false,
-        Comparator.comparingInt((Map.Entry<String, Integer> e) -> e.getValue()).reversed());
+        Map.Entry.comparingByValue(Comparator.reverseOrder()));
 
     if (partitionNames.isEmpty()) {
       return null;
@@ -564,7 +565,7 @@ public class IcebergTableUtil {
       Comparator<Map.Entry<String, Integer>> specIdComparator) throws SemanticException {
     Table icebergTable = getTable(conf, table.getTTable());
 
-    Expression filterExpression = IcebergTableUtil.generateExpressionFromPartitionSpec(
+    Expression partitionExpr = IcebergTableUtil.generateExpressionFromPartitionSpec(
         icebergTable, partitionSpec, latestSpecOnly);
 
     int latestSpecId = icebergTable.spec().specId();
@@ -577,7 +578,7 @@ public class IcebergTableUtil {
       return FluentIterable.from(fileScanTasks)
           .transformAndConcat(task -> task.asDataTask().rows())
           .transform(row -> extractPartitionDataAndSpec(row, icebergTable, partitionType))
-          .filter(entry -> matchesPartition(entry, filterExpression, latestSpecOnly, latestSpecId))
+          .filter(entry -> matchesPartition(entry, partitionExpr, latestSpecOnly, latestSpecId))
           // Create (partitionPath, specId) entries for sorting
           .transform(entry -> Maps.immutableEntry(
               entry.getValue().partitionToPath(entry.getKey()),
