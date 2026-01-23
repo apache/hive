@@ -61,14 +61,14 @@ public class DescTableDesc implements DDLDesc, Serializable {
   private final boolean isExtended;
   private final boolean isFormatted;
 
-  public DescTableDesc(Path resFile, TableName tableName, Partition partition,
-      String columnPath, boolean isExtended, boolean isFormatted) {
+  public DescTableDesc(Path resFile, TableName tableName, Partition partition, String columnPath,
+      boolean isExtended, boolean isFormatted) {
     this.resFile = resFile.toString();
     this.tableName = tableName;
+    this.partition = partition;
     this.columnPath = columnPath;
     this.isExtended = isExtended;
     this.isFormatted = isFormatted;
-    this.partition = partition;
   }
 
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
@@ -85,9 +85,13 @@ public class DescTableDesc implements DDLDesc, Serializable {
     return tableName;
   }
 
+  public Partition getPartition() {
+    return partition;
+  }
+
   @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartitionSpec() {
-    return this.partition.getSpec();
+    return partition != null ? partition.getSpec() : null;
   }
 
   public String getColumnPath() {
@@ -104,10 +108,6 @@ public class DescTableDesc implements DDLDesc, Serializable {
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isFormatted() {
     return isFormatted;
-  }
-
-  public Partition getPartition() {
-    return this.partition;
   }
 
   public static List<String> getColumnStatisticsHeaders(boolean histogramEnabled) {

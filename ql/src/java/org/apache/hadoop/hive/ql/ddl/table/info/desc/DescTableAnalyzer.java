@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -32,7 +31,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -75,16 +73,11 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
     }
     Table table = getTable(tableName);
 
-    // process the second child, if exists, node to get partition spec(s)
-    Map<String, String> partitionSpec = getPartitionSpec(db, tableTypeExpr, tableName);
-    Partition partition = null;
-    if (partitionSpec != null) {
-      // validate that partition exists
-      partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
-    }
+    // process the second child, if exists, node to get partition
+    Partition partition = getPartition(db, tableTypeExpr, table);
 
     // process the third child node,if exists, to get partition spec(s)
-    String columnPath = getColumnPath(tableTypeExpr, tableName, partitionSpec);
+    String columnPath = getColumnPath(tableTypeExpr, tableName, partition);
 
     boolean showColStats = false;
     boolean isFormatted = false;
@@ -118,7 +111,7 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
    * Example: lintString.$elem$.myint.
    * Return table name for column name if no column has been specified.
    */
-  private String getColumnPath(ASTNode node, TableName tableName, Map<String, String> partitionSpec) {
+  private String getColumnPath(ASTNode node, TableName tableName, Partition partition) {
     // if this ast has only one child, then no column name specified.
     if (node.getChildCount() == 1) {
       return null;
@@ -126,7 +119,8 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
 
     // Second child node could be partitionSpec or column
     if (node.getChildCount() > 1) {
-      ASTNode columnNode = (partitionSpec == null) ? (ASTNode) node.getChild(1) : (ASTNode) node.getChild(2);
+      ASTNode columnNode = (partition == null) ?
+          (ASTNode) node.getChild(1) : (ASTNode) node.getChild(2);
       if (columnNode != null) {
         return String.join(".", tableName.getNotEmptyDbTable(), DDLUtils.getFQName(columnNode));
       }
@@ -135,7 +129,8 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  private Map<String, String> getPartitionSpec(Hive db, ASTNode node, TableName tableName) throws SemanticException {
+  private Partition getPartition(Hive db, ASTNode node, Table table)
+      throws SemanticException {
     // if this node has only one child, then no partition spec specified.
     if (node.getChildCount() == 1) {
       return null;
@@ -150,28 +145,33 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
     if (node.getChild(1).getType() == HiveParser.TOK_PARTSPEC) {
       ASTNode partNode = (ASTNode) node.getChild(1);
 
-      Table table;
-      try {
-        table = db.getTable(tableName.getNotEmptyDbTable());
-      } catch (InvalidTableException e) {
-        throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName.getNotEmptyDbTable()), e);
-      } catch (HiveException e) {
-        throw new SemanticException(e.getMessage(), e);
-      }
-
       Map<String, String> partitionSpec;
       try {
         partitionSpec = getValidatedPartSpec(table, partNode, db.getConf(), false);
       } catch (SemanticException e) {
-        // get exception in resolving partition it could be DESCRIBE table key
-        // return null, continue processing for DESCRIBE table key
+        // continue processing for DESCRIBE table key
         return null;
       }
 
-      if (partitionSpec != null) {
-        return partitionSpec;
+      if (partitionSpec == null || partitionSpec.isEmpty()) {
+        return null;
       }
+
+      Partition partition;
+      try {
+        partition = db.getPartition(table, partitionSpec);
+      } catch (HiveException e) {
+        // continue processing for DESCRIBE table key
+        return null;
+      }
+
+      if (partition == null) {
+        throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partitionSpec.toString()));
+      }
+
+      return partition;
     }
+    // If child(1) is not TOK_PARTSPEC, it's a column name, return null
     return null;
   }
 }
