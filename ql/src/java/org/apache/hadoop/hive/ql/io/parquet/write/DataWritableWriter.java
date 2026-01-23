@@ -192,8 +192,7 @@ public class DataWritableWriter {
    */
   private DecimalTypeInfo getSchemaDecimalTypeInfo(Type type, HiveDecimalObjectInspector inspector) {
     LogicalTypeAnnotation logicalType = type.getLogicalTypeAnnotation();
-    if (logicalType instanceof DecimalLogicalTypeAnnotation) {
-      LogicalTypeAnnotation.DecimalLogicalTypeAnnotation decimal = (DecimalLogicalTypeAnnotation) logicalType;
+    if (logicalType instanceof DecimalLogicalTypeAnnotation decimal) {
       return new DecimalTypeInfo(decimal.getPrecision(), decimal.getScale());
     }
     // Fallback to the inspector's type info if the schema does not carry the logical annotation.

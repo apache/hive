@@ -6,11 +6,11 @@ POSTHOOK: query: CREATE TABLE table_a (col_dec_a decimal(12,7))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_a
-PREHOOK: query: CREATE TABLE table_b(col_dec_b decimal(15,5))
+PREHOOK: query: CREATE TABLE table_b (col_dec_b decimal(15,5))
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_b
-POSTHOOK: query: CREATE TABLE table_b(col_dec_b decimal(15,5))
+POSTHOOK: query: CREATE TABLE table_b (col_dec_b decimal(15,5))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_b
