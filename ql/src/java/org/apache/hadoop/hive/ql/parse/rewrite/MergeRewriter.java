@@ -223,8 +223,7 @@ public class MergeRewriter implements Rewriter<MergeStatement>, MergeStatement.D
       String onClauseAsString = mergeStatement.getOnClauseAsText();
 
       sqlGenerator.append("    -- update clause").append("\n");
-      List<String> valuesAndAcidSortKeys = new ArrayList<>(
-          targetTable.getCols().size() + targetTable.getPartCols().size() + 1);
+      List<String> valuesAndAcidSortKeys = new ArrayList<>(targetTable.getAllCols().size() + 1);
       valuesAndAcidSortKeys.addAll(sqlGenerator.getSortKeys(Operation.MERGE));
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), valuesAndAcidSortKeys);
       sqlGenerator.appendInsertBranch(hintStr, valuesAndAcidSortKeys);
