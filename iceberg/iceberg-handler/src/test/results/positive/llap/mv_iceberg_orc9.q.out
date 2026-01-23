@@ -91,7 +91,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
 #### A masked pattern was here ####
-  'uuid'='f499353f-8a36-4efd-81f7-8522364a47d2')
+  'uuid'='13c7930a-a7d8-47c7-a907-cd282b1503ae')
 PREHOOK: query: describe formatted mat1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mat1
@@ -121,7 +121,7 @@ Table Parameters:
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
-	uuid                	f499353f-8a36-4efd-81f7-8522364a47d2
+	uuid                	13c7930a-a7d8-47c7-a907-cd282b1503ae
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -138,7 +138,7 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=7841179926915636266}	 
+default.tbl_ice     	SnapshotContext{snapshotId=1213469105887095012}	 
 PREHOOK: query: select 1
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -193,47 +193,57 @@ TBLPROPERTIES (
   'bucketing_version'='2', 
   'format-version'='1', 
 #### A masked pattern was here ####
-PREHOOK: query: describe formatted mat1_orc
+PREHOOK: query: explain show create table mat1_orc
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@mat1_orc
+POSTHOOK: query: explain show create table mat1_orc
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@mat1_orc
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Create Table
+      database name: default
+      table name: mat1_orc
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: describe extended mat1_orc
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mat1_orc
-POSTHOOK: query: describe formatted mat1_orc
+POSTHOOK: query: describe extended mat1_orc
 POSTHOOK: type: DESCTABLE
 POSTHOOK: Input: default@mat1_orc
-# col_name            	data_type           	comment             
 b                   	string              	                    
 c                   	int                 	                    
 	 	 
-# Detailed Table Information	 	 
-Database:           	default             	 
 #### A masked pattern was here ####
-Retention:          	0                   	 
-#### A masked pattern was here ####
-Table Type:         	MATERIALIZED_VIEW   	 
-Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"b\":\"true\",\"c\":\"true\"}}
-	bucketing_version   	2                   
-	format-version      	1                   
-	numFiles            	1                   
-	numRows             	2                   
-	rawDataSize         	184                 
-	totalSize           	#Masked#
-#### A masked pattern was here ####
-	 	 
-# Storage Information	 	 
-SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
-InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
-Compressed:         	No                  	 
-Num Buckets:        	-1                  	 
-Bucket Columns:     	[]                  	 
-Sort Columns:       	[]                  	 
-	 	 
-# Materialized View Information	 	 
-Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
-Expanded Query:     	select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52	 
-Rewrite Enabled:    	Yes                 	 
-Outdated for Rewriting:	No                  	 
-	 	 
-# Materialized View Source table information	 	 
-Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=7841179926915636266}	 
+PREHOOK: query: explain describe formatted mat1_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mat1_orc
+POSTHOOK: query: explain describe formatted mat1_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mat1_orc
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Describe Table
+      table: default.mat1_orc
+      formatted: true
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
