@@ -74,6 +74,12 @@
       <artifactId>value</artifactId>
       <version>${immutables.value.version}</version>
     </dependency>
+<!--    We don't need this dependency to compile. But when we add this dependency, we get IDE support -->
+<!--    Uncomment it during development-->
+<!--    <dependency>-->
+<!--      <groupId>org.apache.iceberg</groupId>-->
+<!--      <artifactId>iceberg-api</artifactId>-->
+<!--    </dependency>-->
   </dependencies>
   <build>
     <plugins>
