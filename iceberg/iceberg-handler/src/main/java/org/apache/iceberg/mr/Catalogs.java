@@ -92,7 +92,6 @@ public final class Catalogs {
   public static final String MATERIALIZED_VIEW_ORIGINAL_TEXT = "iceberg.materialized.view.original.text";
   private static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = "_storage_table";
 
-
   private Catalogs() {
   }
 
@@ -325,14 +324,20 @@ public final class Catalogs {
     viewProperties.put(MATERIALIZED_VIEW_ORIGINAL_TEXT, viewOriginalText);
 
     Long maxStalenessMs = getMaxStalenessMs(conf, props);
+//    SourceState sourceState = ImmutableSourceState.of("table");
+//      SourceState sourceState = ImmutableSourceState.of("table");
+//    RefreshState refreshState = ImmutableRefreshState
 
     TableIdentifier viewIdentifier = TableIdentifier.parse(name);
-    View mv = viewCatalog.buildView(viewIdentifier).withLocation(location)
+    View mv = viewCatalog.buildView(viewIdentifier)
+            .withLocation(location)
             .withDefaultNamespace(viewIdentifier.namespace())
             .withQuery("hive", viewExpandedText)
             .withSchema(schema)
             .withProperties(viewProperties)
             .withMaxStalenessMs(maxStalenessMs)
+            .withStorageTable(storageTableIdentifier)
+//            .withRefreshState()
             .create();
 
     return new MaterializedView(mv, storageTable);

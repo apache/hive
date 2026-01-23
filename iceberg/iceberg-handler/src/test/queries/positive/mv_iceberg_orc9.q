@@ -38,6 +38,8 @@ select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52;
 select * from mat1_orc;
 
 show create table mat1_orc;
-describe formatted mat1_orc;
+explain show create table mat1_orc;
+describe extended mat1_orc;
+explain describe formatted mat1_orc;
 
 -- SHOW MATERIALIZED VIEWS;

@@ -19,6 +19,7 @@
 
 package org.apache.iceberg.view;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import org.apache.iceberg.BaseMetastoreCatalog;
@@ -82,6 +83,8 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
     private Schema schema = null;
     private String location = null;
     private Long maxStalenessMs = 0L;
+    private String storageTableName;
+    private RefreshState refreshState;
 
     protected BaseViewBuilder(TableIdentifier identifier) {
       Preconditions.checkArgument(
@@ -150,6 +153,18 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
     }
 
     @Override
+    public ViewBuilder withStorageTable(String matViewStorageTable) {
+      this.storageTableName = matViewStorageTable;
+      return this;
+    }
+
+    @Override
+    public ViewBuilder withRefreshState(RefreshState matViewRefreshState) {
+      this.refreshState = matViewRefreshState;
+      return this;
+    }
+
+    @Override
     public ViewBuilder withProperties(Map<String, String> newProperties) {
       this.properties.putAll(newProperties);
       return this;
@@ -198,6 +213,15 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
       Preconditions.checkState(
               null != defaultNamespace, "Cannot create view without specifying a default namespace");
 
+      // Todo: finish refreshState after Iceberg team figured it out
+//      SourceState sourceState = ImmutableSourceState.of("table");
+//      RefreshState refreshState = ImmutableRefreshState.of(1, List.of(sourceState), 1L);
+      StorageTable storageTable = ImmutableStorageTable.of(
+              Arrays.asList(defaultNamespace.levels()),
+              storageTableName,
+              null
+      );
+
       ViewVersion viewVersion =
               ImmutableViewVersion.builder()
                       .versionId(1)
@@ -207,6 +231,7 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
                       .defaultCatalog(defaultCatalog)
                       .timestampMillis(System.currentTimeMillis())
                       .putAllSummary(EnvironmentContext.get())
+                      .storageTable(storageTable)
                       .build();
 
       properties.putAll(viewOverrideProperties());
