@@ -180,6 +180,34 @@ VALUES (7, "hello7", 8, "hello8")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@ice_t
+PREHOOK: query: EXPLAIN DESC EXTENDED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: EXPLAIN DESC EXTENDED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+      Describe Table{"table:":"default.ice_t","partition:":{"b":"hello7","c":"8","d":"hello8"},"extended:":"true"}
+
+PREHOOK: query: EXPLAIN DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: EXPLAIN DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+      Describe Table{"table:":"default.ice_t","partition:":{"b":"hello7","c":"8","d":"hello8"},"formatted:":"true"}
+
 PREHOOK: query: DESC FORMATTED ice_t
 PARTITION (c = 8, d = "hello8", b = "hello7")
 PREHOOK: type: DESCTABLE

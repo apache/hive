@@ -47,6 +47,12 @@ SET PARTITION SPEC (
 INSERT INTO TABLE ice_t
 VALUES (7, "hello7", 8, "hello8");
 
+EXPLAIN DESC EXTENDED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7");
+
+EXPLAIN DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7");
+
 DESC FORMATTED ice_t
 PARTITION (c = 8, d = "hello8", b = "hello7");
 

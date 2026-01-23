@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -55,19 +56,19 @@ public class DescTableDesc implements DDLDesc, Serializable {
 
   private final String resFile;
   private final TableName tableName;
-  private final Map<String, String> partitionSpec;
+  private final Partition partition;
   private final String columnPath;
   private final boolean isExtended;
   private final boolean isFormatted;
 
-  public DescTableDesc(Path resFile, TableName tableName, Map<String, String> partitionSpec, String columnPath,
-      boolean isExtended, boolean isFormatted) {
+  public DescTableDesc(Path resFile, TableName tableName, Partition partition,
+      String columnPath, boolean isExtended, boolean isFormatted) {
     this.resFile = resFile.toString();
     this.tableName = tableName;
-    this.partitionSpec = partitionSpec;
     this.columnPath = columnPath;
     this.isExtended = isExtended;
     this.isFormatted = isFormatted;
+    this.partition = partition;
   }
 
   @Explain(displayName = "result file", explainLevels = { Level.EXTENDED })
@@ -86,7 +87,7 @@ public class DescTableDesc implements DDLDesc, Serializable {
 
   @Explain(displayName = "partition", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public Map<String, String> getPartitionSpec() {
-    return partitionSpec;
+    return this.partition.getSpec();
   }
 
   public String getColumnPath() {
@@ -103,6 +104,10 @@ public class DescTableDesc implements DDLDesc, Serializable {
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public boolean isFormatted() {
     return isFormatted;
+  }
+
+  public Partition getPartition() {
+    return this.partition;
   }
 
   public static List<String> getColumnStatisticsHeaders(boolean histogramEnabled) {

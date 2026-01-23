@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.primitives.Longs;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -75,7 +74,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   @Override
   public int execute() throws Exception {
     Table table = getTable();
-    Partition part = getPartition(table);
+    Partition part = desc.getPartition();
     final String dbTableName = desc.getDbTableName();
 
     try (DataOutputStream outStream = ShowUtils.getOutputStream(new Path(desc.getResFile()), context)) {
@@ -122,18 +121,6 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
       throw new HiveException(ErrorMsg.INVALID_TABLE, desc.getDbTableName());
     }
     return table;
-  }
-
-  private Partition getPartition(Table table) throws HiveException {
-    Partition part = null;
-    if (desc.getPartitionSpec() != null) {
-      part = context.getDb().getPartition(table, desc.getPartitionSpec());
-      if (part == null) {
-        throw new HiveException(ErrorMsg.INVALID_PARTITION,
-            StringUtils.join(desc.getPartitionSpec().keySet(), ','), desc.getDbTableName());
-      }
-    }
-    return part;
   }
 
   private Deserializer getDeserializer(Table table) throws SQLException {

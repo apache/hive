@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -1488,6 +1489,29 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     metaHook.preAlterTable(hmsTable, environmentContext);
     metaHook.commitAlterTable(hmsTable, environmentContext);
+  }
+
+  @Test
+  public void testCommandsWithPartitionClause() throws IOException {
+    TableIdentifier target = TableIdentifier.of("default", "target");
+    PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
+        .identity("last_name").build();
+    testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
+        spec, FileFormat.PARQUET, ImmutableList.of());
+    PartitionData partitionData = new PartitionData(spec.partitionType());
+    partitionData.set(0, "Johnson");
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(target);
+    testTables.appendIcebergTable(shell.getHiveConf(), icebergTable, FileFormat.PARQUET, partitionData,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
+
+    String[] commands = {
+        "DESCRIBE target PARTITION (last_name='Johnson')"
+    };
+
+    for (String command : commands) {
+      Assertions.assertThatCode(() -> shell.executeStatement(command))
+          .doesNotThrowAnyException();
+    }
   }
 
   @Test

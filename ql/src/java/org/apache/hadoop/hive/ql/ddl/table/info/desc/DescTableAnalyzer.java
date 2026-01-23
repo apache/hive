@@ -77,9 +77,10 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
 
     // process the second child, if exists, node to get partition spec(s)
     Map<String, String> partitionSpec = getPartitionSpec(db, tableTypeExpr, tableName);
+    Partition partition = null;
     if (partitionSpec != null) {
       // validate that partition exists
-      PartitionUtils.getPartition(db, table, partitionSpec, true);
+      partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
     }
 
     // process the third child node,if exists, to get partition spec(s)
@@ -102,7 +103,7 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
 
     inputs.add(new ReadEntity(table));
 
-    DescTableDesc desc = new DescTableDesc(ctx.getResFile(), tableName, partitionSpec, columnPath, isExt, isFormatted);
+    DescTableDesc desc = new DescTableDesc(ctx.getResFile(), tableName, partition, columnPath, isExt, isFormatted);
     Task<?> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 
@@ -168,19 +169,6 @@ public class DescTableAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if (partitionSpec != null) {
-        Partition part;
-        try {
-          part = db.getPartition(table, partitionSpec);
-        } catch (HiveException e) {
-          // if get exception in finding partition it could be DESCRIBE table key
-          // return null, continue processing for DESCRIBE table key
-          return null;
-        }
-
-        if (part == null) {
-          throw new SemanticException(ErrorMsg.INVALID_PARTITION.getMsg(partitionSpec.toString()));
-        }
-
         return partitionSpec;
       }
     }
