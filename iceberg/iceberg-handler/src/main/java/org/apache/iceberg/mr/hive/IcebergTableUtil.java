@@ -440,61 +440,112 @@ public class IcebergTableUtil {
 
   public static PartitionData toPartitionData(StructLike sourceKey, Types.StructType sourceKeyType,
       Types.StructType targetKeyType) {
-    StructProjection projection = StructProjection.create(sourceKeyType, targetKeyType).wrap(sourceKey);
+    StructProjection projection = StructProjection.create(sourceKeyType, targetKeyType)
+        .wrap(sourceKey);
     return toPartitionData(projection, targetKeyType);
   }
 
-  public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec,
+  public static Expression generateExprForIdentityPartition(Table table, Map<String, String> partitionSpec,
       boolean latestSpecOnly) throws SemanticException {
 
-    return generateExpressionFromPartitionSpec(
-        table, partitionSpec, partitionFieldsBySourceColumn(table, latestSpecOnly));
+    Map<String, PartitionField> partitionFields = getPartitionFields(table, latestSpecOnly).stream()
+        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
+
+    return generateExprForIdentityPartition(table, partitionSpec, partitionFields);
   }
 
-  public static Map<String, List<PartitionField>> partitionFieldsBySourceColumn(Table table, boolean latestSpecOnly) {
+  public static Expression generateExprForIdentityPartition(Table table, Map<String, String> partitionSpec,
+      Map<String, PartitionField> partitionFields) throws SemanticException {
+
+    return buildPartitionExpression(
+        partitionSpec,
+        (column, value) ->
+            buildIdentityPartitionPredicate(table, value, partitionFields.get(column)),
+        partitionFields::containsKey
+    );
+  }
+
+  public static Expression generateExprFromPartitionSpec(Table table, Map<String, String> partitionSpec,
+      boolean latestSpecOnly) throws SemanticException {
+
     // Group partition fields by source column name to handle partition evolution
     // where the same source column may have multiple transforms across different specs
-    return getPartitionFields(table, latestSpecOnly).stream()
-        .collect(Collectors.groupingBy(
-            partitionField -> table.schema().findColumnName(partitionField.sourceId()))
-        );
+    Map<String, List<PartitionField>> partitionFieldsBySourceColumn =
+        getPartitionFields(table, latestSpecOnly).stream()
+            .collect(Collectors.groupingBy(
+                pf -> table.schema().findColumnName(pf.sourceId()))
+            );
+
+    return buildPartitionExpression(
+        partitionSpec,
+        (column, value) ->
+            buildTransformPartitionPredicate(table, value, partitionFieldsBySourceColumn.get(column)),
+        partitionFieldsBySourceColumn::containsKey
+    );
   }
 
-  public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec,
-      Map<String, List<PartitionField>> partitionFieldsBySourceColumn) throws SemanticException {
+  @FunctionalInterface
+  private interface PartitionPredicateBuilder {
+    Expression build(String partitionColumn, String partitionValue) throws SemanticException;
+  }
+
+  private static Expression buildPartitionExpression(
+      Map<String, String> partitionSpec,
+      PartitionPredicateBuilder predicateBuilder,
+      Predicate<String> fieldValidator) throws SemanticException {
 
     Expression predicate = Expressions.alwaysTrue();
 
     for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
       String partitionColumn = entry.getKey();
-      List<PartitionField> partitionFields = partitionFieldsBySourceColumn.get(partitionColumn);
 
-      if (partitionFields == null) {
-        throw new SemanticException(String.format("No partition column by the name: %s", partitionColumn));
+      // Validate field exists
+      if (!fieldValidator.test(partitionColumn)) {
+        throw new SemanticException(
+            "No partition column by the name: %s".formatted(partitionColumn));
       }
-
-      // When there are multiple partition fields for the same source column (due to partition evolution),
-      // create an OR expression that matches any of the transforms
-      Types.NestedField sourceField = table.schema().findField(
-          partitionFields.getFirst().sourceId());
-      Object sourceValue = Conversions.fromPartitionString(sourceField.type(), entry.getValue());
-
-      Expression columnPredicate = Expressions.alwaysFalse();
-
-      for (PartitionField partitionField : partitionFields) {
-        // Apply the transform to the source value
-        @SuppressWarnings("unchecked")
-        Transform<Object, Object> transform = (Transform<Object, Object>) partitionField.transform();
-        Object transformedValue = transform.bind(sourceField.type()).apply(sourceValue);
-
-        TransformSpec transformSpec = TransformSpec.fromString(transform.toString().toUpperCase(), sourceField.name());
-        UnboundTerm<Object> term = SchemaUtils.toTerm(transformSpec);
-
-        columnPredicate = Expressions.or(
-            columnPredicate, Expressions.equal(term, transformedValue));
-      }
-
+      Expression columnPredicate = predicateBuilder.build(partitionColumn, entry.getValue());
       predicate = Expressions.and(predicate, columnPredicate);
+    }
+
+    return predicate;
+  }
+
+  private static Expression buildIdentityPartitionPredicate(Table table, String partitionValue,
+      PartitionField partitionField) throws SemanticException {
+
+    if (!partitionField.transform().isIdentity()) {
+      throw new SemanticException(
+          "Partition transforms are not supported here: %s".formatted(partitionField.name()));
+    }
+    Types.NestedField sourceField = table.schema().findField(partitionField.sourceId());
+    Object columnValue = Conversions.fromPartitionString(sourceField.type(), partitionValue);
+
+    return Expressions.equal(partitionField.name(), columnValue);
+  }
+
+  private static Expression buildTransformPartitionPredicate(Table table, String partitionValue,
+      List<PartitionField> partitionFields) {
+
+    // Get source field type from first partition field (all share same source)
+    Types.NestedField sourceField = table.schema().findField(
+        partitionFields.getFirst().sourceId());
+    Object columnValue = Conversions.fromPartitionString(sourceField.type(), partitionValue);
+
+    Expression predicate = Expressions.alwaysFalse();
+
+    // Create OR expression for each transform on this source column
+    for (PartitionField partitionField : partitionFields) {
+      // Apply the transform to the source value
+      @SuppressWarnings("unchecked")
+      Transform<Object, Object> transform = (Transform<Object, Object>) partitionField.transform();
+      Object transformedValue = transform.bind(sourceField.type()).apply(columnValue);
+
+      TransformSpec transformSpec = TransformSpec.fromString(transform.toString().toUpperCase(), sourceField.name());
+      UnboundTerm<Object> term = SchemaUtils.toTerm(transformSpec);
+
+      predicate = Expressions.or(
+          predicate, Expressions.equal(term, transformedValue));
     }
 
     return predicate;
@@ -575,7 +626,7 @@ public class IcebergTableUtil {
       Comparator<Map.Entry<String, Integer>> specIdComparator) throws SemanticException {
     Table icebergTable = getTable(conf, table.getTTable());
 
-    Expression partitionExpr = IcebergTableUtil.generateExpressionFromPartitionSpec(
+    Expression partitionExpr = IcebergTableUtil.generateExprFromPartitionSpec(
         icebergTable, partitionSpec, latestSpecOnly);
 
     int latestSpecId = icebergTable.spec().specId();

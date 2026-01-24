@@ -2033,7 +2033,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return false;
     }
 
-    Expression partitionExpr = IcebergTableUtil.generateExpressionFromPartitionSpec(
+    Expression partitionExpr = IcebergTableUtil.generateExprForIdentityPartition(
         table, partitionSpec, true);
 
     FindFiles.Builder builder = new FindFiles.Builder(table).withRecordsMatching(partitionExpr);

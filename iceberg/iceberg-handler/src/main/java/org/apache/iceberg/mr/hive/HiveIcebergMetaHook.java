@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
@@ -574,7 +575,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     this.tableProperties = IcebergTableProperties.getTableProperties(table, conf);
     this.icebergTable = Catalogs.loadTable(conf, tableProperties);
 
-    Expression predicate = buildDeletePredicate(partNames);
+    Expression predicate = generateExprFromPartitionNames(partNames);
 
     DeleteFiles delete = icebergTable.newDelete();
     String branchName = context.getProperties().get(Catalogs.SNAPSHOT_REF);
@@ -587,20 +588,20 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     context.putToProperties("truncateSkipDataDeletion", "true");
   }
 
-  private Expression buildDeletePredicate(List<String> partNames) throws MetaException {
+  private Expression generateExprFromPartitionNames(List<String> partNames) throws MetaException {
     if (CollectionUtils.isEmpty(partNames)) {
       return Expressions.alwaysTrue();
     }
 
-    Map<String, List<PartitionField>> partitionFieldsBySourceColumn =
-        IcebergTableUtil.partitionFieldsBySourceColumn(icebergTable, true);
+    Map<String, PartitionField> partitionFields = icebergTable.spec().fields().stream()
+        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
     Expression predicate = Expressions.alwaysFalse();
 
     for (String partName : partNames) {
       try {
-        Map<String, String> partSpec = Warehouse.makeSpecFromName(partName);
-        Expression partitionExpr = IcebergTableUtil.generateExpressionFromPartitionSpec(
-            icebergTable, partSpec, partitionFieldsBySourceColumn);
+        Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partName);
+        Expression partitionExpr = IcebergTableUtil.generateExprForIdentityPartition(
+            icebergTable, partitionSpec, partitionFields);
 
         predicate = Expressions.or(predicate, partitionExpr);
       } catch (Exception e) {
@@ -610,10 +611,6 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     }
 
     return predicate;
-  }
-
-  @Override public boolean createHMSTableInHook() {
-    return createHMSTableInHook;
   }
 
   private void alterTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable,
