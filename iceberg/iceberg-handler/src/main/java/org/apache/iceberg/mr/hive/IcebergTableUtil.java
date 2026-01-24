@@ -447,18 +447,27 @@ public class IcebergTableUtil {
   public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec,
       boolean latestSpecOnly) throws SemanticException {
 
+    return generateExpressionFromPartitionSpec(
+        table, partitionSpec, partitionFieldsBySourceColumn(table, latestSpecOnly));
+  }
+
+  public static Map<String, List<PartitionField>> partitionFieldsBySourceColumn(Table table, boolean latestSpecOnly) {
     // Group partition fields by source column name to handle partition evolution
     // where the same source column may have multiple transforms across different specs
-    Map<String, List<PartitionField>> partitionFieldsBySourceName = getPartitionFields(table, latestSpecOnly).stream()
+    return getPartitionFields(table, latestSpecOnly).stream()
         .collect(Collectors.groupingBy(
             partitionField -> table.schema().findColumnName(partitionField.sourceId()))
         );
+  }
+
+  public static Expression generateExpressionFromPartitionSpec(Table table, Map<String, String> partitionSpec,
+      Map<String, List<PartitionField>> partitionFieldsBySourceColumn) throws SemanticException {
 
     Expression predicate = Expressions.alwaysTrue();
 
     for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
       String partitionColumn = entry.getKey();
-      List<PartitionField> partitionFields = partitionFieldsBySourceName.get(partitionColumn);
+      List<PartitionField> partitionFields = partitionFieldsBySourceColumn.get(partitionColumn);
 
       if (partitionFields == null) {
         throw new SemanticException(String.format("No partition column by the name: %s", partitionColumn));
@@ -466,7 +475,8 @@ public class IcebergTableUtil {
 
       // When there are multiple partition fields for the same source column (due to partition evolution),
       // create an OR expression that matches any of the transforms
-      Types.NestedField sourceField = table.schema().findField(partitionFields.getFirst().sourceId());
+      Types.NestedField sourceField = table.schema().findField(
+          partitionFields.getFirst().sourceId());
       Object sourceValue = Conversions.fromPartitionString(sourceField.type(), entry.getValue());
 
       Expression columnPredicate = Expressions.alwaysFalse();
