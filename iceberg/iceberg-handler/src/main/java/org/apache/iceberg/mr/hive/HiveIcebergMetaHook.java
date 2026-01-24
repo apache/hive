@@ -592,13 +592,15 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
       return Expressions.alwaysTrue();
     }
 
+    Map<String, List<PartitionField>> partitionFieldsBySourceColumn =
+        IcebergTableUtil.partitionFieldsBySourceColumn(icebergTable, true);
     Expression predicate = Expressions.alwaysFalse();
 
     for (String partName : partNames) {
       try {
         Map<String, String> partSpec = Warehouse.makeSpecFromName(partName);
         Expression partitionExpr = IcebergTableUtil.generateExpressionFromPartitionSpec(
-            icebergTable, partSpec, true);
+            icebergTable, partSpec, partitionFieldsBySourceColumn);
 
         predicate = Expressions.or(predicate, partitionExpr);
       } catch (Exception e) {
