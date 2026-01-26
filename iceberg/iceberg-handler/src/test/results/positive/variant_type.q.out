@@ -12,6 +12,92 @@ POSTHOOK: query: CREATE EXTERNAL TABLE variant_test_basic (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@variant_test_basic
+PREHOOK: query: show create table variant_test_basic
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@variant_test_basic
+POSTHOOK: query: show create table variant_test_basic
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@variant_test_basic
+CREATE EXTERNAL TABLE `variant_test_basic`(
+  `id` int, 
+  `data` variant)
+ROW FORMAT SERDE 
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
+LOCATION
+  'hdfs://### HDFS PATH ###'
+TBLPROPERTIES (
+  'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"id","required":false,"type":"int"},{"id":2,"name":"data","required":false,"type":"variant"}]}', 
+  'format-version'='3', 
+  'iceberg.orc.files.only'='false', 
+  'metadata_location'='hdfs://### HDFS PATH ###', 
+  'parquet.compression'='zstd', 
+  'serialization.format'='1', 
+  'snapshot-count'='0', 
+  'table_type'='ICEBERG', 
+#### A masked pattern was here ####
+  'uuid'='#Masked#', 
+  'write.delete.mode'='merge-on-read', 
+  'write.merge.mode'='merge-on-read', 
+  'write.metadata.delete-after-commit.enabled'='true', 
+  'write.update.mode'='merge-on-read')
+PREHOOK: query: describe variant_test_basic
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@variant_test_basic
+POSTHOOK: query: describe variant_test_basic
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@variant_test_basic
+id                  	int                 	                    
+data                	variant             	                    
+PREHOOK: query: describe formatted variant_test_basic
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@variant_test_basic
+POSTHOOK: query: describe formatted variant_test_basic
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@variant_test_basic
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+data                	variant             	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"data\":\"true\",\"id\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"id\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"data\",\"required\":false,\"type\":\"variant\"}]}
+	format-version      	3                   
+	iceberg.orc.files.only	false               
+	metadata_location   	hdfs://### HDFS PATH ###
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
 PREHOOK: query: INSERT INTO variant_test_basic VALUES
 (1, parse_json('null')),
 (2, parse_json('true')),
