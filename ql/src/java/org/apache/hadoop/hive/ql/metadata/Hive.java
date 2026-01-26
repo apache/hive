@@ -1627,12 +1627,12 @@ public class Hive implements AutoCloseable {
    */
   public Table getTable(final String tableName, boolean throwException) throws HiveException {
     String[] nameParts = tableName.split("\\.");
-    if (nameParts.length == 3) {
-      Table table = this.getTable(nameParts[0], nameParts[1], nameParts[2], throwException);
+    if (nameParts.length == 4) {
+      Table table = this.getTable(nameParts[0], nameParts[1], nameParts[2], nameParts[3], throwException);
       return table;
     } else {
       String[] names = Utilities.getDbTableName(tableName);
-      Table table = this.getTable(names[0], names[1], null, throwException);
+      Table table = this.getTable(names[0], names[1], names[2], null,  throwException);
       return table;
     }
   }
@@ -1652,9 +1652,9 @@ public class Hive implements AutoCloseable {
      // TODO: catalog... etc everywhere
     if (tableName.contains(".")) {
       String[] names = Utilities.getDbTableName(tableName);
-      return this.getTable(names[0], names[1], null, true);
+      return this.getTable(names[0], names[1], names[2], null, true);
     } else {
-      return this.getTable(dbName, tableName, null, true);
+      return this.getTable(SessionState.get().getCurrentCatalog(), dbName, tableName, null, true);
     }
   }
 
@@ -1668,7 +1668,7 @@ public class Hive implements AutoCloseable {
    *              if there's an internal error or if the table doesn't exist
    */
   public Table getTable(TableName tableName) throws HiveException {
-    return this.getTable(ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
+    return this.getTable(SessionState.get().getCurrentCatalog(), ObjectUtils.firstNonNull(tableName.getDb(), SessionState.get().getCurrentDatabase()),
         tableName.getTable(), tableName.getTableMetaRef(), true);
   }
 
@@ -1686,9 +1686,9 @@ public class Hive implements AutoCloseable {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName,
+  public Table getTable(final String catName, final String dbName, final String tableName,
                         final String tableMetaRef, boolean throwException) throws HiveException {
-    return this.getTable(dbName, tableName, tableMetaRef, throwException, false);
+    return this.getTable(catName, dbName, tableName, tableMetaRef, throwException, false);
   }
 
   /**
@@ -1704,8 +1704,8 @@ public class Hive implements AutoCloseable {
    * @throws HiveException
    */
   public Table getTable(final String dbName, final String tableName, boolean throwException) throws HiveException {
-    return this.getTable(dbName, tableName, null, throwException);
-  }
+    return this.getTable(SessionState.get().getCurrentCatalog(), dbName, tableName, null, throwException);
+  } //TODO get the correct catalog
 
   /**
    * Returns metadata of the table.
@@ -1724,7 +1724,7 @@ public class Hive implements AutoCloseable {
    */
   public Table getTable(final String dbName, final String tableName, boolean throwException, boolean checkTransactional)
       throws HiveException {
-    return getTable(dbName, tableName, null, throwException, checkTransactional, false);
+    return getTable(null, dbName, tableName, null, throwException, checkTransactional, false);
   }
 
   /**
@@ -1744,9 +1744,9 @@ public class Hive implements AutoCloseable {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
+  public Table getTable(final String catName, final String dbName, final String tableName, String tableMetaRef, boolean throwException,
                         boolean checkTransactional) throws HiveException {
-    return getTable(dbName, tableName, tableMetaRef, throwException, checkTransactional, false);
+    return getTable(catName, dbName, tableName, tableMetaRef, throwException, checkTransactional, false);
   }
 
   /**
@@ -1768,8 +1768,8 @@ public class Hive implements AutoCloseable {
    * @return the table or if throwException is false a null value.
    * @throws HiveException
    */
-  public Table getTable(final String dbName, final String tableName, String tableMetaRef, boolean throwException,
-                        boolean checkTransactional, boolean getColumnStats) throws HiveException {
+  public Table getTable(final String catalogName, final String dbName, final String tableName, String tableMetaRef,
+                        boolean throwException, boolean checkTransactional, boolean getColumnStats) throws HiveException {
 
     if (tableName == null || tableName.equals("")) {
       throw new HiveException("empty table creation??");
@@ -1780,7 +1780,7 @@ public class Hive implements AutoCloseable {
     try {
       // Note: this is currently called w/true from StatsOptimizer only.
       GetTableRequest request = new GetTableRequest(dbName, tableName);
-      request.setCatName(getDefaultCatalog(conf));
+      request.setCatName(catalogName != null ? catalogName : SessionState.get().getCurrentCatalog());
       request.setGetColumnStats(getColumnStats);
       request.setEngine(Constants.HIVE_ENGINE);
       if (checkTransactional) {
