@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.conf;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -150,7 +151,7 @@ public class TestHiveConf {
     }
 
     ArrayList<String> hiddenList = Lists.newArrayList(
-        HiveConf.ConfVars.METASTORE_PWD.varname,
+        MetastoreConf.ConfVars.PWD.getHiveName(),
         HiveConf.ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname,
         HiveConf.ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname,
         "fs.s3.awsSecretAccessKey",

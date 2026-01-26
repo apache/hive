@@ -32,8 +32,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.iceberg.CatalogProperties;
 import org.apache.iceberg.ClientPool;
@@ -128,7 +128,7 @@ public class CachedClientPool implements ClientPool<IMetaStoreClient, TException
   static Key extractKey(String cacheKeys, Configuration conf) {
     // generate key elements in a certain order, so that the Key instances are comparable
     List<Object> elements = Lists.newArrayList();
-    elements.add(conf.get(HiveConf.ConfVars.METASTORE_URIS.varname, ""));
+    elements.add(conf.get(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), ""));
     elements.add(conf.get(HiveCatalog.HIVE_CONF_CATALOG, "hive"));
     if (cacheKeys == null || cacheKeys.isEmpty()) {
       return Key.of(elements);

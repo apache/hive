@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.AfterClass;
@@ -68,7 +69,7 @@ public class TestDFSErrorHandling
     hiveConf = new HiveConf();
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS, 1);
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS, 1);
-    hiveConf.setBoolVar(ConfVars.METASTORE_EXECUTE_SET_UGI, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.EXECUTE_SET_UGI, true);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
 
     // Setting hive.server2.enable.doAs to True ensures that HS2 performs the query operation as

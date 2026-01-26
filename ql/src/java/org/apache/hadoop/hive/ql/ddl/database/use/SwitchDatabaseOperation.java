@@ -57,11 +57,11 @@ public class SwitchDatabaseOperation extends DDLOperation<SwitchDatabaseDesc> {
 
     Map<String, String> dbParams = database.getParameters();
     if (dbParams != null) {
-      for (HiveConf.ConfVars var: HiveConf.dbVars) {
-        String newValue = dbParams.get(var.varname);
+      for (String var : HiveConf.dbVars) {
+        String newValue = dbParams.get(var);
         if (newValue != null) {
-          LOG.info("Changing {} from {} to {}", var.varname, context.getConf().getVar(var), newValue);
-          context.getConf().setVar(var, newValue);
+          LOG.info("Changing {} from {} to {}", var, context.getConf().get(var), newValue);
+          context.getConf().set(var, newValue);
         }
       }
     }

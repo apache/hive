@@ -45,6 +45,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -76,7 +77,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hcatConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
     hcatConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
-    hcatConf.set(ConfVars.METASTORE_WAREHOUSE.varname, whPath.toString());
+    hcatConf.set(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(), whPath.toString());
     hcatConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

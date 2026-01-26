@@ -1154,7 +1154,7 @@ public class TestTxnHandler {
 
   @Test
   public void testHeartbeatLock() throws Exception {
-    conf.setTimeVar(HiveConf.ConfVars.HIVE_TXN_TIMEOUT, 1, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_TIMEOUT, 1, TimeUnit.SECONDS);
     HeartbeatRequest h = new HeartbeatRequest();
     LockComponent comp = new LockComponent(LockType.EXCLUSIVE, LockLevel.DB, "mydb");
     comp.setTablename("mytable");
@@ -1511,7 +1511,7 @@ public class TestTxnHandler {
 
   private List<Long> replOpenTxnForTest(long startId, int numTxn, String replPolicy)
           throws Exception {
-    conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, numTxn);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.TXN_MAX_OPEN_BATCH, numTxn);
     long lastId = startId + numTxn - 1;
     OpenTxnRequest rqst = new OpenTxnRequest(numTxn, "me", "localhost");
     rqst.setReplPolicy(replPolicy);

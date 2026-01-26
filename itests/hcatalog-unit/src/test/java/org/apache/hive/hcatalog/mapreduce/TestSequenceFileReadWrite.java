@@ -25,6 +25,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Ignore;
 import java.util.Iterator;
 
@@ -77,7 +79,7 @@ public class TestSequenceFileReadWrite {
     hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    hiveConf.set(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname, warehouseDir);
+    hiveConf.set(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(), warehouseDir);
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

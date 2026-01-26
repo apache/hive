@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -112,7 +113,7 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
   private void setDelegationToken(String hmsDelegationTokenStr) throws HiveSQLException {
     this.hmsDelegationTokenStr = hmsDelegationTokenStr;
     if (hmsDelegationTokenStr != null) {
-      getHiveConf().setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE, HS2TOKEN);
+      MetastoreConf.setVar(getHiveConf(), MetastoreConf.ConfVars.TOKEN_SIGNATURE, HS2TOKEN);
       try {
         SessionUtils.setTokenStr(sessionUgi, hmsDelegationTokenStr, HS2TOKEN);
       } catch (IOException e) {
@@ -127,7 +128,7 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
       try {
         Hive.get(getHiveConf()).cancelDelegationToken(hmsDelegationTokenStr);
         hmsDelegationTokenStr = null;
-        getHiveConf().setVar(HiveConf.ConfVars.METASTORE_TOKEN_SIGNATURE, "");
+        MetastoreConf.setVar(getHiveConf(), MetastoreConf.ConfVars.TOKEN_SIGNATURE, "");
       } catch (HiveException e) {
         throw new HiveSQLException("Couldn't cancel delegation token", e);
       }

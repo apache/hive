@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -61,8 +62,8 @@ public class TestMetastoreVersion {
     defDb.set(null, null);
     // reset defaults
     ObjectStore.setSchemaVerified(false);
-    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
-    System.setProperty(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL.toString(), "true");
+    System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getHiveName(), "false");
+    System.setProperty(MetastoreConf.ConfVars.AUTO_CREATE_ALL.getHiveName(), "true");
     hiveConf = new HiveConfForTest(this.getClass());
     System.setProperty("hive.support.concurrency", "false");
     System.setProperty("hive.metastore.event.listeners",
@@ -71,7 +72,7 @@ public class TestMetastoreVersion {
         DummyPreListener.class.getName());
     testMetastoreDB = System.getProperty("java.io.tmpdir") +
       File.separator + "test_metastore-" + System.currentTimeMillis();
-    System.setProperty(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname,
+    System.setProperty(MetastoreConf.ConfVars.CONNECT_URL_KEY.getHiveName(),
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf,
         System.getProperty("test.tmp.dir", "target/tmp"), "derby");
@@ -90,10 +91,10 @@ public class TestMetastoreVersion {
    */
   @Test
   public void testDefaults() {
-    System.clearProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString());
+    System.clearProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getHiveName());
     hiveConf = new HiveConfForTest(this.getClass());
-    assertFalse(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION));
-    assertTrue(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL));
+    assertFalse(MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.SCHEMA_VERIFICATION));
+    assertTrue(MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.AUTO_CREATE_ALL));
   }
 
   /***
@@ -102,10 +103,10 @@ public class TestMetastoreVersion {
    */
   @Test
   public void testVersionRestriction () throws Exception {
-    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "true");
+    System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getHiveName(), "true");
     hiveConf = new HiveConfForTest(this.getClass());
-    assertTrue(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION));
-    assertFalse(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_AUTO_CREATE_ALL));
+    assertTrue(MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.SCHEMA_VERIFICATION));
+    assertFalse(MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.AUTO_CREATE_ALL));
 
     // session creation should fail since the schema didn't get created
     try {
@@ -128,8 +129,8 @@ public class TestMetastoreVersion {
   @Test
   public void testMetastoreVersion() throws Exception {
     // let the schema and version be auto created
-    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
-    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION_RECORD_VERSION.toString(), "true");
+    System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getHiveName(), "false");
+    System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION_RECORD_VERSION.getHiveName(), "true");
     hiveConf = new HiveConfForTest(this.getClass());
     SessionState.start(new CliSessionState(hiveConf));
     driver = DriverFactory.newDriver(hiveConf);
@@ -152,7 +153,7 @@ public class TestMetastoreVersion {
    */
   @Test
   public void testVersionMatching () throws Exception {
-    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
+    System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getHiveName(), "false");
     hiveConf = new HiveConfForTest(this.getClass());
     SessionState.start(new CliSessionState(hiveConf));
     driver = DriverFactory.newDriver(hiveConf);
@@ -164,7 +165,7 @@ public class TestMetastoreVersion {
     }
 
     ObjectStore.setSchemaVerified(false);
-    hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION, true);
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.SCHEMA_VERIFICATION, true);
     hiveConf = new HiveConfForTest(this.getClass());
     setVersion(hiveConf, metastoreSchemaInfo.getHiveSchemaVersion());
     driver = DriverFactory.newDriver(hiveConf);
@@ -177,14 +178,14 @@ public class TestMetastoreVersion {
    */
   @Test
   public void testVersionMisMatch () throws Exception {
-    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
+    System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.toString(), "false");
     hiveConf = new HiveConfForTest(this.getClass());
     SessionState.start(new CliSessionState(hiveConf));
     driver = DriverFactory.newDriver(hiveConf);
     driver.run("show tables");
 
     ObjectStore.setSchemaVerified(false);
-    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "true");
+    System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getHiveName(), "true");
     hiveConf = new HiveConfForTest(this.getClass());
     setVersion(hiveConf, "fooVersion");
     SessionState.start(new CliSessionState(hiveConf));
@@ -204,13 +205,13 @@ public class TestMetastoreVersion {
    */
   @Test
   public void testVersionCompatibility () throws Exception {
-    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "false");
+    System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getHiveName(), "false");
     hiveConf = new HiveConfForTest(this.getClass());
     SessionState.start(new CliSessionState(hiveConf));
     driver = DriverFactory.newDriver(hiveConf);
     driver.run("show tables");
 
-    System.setProperty(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString(), "true");
+    System.setProperty(MetastoreConf.ConfVars.SCHEMA_VERIFICATION.getHiveName(), "true");
     hiveConf = new HiveConfForTest(this.getClass());
     setVersion(hiveConf, "3.9000.0");
     SessionState.start(new CliSessionState(hiveConf));

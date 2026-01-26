@@ -87,8 +87,8 @@ public class TestCompactionTxnHandler {
     TestTxnDbUtil.prepDb(conf);
     // Set config so that TxnUtils.buildQueryWithINClauseStrings() will
     // produce multiple queries
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
-    conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 10);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_QUERY_LENGTH, 1);
+    MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.DIRECT_SQL_MAX_ELEMENTS_IN_CLAUSE, 10);
     tearDown();
   }
 

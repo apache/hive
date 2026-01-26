@@ -56,11 +56,11 @@ public class TestTransactionalDbNotificationListener {
     @BeforeClass
     public static void connectToMetastore() throws Exception {
         HiveConf conf = new HiveConfForTest(TestTransactionalDbNotificationListener.class);
-        conf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
+        MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS,
                 "org.apache.hive.hcatalog.listener.DbNotificationListener");
         conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
         conf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
-        conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
+        MetastoreConf.setVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
         MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class.getName());
         conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
                 "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

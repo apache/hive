@@ -22,6 +22,8 @@ package org.apache.hadoop.hive.conf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -77,14 +79,14 @@ public class TestHiveConfRestrictList {
   public void testAppendRestriction() throws Exception {
     String appendListStr = ConfVars.SCRATCH_DIR.varname + "," +
         ConfVars.LOCAL_SCRATCH_DIR.varname + "," +
-        ConfVars.METASTORE_URIS.varname;
+        MetastoreConf.ConfVars.THRIFT_URIS.getHiveName();
 
     conf.addToRestrictList(appendListStr);
     // check if the new configs are added to HIVE_CONF_RESTRICTED_LIST
     String newRestrictList = conf.getVar(ConfVars.HIVE_CONF_RESTRICTED_LIST);
     assertTrue(newRestrictList.contains(ConfVars.SCRATCH_DIR.varname));
     assertTrue(newRestrictList.contains(ConfVars.LOCAL_SCRATCH_DIR.varname));
-    assertTrue(newRestrictList.contains(ConfVars.METASTORE_URIS.varname));
+    assertTrue(newRestrictList.contains(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName()));
 
     // check if the old values are still there in HIVE_CONF_RESTRICTED_LIST
     assertTrue(newRestrictList.contains(ConfVars.HIVE_TEST_MODE_PREFIX.varname));
@@ -93,7 +95,7 @@ public class TestHiveConfRestrictList {
     verifyRestriction(ConfVars.HIVE_TEST_MODE_PREFIX.varname, "foo");
     verifyRestriction(ConfVars.HIVE_CONF_RESTRICTED_LIST.varname, "foo");
     verifyRestriction(ConfVars.LOCAL_SCRATCH_DIR.varname, "foo");
-    verifyRestriction(ConfVars.METASTORE_URIS.varname, "foo");
+    verifyRestriction(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), "foo");
   }
 
   private void verifyRestriction(String varName, String newVal) {
