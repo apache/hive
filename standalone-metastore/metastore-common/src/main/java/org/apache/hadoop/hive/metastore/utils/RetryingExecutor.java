@@ -26,6 +26,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +73,7 @@ public class RetryingExecutor<T> {
     return this;
   }
 
-  public T run() throws MetaException {
+  public T run() throws TException {
     while (true) {
       try {
         return command.call();
@@ -100,7 +101,7 @@ public class RetryingExecutor<T> {
     }
   }
 
-  private Throwable checkException(Throwable e) throws MetaException {
+  private Throwable checkException(Throwable e) throws TException {
     Throwable cause = e;
     if (e instanceof InvocationTargetException ||
         e instanceof UndeclaredThrowableException) {
@@ -109,12 +110,26 @@ public class RetryingExecutor<T> {
     if (retryPolicy != null && !retryPolicy.test(cause)) {
       String message = "See a fatal exception, avoid to retry the command:" + commandName;
       LOG.error(message, cause);
+      if (cause instanceof TException te) {
+        throw te;
+      }
       String errorMessage = ExceptionUtils.getMessage(cause);
       Throwable rootCause = ExceptionUtils.getRootCause(e);
       errorMessage += (rootCause == null ? "" : ("\nRoot cause: " + rootCause));
       throw new MetaException(message + " :: " + errorMessage);
     }
     return cause;
+  }
+
+  public T runWithMetaException() throws MetaException {
+    try {
+      return run();
+    } catch (TException te) {
+      if (te instanceof MetaException me) {
+        throw me;
+      }
+      throw new MetaException(te.getMessage());
+    }
   }
 
   public static class RetryException extends Exception {
