@@ -167,14 +167,13 @@ public class IcebergTableOptimizer extends TableOptimizer {
    * @param pastSnapshotTimeMil The timestamp in milliseconds of the snapshot to check from (exclusive).
    * @param latestSpecOnly when True, returns partitions with the current spec only;
    *                       False - older specs only;
-   *                       Null - any spec
    * @return A List of {@link org.apache.hadoop.hive.ql.metadata.Partition} representing the unique modified
    *                       partition names.
    * @throws IllegalArgumentException if snapshot IDs are invalid or out of order, or if the table has no current
    *                       snapshot.
    */
   private List<Partition> findModifiedPartitions(org.apache.hadoop.hive.ql.metadata.Table hiveTable,
-      org.apache.iceberg.Table icebergTable, Long pastSnapshotTimeMil, Boolean latestSpecOnly) {
+      org.apache.iceberg.Table icebergTable, Long pastSnapshotTimeMil, boolean latestSpecOnly) {
 
     List<Snapshot> relevantSnapshots = getRelevantSnapshots(icebergTable, pastSnapshotTimeMil).toList();
     if (relevantSnapshots.isEmpty()) {
@@ -192,7 +191,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
                     snapshot.addedDeleteFiles(io),
                     snapshot.removedDeleteFiles(io))
                 .toList();
-            return IcebergTableUtil.getPartitionNames(icebergTable, affectedFiles, latestSpecOnly);
+            return IcebergCompactionUtil.getPartitionNames(icebergTable, affectedFiles, latestSpecOnly);
           }))
           .toList();
 
@@ -202,7 +201,7 @@ public class IcebergTableOptimizer extends TableOptimizer {
         modifiedPartitions.addAll(future.get());
       }
 
-      return IcebergTableUtil.convertNameToMetastorePartition(hiveTable, modifiedPartitions);
+      return IcebergTableUtil.convertNameToHivePartition(hiveTable, modifiedPartitions);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeMetaException(e, "Interrupted while finding modified partitions");

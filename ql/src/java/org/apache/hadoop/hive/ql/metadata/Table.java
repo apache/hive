@@ -612,7 +612,8 @@ public class Table implements Serializable {
   public List<FieldSchema> getPartCols() {
     List<FieldSchema> partKeys = tTable.getPartitionKeys();
     if (partKeys == null) {
-      partKeys = new ArrayList<>();
+      partKeys = hasNonNativePartitionSupport() ?
+          getStorageHandler().getPartitionKeys(this) : new ArrayList<>();
       tTable.setPartitionKeys(partKeys);
     }
     return partKeys;
@@ -625,10 +626,7 @@ public class Table implements Serializable {
   }
 
   public List<String> getPartColNames() {
-    List<FieldSchema> partCols = hasNonNativePartitionSupport() ?
-        getStorageHandler().getPartitionKeys(this) : getPartCols();
-    return partCols.stream().map(FieldSchema::getName)
-      .collect(Collectors.toList());
+    return getPartCols().stream().map(FieldSchema::getName).toList();
   }
 
   public boolean hasNonNativePartitionSupport() {

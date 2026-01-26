@@ -19,12 +19,19 @@
 package org.apache.iceberg.mr.hive.compaction;
 
 import java.util.List;
+import java.util.Set;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.util.Sets;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
+import org.apache.iceberg.PartitionField;
+import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PositionDeletesScanTask;
 import org.apache.iceberg.ScanTask;
 import org.apache.iceberg.Table;
@@ -99,5 +106,38 @@ public class IcebergCompactionUtil {
         });
     return Lists.newArrayList(CloseableIterable.transform(filteredDeletesScanTasks,
         t -> ((PositionDeletesScanTask) t).file()));
+  }
+
+  static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
+      throws MetaException, HiveException {
+    if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {
+      throw new HiveException("Table and partitionPath must not be null or empty.");
+    }
+
+    // Extract field names from the path: "field1=val1/field2=val2" → [field1, field2]
+    List<String> fieldNames = Lists.newArrayList(Warehouse.makeSpecFromName(partitionPath).keySet());
+
+    return icebergTable.specs().values().stream()
+        .filter(spec -> {
+          List<String> specFieldNames = spec.fields().stream()
+              .map(PartitionField::name)
+              .toList();
+          return specFieldNames.equals(fieldNames);
+        })
+        .findFirst() // Supposed to be only one matching spec
+        .orElseThrow(() -> new HiveException("No matching partition spec found for partition path: " + partitionPath));
+  }
+
+  static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
+      boolean latestSpecOnly) {
+    Set<String> partitions = Sets.newHashSet();
+    int tableSpecId = icebergTable.spec().specId();
+    for (T file : files) {
+      if (latestSpecOnly == (file.specId() == tableSpecId)) {
+        String partName = icebergTable.specs().get(file.specId()).partitionToPath(file.partition());
+        partitions.add(partName);
+      }
+    }
+    return partitions;
   }
 }
