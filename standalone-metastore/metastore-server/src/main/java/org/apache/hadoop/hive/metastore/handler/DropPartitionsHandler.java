@@ -290,11 +290,6 @@ public class DropPartitionsHandler
     return "DropPartitionsHandler [" + id + "] -  Drop partitions from " + tableName + ":";
   }
 
-  @Override
-  protected String getRequestProgress() {
-    return "Dropping partitions";
-  }
-
   public static class DropPartitionsResult implements Result {
     private final List<Partition> partitions;
     private final boolean tableDataShouldBeDeleted;

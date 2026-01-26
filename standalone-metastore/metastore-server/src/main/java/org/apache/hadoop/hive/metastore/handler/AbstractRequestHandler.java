@@ -189,10 +189,6 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
             public String getMessagePrefix() {
               throw new UnsupportedOperationException();
             }
-            @Override
-            public String getRequestProgress() {
-              throw new UnsupportedOperationException();
-            }
           };
         }
       }
@@ -200,6 +196,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
     return opHandler;
   }
 
+  @SuppressWarnings("unchecked")
   public static <T extends AbstractRequestHandler> T offer(IHMSHandler handler, TBase req)
       throws TException, IOException {
     HandlerFactory factory = REQ_FACTORIES.get(req.getClass());
@@ -235,8 +232,8 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
       // No Op, return to the caller since long polling timeout has expired
       LOG.trace("{} Long polling timed out", logMsgPrefix);
     } catch (CancellationException e) {
-      // The background operation thread was cancelled
-      LOG.trace("{} The background operation was cancelled", logMsgPrefix);
+      // The background handler thread was cancelled
+      LOG.trace("{} The background handler was cancelled", logMsgPrefix);
     } catch (ExecutionException | InterruptedException e) {
       // No op, we will deal with this exception later
       LOG.error("{} Failed", logMsgPrefix, e);
@@ -280,11 +277,12 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
   }
 
   /**
-   * Retrieve the result after this operation is done,
-   * an IllegalStateException would raise if the operation has not completed.
-   * @return the operation result
-   * @throws TException exception while checking the status of the operation
+   * Retrieve the result after this handler is done,
+   * an IllegalStateException would raise if the handler has not completed.
+   * @return the handler's result
+   * @throws TException exception while checking the status of the handler
    */
+  @SuppressWarnings("unchecked")
   public final A getResult() throws TException {
     RequestStatus resp = getRequestStatus();
     if (!resp.finished) {
@@ -295,8 +293,8 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
   }
 
   /**
-   * Method invoked prior to executing the given operation.
-   * This method may be used to initialize and validate the operation.
+   * Method invoked prior to executing the given handler.
+   * This method may be used to initialize and validate the handler.
    * @throws TException
    */
   protected void beforeExecute() throws TException, IOException {
@@ -304,15 +302,15 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
   }
 
   /**
-   * Run this operation.
+   * Run this handler.
    * @return computed result
-   * @throws TException  if unable to run the operation
+   * @throws TException  if unable to run the handler
    * @throws IOException if the request is invalid
    */
   protected abstract A execute() throws TException, IOException;
 
   /**
-   * Method after the operation is done.
+   * Method after the handler is done.
    * Can be used to free the resources this handler holds
    */
   protected void afterExecute(A result) throws TException, IOException {
@@ -321,18 +319,20 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
   }
 
   /**
-   * Get the prefix for logging the message on polling the operation status.
+   * Get the prefix for logging the message on polling the handler's status.
    *
    * @return message prefix
    */
   protected abstract String getMessagePrefix();
 
   /**
-   * Get the message about the operation progress.
+   * Get the handler's progress that will show at the client.
    *
    * @return the progress
    */
-  protected abstract String getRequestProgress();
+  protected String getRequestProgress() {
+    return "Done";
+  }
 
   public boolean success() throws TException {
     RequestStatus status = getRequestStatus();
@@ -341,7 +341,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
 
   /**
    * Get the alias of this handler for metrics.
-   * @return the alias, null or empty if no need to measure the operation.
+   * @return the alias, null or empty if no need to measure the handler.
    */
   private String getMetricAlias() {
     RequestHandler rh = getClass().getAnnotation(RequestHandler.class);
@@ -366,7 +366,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
   public interface Result {
     /**
      * An indicator to tell if the handler is successful or not.
-     * @return true if the operation is successful, false otherwise
+     * @return true if the handler is successful, false otherwise
      */
     boolean success();
 

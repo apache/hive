@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore.handler;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
@@ -41,16 +42,13 @@ import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreateTableRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -62,7 +60,6 @@ import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
-import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -82,6 +79,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbRe
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+@SuppressWarnings("unused")
 @RequestHandler(requestBody = CreateTableRequest.class)
 public class CreateTableHandler
     extends AbstractRequestHandler<CreateTableRequest, CreateTableHandler.CreateTableResult> {
@@ -260,63 +258,12 @@ public class CreateTableHandler
                 new long[0], new BitSet(), writeId);
         validWriteIds = validWriteIdList.toString();
       }
-      updateTableColumnStatsInternal(colStats, validWriteIds, tbl.getWriteId());
+      SetPartitionsStatsRequest setStatsRequest = new SetPartitionsStatsRequest(Arrays.asList(colStats));
+      setStatsRequest.setWriteId(writeId);
+      setStatsRequest.setValidWriteIdList(validWriteIds);
+      setStatsRequest.setNeedMerge(false);
+      handler.update_table_column_statistics_req(setStatsRequest);
     }
-  }
-
-  private boolean updateTableColumnStatsInternal(ColumnStatistics colStats,
-      String validWriteIds, long writeId)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    normalizeColStatsInput(colStats);
-    Map<String, String> parameters = null;
-    rs.openTransaction();
-    boolean committed = false;
-    try {
-      parameters = rs.updateTableColumnStatistics(colStats, validWriteIds, writeId);
-      if (parameters != null) {
-        Table tableObj = rs.getTable(colStats.getStatsDesc().getCatName(),
-            colStats.getStatsDesc().getDbName(),
-            colStats.getStatsDesc().getTableName(), validWriteIds);
-        if (!handler.getTransactionalListeners().isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(handler.getTransactionalListeners(),
-              EventMessage.EventType.UPDATE_TABLE_COLUMN_STAT,
-              new UpdateTableColumnStatEvent(colStats, tableObj, parameters,
-                  writeId, handler));
-        }
-        if (!handler.getListeners().isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(handler.getListeners(),
-              EventMessage.EventType.UPDATE_TABLE_COLUMN_STAT,
-              new UpdateTableColumnStatEvent(colStats, tableObj, parameters,
-                  writeId, handler));
-        }
-      }
-      committed = rs.commitTransaction();
-    } finally {
-      if (!committed) {
-        rs.rollbackTransaction();
-      }
-    }
-
-    return parameters != null;
-  }
-
-  private void normalizeColStatsInput(ColumnStatistics colStats) throws MetaException {
-    // TODO: is this really needed? this code is propagated from HIVE-1362 but most of it is useless.
-    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-    statsDesc.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName().toLowerCase() :
-        getDefaultCatalog(handler.getConf()));
-    statsDesc.setDbName(statsDesc.getDbName().toLowerCase());
-    statsDesc.setTableName(statsDesc.getTableName().toLowerCase());
-    statsDesc.setPartName(statsDesc.getPartName());
-    long time = System.currentTimeMillis() / 1000;
-    statsDesc.setLastAnalyzed(time);
-
-    for (ColumnStatisticsObj statsObj : colStats.getStatsObj()) {
-      statsObj.setColName(statsObj.getColName().toLowerCase());
-      statsObj.setColType(statsObj.getColType().toLowerCase());
-    }
-    colStats.setStatsDesc(statsDesc);
-    colStats.setStatsObj(colStats.getStatsObj());
   }
 
   @Override
@@ -442,11 +389,6 @@ public class CreateTableHandler
   protected String getMessagePrefix() {
     return "CreateTableHandler [" + id + "] -  create table for " +
         TableName.getQualified(tbl.getCatName(), tbl.getDbName(), tbl.getTableName()) + ":";
-  }
-
-  @Override
-  protected String getRequestProgress() {
-    return "Creating table";
   }
 
   public record CreateTableResult(boolean success, Map<String, String> transactionalListenerResponses)

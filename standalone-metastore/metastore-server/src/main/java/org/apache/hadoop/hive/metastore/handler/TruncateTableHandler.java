@@ -291,11 +291,7 @@ public class TruncateTableHandler
         TableName.getQualified(catName, dbName, table.getTableName()) + ":";
   }
 
-  @Override
-  protected String getRequestProgress() {
-    return "Truncating table";
-  }
-
   public record TruncateTableResult(boolean success) implements Result {
+
   }
 }

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
@@ -186,7 +187,11 @@ public class AddPartitionsHandler
                   new long[0], new BitSet(), writeId);
           validWriteIds = validWriteIdList.toString();
         }
-        ((HMSHandler)handler).updatePartitonColStatsInternal(table, null, partColStats, validWriteIds, writeId);
+        SetPartitionsStatsRequest setPartitionsStatsRequest = new SetPartitionsStatsRequest(Arrays.asList(partColStats));
+        setPartitionsStatsRequest.setWriteId(writeId);
+        setPartitionsStatsRequest.setValidWriteIdList(validWriteIds);
+        setPartitionsStatsRequest.setNeedMerge(false);
+        handler.update_partition_column_statistics_req(setPartitionsStatsRequest);
       }
 
       success = ms.commitTransaction();
@@ -539,11 +544,6 @@ public class AddPartitionsHandler
   @Override
   protected String getMessagePrefix() {
     return "AddPartitionsHandler [" + id + "] -  Add partitions for " + tableName + ":";
-  }
-
-  @Override
-  protected String getRequestProgress() {
-    return "Adding partitions";
   }
 
   public record AddPartitionsResult(boolean success, List<Partition> newParts) implements Result {
