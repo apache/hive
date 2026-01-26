@@ -73,7 +73,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypesorc
-                  filterExpr: (((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D)) or ((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2))) (type: boolean)
+                  filterExpr: (((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2)) or ((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D))) (type: boolean)
                   Statistics: Num rows: 12288 Data size: 1027540 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -82,8 +82,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 14:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 14:float), FilterDecimalColNotEqualDecimalScalar(col 15:decimal(22,3), val 79.553)(children: CastLongToDecimal(col 3:bigint) -> 15:decimal(22,3)), FilterDoubleColEqualDoubleScalar(col 16:double, val -29071.0)(children: CastTimestampToDouble(col 9:timestamp) -> 16:double)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 17:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 17:double), FilterDecimal64ColGreaterEqualDecimal64Scalar(col 18:decimal(8,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 1:smallint) -> 18:decimal(8,3)/DECIMAL_64), FilterTimestampColGreaterTimestampColumn(col 8:timestamp, col 9:timestamp)))
-                    predicate: (((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D)) or ((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2))) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 14:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 14:double), FilterDecimal64ColGreaterEqualDecimal64Scalar(col 15:decimal(8,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 1:smallint) -> 15:decimal(8,3)/DECIMAL_64), FilterTimestampColGreaterTimestampColumn(col 8:timestamp, col 9:timestamp)), FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 16:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 16:float), FilterDecimalColNotEqualDecimalScalar(col 17:decimal(22,3), val 79.553)(children: CastLongToDecimal(col 3:bigint) -> 17:decimal(22,3)), FilterDoubleColEqualDoubleScalar(col 18:double, val -29071.0)(children: CastTimestampToDouble(col 9:timestamp) -> 18:double)))
+                    predicate: (((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2)) or ((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D))) (type: boolean)
                     Statistics: Num rows: 2503 Data size: 209380 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: cfloat (type: float), cint (type: int), UDFToDouble(csmallint) (type: double), (UDFToDouble(csmallint) * UDFToDouble(csmallint)) (type: double), UDFToDouble(ctinyint) (type: double), (UDFToDouble(ctinyint) * UDFToDouble(ctinyint)) (type: double), UDFToDouble(cfloat) (type: double), (UDFToDouble(cfloat) * UDFToDouble(cfloat)) (type: double), UDFToDouble(cint) (type: double), (UDFToDouble(cint) * UDFToDouble(cint)) (type: double)
@@ -133,7 +133,7 @@ STAGE PLANS:
                     includeColumns: [0, 1, 2, 3, 4, 5, 8, 9]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, decimal(22,3), double, double, decimal(8,3)/DECIMAL_64, double, double, double, double, double, double, double, double, double, double, double, double, double]
+                    scratchColumnTypeNames: [double, decimal(8,3)/DECIMAL_64, double, decimal(22,3), double, double, double, double, double, double, double, double, double, double, double, double, double, double]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:

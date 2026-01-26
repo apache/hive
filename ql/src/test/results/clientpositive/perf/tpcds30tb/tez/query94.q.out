@@ -23,7 +23,7 @@ STAGE PLANS:
                 TableScan
                   alias: ws1
                   filterExpr: (ws_ship_addr_sk is not null and ws_web_site_sk is not null and ws_ship_date_sk is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_119_container, bigKeyColName:ws_web_site_sk, smallTablePos:1, keyRatio:2.7777730824410645E-10
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_120_container, bigKeyColName:ws_web_site_sk, smallTablePos:1, keyRatio:2.9924592936258674E-4
                   Statistics: Num rows: 21600036511 Data size: 5701632353848 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (ws_ship_addr_sk is not null and ws_web_site_sk is not null and ws_ship_date_sk is not null) (type: boolean)
@@ -36,27 +36,27 @@ STAGE PLANS:
                         condition map:
                              Inner Join 0 to 1
                         keys:
-                          0 _col1 (type: bigint)
+                          0 _col0 (type: bigint)
                           1 _col0 (type: bigint)
-                        outputColumnNames: _col0, _col2, _col3, _col4, _col5, _col6
+                        outputColumnNames: _col1, _col2, _col3, _col4, _col5, _col6
                         input vertices:
                           1 Map 8
-                        Statistics: Num rows: 407242361 Data size: 103520524440 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2398040806 Data size: 613164879160 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
                                Inner Join 0 to 1
                           keys:
-                            0 _col2 (type: bigint)
+                            0 _col1 (type: bigint)
                             1 _col0 (type: bigint)
-                          outputColumnNames: _col0, _col3, _col4, _col5, _col6
+                          outputColumnNames: _col2, _col3, _col4, _col5, _col6
                           input vertices:
                             1 Map 9
-                          Statistics: Num rows: 58177483 Data size: 13737647176 Basic stats: COMPLETE Column stats: COMPLETE
+                          Statistics: Num rows: 45246054 Data size: 10530636632 Basic stats: COMPLETE Column stats: COMPLETE
                           Map Join Operator
                             condition map:
                                  Inner Join 0 to 1
                             keys:
-                              0 _col0 (type: bigint)
+                              0 _col2 (type: bigint)
                               1 _col0 (type: bigint)
                             outputColumnNames: _col3, _col4, _col5, _col6
                             input vertices:
@@ -89,22 +89,22 @@ STAGE PLANS:
         Map 10 
             Map Operator Tree:
                 TableScan
-                  alias: date_dim
-                  filterExpr: CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' (type: boolean)
-                  Statistics: Num rows: 73049 Data size: 4675136 Basic stats: COMPLETE Column stats: COMPLETE
+                  alias: web_site
+                  filterExpr: (web_company_name = 'pri                                               ') (type: boolean)
+                  Statistics: Num rows: 84 Data size: 8064 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' (type: boolean)
-                    Statistics: Num rows: 8116 Data size: 519424 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: (web_company_name = 'pri                                               ') (type: boolean)
+                    Statistics: Num rows: 12 Data size: 1152 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: d_date_sk (type: bigint)
+                      expressions: web_site_sk (type: bigint)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: bigint)
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Map 11 
@@ -165,6 +165,27 @@ STAGE PLANS:
         Map 8 
             Map Operator Tree:
                 TableScan
+                  alias: date_dim
+                  filterExpr: CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' (type: boolean)
+                  Statistics: Num rows: 73049 Data size: 4675136 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1999-05-01 00:00:00' AND TIMESTAMP'1999-06-30 00:00:00' (type: boolean)
+                    Statistics: Num rows: 8116 Data size: 519424 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: d_date_sk (type: bigint)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 8116 Data size: 64928 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: may be used (ACID table)
+        Map 9 
+            Map Operator Tree:
+                TableScan
                   alias: customer_address
                   filterExpr: (ca_state = 'TX') (type: boolean)
                   Statistics: Num rows: 40000000 Data size: 3760000000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -181,27 +202,6 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col0 (type: bigint)
                         Statistics: Num rows: 754717 Data size: 6037736 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: may be used (ACID table)
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: web_site
-                  filterExpr: (web_company_name = 'pri                                               ') (type: boolean)
-                  Statistics: Num rows: 84 Data size: 8064 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (web_company_name = 'pri                                               ') (type: boolean)
-                    Statistics: Num rows: 12 Data size: 1152 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: web_site_sk (type: bigint)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: bigint)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: bigint)
-                        Statistics: Num rows: 12 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
