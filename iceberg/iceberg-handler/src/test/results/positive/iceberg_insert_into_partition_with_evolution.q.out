@@ -164,6 +164,10 @@ POSTHOOK: Input: default@testice1000
 a                   	int                 	                    
 b                   	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: truncate[2]
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 b                   	TRUNCATE[2]         	 

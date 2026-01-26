@@ -171,7 +171,13 @@ class TextDescTableFormatter extends DescTableFormatter {
       boolean isFormatted, boolean isOutputPadded) throws IOException {
     String partitionData = "";
     if (columnPath == null) {
-      List<FieldSchema> partitionColumns = table.isPartitioned() ? table.getPartCols() : null;
+      List<FieldSchema> partitionColumns = null;
+      // TODO (HIVE-29413): Refactor to a generic getPartCols() implementation
+      if (table.isPartitioned()) {
+        partitionColumns = table.hasNonNativePartitionSupport() ?
+            table.getStorageHandler().getPartitionKeys(table) :
+            table.getPartCols();
+      }
       if (CollectionUtils.isNotEmpty(partitionColumns) &&
           conf.getBoolVar(ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY)) {
         TextMetaDataTable metaDataTable = new TextMetaDataTable();

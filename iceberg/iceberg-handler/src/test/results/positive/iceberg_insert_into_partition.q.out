@@ -481,6 +481,10 @@ strcol              	string
 intcol              	int                 	                    
 pcol                	int                 	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	int                 	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	IDENTITY            	 
@@ -1675,6 +1679,11 @@ age                 	int
 country             	string              	                    
 state               	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+country             	string              	Transform: identity 
+state               	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 country             	IDENTITY            	 
@@ -2727,6 +2736,11 @@ age                 	int
 country             	string              	                    
 state               	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+country             	string              	Transform: identity 
+state               	string              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 country             	IDENTITY            	 
@@ -3418,6 +3432,10 @@ datecol             	date
 intcol              	int                 	                    
 pcol                	bigint              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	bigint              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	IDENTITY            	 
@@ -4108,6 +4126,10 @@ datecol             	date
 intcol              	int                 	                    
 pcol                	double              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	double              	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	IDENTITY            	 
@@ -4797,6 +4819,10 @@ POSTHOOK: Input: default@ice_parquet_decimal
 datecol             	date                	                    
 intcol              	int                 	                    
 pcol                	decimal(10,6)       	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	decimal(10,6)       	Transform: identity 
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 

@@ -38,24 +38,27 @@ public class DummyPartition extends Partition {
 
   private String name;
   private LinkedHashMap<String, String> partSpec;
+  private List<String> values;
+
   public DummyPartition() {
   }
   
-  public DummyPartition(Table tbl, String name) {
-    setTable(tbl);
+  public DummyPartition(Table table, String name) {
+    setTable(table);
     this.name = name;
   }
 
-  public DummyPartition(Table tbl) {
-    this(tbl, null, Maps.newHashMap());
+  public DummyPartition(Table table) {
+    this(table, null, Maps.newHashMap());
   }
 
-  public DummyPartition(Table tbl, String name, Map<String, String> partSpec) {
-    this(tbl, name);
+  public DummyPartition(Table table, String name, Map<String, String> partSpec) {
+    this(table, name);
     org.apache.hadoop.hive.metastore.api.Partition tPart =
         new org.apache.hadoop.hive.metastore.api.Partition();
-    tPart.setSd(tbl.getSd().deepCopy());
+    tPart.setSd(table.getSd().deepCopy());
     tPart.setParameters(Maps.newHashMap());
+    tPart.setDbName(table.getDbName());
     
     this.partSpec = Maps.newLinkedHashMap(partSpec);
     setTPartition(tPart);
@@ -80,10 +83,21 @@ public class DummyPartition extends Partition {
 
   @Override
   public List<String> getValues() {
-    List<String> values = new ArrayList<String>();
-    for (FieldSchema fs : this.getTable().getPartCols()) {
-      values.add(partSpec.get(fs.getName()));
+    if (values != null) {
+      return values;
     }
+
+    Table table = this.getTable();
+    values = new ArrayList<>();
+
+    // TODO (HIVE-29413): Refactor to a generic getPartCols() implementation
+    for (FieldSchema fs : table.hasNonNativePartitionSupport()
+        ? table.getStorageHandler().getPartitionKeys(table)
+        : table.getPartCols()) {
+      String val = partSpec.get(fs.getName());
+      values.add(val);
+    }
+
     return values;
   }
 

@@ -256,4 +256,25 @@ public class TestHiveIcebergPartitions extends HiveIcebergStorageHandlerWithEngi
 
     HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
   }
+
+  @Test
+  public void testShowPartitionsWithTransform() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.IntegerType.get()),
+        optional(2, "part_field", Types.StringType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("part_field", 2).build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(1L, "Part1")
+        .add(2L, "Part2")
+        .add(3L, "Art3")
+        .build();
+    testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
+
+    List<Object[]> rows = shell.executeStatement("SHOW PARTITIONS part_test");
+    Assert.assertEquals(2, rows.size());
+
+    rows = shell.executeStatement("SHOW PARTITIONS part_test PARTITION(part_field='Art3')");
+    Assert.assertEquals(1, rows.size());
+    Assert.assertEquals("part_field_trunc=Ar", rows.get(0)[0]);
+  }
 }

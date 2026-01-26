@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
 import org.apache.iceberg.FileFormat;
+import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
@@ -959,8 +960,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
 
     List<Object[]> rows = shell.executeStatement("DESCRIBE default.partitioned_with_comment_table");
     List<Types.NestedField> columns = icebergTable.schema().columns();
-    // The partition transform information is 3 extra lines, and 2 more line for the columns
-    Assert.assertEquals(columns.size() + 5, rows.size());
+    // The partition transform information and partition information is 6 extra lines, and 4 more line for the columns
+    Assert.assertEquals(columns.size() + 10, rows.size());
     for (int i = 0; i < columns.size(); i++) {
       Types.NestedField field = columns.get(i);
       Assert.assertArrayEquals(new Object[] {field.name(), HiveSchemaUtil.convert(field.type()).getTypeName(),
@@ -1323,8 +1324,8 @@ public class TestHiveIcebergStorageHandlerNoScan {
     shell.executeStatement("ALTER TABLE default.customers SET PARTITION SPEC (region, city)");
 
     List<Object[]> result = shell.executeStatement("DESCRIBE default.customers");
-    Assert.assertArrayEquals(new String[] {"region", "IDENTITY", null}, result.get(8));
-    Assert.assertArrayEquals(new String[] {"city", "IDENTITY", null}, result.get(9));
+    Assert.assertArrayEquals(new String[] {"region", "IDENTITY", null}, result.get(14));
+    Assert.assertArrayEquals(new String[] {"city", "IDENTITY", null}, result.get(15));
   }
 
   @Test
@@ -1491,21 +1492,25 @@ public class TestHiveIcebergStorageHandlerNoScan {
   }
 
   @Test
-  public void testCommandsWithPartitionClauseThrow() {
+  public void testCommandsWithPartitionClause() throws IOException {
     TableIdentifier target = TableIdentifier.of("default", "target");
     PartitionSpec spec = PartitionSpec.builderFor(HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA)
         .identity("last_name").build();
     testTables.createTable(shell, target.name(), HiveIcebergStorageHandlerTestUtils.CUSTOMER_SCHEMA,
         spec, FileFormat.PARQUET, ImmutableList.of());
+    PartitionData partitionData = new PartitionData(spec.partitionType());
+    partitionData.set(0, "Johnson");
+    org.apache.iceberg.Table icebergTable = testTables.loadTable(target);
+    testTables.appendIcebergTable(shell.getHiveConf(), icebergTable, FileFormat.PARQUET, partitionData,
+        HiveIcebergStorageHandlerTestUtils.CUSTOMER_RECORDS);
 
     String[] commands = {
         "DESCRIBE target PARTITION (last_name='Johnson')"
     };
 
     for (String command : commands) {
-      Assertions.assertThatThrownBy(() -> shell.executeStatement(command))
-              .isInstanceOf(IllegalArgumentException.class)
-              .hasMessageContaining("Using partition spec in query is unsupported");
+      Assertions.assertThatCode(() -> shell.executeStatement(command))
+          .doesNotThrowAnyException();
     }
   }
 
