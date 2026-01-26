@@ -67,8 +67,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkT
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+@RequestHandler(requestBody = DropDatabaseRequest.class, supportAsync = true, metricAlias = "drop_database_req")
 public class DropDatabaseHandler
-    extends AbstractOperationHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
+    extends AbstractRequestHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
 
   private static final Logger LOG = LoggerFactory.getLogger(DropDatabaseHandler.class);
   private String name;
@@ -80,6 +81,7 @@ public class DropDatabaseHandler
   private List<String> packages;
   private AtomicReference<String> progress;
   private DropDatabaseResult result;
+  private RawStore rs;
 
   DropDatabaseHandler(IHMSHandler handler, DropDatabaseRequest request) {
     super(handler, request.isAsyncDrop(), request);
@@ -88,11 +90,10 @@ public class DropDatabaseHandler
   public DropDatabaseResult execute() throws TException, IOException {
     boolean success = false;
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    RawStore rs = handler.getMS();
     rs.openTransaction();
     try {
       if (MetaStoreUtils.isDatabaseRemote(db)) {
-        if (rs.dropDatabase(db.getCatalogName(), db.getName())) {
+        if (rs.dropDatabase(catalogName, name)) {
           success = rs.commitTransaction();
         }
         return result;
@@ -143,7 +144,7 @@ public class DropDatabaseHandler
         dropRequest.setDeleteData(false);
         dropRequest.setDropPartitions(true);
         dropRequest.setAsyncDrop(false);
-        DropTableHandler dropTable = AbstractOperationHandler.offer(handler, dropRequest);
+        DropTableHandler dropTable = AbstractRequestHandler.offer(handler, dropRequest);
         if (tableDataShouldBeDeleted
             && dropTable.success()) {
           DropTableHandler.DropTableResult dropTableResult = dropTable.getResult();
@@ -153,6 +154,7 @@ public class DropDatabaseHandler
         }
       }
 
+      progress.set("Dropping the database");
       if (rs.dropDatabase(catalogName, name)) {
         if (!handler.getTransactionalListeners().isEmpty()) {
           checkInterrupted();
@@ -195,7 +197,7 @@ public class DropDatabaseHandler
     this.catalogName = normalizeIdentifier(
         request.isSetCatalogName() ? request.getCatalogName() : MetaStoreUtils.getDefaultCatalog(handler.getConf()));
 
-    RawStore rs = handler.getMS();
+    this.rs = handler.getMS();
     db = rs.getDatabase(catalogName, name);
     if (!MetastoreConf.getBoolVar(handler.getConf(), HIVE_IN_TEST) && ReplChangeManager.isSourceOfReplication(db)) {
       throw new InvalidOperationException("can not drop a database which is a source of replication");
@@ -342,7 +344,7 @@ public class DropDatabaseHandler
   }
 
   @Override
-  protected String getProgress() {
+  protected String getRequestProgress() {
     if (progress == null) {
       return getMessagePrefix() + " hasn't started yet";
     }
@@ -405,12 +407,7 @@ public class DropDatabaseHandler
   }
 
   @Override
-  protected String getHandlerAlias() {
-    return "drop_database_req";
-  }
-
-  @Override
-  protected void afterExecute(DropDatabaseResult result) throws MetaException, IOException {
+  protected void afterExecute(DropDatabaseResult result) throws TException, IOException {
     try {
       Warehouse wh = handler.getWh();
       if (result != null && result.success()) {
@@ -418,6 +415,9 @@ public class DropDatabaseHandler
           wh.addToChangeManagement(funcCmPath);
         }
         if (request.isDeleteData()) {
+          progress.set(String.format("Deleting %d partition paths and %d table paths from the database",
+              result.getPartitionPaths() != null ? result.getPartitionPaths().size() : 0,
+              result.getTablePaths().size()));
           Database db = result.getDatabase();
           // Delete the data in the partitions which have other locations
           List<Path> pathsToDelete = new ArrayList<>();
@@ -457,12 +457,16 @@ public class DropDatabaseHandler
         }
       }
     } finally {
+      super.afterExecute(result);
+      if (async) {
+        rs.shutdown();
+      }
+      rs = null;
       tables = null;
       functions = null;
       procedures = null;
       packages = null;
       db = null;
-      super.afterExecute(result);
     }
   }
 }

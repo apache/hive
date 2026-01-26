@@ -23,6 +23,7 @@
   <name>Hive Metastore Server</name>
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
+    <reflections.version>0.10.2</reflections.version>
   </properties>
   <dependencies>
     <dependency>
@@ -67,6 +68,17 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-simple</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.reflections</groupId>
+      <artifactId>reflections</artifactId>
+      <version>${reflections.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>annotations</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
