@@ -274,30 +274,30 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
     // Determine the size of small table inputs
     final int mapJoinConversionPos = mapJoinConversion.getBigTablePos();
-    long totalSize = 0;
+    long estimatedTotalSize = 0;
     for (int pos = 0; pos < joinOp.getParentOperators().size(); pos++) {
       if (pos == mapJoinConversionPos) {
         continue;
       }
       Operator<? extends OperatorDesc> parentOp = joinOp.getParentOperators().get(pos);
-      totalSize = StatsUtils.safeAdd(totalSize, computeOnlineDataSize(parentOp.getStatistics()));
+      estimatedTotalSize = StatsUtils.safeAdd(estimatedTotalSize, computeOnlineDataSize(parentOp.getStatistics()));
     }
 
     // Size of bigtable
     long bigTableSize = computeOnlineDataSize(joinOp.getParentOperators().get(mapJoinConversionPos).getStatistics());
 
     // Network cost of DPHJ
-    long networkCostDPHJ = StatsUtils.safeAdd(totalSize, bigTableSize);
+    long networkCostDPHJ = StatsUtils.safeAdd(estimatedTotalSize, bigTableSize);
 
-    LOG.info("Cost of dynamically partitioned hash join : total small table size = " + totalSize
+    LOG.info("Cost of dynamically partitioned hash join : total small table size = " + estimatedTotalSize
     + " bigTableSize = " + bigTableSize + "networkCostDPHJ = " + networkCostDPHJ);
 
     // Network cost of map side join
-    long networkCostMJ = StatsUtils.safeMult(numNodes, totalSize);
+    long networkCostMJ = StatsUtils.safeMult(numNodes, estimatedTotalSize);
     LOG.info("Cost of Bucket Map Join : numNodes = " + numNodes + " total small table size = "
-    + totalSize + " networkCostMJ = " + networkCostMJ);
+    + estimatedTotalSize + " networkCostMJ = " + networkCostMJ);
 
-    if (totalSize <= maxJoinMemory) {
+    if (estimatedTotalSize <= maxJoinMemory) {
       // mapjoin is applicable; don't try the below algos..
       return false;
     }
@@ -388,7 +388,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     for (ColStatistics cs : colStats) {
       if (cs != null) {
         String colTypeLowerCase = cs.getColumnType().toLowerCase();
-        long nonNullCount = cs.getNumNulls() > 0 ? Math.max(1L, numRows - cs.getNumNulls() + 1) : numRows;
+        long nonNullCount = cs.getNumNulls() > 0 ? Math.max(0L, numRows - cs.getNumNulls()) + 1 : numRows;
         double overhead = 0;
         if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
             || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
