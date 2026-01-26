@@ -2654,8 +2654,15 @@ public class HiveConf extends Configuration {
 
     // CTE
     @InterfaceStability.Unstable
-    HIVE_CTE_SUGGESTER_CLASS("hive.optimize.cte.suggester.class", "",
-        "Class for finding and suggesting common table expressions (CTEs) based on a given query. The class must implement the CommonTableExpressionSuggester interface."),
+    HIVE_CTE_SUGGESTER_TYPE("hive.optimize.cte.suggester.type", "AST", new StringSet("AST", "CBO", "NONE"),
+        "The type of the suggester that is used for finding and materializing common table expressions " +
+            "(CTEs) based on a given query."),
+    @InterfaceStability.Unstable
+    HIVE_CTE_SUGGESTER_CLASS("hive.optimize.cte.suggester.class",
+        "org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionIdentitySuggester",
+        "The class implementing the common table expression (CTE) suggester logic. This configuration is " +
+            "only relevant for the CBO suggester. The class must implement the CommonTableExpressionSuggester " +
+            "interface."),
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", 3,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
