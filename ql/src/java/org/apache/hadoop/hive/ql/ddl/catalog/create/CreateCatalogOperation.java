@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.ddl.catalog.create;
 
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
@@ -37,7 +38,11 @@ public class CreateCatalogOperation extends DDLOperation<CreateCatalogDesc> {
 
   @Override
   public int execute() throws Exception {
-    Catalog catalog = new Catalog(desc.getName(), desc.getLocationUri());
+    String catLocationUri = Optional.ofNullable(desc.getLocationUri())
+            .orElse(MetastoreConf.getVar(context.getConf(),
+                    MetastoreConf.ConfVars.WAREHOUSE_CATALOG) + "/" + desc.getName());
+
+    Catalog catalog = new Catalog(desc.getName(), catLocationUri);
     catalog.setDescription(desc.getComment());
     Optional.ofNullable(desc.getCatlogProperties())
             .ifPresent(catalog::setParameters);
