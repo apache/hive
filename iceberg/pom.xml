@@ -32,7 +32,7 @@
     <iceberg.avro.version>1.12.0</iceberg.avro.version>
     <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
     <google.errorprone.version>2.29.2</google.errorprone.version>
-    <assertj.version>3.27.3</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
     <awaitility.version>4.2.1</awaitility.version>
     <immutables.value.version>2.10.0</immutables.value.version>
     <validate.skip>false</validate.skip>
