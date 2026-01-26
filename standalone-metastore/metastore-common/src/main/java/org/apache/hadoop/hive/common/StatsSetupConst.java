@@ -374,8 +374,11 @@ public class StatsSetupConst {
       return;
     }
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
-    colNames.forEach(colName ->
-        stats.columnStats.remove(colName.toLowerCase()));
+    colNames.forEach(colName -> {
+      if (colName != null) {
+        stats.columnStats.remove(colName.toLowerCase());
+      }
+    });
 
     try {      
       params.put(COLUMN_STATS_ACCURATE, ColumnStatsAccurate.objectWriter.writeValueAsString(stats));
