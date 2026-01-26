@@ -64,8 +64,13 @@ public class DBRecordWritable implements Writable,
     ParameterMetaData parameterMetaData = statement.getParameterMetaData();
     for (int i = 0; i < columnValues.length; i++) {
       Object value = columnValues[i];
-      if ((parameterMetaData.getParameterType(i + 1) == Types.CHAR) && value != null && value instanceof Boolean) {
-        value = ((Boolean) value).booleanValue() ? "1" : "0";
+      try {
+        if (value instanceof Boolean b && (parameterMetaData.getParameterType(i + 1) == Types.CHAR)) {
+          value = b ? "1" : "0";
+        }
+      } catch (SQLException e) {
+        // Suppress the driver error and rely on setObject to handle the type inference.
+        // One example of when this happens is when we use quoted table names in Oracle.
       }
       statement.setObject(i + 1, value);
     }
