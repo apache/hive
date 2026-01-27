@@ -1215,7 +1215,7 @@ public class TestCleaner extends CompactorTest {
     Assert.assertTrue(sawDelta);
   }
 
-  private void allocateTableWriteId(String dbName, String tblName, long txnId) throws Exception {
+  void allocateTableWriteId(String dbName, String tblName, long txnId) throws Exception {
     AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(dbName, tblName);
     awiRqst.setTxnIds(Collections.singletonList(txnId));
     AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
