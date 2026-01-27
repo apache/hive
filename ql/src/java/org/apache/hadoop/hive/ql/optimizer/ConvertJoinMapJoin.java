@@ -274,30 +274,30 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
     // Determine the size of small table inputs
     final int mapJoinConversionPos = mapJoinConversion.getBigTablePos();
-    long totalSize = 0;
+    long estimatedTotalSize = 0;
     for (int pos = 0; pos < joinOp.getParentOperators().size(); pos++) {
       if (pos == mapJoinConversionPos) {
         continue;
       }
       Operator<? extends OperatorDesc> parentOp = joinOp.getParentOperators().get(pos);
-      totalSize += computeOnlineDataSize(parentOp.getStatistics());
+      estimatedTotalSize = StatsUtils.safeAdd(estimatedTotalSize, computeOnlineDataSize(parentOp.getStatistics()));
     }
 
     // Size of bigtable
     long bigTableSize = computeOnlineDataSize(joinOp.getParentOperators().get(mapJoinConversionPos).getStatistics());
 
     // Network cost of DPHJ
-    long networkCostDPHJ = totalSize + bigTableSize;
+    long networkCostDPHJ = StatsUtils.safeAdd(estimatedTotalSize, bigTableSize);
 
-    LOG.info("Cost of dynamically partitioned hash join : total small table size = " + totalSize
+    LOG.info("Cost of dynamically partitioned hash join : total small table size = " + estimatedTotalSize
     + " bigTableSize = " + bigTableSize + "networkCostDPHJ = " + networkCostDPHJ);
 
     // Network cost of map side join
-    long networkCostMJ = numNodes * totalSize;
+    long networkCostMJ = StatsUtils.safeMult(numNodes, estimatedTotalSize);
     LOG.info("Cost of Bucket Map Join : numNodes = " + numNodes + " total small table size = "
-    + totalSize + " networkCostMJ = " + networkCostMJ);
+    + estimatedTotalSize + " networkCostMJ = " + networkCostMJ);
 
-    if (totalSize <= maxJoinMemory) {
+    if (estimatedTotalSize <= maxJoinMemory) {
       // mapjoin is applicable; don't try the below algos..
       return false;
     }
@@ -363,9 +363,13 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       numRows = 1;
     }
     long worstCaseNeededSlots = 1L << DoubleMath.log2(numRows / hashTableLoadFactor, RoundingMode.UP);
-    onlineDataSize += statistics.getDataSize() - hashTableDataSizeAdjustment(numRows, statistics.getColumnStats());
-    onlineDataSize += overHeadPerRow * statistics.getNumRows();
-    onlineDataSize += overHeadPerSlot * worstCaseNeededSlots;
+    long adjustedDataSize = Math.max(0L,
+        statistics.getDataSize() - hashTableDataSizeAdjustment(numRows, statistics.getColumnStats()));
+    onlineDataSize = StatsUtils.safeAdd(onlineDataSize, adjustedDataSize);
+    onlineDataSize = StatsUtils.safeAdd(onlineDataSize,
+        StatsUtils.safeMult(overHeadPerRow, statistics.getNumRows()));
+    onlineDataSize = StatsUtils.safeAdd(onlineDataSize,
+        StatsUtils.safeMult(overHeadPerSlot, worstCaseNeededSlots));
     return onlineDataSize;
   }
 
@@ -384,7 +388,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     for (ColStatistics cs : colStats) {
       if (cs != null) {
         String colTypeLowerCase = cs.getColumnType().toLowerCase();
-        long nonNullCount = cs.getNumNulls() > 0 ? numRows - cs.getNumNulls() + 1 : numRows;
+        long nonNullCount = cs.getNumNulls() > 0 ? Math.max(0L, numRows - cs.getNumNulls()) + 1 : numRows;
         double overhead = 0;
         if (colTypeLowerCase.equals(serdeConstants.STRING_TYPE_NAME)
             || colTypeLowerCase.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
@@ -1248,7 +1252,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       if (bigInputStat != null && selectedBigTable) {
         // We are replacing the current big table with a new one, thus
         // we need to count the current one as a map table then.
-        totalSize += computeOnlineDataSize(bigInputStat);
+        totalSize = StatsUtils.safeAdd(totalSize, computeOnlineDataSize(bigInputStat));
         // Check if number of distinct keys is greater than given max number of entries
         // for HashMap
         if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, bigTablePosition, context)) {
@@ -1257,7 +1261,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       } else if (!selectedBigTable) {
         // This is not the first table and we are not using it as big table,
         // in fact, we're adding this table as a map table
-        totalSize += inputSize;
+        totalSize = StatsUtils.safeAdd(totalSize, inputSize);
         // Check if number of distinct keys is greater than given max number of entries
         // for HashMap
         if (checkMapJoinThresholds && !checkNumberOfEntriesForHashTable(joinOp, pos, context)) {
@@ -1342,7 +1346,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         if (inputCardinality == null) {
           return null;
         }
-        cumulativeCardinality += inputCardinality;
+        cumulativeCardinality = StatsUtils.safeAdd(cumulativeCardinality, inputCardinality);
       }
     }
     Statistics currInputStat = op.getStatistics();
@@ -1350,7 +1354,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       LOG.warn("Couldn't get statistics from: " + op);
       return null;
     }
-    cumulativeCardinality += currInputStat.getNumRows();
+    cumulativeCardinality = StatsUtils.safeAdd(cumulativeCardinality, currInputStat.getNumRows());
     return cumulativeCardinality;
   }
 
