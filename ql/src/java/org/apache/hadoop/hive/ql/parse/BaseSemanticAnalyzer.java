@@ -1748,23 +1748,6 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  /**
-   * Throws an UnsupportedOperationException in case the query has a partition clause but the table is never partitioned
-   * on the HMS-level. Even though table is not partitioned from the HMS's point of view, it might have some other
-   * notion of partitioning under the hood (e.g. Iceberg tables). In these cases, we might decide to proactively throw a
-   * more descriptive, unified error message instead of failing on some other semantic analysis validation step, which
-   * could provide a more counter-intuitive exception message.
-   *
-   * @param tbl The table object, should not be null.
-   * @param partitionClausePresent Whether a partition clause is present in the query (e.g. PARTITION(last_name='Don'))
-   */
-  protected static void validateUnsupportedPartitionClause(Table tbl, boolean partitionClausePresent) {
-    if (partitionClausePresent && tbl.hasNonNativePartitionSupport()) {
-      throw new UnsupportedOperationException("Using partition spec in query is unsupported for non-native table" +
-          " backed by: " + tbl.getStorageHandler().toString());
-    }
-  }
-
   public static void validatePartColumnType(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf) throws SemanticException {
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TYPE_CHECK_ON_INSERT)) {

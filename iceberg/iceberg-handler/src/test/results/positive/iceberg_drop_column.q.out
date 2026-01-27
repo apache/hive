@@ -30,6 +30,11 @@ intcol              	int
 pcol                	string              	                    
 datecol             	date                	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+pcol                	string              	Transform: identity 
+datecol             	date                	Transform: identity 
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 pcol                	IDENTITY            	 

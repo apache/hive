@@ -20,8 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -35,7 +33,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -137,7 +134,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
-import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Pair;
@@ -574,56 +570,47 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
   @Override
   public void preTruncateTable(org.apache.hadoop.hive.metastore.api.Table table, EnvironmentContext context,
-      List<String> partNames)
-      throws MetaException {
+      List<String> partNames) throws MetaException {
+
     this.tableProperties = IcebergTableProperties.getTableProperties(table, conf);
     this.icebergTable = Catalogs.loadTable(conf, tableProperties);
-    Map<String, PartitionField> partitionFieldMap = icebergTable.spec().fields().stream()
-        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
-    Expression finalExp = CollectionUtils.isEmpty(partNames) ? Expressions.alwaysTrue() : Expressions.alwaysFalse();
-    if (partNames != null) {
-      for (String partName : partNames) {
-        Map<String, String> specMap = Warehouse.makeSpecFromName(partName);
-        Expression subExp = Expressions.alwaysTrue();
-        for (Map.Entry<String, String> entry : specMap.entrySet()) {
-          // Since Iceberg encodes the values in UTF-8, we need to decode it.
-          String partColValue = URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8);
 
-          if (partitionFieldMap.containsKey(entry.getKey())) {
-            PartitionField partitionField = partitionFieldMap.get(entry.getKey());
-            Type resultType = partitionField.transform().getResultType(icebergTable.schema()
-                    .findField(partitionField.sourceId()).type());
-            TransformSpec.TransformType transformType = TransformSpec.fromString(partitionField.transform().toString());
-            Object value = Conversions.fromPartitionString(resultType, partColValue);
-            Iterable iterable = () -> Collections.singletonList(value).iterator();
-            if (TransformSpec.TransformType.IDENTITY.equals(transformType)) {
-              Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
-              subExp = Expressions.and(subExp, boundPredicate);
-            } else {
-              throw new MetaException(
-                  String.format("Partition transforms are not supported via truncate operation: %s", entry.getKey()));
-            }
-          } else {
-            throw new MetaException(String.format("No partition column/transform name by the name: %s",
-                entry.getKey()));
-          }
-        }
-        finalExp = Expressions.or(finalExp, subExp);
-      }
-    }
+    Expression predicate = generateExprFromPartitionNames(partNames);
 
     DeleteFiles delete = icebergTable.newDelete();
     String branchName = context.getProperties().get(Catalogs.SNAPSHOT_REF);
     if (branchName != null) {
       delete.toBranch(HiveUtils.getTableSnapshotRef(branchName));
     }
-    delete.deleteFromRowFilter(finalExp);
+
+    delete.deleteFromRowFilter(predicate);
     delete.commit();
     context.putToProperties("truncateSkipDataDeletion", "true");
   }
 
-  @Override public boolean createHMSTableInHook() {
-    return createHMSTableInHook;
+  private Expression generateExprFromPartitionNames(List<String> partNames) throws MetaException {
+    if (CollectionUtils.isEmpty(partNames)) {
+      return Expressions.alwaysTrue();
+    }
+
+    Map<String, PartitionField> partitionFields = icebergTable.spec().fields().stream()
+        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
+    Expression predicate = Expressions.alwaysFalse();
+
+    for (String partName : partNames) {
+      try {
+        Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partName);
+        Expression partitionExpr = IcebergTableUtil.generateExprForIdentityPartition(
+            icebergTable, partitionSpec, partitionFields);
+
+        predicate = Expressions.or(predicate, partitionExpr);
+      } catch (Exception e) {
+        throw new MetaException(
+            "Failed to generate expression for partition: " + partName + ". " + e.getMessage());
+      }
+    }
+
+    return predicate;
   }
 
   private void alterTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable,
@@ -1029,10 +1016,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     String columName = schema.findField(field.sourceId()).name();
     TransformSpec transformSpec = TransformSpec.fromString(field.transform().toString(), columName);
 
-    UnboundTerm<Object> partitionColumn =
-        ObjectUtils.defaultIfNull(HiveIcebergFilterFactory.toTerm(columName, transformSpec),
-            Expressions.ref(field.name()));
-
+    UnboundTerm<Object> partitionColumn = SchemaUtils.toTerm(transformSpec);
     return Expressions.equal(partitionColumn, partitionData.get(index, Object.class));
   }
 
