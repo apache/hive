@@ -832,13 +832,21 @@ public class StatsUtils {
       cs.setNumNulls(csd.getBinaryStats().getNumNulls());
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
-      cs.setNumNulls(csd.getTimestampStats().getNumNulls());
-      Long lowVal = (csd.getTimestampStats().getLowValue() != null) ? csd.getTimestampStats().getLowValue()
-          .getSecondsSinceEpoch() : null;
-      Long highVal = (csd.getTimestampStats().getHighValue() != null) ? csd.getTimestampStats().getHighValue()
-          .getSecondsSinceEpoch() : null;
-      cs.setRange(lowVal, highVal);
-      cs.setHistogram(csd.getTimestampStats().getHistogram());
+      if (csd.isSetTimestampStats()) {
+        cs.setNumNulls(csd.getTimestampStats().getNumNulls());
+        Long lowVal = (csd.getTimestampStats().getLowValue() != null) ? csd.getTimestampStats().getLowValue()
+            .getSecondsSinceEpoch() : null;
+        Long highVal = (csd.getTimestampStats().getHighValue() != null) ? csd.getTimestampStats().getHighValue()
+            .getSecondsSinceEpoch() : null;
+        cs.setRange(lowVal, highVal);
+        cs.setHistogram(csd.getTimestampStats().getHistogram());
+      } else if (csd.isSetLongStats()) {
+        cs.setNumNulls(csd.getLongStats().getNumNulls());
+        Long lowVal = csd.getLongStats().isSetLowValue() ? csd.getLongStats().getLowValue() : null;
+        Long highVal = csd.getLongStats().isSetHighValue() ? csd.getLongStats().getHighValue() : null;
+        cs.setRange(lowVal, highVal);
+        cs.setHistogram(csd.getLongStats().getHistogram());
+      }
     } else if (colTypeLowerCase.equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
       cs.setAvgColLen(JavaDataModel.get().lengthOfTimestamp());
     } else if (colTypeLowerCase.startsWith(serdeConstants.DECIMAL_TYPE_NAME)) {
@@ -879,13 +887,13 @@ public class StatsUtils {
   }
 
   public static void fillColumnStatisticsData(ColumnStatisticsData data, ColStatistics cs,
-      String colType) throws MetaException {
+      String colType, boolean timestampAsLong) throws MetaException {
     ColStatistics.Range r = cs.getRange();
     Object lowValue = (r != null) ? r.minValue : null;
     Object highValue = (r != null) ? r.maxValue : null;
     StatObjectConverter.fillColumnStatisticsData(colType, data, lowValue, highValue,
         cs.getNumNulls(), cs.getCountDistint(), cs.getBitVectors(), cs.getHistogram(),
-        cs.getAvgColLen(), cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses());
+        cs.getAvgColLen(), cs.getAvgColLen(), cs.getNumTrues(), cs.getNumFalses(), timestampAsLong);
   }
 
   private static void fillColStatisticsFromLongStatsData(ColStatistics cs, LongColumnStatsData longStats,

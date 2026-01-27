@@ -198,7 +198,9 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         Map<String, String> tableProps = table.getParameters() == null ?
             new HashMap<>() : table.getParameters();
         if (table.isPartitionKey(colNames.get(0))) {
-          getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps);
+          boolean timestampAsLong =
+              MetastoreConf.getBoolVar(context.getConf(), MetastoreConf.ConfVars.HIVE_STATS_LEGACY_TIMESTAMP_AS_LONG);
+          getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps, timestampAsLong);
         } else {
           getColumnsForNotPartitionKeyColumn(table, cols, colStats, deserializer, colNames, tableProps);
         }
@@ -222,7 +224,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   }
 
   private void getColumnDataForPartitionKeyColumn(Table table, List<FieldSchema> cols,
-      List<ColumnStatisticsObj> colStats, List<String> colNames, Map<String, String> tableProps)
+      List<ColumnStatisticsObj> colStats, List<String> colNames, Map<String, String> tableProps,
+      boolean timestampAsLong)
       throws HiveException, MetaException {
     FieldSchema partCol = table.getPartColByName(colNames.get(0));
     cols.add(partCol);
@@ -232,7 +235,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         TypeInfoUtils.getTypeInfoFromTypeString(partCol.getType()), null, false);
     ColStatistics cs = StatsUtils.getColStatsForPartCol(ci, parts, context.getConf());
     ColumnStatisticsData data = new ColumnStatisticsData();
-    StatsUtils.fillColumnStatisticsData(data, cs, partCol.getType());
+    StatsUtils.fillColumnStatisticsData(data, cs, partCol.getType(), timestampAsLong);
     ColumnStatisticsObj cso = new ColumnStatisticsObj(partCol.getName(), partCol.getType(), data);
     colStats.add(cso);
     StatsSetupConst.setColumnStatsState(tableProps, colNames);

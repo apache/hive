@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hive.common.util.HiveStringUtils;
@@ -199,13 +200,23 @@ public final class ShowUtils {
           }
         } else if (statsData.isSetLongStats()) {
           LongColumnStatsData longStats = statsData.getLongStats();
-          String lowVal = longStats.isSetLowValue() ? "" + longStats.getLowValue() : "";
-          String highVal = longStats.isSetHighValue() ? "" + longStats.getHighValue() : "";
+          ColumnStatisticsData._Fields field = statsData.getSetField();
+          String lowVal;
+          String highVal;
+          if (serdeConstants.TIMESTAMP_TYPE_NAME.equals(column.getType())) {
+            // if the long stats represent a timestamp, format it as a timestamp
+            lowVal = longStats.isSetLowValue() ? convertTimestampToString(longStats.getLowValue()) : "";
+            highVal = longStats.isSetHighValue() ? convertTimestampToString(longStats.getHighValue()) : "";
+            field = ColumnStatisticsData._Fields.TIMESTAMP_STATS;
+          } else {
+            lowVal = longStats.isSetLowValue() ? "" + longStats.getLowValue() : "";
+            highVal = longStats.isSetHighValue() ? "" + longStats.getHighValue() : "";
+          }
           values.addAll(Lists.newArrayList(lowVal, highVal,
               "" + longStats.getNumNulls(), "" + longStats.getNumDVs(), "", "", "", "",
               convertToString(longStats.getBitVectors())));
           if (histogramEnabled) {
-            values.add(convertHistogram(statsData.getLongStats().getHistogram(), statsData.getSetField()));
+            values.add(convertHistogram(statsData.getLongStats().getHistogram(), field));
           }
         } else if (statsData.isSetDateStats()) {
           DateColumnStatsData dateStats = statsData.getDateStats();
@@ -295,6 +306,12 @@ public final class ShowUtils {
       return "";
     }
     return new String(Arrays.copyOfRange(buffer, 0, 2));
+  }
+
+  public static String convertTimestampToString(long val) {
+    TimestampWritableV2 writableValue = new TimestampWritableV2(
+        Timestamp.ofEpochSecond(val));
+    return writableValue.toString();
   }
 
   public static String convertToString(org.apache.hadoop.hive.metastore.api.Timestamp val) {

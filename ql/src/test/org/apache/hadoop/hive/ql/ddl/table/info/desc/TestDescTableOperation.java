@@ -102,7 +102,7 @@ class TestDescTableOperation {
       // Capture the ColStatistics passed to fillColumnStatisticsData
       ArgumentCaptor<ColStatistics> colStatsCaptor = ArgumentCaptor.forClass(ColStatistics.class);
       statsUtils.when(() -> StatsUtils.fillColumnStatisticsData(any(ColumnStatisticsData.class),
-          colStatsCaptor.capture(), any(String.class))).thenCallRealMethod();
+          colStatsCaptor.capture(), any(String.class), any(Boolean.class))).thenCallRealMethod();
 
       DescTableOperation operation = new DescTableOperation(mockContext, mockDesc);
 
