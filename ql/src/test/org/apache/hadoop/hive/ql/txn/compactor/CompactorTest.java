@@ -71,6 +71,7 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
+import org.apache.hadoop.hive.ql.testutil.TxnStoreHelper;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -263,11 +264,8 @@ public abstract class CompactorTest {
 
   protected long allocateWriteId(String dbName, String tblName, long txnid)
           throws MetaException, TxnAbortedException, NoSuchTxnException {
-    AllocateTableWriteIdsRequest awiRqst
-            = new AllocateTableWriteIdsRequest(dbName, tblName);
-    awiRqst.setTxnIds(Collections.singletonList(txnid));
-    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
-    return awiResp.getTxnToWriteIds().getFirst().getWriteId();
+    return TxnStoreHelper.wrap(txnHandler)
+        .allocateTableWriteId(dbName, tblName, txnid);
   }
 
   protected void addDeltaFileWithTxnComponents(Table t, Partition p, int numRecords, boolean abort)
@@ -419,13 +417,11 @@ public abstract class CompactorTest {
   // I can't do this with @Before because I want to be able to control when the thread starts
   private void runOneLoopOfCompactorThread(CompactorThreadType type) throws Exception {
     TestTxnDbUtil.setConfValues(conf);
+
     CompactorThread t = switch (type) {
-      case INITIATOR ->
-          new Initiator();
-      case WORKER ->
-          new Worker();
-      case CLEANER ->
-          new Cleaner();
+      case INITIATOR -> new Initiator();
+      case WORKER -> new Worker();
+      case CLEANER -> new Cleaner();
     };
     t.setConf(conf);
     stop.set(true);
@@ -724,26 +720,36 @@ public abstract class CompactorTest {
 
   long compactInTxn(CompactionRequest rqst, CommitAction commitAction) throws Exception {
     txnHandler.compact(rqst);
+
     FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
     findNextCompactRequest.setWorkerId("fred");
     findNextCompactRequest.setWorkerVersion(WORKER_VERSION);
+
     CompactionInfo ci = txnHandler.findNextToCompact(findNextCompactRequest);
     ci.runAs = rqst.getRunas() == null ? System.getProperty("user.name") : rqst.getRunas();
+
     long compactorTxnId = openTxn(TxnType.COMPACTION);
+
     // Need to create a valid writeIdList to set the highestWriteId in ci
-    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), compactorTxnId);
-    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest();
+    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(
+        txnHandler.getOpenTxns(Collections.singletonList(TxnType.READ_ONLY)), compactorTxnId);
+
+    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest(
+        Collections.singletonList(ci.getFullTableName()));
     writeIdsRequest.setValidTxnList(validTxnList.writeToString());
-    writeIdsRequest.setFullTableNames(
-        Collections.singletonList(TxnUtils.getFullTableName(rqst.getDbname(), rqst.getTablename())));
+
     // with this ValidWriteIdList is capped at whatever HWM validTxnList has
     ValidCompactorWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
-        txnHandler.getValidWriteIds(writeIdsRequest).getTblValidWriteIds().getFirst());
+        txnHandler.getValidWriteIds(writeIdsRequest).getTblValidWriteIds()
+            .getFirst());
 
     ci.highestWriteId = tblValidWriteIds.getHighWatermark();
     txnHandler.updateCompactorState(ci, compactorTxnId);
 
     switch (commitAction) {
+      case MARK_COMPACTED ->
+        txnHandler.markCompacted(ci);
+
       case COMMIT -> {
         txnHandler.markCompacted(ci);
         txnHandler.commitTxn(new CommitTxnRequest(compactorTxnId));
@@ -760,6 +766,7 @@ public abstract class CompactorTest {
   enum CommitAction {
     COMMIT,
     ABORT,
+    MARK_COMPACTED,
     NONE
   }
 

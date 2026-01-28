@@ -80,6 +80,7 @@ import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionContext;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryExecutionService;
 import org.apache.hadoop.hive.ql.schq.MockScheduledQueryService;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.testutil.TxnStoreHelper;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorFactory;
 import org.apache.hadoop.hive.ql.txn.compactor.CompactorPipeline;
 import org.apache.hadoop.hive.ql.txn.compactor.MRCompactor;
@@ -99,6 +100,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.rules.ExpectedException;
 
+import static org.apache.hadoop.hive.metastore.txn.TxnHandler.ConfVars;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
@@ -2396,8 +2398,12 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     // See MinOpenTxnIdWaterMarkFunction, OpenTxnTimeoutLowBoundaryTxnIdHandler
     // TODO: revisit wait logic
     waitUntilAllTxnFinished();
-    txnMgr.openTxn(ctx, "u1");
+
+    long txnId = txnMgr.openTxn(ctx, "u1");
     txnMgr.getValidTxns();
+
+    TxnStoreHelper.wrap(txnHandler)
+        .registerMinOpenWriteId("default", Table.ACIDTBL.name(), txnId);
 
     // Start an INSERT statement transaction and roll back this transaction.
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, true);
@@ -2437,10 +2443,24 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
     // Commit the open txn, which lets the cleanup on TXN_TO_WRITE_ID.
     txnMgr.commitTxn();
-    txnMgr.openTxn(ctx, "u1");
+
+    // When useMinHistoryWriteId is enabled, compaction write HWM must be < min open writeId -1 to allow cleanup.
+    if (ConfVars.useMinHistoryWriteId()) {
+      txnId = txnMgr.openTxn(ctx, "u1");
+      TxnStoreHelper.wrap(txnHandler)
+          .allocateTableWriteId("default", Table.ACIDTBL.name(), txnId);
+      txnMgr.commitTxn();
+    }
+
+    txnId = txnMgr.openTxn(ctx, "u1");
     txnMgr.getValidTxns();
-    // The txn opened after the compaction commit should not effect the Cleaner
+
+    TxnStoreHelper.wrap(txnHandler)
+        .registerMinOpenWriteId("default", Table.ACIDTBL.name(), txnId);
+
+    // Transactions initiated after a compaction commit must not affect the Cleaner.
     runCleaner(hiveConf);
+
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
