@@ -1380,7 +1380,7 @@ public class AcidUtils {
     // Filter out all delta directories that are shadowed by others
     findBestWorkingDeltas(writeIdList, directory);
 
-    if(directory.getOldestBase() != null && directory.getBase() == null &&
+    if (directory.getOldestBase() != null && directory.getBase() == null &&
         isCompactedBase(directory.getOldestBase(), fs, dirSnapshots)) {
       /*
        * If here, it means there was a base_x (> 1 perhaps) but none were suitable for given

@@ -163,7 +163,9 @@ public abstract class TaskHandler {
 
     // Make sure there are no leftovers below the compacted watermark
     boolean success = false;
-    getConf().set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
+    if (info.minOpenWriteId < 0) {
+      getConf().set(ValidTxnList.VALID_TXNS_KEY, new ValidReadTxnList().toString());
+    }
 
     dir = AcidUtils.getAcidState(
         fs, path, getConf(),

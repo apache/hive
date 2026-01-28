@@ -88,7 +88,7 @@ public class ReadyToCleanHandler implements QueryHandler<List<CompactionInfo>> {
               "ON \"cq1\".\"CQ_DATABASE\" = \"hwm\".\"MH_DATABASE\"" +
               "  AND \"cq1\".\"CQ_TABLE\" = \"hwm\".\"MH_TABLE\"";
 
-      whereClause += " AND (\"CQ_HIGHEST_WRITE_ID\" < \"MIN_OPEN_WRITE_ID\" OR \"MIN_OPEN_WRITE_ID\" IS NULL)";
+      whereClause += " AND (\"CQ_HIGHEST_WRITE_ID\" < \"MIN_OPEN_WRITE_ID\"-1 OR \"MIN_OPEN_WRITE_ID\" IS NULL)";
 
     } else if (minOpenTxnWaterMark > 0) {
       whereClause += " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";

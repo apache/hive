@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.service;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -195,9 +194,6 @@ public class AcidCompactionService extends CompactionService {
       final ValidTxnWriteIdList txnWriteIds = new ValidTxnWriteIdList(compactionTxn.getTxnId());
       txnWriteIds.addTableValidWriteIdList(tblValidWriteIds);
       conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, txnWriteIds.toString());
-
-      msc.addWriteIdsToMinHistory(compactionTxn.getTxnId(),
-          ImmutableMap.of(fullTableName, txnWriteIds.getMinOpenWriteId(fullTableName)));
 
       ci.highestWriteId = tblValidWriteIds.getHighWatermark();
       //this writes TXN_COMPONENTS to ensure that if compactorTxnId fails, we keep metadata about

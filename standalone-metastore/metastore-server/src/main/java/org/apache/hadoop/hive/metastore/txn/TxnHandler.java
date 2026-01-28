@@ -690,7 +690,7 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   @Override
-  public MaxAllocatedTableWriteIdResponse getMaxAllocatedTableWrited(MaxAllocatedTableWriteIdRequest rqst) throws MetaException {
+  public MaxAllocatedTableWriteIdResponse getMaxAllocatedTableWriteId(MaxAllocatedTableWriteIdRequest rqst) throws MetaException {
     return jdbcResource.execute(new GetMaxAllocatedTableWriteIdHandler(rqst));
   }
 
