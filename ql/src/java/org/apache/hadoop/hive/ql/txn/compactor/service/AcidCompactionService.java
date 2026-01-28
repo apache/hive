@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor.service;
 
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;

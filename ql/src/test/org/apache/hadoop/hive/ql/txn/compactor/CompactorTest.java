@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
@@ -71,6 +72,7 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
+import org.apache.hadoop.hive.ql.testutil.TxnStoreHelper;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -137,14 +139,14 @@ public abstract class CompactorTest {
   protected final void setup(HiveConf conf) throws Exception {
     this.conf = conf;
     fs = FileSystem.get(conf);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, useMinHistoryWriteId());
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS,
+    MetastoreConf.setTimeVar(conf, ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
+    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEANER_ON, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, useMinHistoryWriteId());
+    MetastoreConf.setVar(conf, ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS,
         "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer");
     // Set this config to true in the base class, there are extended test classes which set this config to false.
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
@@ -263,11 +265,8 @@ public abstract class CompactorTest {
 
   protected long allocateWriteId(String dbName, String tblName, long txnid)
           throws MetaException, TxnAbortedException, NoSuchTxnException {
-    AllocateTableWriteIdsRequest awiRqst
-            = new AllocateTableWriteIdsRequest(dbName, tblName);
-    awiRqst.setTxnIds(Collections.singletonList(txnid));
-    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
-    return awiResp.getTxnToWriteIds().getFirst().getWriteId();
+    return TxnStoreHelper.wrap(txnHandler)
+        .allocateTableWriteId(dbName, tblName, txnid);
   }
 
   protected void addDeltaFileWithTxnComponents(Table t, Partition p, int numRecords, boolean abort)
@@ -419,13 +418,13 @@ public abstract class CompactorTest {
   // I can't do this with @Before because I want to be able to control when the thread starts
   private void runOneLoopOfCompactorThread(CompactorThreadType type) throws Exception {
     TestTxnDbUtil.setConfValues(conf);
+
     CompactorThread t = switch (type) {
-      case INITIATOR ->
-          new Initiator();
-      case WORKER ->
-          new Worker();
-      case CLEANER ->
-          new Cleaner();
+      case INITIATOR -> new Initiator();
+      case WORKER -> new Worker();
+      case CLEANER -> new Cleaner();
+      case null ->
+          throw new IllegalStateException("Unexpected type: " + type);
     };
     t.setConf(conf);
     stop.set(true);
@@ -441,7 +440,12 @@ public abstract class CompactorTest {
     return tblLocation.toString();
   }
 
-  private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE}
+  private enum FileType {
+    BASE,
+    DELTA,
+    LEGACY,
+    LENGTH_FILE
+  }
 
   private void addFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords, FileType type, int numBuckets,
       boolean allBucketsPresent) throws Exception {
@@ -453,11 +457,16 @@ public abstract class CompactorTest {
     String partValue = (p == null) ? null : p.getValues().getFirst();
     Path location = new Path(getLocation(t.getTableName(), partValue));
     String filename = null;
+
     switch (type) {
-      case BASE: filename = AcidUtils.addVisibilitySuffix(AcidUtils.BASE_PREFIX + maxTxn, visibilityId); break;
-      case LENGTH_FILE: // Fall through to delta
-      case DELTA: filename = AcidUtils.addVisibilitySuffix(makeDeltaDirName(minTxn, maxTxn),visibilityId); break;
-      case LEGACY: break; // handled below
+      case BASE -> filename = AcidUtils.addVisibilitySuffix(AcidUtils.BASE_PREFIX + maxTxn, visibilityId);
+      case LENGTH_FILE, // Fall through to delta
+           DELTA -> filename = AcidUtils.addVisibilitySuffix(makeDeltaDirName(minTxn, maxTxn), visibilityId);
+      case LEGACY -> {
+        // handled below
+      }
+      case null, default ->
+          throw new IllegalStateException("Unexpected type: " + type);
     }
 
     FileSystem fs = FileSystem.get(conf);
@@ -718,49 +727,67 @@ public abstract class CompactorTest {
     return AcidUtils.deleteDeltaSubdir(minTxnId, maxTxnId);
   }
 
+  enum CommitAction {
+    COMMIT,
+    ABORT,
+    MARK_COMPACTED,
+    NONE
+  }
+
   protected long compactInTxn(CompactionRequest rqst) throws Exception {
     return compactInTxn(rqst, CommitAction.COMMIT);
   }
 
   long compactInTxn(CompactionRequest rqst, CommitAction commitAction) throws Exception {
     txnHandler.compact(rqst);
+
     FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
     findNextCompactRequest.setWorkerId("fred");
     findNextCompactRequest.setWorkerVersion(WORKER_VERSION);
+
     CompactionInfo ci = txnHandler.findNextToCompact(findNextCompactRequest);
     ci.runAs = rqst.getRunas() == null ? System.getProperty("user.name") : rqst.getRunas();
+
     long compactorTxnId = openTxn(TxnType.COMPACTION);
+
     // Need to create a valid writeIdList to set the highestWriteId in ci
-    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), compactorTxnId);
-    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest();
+    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(
+        txnHandler.getOpenTxns(Collections.singletonList(TxnType.READ_ONLY)), compactorTxnId);
+
+    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest(
+        Collections.singletonList(
+            ci.getFullTableName().toLowerCase()));
     writeIdsRequest.setValidTxnList(validTxnList.writeToString());
-    writeIdsRequest.setFullTableNames(
-        Collections.singletonList(TxnUtils.getFullTableName(rqst.getDbname(), rqst.getTablename())));
+
     // with this ValidWriteIdList is capped at whatever HWM validTxnList has
     ValidCompactorWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
-        txnHandler.getValidWriteIds(writeIdsRequest).getTblValidWriteIds().getFirst());
+        txnHandler.getValidWriteIds(writeIdsRequest).getTblValidWriteIds()
+            .getFirst());
 
     ci.highestWriteId = tblValidWriteIds.getHighWatermark();
     txnHandler.updateCompactorState(ci, compactorTxnId);
 
     switch (commitAction) {
+      case MARK_COMPACTED ->
+        txnHandler.markCompacted(ci);
+
       case COMMIT -> {
         txnHandler.markCompacted(ci);
         txnHandler.commitTxn(new CommitTxnRequest(compactorTxnId));
 
         Thread.sleep(MetastoreConf.getTimeVar(
-            conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+            conf, ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
       }
       case ABORT ->
           txnHandler.abortTxn(new AbortTxnRequest(compactorTxnId));
+
+      case NONE -> {
+        // do nothing
+      }
+      case null, default ->
+          throw new IllegalStateException("Unexpected commitAction: " + commitAction);
     }
     return compactorTxnId;
-  }
-
-  enum CommitAction {
-    COMMIT,
-    ABORT,
-    NONE
   }
 
   protected static Map<String, Integer> gaugeToMap(String metric) throws Exception {

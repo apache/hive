@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
@@ -37,20 +38,20 @@ import org.apache.hadoop.hive.ql.txn.compactor.Cleaner;
 import org.apache.hadoop.hive.ql.txn.compactor.CleanupRequest;
 import org.apache.hadoop.hive.ql.txn.compactor.FSRemover;
 import org.apache.hadoop.hive.ql.txn.compactor.MetadataCache;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.ql.TxnCommandsBaseForTests.runInitiator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 public class TestAbortedTxnCleaner extends TestHandler {
@@ -74,7 +75,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
@@ -82,7 +83,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
     List<Path> directories = getDirectories(conf, t, null);
     // All aborted directories removed, hence 1 committed delta directory must be present
-    Assert.assertEquals(1, directories.size());
+    assertEquals(1, directories.size());
   }
 
   @Test
@@ -105,7 +106,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
@@ -113,7 +114,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
     List<Path> directories = getDirectories(conf, t, p);
     // All aborted directories removed, hence 1 committed delta directory must be present
-    Assert.assertEquals(1, directories.size());
+    assertEquals(1, directories.size());
   }
 
   @Test
@@ -143,7 +144,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(2)).clean(any(CleanupRequest.class));
@@ -151,11 +152,11 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
     List<Path> directories = getDirectories(conf, t, p1);
     // All aborted directories removed, hence 1 committed delta directory must be present
-    Assert.assertEquals(1, directories.size());
+    assertEquals(1, directories.size());
 
     directories = getDirectories(conf, t, p2);
     // All aborted directories removed, hence 1 committed delta directory must be present
-    Assert.assertEquals(1, directories.size());
+    assertEquals(1, directories.size());
   }
 
   @Test
@@ -186,7 +187,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
@@ -195,7 +196,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     List<Path> directories = getDirectories(conf, t, null);
     // All aborted directories below min open write ID are removed,
     // hence 1 open, 1 committed, 1 aborted delta directory must be present
-    Assert.assertEquals(3, directories.size());
+    assertEquals(3, directories.size());
 
     // Commit the long open txn
     txnHandler.commitTxn(new CommitTxnRequest(openTxnId));
@@ -221,8 +222,8 @@ public class TestAbortedTxnCleaner extends TestHandler {
     // Check if there is a one base file
     List<Path> directories = getDirectories(conf, t, null);
     // Both base and delta files are present since we haven't cleaned yet.
-    Assert.assertEquals(5, directories.size());
-    Assert.assertEquals(1, directories.stream().filter(dir -> dir.getName().startsWith(AcidUtils.BASE_PREFIX)).count());
+    assertEquals(5, directories.size());
+    assertEquals(1, directories.stream().filter(dir -> dir.getName().startsWith(AcidUtils.BASE_PREFIX)).count());
 
     // 3 aborted deltas
     addDeltaFileWithTxnComponents(t, null, 2, true);
@@ -237,15 +238,15 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
     Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
 
     directories = getDirectories(conf, t, null);
-    Assert.assertEquals(1, directories.size());
-    Assert.assertTrue(directories.get(0).getName().startsWith(AcidUtils.BASE_PREFIX));
+    assertEquals(1, directories.size());
+    assertTrue(directories.getFirst().getName().startsWith(AcidUtils.BASE_PREFIX));
   }
 
   @Test
@@ -268,8 +269,8 @@ public class TestAbortedTxnCleaner extends TestHandler {
     // Check if there is a one base file
     List<Path> directories = getDirectories(conf, t, null);
     // Both base and delta files are present since we haven't cleaned yet.
-    Assert.assertEquals(5, directories.size());
-    Assert.assertEquals(1, directories.stream().filter(dir -> dir.getName().startsWith(AcidUtils.BASE_PREFIX)).count());
+    assertEquals(5, directories.size());
+    assertEquals(1, directories.stream().filter(dir -> dir.getName().startsWith(AcidUtils.BASE_PREFIX)).count());
 
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
     MetadataCache metadataCache = new MetadataCache(true);
@@ -279,7 +280,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
@@ -287,7 +288,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
 
     directories = getDirectories(conf, t, null);
     // The table is already compacted, so we must see 1 base delta
-    Assert.assertEquals(1, directories.size());
+    assertEquals(1, directories.size());
   }
 
   @Test
@@ -326,11 +327,11 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     List<Path> directories = getDirectories(conf, t, null);
-    Assert.assertEquals(5, directories.size());
+    assertEquals(5, directories.size());
   }
 
   @ParameterizedTest
@@ -346,7 +347,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     addDeltaFileWithTxnComponents(t, p, 2, false);
     addDeltaFileWithTxnComponents(t, p, 2, true);
 
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
     MetadataCache metadataCache = new MetadataCache(true);
     FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
@@ -358,28 +359,28 @@ public class TestAbortedTxnCleaner extends TestHandler {
     String compactionQueuePresence = "SELECT COUNT(*) FROM \"COMPACTION_QUEUE\" " +
             " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL");
-    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
+    assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
 
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedFSRemover, Mockito.times(1)).clean(any(CleanupRequest.class));
     Mockito.verify(mockedTaskHandler, Mockito.times(1)).getTasks(any(HiveConf.class));
 
-    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
-    Assert.assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPLETED_COMPACTIONS\" " +
+    assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, compactionQueuePresence));
+    assertEquals(0, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPLETED_COMPACTIONS\" " +
             " WHERE \"CC_DATABASE\" = '" + dbName+ "' AND \"CC_TABLE\" = '" + tableName + "' AND \"CC_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL")));
-    Assert.assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\" " +
+    assertEquals(1, TestTxnDbUtil.countQueryAgent(conf, "SELECT COUNT(*) FROM \"COMPLETED_TXN_COMPONENTS\" " +
             " WHERE \"CTC_DATABASE\" = '" + dbName+ "' AND \"CTC_TABLE\" = '" + tableName + "' AND \"CTC_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL")));
 
     List<Path> directories = getDirectories(conf, t, null);
     // All aborted directories removed, hence 1 committed delta directory must be present
-    Assert.assertEquals(1, directories.size());
+    assertEquals(1, directories.size());
   }
 
   @ParameterizedTest
@@ -409,21 +410,21 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(mockedTaskHandler));
+    cleaner.setCleanupHandlers(List.of(mockedTaskHandler));
     cleaner.run();
 
     Mockito.verify(mockedTxnHandler, Mockito.times(1)).setCleanerRetryRetentionTimeOnError(any(CompactionInfo.class));
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, scr.getCompactsSize());
-    ShowCompactResponseElement scre = scr.getCompacts().get(0);
-    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().getFirst();
+    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
     String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
-    Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
+    assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
             TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
                     .replace("\n", "").trim());
   }
@@ -445,7 +446,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     long retryRetentionTime = 10000;
 
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
+    MetastoreConf.setTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
     MetadataCache metadataCache = new MetadataCache(true);
     FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
     TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
@@ -458,20 +459,20 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, scr.getCompactsSize());
-    ShowCompactResponseElement scre = scr.getCompacts().get(0);
-    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().getFirst();
+    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
     String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
-    Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+    assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
 
     // Delay for time specified in retry retention.
@@ -482,11 +483,11 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
-    // The retry record must be not present since it will deleted due to successful abort cleanup.
-    Assert.assertEquals(0, txnHandler.showCompact(new ShowCompactRequest()).getCompactsSize());
+    // The retry record must be not present since it would be deleted due to successful abort cleanup.
+    assertEquals(0, txnHandler.showCompact(new ShowCompactRequest()).getCompactsSize());
   }
 
   @ParameterizedTest
@@ -515,20 +516,20 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, scr.getCompactsSize());
-    ShowCompactResponseElement scre = scr.getCompacts().get(0);
-    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().getFirst();
+    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
     String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
-    Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
+    assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
             TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
 
@@ -537,18 +538,18 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
     // The retry entry is not removed since retry conditions are not achieved hence its not picked for cleanup.
     scr = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, scr.getCompactsSize());
-    scre = scr.getCompacts().get(0);
-    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertEquals(1, scr.getCompactsSize());
+    scre = scr.getCompacts().getFirst();
+    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
-    Assert.assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
+    assertEquals(Long.toString(MetastoreConf.getTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, TimeUnit.MILLISECONDS)),
             TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
   }
@@ -570,7 +571,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     long retryRetentionTime = 10000;
 
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
+    MetastoreConf.setTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
     MetadataCache metadataCache = new MetadataCache(true);
     FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
     TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
@@ -583,20 +584,20 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, scr.getCompactsSize());
-    ShowCompactResponseElement scre = scr.getCompacts().get(0);
-    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().getFirst();
+    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
     String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
-    Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+    assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
 
     // Delay for time specified in retry retention.
@@ -605,18 +606,18 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
     scr = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, scr.getCompactsSize());
-    scre = scr.getCompacts().get(0);
-    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertEquals(1, scr.getCompactsSize());
+    scre = scr.getCompacts().getFirst();
+    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
     // The retry entry must reflect double the retention time now.
-    Assert.assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+    assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
   }
 
@@ -637,7 +638,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     long retryRetentionTime = 10000;
 
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
+    MetastoreConf.setTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, retryRetentionTime, TimeUnit.MILLISECONDS);
     MetadataCache metadataCache = new MetadataCache(true);
     FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
     TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
@@ -650,20 +651,20 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, scr.getCompactsSize());
-    ShowCompactResponseElement scre = scr.getCompacts().get(0);
-    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().getFirst();
+    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing first retry"));
     String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
-    Assert.assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+    assertEquals(Long.toString(retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
 
     // Delay for time specified in retry retention.
@@ -676,18 +677,18 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
     scr = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, scr.getCompactsSize());
-    scre = scr.getCompacts().get(0);
-    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertEquals(1, scr.getCompactsSize());
+    scre = scr.getCompacts().getFirst();
+    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing second retry"));
     // The retry entry must reflect double the retention time now.
-    Assert.assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+    assertEquals(Long.toString(2 * retryRetentionTime), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
   }
 
@@ -705,7 +706,7 @@ public class TestAbortedTxnCleaner extends TestHandler {
     addDeltaFileWithTxnComponents(t, p, 2, false);
 
     HiveConf.setIntVar(conf, HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, 0, TimeUnit.MILLISECONDS);
+    MetastoreConf.setTimeVar(conf, ConfVars.HIVE_COMPACTOR_CLEANER_RETRY_RETENTION_TIME, 0, TimeUnit.MILLISECONDS);
     MetadataCache metadataCache = new MetadataCache(true);
     FSRemover mockedFSRemover = Mockito.spy(new FSRemover(conf, ReplChangeManager.getInstance(conf), metadataCache));
     TaskHandler taskHandler = new AbortedTxnCleaner(conf, txnHandler, metadataCache,
@@ -718,20 +719,20 @@ public class TestAbortedTxnCleaner extends TestHandler {
     Cleaner cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
     ShowCompactResponse scr = txnHandler.showCompact(new ShowCompactRequest());
-    Assert.assertEquals(1, scr.getCompactsSize());
-    ShowCompactResponseElement scre = scr.getCompacts().get(0);
-    Assert.assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
+    assertEquals(1, scr.getCompactsSize());
+    ShowCompactResponseElement scre = scr.getCompacts().getFirst();
+    assertTrue(scre.getDbname().equals(dbName) && scre.getTablename().equals(tableName)
             && (isPartitioned ? scre.getPartitionname().equals("ds=" + partName) : scre.getPartitionname() == null) &&
             "ready for cleaning".equalsIgnoreCase(scre.getState()) && scre.getType() == CompactionType.ABORT_TXN_CLEANUP &&
             scre.getErrorMessage().equalsIgnoreCase("Testing retry"));
     String whereClause = " WHERE \"CQ_DATABASE\" = '" + dbName+ "' AND \"CQ_TABLE\" = '" + tableName + "' AND \"CQ_PARTITION\"" +
             (isPartitioned ? " = 'ds=" + partName + "'" : " IS NULL") + " AND \"CQ_TYPE\" = 'c' AND \"CQ_STATE\" = 'r'";
     String retryRetentionQuery = "SELECT \"CQ_RETRY_RETENTION\" FROM \"COMPACTION_QUEUE\" " + whereClause;
-    Assert.assertEquals(Integer.toString(0), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
+    assertEquals(Integer.toString(0), TestTxnDbUtil.queryToString(conf, retryRetentionQuery, false)
             .replace("\n", "").trim());
 
     Mockito.doAnswer(InvocationOnMock::callRealMethod).when(mockedFSRemover).clean(any());
@@ -739,10 +740,10 @@ public class TestAbortedTxnCleaner extends TestHandler {
     cleaner = new Cleaner();
     cleaner.setConf(conf);
     cleaner.init(new AtomicBoolean(true));
-    cleaner.setCleanupHandlers(Arrays.asList(taskHandler));
+    cleaner.setCleanupHandlers(List.of(taskHandler));
     cleaner.run();
 
     // The retry entry should be removed since retry conditions are achieved because retry retention time is 0.
-    Assert.assertEquals(0, txnHandler.showCompact(new ShowCompactRequest()).getCompactsSize());
+    assertEquals(0, txnHandler.showCompact(new ShowCompactRequest()).getCompactsSize());
   }
 }
