@@ -626,7 +626,7 @@ public class MetastoreDirectSqlUtils {
     } else if (pm instanceof PersistenceManagerProxy.ExecutionContextReference ecr) {
       ec = ecr.getExecutionContext();
     } else {
-      throw new MetaException("Unknow " + pm);
+      throw new MetaException("Unknown " + pm);
     }
     AbstractClassMetaData cmd = ec.getMetaDataManager().getMetaDataForClass(modelClass, ec.getClassLoaderResolver());
     switch (cmd.getIdentityType()) {
