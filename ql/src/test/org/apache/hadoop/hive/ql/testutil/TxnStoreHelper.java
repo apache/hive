@@ -31,7 +31,7 @@ import java.util.Collections;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnHandler.ConfVars;
 
-public class TxnStoreHelper {
+public final class TxnStoreHelper {
 
   private final TxnStore txnHandler;
 

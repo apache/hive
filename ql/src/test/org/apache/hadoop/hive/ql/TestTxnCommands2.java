@@ -97,6 +97,7 @@ import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.rules.ExpectedException;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnHandler.ConfVars;
@@ -2307,11 +2308,15 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
    * Test cleaner for TXN_TO_WRITE_ID table.
    * @throws Exception
    */
-  @Test
-  public void testCleanerForTxnToWriteId() throws Exception {
+  @ParameterizedTest(name = "useMinHistoryWriteId={0}")
+  @ValueSource(booleans = {true, false})
+  public void testCleanerForTxnToWriteId(boolean useMinHistoryWriteId) throws Exception {
+    ConfVars.setUseMinHistoryWriteId(useMinHistoryWriteId);
+
     int[][] tableData1 = {{1, 2}};
     int[][] tableData2 = {{2, 3}};
     int[][] tableData3 = {{3, 4}};
+
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData1));
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData2));
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData3));
@@ -2320,28 +2325,30 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
     // All inserts are committed and hence would expect in TXN_TO_WRITE_ID, 3 entries for acidTbl
     // and 2 entries for acidTblPart as each insert would have allocated a writeid.
-    String acidTblWhereClause = " where t2w_database = " + quoteString("default")
-            + " and t2w_table = " + quoteString(Table.ACIDTBL.name().toLowerCase());
-    String acidTblPartWhereClause = " where t2w_database = " + quoteString("default")
-            + " and t2w_table = " + quoteString(Table.ACIDTBLPART.name().toLowerCase());
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblWhereClause),
-            3, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblWhereClause));
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblPartWhereClause),
-            2, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblPartWhereClause));
+    String acidTblWhereClause = " where t2w_database = " + quoteString("default") +
+        " and t2w_table = " + quoteString(Table.ACIDTBL.name().toLowerCase());
+    String acidTblPartWhereClause = " where t2w_database = " + quoteString("default") +
+        " and t2w_table = " + quoteString(Table.ACIDTBLPART.name().toLowerCase());
 
-    txnHandler.compact(new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MAJOR));
+    assertTxnToWriteIdRowCount(
+        Map.of(3, acidTblWhereClause, 2, acidTblPartWhereClause));
+
+    CompactionRequest compactionRqst =
+        new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MAJOR);
+    txnHandler.compact(compactionRqst);
     runWorker(hiveConf);
+
     runCleaner(hiveConf);
     txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
 
     // After compaction/cleanup, all entries from TXN_TO_WRITE_ID should be cleaned up as all txns are committed.
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
-            0, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
+    assertTxnToWriteIdRowCount(Map.of(0, ""));
 
     // Following sequence of commit-abort-open-abort-commit.
     int[][] tableData4 = {{4, 5}};
     int[][] tableData5 = {{5, 6}};
+
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p=3) (a,b) " + makeValuesClause(tableData3));
 
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_TEST_MODE_ROLLBACK_TXN, true);
@@ -2357,8 +2364,6 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
     waitUntilAllTxnFinished();
 
     long txnId = txnMgr.openTxn(ctx, "u1");
-    txnMgr.getValidTxns();
-
     TxnStoreHelper.wrap(txnHandler)
         .registerMinOpenWriteId("default", Table.ACIDTBL.name(), txnId);
 
@@ -2371,59 +2376,72 @@ public class TestTxnCommands2 extends TxnCommandsBaseForTests {
 
     // We would expect 4 entries in TXN_TO_WRITE_ID as each insert would have allocated a writeid
     // including aborted one.
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblWhereClause),
-            3, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblWhereClause));
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblPartWhereClause),
-            1, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblPartWhereClause));
+    assertTxnToWriteIdRowCount(
+        Map.of(3, acidTblWhereClause, 1, acidTblPartWhereClause));
 
     // The entry relevant to aborted txns shouldn't be removed from TXN_TO_WRITE_ID as
     // aborted txn would be removed from TXNS only after the compaction. Also, committed txn > open txn is retained.
     // As open txn doesn't allocate writeid, the 2 entries for aborted and committed should be retained.
-    txnHandler.cleanEmptyAbortedAndCommittedTxns();
-    txnHandler.performWriteSetGC();
-    txnHandler.cleanTxnToWriteIdTable();
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblWhereClause),
-            3, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblWhereClause));
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblPartWhereClause),
-            0, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblPartWhereClause));
+    assertTxnToWriteIdRowCountAfterMaintenance(
+        Map.of(3, acidTblWhereClause, 0, acidTblPartWhereClause));
 
     // The cleaner after the compaction will not run, since the open txnId < compaction commit txnId
     // Since aborted txns data/metadata was not removed, all data in TXN_TO_WRITE_ID should remain
-    txnHandler.compact(new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MAJOR));
+    txnHandler.compact(compactionRqst);
     runWorker(hiveConf);
+
     runCleaner(hiveConf);
-    txnHandler.cleanEmptyAbortedAndCommittedTxns();
-    txnHandler.performWriteSetGC();
-    txnHandler.cleanTxnToWriteIdTable();
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
-            3, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
+    assertTxnToWriteIdRowCountAfterMaintenance(Map.of(3, ""));
 
     // Commit the open txn, which lets the cleanup on TXN_TO_WRITE_ID.
     txnMgr.commitTxn();
 
-    // When useMinHistoryWriteId is enabled, compaction write HWM must be < min open writeId -1 to allow cleanup.
     if (ConfVars.useMinHistoryWriteId()) {
+      // When useMinHistoryWriteId is enabled, compaction write HWM must be < min open writeId -1 to allow cleanup.
       txnId = txnMgr.openTxn(ctx, "u1");
+      TxnStoreHelper.wrap(txnHandler)
+          .registerMinOpenWriteId("default", Table.ACIDTBL.name(), txnId);
+
+      runCleaner(hiveConf);
+      assertTxnToWriteIdRowCountAfterMaintenance(Map.of(3, ""));
+
+      // commit a new txn to advance min open writeId
       TxnStoreHelper.wrap(txnHandler)
           .allocateTableWriteId("default", Table.ACIDTBL.name(), txnId);
       txnMgr.commitTxn();
     }
 
+    // Transactions initiated after a compaction commit must not affect the Cleaner.
     txnId = txnMgr.openTxn(ctx, "u1");
-    txnMgr.getValidTxns();
-
     TxnStoreHelper.wrap(txnHandler)
         .registerMinOpenWriteId("default", Table.ACIDTBL.name(), txnId);
 
-    // Transactions initiated after a compaction commit must not affect the Cleaner.
     runCleaner(hiveConf);
+    assertTxnToWriteIdRowCountAfterMaintenance(Map.of(0, ""));
+  }
 
+  private void assertTxnToWriteIdRowCountAfterMaintenance(Map<Integer, String> expectedToWhereClause) throws Exception {
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnHandler.performWriteSetGC();
     txnHandler.cleanTxnToWriteIdTable();
 
-    Assert.assertEquals(TestTxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
-            0, TestTxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
+    assertTxnToWriteIdRowCount(expectedToWhereClause);
+  }
+
+  private void assertTxnToWriteIdRowCount(Map<Integer, String> expectedToWhereClause) throws Exception {
+    for (Map.Entry<Integer, String> entry : expectedToWhereClause.entrySet()) {
+      int expected = entry.getKey();
+      String where = entry.getValue() != null ? entry.getValue() : "";
+
+      String selectQuery = "select * from TXN_TO_WRITE_ID" + where;
+      String countQuery  = "select count(*) from TXN_TO_WRITE_ID" + where;
+
+      Assert.assertEquals(
+          TestTxnDbUtil.queryToString(hiveConf, selectQuery),
+          expected,
+          TestTxnDbUtil.countQueryAgent(hiveConf, countQuery)
+      );
+    }
   }
 
   @Test
