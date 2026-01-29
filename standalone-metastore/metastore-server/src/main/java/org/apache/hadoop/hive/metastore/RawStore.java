@@ -123,6 +123,7 @@ import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.properties.PropertyStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.NotificationStore;
+import org.apache.hadoop.hive.metastore.metastore.iface.PrivilegeStore;
 import org.apache.hadoop.hive.metastore.metastore.iface.TableStore;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -957,20 +958,30 @@ public interface RawStore extends Configurable {
     return unwrap(TableStore.class).isPartitionMarkedForEvent(new TableName(catName, dbName, tblName), partName, evtType);
   }
 
-  boolean addRole(String rowName, String ownerName)
-      throws InvalidObjectException, MetaException, NoSuchObjectException;
+ default boolean addRole(String rowName, String ownerName)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    return unwrap(PrivilegeStore.class).addRole(rowName, ownerName);
+  }
 
-  boolean removeRole(String roleName) throws MetaException, NoSuchObjectException;
+  default boolean removeRole(String roleName) throws MetaException, NoSuchObjectException {
+    return unwrap(PrivilegeStore.class).removeRole(roleName);
+  }
 
-  boolean grantRole(Role role, String userName, PrincipalType principalType,
+ default boolean grantRole(Role role, String userName, PrincipalType principalType,
       String grantor, PrincipalType grantorType, boolean grantOption)
-      throws MetaException, NoSuchObjectException, InvalidObjectException;
+      throws MetaException, NoSuchObjectException, InvalidObjectException {
+    return unwrap(PrivilegeStore.class).grantRole(role, userName, principalType, grantor, grantorType, grantOption);
+ }
 
-  boolean revokeRole(Role role, String userName, PrincipalType principalType,
-      boolean grantOption) throws MetaException, NoSuchObjectException;
+  default boolean revokeRole(Role role, String userName, PrincipalType principalType,
+      boolean grantOption) throws MetaException, NoSuchObjectException {
+    return unwrap(PrivilegeStore.class).revokeRole(role, userName, principalType, grantOption);
+  }
 
-  PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
-      List<String> groupNames) throws InvalidObjectException, MetaException;
+  default PrincipalPrivilegeSet getUserPrivilegeSet(String userName,
+      List<String> groupNames) throws InvalidObjectException, MetaException {
+    return unwrap(PrivilegeStore.class).getUserPrivilegeSet(userName, groupNames);
+  }
 
   /**
    * Get privileges for a database for a user.
@@ -982,8 +993,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException no such database
    * @throws MetaException error accessing the RDBMS
    */
-  PrincipalPrivilegeSet getDBPrivilegeSet (String catName, String dbName, String userName,
-      List<String> groupNames)  throws InvalidObjectException, MetaException;
+  default PrincipalPrivilegeSet getDBPrivilegeSet (String catName, String dbName, String userName,
+      List<String> groupNames)  throws InvalidObjectException, MetaException {
+    return unwrap(PrivilegeStore.class).getDBPrivilegeSet(catName, dbName, userName, groupNames);
+  }
 
   /**
    * Get privileges for a connector for a user.
@@ -995,8 +1008,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException no such database
    * @throws MetaException error accessing the RDBMS
    */
-  PrincipalPrivilegeSet getConnectorPrivilegeSet (String catName, String connectorName, String userName,
-      List<String> groupNames)  throws InvalidObjectException, MetaException;
+  default PrincipalPrivilegeSet getConnectorPrivilegeSet (String catName, String connectorName, String userName,
+      List<String> groupNames)  throws InvalidObjectException, MetaException {
+    return unwrap(PrivilegeStore.class).getConnectorPrivilegeSet(catName, connectorName, userName, groupNames);
+  }
 
   /**
    * Get privileges for a table for a user.
@@ -1009,8 +1024,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException no such table
    * @throws MetaException error accessing the RDBMS
    */
-  PrincipalPrivilegeSet getTablePrivilegeSet (String catName, String dbName, String tableName,
-      String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
+  default PrincipalPrivilegeSet getTablePrivilegeSet (String catName, String dbName, String tableName,
+      String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
+    return unwrap(PrivilegeStore.class).getTablePrivilegeSet(new TableName(catName, dbName, tableName), userName, groupNames);
+  }
 
   /**
    * Get privileges for a partition for a user.
@@ -1024,8 +1041,10 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException no such partition
    * @throws MetaException error accessing the RDBMS
    */
-  PrincipalPrivilegeSet getPartitionPrivilegeSet (String catName, String dbName, String tableName,
-      String partition, String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
+ default PrincipalPrivilegeSet getPartitionPrivilegeSet (String catName, String dbName, String tableName,
+      String partition, String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
+   return unwrap(PrivilegeStore.class).getPartitionPrivilegeSet(new TableName(catName, dbName, tableName), partition, userName, groupNames);
+ }
 
   /**
    * Get privileges for a column in a table or partition for a user.
@@ -1040,11 +1059,16 @@ public interface RawStore extends Configurable {
    * @throws InvalidObjectException no such table, partition, or column
    * @throws MetaException error accessing the RDBMS
    */
-  PrincipalPrivilegeSet getColumnPrivilegeSet (String catName, String dbName, String tableName, String partitionName,
-      String columnName, String userName, List<String> groupNames) throws InvalidObjectException, MetaException;
+  default PrincipalPrivilegeSet getColumnPrivilegeSet (String catName, String dbName, String tableName, String partitionName,
+      String columnName, String userName, List<String> groupNames) throws InvalidObjectException, MetaException {
+    return unwrap(PrivilegeStore.class).getColumnPrivilegeSet(new TableName(catName, dbName, tableName),
+        partitionName, columnName, userName, groupNames);
+  }
 
-  List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
-      PrincipalType principalType);
+  default List<HiveObjectPrivilege> listPrincipalGlobalGrants(String principalName,
+      PrincipalType principalType) {
+    return unwrap(PrivilegeStore.class).listPrincipalGlobalGrants(principalName, principalType);
+  }
 
   /**
    * For a given principal name and type, list the DB Grants
@@ -1054,8 +1078,10 @@ public interface RawStore extends Configurable {
    * @param dbName database name
    * @return list of privileges for that principal on the specified database.
    */
-  List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
-      PrincipalType principalType, String catName, String dbName);
+  default List<HiveObjectPrivilege> listPrincipalDBGrants(String principalName,
+      PrincipalType principalType, String catName, String dbName) {
+    return unwrap(PrivilegeStore.class).listPrincipalDBGrants(principalName, principalType, catName, dbName);
+  }
 
   /**
    * For a given principal name and type, list the DC Grants
@@ -1064,8 +1090,10 @@ public interface RawStore extends Configurable {
    * @param dcName data connector name
    * @return list of privileges for that principal on the specified data connector.
    */
-  List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName,
-                                                  PrincipalType principalType, String dcName);
+  default List<HiveObjectPrivilege> listPrincipalDCGrants(String principalName,
+                                                  PrincipalType principalType, String dcName) {
+    return unwrap(PrivilegeStore.class).listPrincipalDCGrants(principalName, principalType, dcName);
+  }
 
   /**
    * For a given principal name and type, list the Table Grants
@@ -1076,9 +1104,11 @@ public interface RawStore extends Configurable {
    * @param tableName table name
    * @return list of privileges for that principal on the specified database.
    */
-  List<HiveObjectPrivilege> listAllTableGrants(
+ default List<HiveObjectPrivilege> listAllTableGrants(
       String principalName, PrincipalType principalType, String catName, String dbName,
-      String tableName);
+      String tableName) {
+   return unwrap(PrivilegeStore.class).listAllTableGrants(principalName, principalType, new TableName(catName, dbName, tableName));
+ }
 
   /**
    * For a given principal name and type, list the Table Grants
@@ -1090,9 +1120,12 @@ public interface RawStore extends Configurable {
    * @param partName partition name (not value)
    * @return list of privileges for that principal on the specified database.
    */
-  List<HiveObjectPrivilege> listPrincipalPartitionGrants(
+  default List<HiveObjectPrivilege> listPrincipalPartitionGrants(
       String principalName, PrincipalType principalType, String catName, String dbName,
-      String tableName, List<String> partValues, String partName);
+      String tableName, List<String> partValues, String partName) {
+    return unwrap(PrivilegeStore.class).listPrincipalPartitionGrants(principalName, principalType,
+        new TableName(catName, dbName, tableName), partValues, partName);
+  }
 
   /**
    * For a given principal name and type, list the Table Grants
@@ -1104,9 +1137,12 @@ public interface RawStore extends Configurable {
    * @param columnName column name
    * @return list of privileges for that principal on the specified database.
    */
-  List<HiveObjectPrivilege> listPrincipalTableColumnGrants(
+  default List<HiveObjectPrivilege> listPrincipalTableColumnGrants(
       String principalName, PrincipalType principalType, String catName, String dbName,
-      String tableName, String columnName);
+      String tableName, String columnName) {
+    return unwrap(PrivilegeStore.class).listPrincipalTableColumnGrants(principalName, principalType,
+        new TableName(catName, dbName, tableName), columnName);
+  }
 
   /**
    * For a given principal name and type, list the Table Grants
@@ -1119,29 +1155,46 @@ public interface RawStore extends Configurable {
    * @param columnName column name
    * @return list of privileges for that principal on the specified database.
    */
-  List<HiveObjectPrivilege> listPrincipalPartitionColumnGrants(
+  default List<HiveObjectPrivilege> listPrincipalPartitionColumnGrants(
       String principalName, PrincipalType principalType, String catName, String dbName,
-      String tableName, List<String> partValues, String partName, String columnName);
+      String tableName, List<String> partValues, String partName, String columnName) {
+    return unwrap(PrivilegeStore.class).listPrincipalPartitionColumnGrants(principalName, principalType,
+        new TableName(catName, dbName, tableName), partValues, partName, columnName);
+  }
 
-  boolean grantPrivileges (PrivilegeBag privileges)
-      throws InvalidObjectException, MetaException, NoSuchObjectException;
+  default boolean grantPrivileges (PrivilegeBag privileges)
+      throws InvalidObjectException, MetaException, NoSuchObjectException {
+    return unwrap(PrivilegeStore.class).grantPrivileges(privileges);
+  }
 
-  boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
-  throws InvalidObjectException, MetaException, NoSuchObjectException;
+  default boolean revokePrivileges(PrivilegeBag privileges, boolean grantOption)
+  throws InvalidObjectException, MetaException, NoSuchObjectException {
+    return unwrap(PrivilegeStore.class).revokePrivileges(privileges, grantOption);
+  }
 
-  boolean refreshPrivileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
-  throws InvalidObjectException, MetaException, NoSuchObjectException;
+  default boolean refreshPrivileges(HiveObjectRef objToRefresh, String authorizer, PrivilegeBag grantPrivileges)
+  throws InvalidObjectException, MetaException, NoSuchObjectException {
+    return unwrap(PrivilegeStore.class).refreshPrivileges(objToRefresh, authorizer, grantPrivileges);
+  }
 
-  org.apache.hadoop.hive.metastore.api.Role getRole(
-      String roleName) throws NoSuchObjectException;
+  default org.apache.hadoop.hive.metastore.api.Role getRole(
+      String roleName) throws NoSuchObjectException {
+    return unwrap(PrivilegeStore.class).getRole(roleName);
+  }
 
-  List<String> listRoleNames();
+  default List<String> listRoleNames() {
+    return unwrap(PrivilegeStore.class).listRoleNames();
+  }
 
-  List<Role> listRoles(String principalName,
-      PrincipalType principalType);
+  default List<Role> listRoles(String principalName,
+      PrincipalType principalType) {
+    return unwrap(PrivilegeStore.class).listRoles(principalName, principalType);
+  }
 
-  List<RolePrincipalGrant> listRolesWithGrants(String principalName,
-                                                      PrincipalType principalType);
+  default List<RolePrincipalGrant> listRolesWithGrants(String principalName,
+                                                      PrincipalType principalType) {
+    return unwrap(PrivilegeStore.class).listRolesWithGrants(principalName, principalType);
+  }
 
 
   /**
@@ -1149,7 +1202,9 @@ public interface RawStore extends Configurable {
    * @param roleName
    * @return
    */
-  List<RolePrincipalGrant> listRoleMembers(String roleName);
+  default List<RolePrincipalGrant> listRoleMembers(String roleName) {
+    return unwrap(PrivilegeStore.class).listRoleMembers(roleName);
+  }
 
   /**
    * Fetch a partition along with privilege information for a particular user.
@@ -1425,8 +1480,10 @@ public interface RawStore extends Configurable {
    * @param principalType type
    * @return all DB grants for this principal
    */
-  List<HiveObjectPrivilege> listPrincipalDBGrantsAll(
-      String principalName, PrincipalType principalType);
+  default List<HiveObjectPrivilege> listPrincipalDBGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return unwrap(PrivilegeStore.class).listPrincipalDBGrantsAll(principalName, principalType);
+  }
 
   /**
    * List all DC grants for a given principal.
@@ -1434,8 +1491,10 @@ public interface RawStore extends Configurable {
    * @param principalType type
    * @return all DC grants for this principal
    */
-  List<HiveObjectPrivilege> listPrincipalDCGrantsAll(
-          String principalName, PrincipalType principalType);
+  default List<HiveObjectPrivilege> listPrincipalDCGrantsAll(
+          String principalName, PrincipalType principalType) {
+    return unwrap(PrivilegeStore.class).listPrincipalDCGrantsAll(principalName, principalType);
+  }
 
   /**
    * List all Table grants for a given principal
@@ -1443,8 +1502,10 @@ public interface RawStore extends Configurable {
    * @param principalType type
    * @return all Table grants for this principal
    */
-  List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
-      String principalName, PrincipalType principalType);
+  default List<HiveObjectPrivilege> listPrincipalTableGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return unwrap(PrivilegeStore.class).listPrincipalTableGrantsAll(principalName, principalType);
+  }
 
   /**
    * List all Partition grants for a given principal
@@ -1452,8 +1513,10 @@ public interface RawStore extends Configurable {
    * @param principalType type
    * @return all Partition grants for this principal
    */
-  List<HiveObjectPrivilege> listPrincipalPartitionGrantsAll(
-      String principalName, PrincipalType principalType);
+  default List<HiveObjectPrivilege> listPrincipalPartitionGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return unwrap(PrivilegeStore.class).listPrincipalPartitionGrantsAll(principalName, principalType);
+  }
 
   /**
    * List all Table column grants for a given principal
@@ -1461,8 +1524,10 @@ public interface RawStore extends Configurable {
    * @param principalType type
    * @return all Table column grants for this principal
    */
-  List<HiveObjectPrivilege> listPrincipalTableColumnGrantsAll(
-      String principalName, PrincipalType principalType);
+  default List<HiveObjectPrivilege> listPrincipalTableColumnGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return unwrap(PrivilegeStore.class).listPrincipalTableColumnGrantsAll(principalName, principalType);
+  }
 
   /**
    * List all Partition column grants for a given principal
@@ -1470,10 +1535,14 @@ public interface RawStore extends Configurable {
    * @param principalType type
    * @return all Partition column grants for this principal
    */
-  List<HiveObjectPrivilege> listPrincipalPartitionColumnGrantsAll(
-      String principalName, PrincipalType principalType);
+  default List<HiveObjectPrivilege> listPrincipalPartitionColumnGrantsAll(
+      String principalName, PrincipalType principalType) {
+    return unwrap(PrivilegeStore.class).listPrincipalPartitionColumnGrantsAll(principalName, principalType);
+  }
 
-  List<HiveObjectPrivilege> listGlobalGrantsAll();
+  default List<HiveObjectPrivilege> listGlobalGrantsAll() {
+    return unwrap(PrivilegeStore.class).listGlobalGrantsAll();
+  }
 
   /**
    * Find all the privileges for a given database.
@@ -1481,14 +1550,18 @@ public interface RawStore extends Configurable {
    * @param dbName database name
    * @return list of all privileges.
    */
-  List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName);
+  default List<HiveObjectPrivilege> listDBGrantsAll(String catName, String dbName) {
+    return unwrap(PrivilegeStore.class).listDBGrantsAll(catName, dbName);
+  }
 
   /**
    * Find all the privileges for a given data connector.
    * @param dcName data connector name
    * @return list of all privileges.
    */
-  List<HiveObjectPrivilege> listDCGrantsAll(String dcName);
+  default List<HiveObjectPrivilege> listDCGrantsAll(String dcName) {
+    return unwrap(PrivilegeStore.class).listDCGrantsAll(dcName);
+  }
 
   /**
    * Find all of the privileges for a given column in a given partition.
@@ -1499,8 +1572,11 @@ public interface RawStore extends Configurable {
    * @param columnName column name
    * @return all privileges on this column in this partition
    */
-  List<HiveObjectPrivilege> listPartitionColumnGrantsAll(
-      String catName, String dbName, String tableName, String partitionName, String columnName);
+  default List<HiveObjectPrivilege> listPartitionColumnGrantsAll(
+      String catName, String dbName, String tableName, String partitionName, String columnName) {
+    return unwrap(PrivilegeStore.class).listPartitionColumnGrantsAll(new TableName(catName, dbName, tableName),
+        partitionName, columnName);
+  }
 
   /**
    * Find all of the privileges for a given table
@@ -1509,7 +1585,9 @@ public interface RawStore extends Configurable {
    * @param tableName table name
    * @return all privileges on this table
    */
-  List<HiveObjectPrivilege> listTableGrantsAll(String catName, String dbName, String tableName);
+  default List<HiveObjectPrivilege> listTableGrantsAll(String catName, String dbName, String tableName) {
+    return unwrap(PrivilegeStore.class).listTableGrantsAll(new TableName(catName, dbName, tableName));
+  }
 
   /**
    * Find all of the privileges for a given partition.
@@ -1519,8 +1597,10 @@ public interface RawStore extends Configurable {
    * @param partitionName partition name (not value)
    * @return all privileges on this partition
    */
-  List<HiveObjectPrivilege> listPartitionGrantsAll(
-      String catName, String dbName, String tableName, String partitionName);
+  default List<HiveObjectPrivilege> listPartitionGrantsAll(
+      String catName, String dbName, String tableName, String partitionName) {
+    return unwrap(PrivilegeStore.class).listPartitionGrantsAll(new TableName(catName, dbName, tableName), partitionName);
+  }
 
   /**
    * Find all of the privileges for a given column in a given table.
@@ -1530,8 +1610,10 @@ public interface RawStore extends Configurable {
    * @param columnName column name
    * @return all privileges on this column in this table
    */
-  List<HiveObjectPrivilege> listTableColumnGrantsAll(
-      String catName, String dbName, String tableName, String columnName);
+  default List<HiveObjectPrivilege> listTableColumnGrantsAll(
+      String catName, String dbName, String tableName, String columnName) {
+    return unwrap(PrivilegeStore.class).listPartitionGrantsAll(new TableName(catName, dbName, tableName), columnName);
+  }
 
   /**
    * Register a user-defined function based on the function specification passed in.
