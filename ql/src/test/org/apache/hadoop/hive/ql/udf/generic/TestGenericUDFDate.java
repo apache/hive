@@ -112,4 +112,53 @@ public class TestGenericUDFDate extends TestCase {
     }
   }
 
+  public void testISO8601StringToDate() throws HiveException {
+    GenericUDFDate udf = new GenericUDFDate();
+    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
+    ObjectInspector[] arguments = {valueOI};
+
+    udf.initialize(arguments);
+    
+    // Test ISO 8601 format with 'T' and 'Z'
+    DeferredObject valueObj = new DeferredJavaObject(new Text("2026-01-19T19:20:59Z"));
+    DeferredObject[] args = {valueObj};
+    DateWritable output = (DateWritable) udf.evaluate(args);
+
+    assertEquals("to_date() test for ISO 8601 STRING failed ", "2026-01-19", output.toString());
+
+    // Try with null args
+    DeferredObject[] nullArgs = { new DeferredJavaObject(null) };
+    output = (DateWritable) udf.evaluate(nullArgs);
+    assertNull("to_date() with null ISO 8601 STRING", output);
+  }
+
+  public void testISO8601MultipleFormats() throws HiveException {
+    GenericUDFDate udf = new GenericUDFDate();
+    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
+    ObjectInspector[] arguments = {valueOI};
+
+    udf.initialize(arguments);
+    
+    // Test various ISO 8601 timestamps
+    String[] iso8601Inputs = {
+        "2026-01-19T19:20:59Z",
+        "2025-12-31T23:59:59Z",
+        "2020-06-15T00:00:00Z"
+    };
+    
+    String[] expectedOutputs = {
+        "2026-01-19",
+        "2025-12-31",
+        "2020-06-15"
+    };
+    
+    for (int i = 0; i < iso8601Inputs.length; i++) {
+      DeferredObject valueObj = new DeferredJavaObject(new Text(iso8601Inputs[i]));
+      DeferredObject[] args = {valueObj};
+      DateWritable output = (DateWritable) udf.evaluate(args);
+      assertEquals("to_date() test for ISO 8601 format failed for input " + iso8601Inputs[i], 
+          expectedOutputs[i], output.toString());
+    }
+  }
+
 }
