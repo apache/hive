@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -26,11 +27,17 @@ import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.FAILED_RESPONSE;
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.SUCCEEDED_RESPONSE;
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.WORKING_RESPONSE;
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.INITIATED_STATE;
+import static org.apache.hadoop.hive.metastore.txn.TxnStore.WORKING_STATE;
 
 import static org.apache.hadoop.hive.ql.io.AcidUtils.addVisibilitySuffix;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -65,7 +72,7 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
     // Check there are no compactions requests left.
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, rsp.getCompactsSize());
-    assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().getFirst().getState());
+    assertEquals(SUCCEEDED_RESPONSE, rsp.getCompacts().getFirst().getState());
 
     // Check that the files are removed
     List<Path> paths = getDirectories(conf, t, null);
@@ -81,20 +88,35 @@ public class TestCleanerWithMinHistoryWriteId extends TestCleaner {
     addBaseFile(t, null, 25L, 25, compactTxn);
 
     txnHandler.revokeTimedoutWorkers(1L);
+    // an open txn should prevent the retry
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    assertEquals(1, rsp.getCompactsSize());
+    assertEquals(WORKING_RESPONSE, rsp.getCompacts().getFirst().getState());
+
+    // force retry
+    revokeTimedoutWorkers(conf);
     compactTxn = compactInTxn(rqst);
     addBaseFile(t, null, 25L, 25, compactTxn);
 
     startCleaner();
 
     // Check there are no compactions requests left.
-    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, rsp.getCompactsSize());
-    assertEquals(TxnStore.FAILED_RESPONSE, rsp.getCompacts().getFirst().getState());
+    assertEquals(FAILED_RESPONSE, rsp.getCompacts().getFirst().getState());
     assertEquals("txnid:26 is open and <= hwm: 27", rsp.getCompacts().getFirst().getErrorMessage());
 
     // Check that the files are not removed
     List<Path> paths = getDirectories(conf, t, null);
     assertEquals(6, paths.size());
+  }
+
+  private static void revokeTimedoutWorkers(Configuration conf) throws Exception {
+    TestTxnDbUtil.executeUpdate(conf, """
+          UPDATE "COMPACTION_QUEUE"
+          SET "CQ_WORKER_ID" = NULL, "CQ_START" = NULL, "CQ_STATE" = '%c'
+          WHERE "CQ_STATE" = '%c'
+        """.formatted(INITIATED_STATE, WORKING_STATE));
   }
 
   private Table prepareTestTable() throws Exception {
