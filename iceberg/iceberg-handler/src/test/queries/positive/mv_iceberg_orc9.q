@@ -30,6 +30,8 @@ show materialized views;
 show create table mat1;
 describe formatted mat1;
 
+drop materialized view mat1;
+
 select 1;
 
 create materialized view mat1_orc stored as orc tblproperties ('format-version'='1') as
