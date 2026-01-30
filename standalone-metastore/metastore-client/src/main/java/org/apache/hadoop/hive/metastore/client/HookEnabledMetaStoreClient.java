@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
@@ -340,6 +339,9 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
       if (hook != null) {
         hook.commitDropTable(table, deleteData || ifPurge);
       }
+
+      removeStorageTableForExternalMaterializedView(table);
+
       success = true;
     } catch (NoSuchObjectException e) {
       if (!ignoreUnknownTab) {
@@ -349,6 +351,14 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
       if (!success && (hook != null)) {
         hook.rollbackDropTable(table);
       }
+    }
+  }
+
+  private void removeStorageTableForExternalMaterializedView(Table table) throws TException {
+    TableType tableType = Enum.valueOf(TableType.class, table.getTableType());
+
+    if (tableType.equals(TableType.EXTERNAL_MATERIALIZED_VIEW)) {
+      delegate.dropTable(table.getCatName(), table.getDbName(), table.getTableName() + "_storage_table", true, true, true);
     }
   }
 
