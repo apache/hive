@@ -29,16 +29,9 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.AcidConstants;
-import org.apache.hadoop.hive.common.AcidMetaDataFile;
-import org.apache.hadoop.hive.common.AcidMetaDataFile.DataFormat;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
-import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.api.Package;
@@ -47,11 +40,13 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
 import org.apache.hadoop.hive.metastore.events.*;
-import org.apache.hadoop.hive.metastore.handler.AbstractOperationHandler;
+import org.apache.hadoop.hive.metastore.handler.AbstractRequestHandler;
 import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.CreateTableHandler;
 import org.apache.hadoop.hive.metastore.handler.DropDatabaseHandler;
 import org.apache.hadoop.hive.metastore.handler.DropPartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.DropTableHandler;
+import org.apache.hadoop.hive.metastore.handler.TruncateTableHandler;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -67,7 +62,6 @@ import org.apache.hadoop.hive.metastore.txn.*;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
-import org.apache.hadoop.hive.metastore.utils.HdfsUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -93,17 +87,10 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.join;
-import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_PATH_SUFFIX;
-import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE_PATTERN;
-import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
-import static org.apache.hadoop.hive.common.AcidConstants.DELTA_DIGITS;
 
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_RESUME_STARTED_AFTER_FAILOVER;
 import static org.apache.hadoop.hive.common.repl.ReplConst.REPL_TARGET_DATABASE_PROPERTY;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
-import static org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient.TRUNCATE_SKIP_DATA_DELETION;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.CTAS_LEGACY_CONFIG;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTAS;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.newMetaException;
 import static org.apache.hadoop.hive.metastore.ExceptionHandler.rethrowException;
@@ -111,8 +98,6 @@ import static org.apache.hadoop.hive.metastore.ExceptionHandler.throwMetaExcepti
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
-import static org.apache.hadoop.hive.metastore.Warehouse.getCatalogQualifiedTableName;
-import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.TABLE_IS_CTLT;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.canUpdateStats;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
@@ -302,6 +287,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public List<MetaStoreEventListener> getListeners() {
     return listeners;
+  }
+
+  @Override
+  public IMetaStoreMetadataTransformer getMetadataTransformer() {
+    return transformer;
   }
 
   @Override
@@ -1592,8 +1582,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     Exception ex = null;
     try {
-      DropDatabaseHandler dropDatabaseOp = AbstractOperationHandler.offer(this, req);
-      AbstractOperationHandler.OperationStatus status = dropDatabaseOp.getOperationStatus();
+      DropDatabaseHandler dropDatabaseOp = AbstractRequestHandler.offer(this, req);
+      AbstractRequestHandler.RequestStatus status = dropDatabaseOp.getRequestStatus();
       return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
@@ -2010,283 +2000,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return transformedTbl != null ? transformedTbl : tbl;
   }
 
-  private void create_table_core(final RawStore ms, final CreateTableRequest req)
-      throws AlreadyExistsException, MetaException,
-      InvalidObjectException, NoSuchObjectException, InvalidInputException {
-    ColumnStatistics colStats = null;
-    Table tbl = req.getTable();
-    EnvironmentContext envContext = req.getEnvContext();
-    SQLAllTableConstraints constraints = new SQLAllTableConstraints();
-    constraints.setPrimaryKeys(req.getPrimaryKeys());
-    constraints.setForeignKeys(req.getForeignKeys());
-    constraints.setUniqueConstraints(req.getUniqueConstraints());
-    constraints.setDefaultConstraints(req.getDefaultConstraints());
-    constraints.setCheckConstraints(req.getCheckConstraints());
-    constraints.setNotNullConstraints(req.getNotNullConstraints());
-    List<String> processorCapabilities = req.getProcessorCapabilities();
-    String processorId = req.getProcessorIdentifier();
-
-    // To preserve backward compatibility throw MetaException in case of null database
-    if (tbl.getDbName() == null) {
-      throw new MetaException("Null database name is not allowed");
-    }
-
-    if (!MetaStoreUtils.validateName(tbl.getTableName(), conf)) {
-      throw new InvalidObjectException(tbl.getTableName()
-          + " is not a valid object name");
-    }
-
-    if (!MetaStoreUtils.validateTblStorage(tbl.getSd())) {
-      throw new InvalidObjectException(tbl.getTableName()
-              + " location must not be root path");
-    }
-
-    if (!tbl.isSetCatName()) {
-      tbl.setCatName(getDefaultCatalog(conf));
-    }
-
-    Database db = get_database_core(tbl.getCatName(), tbl.getDbName());
-    if (MetaStoreUtils.isDatabaseRemote(db)) {
-      // HIVE-24425: Create table in REMOTE db should fail
-      throw new MetaException("Create table in REMOTE database " + db.getName() + " is not allowed");
-    }
-
-    if (is_table_exists(ms, tbl.getCatName(), tbl.getDbName(), tbl.getTableName())) {
-      throw new AlreadyExistsException("Table " + getCatalogQualifiedTableName(tbl)
-          + " already exists");
-    }
-
-    tbl.setDbName(normalizeIdentifier(tbl.getDbName()));
-    tbl.setTableName(normalizeIdentifier(tbl.getTableName()));
-
-    if (transformer != null) {
-      tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
-    }
-
-    Map<String, String> params = tbl.getParameters();
-    if (params != null) {
-      params.remove(TABLE_IS_CTAS);
-      params.remove(TABLE_IS_CTLT);
-      if (MetaStoreServerUtils.getBooleanEnvProp(envContext, CTAS_LEGACY_CONFIG) &&
-          TableType.MANAGED_TABLE.toString().equals(tbl.getTableType())) {
-        params.put("EXTERNAL", "TRUE");
-        tbl.setTableType(TableType.EXTERNAL_TABLE.toString());
-      }
-    }
-
-    // If the given table has column statistics, save it here. We will update it later.
-    // We don't want it to be part of the Table object being created, lest the create table
-    // event will also have the col stats which we don't want.
-    if (tbl.isSetColStats()) {
-      colStats = tbl.getColStats();
-      tbl.unsetColStats();
-    }
-
-    String validate = MetaStoreServerUtils.validateTblColumns(tbl.getSd().getCols());
-    if (validate != null) {
-      throw new InvalidObjectException("Invalid column " + validate);
-    }
-    if (tbl.getPartitionKeys() != null) {
-      validate = MetaStoreServerUtils.validateTblColumns(tbl.getPartitionKeys());
-      if (validate != null) {
-        throw new InvalidObjectException("Invalid partition column " + validate);
-      }
-    }
-    if (tbl.isSetId()) {
-      LOG.debug("Id shouldn't be set but table {}.{} has the Id set to {}. Id is ignored.", tbl.getDbName(),
-          tbl.getTableName(), tbl.getId());
-      tbl.unsetId();
-    }
-    SkewedInfo skew = tbl.getSd().getSkewedInfo();
-    if (skew != null) {
-      validate = MetaStoreServerUtils.validateSkewedColNames(skew.getSkewedColNames());
-      if (validate != null) {
-        throw new InvalidObjectException("Invalid skew column " + validate);
-      }
-      validate = MetaStoreServerUtils.validateSkewedColNamesSubsetCol(
-          skew.getSkewedColNames(), tbl.getSd().getCols());
-      if (validate != null) {
-        throw new InvalidObjectException("Invalid skew column " + validate);
-      }
-    }
-
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    Path tblPath = null;
-    boolean success = false, madeDir = false;
-    boolean isReplicated = false;
-    try {
-
-      ms.openTransaction();
-
-      db = ms.getDatabase(tbl.getCatName(), tbl.getDbName());
-      isReplicated = isDbReplicationTarget(db);
-
-      firePreEvent(new PreCreateTableEvent(tbl, db, this));
-
-      if (!TableType.VIRTUAL_VIEW.toString().equals(tbl.getTableType())) {
-        if (tbl.getSd().getLocation() == null
-            || tbl.getSd().getLocation().isEmpty()) {
-          tblPath = wh.getDefaultTablePath(db, tbl.getTableName() + getTableSuffix(tbl),
-              MetaStoreUtils.isExternalTable(tbl));
-        } else {
-          if (!MetaStoreUtils.isExternalTable(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
-            LOG.warn("Location: " + tbl.getSd().getLocation()
-                + " specified for non-external table:" + tbl.getTableName());
-          }
-          tblPath = wh.getDnsPath(new Path(tbl.getSd().getLocation()));
-          // ignore suffix if it's already there (direct-write CTAS)
-          if (!tblPath.getName().matches("(.*)" + SOFT_DELETE_TABLE_PATTERN)) {
-            tblPath = new Path(tblPath + getTableSuffix(tbl));
-          }
-        }
-        tbl.getSd().setLocation(tblPath.toString());
-      }
-
-      if (tblPath != null) {
-        if (!wh.isDir(tblPath)) {
-          if (!wh.mkdirs(tblPath)) {
-            throw new MetaException(tblPath
-                + " is not a directory or unable to create one");
-          }
-          madeDir = true;
-        }
-      }
-
-      MetaStoreServerUtils.updateTableStatsForCreateTable(wh, db, tbl, envContext, conf, tblPath, madeDir);
-
-      // set create time
-      long time = System.currentTimeMillis() / 1000;
-      tbl.setCreateTime((int) time);
-      if (tbl.getParameters() == null ||
-          tbl.getParameters().get(hive_metastoreConstants.DDL_TIME) == null) {
-        tbl.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
-      }
-
-      if (CollectionUtils.isEmpty(constraints.getPrimaryKeys()) && CollectionUtils.isEmpty(constraints.getForeignKeys())
-          && CollectionUtils.isEmpty(constraints.getUniqueConstraints())&& CollectionUtils.isEmpty(constraints.getNotNullConstraints())&& CollectionUtils.isEmpty(constraints.getDefaultConstraints())
-          && CollectionUtils.isEmpty(constraints.getCheckConstraints())) {
-        ms.createTable(tbl);
-      } else {
-        final String catName = tbl.getCatName();
-        // Check that constraints have catalog name properly set first
-        if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys()) && !constraints.getPrimaryKeys().get(0).isSetCatName()) {
-          constraints.getPrimaryKeys().forEach(constraint -> constraint.setCatName(catName));
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getForeignKeys()) && !constraints.getForeignKeys().get(0).isSetCatName()) {
-          constraints.getForeignKeys().forEach(constraint -> constraint.setCatName(catName));
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints()) && !constraints.getUniqueConstraints().get(0).isSetCatName()) {
-          constraints.getUniqueConstraints().forEach(constraint -> constraint.setCatName(catName));
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints()) && !constraints.getNotNullConstraints().get(0).isSetCatName()) {
-          constraints.getNotNullConstraints().forEach(constraint -> constraint.setCatName(catName));
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints()) && !constraints.getDefaultConstraints().get(0).isSetCatName()) {
-          constraints.getDefaultConstraints().forEach(constraint -> constraint.setCatName(catName));
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints()) && !constraints.getCheckConstraints().get(0).isSetCatName()) {
-          constraints.getCheckConstraints().forEach(constraint -> constraint.setCatName(catName));
-        }
-        // Set constraint name if null before sending to listener
-        constraints = ms.createTableWithConstraints(tbl, constraints);
-
-      }
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenerResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-            EventType.CREATE_TABLE, new CreateTableEvent(tbl, true, this, isReplicated), envContext);
-        if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_PRIMARYKEY,
-              new AddPrimaryKeyEvent(constraints.getPrimaryKeys(), true, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_FOREIGNKEY,
-              new AddForeignKeyEvent(constraints.getForeignKeys(), true, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_UNIQUECONSTRAINT,
-              new AddUniqueConstraintEvent(constraints.getUniqueConstraints(), true, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_NOTNULLCONSTRAINT,
-              new AddNotNullConstraintEvent(constraints.getNotNullConstraints(), true, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_CHECKCONSTRAINT,
-              new AddCheckConstraintEvent(constraints.getCheckConstraints(), true, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.ADD_DEFAULTCONSTRAINT,
-              new AddDefaultConstraintEvent(constraints.getDefaultConstraints(), true, this), envContext);
-        }
-      }
-
-      success = ms.commitTransaction();
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-        if (madeDir) {
-          wh.deleteDir(tblPath, false, ReplChangeManager.shouldEnableCm(db, tbl));
-        }
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.CREATE_TABLE,
-            new CreateTableEvent(tbl, success, this, isReplicated), envContext,
-            transactionalListenerResponses, ms);
-        if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())) {
-          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_PRIMARYKEY,
-              new AddPrimaryKeyEvent(constraints.getPrimaryKeys(), success, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())) {
-          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_FOREIGNKEY,
-              new AddForeignKeyEvent(constraints.getForeignKeys(), success, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())) {
-          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_UNIQUECONSTRAINT,
-              new AddUniqueConstraintEvent(constraints.getUniqueConstraints(), success, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())) {
-          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_NOTNULLCONSTRAINT,
-              new AddNotNullConstraintEvent(constraints.getNotNullConstraints(), success, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())) {
-          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_DEFAULTCONSTRAINT,
-              new AddDefaultConstraintEvent(constraints.getDefaultConstraints(), success, this), envContext);
-        }
-        if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())) {
-          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ADD_CHECKCONSTRAINT,
-              new AddCheckConstraintEvent(constraints.getCheckConstraints(), success, this), envContext);
-        }
-      }
-    }
-
-    // If the table has column statistics, update it into the metastore. We need a valid
-    // writeId list to update column statistics for a transactional table. But during bootstrap
-    // replication, where we use this feature, we do not have a valid writeId list which was
-    // used to update the stats. But we know for sure that the writeId associated with the
-    // stats was valid then (otherwise stats update would have failed on the source). So, craft
-    // a valid transaction list with only that writeId and use it to update the stats.
-    if (colStats != null) {
-      long writeId = tbl.getWriteId();
-      String validWriteIds = null;
-      if (writeId > 0) {
-        ValidWriteIdList validWriteIdList =
-            new ValidReaderWriteIdList(TableName.getDbTable(tbl.getDbName(),
-                tbl.getTableName()),
-                new long[0], new BitSet(), writeId);
-        validWriteIds = validWriteIdList.toString();
-      }
-      updateTableColumnStatsInternal(colStats, validWriteIds, tbl.getWriteId());
-    }
-  }
-
-  private String getTableSuffix(Table tbl) {
-    return tbl.isSetTxnId() && tbl.getParameters() != null 
-        && Boolean.parseBoolean(tbl.getParameters().get(SOFT_DELETE_TABLE)) ?
-      SOFT_DELETE_PATH_SUFFIX + String.format(DELTA_DIGITS, tbl.getTxnId()) : "";
-  }
-
   @Override
   @Deprecated
   public void create_table(final Table tbl) throws AlreadyExistsException,
@@ -2329,8 +2042,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Exception ex = null;
     try {
-      create_table_core(getMS(), req);
-      success = true;
+      CreateTableHandler createTableOp = AbstractRequestHandler.offer(this, req);
+      success = createTableOp.success();
     } catch (Exception e) {
       LOG.warn("create_table_req got ", e);
       ex = e;
@@ -2711,8 +2424,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ", async: " + dropReq.isAsyncDrop() + ", id: " + dropReq.getId());
     Exception ex = null;
     try {
-      DropTableHandler dropTableOp = AbstractOperationHandler.offer(this, dropReq);
-      AbstractOperationHandler.OperationStatus status = dropTableOp.getOperationStatus();
+      DropTableHandler dropTableOp = AbstractRequestHandler.offer(this, dropReq);
+      AbstractRequestHandler.RequestStatus status = dropTableOp.getRequestStatus();
       return status.toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
@@ -2724,119 +2437,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             TableName.getQualified(dropReq.getCatalogName(), dropReq.getDbName(), dropReq.getTableName())));
       }
     }
-  }
-
-  private void updateStatsForTruncate(Map<String,String> props, EnvironmentContext environmentContext) {
-    if (null == props) {
-      return;
-    }
-    for (String stat : StatsSetupConst.SUPPORTED_STATS) {
-      String statVal = props.get(stat);
-      if (statVal != null) {
-        //In the case of truncate table, we set the stats to be 0.
-        props.put(stat, "0");
-      }
-    }
-    //first set basic stats to true
-    StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
-    environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
-    environmentContext.putToProperties(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS, StatsSetupConst.TRUE);
-    //then invalidate column stats
-    StatsSetupConst.clearColumnStatsState(props);
-    return;
-  }
-
-  private void alterPartitionsForTruncate(RawStore ms, String catName, String dbName, String tableName,
-      Table table, List<Partition> partitions, String validWriteIds, long writeId) throws Exception {
-    EnvironmentContext environmentContext = new EnvironmentContext();
-    if (partitions.isEmpty()) {
-      return;
-    }
-    List<List<String>> partValsList = new ArrayList<>();
-    for (Partition partition: partitions) {
-      updateStatsForTruncate(partition.getParameters(), environmentContext);
-      if (writeId > 0) {
-        partition.setWriteId(writeId);
-      }
-      partition.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
-          .currentTimeMillis() / 1000));
-      partValsList.add(partition.getValues());
-    }
-    ms.alterPartitions(catName, dbName, tableName, partValsList, partitions, writeId, validWriteIds);
-    if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(this.getConf(),
-          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
-      if (shouldSendSingleEvent) {
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITIONS,
-            new AlterPartitionsEvent(partitions, partitions, table, true, true, this), environmentContext);
-      } else {
-        for (Partition partition : partitions) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), this),
-              environmentContext);
-        }
-      }
-    }
-    if (listeners != null && !listeners.isEmpty()) {
-      boolean shouldSendSingleEvent = MetastoreConf.getBoolVar(this.getConf(),
-          MetastoreConf.ConfVars.NOTIFICATION_ALTER_PARTITIONS_V2_ENABLED);
-      if (shouldSendSingleEvent) {
-        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_PARTITIONS,
-            new AlterPartitionsEvent(partitions, partitions, table, true, true, this), environmentContext);
-      } else {
-        for (Partition partition : partitions) {
-          MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_PARTITION,
-              new AlterPartitionEvent(partition, partition, table, true, true, partition.getWriteId(), this),
-              environmentContext);
-        }
-      }
-    }
-  }
-
-  private void alterTableStatsForTruncate(RawStore ms, String catName, String dbName,
-      String tableName, Table table, List<Partition> partitionsList,
-      String validWriteIds, long writeId) throws Exception {
-    if (0 != table.getPartitionKeysSize()) {
-      alterPartitionsForTruncate(ms, catName, dbName, tableName, table, partitionsList,
-          validWriteIds, writeId);
-    } else {
-      EnvironmentContext environmentContext = new EnvironmentContext();
-      updateStatsForTruncate(table.getParameters(), environmentContext);
-      boolean isReplicated = isDbReplicationTarget(ms.getDatabase(catName, dbName));
-      if (!transactionalListeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-            EventType.ALTER_TABLE,
-            new AlterTableEvent(table, table, true, true,
-                writeId, this, isReplicated));
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ALTER_TABLE,
-            new AlterTableEvent(table, table, true, true,
-                writeId, this, isReplicated));
-      }
-      // TODO: this should actually pass thru and set writeId for txn stats.
-      if (writeId > 0) {
-        table.setWriteId(writeId);
-      }
-      ms.alterTable(catName, dbName, tableName, table, validWriteIds);
-    }
-    return;
-  }
-
-  private List<Path> getLocationsForTruncate(final RawStore ms, final String catName,
-      final String dbName, final String tableName, final Table table,
-      List<Partition> partitionsList)  throws Exception {
-    List<Path> locations = new ArrayList<>();
-    if (0 != table.getPartitionKeysSize()) {
-      for (Partition partition : partitionsList) {
-        locations.add(new Path(partition.getSd().getLocation()));
-      }
-    } else {
-      locations.add(new Path(table.getSd().getLocation()));
-    }
-    return locations;
   }
 
   @Override
@@ -2857,109 +2457,23 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public TruncateTableResponse truncate_table_req(TruncateTableRequest req)
       throws NoSuchObjectException, MetaException {
-    truncateTableInternal(req.getDbName(), req.getTableName(), req.getPartNames(),
-        req.getValidWriteIdList(), req.getWriteId(), req.getEnvironmentContext());
-    return new TruncateTableResponse();
-  }
-
-  private void truncateTableInternal(String dbName, String tableName, List<String> partNames,
-      String validWriteIds, long writeId, EnvironmentContext context) throws MetaException, NoSuchObjectException {
-    boolean isSkipTrash = false, needCmRecycle = false;
+    String[] parsedDbName = parseDbName(req.getDbName(), getConf());
+    startFunction("truncate_table_req",
+        ": db=" + parsedDbName[DB_NAME] + " tab=" + req.getTableName());
+    Exception ex = null;
+    boolean success = false;
     try {
-      String[] parsedDbName = parseDbName(dbName, conf);
-      GetTableRequest getTableRequest = new GetTableRequest(parsedDbName[DB_NAME], tableName);
-      getTableRequest.setCatName(parsedDbName[CAT_NAME]);
-      Table tbl = get_table_core(getTableRequest);
-
-      boolean skipDataDeletion = Optional.ofNullable(context)
-          .map(EnvironmentContext::getProperties)
-          .map(prop -> prop.get(TRUNCATE_SKIP_DATA_DELETION))
-          .map(Boolean::parseBoolean)
-          .orElse(false);
-      List<Partition> partitionsList = new ArrayList<>();
-      if (partNames == null) {
-        if (0 != tbl.getPartitionKeysSize()) {
-          partitionsList = getMS().getPartitions(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-              tableName, GetPartitionsArgs.getAllPartitions());
-        }
-      } else {
-        partitionsList = getMS().getPartitionsByNames(parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-            tableName, partNames);
-      }
-      if (TxnUtils.isTransactionalTable(tbl) || !skipDataDeletion) {
-        if (!skipDataDeletion) {
-          isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
-          
-          Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-          needCmRecycle = ReplChangeManager.shouldEnableCm(db, tbl);
-        }
-        // This is not transactional
-        for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName,
-            tbl, partitionsList)) {
-          if (!skipDataDeletion) {
-            truncateDataFiles(location, isSkipTrash, needCmRecycle);
-          } else {
-            // For Acid tables we don't need to delete the old files, only write an empty baseDir.
-            // Compaction and cleaner will take care of the rest
-            addTruncateBaseFile(location, writeId, conf, DataFormat.TRUNCATED);
-          }
-        }
-      }
-
-      // Alter the table/partition stats and also notify truncate table event
-      alterTableStatsForTruncate(getMS(), parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-          tableName, tbl, partitionsList, validWriteIds, writeId);
+      TruncateTableHandler truncateTable = AbstractRequestHandler.offer(this, req);
+      success = truncateTable.success();
+      return new TruncateTableResponse();
     } catch (Exception e) {
+      ex = e;
       throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
           .convertIfInstance(IOException.class, MetaException.class)
           .defaultMetaException();
-    }
-  }
-
-  /**
-   * Add an empty baseDir with a truncate metadatafile
-   * @param location partition or table directory
-   * @param writeId allocated writeId
-   * @throws MetaException
-   */
-  public static void addTruncateBaseFile(Path location, long writeId, Configuration conf, DataFormat dataFormat)
-      throws MetaException {
-    if (location == null) 
-      return;
-    
-    Path basePath = new Path(location, AcidConstants.baseDir(writeId));
-    try {
-      FileSystem fs = location.getFileSystem(conf);
-      fs.mkdirs(basePath);
-      // We can not leave the folder empty, otherwise it will be skipped at some file listing in AcidUtils
-      // No need for a data file, a simple metadata is enough
-      AcidMetaDataFile.writeToFile(fs, basePath, dataFormat);
-    } catch (Exception e) {
-      throw newMetaException(e);
-    }
-  }
-
-  private void truncateDataFiles(Path location, boolean isSkipTrash, boolean needCmRecycle)
-      throws IOException, MetaException {
-    FileSystem fs = location.getFileSystem(getConf());
-    
-    if (!HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
-        !FileUtils.pathHasSnapshotSubDir(location, fs)) {
-      HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
-      FileStatus targetStatus = fs.getFileStatus(location);
-      String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-      
-      wh.deleteDir(location, isSkipTrash, needCmRecycle);
-      fs.mkdirs(location);
-      HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
-    } else {
-      FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
-      if (statuses == null || statuses.length == 0) {
-        return;
-      }
-      for (final FileStatus status : statuses) {
-        wh.deleteDir(status.getPath(), isSkipTrash, needCmRecycle);
-      }
+    } finally {
+      endFunction("truncate_table_req", success, ex,
+          TableName.getQualified(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], req.getTableName()));
     }
   }
 
@@ -3565,7 +3079,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       // Make sure all the partitions have the catalog set as well
-      AddPartitionsHandler addPartsOp = AbstractOperationHandler.offer(this, request);
+      AddPartitionsHandler addPartsOp = AbstractRequestHandler.offer(this, request);
       if (addPartsOp.success() && request.isNeedResult()) {
         AddPartitionsHandler.AddPartitionsResult addPartsResult = addPartsOp.getResult();
         if (request.isSkipColumnSchemaForPartition()) {
@@ -3931,7 +3445,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     try {
       DropPartitionsResult resp = new DropPartitionsResult();
-      DropPartitionsHandler dropPartsOp = AbstractOperationHandler.offer(this, request);
+      DropPartitionsHandler dropPartsOp = AbstractRequestHandler.offer(this, request);
       if (dropPartsOp.success() && request.isNeedResult()) {
         resp.setPartitions(dropPartsOp.getResult().getPartitions());
       }

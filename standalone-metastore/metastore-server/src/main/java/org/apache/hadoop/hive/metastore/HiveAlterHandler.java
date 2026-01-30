@@ -68,10 +68,10 @@ import java.util.stream.Collectors;
 import java.util.LinkedList;
 import java.util.Optional;
 
-import static org.apache.hadoop.hive.metastore.HMSHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
+import static org.apache.hadoop.hive.metastore.handler.TruncateTableHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.findStaleColumns;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;

@@ -107,5 +107,7 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
   DataConnector get_dataconnector_core(final String name)
       throws NoSuchObjectException, MetaException;
 
-    AbortCompactResponse abort_Compactions(AbortCompactionRequest rqst) throws TException;
+  AbortCompactResponse abort_Compactions(AbortCompactionRequest rqst) throws TException;
+
+  IMetaStoreMetadataTransformer getMetadataTransformer();
 }
