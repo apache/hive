@@ -3307,12 +3307,16 @@ class MetaStoreDirectSql {
     return true;
   }
 
-  // a helper function which will firstly get the current COLUMN_STATS_ACCURATE parameter on table level
-  // secondly convert the JSON String into map, and update the information in it, and convert it back to JSON
-  // thirdly update the COLUMN_STATS_ACCURATE parameter with the new value on table level using directSql
+  /**
+      a helper function which will firstly get the current COLUMN_STATS_ACCURATE parameter on table level
+      secondly convert the JSON String into map, and update the information in it, and convert it back to JSON
+      thirdly update the COLUMN_STATS_ACCURATE parameter with the new value on table level using directSql
+   */
   public long updateColumnStatsAccurateForTable(Table table, List<String> droppedCols) throws MetaException {
-    String currentValue = table.getParameters().get("COLUMN_STATS_ACCURATE");
-    if (currentValue == null) return 0;
+    String currentValue = table.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+    if (currentValue == null) {
+      return 0;
+    }
 
     try {
       ObjectMapper mapper = new ObjectMapper();
@@ -3321,25 +3325,22 @@ class MetaStoreDirectSql {
       Map<String, Object> statsMap = mapper.readValue(currentValue, new TypeReference<Map<String, Object>>() {});
 
       // Get the COLUMN_STATS object if it exists
-      Object columnStatsObj = statsMap.get("COLUMN_STATS");
+      Object columnStatsObj = statsMap.get(StatsSetupConst.COLUMN_STATS);
 
       if (columnStatsObj instanceof Map) {
         Map<String, String> columnStats = (Map<String, String>) columnStatsObj;
 
-        boolean removeAll = (droppedCols == null || droppedCols.isEmpty());
+        boolean removeAll = droppedCols == null || droppedCols.isEmpty() || droppedCols.size() == columnStats.size();
 
         if (removeAll) {
           // Remove entire column stats
-          statsMap.remove("COLUMN_STATS");
+          statsMap.remove(StatsSetupConst.COLUMN_STATS);
         } else {
           // Remove only the dropped columns
           for (String col : droppedCols) {
             if (col != null) {
               columnStats.remove(col.toLowerCase());
             }
-          }
-          if (columnStats.isEmpty()) {
-            statsMap.remove("COLUMN_STATS");
           }
         }
       }
@@ -3348,7 +3349,7 @@ class MetaStoreDirectSql {
       String updatedValue = mapper.writeValueAsString(statsMap);
 
       // Update the COLUMN_STATS_ACCURATE parameter
-      return updateTableParam(table, "COLUMN_STATS_ACCURATE", currentValue, updatedValue);
+      return updateTableParam(table, StatsSetupConst.COLUMN_STATS_ACCURATE, currentValue, updatedValue);
     } catch (Exception e) {
       throw new MetaException("Failed to parse/update COLUMN_STATS_ACCURATE: " + e.getMessage());
     }
@@ -3377,7 +3378,6 @@ class MetaStoreDirectSql {
     } else {
       effectiveColNames = colNames.stream().map(String::toLowerCase).collect(Collectors.toList());
     }
-    List<String> finalColNames = effectiveColNames;
 
     try {
       Batchable.runBatched(batchSize, partNames, new Batchable<String, Void>() {
@@ -3408,7 +3408,7 @@ class MetaStoreDirectSql {
               boolean changed = false;
               if (columnStatsObj instanceof Map) {
                 Map<String, String> columnStats = (Map<String, String>) columnStatsObj;
-                for (String col : finalColNames) {
+                for (String col : effectiveColNames) {
                   if (columnStats.remove(col) != null) {
                     changed = true;
                   }
@@ -3483,15 +3483,6 @@ class MetaStoreDirectSql {
       return result;
     }
   }
-
-
-
-
-
-
-
-
-
 
   public Map<String, Map<String, String>> updatePartitionColumnStatisticsBatch(
                                                       Map<String, ColumnStatistics> partColStatsMap,
