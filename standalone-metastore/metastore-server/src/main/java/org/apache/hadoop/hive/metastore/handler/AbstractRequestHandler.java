@@ -58,6 +58,7 @@ import static org.apache.hadoop.hive.metastore.ExceptionHandler.handleException;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
 import static org.apache.hadoop.hive.metastore.utils.JavaUtils.newInstance;
 
+@SuppressWarnings("rawtypes")
 public abstract class AbstractRequestHandler<T extends TBase, A extends AbstractRequestHandler.Result> {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractRequestHandler.class);
   private static final Map<String, AbstractRequestHandler> ID_TO_HANDLER = new ConcurrentHashMap<>();

@@ -31,6 +31,7 @@ public class GetPartitionsArgs {
   private String includeParamKeyPattern;
   private String excludeParamKeyPattern;
   private boolean skipColumnSchemaForPartition;
+  private String order;
 
   private GetPartitionsArgs() {
 
@@ -80,6 +81,10 @@ public class GetPartitionsArgs {
     return skipColumnSchemaForPartition;
   }
 
+  public String getOrder() {
+    return order;
+  }
+
   public static class GetPartitionsArgsBuilder {
     private String filter;
     private byte[] expr;
@@ -91,6 +96,7 @@ public class GetPartitionsArgs {
     private List<String> groupNames;
     private String includeParamKeyPattern;
     private String excludeParamKeyPattern;
+    private String order;
     private boolean skipColumnSchemaForPartition = false;
 
     public GetPartitionsArgsBuilder() {
@@ -109,6 +115,7 @@ public class GetPartitionsArgs {
       this.includeParamKeyPattern = args.includeParamKeyPattern;
       this.excludeParamKeyPattern = args.excludeParamKeyPattern;
       this.skipColumnSchemaForPartition = args.skipColumnSchemaForPartition;
+      this.order = args.order;
     }
 
     public GetPartitionsArgsBuilder filter(String filter) {
@@ -146,6 +153,11 @@ public class GetPartitionsArgs {
       return this;
     }
 
+    public GetPartitionsArgsBuilder order(String order) {
+      this.order = order;
+      return this;
+    }
+
     public GetPartitionsArgsBuilder groupNames(List<String> groupNames) {
       this.groupNames = groupNames;
       return this;
@@ -179,6 +191,7 @@ public class GetPartitionsArgs {
       additionalArgs.includeParamKeyPattern = includeParamKeyPattern;
       additionalArgs.excludeParamKeyPattern = excludeParamKeyPattern;
       additionalArgs.skipColumnSchemaForPartition = skipColumnSchemaForPartition;
+      additionalArgs.order = order;
       return additionalArgs;
     }
   }
