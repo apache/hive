@@ -219,7 +219,10 @@ public class TestMetaStoreEventListener {
     Database db = msc.getDatabase(dbName);
     assertEquals(listSize, notifyList.size());
     assertEquals(listSize + 1, preNotifyList.size());
-    validateCreateDb(db, preDbEvent.getDatabase());
+    // The location uri in preDbEvent.getDatabase() is null as "skipAuthorization" is true.
+    Database expectedDb = new Database(db);
+    expectedDb.setLocationUri(null);
+    validateCreateDb(expectedDb, preDbEvent.getDatabase());
 
     CreateDatabaseEvent dbEvent = (CreateDatabaseEvent)(notifyList.get(listSize - 1));
     Assert.assertTrue(dbEvent.getStatus());

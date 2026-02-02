@@ -187,7 +187,8 @@ public class AddPartitionsHandler
                   new long[0], new BitSet(), writeId);
           validWriteIds = validWriteIdList.toString();
         }
-        SetPartitionsStatsRequest setPartitionsStatsRequest = new SetPartitionsStatsRequest(Arrays.asList(partColStats));
+        SetPartitionsStatsRequest setPartitionsStatsRequest =
+            new SetPartitionsStatsRequest(Arrays.asList(partColStats));
         setPartitionsStatsRequest.setWriteId(writeId);
         setPartitionsStatsRequest.setValidWriteIdList(validWriteIds);
         setPartitionsStatsRequest.setNeedMerge(false);

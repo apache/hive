@@ -86,12 +86,10 @@ public class SetAggrStatsHandler
       this.dbName = normalizeIdentifier(statsDesc.getDbName());
       this.tableName = normalizeIdentifier(statsDesc.getTableName());
       this.t = ms.getTable(catName, dbName, tableName);
-      if (statsDesc.isIsTblLevel()) {
+      if (statsDesc.isIsTblLevel() && request.getColStatsSize() != 1) {
         // there should be only one ColumnStatistics
-        if (request.getColStatsSize() != 1) {
-          throw new MetaException(
-              "Expecting only 1 ColumnStatistics for table's column stats, but find " + request.getColStatsSize());
-        }
+        throw new MetaException(
+            "Expecting only 1 ColumnStatistics for table's column stats, but find " + request.getColStatsSize());
       }
     }
   }
@@ -400,7 +398,7 @@ public class SetAggrStatsHandler
     return parameters != null;
   }
 
-  private void normalizeColStatsInput(ColumnStatistics colStats) throws MetaException {
+  private void normalizeColStatsInput(ColumnStatistics colStats) {
     // TODO: is this really needed? this code is propagated from HIVE-1362 but most of it is useless.
     ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
     statsDesc.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName().toLowerCase() : getDefaultCatalog(conf));
@@ -421,8 +419,8 @@ public class SetAggrStatsHandler
   private void updatePartitionColStatsForOneBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
       String validWriteIds, long writeId)
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    Map<String, Map<String, String>> result =
-        ms.updatePartitionColumnStatisticsInBatch(statsMap, tbl, handler.getTransactionalListeners(), validWriteIds, writeId);
+    Map<String, Map<String, String>> result = ms.updatePartitionColumnStatisticsInBatch(statsMap, tbl,
+        handler.getTransactionalListeners(), validWriteIds, writeId);
     if (result != null && result.size() != 0 && handler.getListeners() != null) {
       // The normal listeners, unlike transaction listeners are not using the same transactions used by the update
       // operations. So there is no need of keeping them within the same transactions. If notification to one of

@@ -114,8 +114,8 @@ public class CreateDatabaseHandler
             if (madeManagedDir) {
               LOG.info("Created database path in managed directory {}", dbMgdPath);
             } else if (!isInTest || !isDbReplicationTarget(db)) { // Hive replication tests doesn't drop the db after each test
-              throw new MetaException(
-                  "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
+              throw new MetaException("Unable to create database managed directory " + dbMgdPath +
+                  ", failed to create database " + db.getName());
             }
           } catch (IOException | InterruptedException e) {
             throw new MetaException(
@@ -211,7 +211,7 @@ public class CreateDatabaseHandler
       throw new InvalidObjectException("No such catalog " + catalogName);
     }
 
-    db = new Database(name, request.getDescription(), request.getLocationUri() ,request.getParameters());
+    db = new Database(name, request.getDescription(), request.getLocationUri(), request.getParameters());
     db.setPrivileges(request.getPrivileges());
     db.setOwnerName(request.getOwnerName());
     db.setOwnerType(request.getOwnerType());
