@@ -129,8 +129,7 @@ public interface HiveOperationsBase {
             (TableType.MANAGED_TABLE.name().equalsIgnoreCase(table.getTableType()) ||
                     TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(table.getTableType())) &&
                     BaseMetastoreTableOperations.ICEBERG_TABLE_TYPE_VALUE.equalsIgnoreCase(tableTypeProp) ||
-                    (TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType()) ||
-                        TableType.EXTERNAL_MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType())) &&
+                    (TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType())) &&
                         ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableTypeProp),
             "Not an iceberg table: %s (type=%s) (tableType=%s)",
             fullName,
@@ -142,8 +141,7 @@ public interface HiveOperationsBase {
     String tableTypeProp = table.getParameters().get(BaseMetastoreTableOperations.TABLE_TYPE_PROP);
     NoSuchIcebergViewException.check(
             (TableType.VIRTUAL_VIEW.name().equalsIgnoreCase(table.getTableType()) ||
-                    TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType()) ||
-                    TableType.EXTERNAL_MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType())) &&
+                    TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(table.getTableType())) &&
                     ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableTypeProp),
         "Not an iceberg view: %s (type=%s) (tableType=%s)",
         fullName,

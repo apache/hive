@@ -59,10 +59,12 @@ POSTHOOK: Input: database:default
 mat1
 mat1_storage_table
 tbl_ice
-PREHOOK: query: show materialized views
+PREHOOK: query: SHOW MATERIALIZED VIEWS
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
-POSTHOOK: query: show materialized views
+POSTHOOK: query: SHOW MATERIALIZED VIEWS
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+mat1                	Yes                 	Manual refresh      	Available for insert operations only
 PREHOOK: query: show create table mat1
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@mat1
@@ -91,7 +93,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
 #### A masked pattern was here ####
-  'uuid'='412e57eb-e7c9-46e6-b694-8a9c48e3dcac')
+  'uuid'='4b1d3203-72b8-437c-8aa6-22d99a50e4e4')
 PREHOOK: query: describe formatted mat1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mat1
@@ -107,7 +109,7 @@ Database:           	default
 #### A masked pattern was here ####
 Retention:          	0                   	 
 #### A masked pattern was here ####
-Table Type:         	EXTERNAL_MATERIALIZED_VIEW	 
+Table Type:         	MATERIALIZED_VIEW   	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"c\",\"required\":false,\"type\":\"int\"}]}
@@ -121,7 +123,7 @@ Table Parameters:
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
-	uuid                	412e57eb-e7c9-46e6-b694-8a9c48e3dcac
+	uuid                	4b1d3203-72b8-437c-8aa6-22d99a50e4e4
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -138,7 +140,7 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=6876800602859985068}	 
+default.tbl_ice     	SnapshotContext{snapshotId=4555493286211681372}	 
 PREHOOK: query: drop materialized view mat1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mat1
@@ -147,27 +149,20 @@ POSTHOOK: query: drop materialized view mat1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mat1
 POSTHOOK: Output: default@mat1
-PREHOOK: query: select 1
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: select 1
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-1
-PREHOOK: query: create materialized view mat1_orc stored as orc tblproperties ('format-version'='1') as
+PREHOOK: query: create materialized view mat1_orc stored by iceberg stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@tbl_ice
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat1_orc
-POSTHOOK: query: create materialized view mat1_orc stored as orc tblproperties ('format-version'='1') as
+#### A masked pattern was here ####
+POSTHOOK: query: create materialized view mat1_orc stored by iceberg stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@tbl_ice
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat1_orc
+#### A masked pattern was here ####
 POSTHOOK: Lineage: mat1_orc.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
 POSTHOOK: Lineage: mat1_orc.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
 PREHOOK: query: select * from mat1_orc
@@ -190,17 +185,25 @@ CREATE TABLE `mat1_orc`(
   `b` string, 
   `c` int)
 ROW FORMAT SERDE 
-  'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
+  'org.apache.iceberg.mr.hive.HiveIcebergSerDe' 
+STORED BY 
+  'org.apache.iceberg.mr.hive.HiveIcebergStorageHandler' 
+
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'bucketing_version'='2', 
+  'current-schema'='{"type":"struct","schema-id":0,"fields":[{"id":1,"name":"b","required":false,"type":"string"},{"id":2,"name":"c","required":false,"type":"int"}]}', 
   'format-version'='1', 
+  'iceberg.materialized.view'='true', 
+  'iceberg.materialized.view.original.text'='select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52', 
+  'iceberg.materialized.view.storage.table'='default.mat1_orc_storage_table', 
+  'iceberg.orc.files.only'='true', 
+  'max-staleness-ms'='1000', 
 #### A masked pattern was here ####
+  'table_type'='ICEBERG-VIEW', 
+#### A masked pattern was here ####
+  'uuid'='c23e0a1c-f058-43c1-a579-e949a8b0076f')
 PREHOOK: query: explain show create table mat1_orc
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@mat1_orc
@@ -255,3 +258,126 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: describe formatted mat1_orc
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mat1_orc
+POSTHOOK: query: describe formatted mat1_orc
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mat1_orc
+# col_name            	data_type           	comment             
+b                   	string              	                    
+c                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"b\",\"required\":false,\"type\":\"string\"},{\"id\":2,\"name\":\"c\",\"required\":false,\"type\":\"int\"}]}
+	format-version      	1                   
+	iceberg.materialized.view	true                
+	iceberg.materialized.view.original.text	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+	iceberg.materialized.view.storage.table	default.mat1_orc_storage_table
+	iceberg.orc.files.only	true                
+	max-staleness-ms    	1000                
+#### A masked pattern was here ####
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG-VIEW        
+#### A masked pattern was here ####
+	uuid                	c23e0a1c-f058-43c1-a579-e949a8b0076f
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
+Expanded Query:     	select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+default.tbl_ice     	SnapshotContext{snapshotId=4555493286211681372}	 
+PREHOOK: query: insert into tbl_ice values (6, 'six', 60)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice
+POSTHOOK: query: insert into tbl_ice values (6, 'six', 60)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice
+PREHOOK: query: select * from mat1_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mat1_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1_orc
+#### A masked pattern was here ####
+five	54
+four	53
+PREHOOK: query: select 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: alter materialized view mat1_orc rebuild
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: default@mat1_orc
+POSTHOOK: query: alter materialized view mat1_orc rebuild
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: default@mat1_orc
+PREHOOK: query: select * from mat1_orc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1_orc
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mat1_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1_orc
+#### A masked pattern was here ####
+five	54
+four	53
+six	60
+PREHOOK: query: select 1
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: create materialized view mat2_orc stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat2_orc
+POSTHOOK: query: create materialized view mat2_orc stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat2_orc
+POSTHOOK: Lineage: mat2_orc.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat2_orc.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: SHOW MATERIALIZED VIEWS
+PREHOOK: type: SHOWMATERIALIZEDVIEWS
+POSTHOOK: query: SHOW MATERIALIZED VIEWS
+POSTHOOK: type: SHOWMATERIALIZEDVIEWS
+# MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+mat1_orc            	Yes                 	Manual refresh      	Available for insert operations only
+mat2_orc            	Yes                 	Manual refresh      	Available for insert operations only
