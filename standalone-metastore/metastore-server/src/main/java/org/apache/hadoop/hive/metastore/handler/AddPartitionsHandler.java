@@ -76,8 +76,9 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.canUpd
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+@RequestHandler(requestBody = AddPartitionsRequest.class)
 public class AddPartitionsHandler
-    extends AbstractOperationHandler<AddPartitionsRequest, AddPartitionsHandler.AddPartitionsResult> {
+    extends AbstractRequestHandler<AddPartitionsRequest, AddPartitionsHandler.AddPartitionsResult> {
   private TableName tableName;
   private Table table;
   private Database db;
@@ -541,7 +542,7 @@ public class AddPartitionsHandler
   }
 
   @Override
-  protected String getProgress() {
+  protected String getRequestProgress() {
     return "Adding partitions";
   }
 

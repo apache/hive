@@ -60,6 +60,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.AcidMetricService;
 import org.apache.hadoop.hive.metastore.txn.entities.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
@@ -71,6 +72,7 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.RecordUpdater;
+import org.apache.hadoop.hive.ql.testutil.TxnStoreHelper;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -100,7 +102,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -138,14 +139,14 @@ public abstract class CompactorTest {
   protected final void setup(HiveConf conf) throws Exception {
     this.conf = conf;
     fs = FileSystem.get(conf);
-    MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_ON, true);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEANER_ON, true);
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, useMinHistoryWriteId());
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS,
+    MetastoreConf.setTimeVar(conf, ConfVars.TXN_OPENTXN_TIMEOUT, 2, TimeUnit.SECONDS);
+    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_INITIATOR_ON, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEANER_ON, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_WRITE_ID, useMinHistoryWriteId());
+    MetastoreConf.setVar(conf, ConfVars.COMPACTOR_INITIATOR_TABLE_OPTIMIZERS,
         "org.apache.hadoop.hive.ql.txn.compactor.AcidTableOptimizer");
     // Set this config to true in the base class, there are extended test classes which set this config to false.
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
+    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, true);
     TestTxnDbUtil.setConfValues(conf);
     TestTxnDbUtil.cleanDb(conf);
     TestTxnDbUtil.prepDb(conf);
@@ -256,19 +257,16 @@ public abstract class CompactorTest {
     rqst.setTxn_type(txnType);
     if (txnType == TxnType.REPL_CREATED) {
       rqst.setReplPolicy("default.*");
-      rqst.setReplSrcTxnIds(Arrays.asList(1L));
+      rqst.setReplSrcTxnIds(List.of(1L));
     }
     List<Long> txns = txnHandler.openTxns(rqst).getTxn_ids();
-    return txns.get(0);
+    return txns.getFirst();
   }
 
   protected long allocateWriteId(String dbName, String tblName, long txnid)
           throws MetaException, TxnAbortedException, NoSuchTxnException {
-    AllocateTableWriteIdsRequest awiRqst
-            = new AllocateTableWriteIdsRequest(dbName, tblName);
-    awiRqst.setTxnIds(Collections.singletonList(txnid));
-    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
-    return awiResp.getTxnToWriteIds().get(0).getWriteId();
+    return TxnStoreHelper.wrap(txnHandler)
+        .allocateTableWriteId(dbName, tblName, txnid);
   }
 
   protected void addDeltaFileWithTxnComponents(Table t, Partition p, int numRecords, boolean abort)
@@ -292,7 +290,7 @@ public abstract class CompactorTest {
             .setTableName(t.getTableName())
             .setIsTransactional(true);
     if (p != null) {
-      lockCompBuilder.setPartitionName(t.getPartitionKeys().get(0).getName() + "=" + p.getValues().get(0));
+      lockCompBuilder.setPartitionName(t.getPartitionKeys().getFirst().getName() + "=" + p.getValues().getFirst());
     }
     LockRequestBuilder requestBuilder = new LockRequestBuilder().setUser(null)
             .setTransactionId(txnId).addLockComponent(lockCompBuilder.build());
@@ -338,14 +336,14 @@ public abstract class CompactorTest {
   }
 
   protected List<Path> getDirectories(HiveConf conf, Table t, Partition p) throws Exception {
-    String partValue = (p == null) ? null : p.getValues().get(0);
+    String partValue = (p == null) ? null : p.getValues().getFirst();
     String location = getLocation(t.getTableName(), partValue);
     Path dir = new Path(location);
     FileSystem fs = FileSystem.get(conf);
     FileStatus[] stats = fs.listStatus(dir);
-    List<Path> paths = new ArrayList<Path>(stats.length);
-    for (int i = 0; i < stats.length; i++) {
-      paths.add(stats[i].getPath());
+    List<Path> paths = new ArrayList<>(stats.length);
+    for (FileStatus stat : stats) {
+      paths.add(stat.getPath());
     }
     return paths;
   }
@@ -394,13 +392,9 @@ public abstract class CompactorTest {
     }
   }
 
-  protected void stopThread() {
-    stop.set(true);
-  }
-
   private StorageDescriptor newStorageDescriptor(String location, List<Order> sortCols) {
     StorageDescriptor sd = new StorageDescriptor();
-    List<FieldSchema> cols = new ArrayList<FieldSchema>(2);
+    List<FieldSchema> cols = new ArrayList<>(2);
     cols.add(new FieldSchema("a", "varchar(25)", "still no comment"));
     cols.add(new FieldSchema("b", "int", "comment"));
     sd.setCols(cols);
@@ -411,7 +405,7 @@ public abstract class CompactorTest {
     SerDeInfo serde = new SerDeInfo();
     serde.setSerializationLib(LazySimpleSerDe.class.getName());
     sd.setSerdeInfo(serde);
-    List<String> bucketCols = new ArrayList<String>(1);
+    List<String> bucketCols = new ArrayList<>(1);
     bucketCols.add("a");
     sd.setBucketCols(bucketCols);
 
@@ -424,13 +418,14 @@ public abstract class CompactorTest {
   // I can't do this with @Before because I want to be able to control when the thread starts
   private void runOneLoopOfCompactorThread(CompactorThreadType type) throws Exception {
     TestTxnDbUtil.setConfValues(conf);
-    CompactorThread t;
-    switch (type) {
-      case INITIATOR: t = new Initiator(); break;
-      case WORKER: t = new Worker(); break;
-      case CLEANER: t = new Cleaner(); break;
-      default: throw new RuntimeException("Huh? Unknown thread type.");
-    }
+
+    CompactorThread t = switch (type) {
+      case INITIATOR -> new Initiator();
+      case WORKER -> new Worker();
+      case CLEANER -> new Cleaner();
+      case null ->
+          throw new IllegalStateException("Unexpected type: " + type);
+    };
     t.setConf(conf);
     stop.set(true);
     t.init(stop);
@@ -445,7 +440,12 @@ public abstract class CompactorTest {
     return tblLocation.toString();
   }
 
-  private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE}
+  private enum FileType {
+    BASE,
+    DELTA,
+    LEGACY,
+    LENGTH_FILE
+  }
 
   private void addFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords, FileType type, int numBuckets,
       boolean allBucketsPresent) throws Exception {
@@ -454,14 +454,19 @@ public abstract class CompactorTest {
 
   private void addFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords, FileType type, int numBuckets,
       boolean allBucketsPresent, long visibilityId) throws Exception {
-    String partValue = (p == null) ? null : p.getValues().get(0);
+    String partValue = (p == null) ? null : p.getValues().getFirst();
     Path location = new Path(getLocation(t.getTableName(), partValue));
     String filename = null;
+
     switch (type) {
-      case BASE: filename = AcidUtils.addVisibilitySuffix(AcidUtils.BASE_PREFIX + maxTxn, visibilityId); break;
-      case LENGTH_FILE: // Fall through to delta
-      case DELTA: filename = AcidUtils.addVisibilitySuffix(makeDeltaDirName(minTxn, maxTxn),visibilityId); break;
-      case LEGACY: break; // handled below
+      case BASE -> filename = AcidUtils.addVisibilitySuffix(AcidUtils.BASE_PREFIX + maxTxn, visibilityId);
+      case LENGTH_FILE, // Fall through to delta
+           DELTA -> filename = AcidUtils.addVisibilitySuffix(makeDeltaDirName(minTxn, maxTxn), visibilityId);
+      case LEGACY -> {
+        // handled below
+      }
+      case null, default ->
+          throw new IllegalStateException("Unexpected type: " + type);
     }
 
     FileSystem fs = FileSystem.get(conf);
@@ -469,7 +474,7 @@ public abstract class CompactorTest {
       if (bucket == 0 && !allBucketsPresent) {
         continue; // skip one
       }
-      Path partFile = null;
+      Path partFile;
       if (type == FileType.LEGACY) {
         partFile = new Path(location, String.format(AcidUtils.LEGACY_FILE_BUCKET_DIGITS, bucket) + "_0");
       } else {
@@ -477,7 +482,7 @@ public abstract class CompactorTest {
         fs.mkdirs(dir);
         partFile = AcidUtils.createBucketFile(dir, bucket);
         if (type == FileType.LENGTH_FILE) {
-          partFile = new Path(partFile.toString() + AcidUtils.DELTA_SIDE_FILE_SUFFIX);
+          partFile = new Path(partFile + AcidUtils.DELTA_SIDE_FILE_SUFFIX);
         }
       }
       FSDataOutputStream out = fs.create(partFile);
@@ -497,9 +502,7 @@ public abstract class CompactorTest {
   static class MockInputFormat implements AcidInputFormat<WritableComparable,Text> {
 
     @Override
-    public AcidInputFormat.RowReader<Text> getReader(InputSplit split,
-                                                          Options options) throws
-        IOException {
+    public AcidInputFormat.RowReader<Text> getReader(InputSplit split, Options options) {
       return null;
     }
 
@@ -508,7 +511,7 @@ public abstract class CompactorTest {
                                         ValidWriteIdList validWriteIdList,
                                         Path baseDirectory, Path[] deltaDirectory, Map<String, Integer> deltaToAttemptId) throws IOException {
 
-      List<Path> filesToRead = new ArrayList<Path>();
+      List<Path> filesToRead = new ArrayList<>();
       if (baseDirectory != null) {
         if (baseDirectory.getName().startsWith(AcidUtils.BASE_PREFIX)) {
           Path p = AcidUtils.createBucketFile(baseDirectory, bucket);
@@ -521,8 +524,8 @@ public abstract class CompactorTest {
 
         }
       }
-      for (int i = 0; i < deltaDirectory.length; i++) {
-        Path p = AcidUtils.createBucketFile(deltaDirectory[i], bucket);
+      for (Path path : deltaDirectory) {
+        Path p = AcidUtils.createBucketFile(path, bucket);
         FileSystem fs = p.getFileSystem(conf);
         if (fs.exists(p)) {
           filesToRead.add(p);
@@ -543,25 +546,22 @@ public abstract class CompactorTest {
     }
 
     @Override
-    public boolean validateInput(FileSystem fs, HiveConf conf, List<FileStatus> files) throws
-        IOException {
+    public boolean validateInput(FileSystem fs, HiveConf conf, List<FileStatus> files) {
       return false;
     }
   }
 
   static class MockRawReader implements AcidInputFormat.RawReader<Text> {
     private final Stack<Path> filesToRead;
-    private final Configuration conf;
     private FSDataInputStream is = null;
     private final FileSystem fs;
     private boolean lastWasDelete = true;
 
     MockRawReader(Configuration conf, List<Path> files) throws IOException {
-      filesToRead = new Stack<Path>();
+      filesToRead = new Stack<>();
       for (Path file : files) {
         filesToRead.push(file);
       }
-      this.conf = conf;
       fs = FileSystem.get(conf);
     }
 
@@ -599,7 +599,7 @@ public abstract class CompactorTest {
       try {
         identifier.readFields(is);
         line = is.readLine();
-      } catch (EOFException e) {
+      } catch (EOFException ignored) {
       }
       if (line == null) {
         // Set our current entry to null (since it's done) and try again.
@@ -642,8 +642,7 @@ public abstract class CompactorTest {
   static class MockOutputFormat implements AcidOutputFormat<WritableComparable, Text> {
 
     @Override
-    public RecordUpdater getRecordUpdater(Path path, Options options) throws
-        IOException {
+    public RecordUpdater getRecordUpdater(Path path, Options options) {
       return null;
     }
 
@@ -656,7 +655,7 @@ public abstract class CompactorTest {
     public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
                                               Class<? extends Writable> valueClass,
                                               boolean isCompressed, Properties tableProperties,
-                                              Progressable progress) throws IOException {
+                                              Progressable progress) {
       return null;
     }
 
@@ -728,32 +727,68 @@ public abstract class CompactorTest {
     return AcidUtils.deleteDeltaSubdir(minTxnId, maxTxnId);
   }
 
+  enum CommitAction {
+    COMMIT,
+    ABORT,
+    MARK_COMPACTED,
+    NONE
+  }
+
   protected long compactInTxn(CompactionRequest rqst) throws Exception {
+    return compactInTxn(rqst, CommitAction.COMMIT);
+  }
+
+  long compactInTxn(CompactionRequest rqst, CommitAction commitAction) throws Exception {
     txnHandler.compact(rqst);
+
     FindNextCompactRequest findNextCompactRequest = new FindNextCompactRequest();
     findNextCompactRequest.setWorkerId("fred");
     findNextCompactRequest.setWorkerVersion(WORKER_VERSION);
+
     CompactionInfo ci = txnHandler.findNextToCompact(findNextCompactRequest);
     ci.runAs = rqst.getRunas() == null ? System.getProperty("user.name") : rqst.getRunas();
+
     long compactorTxnId = openTxn(TxnType.COMPACTION);
+
     // Need to create a valid writeIdList to set the highestWriteId in ci
-    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), compactorTxnId);
-    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest();
+    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(
+        txnHandler.getOpenTxns(Collections.singletonList(TxnType.READ_ONLY)), compactorTxnId);
+
+    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest(
+        Collections.singletonList(
+            ci.getFullTableName().toLowerCase()));
     writeIdsRequest.setValidTxnList(validTxnList.writeToString());
-    writeIdsRequest
-        .setFullTableNames(Collections.singletonList(TxnUtils.getFullTableName(rqst.getDbname(), rqst.getTablename())));
+
     // with this ValidWriteIdList is capped at whatever HWM validTxnList has
-    ValidCompactorWriteIdList tblValidWriteIds = TxnUtils
-        .createValidCompactWriteIdList(txnHandler.getValidWriteIds(writeIdsRequest).getTblValidWriteIds().get(0));
+    ValidCompactorWriteIdList tblValidWriteIds = TxnUtils.createValidCompactWriteIdList(
+        txnHandler.getValidWriteIds(writeIdsRequest).getTblValidWriteIds()
+            .getFirst());
 
     ci.highestWriteId = tblValidWriteIds.getHighWatermark();
     txnHandler.updateCompactorState(ci, compactorTxnId);
-    txnHandler.markCompacted(ci);
-    txnHandler.commitTxn(new CommitTxnRequest(compactorTxnId));
-    Thread.sleep(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+
+    switch (commitAction) {
+      case MARK_COMPACTED ->
+        txnHandler.markCompacted(ci);
+
+      case COMMIT -> {
+        txnHandler.markCompacted(ci);
+        txnHandler.commitTxn(new CommitTxnRequest(compactorTxnId));
+
+        Thread.sleep(MetastoreConf.getTimeVar(
+            conf, ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+      }
+      case ABORT ->
+          txnHandler.abortTxn(new AbortTxnRequest(compactorTxnId));
+
+      case NONE -> {
+        // do nothing
+      }
+      case null, default ->
+          throw new IllegalStateException("Unexpected commitAction: " + commitAction);
+    }
     return compactorTxnId;
   }
-
 
   protected static Map<String, Integer> gaugeToMap(String metric) throws Exception {
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();

@@ -37,15 +37,34 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Parameterized.class)
 public class TestCleanerWithReplication extends CompactorTest {
+
   private Path cmRootDirectory;
   private static MiniDFSCluster miniDFSCluster;
   private final String dbName = "TestCleanerWithReplication";
+
+  private final boolean useMinHistoryWriteId;
+
+  public TestCleanerWithReplication(boolean useMinHistoryWriteId) {
+    this.useMinHistoryWriteId = useMinHistoryWriteId;
+  }
+
+  @Parameters(name = "useMinHistoryWriteId={0}")
+  public static Collection<Object[]> parameters() {
+    return Arrays.asList(
+        new Object[][]{{true}, {false}});
+  }
 
   @Before
   public void setup() throws Exception {
@@ -61,6 +80,11 @@ public class TestCleanerWithReplication extends CompactorTest {
     db.putToParameters(SOURCE_OF_REPLICATION, "1,2,3");
     db.setName(dbName);
     ms.createDatabase(db);
+  }
+
+  @Override
+  protected boolean useMinHistoryWriteId() {
+    return useMinHistoryWriteId;
   }
 
   @BeforeClass

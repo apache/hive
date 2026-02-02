@@ -15,23 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.txn.compactor;
 
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import org.junit.jupiter.api.BeforeEach;
+package org.apache.hadoop.hive.metastore.handler;
 
-public class TestAbortCleanupUsingCompactionCycleWithMinHistoryWriteId extends TestCleaner {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-  @BeforeEach
-  @Override
-  public void setup() throws Exception {
-    super.setup();
-    MetastoreConf.setBoolVar(conf, ConfVars.COMPACTOR_CLEAN_ABORTS_USING_CLEANER, false);
-  }
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.thrift.TBase;
 
-  @Override
-  protected boolean useMinHistoryWriteId() {
-    return true;
-  }
+@InterfaceStability.Evolving
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RequestHandler {
+  Class<? extends TBase> requestBody();
+  boolean supportAsync() default false;
+  String id() default "getId";
+  String cancel() default "isCancel";
+  String metricAlias() default "";
 }

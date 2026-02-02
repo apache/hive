@@ -88,7 +88,8 @@ public class TxnUtils {
         if (isAbortCleanup) {
           exceptions[i] = txnId;
         } else {
-          assert false : JavaUtils.txnIdToString(txnId) + " is open and <= hwm:" + highWatermark;
+          throw new IllegalStateException(
+              JavaUtils.txnIdToString(txnId) + " is open and <= hwm: " + highWatermark);
         }
       }
       ++i;

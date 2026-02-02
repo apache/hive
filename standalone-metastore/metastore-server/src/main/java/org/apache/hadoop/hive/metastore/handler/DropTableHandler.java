@@ -56,14 +56,16 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isMust
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+@RequestHandler(requestBody = DropTableRequest.class, supportAsync = true, metricAlias = "drop_table_req")
 public class DropTableHandler
-    extends AbstractOperationHandler<DropTableRequest, DropTableHandler.DropTableResult> {
+    extends AbstractRequestHandler<DropTableRequest, DropTableHandler.DropTableResult> {
   private static final Logger LOG = LoggerFactory.getLogger(DropTableHandler.class);
   private Table tbl;
   private Path tblPath;
   private TableName tableName;
   private boolean tableDataShouldBeDeleted;
   private AtomicReference<String> progress;
+  private RawStore ms;
 
   DropTableHandler(IHMSHandler handler, DropTableRequest request) {
     super(handler, request.isAsyncDrop(), request);
@@ -73,9 +75,8 @@ public class DropTableHandler
     boolean success = false;
     List<Path> partPaths = null;
     Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    Database db = null;
+    Database db;
     boolean isReplicated = false;
-    RawStore ms = handler.getMS();
     try {
       ms.openTransaction();
       String catName = tableName.getCat();
@@ -145,6 +146,7 @@ public class DropTableHandler
     String name = normalizeIdentifier(request.getTableName());
     String dbname = normalizeIdentifier(request.getDbName());
     tableName = new TableName(catName, dbname, name);
+    this.ms = handler.getMS();
     progress = new AtomicReference<>("Starting to drop the table: " + tableName);
     GetTableRequest req = new GetTableRequest(tableName.getDb(), tableName.getTable());
     req.setCatName(tableName.getCat());
@@ -179,7 +181,7 @@ public class DropTableHandler
   }
 
   @Override
-  public String getProgress() {
+  public String getRequestProgress() {
     if (progress == null) {
       return getMessagePrefix() + " hasn't started yet";
     }
@@ -187,7 +189,7 @@ public class DropTableHandler
   }
 
   @Override
-  protected void afterExecute(DropTableResult result) throws MetaException, IOException {
+  protected void afterExecute(DropTableResult result) throws TException, IOException {
     try {
       if (result != null && result.success() &&
           result.tableDataShouldBeDeleted()) {
@@ -196,6 +198,8 @@ public class DropTableHandler
         // Data needs deletion. Check if trash may be skipped.
         // Delete the data in the partitions which have other locations
         List<Path> pathsToDelete = new ArrayList<>();
+        progress.set(String.format("Deleting %d partition paths from the table",
+            result.partPaths != null ? result.partPaths.size() : 0));
         if (result.partPaths != null) {
           pathsToDelete.addAll(result.partPaths);
         }
@@ -206,6 +210,10 @@ public class DropTableHandler
       }
     } finally {
       super.afterExecute(result);
+      if (async) {
+        ms.shutdown();
+      }
+      ms = null;
       tbl = null;
     }
   }
@@ -242,11 +250,6 @@ public class DropTableHandler
     } catch (Exception e) {
       LOG.error("Failed to delete directory: {}", path, e);
     }
-  }
-
-  @Override
-  protected String getHandlerAlias() {
-    return "drop_table_req";
   }
 
   public record DropTableResult(Path tablePath,

@@ -271,12 +271,17 @@ class CompactionTxnHandler extends TxnHandler {
   public void revokeTimedoutWorkers(long timeout) throws MetaException {
     long latestValidStart = getDbTime().getTime() - timeout;
     jdbcResource.execute(
-        "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, " +
-            "\"CQ_STATE\" = :initiatedState WHERE \"CQ_STATE\" = :workingState AND \"CQ_START\" < :timeout",
+        "UPDATE \"COMPACTION_QUEUE\" " +
+        "SET \"CQ_WORKER_ID\" = NULL, \"CQ_START\" = NULL, \"CQ_STATE\" = :initiatedState " +
+        "WHERE \"CQ_STATE\" = :workingState AND \"CQ_START\" < :timeout AND (" +
+            "\"CQ_TXN_ID\" IS NULL OR " +
+            "\"CQ_TXN_ID\" NOT IN (SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = :openState)" +
+        ")",
         new MapSqlParameterSource()
             .addValue("initiatedState", Character.toString(INITIATED_STATE), Types.CHAR)
             .addValue("workingState", Character.toString(WORKING_STATE), Types.CHAR)
-            .addValue("timeout", latestValidStart),
+            .addValue("timeout", latestValidStart)
+            .addValue("openState", TxnStatus.OPEN.getSqlConst(), Types.CHAR),
         null);
   }
 
@@ -456,7 +461,8 @@ class CompactionTxnHandler extends TxnHandler {
                 .addValue("type", Character.toString(thriftCompactionType2DbType(info.type)))
                 .addValue("state", Character.toString(info.state))
                 .addValue("retention", info.retryRetention)
-                .addValue("msg", info.errorMessage), null);
+                .addValue("msg", info.errorMessage),
+            null);
         if (updCnt == 0) {
           LOG.error("Unable to update/insert compaction queue record: {}. updCnt={}", info, updCnt);
           throw new MetaException("Unable to insert abort retry entry into COMPACTION QUEUE: " +
