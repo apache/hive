@@ -86,6 +86,7 @@ alterTableStatementSuffix
     | alterStatementSuffixReplaceBranch
     | alterStatementSuffixReplaceTag
     | alterStatementSuffixSetWriteOrder
+    | alterStatementSuffixDropStatsForColumns
     ;
 
 alterTblPartitionStatementSuffix[boolean partition]
@@ -106,7 +107,6 @@ alterTblPartitionStatementSuffix[boolean partition]
   | alterStatementSuffixAddCol
   | alterStatementSuffixDropCol
   | alterStatementSuffixUpdateColumns
-  | alterStatementSuffixDropStatsCol[partition]
   ;
 
 optimizeTableStatementSuffix
@@ -286,12 +286,11 @@ alterStatementSuffixUpdateStats[boolean partition]
     ->              ^(TOK_ALTERTABLE_UPDATESTATS tableProperties)
     ;
 
-alterStatementSuffixDropStatsCol[boolean partition]
-@init { gParent.pushMsg("drop column statistics", state); }
+alterStatementSuffixDropStatsForColumns
+@init { gParent.pushMsg("drop statistics for columns", state); }
 @after { gParent.popMsg(state); }
-    : KW_DROP KW_STATISTICS KW_FOR KW_COLUMNS colNames=columnNameList?
-    -> {partition}? ^(TOK_ALTERPARTITION_DROPCOLSTATS $colNames?)
-    ->              ^(TOK_ALTERTABLE_DROPCOLSTATS $colNames?)
+    : KW_DROP KW_STATISTICS KW_FOR KW_COLUMNS
+    -> ^(TOK_ALTERTABLE_DROPCOLSTATS)
     ;
 
 alterStatementChangeColPosition
@@ -798,18 +797,5 @@ alterForeignKeyWithName
 @after { gParent.popMsg(state); }
     : KW_CONSTRAINT constraintName=identifier KW_FOREIGN KW_KEY fkCols=columnParenthesesList  KW_REFERENCES tabName=tableName parCols=columnParenthesesList constraintOptsAlter?
     -> ^(TOK_FOREIGN_KEY ^(TOK_CONSTRAINT_NAME $constraintName) $fkCols $tabName $parCols constraintOptsAlter?)
-    ;
-
-columnNameList
-@init { gParent.pushMsg("column name list", state); }
-@after { gParent.popMsg(state); }
-    : columnName (COMMA columnName)* -> ^(TOK_TABCOLNAME columnName+)
-    ;
-
-columnName
-@init { gParent.pushMsg("column name", state); }
-@after { gParent.popMsg(state); }
-    :
-      identifier
     ;
 

@@ -6332,18 +6332,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
   
-  public void deleteColumnStatistics(String dbName, String tableName, String partName, List<String> colNames)
-    throws HiveException {
+  public void deleteColumnStatistics(String dbName, String tableName) throws HiveException {
     DeleteColumnStatisticsRequest request = new DeleteColumnStatisticsRequest(dbName, tableName);
-    
-    if (partName != null) {
-      request.addToPart_names(partName);
-    }
-    if (colNames != null && !colNames.isEmpty()) {
-      request.setCol_names(colNames);
-    }
     request.setEngine(Constants.HIVE_ENGINE);
-    
     try {
       getMSC().deleteColumnStatistics(request);
     } catch (Exception e) {

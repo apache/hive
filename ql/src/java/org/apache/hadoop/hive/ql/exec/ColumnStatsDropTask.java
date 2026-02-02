@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.Serial;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsDropWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -25,25 +26,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ColumnStatsDropTask implementation. Examples:
- * ALTER TABLE src_stat DROP STATISTICS for columns [comma separated list of columns];
- * ALTER TABLE src_stat_part PARTITION(partitionId=100) DROP STATISTICS for columns [comma separated list of columns];
+ * ColumnStatsDropTask implementation. Example:
+ * ALTER TABLE src_stat DROP STATISTICS for columns;
  **/
 
 public class ColumnStatsDropTask extends Task<ColumnStatsDropWork> {
+  @Serial
   private static final long serialVersionUID = 1L;
   private static final Logger LOG = LoggerFactory.getLogger(ColumnStatsDropTask.class);
 
   @Override
   public int execute() {
     try {
-      getHive()
-          .deleteColumnStatistics(work.getDbName(), work.getTableName(), work.getPartName(), work.getColNames());
+      getHive().deleteColumnStatistics(work.dbName(), work.tableName());
       return 0;
     } catch (Exception e) {
       setException(e);
       LOG.info("Failed to drop column stats in metastore", e);
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      return ErrorMsg.GENERIC_ERROR.getErrorCode();
     }
   }
 
@@ -54,6 +54,6 @@ public class ColumnStatsDropTask extends Task<ColumnStatsDropWork> {
 
   @Override
   public String getName() {
-    return "COLUMN STATS DELETE TASK";
+    return "COLUMN STATS DROP TASK";
   }
 }

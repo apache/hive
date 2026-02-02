@@ -21,7 +21,7 @@ describe formatted test_stats a;
 describe formatted test_stats b;
 describe formatted test_stats c;
 
-alter table test_stats drop statistics for columns a, c;
+alter table test_stats drop statistics for columns;
 
 describe formatted test_stats;
 describe formatted test_stats a;

@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.misc.columnstats;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.TableName;
@@ -29,7 +27,6 @@ import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.ColumnStatsDropTask;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -39,7 +36,7 @@ import org.apache.hadoop.hive.ql.plan.ColumnStatsDropWork;
 /**
  * Analyzer for drop column statistics commands.
  */
-@DDLType(types = {HiveParser.TOK_ALTERTABLE_DROPCOLSTATS, HiveParser.TOK_ALTERPARTITION_DROPCOLSTATS})
+@DDLType(types = HiveParser.TOK_ALTERTABLE_DROPCOLSTATS)
 public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableDropColumnStatisticsAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -54,14 +51,8 @@ public class AlterTableDropColumnStatisticsAnalyzer extends AbstractAlterTableAn
       throw new SemanticException("DROP STATISTICS FOR COLUMNS is not supported for non-native table that " +
           "doesn't store stats in metastore.");
     }
-    
-    List<String> columnNames = command.getChildCount() == 0 ? 
-        new ArrayList<>() : 
-        getColumnNames((ASTNode) command.getChild(0));
-    String partitionName = AcidUtils.getPartitionName(partitionSpec);
 
-    ColumnStatsDropWork work = 
-        new ColumnStatsDropWork(partitionName, table.getDbName(), table.getTableName(), columnNames);
+    ColumnStatsDropWork work = new ColumnStatsDropWork(table.getDbName(), table.getTableName());
     ColumnStatsDropTask task = (ColumnStatsDropTask) TaskFactory.get(work);
     
     addInputsOutputsAlterTable(tableName, partitionSpec, null, AlterTableType.DROP_COL_STATS, false);
