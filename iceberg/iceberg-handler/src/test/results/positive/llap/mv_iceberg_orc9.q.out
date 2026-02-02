@@ -93,7 +93,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
 #### A masked pattern was here ####
-  'uuid'='4b1d3203-72b8-437c-8aa6-22d99a50e4e4')
+  'uuid'='#Masked#')
 PREHOOK: query: describe formatted mat1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@mat1
@@ -123,7 +123,7 @@ Table Parameters:
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
-	uuid                	4b1d3203-72b8-437c-8aa6-22d99a50e4e4
+	uuid                	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -140,7 +140,7 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=4555493286211681372}	 
+default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 
 PREHOOK: query: drop materialized view mat1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@mat1
@@ -203,7 +203,7 @@ TBLPROPERTIES (
 #### A masked pattern was here ####
   'table_type'='ICEBERG-VIEW', 
 #### A masked pattern was here ####
-  'uuid'='c23e0a1c-f058-43c1-a579-e949a8b0076f')
+  'uuid'='#Masked#')
 PREHOOK: query: explain show create table mat1_orc
 PREHOOK: type: SHOW_CREATETABLE
 PREHOOK: Input: default@mat1_orc
@@ -287,7 +287,7 @@ Table Parameters:
 	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
 	table_type          	ICEBERG-VIEW        
 #### A masked pattern was here ####
-	uuid                	c23e0a1c-f058-43c1-a579-e949a8b0076f
+	uuid                	#Masked#
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
@@ -304,7 +304,7 @@ Outdated for Rewriting:	No
 	 	 
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
-default.tbl_ice     	SnapshotContext{snapshotId=4555493286211681372}	 
+default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 
 PREHOOK: query: insert into tbl_ice values (6, 'six', 60)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
