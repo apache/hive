@@ -55,6 +55,9 @@ import static org.apache.hadoop.hive.common.AcidConstants.SOFT_DELETE_TABLE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
+  public static final String ICEBERG_STORAGE_HANDLER = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler";
+  public static final String STORAGE_HANDLER_KEY = "storage_handler";
+  public static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = "_storage_table";
   private final HiveMetaHookLoader hookLoader;
 
   private static final Logger LOG = LoggerFactory.getLogger(HookEnabledMetaStoreClient.class);
@@ -357,8 +360,16 @@ public class HookEnabledMetaStoreClient extends MetaStoreClientWrapper {
   private void removeStorageTableForExternalMaterializedView(Table table) throws TException {
     TableType tableType = Enum.valueOf(TableType.class, table.getTableType());
 
-    if (tableType.equals(TableType.EXTERNAL_MATERIALIZED_VIEW)) {
-      delegate.dropTable(table.getCatName(), table.getDbName(), table.getTableName() + "_storage_table", true, true, true);
+    if (tableType.equals(TableType.MATERIALIZED_VIEW) &&
+      ICEBERG_STORAGE_HANDLER.equals(table.getParameters().get(STORAGE_HANDLER_KEY))
+    ) {
+      delegate.dropTable(
+              table.getCatName(),
+              table.getDbName(),
+              table.getTableName() + MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX,
+              true,
+              true,
+              true);
     }
   }
 

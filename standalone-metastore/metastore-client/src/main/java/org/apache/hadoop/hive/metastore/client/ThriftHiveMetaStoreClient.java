@@ -1391,13 +1391,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     client.create_table_req(request);
   }
 
-  private void handleIcebergMaterializedView(CreateTableRequest request) {
-    if (TableType.EXTERNAL_MATERIALIZED_VIEW.name().equalsIgnoreCase(request.getTable().getTableType())) {
-      request.getTable().setViewOriginalText(null);
-      request.getTable().setViewExpandedText(null);
-    }
-  }
-
   @Override
   public void createTableWithConstraints(Table tbl,
       List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,

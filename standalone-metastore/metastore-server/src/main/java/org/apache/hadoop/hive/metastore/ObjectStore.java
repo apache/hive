@@ -1624,9 +1624,7 @@ public class ObjectStore implements RawStore, Configurable {
       MTable mtable = getMTable(catName, dbName, tableName);
       tbl = convertToTable(mtable);
       // Retrieve creation metadata if needed
-      if (tbl != null &&
-              (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType()) ||
-              TableType.EXTERNAL_MATERIALIZED_VIEW.toString().equals(tbl.getTableType()))) {
+      if (tbl != null && (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType()))) {
         tbl.setCreationMetadata(
                 convertToCreationMetadata(getCreationMetadata(catName, dbName, tableName)));
       }
