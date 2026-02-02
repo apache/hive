@@ -1,5 +1,8 @@
 -- MV metadata is stored in Iceberg
 -- SORT_QUERY_RESULTS
+--! qt:replace:/(\s+'uuid'=')\S+('\s*)/$1#Masked#$2/
+--! qt:replace:/(\s+uuid\s+)\S+(\s*)/$1#Masked#$2/
+--! qt:replace:/(.*snapshotId=)\S+(\}.*)/$1#SnapshotId#$2/
 
 set hive.explain.user=false;
 set hive.support.concurrency=true;
