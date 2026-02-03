@@ -19,15 +19,18 @@
 package org.apache.iceberg.mr.hive.compaction;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -96,13 +99,13 @@ public class IcebergTableOptimizer extends TableOptimizer {
       if (hasNewCommits(icebergTable, snapshotTimeMilCache.get(qualifiedTableName))) {
         if (icebergTable.spec().isPartitioned()) {
           List<org.apache.hadoop.hive.ql.metadata.Partition> partitions = findModifiedPartitions(hiveTable,
-              icebergTable, snapshotTimeMilCache.get(qualifiedTableName), true);
+              icebergTable, snapshotTimeMilCache.get(qualifiedTableName));
 
           partitions.forEach(partition -> addCompactionTargetIfEligible(table, icebergTable,
               partition.getName(), compactionTargets, currentCompactions, skipDBs, skipTables));
 
-          if (IcebergTableUtil.hasUndergonePartitionEvolution(icebergTable) && !findModifiedPartitions(hiveTable,
-              icebergTable, snapshotTimeMilCache.get(qualifiedTableName), false).isEmpty()) {
+          if (IcebergTableUtil.hasUndergonePartitionEvolution(icebergTable) && hasModifiedPartitions(icebergTable,
+              snapshotTimeMilCache.get(qualifiedTableName))) {
             addCompactionTargetIfEligible(table, icebergTable,
                 null, compactionTargets, currentCompactions, skipDBs, skipTables);
           }
@@ -160,56 +163,106 @@ public class IcebergTableOptimizer extends TableOptimizer {
     compactions.add(ci);
   }
 
-  /**
-   * Finds all unique non-compaction-modified partitions (with added or deleted files) between a given past
-   * snapshot ID and the table's current (latest) snapshot.
-   * @param hiveTable The {@link org.apache.hadoop.hive.ql.metadata.Table} instance to inspect.
-   * @param pastSnapshotTimeMil The timestamp in milliseconds of the snapshot to check from (exclusive).
-   * @param latestSpecOnly when True, returns partitions with the current spec only;
-   *                       False - older specs only;
-   *                       Null - any spec
-   * @return A List of {@link org.apache.hadoop.hive.ql.metadata.Partition} representing the unique modified
-   *                       partition names.
-   * @throws IllegalArgumentException if snapshot IDs are invalid or out of order, or if the table has no current
-   *                       snapshot.
-   */
-  private List<Partition> findModifiedPartitions(org.apache.hadoop.hive.ql.metadata.Table hiveTable,
-      org.apache.iceberg.Table icebergTable, Long pastSnapshotTimeMil, Boolean latestSpecOnly) {
+  private <R> R findModifiedPartitionsInternal(
+      org.apache.iceberg.Table icebergTable,
+      Long pastSnapshotTimeMil,
+      Boolean latestSpecOnly,
+      Supplier<R> resultSupplier,
+      BiFunction<R, Set<String>, Boolean> resultConsumer
+  ) {
 
-    List<Snapshot> relevantSnapshots = getRelevantSnapshots(icebergTable, pastSnapshotTimeMil).toList();
+    List<Snapshot> relevantSnapshots =
+        getRelevantSnapshots(icebergTable, pastSnapshotTimeMil).toList();
+
+    R result = resultSupplier.get();
     if (relevantSnapshots.isEmpty()) {
-      return Collections.emptyList();
+      return result;
     }
+
+    List<Callable<Set<String>>> tasks =
+        createPartitionNameTasks(icebergTable, relevantSnapshots, latestSpecOnly);
 
     try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
-      // Submit a task for each snapshot and collect the Futures
-      List<Future<Set<String>>> futures = relevantSnapshots.stream()
-          .map(snapshot -> executor.submit(() -> {
-            FileIO io = icebergTable.io();
-            List<ContentFile<?>> affectedFiles = FluentIterable.<ContentFile<?>>concat(
-                    snapshot.addedDataFiles(io),
-                    snapshot.removedDataFiles(io),
-                    snapshot.addedDeleteFiles(io),
-                    snapshot.removedDeleteFiles(io))
-                .toList();
-            return IcebergTableUtil.getPartitionNames(icebergTable, affectedFiles, latestSpecOnly);
-          }))
-          .toList();
+      CompletionService<Set<String>> cs = new ExecutorCompletionService<>(executor);
 
-      // Collect the results from all completed futures
-      Set<String> modifiedPartitions = Sets.newHashSet();
-      for (Future<Set<String>> future : futures) {
-        modifiedPartitions.addAll(future.get());
+      // submit tasks
+      for (Callable<Set<String>> task : tasks) {
+        cs.submit(task);
       }
 
-      return IcebergTableUtil.convertNameToMetastorePartition(hiveTable, modifiedPartitions);
+      // process results
+      for (int i = 0; i < tasks.size(); i++) {
+        if (resultConsumer.apply(result, cs.take().get())) {
+          return (R) Boolean.TRUE; // short-circuit
+        }
+      }
+
+      return result;
+
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new RuntimeMetaException(e, "Interrupted while finding modified partitions");
+      throw new RuntimeMetaException(
+          e, "Interrupted while processing modified partitions");
     } catch (ExecutionException e) {
-      // Just wrap this one in a runtime exception
-      throw new RuntimeMetaException(e, "Failed to find modified partitions in parallel");
+      throw new RuntimeMetaException(
+          e, "Failed to process modified partitions in parallel");
     }
+  }
+
+  private boolean hasModifiedPartitions(
+      org.apache.iceberg.Table icebergTable,
+      Long pastSnapshotTimeMil) {
+
+    return findModifiedPartitionsInternal(
+        icebergTable,
+        pastSnapshotTimeMil,
+        false,
+        () -> false,
+        (ignored, partitions) -> !partitions.isEmpty()
+    );
+  }
+
+  private List<Partition> findModifiedPartitions(
+      org.apache.hadoop.hive.ql.metadata.Table hiveTable,
+      org.apache.iceberg.Table icebergTable,
+      Long pastSnapshotTimeMil) {
+
+    Set<String> modifiedPartitions = findModifiedPartitionsInternal(
+        icebergTable,
+        pastSnapshotTimeMil,
+        true,
+        Sets::newHashSet,
+        (acc, partitions) -> {
+          acc.addAll(partitions);
+          return false; // never short-circuit
+        }
+    );
+
+    return IcebergTableUtil.convertNameToMetastorePartition(
+        hiveTable, modifiedPartitions);
+  }
+
+  private List<Callable<Set<String>>> createPartitionNameTasks(
+      org.apache.iceberg.Table icebergTable,
+      List<Snapshot> relevantSnapshots,
+      Boolean latestSpecOnly) {
+
+    return relevantSnapshots.stream()
+        .map(snapshot -> (Callable<Set<String>>) () ->
+            IcebergTableUtil.getPartitionNames(
+                icebergTable,
+                getAffectedFiles(snapshot, icebergTable.io()),
+                latestSpecOnly))
+        .toList();
+  }
+
+  private List<ContentFile<?>> getAffectedFiles(Snapshot snapshot, FileIO io) {
+    return FluentIterable.<ContentFile<?>>concat(
+            snapshot.addedDataFiles(io),
+            snapshot.removedDataFiles(io),
+            snapshot.addedDeleteFiles(io),
+            snapshot.removedDeleteFiles(io))
+        .toList();
   }
 
   /**
