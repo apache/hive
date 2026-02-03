@@ -17,35 +17,27 @@
  */
 package org.apache.hadoop.hive.ql.secrets;
 
+import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
-import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
-import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of SecretSource which loads secrets from AWS Secrets Manager.
  * The format of the uri is "aws-sm:///{key-name-or-arn}"
- * It uses AWS SDK v2 with Guava cache to fetch and refresh the secret, the environment must be setup so that the default
+ * It uses aws secrets cache sdk to fetch and refresh the secret, the environment must be setup so that the default
  * client can load the secret else it will fail.
  * It expects the secret fetched to be a json string with "password" as the key for password, this is default for
  * redshift, rds or external database configs. It does not make use of any other fields.
  */
 public class AWSSecretsManagerSecretSource implements SecretSource {
-  // Do not create cache here, it fails to initialize in non-aws aware environments.
-  private volatile LoadingCache<String, String> cache = null;
-  private volatile SecretsManagerClient client = null;
+  // Do not create SecretCache here, it fails to initialize in non-aws aware environments.
+  private volatile SecretCache cache = null;
   private final ObjectMapper mapper = new ObjectMapper();
 
   /**
@@ -71,10 +63,10 @@ public class AWSSecretsManagerSecretSource implements SecretSource {
 
     String secretsString;
     try {
-      secretsString = cache.get(key);
-    } catch (ExecutionException e) {
+      secretsString = cache.getSecretString(key);
+    } catch (Exception e) {
       // Wrap any exception from the above service call to IOException.
-      throw new IOException("Error trying to get secret", e.getCause());
+      throw new IOException("Error trying to get secret", e);
     }
     if (secretsString == null) {
       throw new IOException("secret was not found");
@@ -92,37 +84,19 @@ public class AWSSecretsManagerSecretSource implements SecretSource {
   }
 
   private void initCache() {
-    // DCL based cache setup, to ensure thread safety.
+    // DCL based SecretCache setup, to ensure thread safety.
     if (cache == null) {
       synchronized (this) {
         if (cache == null) {
-          client = SecretsManagerClient.builder().build();
-          cache = CacheBuilder.newBuilder()
-              .expireAfterWrite(1, TimeUnit.HOURS)
-              .maximumSize(100)
-              .build(new CacheLoader<String, String>() {
-                @Override
-                public String load(String secretId) throws Exception {
-                  GetSecretValueRequest request = GetSecretValueRequest.builder()
-                      .secretId(secretId)
-                      .build();
-                  GetSecretValueResponse response = client.getSecretValue(request);
-                  return response.secretString();
-                }
-              });
+          cache = new SecretCache();
         }
       }
     }
   }
 
   @VisibleForTesting
-  void setCache(LoadingCache<String, String> cache) {
+  void setCache(SecretCache cache) {
     this.cache = cache;
-  }
-
-  @VisibleForTesting
-  void setClient(SecretsManagerClient client) {
-    this.client = client;
   }
 
   /**
@@ -130,12 +104,6 @@ public class AWSSecretsManagerSecretSource implements SecretSource {
    */
   @Override
   public void close() {
-    if (cache != null) {
-      cache.invalidateAll();
-      cache.cleanUp();
-    }
-    if (client != null) {
-      client.close();
-    }
+    cache.close();
   }
 }

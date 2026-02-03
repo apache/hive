@@ -232,6 +232,7 @@
     <spotbugs.version>4.8.6</spotbugs.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <aws-java-sdk.version>2.35.11</aws-java-sdk.version>
+    <aws-secretsmanager-caching.version>2.1.1</aws-secretsmanager-caching.version>
     <jansi.version>2.4.0</jansi.version>
     <!-- If upgrading, upgrade atlas as well in ql/pom.xml, which brings in some springframework dependencies transitively -->
     <spring.version>5.3.39</spring.version>
@@ -269,6 +270,11 @@
   <dependencyManagement>
     <dependencies>
       <!-- dependencies are always listed in sorted order by groupId, artifactId -->
+      <dependency>
+        <groupId>com.amazonaws.secretsmanager</groupId>
+        <artifactId>aws-secretsmanager-caching-java</artifactId>
+        <version>${aws-secretsmanager-caching.version}</version>
+      </dependency>
       <dependency>
         <groupId>software.amazon.awssdk</groupId>
         <artifactId>secretsmanager</artifactId>
