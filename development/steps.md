@@ -16,6 +16,11 @@ sdk use java 8.0.402-amzn
 
 follow - https://6sense.atlassian.net/wiki/spaces/BIG/pages/5225251268/Building+GDP+binaries#Hive
 
+> If face issue due to x86 arch. - https://issues.apache.org/jira/browse/HIVE-21939
+```python
+- com.google.protobuf:protoc:2.5.0
++ com.google.protobuf:protoc:3.7.1
+```
 
 ### For Hive 4.x (Java 17)
 
