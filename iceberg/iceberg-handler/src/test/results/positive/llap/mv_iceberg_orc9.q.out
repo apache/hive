@@ -374,10 +374,98 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mat2_orc
 POSTHOOK: Lineage: mat2_orc.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
 POSTHOOK: Lineage: mat2_orc.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: create materialized view mat1_orc_partitioned partitioned on (b) stored by iceberg stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1_orc_partitioned
+PREHOOK: Output: default@mat1_orc_partitioned
+POSTHOOK: query: create materialized view mat1_orc_partitioned partitioned on (b) stored by iceberg stored as orc tblproperties ('format-version'='1') as
+select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1_orc_partitioned
+POSTHOOK: Output: default@mat1_orc_partitioned
+POSTHOOK: Lineage: mat1_orc_partitioned.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat1_orc_partitioned.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: select * from mat1_orc_partitioned
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mat1_orc_partitioned
+#### A masked pattern was here ####
+POSTHOOK: query: select * from mat1_orc_partitioned
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mat1_orc_partitioned
+#### A masked pattern was here ####
+53	four
+54	five
+60	six
+PREHOOK: query: describe formatted mat1_orc_partitioned
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@mat1_orc_partitioned
+POSTHOOK: query: describe formatted mat1_orc_partitioned
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@mat1_orc_partitioned
+# col_name            	data_type           	comment             
+c                   	int                 	                    
+b                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+b                   	string              	Transform: identity 
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+b                   	IDENTITY            	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MATERIALIZED_VIEW   	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"c\",\"required\":false,\"type\":\"int\"},{\"id\":2,\"name\":\"b\",\"required\":false,\"type\":\"string\"}]}
+	format-version      	1                   
+	iceberg.materialized.view	true                
+	iceberg.materialized.view.original.text	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
+	iceberg.materialized.view.storage.table	default.mat1_orc_partitioned_storage_table
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	3                   
+	numPartitions       	3                   
+	numRows             	3                   
+	rawDataSize         	0                   
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG-VIEW        
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Materialized View Information	 	 
+Original Query:     	select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52	 
+Expanded Query:     	SELECT `c`, `b` FROM (select `tbl_ice`.`b`, `tbl_ice`.`c` from `default`.`tbl_ice` where `tbl_ice`.`c` > 52) `mat1_orc_partitioned`	 
+Rewrite Enabled:    	Yes                 	 
+Outdated for Rewriting:	No                  	 
+	 	 
+# Materialized View Source table information	 	 
+Table name          	Snapshot            	 
+default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 
 PREHOOK: query: SHOW MATERIALIZED VIEWS
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
 mat1_orc            	Yes                 	Manual refresh      	Available for insert operations only
+mat1_orc_partitioned	Yes                 	Manual refresh      	Available for insert operations only
 mat2_orc            	Yes                 	Manual refresh      	Available for insert operations only
