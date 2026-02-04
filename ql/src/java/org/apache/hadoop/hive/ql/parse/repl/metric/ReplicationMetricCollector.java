@@ -52,6 +52,7 @@ public abstract class ReplicationMetricCollector {
   private static boolean enableForTests;
   private static long scheduledExecutionIdForTests = 0L;
   private HiveConf conf;
+  private static final String STAGE_ENDED_LOG_FORMAT = "Stage Ended {}, {}";
 
   public void setMetricsMBean(ObjectName metricsMBean) {
     this.metricsMBean = metricsMBean;
@@ -156,7 +157,7 @@ public abstract class ReplicationMetricCollector {
       SnapshotUtils.ReplSnapshotCount replSnapshotCount, ReplStatsTracker replStatsTracker) throws SemanticException {
     unRegisterMBeanSafe();
     if (isEnabled) {
-      LOG.debug("Stage ended {}, {}, {}", stageName, status, lastReplId );
+      LOG.debug("Stage ended {}, {}, {}", stageName, status, lastReplId);
       Progress progress = replicationMetric.getProgress();
       Stage stage = progress.getStageByName(stageName);
       if(stage == null){
@@ -183,10 +184,35 @@ public abstract class ReplicationMetricCollector {
     }
   }
 
+  public void reportStageEndWithLastExecutionId(String stageName, Status status, String errorLogPath, long lastDumpId)
+          throws SemanticException {
+    unRegisterMBeanSafe();
+    if (isEnabled) {
+      LOG.debug(STAGE_ENDED_LOG_FORMAT, stageName, status);
+      Progress progress = replicationMetric.getProgress();
+      Stage stage = progress.getStageByName(stageName);
+      if(stage == null){
+        stage = new Stage(stageName, status, -1L);
+      }
+      stage.setStatus(status);
+      stage.setEndTime(getCurrentTimeInMillis());
+      stage.setLastSuccessfulDumpId(lastDumpId);
+      if (errorLogPath != null) {
+        stage.setErrorLogPath(errorLogPath);
+      }
+      progress.addStage(stage);
+      replicationMetric.setProgress(progress);
+      metricCollector.addMetric(replicationMetric);
+      if (Status.FAILED == status || Status.FAILED_ADMIN == status || Status.SKIPPED == status) {
+        reportEnd(status);
+      }
+    }
+  }
+
   public void reportStageEnd(String stageName, Status status, String errorLogPath) throws SemanticException {
     unRegisterMBeanSafe();
     if (isEnabled) {
-      LOG.debug("Stage Ended {}, {}", stageName, status );
+      LOG.debug(STAGE_ENDED_LOG_FORMAT, stageName, status);
       Progress progress = replicationMetric.getProgress();
       Stage stage = progress.getStageByName(stageName);
       if(stage == null){
@@ -209,7 +235,7 @@ public abstract class ReplicationMetricCollector {
   public void reportStageEnd(String stageName, Status status) throws SemanticException {
     unRegisterMBeanSafe();
     if (isEnabled) {
-      LOG.debug("Stage Ended {}, {}", stageName, status );
+      LOG.debug(STAGE_ENDED_LOG_FORMAT, stageName, status);
       Progress progress = replicationMetric.getProgress();
       Stage stage = progress.getStageByName(stageName);
       if(stage == null){
