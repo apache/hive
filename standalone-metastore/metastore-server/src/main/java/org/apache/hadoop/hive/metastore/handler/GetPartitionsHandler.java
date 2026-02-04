@@ -107,6 +107,9 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     this.table = handler.get_table_core(getTableRequest);
     ((HMSHandler) handler).firePreEvent(new PreReadTableEvent(table, handler));
     authorizeTableForPartitionMetadata();
+
+    LOG.info("Starting to get {} of {} using {}", request.isFetchPartNames() ? "partition names" : "partitions",
+        TableName.getQualified(catName, dbName, tblName), getMethod);
   }
 
   @Override
@@ -196,7 +199,6 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     boolean success = false;
     rs.openTransaction();
     try {
-      rs.openTransaction();
       checkLimitNumberOfPartitions(tblName, args.getPartNames().size());
       ret = rs.getPartitionsByNames(catName, dbName, tblName, args);
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
@@ -237,7 +239,7 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
         rs.rollbackTransaction();
       }
     }
-    return new GetPartitionsResult<>(ret, true);
+    return new GetPartitionsResult<>(ret, success);
   }
 
   private GetPartitionsResult getPartitions() throws TException {
@@ -249,11 +251,7 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     } else {
       List<Partition> ret;
       checkLimitNumberOfPartitionsByFilter(NO_FILTER_STRING, args.getMax());
-      if (args.getUserName() == null) {
-        ret = rs.getPartitions(catName, dbName, tblName, args);
-      } else {
-        ret = rs.listPartitionsPsWithAuth(catName, dbName, tblName, args);
-      }
+      ret = rs.listPartitionsPsWithAuth(catName, dbName, tblName, args);
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
       return new GetPartitionsResult<>(ret, true);
     }
@@ -430,50 +428,79 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     }
   }
 
-  public static List<Partition> getPartitions(Consumer<TableName> preExecutor,
-      Consumer<Exception> postExecutor, IHMSHandler handler, TableName tableName,
-      GetPartitionsArgs args) throws NoSuchObjectException, MetaException {
+  public static List<Partition> getPartitions(Consumer<TableName> preHook,
+      Consumer<Exception> postHook, IHMSHandler handler, TableName tableName,
+      GetPartitionsArgs args, boolean assumeResult) throws NoSuchObjectException, MetaException {
+    Exception ex = null;
     try {
-      return getPartitionsResult(preExecutor, postExecutor, handler, tableName, args).result();
-    } catch (TException e) {
+      GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args);
+      preHook.accept(tableName);
+      GetPartitionsHandler<Partition> getPartsHandler =
+          AbstractRequestHandler.offer(handler, getPartitionsRequest);
+      List<Partition> partitions = getPartsHandler.getResult().result();
+      if (assumeResult && (partitions == null || partitions.isEmpty())) {
+        throw new NoSuchObjectException(tableName + " partition not found");
+      }
+      return partitions;
+    } catch (Exception e) {
+      ex = e;
       throw handleException(e).throwIfInstance(NoSuchObjectException.class, MetaException.class)
           .defaultMetaException();
+    } finally {
+      postHook.accept(ex);
     }
   }
 
-  public static GetPartitionsResult<Partition> getPartitionsResult(Consumer<TableName> preExecutor,
-      Consumer<Exception> postExecutor, IHMSHandler handler, TableName tableName,
+  public static GetPartitionsResult<Partition> getPartitionsResult(
+      Consumer<TableName> preHook,
+      Consumer<Exception> postHook,
+      IHMSHandler handler, TableName tableName,
       GetPartitionsArgs args) throws TException {
-    GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args);
-    preExecutor.accept(tableName);
     Exception ex = null;
     try {
+      GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args);
+      preHook.accept(tableName);
       GetPartitionsHandler<Partition> getPartsHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
       return getPartsHandler.getResult();
     } catch (Exception e) {
       ex = e;
-      throw handleException(ex).throwIfInstance(TException.class).defaultTException();
+      throw handleException(ex).defaultTException();
     } finally {
-      postExecutor.accept(ex);
+      postHook.accept(ex);
     }
   }
 
   public static GetPartitionsResult<String> getPartitionNames(Consumer<TableName> preExecutor,
       Consumer<Exception> postConsumer, IHMSHandler handler, TableName tableName,
       GetPartitionsArgs args) throws TException {
-    preExecutor.accept(tableName);
     Exception ex = null;
     try {
+      preExecutor.accept(tableName);
       GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args, true);
       GetPartitionsHandler<String> getPartNamesHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
       return getPartNamesHandler.getResult();
     } catch (Exception e) {
       ex = e;
-      throw handleException(ex).throwIfInstance(TException.class).defaultTException();
+      throw handleException(ex).defaultTException();
     } finally {
       postConsumer.accept(ex);
+    }
+  }
+
+  public static void validatePartVals(IHMSHandler handler,
+      TableName tableName, List<String> partVals) throws MetaException, NoSuchObjectException {
+    if (partVals == null || partVals.isEmpty()) {
+      throw new MetaException("The partVals is null or empty");
+    }
+    GetTableRequest request = new GetTableRequest(tableName.getDb(), tableName.getTable());
+    request.setCatName(tableName.getCat());
+    Table table = handler.get_table_core(request);
+    int size = table.getPartitionKeysSize();
+    if (size != partVals.size()) {
+      throw new MetaException("Unmatched partition values, partition keys size: " +
+          size + ", partition values size: " + partVals.size());
     }
   }
 }

@@ -125,7 +125,7 @@ public class TestMetaStoreEndFunctionListener {
     e = context.getException();
     assertTrue((e!=null));
     assertTrue((e instanceof NoSuchObjectException));
-    assertEquals(context.getInputTableName(), tblName);
+    assertEquals(context.getInputTableName(), "hive.hive3524." + tblName);
     try {
       msc.dropTable(dbName, unknownTable);
     } catch (Exception e4) {

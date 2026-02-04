@@ -28,6 +28,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -2847,7 +2848,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
     } catch (Exception e) {
       ex = e;
-      throw handleException(e).throwIfInstance(TException.class).defaultMetaException();
+      throw handleException(e).defaultTException();
     } finally {
       endFunction("add_partitions_req", ex == null, ex, tblName);
     }
@@ -3206,7 +3207,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return resp;
     } catch (Exception e) {
       ex = e;
-      throw handleException(e).throwIfInstance(TException.class).defaultMetaException();
+      throw handleException(e).defaultTException();
     } finally {
       endFunction("drop_partition_req", ex == null, ex,
           TableName.getQualified(request.getCatName(), request.getDbName(), request.getTblName()));
@@ -3298,13 +3299,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws MetaException, NoSuchObjectException, TException {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     TableName tableName = new TableName(catName, req.getDbName(), req.getTblName());
+    GetPartitionsHandler.validatePartVals(this, tableName, req.getPartVals());
     List<Partition> partitions = GetPartitionsHandler.getPartitions(
         t -> startTableFunction("get_partition_req", catName, t.getDb(), t.getCat()),
         ex -> endFunction("get_partition_req", ex == null, ex, tableName.toString()),
-        this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().part_vals(req.getPartVals()).build());
-    if (partitions == null || partitions.isEmpty()) {
-      throw new NoSuchObjectException("partition values=" + req.getPartVals());
-    }
+        this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().part_vals(req.getPartVals()).build(),
+        true);
     return new GetPartitionResponse(partitions.getFirst());
   }
 
@@ -3392,17 +3392,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
     TableName tableName = new TableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
-    List<Partition> partitions = GetPartitionsHandler.getPartitionsResult(
+    GetPartitionsHandler.validatePartVals(this, tableName, part_vals);
+    List<Partition> partitions = GetPartitionsHandler.getPartitions(
         t ->  startFunction("get_partition_with_auth",
             " : tbl=" + t + samplePartitionValues(part_vals) + getGroupsCountAndUsername(user_name,group_names)),
         ex ->   endFunction("get_partition_with_auth", ex == null, ex, tbl_name),
         this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-                .part_vals(part_vals).userName(user_name).groupNames(group_names).build())
-        .result();
-    if (partitions == null || partitions.isEmpty()) {
-      throw new NoSuchObjectException("partition values=" + part_vals);
-    }
-    return partitions.get(0);
+                .part_vals(part_vals).userName(user_name).groupNames(group_names).build(), true);
+    return partitions.getFirst();
   }
 
   /**
@@ -3418,7 +3415,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return GetPartitionsHandler.getPartitions(
         t -> startTableFunction("get_partitions", tableName.getCat(), tableName.getDb(), tableName.getTable()),
         ex -> endFunction("get_partitions", ex == null, ex, tableName.toString()),
-        this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().max(max_parts).build());
+        this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().max(max_parts).build(), false);
   }
 
   @Override
@@ -3434,7 +3431,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             .includeParamKeyPattern(req.getIncludeParamKeyPattern())
             .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
             .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
-            .max(req.getMaxParts()).build());
+            .max(req.getMaxParts()).build(), false);
     return new PartitionsResponse(partitions);
   }
 
@@ -3578,16 +3575,24 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public List<String> fetch_partition_names_req(final PartitionsRequest req)
       throws NoSuchObjectException, MetaException {
+    String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    TableName tableName = new TableName(catName, dbName, tblName);
     try {
-      String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
-      String dbName = req.getDbName(), tblName = req.getTblName();
-      TableName tableName = new TableName(catName, dbName, tblName);
       return GetPartitionsHandler.getPartitionNames(
           t -> startTableFunction("fetch_partition_names_req", catName, dbName, tblName),
           ex -> endFunction("fetch_partition_names_req", ex == null, ex, tableName.toString()), this, tableName,
           new GetPartitionsArgs.GetPartitionsArgsBuilder().max(req.getMaxParts()).build()).result();
     } catch (TException ex) {
-      throw handleException(ex).throwIfInstance(NoSuchObjectException.class, MetaException.class).defaultMetaException();
+      if (ex instanceof NoSuchObjectException e) {
+        // Keep it here just because some tests in TestListPartitions assume NoSuchObjectException
+        // if the input is invalid.
+        if (StringUtils.isBlank(dbName) || StringUtils.isBlank(tableName.getTable())) {
+          throw e;
+        }
+        return Collections.emptyList();
+      }
+      throw handleException(ex).defaultMetaException();
     }
   }
 
@@ -4340,7 +4345,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return toReturn;
     } catch (Exception e) {
       ex = e;
-      throw handleException(e).throwIfInstance(TException.class).defaultMetaException();
+      throw handleException(e).defaultTException();
     } finally {
       endFunction("get_config_value", success, ex);
     }
@@ -4379,17 +4384,16 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Deprecated
   public Partition get_partition_by_name(final String db_name, final String tbl_name,
                                          final String part_name) throws TException {
-
+    if (StringUtils.isBlank(part_name)) {
+      throw new MetaException("The part_name in get_partition_by_name cannot be null or empty");
+    }
     String[] parsedDbName = parseDbName(db_name, conf);
     TableName tableName = new TableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
     List<Partition> partitions = GetPartitionsHandler.getPartitions(
         t ->  startFunction("get_partition_by_name", ": tbl=" + t + " part=" + part_name),
         ex -> endFunction("get_partition_by_name", ex == null, ex, tableName.toString()),
         this, tableName,
-        new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(Arrays.asList(part_name)).build());
-    if (partitions == null || partitions.isEmpty()) {
-      throw new NoSuchObjectException(tableName + " partition (" + part_name + ") not found");
-    }
+        new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(List.of(part_name)).build(), true);
     return partitions.getFirst();
   }
 
@@ -4473,7 +4477,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         t -> startTableFunction("get_partitions_ps_with_auth", t.getCat(), t.getDb(), t.getTable()),
         ex -> endFunction("get_partitions_ps_with_auth", ex == null, ex, tableName.toString()),
         this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-            .part_vals(part_vals).max(max_parts).userName(userName).groupNames(groupNames).build());
+            .part_vals(part_vals).max(max_parts).userName(userName).groupNames(groupNames).build(), false);
   }
 
   @Override
@@ -4482,14 +4486,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     TableName tableName = new TableName(catName, req.getDbName(), req.getTblName());
     List<Partition> partitions = GetPartitionsHandler.getPartitionsResult(
-        t ->  startTableFunction("get_partition_names_req", catName, t.getDb(), t.getTable()),
+        t ->  startTableFunction("get_partitions_ps_with_auth_req", catName, t.getDb(), t.getTable()),
         ex -> endFunction("get_partitions_ps_with_auth_req", ex == null, ex, tableName.toString()),
         this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-            .part_vals(req.getPartVals()).max(req.getMaxParts())
-            .userName(req.getUserName()).groupNames(req.getGroupNames())
-            .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
-            .includeParamKeyPattern(req.getIncludeParamKeyPattern())
-            .excludeParamKeyPattern(req.getExcludeParamKeyPattern()).partNames(req.getPartNames()).build())
+                .part_vals(req.getPartVals()).max(req.getMaxParts())
+                .userName(req.getUserName()).groupNames(req.getGroupNames())
+                .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+                .includeParamKeyPattern(req.getIncludeParamKeyPattern())
+                .excludeParamKeyPattern(req.getExcludeParamKeyPattern()).partNames(req.getPartNames()).build())
         .result();
     return new GetPartitionsPsWithAuthResponse(partitions);
   }
@@ -4527,6 +4531,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetPartitionNamesPsResponse get_partition_names_ps_req(GetPartitionNamesPsRequest req)
       throws MetaException, NoSuchObjectException, TException {
+    if (req.getPartValues() == null) {
+      throw new MetaException("The partValues in GetPartitionNamesPsRequest is null");
+    }
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     String dbName = req.getDbName(), tblName = req.getTblName();
     TableName tableName = new TableName(catName, dbName, tblName);
@@ -4534,7 +4541,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         t -> startTableFunction("get_partition_names_ps_req", catName, dbName, tblName),
         ex -> endFunction("get_partition_names_ps_req", ex == null, ex, tableName.toString()),
         this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-            .max(req.getMaxParts()).part_vals(req.getPartValues()).build())
+                .max(req.getMaxParts()).part_vals(req.getPartValues()).build())
         .result();
     GetPartitionNamesPsResponse res = new GetPartitionNamesPsResponse();
     res.setNames(names);
@@ -5034,6 +5041,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
                                                  final List<String> partNames)
       throws TException {
+    if (partNames == null) {
+      throw new MetaException("The partNames is null");
+    }
     String[] dbNameParts = parseDbName(dbName, conf);
     TableName tableName = new TableName(dbNameParts[CAT_NAME], dbNameParts[DB_NAME], tblName);
     return GetPartitionsHandler.getPartitionsResult(
@@ -5046,6 +5056,9 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public GetPartitionsByNamesResult get_partitions_by_names_req(GetPartitionsByNamesRequest gpbnr)
       throws TException {
+    if (gpbnr.getNames() == null) {
+      throw new MetaException("The names in GetPartitionsByNamesRequest is null");
+    }
     String[] dbNameParts = parseDbName(gpbnr.getDb_name(), conf);
     TableName tableName = new TableName(dbNameParts[CAT_NAME], dbNameParts[DB_NAME], gpbnr.getTbl_name());
     GetPartitionsHandler.GetPartitionsRequest request =
@@ -5065,7 +5078,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       return new GetPartitionsByNamesResult(partitions);
     } catch (Exception e) {
       ex = e;
-      throw handleException(e).throwIfInstance(TException.class).defaultTException();
+      throw handleException(e).defaultTException();
     } finally {
       endFunction("get_partitions_by_names", ex == null, ex, tableName.toString());
     }
@@ -6739,17 +6752,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       endFunction("set_aggr_stats_for", success, ex,
           TableName.getQualified(catName, dbName, tableName));
     }
-  }
-
-  private Table getTable(String catName, String dbName, String tableName,
-                         String writeIdList)
-      throws MetaException, InvalidObjectException {
-    Table t = getMS().getTable(catName, dbName, tableName, writeIdList);
-    if (t == null) {
-      throw new InvalidObjectException(TableName.getQualified(catName, dbName, tableName)
-          + " table not found");
-    }
-    return t;
   }
 
   @Override
