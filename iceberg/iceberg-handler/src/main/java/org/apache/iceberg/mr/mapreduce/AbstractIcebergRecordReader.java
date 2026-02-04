@@ -23,6 +23,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
@@ -35,6 +36,7 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.HiveTableUtil;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
+import org.apache.iceberg.mr.hive.IcebergTableUtil;
 
 public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, T> {
 
@@ -79,7 +81,10 @@ public abstract class AbstractIcebergRecordReader<T> extends RecordReader<Void, 
     }
 
     if (InputFormatConfig.fetchVirtualColumns(conf)) {
-      return IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns(), table);
+      readSchema = IcebergAcidUtil.createFileReadSchemaWithVirtualColums(readSchema.columns(), table);
+      if (IcebergTableUtil.supportsRowLineage(table.properties())) {
+        readSchema = MetadataColumns.schemaWithRowLineage(readSchema);
+      }
     }
 
     return readSchema;

@@ -697,6 +697,18 @@ public class MapOperator extends AbstractMapOperator {
         case ROWISDELETED:
           vcValues[i] = new BooleanWritable(ctx.getIoCxt().isDeletedRecord());
           break;
+        case ROW_LINEAGE_ID:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getRowLineageInfo() != null) {
+            vcValues[i] = new LongWritable(ctx.getIoCxt().getRowLineageInfo().getBaseRowId());
+          }
+          break;
+        case LAST_UPDATED_SEQUENCE_NUMBER:
+          vcValues[i] = null;
+          if (ctx.getIoCxt().getRowLineageInfo() != null) {
+            vcValues[i] = new LongWritable(ctx.getIoCxt().getRowLineageInfo().getLastUpdatedSequenceNumber());
+          }
+          break;
       }
     }
     return vcValues;

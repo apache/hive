@@ -135,7 +135,7 @@ public class CopyOnWriteMergeRewriter extends MergeRewriter {
 
     CopyOnWriteMergeWhenClauseSqlGenerator(
       HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement) {
-      super(conf, sqlGenerator, mergeStatement);
+      super(conf, sqlGenerator, mergeStatement, false);
       this.cowWithClauseBuilder = new COWWithClauseBuilder();
     }
 

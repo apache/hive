@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Arrays.asList;
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addRowLineageColumnsForWhenMatchedUpdateClause;
 
 public class SplitMergeRewriter extends MergeRewriter {
 
@@ -38,14 +38,17 @@ public class SplitMergeRewriter extends MergeRewriter {
   @Override
   protected MergeWhenClauseSqlGenerator createMergeSqlGenerator(
       MergeStatement mergeStatement, MultiInsertSqlGenerator sqlGenerator) {
-    return new SplitMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement);
+    return new SplitMergeWhenClauseSqlGenerator(conf, sqlGenerator, mergeStatement, isRowLineageSupported);
   }
 
   static class SplitMergeWhenClauseSqlGenerator extends MergeWhenClauseSqlGenerator {
+    private final boolean isRowLineageSupported;
 
     SplitMergeWhenClauseSqlGenerator(
-        HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement) {
-      super(conf, sqlGenerator, mergeStatement);
+        HiveConf conf, MultiInsertSqlGenerator sqlGenerator, MergeStatement mergeStatement,
+        boolean isRowLineageSupported) {
+      super(conf, sqlGenerator, mergeStatement, isRowLineageSupported);
+      this.isRowLineageSupported = isRowLineageSupported;
     }
 
     @Override
@@ -57,6 +60,7 @@ public class SplitMergeRewriter extends MergeRewriter {
       sqlGenerator.append("    -- update clause (insert part)\n");
       List<String> values = new ArrayList<>(targetTable.getCols().size() + targetTable.getPartCols().size());
       addValues(targetTable, targetAlias, updateClause.getNewValuesMap(), values);
+      addRowLineageColumnsForWhenMatchedUpdateClause(isRowLineageSupported, values, targetAlias, conf);
       sqlGenerator.appendInsertBranch(hintStr, values);
       hintStr = null;
 

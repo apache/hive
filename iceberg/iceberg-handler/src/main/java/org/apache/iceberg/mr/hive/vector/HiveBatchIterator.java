@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.RowPositionAwareVectorizedRecordReader;
+import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -61,6 +62,7 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
     this.partitionColIndices = partitionColIndices;
     this.partitionValues = partitionValues;
     this.idToConstant = idToConstant;
+    RowLineageUtils.initializeRowLineageColumns(vrbCtx, batch);
   }
 
   @Override
@@ -128,6 +130,51 @@ public final class HiveBatchIterator implements CloseableIterator<HiveBatchConte
               bcv.noNulls = false;
               bcv.isNull[0] = true;
               bcv.isRepeating = true;
+              break;
+            case ROW_LINEAGE_ID:
+              LongColumnVector rowIdLcv = (LongColumnVector) batch.cols[idx];
+              Object firstRowIdObj = idToConstant.get(MetadataColumns.ROW_ID.fieldId());
+              long firstRowId = (firstRowIdObj != null) ? (Long) firstRowIdObj : 0L;
+
+              // If vector[0] is still -1, the reader didn't find the column in the file.
+              if (rowIdLcv.vector[0] == -1L) {
+                for (int i = 0; i < batch.size; i++) {
+                  rowIdLcv.vector[i] = firstRowId + rowOffset + i;
+                }
+              } else {
+                // Lineage data was found (could be 0). Preserve it and fill only the NULL gaps.
+                for (int i = 0; i < batch.size; i++) {
+                  if (rowIdLcv.isNull[i]) {
+                    rowIdLcv.vector[i] = firstRowId + rowOffset + i;
+                    rowIdLcv.isNull[i] = false;
+                  }
+                }
+              }
+              rowIdLcv.noNulls = true;
+              rowIdLcv.isRepeating = false;
+              break;
+
+            case LAST_UPDATED_SEQUENCE_NUMBER:
+              LongColumnVector lusnLcv = (LongColumnVector) batch.cols[idx];
+              Object fileSeqObj = idToConstant.get(MetadataColumns.LAST_UPDATED_SEQUENCE_NUMBER.fieldId());
+              long fileSeq = (fileSeqObj != null) ? (Long) fileSeqObj : 0L;
+
+              // If vector[0] is still -1, apply the file-level sequence number to the whole batch.
+              if (lusnLcv.vector[0] == -1L) {
+                for (int i = 0; i < batch.size; i++) {
+                  lusnLcv.vector[i] = fileSeq;
+                }
+              } else {
+                // Lineage data found in file, fill only the gaps where data is missing.
+                for (int i = 0; i < batch.size; i++) {
+                  if (!lusnLcv.noNulls && lusnLcv.isNull[i]) {
+                    lusnLcv.vector[i] = fileSeq;
+                    lusnLcv.isNull[i] = false;
+                  }
+                }
+              }
+              lusnLcv.noNulls = true;
+              lusnLcv.isRepeating = false;
               break;
           }
         }

@@ -88,6 +88,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.getRequestedSchemaWithRowLineageColumns;
 import static org.apache.parquet.format.converter.ParquetMetadataConverter.NO_FILTER;
 
 /**
@@ -274,6 +275,7 @@ public class VectorizedParquetRecordReader extends ParquetRecordReaderBase
     colsToInclude = ColumnProjectionUtils.getReadColumnIDs(configuration);
     requestedSchema = DataWritableReadSupport
       .getRequestedSchema(indexAccess, columnNamesList, columnTypesList, fileSchema, configuration);
+    requestedSchema = getRequestedSchemaWithRowLineageColumns(rbCtx, requestedSchema, fileSchema, colsToInclude);
 
     Path path = wrapPathForCache(filePath, cacheKey, configuration, blocks, cacheTag);
     this.reader = new ParquetFileReader(

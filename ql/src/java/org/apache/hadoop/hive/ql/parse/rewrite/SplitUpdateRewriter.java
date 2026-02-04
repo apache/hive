@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addRowLineageColumnsForUpdate;
+
 public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
 
   private static final Context.Operation OPERATION = Context.Operation.UPDATE;
@@ -100,6 +102,7 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
       updateBlock.getTargetTable().getPartCols().forEach(
           fieldSchema -> insertValues.add(sqlGenerator.qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
     }
+    addRowLineageColumnsForUpdate(updateBlock.getTargetTable(), sqlGenerator, insertValues, conf);
 
     sqlGenerator.append(" FROM ").append(sqlGenerator.getTargetTableFullName()).append(") ");
     sqlGenerator.appendSubQueryAlias().append("\n");
