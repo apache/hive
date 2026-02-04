@@ -25,11 +25,11 @@ POSTHOOK: Output: default@t
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE `flag`
@@ -75,9 +75,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -89,6 +89,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -103,6 +104,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -124,10 +126,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -154,11 +156,11 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE NOT flag
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE NOT flag
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE NOT `flag`
@@ -205,9 +207,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -219,6 +221,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -233,6 +236,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -254,10 +258,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -284,11 +288,11 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag IS NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag IS NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE `flag` IS NULL
@@ -335,9 +339,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -349,6 +353,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -363,6 +368,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -384,10 +390,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -422,11 +428,11 @@ POSTHOOK: Output: default@t
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE `flag`
@@ -472,9 +478,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -486,6 +492,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -500,6 +507,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -521,10 +529,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -551,11 +559,11 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE NOT flag
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE NOT flag
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE NOT `flag`
@@ -602,9 +610,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -616,6 +624,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -630,6 +639,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -651,10 +661,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -689,11 +699,11 @@ POSTHOOK: Output: default@t
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE `flag`
@@ -739,9 +749,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -753,6 +763,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -767,6 +778,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -788,10 +800,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -818,11 +830,11 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE NOT flag
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE NOT flag
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE NOT `flag`
@@ -869,9 +881,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -883,6 +895,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -897,6 +910,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -918,10 +932,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -956,11 +970,11 @@ POSTHOOK: Output: default@t
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE NOT flag
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE NOT flag
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE NOT `flag`
@@ -1007,9 +1021,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1021,6 +1035,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1035,6 +1050,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1056,10 +1072,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1086,11 +1102,11 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag IS NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag IS NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE `flag` IS NULL
@@ -1137,9 +1153,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1151,6 +1167,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1165,6 +1182,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1186,10 +1204,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1224,11 +1242,11 @@ POSTHOOK: Output: default@t
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE `flag`
@@ -1274,9 +1292,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1288,6 +1306,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1302,6 +1321,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1323,10 +1343,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1353,11 +1373,11 @@ STAGE PLANS:
 PREHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag IS NULL
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT COUNT(*) FROM t WHERE flag IS NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT COUNT(*) AS `_c0`
 FROM `default`.`t`
 WHERE `flag` IS NULL
@@ -1404,9 +1424,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1418,6 +1438,7 @@ STAGE PLANS:
                     columns flag
                     columns.types boolean
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1432,6 +1453,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types boolean
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1453,10 +1475,10 @@ STAGE PLANS:
                   bucketingVersion: 2
                   compressed: false
                   GlobalTableId: 0
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 1
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1540,12 +1562,12 @@ PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM (SELECT t3.id, t4.data FROM t3 LE
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 PREHOOK: Input: default@t4
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM (SELECT t3.id, t4.data FROM t3 LEFT OUTER JOIN t4 ON t3.id = t4.id) sub WHERE sub.data IS NULL
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 POSTHOOK: Input: default@t4
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 OPTIMIZED SQL: SELECT `t`.`id` AS `sub.id`, CAST(NULL AS INT) AS `sub.data`
 FROM (SELECT `id`
 FROM `default`.`t3`) AS `t`
@@ -1588,9 +1610,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t3]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t3
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1602,6 +1624,7 @@ STAGE PLANS:
                     columns id
                     columns.types int
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t3
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1616,6 +1639,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t3
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1653,9 +1677,9 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [t4]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: t4
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1667,6 +1691,7 @@ STAGE PLANS:
                     columns id,data
                     columns.types int:int
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.t4
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1681,6 +1706,7 @@ STAGE PLANS:
                       columns.comments 
                       columns.types int:int
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.t4
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -1701,23 +1727,23 @@ STAGE PLANS:
                   1 _col0 (type: int)
                 outputColumnNames: _col0, _col2
                 Position of Big Table: 0
-                Statistics: Num rows: 15000 Data size: 80008 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 15000 Data size: 120000 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   isSamplingPred: false
                   predicate: _col2 is null (type: boolean)
-                  Statistics: Num rows: 9999 Data size: 53336 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 7500 Data size: 60000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int), null (type: int)
                     outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 9999 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 7500 Data size: 30004 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       bucketingVersion: 2
                       compressed: false
                       GlobalTableId: 0
-#### A masked pattern was here ####
+                      directory: hdfs://### HDFS PATH ###
                       NumFilesPerFileSink: 1
-                      Statistics: Num rows: 9999 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
-#### A masked pattern was here ####
+                      Statistics: Num rows: 7500 Data size: 30004 Basic stats: COMPLETE Column stats: COMPLETE
+                      Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
