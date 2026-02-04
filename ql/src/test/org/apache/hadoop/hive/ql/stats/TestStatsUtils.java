@@ -25,17 +25,21 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -242,6 +246,152 @@ class TestStatsUtils {
       Arguments.of(serdeConstants.DOUBLE_TYPE_NAME, "OnlyHighValueSet", null, 1000.5, null, 1000.5),
       Arguments.of(serdeConstants.DOUBLE_TYPE_NAME, "NegativeHighValueOnly", null, -5.5, null, -5.5)
     );
+  }
+
+  private ColStatistics createColStats(String name, long ndv, long numNulls) {
+    ColStatistics cs = new ColStatistics(name, "string");
+    cs.setCountDistint(ndv);
+    cs.setNumNulls(numNulls);
+    return cs;
+  }
+
+  @Test
+  void testStatisticsAddToColumnStatsPropagatesUnknownNumNulls() {
+    Statistics stats = new Statistics(1000, 8000, 0, 0);
+    ColStatistics cs1 = createColStats("col1", 100, 50);
+    stats.setColumnStats(Collections.singletonList(cs1));
+
+    ColStatistics cs2 = createColStats("col1", 150, -1); // unknown numNulls
+    stats.addToColumnStats(Collections.singletonList(cs2));
+
+    ColStatistics merged = stats.getColumnStatisticsFromColName("col1");
+    assertEquals(-1, merged.getNumNulls(), "Unknown numNulls (-1) should be propagated when merging");
+  }
+
+  @Test
+  void testStatisticsAddToColumnStatsPropagatesUnknownFromExisting() {
+    Statistics stats = new Statistics(1000, 8000, 0, 0);
+    ColStatistics cs1 = createColStats("col1", 100, -1); // unknown numNulls
+    stats.setColumnStats(Collections.singletonList(cs1));
+
+    ColStatistics cs2 = createColStats("col1", 150, 50);
+    stats.addToColumnStats(Collections.singletonList(cs2));
+
+    ColStatistics merged = stats.getColumnStatisticsFromColName("col1");
+    assertEquals(-1, merged.getNumNulls(), "Unknown numNulls (-1) should be propagated when existing is unknown");
+  }
+
+  @Test
+  void testGetColStatisticsBooleanWithUnknownNumTrues() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(-1);  // unknown
+    boolStats.setNumFalses(100);
+    boolStats.setNumNulls(10);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertNotNull(cs);
+    assertEquals(2, cs.getCountDistint(), "Boolean NDV should be 2 when numTrues is unknown (-1)");
+  }
+
+  @Test
+  void testGetColStatisticsBooleanWithUnknownNumFalses() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(100);
+    boolStats.setNumFalses(-1);  // unknown
+    boolStats.setNumNulls(10);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertNotNull(cs);
+    assertEquals(2, cs.getCountDistint(), "Boolean NDV should be 2 when numFalses is unknown (-1)");
+  }
+
+  @Test
+  void testGetColStatisticsBooleanWithBothUnknown() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(-1);  // unknown
+    boolStats.setNumFalses(-1);  // unknown
+    boolStats.setNumNulls(10);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertNotNull(cs);
+    assertEquals(2, cs.getCountDistint(), "Boolean NDV should be 2 when both numTrues and numFalses are unknown");
+  }
+
+  @Test
+  void testUpdateStatsPreservesUnknownNumNulls() {
+    Statistics stats = new Statistics(1000, 8000, 0, 0);
+    ColStatistics cs = createColStats("col1", 100, -1); // unknown numNulls
+    stats.setColumnStats(Collections.singletonList(cs));
+
+    StatsUtils.updateStats(stats, 500, true, null); // scale down to 500 rows
+
+    ColStatistics updated = stats.getColumnStats().get(0);
+    assertEquals(-1, updated.getNumNulls(), "Unknown numNulls (-1) should be preserved after scaling");
+  }
+
+  @Test
+  void testScaleColStatisticsPreservesUnknownNumNulls() {
+    ColStatistics cs = createColStats("col1", 100, -1); // unknown numNulls
+    List<ColStatistics> colStats = Collections.singletonList(cs);
+
+    StatsUtils.scaleColStatistics(colStats, 2.0);
+
+    assertEquals(-1, colStats.get(0).getNumNulls(), "Unknown numNulls (-1) should be preserved after scaling");
+  }
+
+  @Test
+  void testScaleColStatisticsPreservesUnknownNumTrues() {
+    ColStatistics cs = new ColStatistics("bool_col", "boolean");
+    cs.setNumTrues(-1);  // unknown
+    cs.setNumFalses(100);
+    cs.setNumNulls(10);
+    List<ColStatistics> colStats = Collections.singletonList(cs);
+
+    StatsUtils.scaleColStatistics(colStats, 2.0);
+
+    assertEquals(-1, colStats.get(0).getNumTrues(), "Unknown numTrues (-1) should be preserved after scaling");
+    assertEquals(200, colStats.get(0).getNumFalses(), "Known numFalses should be scaled");
+  }
+
+  @Test
+  void testScaleColStatisticsPreservesUnknownNumFalses() {
+    ColStatistics cs = new ColStatistics("bool_col", "boolean");
+    cs.setNumTrues(100);
+    cs.setNumFalses(-1);  // unknown
+    cs.setNumNulls(10);
+    List<ColStatistics> colStats = Collections.singletonList(cs);
+
+    StatsUtils.scaleColStatistics(colStats, 2.0);
+
+    assertEquals(200, colStats.get(0).getNumTrues(), "Known numTrues should be scaled");
+    assertEquals(-1, colStats.get(0).getNumFalses(), "Unknown numFalses (-1) should be preserved after scaling");
   }
 
 }

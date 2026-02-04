@@ -820,7 +820,11 @@ public class StatsUtils {
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
       if (csd.getBooleanStats().getNumFalses() > 0 && csd.getBooleanStats().getNumTrues() > 0) {
         cs.setCountDistint(2);
+      } else if (csd.getBooleanStats().getNumFalses() < 0 || csd.getBooleanStats().getNumTrues() < 0) {
+        // At least one is unknown (-1) - assume typical boolean has both values
+        cs.setCountDistint(2);
       } else {
+        // Both >= 0 but not both > 0 - one value type confirmed absent (or all NULL)
         cs.setCountDistint(1);
       }
       cs.setNumTrues(csd.getBooleanStats().getNumTrues());
@@ -2038,8 +2042,11 @@ public class StatsUtils {
         if (oldDV > newNumRows) {
           cs.setCountDistint(newNumRows);
         }
-        long newNumNulls = Math.round(ratio * cs.getNumNulls());
-        cs.setNumNulls(Math.min(newNumNulls, newNumRows));
+        // numNulls < 0 means "unknown" - preserve the sentinel value
+        if (cs.getNumNulls() >= 0) {
+          long newNumNulls = Math.round(ratio * cs.getNumNulls());
+          cs.setNumNulls(Math.min(newNumNulls, newNumRows));
+        }
       }
       stats.setColumnStats(colStats);
       long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
@@ -2052,9 +2059,17 @@ public class StatsUtils {
 
   public static void scaleColStatistics(List<ColStatistics> colStats, double factor) {
     for (ColStatistics cs : colStats) {
-      cs.setNumFalses(StatsUtils.safeMult(cs.getNumFalses(), factor));
-      cs.setNumTrues(StatsUtils.safeMult(cs.getNumTrues(), factor));
-      cs.setNumNulls(StatsUtils.safeMult(cs.getNumNulls(), factor));
+      // numTrues/numFalses < 0 means "unknown" - preserve the sentinel value
+      if (cs.getNumFalses() >= 0) {
+        cs.setNumFalses(StatsUtils.safeMult(cs.getNumFalses(), factor));
+      }
+      if (cs.getNumTrues() >= 0) {
+        cs.setNumTrues(StatsUtils.safeMult(cs.getNumTrues(), factor));
+      }
+      // numNulls < 0 means "unknown" - preserve the sentinel value
+      if (cs.getNumNulls() >= 0) {
+        cs.setNumNulls(StatsUtils.safeMult(cs.getNumNulls(), factor));
+      }
       if (factor < 1.0) {
         final double newNDV = Math.ceil(cs.getCountDistint() * factor);
         cs.setCountDistint(newNDV > Long.MAX_VALUE ? Long.MAX_VALUE : (long) newNDV);

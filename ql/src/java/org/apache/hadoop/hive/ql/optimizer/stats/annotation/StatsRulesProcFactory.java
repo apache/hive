@@ -424,10 +424,10 @@ public class StatsRulesProcFactory {
         String colType = encd.getTypeString();
         if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
           ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
-          if (cs != null) {
+          if (cs != null && cs.getNumTrues() >= 0) {
             newNumRows = cs.getNumTrues();
           } else {
-            // default
+            // default (no stats or numTrues unknown i.e. negative)
             newNumRows = stats.getNumRows() / 2;
           }
         } else {
@@ -923,11 +923,11 @@ public class StatsRulesProcFactory {
             String colType = encd.getTypeString();
             if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
               ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
-              if (cs != null) {
+              if (cs != null && cs.getNumFalses() >= 0) {
                 return cs.getNumFalses();
               }
             }
-            // if not boolean column return half the number of rows
+            // if not boolean column, or numFalses unknown (negative), return half the number of rows
             return numRows / 2;
           }
         }
@@ -952,7 +952,7 @@ public class StatsRulesProcFactory {
             aspCtx.addAffectedColumn(colDesc);
             String colName = colDesc.getColumn();
             ColStatistics cs = stats.getColumnStatisticsFromColName(colName);
-            if (cs != null) {
+            if (cs != null && cs.getNumNulls() >= 0) {
               return cs.getNumNulls();
             }
           }
@@ -1783,9 +1783,11 @@ public class StatsRulesProcFactory {
             conf, parentStats, agg.getParameters().get(0));
         if (parentCS != null && parentCS.getRange() != null &&
             parentCS.getRange().minValue != null && parentCS.getRange().maxValue != null) {
+          // numNulls < 0 means "unknown" - treat as 0 for conservative COUNT estimate
+          long numNulls = parentCS.getNumNulls() < 0 ? 0 : parentCS.getNumNulls();
           long valuesCount = agg.getDistinct() ?
               parentCS.getCountDistint() :
-              parentStats.getNumRows() - parentCS.getNumNulls();
+              parentStats.getNumRows() - numNulls;
           Range range = parentCS.getRange();
           // Get the aggregate function matching the name in the query.
           GenericUDAFResolver udaf =
@@ -2626,6 +2628,10 @@ public class StatsRulesProcFactory {
       }
 
       long oldNumNulls = colStats.getNumNulls();
+      // numNulls < 0 means "unknown" - preserve the sentinel value
+      if (oldNumNulls < 0) {
+        return;
+      }
       long newNumNulls = Math.min(newNumRows, oldNumNulls);
 
       JoinCondDesc joinCond = jop.getConf().getConds()[0];
