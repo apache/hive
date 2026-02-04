@@ -66,11 +66,11 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
   private GetPartitionsArgs args;
   private Table table;
   private Configuration conf;
-  private GetMethod getMethod = GetMethod.ALL;
+  private GetPartitionsMethod getMethod;
   private MetaStoreFilterHook filterHook;
   private boolean isServerFilterEnabled;
 
-  enum GetMethod {
+  enum GetPartitionsMethod {
     EXPR, NAMES, FILTER, PART_VALS, ALL, VALUES
   }
 
@@ -82,15 +82,17 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
   protected void beforeExecute() throws TException, IOException {
     this.args = request.getGetPartitionsArgs();
     if (request.isGetPartitionValues()) {
-      getMethod = GetMethod.VALUES;
+      getMethod = GetPartitionsMethod.VALUES;
     } else if (args.getExpr() != null) {
-      getMethod = GetMethod.EXPR;
+      getMethod = GetPartitionsMethod.EXPR;
     } else if (args.getFilter() != null) {
-      getMethod = GetMethod.FILTER;
+      getMethod = GetPartitionsMethod.FILTER;
     } else if (args.getPartNames() != null) {
-      getMethod = GetMethod.NAMES;
+      getMethod = GetPartitionsMethod.NAMES;
     } else if (args.getPart_vals() != null) {
-      getMethod = GetMethod.PART_VALS;
+      getMethod = GetPartitionsMethod.PART_VALS;
+    } else {
+      getMethod = GetPartitionsMethod.ALL;
     }
     
     this.catName = normalizeIdentifier(request.getTableName().getCat());
