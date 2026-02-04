@@ -1,0 +1,155 @@
+PREHOOK: query: create table ice_t (id int, name string, balance int) stored by iceberg TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: create table ice_t (id int, name string, balance int) stored by iceberg TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: insert into ice_t values (1, 'aaa', 25),(2, 'bbb', 35),(3, 'ccc', 82),(4, 'ddd', 91)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: insert into ice_t values (1, 'aaa', 25),(2, 'bbb', 35),(3, 'ccc', 82),(4, 'ddd', 91)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: select id, name, balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name, balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	aaa	25	0	1
+2	bbb	35	1	1
+3	ccc	82	2	1
+4	ddd	91	3	1
+PREHOOK: query: update ice_t set balance = 500 where id = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_t
+PREHOOK: Output: default@ice_t
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: update ice_t set balance = 500 where id = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: default@ice_t
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: select id, name, balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t order by id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_t
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select id, name, balance, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER from ice_t order by id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	aaa	25	0	1
+2	bbb	500	1	2
+3	ccc	82	2	1
+4	ddd	91	3	1
+PREHOOK: query: CREATE TABLE ice_merge (
+  id INT,
+  data STRING
+)
+STORED BY iceberg
+TBLPROPERTIES ('format-version'='3')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_merge
+POSTHOOK: query: CREATE TABLE ice_merge (
+  id INT,
+  data STRING
+)
+STORED BY iceberg
+TBLPROPERTIES ('format-version'='3')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_merge
+PREHOOK: query: INSERT INTO ice_merge VALUES
+  (1, 'a'),
+  (2, 'b'),
+  (3, 'c')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_merge
+POSTHOOK: query: INSERT INTO ice_merge VALUES
+  (1, 'a'),
+  (2, 'b'),
+  (3, 'c')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_merge
+PREHOOK: query: CREATE TABLE src (
+  id INT,
+  data STRING
+)
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src
+POSTHOOK: query: CREATE TABLE src (
+  id INT,
+  data STRING
+)
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src
+PREHOOK: query: INSERT INTO src VALUES
+  (2, 'bb'),
+  (4, 'd')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@src
+POSTHOOK: query: INSERT INTO src VALUES
+  (2, 'bb'),
+  (4, 'd')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@src
+POSTHOOK: Lineage: src.data SCRIPT []
+POSTHOOK: Lineage: src.id SCRIPT []
+PREHOOK: query: MERGE INTO ice_merge t
+USING src s
+ON t.id = s.id
+WHEN MATCHED THEN
+  UPDATE SET data = s.data
+WHEN NOT MATCHED THEN
+  INSERT VALUES (s.id, s.data)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_merge
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ice_merge
+PREHOOK: Output: default@ice_merge
+PREHOOK: Output: default@merge_tmp_table
+POSTHOOK: query: MERGE INTO ice_merge t
+USING src s
+ON t.id = s.id
+WHEN MATCHED THEN
+  UPDATE SET data = s.data
+WHEN NOT MATCHED THEN
+  INSERT VALUES (s.id, s.data)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_merge
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ice_merge
+POSTHOOK: Output: default@ice_merge
+POSTHOOK: Output: default@merge_tmp_table
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(ice_merge)ice_merge.null, ]
+PREHOOK: query: SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_merge
+ORDER BY ROW__LINEAGE__ID
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ice_merge
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT id, data, ROW__LINEAGE__ID, LAST__UPDATED__SEQUENCE__NUMBER
+FROM ice_merge
+ORDER BY ROW__LINEAGE__ID
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ice_merge
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a	0	1
+2	bb	1	2
+3	c	2	1
+4	d	4	2
