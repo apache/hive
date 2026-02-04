@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFacto
 import org.apache.hadoop.hive.metastore.events.*;
 import org.apache.hadoop.hive.metastore.handler.AbstractRequestHandler;
 import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
+import org.apache.hadoop.hive.metastore.handler.AppendPartitionHandler;
 import org.apache.hadoop.hive.metastore.handler.DropPartitionsHandler;
 import org.apache.hadoop.hive.metastore.handler.GetPartitionsHandler;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
@@ -93,7 +94,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_COMMENT;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars.HIVE_IN_TEST;
-import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.canUpdateStats;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CAT_NAME;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.DB_NAME;
@@ -2625,104 +2625,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return tables;
   }
 
-  private Partition append_partition_common(RawStore ms, String catName, String dbName,
-                                            String tableName, List<String> part_vals,
-                                            EnvironmentContext envContext)
-      throws InvalidObjectException, AlreadyExistsException, MetaException, NoSuchObjectException {
-
-    Partition part = new Partition();
-    boolean success = false, madeDir = false;
-    Path partLocation = null;
-    Table tbl = null;
-    Map<String, String> transactionalListenerResponses = Collections.emptyMap();
-    Database db = null;
-    try {
-      ms.openTransaction();
-      part.setCatName(catName);
-      part.setDbName(dbName);
-      part.setTableName(tableName);
-      part.setValues(part_vals);
-
-      MetaStoreServerUtils.validatePartitionNameCharacters(part_vals, getConf());
-
-      tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
-      if (tbl == null) {
-        throw new InvalidObjectException(
-            "Unable to add partition because table or database do not exist");
-      }
-      if (tbl.getSd().getLocation() == null) {
-        throw new MetaException(
-            "Cannot append a partition to a view");
-      }
-
-      db = get_database_core(catName, dbName);
-
-      firePreEvent(new PreAddPartitionEvent(tbl, part, this));
-
-      part.setSd(tbl.getSd().deepCopy());
-      partLocation = new Path(tbl.getSd().getLocation(), Warehouse
-          .makePartName(tbl.getPartitionKeys(), part_vals));
-      part.getSd().setLocation(partLocation.toString());
-
-      Partition old_part;
-      try {
-        old_part = ms.getPartition(part.getCatName(), part.getDbName(), part
-            .getTableName(), part.getValues());
-      } catch (NoSuchObjectException e) {
-        // this means there is no existing partition
-        old_part = null;
-      }
-      if (old_part != null) {
-        throw new AlreadyExistsException("Partition already exists:" + part);
-      }
-
-      if (!wh.isDir(partLocation)) {
-        if (!wh.mkdirs(partLocation)) {
-          throw new MetaException(partLocation
-              + " is not a directory or unable to create one");
-        }
-        madeDir = true;
-      }
-
-      // set create time
-      long time = System.currentTimeMillis() / 1000;
-      part.setCreateTime((int) time);
-      part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
-
-      if (canUpdateStats(getConf(), tbl)) {
-        MetaStoreServerUtils.updatePartitionStatsFast(part, tbl, wh, madeDir, false, envContext, true);
-      }
-
-      if (ms.addPartition(part)) {
-        if (!transactionalListeners.isEmpty()) {
-          transactionalListenerResponses =
-              MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.ADD_PARTITION,
-                  new AddPartitionEvent(tbl, part, true, this),
-                  envContext);
-        }
-
-        success = ms.commitTransaction();
-      }
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-        if (madeDir) {
-          wh.deleteDir(partLocation, false, ReplChangeManager.shouldEnableCm(db, tbl));
-        }
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.ADD_PARTITION,
-            new AddPartitionEvent(tbl, part, success, this),
-            envContext,
-            transactionalListenerResponses, ms);
-      }
-    }
-    return part;
-  }
-
   public void firePreEvent(PreEventContext event) throws MetaException {
     for (MetaStorePreEventListener listener : preListeners) {
       try {
@@ -2755,62 +2657,35 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       final String tableName, final List<String> part_vals, final EnvironmentContext envContext)
       throws InvalidObjectException, AlreadyExistsException, MetaException {
     String[] parsedDbName = parseDbName(dbName, conf);
-    startPartitionFunction("append_partition_with_environment_context", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName, part_vals);
-    Partition ret = null;
-    Exception ex = null;
-    try {
-      AppendPartitionsRequest appendPartitionsReq = new AppendPartitionsRequest();
-      appendPartitionsReq.setDbName(parsedDbName[DB_NAME]);
-      appendPartitionsReq.setTableName(tableName);
-      appendPartitionsReq.setPartVals(part_vals);
-      appendPartitionsReq.setCatalogName(parsedDbName[CAT_NAME]);
-      appendPartitionsReq.setEnvironmentContext(envContext);
-      ret = append_partition_req(appendPartitionsReq);
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
-          .defaultMetaException();
-    } finally {
-      endFunction("append_partition_with_environment_context", ret != null, ex, tableName);
-    }
-    return ret;
+    AppendPartitionsRequest appendPartitionsReq = new AppendPartitionsRequest();
+    appendPartitionsReq.setDbName(parsedDbName[DB_NAME]);
+    appendPartitionsReq.setTableName(tableName);
+    appendPartitionsReq.setPartVals(part_vals);
+    appendPartitionsReq.setCatalogName(parsedDbName[CAT_NAME]);
+    appendPartitionsReq.setEnvironmentContext(envContext);
+    return append_partition_req(appendPartitionsReq);
   }
 
   @Override
   public Partition append_partition_req(final AppendPartitionsRequest appendPartitionsReq)
       throws InvalidObjectException, AlreadyExistsException, MetaException {
-    List<String> part_vals = appendPartitionsReq.getPartVals();
     String dbName = appendPartitionsReq.getDbName();
     String catName = appendPartitionsReq.isSetCatalogName() ?
         appendPartitionsReq.getCatalogName() : getDefaultCatalog(conf);
     String tableName = appendPartitionsReq.getTableName();
-    String partName = appendPartitionsReq.getName();
-    if (partName == null && (part_vals == null || part_vals.isEmpty())) {
-      throw new MetaException("The partition values must not be null or empty.");
-    }
-    if (part_vals == null || part_vals.isEmpty()) {
-      // partition name is set, get partition vals and then append partition
-      part_vals = getPartValsFromName(getMS(), catName, dbName, tableName, partName);
-    }
-    startPartitionFunction("append_partition_req", catName, dbName, tableName, part_vals);
-    if (LOG.isDebugEnabled()) {
-      for (String part : part_vals) {
-        LOG.debug(part);
-      }
-    }
-    Partition ret = null;
+    startTableFunction("append_partition_req", catName, dbName, tableName);
     Exception ex = null;
     try {
-      ret = append_partition_common(getMS(), catName, dbName, tableName, part_vals, appendPartitionsReq.getEnvironmentContext());
+      AppendPartitionHandler appendPartition = AbstractRequestHandler.offer(this, appendPartitionsReq);
+      return appendPartition.getResult().partition();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
           .throwIfInstance(MetaException.class, InvalidObjectException.class, AlreadyExistsException.class)
           .defaultMetaException();
     } finally {
-      endFunction("append_partition_req", ret != null, ex, tableName);
+      endFunction("append_partition_req", ex == null, ex, tableName);
     }
-    return ret;
   }
 
   public Lock getTableLockFor(String dbName, String tblName) {
@@ -4369,17 +4244,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     return partVals;
   }
 
-  private List<String> getPartValsFromName(RawStore ms, String catName, String dbName,
-                                           String tblName, String partName)
-      throws MetaException, InvalidObjectException {
-    Table t = ms.getTable(catName, dbName, tblName,  null);
-    if (t == null) {
-      throw new InvalidObjectException(dbName + "." + tblName
-          + " table not found");
-    }
-    return getPartValsFromName(t, partName);
-  }
-
   @Override
   @Deprecated
   public Partition get_partition_by_name(final String db_name, final String tbl_name,
@@ -4410,25 +4274,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       final String tbl_name, final String part_name, final EnvironmentContext env_context)
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    Partition ret = null;
-    Exception ex = null;
-    try {
-      AppendPartitionsRequest appendPartitionRequest = new AppendPartitionsRequest();
-      appendPartitionRequest.setDbName(parsedDbName[DB_NAME]);
-      appendPartitionRequest.setTableName(tbl_name);
-      appendPartitionRequest.setName(part_name);
-      appendPartitionRequest.setCatalogName(parsedDbName[CAT_NAME]);
-      appendPartitionRequest.setEnvironmentContext(env_context);
-      ret = append_partition_req(appendPartitionRequest);
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e)
-          .throwIfInstance(InvalidObjectException.class, AlreadyExistsException.class, MetaException.class)
-          .defaultMetaException();
-    } finally {
-      endFunction("append_partition_by_name", ret != null, ex, tbl_name);
-    }
-    return ret;
+    AppendPartitionsRequest appendPartitionRequest = new AppendPartitionsRequest();
+    appendPartitionRequest.setDbName(parsedDbName[DB_NAME]);
+    appendPartitionRequest.setTableName(tbl_name);
+    appendPartitionRequest.setName(part_name);
+    appendPartitionRequest.setCatalogName(parsedDbName[CAT_NAME]);
+    appendPartitionRequest.setEnvironmentContext(env_context);
+    return append_partition_req(appendPartitionRequest);
   }
 
   @Deprecated
