@@ -256,7 +256,12 @@ public class Statistics implements Serializable {
             updatedCS = columnStats.get(key);
             updatedCS.setAvgColLen(Math.max(updatedCS.getAvgColLen(), cs.getAvgColLen()));
             updatedCS.setNumNulls(StatsUtils.safeAdd(updatedCS.getNumNulls(), cs.getNumNulls()));
-            updatedCS.setCountDistint(Math.max(updatedCS.getCountDistint(), cs.getCountDistint()));
+            if(updatedCS.getCountDistint() > 0 && cs.getCountDistint() > 0) {
+              updatedCS.setCountDistint(Math.max(updatedCS.getCountDistint(), cs.getCountDistint()));
+            } else {
+              // If one is unknown, the product is also unknown
+              updatedCS.setCountDistint(0);
+            }
             columnStats.put(key, updatedCS);
           } else {
             columnStats.put(key, cs);

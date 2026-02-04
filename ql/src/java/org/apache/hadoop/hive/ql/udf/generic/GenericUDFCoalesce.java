@@ -18,14 +18,18 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
@@ -90,6 +94,37 @@ public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvi
 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      return estimate(argStats, null);
+    }
+
+    @Override
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats, List<ExprNodeDesc> argExprs) {
+      if (argExprs != null && !argExprs.isEmpty()) {
+        Set<Object> distinctConstants = new HashSet<>();
+        boolean allConstants = true;
+
+        for (ExprNodeDesc expr : argExprs) {
+          if (!(expr instanceof ExprNodeConstantDesc)) {
+            allConstants = false;
+            break;
+          }
+          distinctConstants.add(((ExprNodeConstantDesc) expr).getValue());
+        }
+
+        if (allConstants && !distinctConstants.isEmpty()) {
+          ColStatistics result = argStats.get(0).clone();
+          result.setCountDistint(distinctConstants.size());
+          result.setIsEstimated(true);
+          for (int i = 1; i < argStats.size(); i++) {
+            if (argStats.get(i).getAvgColLen() > result.getAvgColLen()) {
+              result.setAvgColLen(argStats.get(i).getAvgColLen());
+            }
+          }
+          return Optional.of(result);
+        }
+      }
+
+      // Fall back to pessimistic combining
       PessimisticStatCombiner combiner = new PessimisticStatCombiner();
       for (int i = 0; i < argStats.size(); i++) {
         combiner.add(argStats.get(i));

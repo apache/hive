@@ -2030,6 +2030,18 @@ public class StatsRulesProcFactory {
         }
       }
 
+      // NDV=0 means join key statistics are unavailable - fall back to joinFactor heuristic
+      if (allSatisfyPreCondition) {
+        for (int pos = 0; pos < parents.size(); pos++) {
+          ReduceSinkOperator parent = (ReduceSinkOperator) jop.getParentOperators().get(pos);
+          List<String> keyExprs = StatsUtils.getQualifedReducerKeyNames(parent.getConf().getOutputKeyColumnNames());
+          if (!satisfyPrecondition(parent.getStatistics(), keyExprs)) {
+            allSatisfyPreCondition = false;
+            break;
+          }
+        }
+      }
+
       if (allSatisfyPreCondition) {
 
         // statistics object that is combination of statistics from all
@@ -3235,6 +3247,16 @@ public class StatsRulesProcFactory {
   static boolean satisfyPrecondition(Statistics stats) {
     return stats != null && stats.getBasicStatsState().equals(Statistics.State.COMPLETE)
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
+  }
+
+  static boolean satisfyPrecondition(Statistics stats, List<String> joinKeys) {
+    for (String col : joinKeys) {
+      ColStatistics cs = stats.getColumnStatisticsFromColName(col);
+      if (cs != null && cs.getCountDistint() == 0L) {
+        return false;
+      }
+    }
+    return true;
   }
 
   // check if all parent statistics are available
