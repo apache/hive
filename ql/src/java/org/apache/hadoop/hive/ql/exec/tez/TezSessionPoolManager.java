@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -235,6 +237,10 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     //       able to handle not being initialized. Perhaps we should get rid of the instance and
     //       move the setupPool code to ctor. For now, at least hasInitialSessions will be false.
     String queueName = conf.get(TezConfiguration.TEZ_QUEUE_NAME);
+    String tezQueues = HiveConf.getVar(conf, ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES);
+    if ((queueName == null || queueName.isEmpty()) && (tezQueues == null || tezQueues.isEmpty())) {
+      queueName = conf.get(JobContext.QUEUE_NAME, YarnConfiguration.DEFAULT_QUEUE_NAME);
+    }
     boolean hasQueue = (queueName != null) && !queueName.isEmpty();
     if (hasQueue) {
       switch (customQueueAllowed) {

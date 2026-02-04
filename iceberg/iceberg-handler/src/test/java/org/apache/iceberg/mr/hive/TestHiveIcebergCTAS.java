@@ -20,6 +20,7 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -35,13 +36,16 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.test.TestTables.TestTableType;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 
@@ -50,10 +54,12 @@ import static org.apache.iceberg.types.Types.NestedField.optional;
  */
 public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase {
 
-  @Override
-  protected void validateTestParams() {
-    Assume.assumeTrue(HiveIcebergSerDe.CTAS_EXCEPTION_MSG, testTableType == TestTables.TestTableType.HIVE_CATALOG &&
-        isVectorized && formatVersion == 1);
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.testTableType() == TestTableType.HIVE_CATALOG &&
+        p.isVectorized() &&
+        p.formatVersion() == 2);
   }
 
   @Test
@@ -377,7 +383,7 @@ public class TestHiveIcebergCTAS extends HiveIcebergStorageHandlerWithEngineBase
   public void testCTASAndCTLTWithAuth() {
     shell.setHiveSessionValue("hive.security.authorization.enabled", true);
     shell.setHiveSessionValue("hive.security.authorization.manager",
-            "org.apache.iceberg.mr.hive.CustomTestHiveAuthorizerFactory");
+            "org.apache.iceberg.mr.hive.test.CustomTestHiveAuthorizerFactory");
     shell.setHiveSessionValue("hive.security.authorization.tables.on.storagehandlers", true);
     TableIdentifier identifier = TableIdentifier.of("default", "customers");
     String query = String.format("CREATE EXTERNAL TABLE customers (" +

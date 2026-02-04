@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.metastore.client;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -1028,8 +1027,12 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
         new ArrayList<>(Arrays.asList(new_part)), false);
     addPartitionsReq.setCatName(new_part.getCatName());
     addPartitionsReq.setEnvironmentContext(envContext);
-    Partition p = client.add_partitions_req(addPartitionsReq).getPartitions().get(0);
-    return HiveMetaStoreClientUtils.deepCopy(p);
+
+    List<Partition> new_parts = client.add_partitions_req(addPartitionsReq).getPartitions();
+    if (new_parts != null && !new_parts.isEmpty()) {
+      return HiveMetaStoreClientUtils.deepCopy(new_parts.getFirst());
+    }
+    return null;
   }
 
   @Override
@@ -1076,10 +1079,13 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     AddPartitionsResult result = client.add_partitions_req(req);
     if (needResults) {
       List<Partition> new_parts = HiveMetaStoreClientUtils.deepCopyPartitions(result.getPartitions());
-      if (skipColumnSchemaForPartition) {
-        new_parts.forEach(partition -> partition.getSd().setCols(result.getPartitionColSchema()));
+      if (new_parts != null && !new_parts.isEmpty()) {
+        if (skipColumnSchemaForPartition) {
+          new_parts.forEach(partition -> partition.getSd().setCols(result.getPartitionColSchema()));
+        }
+        return FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, new_parts);
       }
-      return FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, new_parts);
+      return new ArrayList<>();
     }
     return null;
   }
@@ -1518,7 +1524,22 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   @Override
   public void dropDatabase(DropDatabaseRequest req) throws TException {
-    client.drop_database_req(req);
+    req.setAsyncDrop(!isLocalMetaStore());
+    AsyncOperationResp resp = client.drop_database_req(req);
+    req.setId(resp.getId());
+    try {
+      while (!resp.isFinished() && !Thread.currentThread().isInterrupted()) {
+        resp = client.drop_database_req(req);
+        if (resp.getMessage() != null) {
+          LOG.info(resp.getMessage());
+        }
+      }
+    } finally {
+      if (!resp.isFinished()) {
+        req.setCancel(true);
+        client.drop_database_req(req);
+      }
+    }
   }
 
   @Override
@@ -1679,7 +1700,22 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     dropTableReq.setCatalogName(catName);
     dropTableReq.setDropPartitions(true);
     dropTableReq.setEnvContext(envContext);
-    client.drop_table_req(dropTableReq);
+    dropTableReq.setAsyncDrop(!isLocalMetaStore());
+    AsyncOperationResp resp = client.drop_table_req(dropTableReq);
+    dropTableReq.setId(resp.getId());
+    try {
+      while (!resp.isFinished() && !Thread.currentThread().isInterrupted()) {
+        resp = client.drop_table_req(dropTableReq);
+        if (resp.getMessage() != null) {
+          LOG.info(resp.getMessage());
+        }
+      }
+    } finally {
+      if (!resp.isFinished()) {
+        dropTableReq.setCancel(true);
+        client.drop_table_req(dropTableReq);
+      }
+    }
   }
 
   @Override

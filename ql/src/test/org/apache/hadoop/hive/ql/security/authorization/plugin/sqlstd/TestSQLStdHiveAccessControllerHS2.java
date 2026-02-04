@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.security.HadoopDefaultAuthenticator;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.DisallowTransformHook;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzPluginException;
@@ -126,8 +127,8 @@ public class TestSQLStdHiveAccessControllerHS2 {
     assertConfModificationException(processedConf, "dummy.param");
     // does not make sense to have any of the metastore config variables to be
     // modifiable
-    for (ConfVars metaVar : HiveConf.metaVars) {
-      assertConfModificationException(processedConf, metaVar.varname);
+    for (MetastoreConf.ConfVars metaVar : MetastoreConf.metaVars) {
+      assertConfModificationException(processedConf, metaVar.getHiveName());
     }
   }
 

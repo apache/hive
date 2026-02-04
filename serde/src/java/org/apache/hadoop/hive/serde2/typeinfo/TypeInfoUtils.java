@@ -22,6 +22,7 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -498,6 +499,10 @@ public final class TypeInfoUtils {
           }
           return TypeInfoFactory.getDecimalTypeInfo(precision, scale);
 
+          case TIMESTAMP:
+            return TypeInfoFactory.getTimestampTypeInfo(getTimestampPrecision(params));
+          case TIMESTAMPLOCALTZ:
+            return TypeInfoFactory.getTimestampTZTypeInfo(ZoneId.systemDefault(), getTimestampPrecision(params));
         default:
           return TypeInfoFactory.getPrimitiveTypeInfo(typeEntry.typeName);
         }
@@ -576,6 +581,18 @@ public final class TypeInfoUtils {
 
       throw new RuntimeException("Internal error parsing position "
           + t.position + " of '" + typeInfoString + "'");
+    }
+
+    private static int getTimestampPrecision(String[] params) {
+      int prec = 6;
+      if (params != null) {
+        if (params.length == 1) {
+          prec = Integer.parseInt(params[0]);
+        } else if (params.length > 1) {
+          throw new IllegalArgumentException("Timestamp takes only one parameter, but " + params.length + " is seen");
+        }
+      }
+      return prec;
     }
 
     public PrimitiveParts parsePrimitiveParts() {

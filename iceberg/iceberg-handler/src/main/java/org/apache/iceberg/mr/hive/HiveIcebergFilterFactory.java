@@ -30,7 +30,6 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.hive.ql.io.sarg.ExpressionTree;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
@@ -111,9 +110,7 @@ public class HiveIcebergFilterFactory {
    */
   private static Expression translateLeaf(PredicateLeaf leaf) {
     TransformSpec transformSpec = TransformSpec.fromStringWithColumnName(leaf.getColumnName());
-    String columnName = transformSpec.getColumnName();
-    UnboundTerm<Object> column =
-        ObjectUtils.defaultIfNull(toTerm(columnName, transformSpec), Expressions.ref(columnName));
+    UnboundTerm<Object> column = SchemaUtils.toTerm(transformSpec);
 
     switch (leaf.getOperator()) {
       case EQUALS:
@@ -141,30 +138,6 @@ public class HiveIcebergFilterFactory {
         return isNull(column);
       default:
         throw new UnsupportedOperationException("Unknown operator: " + leaf.getOperator());
-    }
-  }
-
-  public static UnboundTerm<Object> toTerm(String columnName, TransformSpec transformSpec) {
-    if (transformSpec == null) {
-      return null;
-    }
-    switch (transformSpec.getTransformType()) {
-      case YEAR:
-        return Expressions.year(columnName);
-      case MONTH:
-        return Expressions.month(columnName);
-      case DAY:
-        return Expressions.day(columnName);
-      case HOUR:
-        return Expressions.hour(columnName);
-      case TRUNCATE:
-        return Expressions.truncate(columnName, transformSpec.getTransformParam());
-      case BUCKET:
-        return Expressions.bucket(columnName, transformSpec.getTransformParam());
-      case IDENTITY:
-        return null;
-      default:
-        throw new UnsupportedOperationException("Unknown transformSpec: " + transformSpec);
     }
   }
 

@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Collection;
 import java.util.List;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.PartitionKey;
@@ -32,11 +33,14 @@ import org.apache.iceberg.Schema;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.mr.TestHelper;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -46,6 +50,12 @@ import static org.apache.iceberg.types.Types.NestedField.required;
  * writing content into partitioned tables and by reading it back.
  */
 public class TestHiveIcebergPartitions extends HiveIcebergStorageHandlerWithEngineBase {
+
+  @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
+  public static Collection<Object[]> parameters() {
+    return HiveIcebergStorageHandlerWithEngineBase.getParameters(p ->
+        p.formatVersion() == 2);
+  }
 
   @Test
   public void testPartitionPruning() throws IOException {
@@ -245,5 +255,26 @@ public class TestHiveIcebergPartitions extends HiveIcebergStorageHandlerWithEngi
     HiveIcebergTestUtils.validateData(table, records, 0);
 
     HiveIcebergTestUtils.validateDataWithSQL(shell, "part_test", records, "id");
+  }
+
+  @Test
+  public void testShowPartitionsWithTransform() {
+    Schema schema = new Schema(
+        optional(1, "id", Types.IntegerType.get()),
+        optional(2, "part_field", Types.StringType.get()));
+    PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("part_field", 2).build();
+    List<Record> records = TestHelper.RecordsBuilder.newInstance(schema)
+        .add(1L, "Part1")
+        .add(2L, "Part2")
+        .add(3L, "Art3")
+        .build();
+    testTables.createTable(shell, "part_test", schema, spec, fileFormat, records);
+
+    List<Object[]> rows = shell.executeStatement("SHOW PARTITIONS part_test");
+    Assert.assertEquals(2, rows.size());
+
+    rows = shell.executeStatement("SHOW PARTITIONS part_test PARTITION(part_field='Art3')");
+    Assert.assertEquals(1, rows.size());
+    Assert.assertEquals("part_field_trunc=Ar", rows.get(0)[0]);
   }
 }

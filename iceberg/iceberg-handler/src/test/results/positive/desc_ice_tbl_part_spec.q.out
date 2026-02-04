@@ -1,0 +1,336 @@
+PREHOOK: query: DROP TABLE IF EXISTS ice_t
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: DROP TABLE IF EXISTS ice_t
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: CREATE EXTERNAL TABLE ice_t (
+  a INT,
+  b STRING
+)
+PARTITIONED BY (
+  c INT,
+  d STRING
+)
+WRITE LOCALLY
+ORDERED BY a DESC
+STORED BY ICEBERG
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: CREATE EXTERNAL TABLE ice_t (
+  a INT,
+  b STRING
+)
+PARTITIONED BY (
+  c INT,
+  d STRING
+)
+WRITE LOCALLY
+ORDERED BY a DESC
+STORED BY ICEBERG
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: INSERT INTO TABLE ice_t
+VALUES (1, "hello1", 2, "hello2")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: INSERT INTO TABLE ice_t
+VALUES (1, "hello1", 2, "hello2")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: INSERT INTO TABLE ice_t
+VALUES (3, "hello3", 4, "hello4")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: INSERT INTO TABLE ice_t
+VALUES (3, "hello3", 4, "hello4")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: INSERT INTO TABLE ice_t
+VALUES (5, "hello5", 6, "hello6")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: INSERT INTO TABLE ice_t
+VALUES (5, "hello5", 6, "hello6")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: DESC EXTENDED ice_t
+PARTITION (c = 6, d = "hello6")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: DESC EXTENDED ice_t
+PARTITION (c = 6, d = "hello6")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	int                 	Transform: identity 
+d                   	string              	Transform: identity 
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+c                   	IDENTITY            	 
+d                   	IDENTITY            	 
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: DESC FORMATTED ice_t
+PARTITION (c = 6, d = "hello6")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: DESC FORMATTED ice_t
+PARTITION (c = 6, d = "hello6")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+c                   	int                 	Transform: identity 
+d                   	string              	Transform: identity 
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+c                   	IDENTITY            	 
+d                   	IDENTITY            	 
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[6, hello6]         	 
+Database:           	default             	 
+Table:              	ice_t               	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	1                   
+	totalSize           	#Masked#
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[FieldSchema(name:a, type:int, comment:Transform: identity, Sort direction: DESC, Null sort order: NULLS_LAST)]	 
+PREHOOK: query: ALTER TABLE ice_t
+SET PARTITION SPEC (
+  c,
+  d,
+  truncate(2, b)
+)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: ALTER TABLE ice_t
+SET PARTITION SPEC (
+  c,
+  d,
+  truncate(2, b)
+)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: INSERT INTO TABLE ice_t
+VALUES (7, "hello7", 8, "hello8")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: INSERT INTO TABLE ice_t
+VALUES (7, "hello7", 8, "hello8")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: ALTER TABLE ice_t
+SET PARTITION SPEC (
+  bucket(16, c),
+  d,
+  truncate(2, b)
+)
+PREHOOK: type: ALTERTABLE_SETPARTSPEC
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: ALTER TABLE ice_t
+SET PARTITION SPEC (
+  bucket(16, c),
+  d,
+  truncate(2, b)
+)
+POSTHOOK: type: ALTERTABLE_SETPARTSPEC
+POSTHOOK: Input: default@ice_t
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: INSERT INTO TABLE ice_t
+VALUES (7, "hello7", 8, "hello8")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@ice_t
+POSTHOOK: query: INSERT INTO TABLE ice_t
+VALUES (7, "hello7", 8, "hello8")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ice_t
+PREHOOK: query: EXPLAIN DESC EXTENDED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: EXPLAIN DESC EXTENDED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+      Describe Table{"table:":"default.ice_t","partition:":{"b":"hello7","c":"8","d":"hello8"},"extended:":"true"}
+
+PREHOOK: query: EXPLAIN DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: EXPLAIN DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+Stage-1
+  Fetch Operator
+    limit:-1
+    Stage-0
+      Describe Table{"table:":"default.ice_t","partition:":{"b":"hello7","c":"8","d":"hello8"},"formatted:":"true"}
+
+PREHOOK: query: DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello7")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	string              	Transform: identity 
+b                   	string              	Transform: truncate[2]
+c                   	int                 	Transform: bucket[16]
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+d                   	IDENTITY            	 
+b                   	TRUNCATE[2]         	 
+c                   	BUCKET[16]          	 
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[hello8, hello7, 8] 	 
+Database:           	default             	 
+Table:              	ice_t               	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	1                   
+	totalSize           	#Masked#
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[FieldSchema(name:a, type:int, comment:Transform: identity, Sort direction: DESC, Null sort order: NULLS_LAST)]	 
+PREHOOK: query: DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello10")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: DESC FORMATTED ice_t
+PARTITION (c = 8, d = "hello8", b = "hello10")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	string              	Transform: identity 
+b                   	string              	Transform: truncate[2]
+c                   	int                 	Transform: bucket[16]
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+d                   	IDENTITY            	 
+b                   	TRUNCATE[2]         	 
+c                   	BUCKET[16]          	 
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[hello8, hello10, 8]	 
+Database:           	default             	 
+Table:              	ice_t               	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	1                   
+	totalSize           	#Masked#
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[FieldSchema(name:a, type:int, comment:Transform: identity, Sort direction: DESC, Null sort order: NULLS_LAST)]	 
+PREHOOK: query: DESC FORMATTED ice_t
+PARTITION (c = 4, d = "hello4")
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@ice_t
+POSTHOOK: query: DESC FORMATTED ice_t
+PARTITION (c = 4, d = "hello4")
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@ice_t
+# col_name            	data_type           	comment             
+a                   	int                 	                    
+b                   	string              	                    
+c                   	int                 	                    
+d                   	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+d                   	string              	Transform: identity 
+b                   	string              	Transform: truncate[2]
+c                   	int                 	Transform: bucket[16]
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+d                   	IDENTITY            	 
+b                   	TRUNCATE[2]         	 
+c                   	BUCKET[16]          	 
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[hello4, null, 4]   	 
+Database:           	default             	 
+Table:              	ice_t               	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	numFiles            	1                   
+	numRows             	1                   
+	totalSize           	#Masked#
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[FieldSchema(name:a, type:int, comment:Transform: identity, Sort direction: DESC, Null sort order: NULLS_LAST)]	 

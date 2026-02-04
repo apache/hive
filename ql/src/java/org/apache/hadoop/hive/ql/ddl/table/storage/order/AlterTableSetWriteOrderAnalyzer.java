@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortOrderUtils;
 import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -36,7 +37,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /**
  * Analyzer for ALTER TABLE ... SET WRITE [LOCALLY] ORDERED BY commands.
- * Currently supports Z-ORDER only. Regular ORDERED BY support will be added in a future commit.
+ * Supports both Z-ORDER and Natural Order for Iceberg tables.
  */
 @DDLType(types = HiveParser.TOK_ALTERTABLE_SET_WRITE_ORDER)
 public class AlterTableSetWriteOrderAnalyzer extends AbstractAlterTableAnalyzer {
@@ -56,32 +57,73 @@ public class AlterTableSetWriteOrderAnalyzer extends AbstractAlterTableAnalyzer 
     ASTNode orderNode = (ASTNode) command.getChild(0);
     if (orderNode.getType() == HiveParser.TOK_WRITE_LOCALLY_ORDERED_BY_ZORDER) {
       // Handle Z-ORDER
-      ASTNode columnListNode = (ASTNode) orderNode.getChild(0);
-      List<String> columnNames = new ArrayList<>();
-      for (int i = 0; i < columnListNode.getChildCount(); i++) {
-        ASTNode child = (ASTNode) columnListNode.getChild(i);
-        columnNames.add(unescapeIdentifier(child.getText()).toLowerCase());
-      }
-
-      if (columnNames.isEmpty()) {
-        throw new SemanticException("Z-order requires at least one column");
-      }
-
-      // Set Z-order properties in table props sort.order=ZORDER and sort.columns=col1,col2,...
-      Map<String, String> props = Map.of(
-          "sort.order", "ZORDER",
-          "sort.columns", String.join(",", columnNames)
-      );
-
-      AlterTableSetWriteOrderDesc desc = new AlterTableSetWriteOrderDesc(tableName, partitionSpec, props);
-      addInputsOutputsAlterTable(tableName, partitionSpec, desc, desc.getType(), false);
-      
-      rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+      handleZOrder(tableName, partitionSpec, orderNode);
     } else if (orderNode.getType() == HiveParser.TOK_WRITE_LOCALLY_ORDERED) {
-      // Regular ORDERED BY - to be implemented in future commit
-      throw new SemanticException("Regular ORDERED BY is not yet supported. Only ZORDER is supported.");
+      // Handle natural ORDERED BY
+      handleNaturalOrder(tableName, partitionSpec, orderNode);
     } else {
       throw new SemanticException("Unexpected token type: " + orderNode.getType());
     }
+  }
+
+  /**
+   * Handles Z-ORDER syntax: ALTER TABLE ... SET WRITE ORDERED BY ZORDER(col1, col2, ...)
+   */
+  private void handleZOrder(TableName tableName, Map<String, String> partitionSpec, ASTNode orderNode)
+      throws SemanticException {
+    ASTNode columnListNode = (ASTNode) orderNode.getChild(0);
+    List<String> columnNames = new ArrayList<>();
+    for (int i = 0; i < columnListNode.getChildCount(); i++) {
+      ASTNode child = (ASTNode) columnListNode.getChild(i);
+      columnNames.add(unescapeIdentifier(child.getText()).toLowerCase());
+    }
+
+    if (columnNames.isEmpty()) {
+      throw new SemanticException("Z-order requires at least one column");
+    }
+
+    // Set Z-order properties: sort.order=ZORDER and sort.columns=col1,col2,...
+    Map<String, String> props = Map.of(
+        "sort.order", "ZORDER",
+        "sort.columns", String.join(",", columnNames)
+    );
+
+    createAndAddTask(tableName, partitionSpec, props);
+  }
+
+  /**
+   * Handles regular ORDERED BY syntax: ALTER TABLE ... SET WRITE ORDERED BY (col1 ASC, col2 DESC NULLS LAST, ...)
+   * Creates a Hive-native SortFields JSON that will be converted to Iceberg format by the metahook.
+   */
+  private void handleNaturalOrder(TableName tableName, Map<String, String> partitionSpec, ASTNode orderNode)
+      throws SemanticException {
+    ASTNode sortColumnListNode = (ASTNode) orderNode.getChild(0);
+
+    // Parse and serialize to JSON using the utility
+    String sortOrderJson = SortOrderUtils.parseSortOrderToJson(sortColumnListNode);
+    if (sortOrderJson == null) {
+      throw new SemanticException("Failed to serialize sort order specification");
+    }
+
+    // Set the sort order JSON in table properties
+    // The metahook will detect this and convert to Iceberg format
+    Map<String, String> props = Map.of(
+        "default-sort-order", sortOrderJson
+    );
+
+    createAndAddTask(tableName, partitionSpec, props);
+  }
+
+  /**
+   * Creates the DDL descriptor, sets up inputs/outputs, and adds the task to rootTasks.
+   */
+  private void createAndAddTask(TableName tableName, Map<String, String> partitionSpec, 
+      Map<String, String> props) throws SemanticException {
+    AlterTableSetWriteOrderDesc desc =
+        new AlterTableSetWriteOrderDesc(tableName, partitionSpec, props);
+    addInputsOutputsAlterTable(
+        tableName, partitionSpec, desc, desc.getType(), false);
+    rootTasks.add(
+        TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

@@ -1,0 +1,5 @@
+PREHOOK: query: CREATE EXTERNAL TABLE nano_timestamp_basic (id INT, t timestamp with local time zone(9))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nano_timestamp_basic
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Column name t cannot be of type 'timestamp with local time zone(9)' as it is not supported in non-Iceberg tables.

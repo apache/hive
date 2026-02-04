@@ -474,11 +474,15 @@ public final class ShowUtils {
         newTable.add(new ArrayList<>());
       }
       for (List<String> sourceRow : table) {
-        if (newTable.size() != sourceRow.size()) {
+        if (newTable.size() < sourceRow.size()) {
           throw new RuntimeException("invalid table size");
         }
         for (int i = 0; i < sourceRow.size(); i++) {
           newTable.get(i).add(sourceRow.get(i));
+        }
+        // if a source row is too short, pad the output column with empty strings
+        for (int i = sourceRow.size(); i < newTable.size(); i++) {
+          newTable.get(i).add("");
         }
       }
       table = newTable;

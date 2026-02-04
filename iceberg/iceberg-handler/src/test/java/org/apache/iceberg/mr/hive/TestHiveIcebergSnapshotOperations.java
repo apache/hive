@@ -22,6 +22,9 @@ package org.apache.iceberg.mr.hive;
 import java.io.IOException;
 import java.util.List;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.mr.hive.test.TestHiveShell;
+import org.apache.iceberg.mr.hive.test.TestTables;
+import org.apache.iceberg.mr.hive.test.utils.HiveIcebergStorageHandlerTestUtils;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.junit.After;
 import org.junit.Assert;
@@ -29,7 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static org.apache.iceberg.mr.hive.TestTables.TestTableType.HIVE_CATALOG;
+import static org.apache.iceberg.mr.hive.test.TestTables.TestTableType.HIVE_CATALOG;
 import static org.junit.Assert.assertEquals;
 
 public class TestHiveIcebergSnapshotOperations {

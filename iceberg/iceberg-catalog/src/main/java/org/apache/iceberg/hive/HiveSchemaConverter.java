@@ -27,6 +27,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TimestampTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.expressions.Expressions;
@@ -130,6 +132,10 @@ class HiveSchemaConverter {
           case STRING:
             return Types.StringType.get();
           case TIMESTAMP:
+            TimestampTypeInfo ts = (TimestampTypeInfo) typeInfo;
+            if (ts.getPrecision() == 9) {
+              return Types.TimestampNanoType.withoutZone();
+            }
             return Types.TimestampType.withoutZone();
           case DATE:
             return Types.DateType.get();
@@ -141,6 +147,10 @@ class HiveSchemaConverter {
           default:
             // special case for Timestamp with Local TZ which is only available in Hive3
             if ("TIMESTAMPLOCALTZ".equalsIgnoreCase(((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory().name())) {
+              TimestampLocalTZTypeInfo tz = (TimestampLocalTZTypeInfo) typeInfo;
+              if (tz.getPrecision() == 9) {
+                return Types.TimestampNanoType.withZone();
+              }
               return Types.TimestampType.withZone();
             }
             throw new IllegalArgumentException("Unsupported Hive type (" +

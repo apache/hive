@@ -51,6 +51,12 @@ public class HiveIdentityPartitionConverters {
         } else {
           return new Timestamp(DateTimeUtil.timestampFromMicros((Long) value));
         }
+      case TIMESTAMP_NANO:
+        if (((Types.TimestampNanoType) type).shouldAdjustToUTC()) {
+          return DateTimeUtil.timestamptzFromNanos((Long) value).toOffsetTime();
+        } else {
+          return new Timestamp(DateTimeUtil.timestampFromNanos((Long) value));
+        }
       case DECIMAL:
         if (value.getClass().isAssignableFrom(BigDecimal.class)) {
           return HiveDecimal.create((BigDecimal) value);

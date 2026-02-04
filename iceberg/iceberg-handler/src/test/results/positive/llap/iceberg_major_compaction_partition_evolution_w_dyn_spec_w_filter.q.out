@@ -228,6 +228,11 @@ event_id            	int
 event_time          	timestamp with local time zone	                    
 event_src           	string              	                    
 	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+event_src           	string              	Transform: truncate[3]
+event_time          	timestamp with local time zone	Transform: month    
+	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 
 event_src           	TRUNCATE[3]         	 
@@ -333,6 +338,11 @@ POSTHOOK: Input: default@ice_orc
 event_id            	int                 	                    
 event_time          	timestamp with local time zone	                    
 event_src           	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+event_src           	string              	Transform: truncate[3]
+event_time          	timestamp with local time zone	Transform: month    
 	 	 
 # Partition Transform Information	 	 
 # col_name            	transform_type      	 

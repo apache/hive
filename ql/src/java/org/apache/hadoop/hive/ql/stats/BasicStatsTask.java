@@ -402,7 +402,7 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
           }
         }
 
-        if (!updates.isEmpty()) {
+        if (!updates.isEmpty() && !table.hasNonNativePartitionSupport()) {
           db.alterPartitions(tableFullName, updates, environmentContext, true);
         }
 

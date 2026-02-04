@@ -815,6 +815,80 @@ public class TestMapJoinOperator {
     return false;
   }
 
+  @Test
+  public void testDate0() throws Exception {
+    long seed = 8322;
+    int rowCount = 10;
+
+    int hiveConfVariation = 0;
+    boolean hiveConfVariationsDone = false;
+    do {
+      for (VectorMapJoinVariation vectorMapJoinVariation : VectorMapJoinVariation.values()) {
+        hiveConfVariationsDone =
+            doTestDate0(
+                seed,
+                rowCount,
+                hiveConfVariation,
+                vectorMapJoinVariation,
+                MapJoinPlanVariation.DYNAMIC_PARTITION_HASH_JOIN);
+      }
+      seed++;
+      hiveConfVariation++;
+    } while (!hiveConfVariationsDone);
+  }
+
+  public boolean doTestDate0(
+      long seed,
+      int rowCount,
+      int hiveConfVariation,
+      VectorMapJoinVariation vectorMapJoinVariation,
+      MapJoinPlanVariation mapJoinPlanVariation)
+      throws Exception {
+
+    HiveConf hiveConf = getHiveConf();
+
+    if (!addLongHiveConfVariation(hiveConfVariation, hiveConf)) {
+      return true;
+    }
+
+    TypeInfo[] bigTableTypeInfos;
+    int[] bigTableKeyColumnNums;
+    TypeInfo[] smallTableValueTypeInfos;
+    int[] smallTableRetainKeyColumnNums;
+
+    SmallTableGenerationParameters smallTableGenerationParameters =
+        new SmallTableGenerationParameters();
+
+    MapJoinTestDescription testDesc;
+    MapJoinTestData testData;
+
+    // Big Table: date key; Small Table: key retained, string value
+    bigTableTypeInfos = new TypeInfo[] {TypeInfoFactory.dateTypeInfo};
+    bigTableKeyColumnNums = new int[] {0};
+    smallTableRetainKeyColumnNums = new int[] {0};
+    smallTableValueTypeInfos = new TypeInfo[] {TypeInfoFactory.stringTypeInfo};
+
+    testDesc =
+        new MapJoinTestDescription(
+            hiveConf,
+            vectorMapJoinVariation,
+            bigTableTypeInfos,
+            bigTableKeyColumnNums,
+            smallTableValueTypeInfos,
+            smallTableRetainKeyColumnNums,
+            smallTableGenerationParameters,
+            mapJoinPlanVariation);
+
+    if (!goodTestVariation(testDesc)) {
+      return false;
+    }
+
+    testData = new MapJoinTestData(rowCount, testDesc, seed);
+    executeTest(testDesc, testData, "testDate0");
+
+    return false;
+  }
+
   private boolean addNonLongHiveConfVariation(int hiveConfVariation, HiveConf hiveConf) {
 
     // Set defaults.

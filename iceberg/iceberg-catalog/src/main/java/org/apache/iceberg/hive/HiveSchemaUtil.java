@@ -230,6 +230,9 @@ public final class HiveSchemaUtil {
 
     if (field.type().isPrimitiveType()) {
       Object expectedDefault = HiveSchemaUtil.getDefaultValue(defaultStr, field.type());
+      if (expectedDefault instanceof Literal<?>) {
+        expectedDefault = ((Literal<?>) expectedDefault).value();
+      }
       if (!Objects.equals(expectedDefault, field.writeDefault())) {
         difference.addDefaultChanged(field, expectedDefault);
       }
@@ -379,6 +382,12 @@ public final class HiveSchemaUtil {
           return "timestamp with local time zone";
         }
         return "timestamp";
+      case TIMESTAMP_NANO:
+        Types.TimestampNanoType timestampNanoType = (Types.TimestampNanoType) type;
+        if (timestampNanoType.shouldAdjustToUTC()) {
+          return "timestamp with local time zone(9)";
+        }
+        return "timestamp(9)";
       case FIXED:
       case BINARY:
         return "binary";
@@ -506,6 +515,15 @@ public final class HiveSchemaUtil {
               DateTimeUtil.timestampFromMicros((Long) value);
         }
         break;
+      case TIMESTAMP_NANO:
+        // Convert nanoseconds since epoch (Long) to LocalDateTime
+        if (value instanceof Long) {
+          Types.TimestampNanoType timestampNanoType = (Types.TimestampNanoType) type;
+          return timestampNanoType.shouldAdjustToUTC() ?
+              DateTimeUtil.timestamptzFromNanos((Long) value) :
+              DateTimeUtil.timestampFromNanos((Long) value);
+        }
+        break;
       default:
         // For other types, no conversion needed
         return value;
@@ -536,7 +554,7 @@ public final class HiveSchemaUtil {
     }
     return switch (type.typeId()) {
       case DATE, TIME, TIMESTAMP, TIMESTAMP_NANO ->
-          Literal.of(stripQuotes(defaultValue)).to(type).value();
+          Literal.of(stripQuotes(defaultValue)).to(type);
       default -> Conversions.fromPartitionString(type, stripQuotes(defaultValue));
     };
   }

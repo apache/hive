@@ -1067,14 +1067,23 @@ public abstract class BaseSemanticAnalyzer {
       typeName = varcharTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_TIMESTAMPLOCALTZ:
-      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo =
-          TypeInfoFactory.getTimestampTZTypeInfo(null);
+      int precision = 6;
+      if (node.getChildCount() > 0) {
+        precision = Integer.parseInt(node.getChild(0).getText());
+      }
+      TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = TypeInfoFactory.getTimestampTZTypeInfo(null, precision);
       typeName = timestampLocalTZTypeInfo.getQualifiedName();
       break;
     case HiveParser.TOK_DECIMAL:
       DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
       typeName = decTypeInfo.getQualifiedName();
       break;
+    case HiveParser.TOK_TIMESTAMP:
+      int prec = 6;
+      if (node.getChildCount() > 0) {
+        prec = Integer.parseInt(node.getChild(0).getText());
+      }
+      return TypeInfoFactory.getTimestampTypeInfo(prec).getQualifiedName();
     default:
       typeName = TOKEN_TO_TYPE.get(token);
     }
@@ -1736,23 +1745,6 @@ public abstract class BaseSemanticAnalyzer {
     } else {
       tbl.validatePartColumnNames(partSpec, shouldBeFull);
       validatePartColumnType(tbl, partSpec, astNode, conf);
-    }
-  }
-
-  /**
-   * Throws an UnsupportedOperationException in case the query has a partition clause but the table is never partitioned
-   * on the HMS-level. Even though table is not partitioned from the HMS's point of view, it might have some other
-   * notion of partitioning under the hood (e.g. Iceberg tables). In these cases, we might decide to proactively throw a
-   * more descriptive, unified error message instead of failing on some other semantic analysis validation step, which
-   * could provide a more counter-intuitive exception message.
-   *
-   * @param tbl The table object, should not be null.
-   * @param partitionClausePresent Whether a partition clause is present in the query (e.g. PARTITION(last_name='Don'))
-   */
-  protected static void validateUnsupportedPartitionClause(Table tbl, boolean partitionClausePresent) {
-    if (partitionClausePresent && tbl.hasNonNativePartitionSupport()) {
-      throw new UnsupportedOperationException("Using partition spec in query is unsupported for non-native table" +
-          " backed by: " + tbl.getStorageHandler().toString());
     }
   }
 

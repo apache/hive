@@ -80,11 +80,6 @@
       <version>${jmh.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.openjdk.jmh</groupId>
-      <artifactId>jmh-generator-annprocess</artifactId>
-      <version>${jmh.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
     </dependency>
@@ -153,6 +148,9 @@
                     <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
                     <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                       <mainClass>org.apache.hadoop.hive.metastore.tools.BenchmarkTool</mainClass>
+                      <manifestEntries>
+                        <Multi-Release>true</Multi-Release>
+                      </manifestEntries>
                     </transformer>
                   </transformers>
                   <filters>
@@ -190,6 +188,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
           <fork>true</fork>
+          <proc>full</proc>
           <compilerArgs>
             <arg>-XDcompilePolicy=simple</arg>
             <arg>--should-stop=ifError=FLOW</arg>
@@ -210,6 +209,11 @@
               <groupId>com.google.errorprone</groupId>
               <artifactId>error_prone_core</artifactId>
               <version>${errorprone.core.version}</version>
+            </path>
+            <path>
+              <groupId>org.openjdk.jmh</groupId>
+              <artifactId>jmh-generator-annprocess</artifactId>
+              <version>${jmh.version}</version>
             </path>
           </annotationProcessorPaths>
           <forceJavacCompilerUse>true</forceJavacCompilerUse>

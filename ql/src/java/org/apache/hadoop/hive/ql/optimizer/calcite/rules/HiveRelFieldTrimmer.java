@@ -69,7 +69,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortExchange;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -390,10 +389,7 @@ public class HiveRelFieldTrimmer extends RelFieldTrimmer {
               true));
       nameList.add(extraField.getName());
     }
-
-    HiveProject hp = (HiveProject) relBuilder.push(dq).project(exprList, nameList).build();
-    hp.setSynthetic();
-    return hp;
+    return relBuilder.push(dq).project(exprList, nameList).build();
   }
 
   private boolean isRexLiteral(final RexNode rexNode) {

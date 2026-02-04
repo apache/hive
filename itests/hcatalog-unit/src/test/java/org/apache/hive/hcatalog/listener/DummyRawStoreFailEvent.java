@@ -115,6 +115,16 @@ public class DummyRawStoreFailEvent extends ObjectStore {
   }
 
   @Override
+  public void dropPartitions(String catName, String dbName, String tblName, List<String> partNames)
+      throws MetaException, NoSuchObjectException {
+    if (shouldEventSucceed) {
+      super.dropPartitions(catName, dbName, tblName, partNames);
+    } else {
+      throw new RuntimeException("Event failed.");
+    }
+  }
+
+  @Override
   public Table alterTable(String catName, String dbName, String name, Table newTable, String queryValidWriteIds)
       throws InvalidObjectException, MetaException {
     if (shouldEventSucceed) {

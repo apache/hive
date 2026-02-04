@@ -20,8 +20,6 @@
 package org.apache.iceberg.mr.hive;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -29,11 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -54,6 +53,7 @@ import org.apache.hadoop.hive.metastore.client.ThriftHiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.ddl.misc.sortoder.SortFieldDesc;
 import org.apache.hadoop.hive.ql.ddl.table.AlterTableType;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -85,13 +85,17 @@ import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileScanTask;
 import org.apache.iceberg.MetadataTableType;
 import org.apache.iceberg.MetadataTableUtils;
+import org.apache.iceberg.NullOrder;
 import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.PartitionsTable;
+import org.apache.iceberg.ReplaceSortOrder;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.SortOrder;
+import org.apache.iceberg.SortOrderParser;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.TableMetadataParser;
@@ -130,7 +134,6 @@ import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.relocated.com.google.common.collect.Sets;
-import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.Pair;
@@ -567,56 +570,47 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
 
   @Override
   public void preTruncateTable(org.apache.hadoop.hive.metastore.api.Table table, EnvironmentContext context,
-      List<String> partNames)
-      throws MetaException {
+      List<String> partNames) throws MetaException {
+
     this.tableProperties = IcebergTableProperties.getTableProperties(table, conf);
     this.icebergTable = Catalogs.loadTable(conf, tableProperties);
-    Map<String, PartitionField> partitionFieldMap = icebergTable.spec().fields().stream()
-        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
-    Expression finalExp = CollectionUtils.isEmpty(partNames) ? Expressions.alwaysTrue() : Expressions.alwaysFalse();
-    if (partNames != null) {
-      for (String partName : partNames) {
-        Map<String, String> specMap = Warehouse.makeSpecFromName(partName);
-        Expression subExp = Expressions.alwaysTrue();
-        for (Map.Entry<String, String> entry : specMap.entrySet()) {
-          // Since Iceberg encodes the values in UTF-8, we need to decode it.
-          String partColValue = URLDecoder.decode(entry.getValue(), StandardCharsets.UTF_8);
 
-          if (partitionFieldMap.containsKey(entry.getKey())) {
-            PartitionField partitionField = partitionFieldMap.get(entry.getKey());
-            Type resultType = partitionField.transform().getResultType(icebergTable.schema()
-                    .findField(partitionField.sourceId()).type());
-            TransformSpec.TransformType transformType = TransformSpec.fromString(partitionField.transform().toString());
-            Object value = Conversions.fromPartitionString(resultType, partColValue);
-            Iterable iterable = () -> Collections.singletonList(value).iterator();
-            if (TransformSpec.TransformType.IDENTITY.equals(transformType)) {
-              Expression boundPredicate = Expressions.in(partitionField.name(), iterable);
-              subExp = Expressions.and(subExp, boundPredicate);
-            } else {
-              throw new MetaException(
-                  String.format("Partition transforms are not supported via truncate operation: %s", entry.getKey()));
-            }
-          } else {
-            throw new MetaException(String.format("No partition column/transform name by the name: %s",
-                entry.getKey()));
-          }
-        }
-        finalExp = Expressions.or(finalExp, subExp);
-      }
-    }
+    Expression predicate = generateExprFromPartitionNames(partNames);
 
     DeleteFiles delete = icebergTable.newDelete();
     String branchName = context.getProperties().get(Catalogs.SNAPSHOT_REF);
     if (branchName != null) {
       delete.toBranch(HiveUtils.getTableSnapshotRef(branchName));
     }
-    delete.deleteFromRowFilter(finalExp);
+
+    delete.deleteFromRowFilter(predicate);
     delete.commit();
     context.putToProperties("truncateSkipDataDeletion", "true");
   }
 
-  @Override public boolean createHMSTableInHook() {
-    return createHMSTableInHook;
+  private Expression generateExprFromPartitionNames(List<String> partNames) throws MetaException {
+    if (CollectionUtils.isEmpty(partNames)) {
+      return Expressions.alwaysTrue();
+    }
+
+    Map<String, PartitionField> partitionFields = icebergTable.spec().fields().stream()
+        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
+    Expression predicate = Expressions.alwaysFalse();
+
+    for (String partName : partNames) {
+      try {
+        Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partName);
+        Expression partitionExpr = IcebergTableUtil.generateExprForIdentityPartition(
+            icebergTable, partitionSpec, partitionFields);
+
+        predicate = Expressions.or(predicate, partitionExpr);
+      } catch (Exception e) {
+        throw new MetaException(
+            "Failed to generate expression for partition: " + partName + ". " + e.getMessage());
+      }
+    }
+
+    return predicate;
   }
 
   private void alterTableProperties(org.apache.hadoop.hive.metastore.api.Table hmsTable,
@@ -624,13 +618,63 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     Map<String, String> hmsTableParameters = hmsTable.getParameters();
     Splitter splitter = Splitter.on(PROPERTIES_SEPARATOR);
     UpdateProperties icebergUpdateProperties = icebergTable.updateProperties();
+
     if (contextProperties.containsKey(SET_PROPERTIES)) {
-      splitter.splitToList(contextProperties.get(SET_PROPERTIES))
-          .forEach(k -> icebergUpdateProperties.set(k, hmsTableParameters.get(k)));
+      List<String> propertiesToSet = splitter.splitToList(contextProperties.get(SET_PROPERTIES));
+
+      // Define handlers for properties that need special processing
+      Map<String, Consumer<String>> propertyHandlers = Maps.newHashMap();
+      propertyHandlers.put(TableProperties.DEFAULT_SORT_ORDER,
+          key -> handleDefaultSortOrder(hmsTable, hmsTableParameters));
+
+      // Process each property using handlers or default behavior
+      propertiesToSet.forEach(key ->
+          propertyHandlers.getOrDefault(key,
+              k -> icebergUpdateProperties.set(k, hmsTableParameters.get(k))
+          ).accept(key)
+      );
     } else if (contextProperties.containsKey(UNSET_PROPERTIES)) {
       splitter.splitToList(contextProperties.get(UNSET_PROPERTIES)).forEach(icebergUpdateProperties::remove);
     }
+
     icebergUpdateProperties.commit();
+  }
+
+  /**
+   * Handles conversion of Hive SortFields JSON to Iceberg SortOrder.
+   * Uses Iceberg's replaceSortOrder() API to properly handle the reserved property.
+   */
+  private void handleDefaultSortOrder(org.apache.hadoop.hive.metastore.api.Table hmsTable,
+      Map<String, String> hmsTableParameters) {
+    String sortOrderJSONString = hmsTableParameters.get(TableProperties.DEFAULT_SORT_ORDER);
+
+    List<SortFieldDesc> sortFieldDescList = parseSortFieldsJSON(sortOrderJSONString);
+    if (sortFieldDescList != null) {
+      try {
+        ReplaceSortOrder replaceSortOrder = icebergTable.replaceSortOrder();
+
+        // Chain all the sort field additions
+        for (SortFieldDesc fieldDesc : sortFieldDescList) {
+          NullOrder nullOrder = convertNullOrder(fieldDesc.getNullOrdering());
+
+          BiConsumer<String, NullOrder> sortMethod =
+              fieldDesc.getDirection() == SortFieldDesc.SortDirection.ASC ?
+                  replaceSortOrder::asc : replaceSortOrder::desc;
+
+          sortMethod.accept(fieldDesc.getColumnName(), nullOrder);
+        }
+
+        replaceSortOrder.commit();
+
+        // Update HMS table parameters with the Iceberg SortOrder JSON
+        SortOrder newSortOrder = icebergTable.sortOrder();
+        hmsTableParameters.put(TableProperties.DEFAULT_SORT_ORDER, SortOrderParser.toJson(newSortOrder));
+
+        LOG.debug("Successfully set sort order for table {}: {}", hmsTable.getTableName(), newSortOrder);
+      } catch (Exception e) {
+        LOG.warn("Failed to apply sort order for table {}: {}", hmsTable.getTableName(), sortOrderJSONString, e);
+      }
+    }
   }
 
   private void setupAlterOperationType(org.apache.hadoop.hive.metastore.api.Table hmsTable,
@@ -972,10 +1016,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     String columName = schema.findField(field.sourceId()).name();
     TransformSpec transformSpec = TransformSpec.fromString(field.transform().toString(), columName);
 
-    UnboundTerm<Object> partitionColumn =
-        ObjectUtils.defaultIfNull(HiveIcebergFilterFactory.toTerm(columName, transformSpec),
-            Expressions.ref(field.name()));
-
+    UnboundTerm<Object> partitionColumn = SchemaUtils.toTerm(transformSpec);
     return Expressions.equal(partitionColumn, partitionData.get(index, Object.class));
   }
 

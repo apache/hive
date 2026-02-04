@@ -68,11 +68,12 @@ import java.util.stream.Collectors;
 import java.util.LinkedList;
 import java.util.Optional;
 
-import static org.apache.hadoop.hive.metastore.HMSHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTERLOCATION;
 import static org.apache.hadoop.hive.metastore.HiveMetaHook.ALTER_TABLE_OPERATION_TYPE;
 import static org.apache.hadoop.hive.metastore.HiveMetaStoreClient.RENAME_PARTITION_MAKE_COPY;
+import static org.apache.hadoop.hive.metastore.handler.TruncateTableHandler.addTruncateBaseFile;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.findStaleColumns;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
@@ -212,7 +213,7 @@ public class HiveAlterHandler implements AlterHandler {
 
       // On a replica this alter table will be executed only if old and new both the databases are
       // available and being replicated into. Otherwise, it will be either create or drop of table.
-      isReplicated = HMSHandler.isDbReplicationTarget(olddb);
+      isReplicated = isDbReplicationTarget(olddb);
       if (oldt.getPartitionKeysSize() != 0) {
         isPartitionedTable = true;
       }
@@ -293,7 +294,7 @@ public class HiveAlterHandler implements AlterHandler {
             srcFs = wh.getFs(srcPath);
 
             // get new location
-            assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
+            assert(isReplicated == isDbReplicationTarget(db));
             if (renamedTranslatedToExternalTable) {
               if (!tableInSpecifiedLoc) {
                 destPath = new Path(newt.getSd().getLocation());
@@ -393,7 +394,7 @@ public class HiveAlterHandler implements AlterHandler {
         // operations other than table rename
         if (MetaStoreServerUtils.requireCalStats(null, null, newt, environmentContext) &&
             !isPartitionedTable) {
-          assert(isReplicated == HMSHandler.isDbReplicationTarget(db));
+          assert(isReplicated == isDbReplicationTarget(db));
           // Update table stats. For partitioned table, we update stats in alterPartition()
           MetaStoreServerUtils.updateTableStatsSlow(db, newt, wh, false, true, environmentContext);
         }

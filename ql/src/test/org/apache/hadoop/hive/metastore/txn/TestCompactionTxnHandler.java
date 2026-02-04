@@ -693,9 +693,10 @@ public class TestCompactionTxnHandler {
     rqst = new CompactionRequest("foo", "baz", CompactionType.MINOR);
     txnHandler.compact(rqst);
 
-    assertNotNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred-193892", WORKER_VERSION)));
+    FindNextCompactRequest nextCompactRqst = aFindNextCompactRequest("fred-193892", WORKER_VERSION);
+    assertNotNull(txnHandler.findNextToCompact(nextCompactRqst));
     Thread.sleep(200);
-    assertNotNull(txnHandler.findNextToCompact(aFindNextCompactRequest("fred-193892", WORKER_VERSION)));
+    assertNotNull(txnHandler.findNextToCompact(nextCompactRqst));
     txnHandler.revokeTimedoutWorkers(100);
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());

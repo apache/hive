@@ -41,7 +41,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.Context.RewritePolicy;
@@ -58,7 +57,6 @@ import org.apache.hadoop.mapred.JobContextImpl;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TaskAttemptID;
-import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.iceberg.AppendFiles;
 import org.apache.iceberg.ContentFile;
@@ -84,7 +82,6 @@ import org.apache.iceberg.mr.hive.compaction.IcebergCompactionService;
 import org.apache.iceberg.mr.hive.compaction.IcebergCompactionUtil;
 import org.apache.iceberg.mr.hive.writer.HiveIcebergWriter;
 import org.apache.iceberg.mr.hive.writer.WriterRegistry;
-import org.apache.iceberg.relocated.com.google.common.annotations.VisibleForTesting;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.base.Splitter;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
@@ -106,7 +103,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
   private static final Logger LOG = LoggerFactory.getLogger(HiveIcebergOutputCommitter.class);
 
   private static final Splitter TABLE_NAME_SPLITTER = Splitter.on("..");
-  private static final String FOR_COMMIT_EXTENSION = ".forCommit";
   private static final String CONFLICT_DETECTION_FILTER = "Conflict detection Filter Expression: {}";
 
   private ExecutorService workerPool;
@@ -159,7 +155,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             Table table = HiveTableUtil.deserializeTable(context.getJobConf(), output);
             if (table != null) {
-              String fileForCommitLocation = generateFileForCommitLocation(table.location(), jobConf,
+              String fileForCommitLocation = HiveTableUtil.fileForCommitLocation(table.location(), jobConf,
                   attemptID.getJobID(), attemptID.getTaskID().getId());
               if (writers.get(output) != null) {
                 List<DataFile> dataFiles = Lists.newArrayList();
@@ -288,7 +284,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             final Collection<JobContext> jobContexts = outputs.get(output);
             final Table table = output.table;
             jobContexts.forEach(jobContext -> jobLocations.add(
-                generateJobLocation(table.location(), jobConf, jobContext.getJobID()))
+                HiveTableUtil.jobLocation(table.location(), jobConf, jobContext.getJobID()))
             );
             commitTable(table.io(), fileExecutor, output, jobContexts, operation);
           });
@@ -360,7 +356,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             for (JobContext jobContext : outputs.get(output)) {
               LOG.info("Cleaning job for jobID: {}, table: {}", jobContext.getJobID(), output);
               Table table = output.table;
-              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              String jobLocation = HiveTableUtil.jobLocation(table.location(), jobConf, jobContext.getJobID());
               jobLocations.add(jobLocation);
               // list jobLocation to get number of forCommit files
               // we do this because map/reduce num in jobConf is unreliable and we have no access to vertex status info
@@ -404,7 +400,8 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
     FileStatus[] children = path.getFileSystem(jobConf).listStatus(path);
     LOG.debug("Listing the job location: {} yielded these files: {}", jobLocation, Arrays.toString(children));
     return Arrays.stream(children)
-        .filter(child -> !child.isDirectory() && child.getPath().getName().endsWith(FOR_COMMIT_EXTENSION))
+        .filter(child -> !child.isDirectory() &&
+            child.getPath().getName().endsWith(HiveTableUtil.FOR_COMMIT_EXTENSION))
         .collect(Collectors.toSet());
   }
 
@@ -451,7 +448,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
       }
 
       LOG.info("Committing job has started for table: {}, using location: {}",
-          table, generateJobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
+          table, HiveTableUtil.jobLocation(outputTable.table.location(), conf, jobContext.getJobID()));
 
       int numTasks = SessionStateUtil.getCommitInfo(conf, name)
           .map(info -> info.get(jobContext.getJobID().toString()))
@@ -771,7 +768,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         .executeWith(executor)
         .retry(3)
         .run(taskId -> {
-          final String taskFileName = generateFileForCommitLocation(location, conf, jobContext.getJobID(), taskId);
+          String taskFileName = HiveTableUtil.fileForCommitLocation(location, conf, jobContext.getJobID(), taskId);
           final FilesForCommit files = readFileForCommit(taskFileName, io);
           LOG.debug("Found Iceberg commitTask manifest file: {}\n{}", taskFileName, files);
 
@@ -785,34 +782,6 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
     return new FilesForCommit(dataFiles, deleteFiles, replacedDataFiles, referencedDataFiles, rewrittenDeleteFiles,
         mergedAndDeletedFiles);
-  }
-
-  /**
-   * Generates the job temp location based on the job configuration.
-   * Currently it uses TABLE_LOCATION/temp/QUERY_ID-jobId.
-   * @param location The location of the table
-   * @param conf The job's configuration
-   * @param jobId The JobID for the task
-   * @return The file to store the results
-   */
-  @VisibleForTesting
-  static String generateJobLocation(String location, Configuration conf, JobID jobId) {
-    String queryId = conf.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname);
-    return location + "/temp/" + queryId + "-" + jobId;
-  }
-
-  /**
-   * Generates file location based on the task configuration and a specific task id.
-   * This file will be used to store the data required to generate the Iceberg commit.
-   * Currently it uses TABLE_LOCATION/temp/QUERY_ID-jobId/task-[0..numTasks).forCommit.
-   * @param location The location of the table
-   * @param conf The job's configuration
-   * @param jobId The jobId for the task
-   * @param taskId The taskId for the commit file
-   * @return The file to store the results
-   */
-  private static String generateFileForCommitLocation(String location, Configuration conf, JobID jobId, int taskId) {
-    return generateJobLocation(location, conf, jobId) + "/task-" + taskId + FOR_COMMIT_EXTENSION;
   }
 
   private static void createFileForCommit(FilesForCommit writeResult, String location, FileIO io) throws IOException {
@@ -855,7 +824,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
             for (JobContext jobContext : outputs.get(output)) {
               Table table = output.table;
               FileSystem fileSystem = new Path(table.location()).getFileSystem(jobConf);
-              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              String jobLocation = HiveTableUtil.jobLocation(table.location(), jobConf, jobContext.getJobID());
               // list jobLocation to get number of forCommit files
               // we do this because map/reduce num in jobConf is unreliable
               // and we have no access to vertex status info
@@ -903,7 +872,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
           .run(output -> {
             for (JobContext jobContext : outputs.get(output)) {
               Table table = output.table;
-              String jobLocation = generateJobLocation(table.location(), jobConf, jobContext.getJobID());
+              String jobLocation = HiveTableUtil.jobLocation(table.location(), jobConf, jobContext.getJobID());
               // list jobLocation to get number of forCommit files
               // we do this because map/reduce num in jobConf is unreliable
               // and we have no access to vertex status info
