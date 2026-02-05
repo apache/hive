@@ -1573,7 +1573,7 @@ public class StatsUtils {
             csList.add(cs);
           }
           if (csList.size() == engfd.getChildren().size()) {
-            Optional<ColStatistics> res = se.estimate(csList, engfd.getChildren());
+            Optional<ColStatistics> res = se.estimate(csList);
             if (res.isPresent()) {
               ColStatistics newStats = res.get();
               colType = colType.toLowerCase();

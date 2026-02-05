@@ -27,12 +27,11 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 
@@ -63,12 +62,16 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
 public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private transient Integer numberOfDistinctConstants;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
 
     argumentOIs = arguments;
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
+
+    Set<Object> distinctConstants = new HashSet<>();
+    boolean allBranchesConstant = true;
 
     for (int i = 0; i + 1 < arguments.length; i += 2) {
       if (!arguments[i].getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
@@ -83,6 +86,13 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
             + "\" is expected but \"" + arguments[i + 1].getTypeName()
             + "\" is found");
       }
+      if (allBranchesConstant) {
+        if (arguments[i + 1] instanceof ConstantObjectInspector) {
+          distinctConstants.add(((ConstantObjectInspector) arguments[i + 1]).getWritableConstantValue());
+        } else {
+          allBranchesConstant = false;
+        }
+      }
     }
     if (arguments.length % 2 == 1) {
       int i = arguments.length - 2;
@@ -93,7 +103,17 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
             + "\" is expected but \"" + arguments[i + 1].getTypeName()
             + "\" is found");
       }
+      if (allBranchesConstant) {
+        if (arguments[i + 1] instanceof ConstantObjectInspector) {
+          distinctConstants.add(((ConstantObjectInspector) arguments[i + 1]).getWritableConstantValue());
+        } else {
+          allBranchesConstant = false;
+        }
+      }
     }
+
+    numberOfDistinctConstants = allBranchesConstant && !distinctConstants.isEmpty()
+        ? distinctConstants.size() : null;
 
     return returnOIResolver.get();
   }
@@ -141,57 +161,33 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
 
   @Override
   public StatEstimator getStatEstimator() {
-    return new WhenStatEstimator();
+    return new WhenStatEstimator(numberOfDistinctConstants);
   }
 
   static class WhenStatEstimator implements StatEstimator {
+    private final Integer numberOfDistinctConstants;
 
-    @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      return estimate(argStats, null);
+    WhenStatEstimator(Integer numberOfDistinctConstants) {
+      this.numberOfDistinctConstants = numberOfDistinctConstants;
     }
 
     @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats, List<ExprNodeDesc> argExprs) {
-      if (argExprs != null) {
-        Set<Object> distinctConstants = new HashSet<>();
-        boolean allConstants = true;
-
-        // Value expressions are at odd indices: 1, 3, 5, ...
-        for (int i = 1; i < argExprs.size(); i += 2) {
-          if (!(argExprs.get(i) instanceof ExprNodeConstantDesc)) {
-            allConstants = false;
-            break;
-          }
-          distinctConstants.add(((ExprNodeConstantDesc) argExprs.get(i)).getValue());
-        }
-        // Check ELSE branch if present (odd number of args)
-        if (allConstants && argExprs.size() % 2 == 1) {
-          ExprNodeDesc elseExpr = argExprs.get(argExprs.size() - 1);
-          if (!(elseExpr instanceof ExprNodeConstantDesc)) {
-            allConstants = false;
-          } else {
-            distinctConstants.add(((ExprNodeConstantDesc) elseExpr).getValue());
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      if (numberOfDistinctConstants != null) {
+        ColStatistics result = argStats.get(1).clone();
+        result.setCountDistint(numberOfDistinctConstants);
+        for (int i = 3; i < argStats.size(); i += 2) {
+          if (argStats.get(i).getAvgColLen() > result.getAvgColLen()) {
+            result.setAvgColLen(argStats.get(i).getAvgColLen());
           }
         }
-
-        if (allConstants && !distinctConstants.isEmpty()) {
-          ColStatistics result = argStats.get(1).clone();
-          result.setCountDistint(distinctConstants.size());
-          result.setIsEstimated(true);
-          for (int i = 3; i < argStats.size(); i += 2) {
-            if (argStats.get(i).getAvgColLen() > result.getAvgColLen()) {
-              result.setAvgColLen(argStats.get(i).getAvgColLen());
-            }
+        if (argStats.size() % 2 == 1) {
+          ColStatistics elseStat = argStats.get(argStats.size() - 1);
+          if (elseStat.getAvgColLen() > result.getAvgColLen()) {
+            result.setAvgColLen(elseStat.getAvgColLen());
           }
-          if (argStats.size() % 2 == 1) {
-            ColStatistics elseStat = argStats.get(argStats.size() - 1);
-            if (elseStat.getAvgColLen() > result.getAvgColLen()) {
-              result.setAvgColLen(elseStat.getAvgColLen());
-            }
-          }
-          return Optional.of(result);
         }
+        return Optional.of(result);
       }
 
       // Fall back to pessimistic combining

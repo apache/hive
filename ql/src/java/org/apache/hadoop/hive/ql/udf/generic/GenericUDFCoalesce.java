@@ -28,11 +28,10 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
@@ -49,6 +48,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private transient Integer numberOfDistinctConstants;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
@@ -56,6 +56,9 @@ public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvi
     argumentOIs = arguments;
 
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
+    Set<Object> distinctConstants = new HashSet<>();
+    boolean allConstants = true;
+
     for (int i = 0; i < arguments.length; i++) {
       if (!returnOIResolver.update(arguments[i])) {
         throw new UDFArgumentTypeException(i,
@@ -64,7 +67,18 @@ public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvi
             + "\" is expected but \"" + arguments[i].getTypeName()
             + "\" is found");
       }
+      if (allConstants) {
+        if (arguments[i] instanceof ConstantObjectInspector) {
+          distinctConstants.add(((ConstantObjectInspector) arguments[i]).getWritableConstantValue());
+        } else {
+          allConstants = false;
+        }
+      }
     }
+
+    numberOfDistinctConstants = allConstants && !distinctConstants.isEmpty()
+        ? distinctConstants.size() : null;
+
     return returnOIResolver.get();
   }
 
@@ -87,41 +101,27 @@ public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvi
 
   @Override
   public StatEstimator getStatEstimator() {
-    return new CoalesceStatEstimator();
+    return new CoalesceStatEstimator(numberOfDistinctConstants);
   }
 
   static class CoalesceStatEstimator implements StatEstimator {
+    private final Integer numberOfDistinctConstants;
 
-    @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      return estimate(argStats, null);
+    CoalesceStatEstimator(Integer numberOfDistinctConstants) {
+      this.numberOfDistinctConstants = numberOfDistinctConstants;
     }
 
     @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats, List<ExprNodeDesc> argExprs) {
-      if (argExprs != null && !argExprs.isEmpty()) {
-        Set<Object> distinctConstants = new HashSet<>();
-        boolean allConstants = true;
-
-        for (ExprNodeDesc expr : argExprs) {
-          if (!(expr instanceof ExprNodeConstantDesc)) {
-            allConstants = false;
-            break;
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      if (numberOfDistinctConstants != null) {
+        ColStatistics result = argStats.get(0).clone();
+        result.setCountDistint(numberOfDistinctConstants);
+        for (int i = 1; i < argStats.size(); i++) {
+          if (argStats.get(i).getAvgColLen() > result.getAvgColLen()) {
+            result.setAvgColLen(argStats.get(i).getAvgColLen());
           }
-          distinctConstants.add(((ExprNodeConstantDesc) expr).getValue());
         }
-
-        if (allConstants && !distinctConstants.isEmpty()) {
-          ColStatistics result = argStats.get(0).clone();
-          result.setCountDistint(distinctConstants.size());
-          result.setIsEstimated(true);
-          for (int i = 1; i < argStats.size(); i++) {
-            if (argStats.get(i).getAvgColLen() > result.getAvgColLen()) {
-              result.setAvgColLen(argStats.get(i).getAvgColLen());
-            }
-          }
-          return Optional.of(result);
-        }
+        return Optional.of(result);
       }
 
       // Fall back to pessimistic combining

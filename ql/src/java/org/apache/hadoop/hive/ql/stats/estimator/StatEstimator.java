@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
  * Enables statistics related computation on UDFs
@@ -41,18 +40,4 @@ public interface StatEstimator {
    * @return {@link ColStatistics} estimate for the actual UDF.
    */
   public Optional<ColStatistics> estimate(List<ColStatistics> argStats);
-
-  /**
-   * Computes the output statistics of the actual UDF with access to original expressions.
-   *
-   * This method provides access to the original expression nodes, allowing estimators to make
-   * more accurate estimates when expressions have special properties (e.g., all constants).
-   *
-   * @param argStats the statistics for every argument of the UDF
-   * @param argExprs the original expression nodes for every argument of the UDF
-   * @return {@link ColStatistics} estimate for the actual UDF.
-   */
-  default Optional<ColStatistics> estimate(List<ColStatistics> argStats, List<ExprNodeDesc> argExprs) {
-    return estimate(argStats);
-  }
 }

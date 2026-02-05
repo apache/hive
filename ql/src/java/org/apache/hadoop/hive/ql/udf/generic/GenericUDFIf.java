@@ -18,10 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -31,12 +30,11 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
@@ -129,6 +127,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
 public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private transient Integer numberOfDistinctConstants;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -161,6 +160,13 @@ public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
           + "\" and \"" + arguments[2].getTypeName() + "\"");
     }
 
+    if (arguments[1] instanceof ConstantObjectInspector
+        && arguments[2] instanceof ConstantObjectInspector) {
+      Object thenValue = ((ConstantObjectInspector) arguments[1]).getWritableConstantValue();
+      Object elseValue = ((ConstantObjectInspector) arguments[2]).getWritableConstantValue();
+      numberOfDistinctConstants = Objects.equals(thenValue, elseValue) ? 1 : 2;
+    }
+
     return returnOIResolver.get();
   }
 
@@ -185,36 +191,25 @@ public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
 
   @Override
   public StatEstimator getStatEstimator() {
-    return new IfStatEstimator();
+    return new IfStatEstimator(numberOfDistinctConstants);
   }
 
   static class IfStatEstimator implements StatEstimator {
+    private final Integer numberOfDistinctConstants;
 
-    @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      return estimate(argStats, null);
+    IfStatEstimator(Integer numberOfDistinctConstants) {
+      this.numberOfDistinctConstants = numberOfDistinctConstants;
     }
 
     @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats, List<ExprNodeDesc> argExprs) {
-      // argExprs: [condition, thenValue, elseValue]
-      if (argExprs != null && argExprs.size() == 3) {
-        ExprNodeDesc thenExpr = argExprs.get(1);
-        ExprNodeDesc elseExpr = argExprs.get(2);
-
-        if (thenExpr instanceof ExprNodeConstantDesc && elseExpr instanceof ExprNodeConstantDesc) {
-          Set<Object> distinctConstants = new HashSet<>();
-          distinctConstants.add(((ExprNodeConstantDesc) thenExpr).getValue());
-          distinctConstants.add(((ExprNodeConstantDesc) elseExpr).getValue());
-
-          ColStatistics result = argStats.get(1).clone();
-          result.setCountDistint(distinctConstants.size());
-          result.setIsEstimated(true);
-          if (argStats.get(2).getAvgColLen() > result.getAvgColLen()) {
-            result.setAvgColLen(argStats.get(2).getAvgColLen());
-          }
-          return Optional.of(result);
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      if (numberOfDistinctConstants != null) {
+        ColStatistics result = argStats.get(1).clone();
+        result.setCountDistint(numberOfDistinctConstants);
+        if (argStats.get(2).getAvgColLen() > result.getAvgColLen()) {
+          result.setAvgColLen(argStats.get(2).getAvgColLen());
         }
+        return Optional.of(result);
       }
 
       // Fall back to pessimistic combining
@@ -223,7 +218,6 @@ public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
       combiner.add(argStats.get(2));
       return combiner.getResult();
     }
-
   }
 
 }
