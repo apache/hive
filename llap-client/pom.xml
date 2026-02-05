@@ -232,8 +232,6 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -241,10 +239,10 @@
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
@@ -254,5 +252,7 @@
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
 </project>

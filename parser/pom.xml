@@ -64,20 +64,11 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifactId -->
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr3-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>antlr</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <sourceDirectory>${basedir}/src/java</sourceDirectory>
           <includes>
@@ -87,6 +78,13 @@
             <include>**/HintParser.g</include>
           </includes>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -94,10 +92,10 @@
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>${project.build.directory}/generated-sources/java</source>
@@ -107,5 +105,7 @@
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
 </project>

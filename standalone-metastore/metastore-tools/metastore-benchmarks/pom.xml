@@ -13,14 +13,14 @@
   limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>hive-metastore-tools</artifactId>
     <groupId>org.apache.hive</groupId>
+    <artifactId>hive-metastore-tools</artifactId>
     <version>4.3.0-SNAPSHOT</version>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
-  <packaging>jar</packaging>
   <artifactId>hive-metastore-benchmarks</artifactId>
+  <packaging>jar</packaging>
   <name>Hive metastore benchmarks</name>
   <properties>
     <standalone.metastore.path.to.root>../..</standalone.metastore.path.to.root>
@@ -123,64 +123,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <profiles>
-    <profile>
-      <!--
-      The dist profile generates two full jars with dependencies - obe for HMSBenchmarks and
-      another for HMSTool.
-      -->
-      <id>perf</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
-            <version>3.4.0</version>
-            <executions>
-              <execution>
-                <phase>package</phase>
-                <goals>
-                  <goal>shade</goal>
-                </goals>
-                <configuration>
-                  <finalName>hmsbench</finalName>
-                  <transformers>
-                    <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
-                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                      <mainClass>org.apache.hadoop.hive.metastore.tools.BenchmarkTool</mainClass>
-                      <manifestEntries>
-                        <Multi-Release>true</Multi-Release>
-                      </manifestEntries>
-                    </transformer>
-                  </transformers>
-                  <filters>
-                    <filter>
-                      <!--
-                      https://logging.apache.org/log4j/transform/latest/#log4j-plugin-cache-transformer
-                      -->
-                      <artifact>*:*</artifact>
-                      <excludes>
-                        <exclude>META-INF/*.SF</exclude>
-                        <exclude>META-INF/*.DSA</exclude>
-                        <exclude>META-INF/*.RSA</exclude>
-                      </excludes>
-                    </filter>
-                  </filters>
-                </configuration>
-              </execution>
-            </executions>
-            <dependencies>
-              <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
-                <version>0.1.0</version>
-              </dependency>
-            </dependencies>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
   <build>
     <plugins>
       <plugin>
@@ -231,4 +173,62 @@
       </plugin>
     </plugins>
   </reporting>
+  <profiles>
+    <profile>
+      <!--
+      The dist profile generates two full jars with dependencies - obe for HMSBenchmarks and
+      another for HMSTool.
+      -->
+      <id>perf</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.4.0</version>
+            <dependencies>
+              <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
+                <version>0.1.0</version>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>shade</goal>
+                </goals>
+                <phase>package</phase>
+                <configuration>
+                  <finalName>hmsbench</finalName>
+                  <transformers>
+                    <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"></transformer>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                      <mainClass>org.apache.hadoop.hive.metastore.tools.BenchmarkTool</mainClass>
+                      <manifestEntries>
+                        <Multi-Release>true</Multi-Release>
+                      </manifestEntries>
+                    </transformer>
+                  </transformers>
+                  <filters>
+                    <filter>
+                      <!--
+                      https://logging.apache.org/log4j/transform/latest/#log4j-plugin-cache-transformer
+                      -->
+                      <artifact>*:*</artifact>
+                      <excludes>
+                        <exclude>META-INF/*.SF</exclude>
+                        <exclude>META-INF/*.DSA</exclude>
+                        <exclude>META-INF/*.RSA</exclude>
+                      </excludes>
+                    </filter>
+                  </filters>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

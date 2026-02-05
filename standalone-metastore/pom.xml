@@ -80,8 +80,7 @@
     <mysql.version>8.2.0</mysql.version>
     <postgres.version>42.7.3</postgres.version>
     <oracle.version>21.3.0.0</oracle.version>
-    <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
-    </dropwizard-metrics-hadoop-metrics2-reporter.version>
+    <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
     <guava.version>22.0</guava.version>
     <hadoop.version>3.4.2</hadoop.version>
@@ -130,8 +129,7 @@
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
-    <thrift.args>-I ${thrift.home} -strict --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
-    </thrift.args>
+    <thrift.args>-I ${thrift.home} -strict --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb</thrift.args>
     <wiremock.jre8.standalone.version>2.32.0</wiremock.jre8.standalone.version>
     <project.build.outputTimestamp>2025-01-01T00:00:00Z</project.build.outputTimestamp>
   </properties>
@@ -706,14 +704,6 @@
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <excludes>
             <exclude>*.patch</exclude>
@@ -737,6 +727,14 @@
             <exclude>**/test/resources/**/*.json</exclude>
           </excludes>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -773,6 +771,13 @@
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
             <version>4.8.6.6</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+              <timeout>60000000</timeout>
+            </configuration>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
@@ -781,13 +786,6 @@
                 <version>${spotbugs.version}</version>
               </dependency>
             </dependencies>
-            <configuration>
-              <fork>true</fork>
-              <maxHeap>2048</maxHeap>
-              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
-              <timeout>60000000</timeout>
-            </configuration>
           </plugin>
         </plugins>
       </build>
@@ -818,10 +816,10 @@
             <version>${maven.cyclonedx.plugin.version}</version>
             <executions>
               <execution>
-                <phase>package</phase>
                 <goals>
                   <goal>makeBom</goal>
                 </goals>
+                <phase>package</phase>
               </execution>
             </executions>
           </plugin>

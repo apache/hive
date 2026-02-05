@@ -218,11 +218,7 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <profiles>
-  </profiles>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifactId -->
       <plugin>
@@ -231,10 +227,10 @@
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>src/model</source>
@@ -244,5 +240,8 @@
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
+  <profiles></profiles>
 </project>

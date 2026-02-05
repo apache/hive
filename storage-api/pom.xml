@@ -174,8 +174,6 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <testResources>
       <testResource>
         <directory>${basedir}/src/test/resources</directory>
@@ -250,21 +248,23 @@
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <excludes>
             <exclude>checkstyle/**</exclude>
           </excludes>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
   <profiles>
     <profile>
@@ -277,10 +277,10 @@
             <version>${maven.cyclonedx.plugin.version}</version>
             <executions>
               <execution>
-                <phase>package</phase>
                 <goals>
                   <goal>makeBom</goal>
                 </goals>
+                <phase>package</phase>
               </execution>
             </executions>
           </plugin>
@@ -295,6 +295,12 @@
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
             <version>4.8.6.6</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+            </configuration>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
@@ -303,12 +309,6 @@
                 <version>${spotbugs.version}</version>
               </dependency>
             </dependencies>
-            <configuration>
-              <fork>true</fork>
-              <maxHeap>2048</maxHeap>
-              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
-            </configuration>
           </plugin>
         </plugins>
       </build>

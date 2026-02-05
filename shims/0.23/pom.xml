@@ -210,6 +210,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-common</artifactId>
       <version>${hadoop.version}</version>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>commons-beanutils</groupId>
@@ -232,7 +233,6 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -282,15 +282,15 @@
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-tests</artifactId>
       <version>${tez.version}</version>
-      <optional>true</optional>
       <classifier>tests</classifier>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-server-tests</artifactId>
       <version>${hadoop.version}</version>
-      <optional>true</optional>
       <classifier>tests</classifier>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>com.codahale.metrics</groupId>

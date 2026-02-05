@@ -11,23 +11,21 @@
   limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-iceberg</artifactId>
     <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg-shading</artifactId>
   <packaging>jar</packaging>
   <name>Hive Iceberg Shading</name>
-  <description>
-        This module collects all required Iceberg modules and their dependencies, and shades them.
+  <description>This module collects all required Iceberg modules and their dependencies, and shades them.
         Consuming modules only need to mark this module as their dependency to get any required Iceberg libs.
         This module has no sources of its own, only the built jar file contains the gathered and shaded libs.
         For Intellij this module is recommended to be ignored, to avoid the dependent modules considering this as a
-        module dependency, they should see this as a library dependency instead.
-    </description>
+        module dependency, they should see this as a library dependency instead.</description>
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <path.to.iceberg.root>..</path.to.iceberg.root>
@@ -71,10 +69,10 @@
             <artifactId>maven-shade-plugin</artifactId>
             <executions>
               <execution>
-                <phase>package</phase>
                 <goals>
                   <goal>shade</goal>
                 </goals>
+                <phase>package</phase>
                 <configuration>
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <relocations>

@@ -23,12 +23,12 @@
   <artifactId>hive-shims-aggregator</artifactId>
   <packaging>pom</packaging>
   <name>Hive Shims Aggregator</name>
-  <properties>
-    <hive.path.to.root>..</hive.path.to.root>
-  </properties>
   <modules>
     <module>common</module>
     <module>0.23</module>
     <module>aggregator</module>
   </modules>
+  <properties>
+    <hive.path.to.root>..</hive.path.to.root>
+  </properties>
 </project>

@@ -468,17 +468,15 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <resources>
       <resource>
+        <filtering>false</filtering>
         <directory>src/main/resources</directory>
         <excludes>
           <exclude>*.py</exclude>
           <exclude>*.pyc</exclude>
           <exclude>llap-daemon-log4j.properties</exclude>
         </excludes>
-        <filtering>false</filtering>
       </resource>
     </resources>
     <plugins>
@@ -488,10 +486,10 @@
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
@@ -526,5 +524,7 @@
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
 </project>

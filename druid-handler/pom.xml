@@ -89,6 +89,7 @@
       <groupId>org.apache.druid</groupId>
       <artifactId>druid-server</artifactId>
       <version>${druid.version}</version>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>io.tesla.aether</groupId>
@@ -119,12 +120,12 @@
           <artifactId>javax.el</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.druid</groupId>
       <artifactId>druid-processing</artifactId>
       <version>${druid.version}</version>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>com.ibm.icu</groupId>
@@ -152,12 +153,12 @@
           <artifactId>annotations</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.druid.extensions</groupId>
       <artifactId>druid-hdfs-storage</artifactId>
       <version>${druid.version}</version>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -180,19 +181,18 @@
           <artifactId>aws-java-sdk-s3</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.druid.extensions</groupId>
       <artifactId>mysql-metadata-storage</artifactId>
       <version>${druid.version}</version>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>mysql</groupId>
           <artifactId>mysql-connector-java</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.druid.extensions</groupId>
@@ -244,8 +244,8 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <scope>provided</scope>
       <artifactId>hadoop-mapreduce-client-core</artifactId>
+      <scope>provided</scope>
       <optional>true</optional>
       <exclusions>
         <exclusion>
@@ -317,6 +317,23 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+  </build>
   <profiles>
     <profile>
       <id>dev-fast-build</id>
@@ -337,10 +354,10 @@
               <!-- we need to shade jackson, as there is a conflict between versions
               used by Hive (2.4.2) and Druid (2.4.6) -->
               <execution>
-                <phase>package</phase>
                 <goals>
                   <goal>shade</goal>
                 </goals>
+                <phase>package</phase>
                 <configuration>
                   <shadeTestJar>true</shadeTestJar>
                   <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -414,21 +431,4 @@
       </build>
     </profile>
   </profiles>
-  <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

@@ -149,13 +149,13 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <!-- test inter-project -->
     <dependency>
@@ -180,6 +180,15 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/resources</directory>
+      </resource>
+    </resources>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+  </build>
   <profiles>
     <profile>
       <id>dist</id>
@@ -202,10 +211,10 @@
             <artifactId>maven-shade-plugin</artifactId>
             <executions>
               <execution>
-                <phase>package</phase>
                 <goals>
                   <goal>shade</goal>
                 </goals>
+                <phase>package</phase>
                 <configuration>
                   <minimizeJar>${packaging.minimizeJar}</minimizeJar>
                   <shadedArtifactAttached>true</shadedArtifactAttached>
@@ -480,13 +489,4 @@
       </build>
     </profile>
   </profiles>
-  <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
-    <resources>
-      <resource>
-        <directory>${basedir}/src/resources</directory>
-      </resource>
-    </resources>
-  </build>
 </project>

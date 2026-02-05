@@ -115,8 +115,6 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -140,6 +138,8 @@
         </configuration>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
   <!-- Set the os.detected.classifier property based on the Maven detected OS
        because Hive's version of Maven doesn't support the os-maven-plugin.  -->
@@ -218,10 +218,10 @@
             <artifactId>maven-shade-plugin</artifactId>
             <executions>
               <execution>
-                <phase>package</phase>
                 <goals>
                   <goal>shade</goal>
                 </goals>
+                <phase>package</phase>
                 <configuration>
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <artifactSet>

@@ -10,18 +10,25 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
     <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-iceberg</artifactId>
   <version>4.3.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Iceberg Modules</name>
+  <modules>
+    <module>patched-iceberg-api</module>
+    <module>patched-iceberg-core</module>
+    <module>iceberg-shading</module>
+    <module>iceberg-catalog</module>
+    <module>iceberg-handler</module>
+  </modules>
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
     <path.to.iceberg.root>.</path.to.iceberg.root>
@@ -38,26 +45,6 @@
     <validate.skip>false</validate.skip>
     <caffeine.version>2.9.3</caffeine.version>
   </properties>
-  <modules>
-    <module>patched-iceberg-api</module>
-    <module>patched-iceberg-core</module>
-    <module>iceberg-shading</module>
-    <module>iceberg-catalog</module>
-    <module>iceberg-handler</module>
-  </modules>
-  <dependencies>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
-      <version>${iceberg.mockito-core.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.errorprone</groupId>
-      <artifactId>error_prone_annotations</artifactId>
-      <version>${google.errorprone.version}</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -186,20 +173,20 @@
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-standalone-metastore-server</artifactId>
-        <classifier>tests</classifier>
         <version>${standalone-metastore.version}</version>
+        <classifier>tests</classifier>
       </dependency>
       <dependency>
         <groupId>org.apache.hive</groupId>
         <artifactId>hive-iceberg-catalog</artifactId>
-        <classifier>tests</classifier>
         <version>${project.version}</version>
+        <classifier>tests</classifier>
       </dependency>
       <dependency>
         <groupId>org.apache.iceberg</groupId>
         <artifactId>iceberg-core</artifactId>
-        <classifier>tests</classifier>
         <version>${iceberg.version}</version>
+        <classifier>tests</classifier>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>
@@ -228,6 +215,19 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${iceberg.mockito-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>error_prone_annotations</artifactId>
+      <version>${google.errorprone.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
   <build>
     <plugins>
       <plugin>
@@ -248,13 +248,13 @@
         <configuration>
           <skip>${validate.skip}</skip>
           <java>
-            <removeUnusedImports/>
+            <removeUnusedImports></removeUnusedImports>
             <importOrder>
               <!-- normal imports, static imports -->
-              <order>,\# </order>
+              <order>,\#</order>
             </importOrder>
-            <trimTrailingWhitespace/>
-            <endWithNewline/>
+            <trimTrailingWhitespace></trimTrailingWhitespace>
+            <endWithNewline></endWithNewline>
             <indent>
               <spaces>true</spaces>
               <spacesPerTab>2</spacesPerTab>
@@ -264,10 +264,10 @@
         <executions>
           <execution>
             <id>validate</id>
-            <phase>validate</phase>
             <goals>
               <goal>check</goal>
             </goals>
+            <phase>validate</phase>
           </execution>
         </executions>
       </plugin>
@@ -289,10 +289,10 @@
         <executions>
           <execution>
             <id>validate</id>
-            <phase>validate</phase>
             <goals>
               <goal>check</goal>
             </goals>
+            <phase>validate</phase>
           </execution>
         </executions>
       </plugin>

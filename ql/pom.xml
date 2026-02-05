@@ -267,6 +267,7 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -293,7 +294,6 @@
           <artifactId>servlet-api</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -313,8 +313,8 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-common</artifactId>
-      <optional>true</optional>
       <scope>test</scope>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -337,13 +337,13 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -353,13 +353,13 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-common</artifactId>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>javax.servlet</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
       </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
@@ -520,8 +520,8 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
       <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -760,8 +760,8 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-dag</artifactId>
-      <optional>true</optional>
       <scope>test</scope>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -864,8 +864,8 @@
     <dependency>
       <groupId>com.esri.geometry</groupId>
       <artifactId>esri-geometry-api</artifactId>
-      <scope>compile</scope>
       <version>${esri.version}</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.roaringbitmap</groupId>
@@ -873,30 +873,7 @@
       <version>${roaringbit.version}</version>
     </dependency>
   </dependencies>
-  <profiles>
-    <profile>
-      <id>sources</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-source-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>attach-sources</id>
-                <goals>
-                  <goal>test-jar</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifactId -->
       <plugin>
@@ -904,10 +881,10 @@
         <artifactId>protoc-jar-maven-plugin</artifactId>
         <executions>
           <execution>
-            <phase>generate-sources</phase>
             <goals>
               <goal>run</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <protocArtifact>com.google.protobuf:protoc:${protobuf.version}</protocArtifact>
               <protocCommand>${protoc.path}</protocCommand>
@@ -945,32 +922,32 @@
         <executions>
           <execution>
             <id>generate-sources</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
             <phase>generate-sources</phase>
             <configuration>
               <target>
-                <property name="compile.classpath" refid="maven.compile.classpath"/>
-                <taskdef name="vectorcodegen" classname="org.apache.hadoop.hive.tools.GenVectorCode" classpath="${compile.classpath}"/>
-                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"/>
-                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/aggregates/gen/"/>
-                <mkdir dir="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"/>
-                <vectorcodegen templateBaseDir="${basedir}/src/gen/vectorization/" buildDir="${project.build.directory}"/>
+                <property name="compile.classpath" refid="maven.compile.classpath"></property>
+                <taskdef classname="org.apache.hadoop.hive.tools.GenVectorCode" classpath="${compile.classpath}" name="vectorcodegen"></taskdef>
+                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"></mkdir>
+                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/aggregates/gen/"></mkdir>
+                <mkdir dir="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"></mkdir>
+                <vectorcodegen buildDir="${project.build.directory}" templateBaseDir="${basedir}/src/gen/vectorization/"></vectorcodegen>
               </target>
             </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
           </execution>
           <execution>
             <id>setup-metastore-scripts</id>
-            <phase>process-test-resources</phase>
             <goals>
               <goal>run</goal>
             </goals>
+            <phase>process-test-resources</phase>
             <configuration>
               <target>
-                <mkdir dir="${test.tmp.dir}/scripts/metastore"/>
-                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade" overwrite="true">
-                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"/>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore"></mkdir>
+                <copy overwrite="true" todir="${test.tmp.dir}/scripts/metastore/upgrade">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/metastore-server/src/main/sql/"></fileset>
                 </copy>
               </target>
             </configuration>
@@ -1015,20 +992,20 @@
             jar called hive-exec-$version-shaded.jar but doing this now will cause backwards compat.
             issues-->
             <id>core-jar</id>
-            <phase>package</phase>
             <goals>
               <goal>jar</goal>
             </goals>
+            <phase>package</phase>
             <configuration>
               <classifier>core</classifier>
             </configuration>
           </execution>
           <execution>
             <id>fallbackauthorizer-jar</id>
-            <phase>package</phase>
             <goals>
               <goal>jar</goal>
             </goals>
+            <phase>package</phase>
             <configuration>
               <classifier>fallbackauthorizer</classifier>
               <includes>
@@ -1044,10 +1021,10 @@
         <executions>
           <execution>
             <id>build-exec-bundle</id>
-            <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
+            <phase>package</phase>
             <configuration>
               <artifactSet>
                 <includes>
@@ -1165,10 +1142,10 @@
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
@@ -1178,10 +1155,10 @@
           </execution>
           <execution>
             <id>add-test-sources</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-test-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>${project.build.directory}/generated-test-sources/java</source>
@@ -1191,5 +1168,28 @@
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
+  <profiles>
+    <profile>
+      <id>sources</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>test-jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

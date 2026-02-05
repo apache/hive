@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -29,9 +29,6 @@
   <artifactId>hive-hcatalog</artifactId>
   <packaging>pom</packaging>
   <name>Hive HCatalog</name>
-  <properties>
-    <hive.path.to.root>..</hive.path.to.root>
-  </properties>
   <modules>
     <module>core</module>
     <module>hcatalog-pig-adapter</module>
@@ -39,6 +36,9 @@
     <module>webhcat/java-client</module>
     <module>webhcat/svr</module>
   </modules>
+  <properties>
+    <hive.path.to.root>..</hive.path.to.root>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.hadoop</groupId>

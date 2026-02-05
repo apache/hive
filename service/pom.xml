@@ -243,15 +243,15 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
       <classifier>tests</classifier>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
       <classifier>tests</classifier>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -286,6 +286,7 @@
     <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>com.sun.jersey</groupId>
@@ -296,7 +297,6 @@
           <artifactId>jersey-client</artifactId>
         </exclusion>
       </exclusions>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.tez</groupId>
@@ -389,8 +389,6 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <resources>
       <resource>
         <directory>${project.build.directory}</directory>
@@ -406,10 +404,10 @@
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>${project.build.directory}/generated-sources/java</source>
@@ -425,27 +423,27 @@
           <!-- Generate web app sources -->
           <execution>
             <id>generate</id>
-            <phase>generate-sources</phase>
-            <configuration>
-              <target>
-                <property name="build.webapps" location="${project.build.directory}/hive-webapps"/>
-                <property name="src.webapps" location="${basedir}/src/resources/hive-webapps"/>
-                <property name="generated.sources" location="${project.build.directory}/generated-sources"/>
-                <mkdir dir="${build.webapps}"/>
-                <copy todir="${build.webapps}">
-                  <fileset dir="${src.webapps}">
-                    <exclude name="**/*.jsp"/>
-                    <exclude name="**/.*"/>
-                  </fileset>
-                </copy>
-                <taskdef classname="org.apache.jasper.JspC" name="jspcompiler" classpathref="maven.compile.classpath"/>
-                <mkdir dir="${build.webapps}/hiveserver2/WEB-INF"/>
-                <jspcompiler uriroot="${src.webapps}/hiveserver2" outputdir="${generated.sources}/java" package="org.apache.hive.generated.hiveserver2" webxml="${build.webapps}/hiveserver2/WEB-INF/web.xml"/>
-              </target>
-            </configuration>
             <goals>
               <goal>run</goal>
             </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <property location="${project.build.directory}/hive-webapps" name="build.webapps"></property>
+                <property location="${basedir}/src/resources/hive-webapps" name="src.webapps"></property>
+                <property location="${project.build.directory}/generated-sources" name="generated.sources"></property>
+                <mkdir dir="${build.webapps}"></mkdir>
+                <copy todir="${build.webapps}">
+                  <fileset dir="${src.webapps}">
+                    <exclude name="**/*.jsp"></exclude>
+                    <exclude name="**/.*"></exclude>
+                  </fileset>
+                </copy>
+                <taskdef classname="org.apache.jasper.JspC" classpathref="maven.compile.classpath" name="jspcompiler"></taskdef>
+                <mkdir dir="${build.webapps}/hiveserver2/WEB-INF"></mkdir>
+                <jspcompiler outputdir="${generated.sources}/java" package="org.apache.hive.generated.hiveserver2" uriroot="${src.webapps}/hiveserver2" webxml="${build.webapps}/hiveserver2/WEB-INF/web.xml"></jspcompiler>
+              </target>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -454,10 +452,10 @@
         <artifactId>jamon-maven-plugin</artifactId>
         <executions>
           <execution>
-            <phase>generate-sources</phase>
             <goals>
               <goal>translate</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <templateSourceDir>src/jamon</templateSourceDir>
               <templateOutputDir>target/generated-jamon</templateOutputDir>
@@ -484,8 +482,7 @@
               <content># now
                             eclipse.preferences.version=1
                             templateSourceDir=src/main/jamon
-                            templateOutputDir=target/generated-jamon
-                        </content>
+                            templateOutputDir=target/generated-jamon</content>
             </file>
           </additionalConfig>
         </configuration>
@@ -502,5 +499,7 @@
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
 </project>

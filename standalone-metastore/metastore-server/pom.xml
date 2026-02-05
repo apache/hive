@@ -13,12 +13,12 @@
   limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>hive-standalone-metastore</artifactId>
     <groupId>org.apache.hive</groupId>
+    <artifactId>hive-standalone-metastore</artifactId>
     <version>4.3.0-SNAPSHOT</version>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
   <artifactId>hive-standalone-metastore-server</artifactId>
   <name>Hive Metastore Server</name>
   <properties>
@@ -438,12 +438,12 @@
       <scope>test</scope>
       <exclusions>
         <exclusion>
-          <artifactId>junit-jupiter-api</artifactId>
           <groupId>org.junit.jupiter</groupId>
+          <artifactId>junit-jupiter-api</artifactId>
         </exclusion>
         <exclusion>
-          <artifactId>junit-platform-commons</artifactId>
           <groupId>org.junit.platform</groupId>
+          <artifactId>junit-platform-commons</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -494,6 +494,211 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>${basedir}/src/main/resources</directory>
+        <includes>
+          <include>package.jdo</include>
+        </includes>
+      </resource>
+    </resources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <dependencies>
+            <dependency>
+              <groupId>ant-contrib</groupId>
+              <artifactId>ant-contrib</artifactId>
+              <version>${ant.contrib.version}</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>ant</groupId>
+                  <artifactId>ant</artifactId>
+                </exclusion>
+              </exclusions>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${maven.exec.plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <!-- plugins are always listed in sorted order by groupId, artifactId -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>setup-test-dirs</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>process-test-resources</phase>
+            <configuration>
+              <target>
+                <delete dir="${test.tmp.dir}"></delete>
+                <delete dir="${test.warehouse.external.dir}"></delete>
+                <delete dir="${test.warehouse.dir}"></delete>
+                <mkdir dir="${test.tmp.dir}"></mkdir>
+                <mkdir dir="${test.warehouse.dir}"></mkdir>
+                <mkdir dir="${test.warehouse.external.dir}"></mkdir>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>setup-metastore-scripts</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>process-test-resources</phase>
+            <configuration>
+              <target>
+                <mkdir dir="${test.tmp.dir}/scripts/metastore/upgrade"></mkdir>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade">
+                  <fileset dir="${basedir}/src/main/sql/"></fileset>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <proc combine.self="override">full</proc>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.apache.logging.log4j</groupId>
+              <artifactId>log4j-core</artifactId>
+              <version>${log4j2.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+      <!-- TODO MS-SPLIT javadoc plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <reuseForks>false</reuseForks>
+          <forkCount>${test.forkcount}</forkCount>
+          <argLine>-Xmx2048m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.sql/java.sql=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED</argLine>
+          <systemPropertyVariables>
+            <build.dir>${project.build.directory}</build.dir>
+            <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>
+            <derby.version>${derby.version}</derby.version>
+            <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+            <log4j.debug>true</log4j.debug>
+            <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
+            <javax.jdo.option.ConnectionURL>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</javax.jdo.option.ConnectionURL>
+            <metastore.schema.verification>false</metastore.schema.verification>
+            <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
+            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+            <hive.metastore.warehouse.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.external.dir>
+          </systemPropertyVariables>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
+          </additionalClasspathElements>
+          <groups>${test.groups}</groups>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <sources>
+                <source>build/generated-sources</source>
+                <source>src/gen/version</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</mainClass>
+          <arguments>
+            <argument>${project.build.directory}/generated-sources/conf/metastore-site.xml.template</argument>
+          </arguments>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <phase>prepare-package</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.datanucleus</groupId>
+        <artifactId>datanucleus-maven-plugin</artifactId>
+        <version>6.0.0-release</version>
+        <configuration>
+          <api>JDO</api>
+          <verbose>false</verbose>
+          <log4j2Configuration>${basedir}/src/main/resources/datanucleus-log4j2.xml</log4j2Configuration>
+          <metadataIncludes>**/*.jdo</metadataIncludes>
+          <fork>false</fork>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>enhance</goal>
+            </goals>
+            <phase>process-classes</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>${antlr.version}</version>
+        <configuration>
+          <visitor>true</visitor>
+          <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+          <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
   <profiles>
     <profile>
       <id>thriftif</id>
@@ -502,8 +707,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-            </executions>
+            <executions></executions>
           </plugin>
         </plugins>
       </build>
@@ -516,6 +720,12 @@
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
             <version>4.8.6.6</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+            </configuration>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
@@ -524,12 +734,6 @@
                 <version>${spotbugs.version}</version>
               </dependency>
             </dependencies>
-            <configuration>
-              <fork>true</fork>
-              <maxHeap>2048</maxHeap>
-              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
-            </configuration>
           </plugin>
         </plugins>
       </build>
@@ -593,214 +797,4 @@
   </profile>
   -->
   </profiles>
-  <build>
-    <resources>
-      <resource>
-        <directory>${basedir}/src/main/resources</directory>
-        <includes>
-          <include>package.jdo</include>
-        </includes>
-      </resource>
-    </resources>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-antrun-plugin</artifactId>
-          <dependencies>
-            <dependency>
-              <groupId>ant-contrib</groupId>
-              <artifactId>ant-contrib</artifactId>
-              <version>${ant.contrib.version}</version>
-              <exclusions>
-                <exclusion>
-                  <groupId>ant</groupId>
-                  <artifactId>ant</artifactId>
-                </exclusion>
-              </exclusions>
-            </dependency>
-          </dependencies>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>exec-maven-plugin</artifactId>
-          <version>${maven.exec.plugin.version}</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-    <plugins>
-      <!-- plugins are always listed in sorted order by groupId, artifactId -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>setup-test-dirs</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <delete dir="${test.tmp.dir}"/>
-                <delete dir="${test.warehouse.external.dir}"/>
-                <delete dir="${test.warehouse.dir}"/>
-                <mkdir dir="${test.tmp.dir}"/>
-                <mkdir dir="${test.warehouse.dir}"/>
-                <mkdir dir="${test.warehouse.external.dir}"/>
-              </target>
-            </configuration>
-          </execution>
-          <execution>
-            <id>setup-metastore-scripts</id>
-            <phase>process-test-resources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <mkdir dir="${test.tmp.dir}/scripts/metastore/upgrade"/>
-                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade">
-                  <fileset dir="${basedir}/src/main/sql/"/>
-                </copy>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <proc combine.self="override">full</proc>
-          <annotationProcessorPaths>
-            <path>
-              <groupId>org.apache.logging.log4j</groupId>
-              <artifactId>log4j-core</artifactId>
-              <version>${log4j2.version}</version>
-            </path>
-          </annotationProcessorPaths>
-        </configuration>
-      </plugin>
-      <!-- TODO MS-SPLIT javadoc plugin -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <reuseForks>false</reuseForks>
-          <forkCount>${test.forkcount}</forkCount>
-          <argLine>-Xmx2048m --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.sql/java.sql=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED</argLine>
-          <systemPropertyVariables>
-            <build.dir>${project.build.directory}</build.dir>
-            <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>
-            <derby.version>${derby.version}</derby.version>
-            <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
-            <log4j.debug>true</log4j.debug>
-            <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
-            <javax.jdo.option.ConnectionURL>
-              jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true
-            </javax.jdo.option.ConnectionURL>
-            <metastore.schema.verification>false</metastore.schema.verification>
-            <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
-            <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
-            <hive.metastore.warehouse.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.external.dir>
-          </systemPropertyVariables>
-          <additionalClasspathElements>
-            <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
-          </additionalClasspathElements>
-          <groups>${test.groups}</groups>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>build/generated-sources</source>
-                <source>src/gen/version</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>java</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <mainClass>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</mainClass>
-          <arguments>
-            <argument>
-              ${project.build.directory}/generated-sources/conf/metastore-site.xml.template
-            </argument>
-          </arguments>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.datanucleus</groupId>
-        <artifactId>datanucleus-maven-plugin</artifactId>
-        <version>6.0.0-release</version>
-        <configuration>
-          <api>JDO</api>
-          <verbose>false</verbose>
-          <log4j2Configuration>${basedir}/src/main/resources/datanucleus-log4j2.xml
-          </log4j2Configuration>
-          <metadataIncludes>**/*.jdo</metadataIncludes>
-          <fork>false</fork>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>process-classes</phase>
-            <goals>
-              <goal>enhance</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4-maven-plugin</artifactId>
-        <version>${antlr.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>antlr4</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <visitor>true</visitor>
-          <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-          <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>

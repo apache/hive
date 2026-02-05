@@ -51,8 +51,8 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
-      <optional>true</optional>
       <version>${hadoop.version}</version>
+      <optional>true</optional>
       <exclusions>
         <exclusion>
           <groupId>commons-beanutils</groupId>
@@ -158,10 +158,7 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
-    <resources>
-    </resources>
+    <resources></resources>
     <plugins>
       <!-- plugins are always listed in sorted order by groupId, artifactId -->
       <plugin>
@@ -176,5 +173,7 @@
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
 </project>

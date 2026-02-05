@@ -76,7 +76,7 @@
     <!-- SonarCloud-related variables -->
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
     <!-- Test Properties -->
-    <test.extra.path/>
+    <test.extra.path></test.extra.path>
     <!--suppress UnresolvedMavenProperty -->
     <test.hive.hadoop.classpath>${maven.test.classpath}</test.hive.hadoop.classpath>
     <test.log4j.scheme>file://</test.log4j.scheme>
@@ -89,7 +89,7 @@
     <test.local.warehouse.dir>${project.build.directory}/localfs/warehouse</test.local.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
     <!-- To add additional exclude patterns set this property -->
-    <test.excludes.additional/>
+    <test.excludes.additional></test.excludes.additional>
     <!-- Plugin and Plugin Dependency Versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.test.jvm.args>-Xmx2048m -DJETTY_AVAILABLE_PROCESSORS=4 -Duser.country=US -Dio.netty.tryReflectionSetAccessible=true -Djava.locale.providers=COMPAT,CLDR --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.sql/java.sql=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED</maven.test.jvm.args>
@@ -241,32 +241,6 @@
     <keycloak.version>26.0.6</keycloak.version>
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
   </properties>
-  <repositories>
-    <!-- This needs to be removed before checking in-->
-    <repository>
-      <id>central</id>
-      <name>central</name>
-      <url>https://repo.maven.apache.org/maven2</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-    </repository>
-    <repository>
-      <!-- shibboleth doesn't publish artifacts on maven central
-        See https://wiki.shibboleth.net/confluence/display/DEV/Use+of+Maven+Central -->
-      <id>shibboleth</id>
-      <url>https://build.shibboleth.net/nexus/content/groups/public</url>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
   <dependencyManagement>
     <dependencies>
       <!-- dependencies are always listed in sorted order by groupId, artifactId -->
@@ -945,10 +919,10 @@
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-slf4j2-impl</artifactId>
-      	<version>2.24.3</version>
+        <version>2.24.3</version>
       </dependency>
       <dependency>
-      	<groupId>org.slf4j</groupId>
+        <groupId>org.slf4j</groupId>
         <artifactId>slf4j-reload4j</artifactId>
         <version>2.0.13</version>
       </dependency>
@@ -1309,8 +1283,8 @@
       <dependency>
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-zookeeper</artifactId>
-        <classifier>tests</classifier>
         <version>${hbase.version}</version>
+        <classifier>tests</classifier>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -1530,6 +1504,32 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
   </dependencies>
+  <repositories>
+    <!-- This needs to be removed before checking in-->
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <id>central</id>
+      <name>central</name>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <layout>default</layout>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <!-- shibboleth doesn't publish artifacts on maven central
+        See https://wiki.shibboleth.net/confluence/display/DEV/Use+of+Maven+Central -->
+      <id>shibboleth</id>
+      <url>https://build.shibboleth.net/nexus/content/groups/public</url>
+    </repository>
+  </repositories>
   <build>
     <pluginManagement>
       <plugins>
@@ -1650,34 +1650,34 @@
         <executions>
           <execution>
             <id>define-classpath</id>
-            <phase>process-resources</phase>
             <goals>
               <goal>run</goal>
             </goals>
+            <phase>process-resources</phase>
             <configuration>
               <exportAntProperties>true</exportAntProperties>
               <target>
-                <property name="maven.test.classpath" refid="maven.test.classpath"/>
+                <property name="maven.test.classpath" refid="maven.test.classpath"></property>
               </target>
             </configuration>
           </execution>
           <execution>
             <id>setup-test-dirs</id>
-            <phase>process-test-resources</phase>
             <goals>
               <goal>run</goal>
             </goals>
+            <phase>process-test-resources</phase>
             <configuration>
               <target>
-                <delete dir="${test.tmp.dir}"/>
-                <delete dir="${test.conf.dir}"/>
-                <delete dir="${test.warehouse.dir}"/>
-                <mkdir dir="${test.tmp.dir}"/>
-                <mkdir dir="${test.warehouse.dir}"/>
-                <mkdir dir="${test.conf.dir}"/>
+                <delete dir="${test.tmp.dir}"></delete>
+                <delete dir="${test.conf.dir}"></delete>
+                <delete dir="${test.warehouse.dir}"></delete>
+                <mkdir dir="${test.tmp.dir}"></mkdir>
+                <mkdir dir="${test.warehouse.dir}"></mkdir>
+                <mkdir dir="${test.conf.dir}"></mkdir>
                 <!-- copies hive-site.xml so it can be modified -->
                 <copy todir="${test.conf.dir}">
-                  <fileset dir="${basedir}/${hive.path.to.root}/data/conf/"/>
+                  <fileset dir="${basedir}/${hive.path.to.root}/data/conf/"></fileset>
                 </copy>
               </target>
             </configuration>
@@ -1793,10 +1793,10 @@
           </execution>
           <execution>
             <id>check-banned-imports</id>
-            <phase>initialize</phase>
             <goals>
               <goal>enforce</goal>
             </goals>
+            <phase>initialize</phase>
             <configuration>
               <rules>
                 <restrictImports implementation="de.skuzzle.enforcer.restrictimports.RestrictImports">
@@ -1905,7 +1905,7 @@
             <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
             <test.local.warehouse.dir>${test.warehouse.scheme}${test.local.warehouse.dir}</test.local.warehouse.dir>
             <!-- EnforceReadOnlyTables hook and QTestUtil -->
-            <test.src.tables/>
+            <test.src.tables></test.src.tables>
             <java.security.krb5.conf>${test.conf.dir}/krb5.conf</java.security.krb5.conf>
             <hadoop.version>${hadoop.version}</hadoop.version>
             <qfile>${qfile}</qfile>
@@ -1919,14 +1919,6 @@
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
         <configuration>
           <excludes>
             <exclude>.m2/**</exclude>
@@ -1980,6 +1972,14 @@
             <exclude>LICENSE-binary</exclude>
           </excludes>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jamon</groupId>
@@ -2022,10 +2022,10 @@
             <executions>
               <execution>
                 <id>check-thrift-version</id>
-                <phase>generate-sources</phase>
                 <goals>
                   <goal>exec</goal>
                 </goals>
+                <phase>generate-sources</phase>
                 <configuration>
                   <executable>sh</executable>
                   <workingDirectory>${basedir}</workingDirectory>
@@ -2037,8 +2037,7 @@
                       echo "========== Currently installed: ";
                       ${thrift.home}/bin/thrift -version;
                       echo "=================================================================================";
-                      exit 1
-                    </argument>
+                      exit 1</argument>
                   </arguments>
                 </configuration>
               </execution>
@@ -2050,30 +2049,30 @@
             <executions>
               <execution>
                 <id>generate-thrift-sources</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
                 <phase>generate-sources</phase>
                 <configuration>
                   <target>
-                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask" classpathref="maven.plugin.classpath"/>
-                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
-                    <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"/>
-                    <delete dir="${thrift.gen.dir}"/>
-                    <mkdir dir="${thrift.gen.dir}"/>
+                    <taskdef classname="net.sf.antcontrib.logic.ForTask" classpathref="maven.plugin.classpath" name="for"></taskdef>
+                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"></property>
+                    <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"></property>
+                    <delete dir="${thrift.gen.dir}"></delete>
+                    <mkdir dir="${thrift.gen.dir}"></mkdir>
                     <for param="thrift.file">
                       <path>
-                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift,src/main/thrift/*.thrift"/>
+                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift,src/main/thrift/*.thrift"></fileset>
                       </path>
                       <sequential>
-                        <echo message="Generating Thrift code for @{thrift.file}"/>
-                        <exec executable="${thrift.home}/bin/thrift" failonerror="true" dir=".">
-                          <arg line="${thrift.args} -strict -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "/>
+                        <echo message="Generating Thrift code for @{thrift.file}"></echo>
+                        <exec dir="." executable="${thrift.home}/bin/thrift" failonerror="true">
+                          <arg line="${thrift.args} -strict -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} "></arg>
                         </exec>
                       </sequential>
                     </for>
                   </target>
                 </configuration>
-                <goals>
-                  <goal>run</goal>
-                </goals>
               </execution>
             </executions>
           </plugin>
@@ -2151,6 +2150,12 @@
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-maven-plugin</artifactId>
             <version>4.8.6.6</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/${hive.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+            </configuration>
             <dependencies>
               <!-- Specify the version of spotbugs -->
               <dependency>
@@ -2159,12 +2164,6 @@
                 <version>${spotbugs.version}</version>
               </dependency>
             </dependencies>
-            <configuration>
-              <fork>true</fork>
-              <maxHeap>2048</maxHeap>
-              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
-              <excludeFilterFile>${basedir}/${hive.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
-            </configuration>
           </plugin>
         </plugins>
       </build>
@@ -2192,6 +2191,14 @@
           <family>Windows</family>
         </os>
       </activation>
+      <properties>
+        <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop.cmd</hadoop.bin.path>
+        <!--suppress UnresolvedMavenProperty -->
+        <test.extra.path>;${env.HADOOP_HOME}/bin</test.extra.path>
+        <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
+        <test.tmp.dir.uri>file:///${test.tmp.dir}</test.tmp.dir.uri>
+        <test.log4j.scheme>file:/</test.log4j.scheme>
+      </properties>
       <build>
         <plugins>
           <!-- maven.test.classpath (used for HIVE_HADOOP_TEST_CLASSPATH) exceeds the 8K Windows -->
@@ -2205,10 +2212,10 @@
             <executions>
               <execution>
                 <id>copy-dependencies</id>
-                <phase>package</phase>
                 <goals>
                   <goal>copy-dependencies</goal>
                 </goals>
+                <phase>package</phase>
                 <configuration>
                   <outputDirectory>${project.build.directory}/deplibs/</outputDirectory>
                   <overWriteReleases>false</overWriteReleases>
@@ -2220,14 +2227,6 @@
           </plugin>
         </plugins>
       </build>
-      <properties>
-        <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop.cmd</hadoop.bin.path>
-        <!--suppress UnresolvedMavenProperty -->
-        <test.extra.path>;${env.HADOOP_HOME}/bin</test.extra.path>
-        <test.hive.hadoop.classpath>${project.build.directory}/deplibs/*</test.hive.hadoop.classpath>
-        <test.tmp.dir.uri>file:///${test.tmp.dir}</test.tmp.dir.uri>
-        <test.log4j.scheme>file:/</test.log4j.scheme>
-      </properties>
     </profile>
     <profile>
       <id>itests</id>
@@ -2245,10 +2244,10 @@
             <version>${maven.cyclonedx.plugin.version}</version>
             <executions>
               <execution>
-                <phase>package</phase>
                 <goals>
                   <goal>makeBom</goal>
                 </goals>
+                <phase>package</phase>
               </execution>
             </executions>
           </plugin>

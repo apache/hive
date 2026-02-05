@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -239,8 +239,8 @@
     <resources>
       <resource>
         <targetPath>.</targetPath>
-        <directory>src/main/config</directory>
         <filtering>true</filtering>
+        <directory>src/main/config</directory>
       </resource>
     </resources>
     <plugins>

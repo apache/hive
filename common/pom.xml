@@ -356,6 +356,76 @@
       <version>${mockito-core.version}</version>
     </dependency>
   </dependencies>
+  <build>
+    <testResources>
+      <testResource>
+        <directory>${basedir}/src/test/resources</directory>
+      </testResource>
+    </testResources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-version-annotation</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <exec executable="bash" failonerror="true">
+                  <arg value="${basedir}/src/scripts/saveVersion.sh"></arg>
+                  <arg value="${project.version}"></arg>
+                  <arg value="${hive.version.shortname}"></arg>
+                  <arg value="${basedir}/src"></arg>
+                </exec>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <sources>
+                <source>src/gen</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+            <configuration>
+              <!--exclude configuration xml that might be picked up-->
+              <excludes>
+                <exclude>*.xml</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <scriptSourceDirectory>${basedir}/src/scripts</scriptSourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+  </build>
   <profiles>
     <profile>
       <id>sources</id>
@@ -386,17 +456,17 @@
             <executions>
               <execution>
                 <id>generate-template</id>
-                <phase>package</phase>
-                <configuration>
-                  <target>
-                    <property name="compile.classpath" refid="maven.runtime.classpath"/>
-                    <taskdef name="templategen" classname="org.apache.hadoop.hive.ant.GenHiveTemplate" classpath="${compile.classpath}"/>
-                    <templategen templateFile="${basedir}/../conf/hive-default.xml.template"/>
-                  </target>
-                </configuration>
                 <goals>
                   <goal>run</goal>
                 </goals>
+                <phase>package</phase>
+                <configuration>
+                  <target>
+                    <property name="compile.classpath" refid="maven.runtime.classpath"></property>
+                    <taskdef classname="org.apache.hadoop.hive.ant.GenHiveTemplate" classpath="${compile.classpath}" name="templategen"></taskdef>
+                    <templategen templateFile="${basedir}/../conf/hive-default.xml.template"></templategen>
+                  </target>
+                </configuration>
               </execution>
             </executions>
           </plugin>
@@ -404,74 +474,4 @@
       </build>
     </profile>
   </profiles>
-  <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
-    <scriptSourceDirectory>${basedir}/src/scripts</scriptSourceDirectory>
-    <testResources>
-      <testResource>
-        <directory>${basedir}/src/test/resources</directory>
-      </testResource>
-    </testResources>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>generate-version-annotation</id>
-            <phase>generate-sources</phase>
-            <configuration>
-              <target>
-                <exec executable="bash" failonerror="true">
-                  <arg value="${basedir}/src/scripts/saveVersion.sh"/>
-                  <arg value="${project.version}"/>
-                  <arg value="${hive.version.shortname}"/>
-                  <arg value="${basedir}/src"/>
-                </exec>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>src/gen</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-            <configuration>
-              <!--exclude configuration xml that might be picked up-->
-              <excludes>
-                <exclude>*.xml</exclude>
-              </excludes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

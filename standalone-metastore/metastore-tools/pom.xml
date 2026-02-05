@@ -15,13 +15,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
+    <groupId>org.apache.hive</groupId>
     <artifactId>hive-standalone-metastore</artifactId>
     <version>4.3.0-SNAPSHOT</version>
-    <groupId>org.apache.hive</groupId>
   </parent>
   <artifactId>hive-metastore-tools</artifactId>
-  <name>Hive Metastore Tools</name>
   <packaging>pom</packaging>
+  <name>Hive Metastore Tools</name>
   <modules>
     <module>metastore-benchmarks</module>
     <module>tools-common</module>
@@ -90,13 +90,13 @@
       <dependency>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jxr-plugin</artifactId>
+        <version>2.5</version>
         <exclusions>
           <exclusion>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
           </exclusion>
         </exclusions>
-        <version>2.5</version>
       </dependency>
       <dependency>
         <groupId>info.picocli</groupId>
@@ -126,10 +126,10 @@
         <executions>
           <execution>
             <id>assemble</id>
-            <phase>none</phase>
             <goals>
               <goal>single</goal>
             </goals>
+            <phase>none</phase>
           </execution>
         </executions>
       </plugin>

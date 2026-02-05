@@ -17,19 +17,19 @@
   ~ limitations under the License.
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
     <version>4.3.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <modelVersion>4.0.0</modelVersion>
-  <properties>
-    <hive.path.to.root>..</hive.path.to.root>
-  </properties>
   <artifactId>kafka-handler</artifactId>
   <packaging>jar</packaging>
   <name>Hive Kafka Storage Handler</name>
+  <properties>
+    <hive.path.to.root>..</hive.path.to.root>
+  </properties>
   <dependencies>
     <!-- Intra-project -->
     <dependency>
@@ -41,8 +41,8 @@
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>
-      <scope>provided</scope>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -101,8 +101,8 @@
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
       <version>${kafka.version}</version>
-      <scope>test</scope>
       <classifier>test</classifier>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
@@ -155,6 +155,51 @@
       <url>https://packages.confluent.io/maven/</url>
     </repository>
   </repositories>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro-maven-plugin</artifactId>
+          <version>${avro.version}</version>
+          <configuration>
+            <testSourceDirectory>${project.basedir}/src/test/resources</testSourceDirectory>
+            <testOutputDirectory>${project.basedir}/src/test/gen</testOutputDirectory>
+            <enableDecimalLogicalType>true</enableDecimalLogicalType>
+            <stringType>String</stringType>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>schema</goal>
+              </goals>
+              <phase>generate-test-sources</phase>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>schema</goal>
+            </goals>
+            <phase>generate-test-sources</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+      </plugin>
+    </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
+  </build>
   <profiles>
     <profile>
       <id>dev-fast-build</id>
@@ -171,10 +216,10 @@
             <artifactId>maven-shade-plugin</artifactId>
             <executions>
               <execution>
-                <phase>package</phase>
                 <goals>
                   <goal>shade</goal>
                 </goals>
+                <phase>package</phase>
                 <configuration>
                   <createDependencyReducedPom>false</createDependencyReducedPom>
                   <artifactSet>
@@ -207,49 +252,4 @@
       </build>
     </profile>
   </profiles>
-  <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.avro</groupId>
-        <artifactId>avro-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-test-sources</phase>
-            <goals>
-              <goal>schema</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-      </plugin>
-    </plugins>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.avro</groupId>
-          <artifactId>avro-maven-plugin</artifactId>
-          <version>${avro.version}</version>
-          <executions>
-            <execution>
-              <phase>generate-test-sources</phase>
-              <goals>
-                <goal>schema</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <testSourceDirectory>${project.basedir}/src/test/resources</testSourceDirectory>
-            <testOutputDirectory>${project.basedir}/src/test/gen</testOutputDirectory>
-            <enableDecimalLogicalType>true</enableDecimalLogicalType>
-            <stringType>String</stringType>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 </project>

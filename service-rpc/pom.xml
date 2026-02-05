@@ -68,8 +68,6 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>${basedir}/src/java</sourceDirectory>
-    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -77,10 +75,10 @@
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>src/gen/thrift/gen-javabean</source>
@@ -101,6 +99,8 @@
         </executions>
       </plugin>
     </plugins>
+    <sourceDirectory>${basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
   </build>
   <profiles>
     <profile>
@@ -114,10 +114,10 @@
             <executions>
               <execution>
                 <id>process-thrift-sources-interface-annotations</id>
-                <phase>process-sources</phase>
                 <goals>
                   <goal>replace</goal>
                 </goals>
+                <phase>process-sources</phase>
                 <configuration>
                   <basedir>${basedir}/src/gen/thrift/gen-javabean/org/apache/hive/service/rpc/thrift/</basedir>
                   <filesToInclude>*.java</filesToInclude>
@@ -142,18 +142,17 @@
               </execution>
               <execution>
                 <id>mask-password</id>
-                <phase>process-sources</phase>
                 <goals>
                   <goal>replace</goal>
                 </goals>
+                <phase>process-sources</phase>
                 <configuration>
                   <file>${basedir}/src/gen/thrift/gen-javabean/org/apache/hive/service/rpc/thrift/TOpenSessionReq.java</file>
                   <replacements>
                     <replacement>
-                      <token>      if \(this.password \=\= null\) \{\n        sb.append\(\"null"\)\;\n      \} else \{\n        sb.append\(this.password\)\;\n      \}</token>
+                      <token>if \(this.password \=\= null\) \{\n        sb.append\(\"null"\)\;\n      \} else \{\n        sb.append\(this.password\)\;\n      \}</token>
                       <value>// Password found and replaced by maven-replacer-plugin in hive-service-rpc.pom. Please update if this file changes.
-      sb.append("-");
-                      </value>
+      sb.append("-");</value>
                     </replacement>
                   </replacements>
                 </configuration>
