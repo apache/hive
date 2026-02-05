@@ -789,7 +789,7 @@ public class TestStatsRulesProcFactory {
     when(joinCond.getRight()).thenReturn(0);  // pos=0 will match getRight()
 
     JoinDesc joinDesc = mock(JoinDesc.class);
-    when(joinDesc.getConds()).thenReturn(new JoinCondDesc[] { joinCond });
+    when(joinDesc.getConds()).thenReturn(new JoinCondDesc[] {joinCond});
     // Return empty join keys so our column won't be a join key
     when(joinDesc.getJoinKeys()).thenReturn(new ExprNodeDesc[][] {});
 
