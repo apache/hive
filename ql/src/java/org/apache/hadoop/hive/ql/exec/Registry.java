@@ -312,8 +312,7 @@ public class Registry {
     FunctionInfo function = new FunctionInfo(functionName, className, resources);
     // register to session first for backward compatibility
     if (registerToSession) {
-      String qualifiedName = FunctionUtils.qualifyFunctionName(
-          functionName, SessionState.get().getCurrentDatabase().toLowerCase());
+      String qualifiedName = FunctionUtils.qualifyFunctionName(functionName);
       FunctionInfo newFunction = registerToSessionRegistry(qualifiedName, function);
       if (newFunction != null) {
         addFunction(functionName, function);
@@ -367,8 +366,7 @@ public class Registry {
         throw new SemanticException ("UDF " + functionName + " is not allowed");
       }
       if (functionInfo == null) {
-        functionName = FunctionUtils.qualifyFunctionName(
-            functionName, SessionState.get().getCurrentDatabase().toLowerCase());
+        functionName = FunctionUtils.qualifyFunctionName(functionName);
         functionInfo = getQualifiedFunctionInfo(functionName);
       }
       addToCurrentFunctions(functionName, functionInfo);
@@ -386,8 +384,7 @@ public class Registry {
     FunctionInfo info = getFunctionInfo(WINDOW_FUNC_PREFIX + functionName);
     // Try qualifying with current db name for permanent functions and try register function to session
     if (info == null && FunctionRegistry.getFunctionInfo(functionName) != null) {
-      String qualifiedName = FunctionUtils.qualifyFunctionName(
-              functionName, SessionState.get().getCurrentDatabase().toLowerCase());
+      String qualifiedName = FunctionUtils.qualifyFunctionName(functionName);
       info = getFunctionInfo(WINDOW_FUNC_PREFIX + qualifiedName);
     }
     if (info instanceof WindowFunctionInfo) {
