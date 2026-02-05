@@ -51,9 +51,9 @@ class TestGenericUDFCoalesceStatEstimator {
     StatEstimator estimator = udf.getStatEstimator();
 
     Optional<ColStatistics> result = estimator.estimate(Arrays.asList(
-        createColStats("arg1", 100, 10),
-        createColStats("arg2", 200, 20),
-        createColStats("arg3", 300, 30)));
+        createColStats("arg1", 1, 0),
+        createColStats("arg2", 1, 0),
+        createColStats("arg3", 1, 0)));
 
     assertTrue(result.isPresent());
     assertEquals(3, result.get().getCountDistint());
@@ -75,9 +75,9 @@ class TestGenericUDFCoalesceStatEstimator {
     StatEstimator estimator = udf.getStatEstimator();
 
     Optional<ColStatistics> result = estimator.estimate(Arrays.asList(
-        createColStats("arg1", 100, 10),
-        createColStats("arg2", 200, 20),
-        createColStats("arg3", 300, 30)));
+        createColStats("arg1", 1, 0),
+        createColStats("arg2", 1, 0),
+        createColStats("arg3", 1, 0)));
 
     assertTrue(result.isPresent());
     assertEquals(2, result.get().getCountDistint());
@@ -95,14 +95,14 @@ class TestGenericUDFCoalesceStatEstimator {
     StatEstimator estimator = udf.getStatEstimator();
 
     Optional<ColStatistics> result = estimator.estimate(Arrays.asList(
-        createColStats("arg1", 100, 10)));
+        createColStats("arg1", 1, 0)));
 
     assertTrue(result.isPresent());
     assertEquals(1, result.get().getCountDistint());
   }
 
   @Test
-  void testNonConstantArgumentFallsBackToPessimisticCombiner() throws UDFArgumentTypeException {
+  void testMixedConstantAndNonConstantArguments() throws UDFArgumentTypeException {
     GenericUDFCoalesce udf = new GenericUDFCoalesce();
 
     ObjectInspector constA = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
@@ -121,7 +121,7 @@ class TestGenericUDFCoalesceStatEstimator {
         createColStats("arg3", 300, 30)));
 
     assertTrue(result.isPresent());
-    assertEquals(0, result.get().getCountDistint());
+    assertEquals(300, result.get().getCountDistint());
   }
 
   @Test
@@ -140,7 +140,7 @@ class TestGenericUDFCoalesceStatEstimator {
         createColStats("arg3", 300, 30)));
 
     assertTrue(result.isPresent());
-    assertEquals(0, result.get().getCountDistint());
+    assertEquals(300, result.get().getCountDistint());
   }
 
   @Test

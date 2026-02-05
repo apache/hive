@@ -78,8 +78,34 @@ class TestPessimisticStatCombiner {
   }
 
   @Test
-  void testCombineSetsCountDistinctToZero() {
+  void testCombineTakesMaxOfNdv() {
     ColStatistics stat1 = createStat("col1", "int", 100, 10, 4.0);
+    ColStatistics stat2 = createStat("col2", "int", 200, 20, 4.0);
+
+    PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+    combiner.add(stat1);
+    combiner.add(stat2);
+
+    ColStatistics combined = combiner.getResult().get();
+    assertEquals(200, combined.getCountDistint());
+  }
+
+  @Test
+  void testCombineWithUnknownNdvReturnsZero() {
+    ColStatistics stat1 = createStat("col1", "int", 100, 10, 4.0);
+    ColStatistics stat2 = createStat("col2", "int", 0, 20, 4.0);
+
+    PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+    combiner.add(stat1);
+    combiner.add(stat2);
+
+    ColStatistics combined = combiner.getResult().get();
+    assertEquals(0, combined.getCountDistint());
+  }
+
+  @Test
+  void testCombineWithFirstStatUnknownNdvReturnsZero() {
+    ColStatistics stat1 = createStat("col1", "int", 0, 10, 4.0);
     ColStatistics stat2 = createStat("col2", "int", 200, 20, 4.0);
 
     PessimisticStatCombiner combiner = new PessimisticStatCombiner();
@@ -135,7 +161,7 @@ class TestPessimisticStatCombiner {
     combiner.add(stat3);
 
     ColStatistics combined = combiner.getResult().get();
-    assertEquals(0, combined.getCountDistint());
+    assertEquals(2000, combined.getCountDistint());
     assertEquals(100, combined.getNumNulls());
     assertEquals(8.0, combined.getAvgColLen());
   }
@@ -149,7 +175,7 @@ class TestPessimisticStatCombiner {
     combiner.add(stat);
 
     ColStatistics combined = combiner.getResult().get();
-    assertEquals(0, combined.getCountDistint());
+    assertEquals(100, combined.getCountDistint());
     assertEquals(10, combined.getNumNulls());
     assertEquals(4.0, combined.getAvgColLen());
   }

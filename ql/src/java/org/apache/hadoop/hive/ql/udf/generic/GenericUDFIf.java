@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -30,9 +29,10 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.BranchingStatEstimator;
+import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
-import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -127,7 +127,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprVarCharScalarStri
 public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
-  private transient Integer numberOfDistinctConstants;
+  private transient int numberOfDistinctConstants;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -160,11 +160,16 @@ public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
           + "\" and \"" + arguments[2].getTypeName() + "\"");
     }
 
-    if (arguments[1] instanceof ConstantObjectInspector
-        && arguments[2] instanceof ConstantObjectInspector) {
+    boolean thenIsConstant = arguments[1] instanceof ConstantObjectInspector;
+    boolean elseIsConstant = arguments[2] instanceof ConstantObjectInspector;
+    if (thenIsConstant && elseIsConstant) {
       Object thenValue = ((ConstantObjectInspector) arguments[1]).getWritableConstantValue();
       Object elseValue = ((ConstantObjectInspector) arguments[2]).getWritableConstantValue();
       numberOfDistinctConstants = Objects.equals(thenValue, elseValue) ? 1 : 2;
+    } else if (thenIsConstant || elseIsConstant) {
+      numberOfDistinctConstants = 1;
+    } else {
+      numberOfDistinctConstants = 0;
     }
 
     return returnOIResolver.get();
@@ -194,29 +199,15 @@ public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
     return new IfStatEstimator(numberOfDistinctConstants);
   }
 
-  static class IfStatEstimator implements StatEstimator {
-    private final Integer numberOfDistinctConstants;
-
-    IfStatEstimator(Integer numberOfDistinctConstants) {
-      this.numberOfDistinctConstants = numberOfDistinctConstants;
+  static class IfStatEstimator extends BranchingStatEstimator {
+    IfStatEstimator(int numberOfDistinctConstants) {
+      super(numberOfDistinctConstants);
     }
 
     @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      if (numberOfDistinctConstants != null) {
-        ColStatistics result = argStats.get(1).clone();
-        result.setCountDistint(numberOfDistinctConstants);
-        if (argStats.get(2).getAvgColLen() > result.getAvgColLen()) {
-          result.setAvgColLen(argStats.get(2).getAvgColLen());
-        }
-        return Optional.of(result);
-      }
-
-      // Fall back to pessimistic combining
-      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+    protected void addBranchStats(PessimisticStatCombiner combiner, List<ColStatistics> argStats) {
       combiner.add(argStats.get(1));
       combiner.add(argStats.get(2));
-      return combiner.getResult();
     }
   }
 

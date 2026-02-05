@@ -48,11 +48,11 @@ class TestGenericUDFIfStatEstimator {
     udf.initialize(new ObjectInspector[]{conditionOI, thenOI, elseOI});
 
     StatEstimator estimator = udf.getStatEstimator();
-    ColStatistics thenStats = createColStats("then_col", 100, 10);
-    ColStatistics elseStats = createColStats("else_col", 200, 20);
 
     Optional<ColStatistics> result = estimator.estimate(
-        Arrays.asList(createColStats("cond", 2, 0), thenStats, elseStats));
+        Arrays.asList(createColStats("cond", 2, 0),
+            createColStats("then_col", 1, 0),
+            createColStats("else_col", 1, 0)));
 
     assertTrue(result.isPresent());
     assertEquals(2, result.get().getCountDistint());
@@ -74,15 +74,15 @@ class TestGenericUDFIfStatEstimator {
 
     Optional<ColStatistics> result = estimator.estimate(
         Arrays.asList(createColStats("cond", 2, 0),
-            createColStats("then_col", 100, 10),
-            createColStats("else_col", 200, 20)));
+            createColStats("then_col", 1, 0),
+            createColStats("else_col", 1, 0)));
 
     assertTrue(result.isPresent());
     assertEquals(1, result.get().getCountDistint());
   }
 
   @Test
-  void testNonConstantThenBranchFallsBackToPessimisticCombiner() throws UDFArgumentException {
+  void testNonConstantThenBranchWithConstantElse() throws UDFArgumentException {
     GenericUDFIf udf = new GenericUDFIf();
 
     ObjectInspector conditionOI = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
@@ -100,11 +100,11 @@ class TestGenericUDFIfStatEstimator {
             createColStats("else_col", 200, 20)));
 
     assertTrue(result.isPresent());
-    assertEquals(0, result.get().getCountDistint());
+    assertEquals(200, result.get().getCountDistint());
   }
 
   @Test
-  void testNonConstantElseBranchFallsBackToPessimisticCombiner() throws UDFArgumentException {
+  void testConstantThenBranchWithNonConstantElse() throws UDFArgumentException {
     GenericUDFIf udf = new GenericUDFIf();
 
     ObjectInspector conditionOI = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
@@ -122,7 +122,74 @@ class TestGenericUDFIfStatEstimator {
             createColStats("else_col", 200, 20)));
 
     assertTrue(result.isPresent());
-    assertEquals(0, result.get().getCountDistint());
+    assertEquals(200, result.get().getCountDistint());
+  }
+
+  @Test
+  void testBothBranchesNonConstant() throws UDFArgumentException {
+    GenericUDFIf udf = new GenericUDFIf();
+
+    ObjectInspector conditionOI = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+    ObjectInspector thenOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector elseOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+
+    udf.initialize(new ObjectInspector[]{conditionOI, thenOI, elseOI});
+
+    StatEstimator estimator = udf.getStatEstimator();
+
+    Optional<ColStatistics> result = estimator.estimate(
+        Arrays.asList(createColStats("cond", 2, 0),
+            createColStats("then_col", 100, 10),
+            createColStats("else_col", 200, 20)));
+
+    assertTrue(result.isPresent());
+    assertEquals(200, result.get().getCountDistint());
+  }
+
+  @Test
+  void testNullAndNonNullConstants() throws UDFArgumentException {
+    GenericUDFIf udf = new GenericUDFIf();
+
+    ObjectInspector conditionOI = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+    ObjectInspector thenOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+        TypeInfoFactory.stringTypeInfo, null);
+    ObjectInspector elseOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+        TypeInfoFactory.stringTypeInfo, new Text("B"));
+
+    udf.initialize(new ObjectInspector[]{conditionOI, thenOI, elseOI});
+
+    StatEstimator estimator = udf.getStatEstimator();
+
+    Optional<ColStatistics> result = estimator.estimate(
+        Arrays.asList(createColStats("cond", 2, 0),
+            createColStats("then_col", 1, 0),
+            createColStats("else_col", 1, 0)));
+
+    assertTrue(result.isPresent());
+    assertEquals(2, result.get().getCountDistint());
+  }
+
+  @Test
+  void testBothNullConstants() throws UDFArgumentException {
+    GenericUDFIf udf = new GenericUDFIf();
+
+    ObjectInspector conditionOI = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+    ObjectInspector thenOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+        TypeInfoFactory.stringTypeInfo, null);
+    ObjectInspector elseOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+        TypeInfoFactory.stringTypeInfo, null);
+
+    udf.initialize(new ObjectInspector[]{conditionOI, thenOI, elseOI});
+
+    StatEstimator estimator = udf.getStatEstimator();
+
+    Optional<ColStatistics> result = estimator.estimate(
+        Arrays.asList(createColStats("cond", 2, 0),
+            createColStats("then_col", 1, 0),
+            createColStats("else_col", 1, 0)));
+
+    assertTrue(result.isPresent());
+    assertEquals(1, result.get().getCountDistint());
   }
 
   @Test

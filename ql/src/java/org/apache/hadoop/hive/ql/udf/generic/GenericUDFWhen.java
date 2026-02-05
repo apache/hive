@@ -20,13 +20,13 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.stats.estimator.BranchingStatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
@@ -62,7 +62,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
 public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
-  private transient Integer numberOfDistinctConstants;
+  private transient int numberOfDistinctConstants;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
@@ -71,7 +71,6 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
 
     Set<Object> distinctConstants = new HashSet<>();
-    boolean allBranchesConstant = true;
 
     for (int i = 0; i + 1 < arguments.length; i += 2) {
       if (!arguments[i].getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
@@ -86,12 +85,8 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
             + "\" is expected but \"" + arguments[i + 1].getTypeName()
             + "\" is found");
       }
-      if (allBranchesConstant) {
-        if (arguments[i + 1] instanceof ConstantObjectInspector) {
-          distinctConstants.add(((ConstantObjectInspector) arguments[i + 1]).getWritableConstantValue());
-        } else {
-          allBranchesConstant = false;
-        }
+      if (arguments[i + 1] instanceof ConstantObjectInspector) {
+        distinctConstants.add(((ConstantObjectInspector) arguments[i + 1]).getWritableConstantValue());
       }
     }
     if (arguments.length % 2 == 1) {
@@ -103,17 +98,12 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
             + "\" is expected but \"" + arguments[i + 1].getTypeName()
             + "\" is found");
       }
-      if (allBranchesConstant) {
-        if (arguments[i + 1] instanceof ConstantObjectInspector) {
-          distinctConstants.add(((ConstantObjectInspector) arguments[i + 1]).getWritableConstantValue());
-        } else {
-          allBranchesConstant = false;
-        }
+      if (arguments[i + 1] instanceof ConstantObjectInspector) {
+        distinctConstants.add(((ConstantObjectInspector) arguments[i + 1]).getWritableConstantValue());
       }
     }
 
-    numberOfDistinctConstants = allBranchesConstant && !distinctConstants.isEmpty()
-        ? distinctConstants.size() : null;
+    numberOfDistinctConstants = distinctConstants.size();
 
     return returnOIResolver.get();
   }
@@ -164,41 +154,19 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
     return new WhenStatEstimator(numberOfDistinctConstants);
   }
 
-  static class WhenStatEstimator implements StatEstimator {
-    private final Integer numberOfDistinctConstants;
-
-    WhenStatEstimator(Integer numberOfDistinctConstants) {
-      this.numberOfDistinctConstants = numberOfDistinctConstants;
+  static class WhenStatEstimator extends BranchingStatEstimator {
+    WhenStatEstimator(int numberOfDistinctConstants) {
+      super(numberOfDistinctConstants);
     }
 
     @Override
-    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
-      if (numberOfDistinctConstants != null) {
-        ColStatistics result = argStats.get(1).clone();
-        result.setCountDistint(numberOfDistinctConstants);
-        for (int i = 3; i < argStats.size(); i += 2) {
-          if (argStats.get(i).getAvgColLen() > result.getAvgColLen()) {
-            result.setAvgColLen(argStats.get(i).getAvgColLen());
-          }
-        }
-        if (argStats.size() % 2 == 1) {
-          ColStatistics elseStat = argStats.get(argStats.size() - 1);
-          if (elseStat.getAvgColLen() > result.getAvgColLen()) {
-            result.setAvgColLen(elseStat.getAvgColLen());
-          }
-        }
-        return Optional.of(result);
-      }
-
-      // Fall back to pessimistic combining
-      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+    protected void addBranchStats(PessimisticStatCombiner combiner, List<ColStatistics> argStats) {
       for (int i = 1; i < argStats.size(); i += 2) {
         combiner.add(argStats.get(i));
       }
       if (argStats.size() % 2 == 1) {
         combiner.add(argStats.get(argStats.size() - 1));
       }
-      return combiner.getResult();
     }
   }
 }

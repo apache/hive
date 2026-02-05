@@ -37,37 +37,30 @@ public class PessimisticStatCombiner {
       result.setRange(null);
       result.setIsEstimated(true);
       return;
-    } else {
-      if (stat.getAvgColLen() > result.getAvgColLen()) {
-        result.setAvgColLen(stat.getAvgColLen());
-      }
-
-      // NDVs can only be accurately combined if full information about columns, query branches and
-      // their relationships is available. Without that info, there is only one "truly conservative"
-      // value of NDV which is 0, which means that the NDV is unknown. It forces optimizer
-      // to make the most conservative decisions possible, which is the exact goal of
-      // PessimisticStatCombiner. It does inflate statistics in multiple cases, but at the same time it
-      // also ensures than the query execution does not "blow up" due to too optimistic stats estimates
-      result.setCountDistint(0L);
-
-      if (stat.getNumNulls() > result.getNumNulls()) {
-        result.setNumNulls(stat.getNumNulls());
-      }
-      if (stat.getNumTrues() > result.getNumTrues()) {
-        result.setNumTrues(stat.getNumTrues());
-      }
-      if (stat.getNumFalses() > result.getNumFalses()) {
-        result.setNumFalses(stat.getNumFalses());
-      }
-      if (stat.isFilteredColumn()) {
-        result.setFilterColumn();
-      }
-
     }
-
+    if (stat.getAvgColLen() > result.getAvgColLen()) {
+      result.setAvgColLen(stat.getAvgColLen());
+    }
+    if (stat.getCountDistint() == 0 || result.getCountDistint() == 0) {
+      result.setCountDistint(0L);
+    } else if (stat.getCountDistint() > result.getCountDistint()) {
+      result.setCountDistint(stat.getCountDistint());
+    }
+    if (stat.getNumNulls() > result.getNumNulls()) {
+      result.setNumNulls(stat.getNumNulls());
+    }
+    if (stat.getNumTrues() > result.getNumTrues()) {
+      result.setNumTrues(stat.getNumTrues());
+    }
+    if (stat.getNumFalses() > result.getNumFalses()) {
+      result.setNumFalses(stat.getNumFalses());
+    }
+    if (stat.isFilteredColumn()) {
+      result.setFilterColumn();
+    }
   }
+
   public Optional<ColStatistics> getResult() {
     return Optional.of(result);
-
   }
 }
