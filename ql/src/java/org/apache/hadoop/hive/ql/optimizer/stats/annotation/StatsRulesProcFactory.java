@@ -3250,6 +3250,11 @@ public class StatsRulesProcFactory {
   }
 
   static boolean satisfyPrecondition(Statistics stats, List<String> joinKeys) {
+    // Empty tables have numRows bumped from 0 to 1 (see BasicStats.SetMinRowNumber),
+    // so numRows <= 1 may indicate an empty table where NDV=0 is legitimate, not "unknown"
+    if (stats.getNumRows() <= 1) {
+      return true;
+    }
     for (String col : joinKeys) {
       ColStatistics cs = stats.getColumnStatisticsFromColName(col);
       if (cs != null && cs.getCountDistint() == 0L) {

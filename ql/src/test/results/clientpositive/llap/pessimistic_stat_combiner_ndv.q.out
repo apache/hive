@@ -28,14 +28,14 @@ FROM (SELECT IF(cat > 50, 'A', 'B') x FROM t1) sub
 GROUP BY x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x, COUNT(*)
 FROM (SELECT IF(cat > 50, 'A', 'B') x FROM t1) sub
 GROUP BY x
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -105,7 +105,7 @@ FROM (
 GROUP BY x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x, COUNT(*)
 FROM (
@@ -115,7 +115,7 @@ FROM (
 GROUP BY x
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -185,7 +185,7 @@ FROM (
 GROUP BY x
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT x, COUNT(*)
 FROM (
@@ -195,7 +195,7 @@ FROM (
 GROUP BY x
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -345,7 +345,7 @@ JOIN t2 b ON a.k = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT a.k, a.total, a.sample, b.v1
 FROM (
@@ -387,7 +387,7 @@ JOIN t2 b ON a.k = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

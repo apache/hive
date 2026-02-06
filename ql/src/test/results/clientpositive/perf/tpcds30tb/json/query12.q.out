@@ -511,406 +511,6 @@
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
         "table": [
           "default",
-          "item"
-        ],
-        "table:alias": "item",
-        "inputs": [],
-        "rowCount": 462000,
-        "avgRowSize": 1033,
-        "rowType": {
-          "fields": [
-            {
-              "type": "BIGINT",
-              "nullable": false,
-              "name": "i_item_sk"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": false,
-              "precision": 2147483647,
-              "name": "i_item_id"
-            },
-            {
-              "type": "DATE",
-              "nullable": true,
-              "name": "i_rec_start_date"
-            },
-            {
-              "type": "DATE",
-              "nullable": true,
-              "name": "i_rec_end_date"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 200,
-              "name": "i_item_desc"
-            },
-            {
-              "type": "DECIMAL",
-              "nullable": true,
-              "precision": 7,
-              "scale": 2,
-              "name": "i_current_price"
-            },
-            {
-              "type": "DECIMAL",
-              "nullable": true,
-              "precision": 7,
-              "scale": 2,
-              "name": "i_wholesale_cost"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "i_brand_id"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 50,
-              "name": "i_brand"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "i_class_id"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 50,
-              "name": "i_class"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "i_category_id"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 50,
-              "name": "i_category"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "i_manufact_id"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 50,
-              "name": "i_manufact"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 20,
-              "name": "i_size"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 20,
-              "name": "i_formulation"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 20,
-              "name": "i_color"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 10,
-              "name": "i_units"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 10,
-              "name": "i_container"
-            },
-            {
-              "type": "INTEGER",
-              "nullable": true,
-              "name": "i_manager_id"
-            },
-            {
-              "type": "CHAR",
-              "nullable": true,
-              "precision": 50,
-              "name": "i_product_name"
-            },
-            {
-              "type": "BIGINT",
-              "nullable": true,
-              "name": "BLOCK__OFFSET__INSIDE__FILE"
-            },
-            {
-              "type": "VARCHAR",
-              "nullable": true,
-              "precision": 2147483647,
-              "name": "INPUT__FILE__NAME"
-            },
-            {
-              "fields": [
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "writeid"
-                },
-                {
-                  "type": "INTEGER",
-                  "nullable": true,
-                  "name": "bucketid"
-                },
-                {
-                  "type": "BIGINT",
-                  "nullable": true,
-                  "name": "rowid"
-                }
-              ],
-              "nullable": true,
-              "name": "ROW__ID"
-            },
-            {
-              "type": "BOOLEAN",
-              "nullable": true,
-              "name": "ROW__IS__DELETED"
-            }
-          ],
-          "nullable": false
-        },
-        "colStats": [
-          {
-            "name": "i_item_sk",
-            "ndv": 464811,
-            "minValue": 1,
-            "maxValue": 462000
-          },
-          {
-            "name": "i_item_id",
-            "ndv": 247524
-          },
-          {
-            "name": "i_item_desc",
-            "ndv": 341846
-          },
-          {
-            "name": "i_current_price",
-            "ndv": 9391,
-            "minValue": 0.09,
-            "maxValue": 99.99
-          },
-          {
-            "name": "i_class",
-            "ndv": 99
-          },
-          {
-            "name": "i_category",
-            "ndv": 11
-          },
-          {
-            "name": "i_rec_start_date",
-            "ndv": 0,
-            "minValue": 10161,
-            "maxValue": 11622
-          },
-          {
-            "name": "i_rec_end_date",
-            "ndv": 0,
-            "minValue": 10891,
-            "maxValue": 11621
-          },
-          {
-            "name": "i_wholesale_cost",
-            "ndv": 7343,
-            "minValue": 0.02,
-            "maxValue": 89.74
-          },
-          {
-            "name": "i_brand_id",
-            "ndv": 962,
-            "minValue": 1001001,
-            "maxValue": 10016017
-          },
-          {
-            "name": "i_brand",
-            "ndv": 742
-          },
-          {
-            "name": "i_class_id",
-            "ndv": 16,
-            "minValue": 1,
-            "maxValue": 16
-          },
-          {
-            "name": "i_category_id",
-            "ndv": 10,
-            "minValue": 1,
-            "maxValue": 10
-          },
-          {
-            "name": "i_manufact_id",
-            "ndv": 987,
-            "minValue": 1,
-            "maxValue": 1000
-          },
-          {
-            "name": "i_manufact",
-            "ndv": 1004
-          },
-          {
-            "name": "i_size",
-            "ndv": 8
-          },
-          {
-            "name": "i_formulation",
-            "ndv": 344236
-          },
-          {
-            "name": "i_color",
-            "ndv": 95
-          },
-          {
-            "name": "i_units",
-            "ndv": 21
-          },
-          {
-            "name": "i_container",
-            "ndv": 2
-          },
-          {
-            "name": "i_manager_id",
-            "ndv": 104,
-            "minValue": 1,
-            "maxValue": 100
-          },
-          {
-            "name": "i_product_name",
-            "ndv": 461487
-          }
-        ]
-      },
-      {
-        "id": "4",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
-        "condition": {
-          "op": {
-            "name": "IN",
-            "kind": "OTHER_FUNCTION",
-            "syntax": "SPECIAL"
-          },
-          "operands": [
-            {
-              "input": 12,
-              "name": "$12"
-            },
-            {
-              "literal": "Books",
-              "type": {
-                "type": "CHAR",
-                "nullable": false,
-                "precision": 5
-              }
-            },
-            {
-              "literal": "Jewelry",
-              "type": {
-                "type": "CHAR",
-                "nullable": false,
-                "precision": 7
-              }
-            },
-            {
-              "literal": "Sports",
-              "type": {
-                "type": "CHAR",
-                "nullable": false,
-                "precision": 6
-              }
-            }
-          ]
-        },
-        "rowCount": 115500
-      },
-      {
-        "id": "5",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
-        "fields": [
-          "i_item_sk",
-          "i_item_id",
-          "i_item_desc",
-          "i_current_price",
-          "i_class",
-          "i_category"
-        ],
-        "exprs": [
-          {
-            "input": 0,
-            "name": "$0"
-          },
-          {
-            "input": 1,
-            "name": "$1"
-          },
-          {
-            "input": 4,
-            "name": "$4"
-          },
-          {
-            "input": 5,
-            "name": "$5"
-          },
-          {
-            "input": 10,
-            "name": "$10"
-          },
-          {
-            "input": 12,
-            "name": "$12"
-          }
-        ],
-        "rowCount": 115500
-      },
-      {
-        "id": "6",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "op": {
-            "name": "=",
-            "kind": "EQUALS",
-            "syntax": "BINARY"
-          },
-          "operands": [
-            {
-              "input": 0,
-              "name": "$0"
-            },
-            {
-              "input": 3,
-              "name": "$3"
-            }
-          ]
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "2",
-          "5"
-        ],
-        "rowCount": 336714399969255
-      },
-      {
-        "id": "7",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
-        "table": [
-          "default",
           "date_dim"
         ],
         "table:alias": "date_dim",
@@ -1119,7 +719,7 @@
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },
@@ -1260,7 +860,7 @@
         ]
       },
       {
-        "id": "8",
+        "id": "4",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1315,7 +915,7 @@
         "rowCount": 18262.25
       },
       {
-        "id": "9",
+        "id": "5",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "d_date_sk"
@@ -1329,7 +929,7 @@
         "rowCount": 18262.25
       },
       {
-        "id": "10",
+        "id": "6",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
         "condition": {
           "op": {
@@ -1343,8 +943,408 @@
               "name": "$2"
             },
             {
-              "input": 9,
-              "name": "$9"
+              "input": 3,
+              "name": "$3"
+            }
+          ]
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "2",
+          "5"
+        ],
+        "rowCount": 5.323950260466258E13
+      },
+      {
+        "id": "7",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan",
+        "table": [
+          "default",
+          "item"
+        ],
+        "table:alias": "item",
+        "inputs": [],
+        "rowCount": 462000,
+        "avgRowSize": 1033,
+        "rowType": {
+          "fields": [
+            {
+              "type": "BIGINT",
+              "nullable": false,
+              "name": "i_item_sk"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": false,
+              "precision": 2147483647,
+              "name": "i_item_id"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "i_rec_start_date"
+            },
+            {
+              "type": "DATE",
+              "nullable": true,
+              "name": "i_rec_end_date"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 200,
+              "name": "i_item_desc"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "i_current_price"
+            },
+            {
+              "type": "DECIMAL",
+              "nullable": true,
+              "precision": 7,
+              "scale": 2,
+              "name": "i_wholesale_cost"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_brand_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_brand"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_class_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_class"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_category_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_category"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_manufact_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_manufact"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "i_size"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "i_formulation"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 20,
+              "name": "i_color"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "i_units"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 10,
+              "name": "i_container"
+            },
+            {
+              "type": "INTEGER",
+              "nullable": true,
+              "name": "i_manager_id"
+            },
+            {
+              "type": "CHAR",
+              "nullable": true,
+              "precision": 50,
+              "name": "i_product_name"
+            },
+            {
+              "type": "BIGINT",
+              "nullable": true,
+              "name": "BLOCK__OFFSET__INSIDE__FILE"
+            },
+            {
+              "type": "VARCHAR",
+              "nullable": true,
+              "precision": 2147483647,
+              "name": "INPUT__FILE__NAME"
+            },
+            {
+              "fields": [
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "writeid"
+                },
+                {
+                  "type": "INTEGER",
+                  "nullable": true,
+                  "name": "bucketid"
+                },
+                {
+                  "type": "BIGINT",
+                  "nullable": true,
+                  "name": "rowid"
+                }
+              ],
+              "nullable": true,
+              "name": "ROW__ID"
+            },
+            {
+              "type": "BOOLEAN",
+              "nullable": true,
+              "name": "ROW__IS__DELETED"
+            }
+          ],
+          "nullable": false
+        },
+        "colStats": [
+          {
+            "name": "i_item_sk",
+            "ndv": 464811,
+            "minValue": 1,
+            "maxValue": 462000
+          },
+          {
+            "name": "i_item_id",
+            "ndv": 247524
+          },
+          {
+            "name": "i_item_desc",
+            "ndv": 341846
+          },
+          {
+            "name": "i_current_price",
+            "ndv": 9391,
+            "minValue": 0.09,
+            "maxValue": 99.99
+          },
+          {
+            "name": "i_class",
+            "ndv": 99
+          },
+          {
+            "name": "i_category",
+            "ndv": 11
+          },
+          {
+            "name": "i_rec_start_date",
+            "ndv": 4,
+            "minValue": 10161,
+            "maxValue": 11622
+          },
+          {
+            "name": "i_rec_end_date",
+            "ndv": 3,
+            "minValue": 10891,
+            "maxValue": 11621
+          },
+          {
+            "name": "i_wholesale_cost",
+            "ndv": 7343,
+            "minValue": 0.02,
+            "maxValue": 89.74
+          },
+          {
+            "name": "i_brand_id",
+            "ndv": 962,
+            "minValue": 1001001,
+            "maxValue": 10016017
+          },
+          {
+            "name": "i_brand",
+            "ndv": 742
+          },
+          {
+            "name": "i_class_id",
+            "ndv": 16,
+            "minValue": 1,
+            "maxValue": 16
+          },
+          {
+            "name": "i_category_id",
+            "ndv": 10,
+            "minValue": 1,
+            "maxValue": 10
+          },
+          {
+            "name": "i_manufact_id",
+            "ndv": 987,
+            "minValue": 1,
+            "maxValue": 1000
+          },
+          {
+            "name": "i_manufact",
+            "ndv": 1004
+          },
+          {
+            "name": "i_size",
+            "ndv": 8
+          },
+          {
+            "name": "i_formulation",
+            "ndv": 344236
+          },
+          {
+            "name": "i_color",
+            "ndv": 95
+          },
+          {
+            "name": "i_units",
+            "ndv": 21
+          },
+          {
+            "name": "i_container",
+            "ndv": 2
+          },
+          {
+            "name": "i_manager_id",
+            "ndv": 104,
+            "minValue": 1,
+            "maxValue": 100
+          },
+          {
+            "name": "i_product_name",
+            "ndv": 461487
+          }
+        ]
+      },
+      {
+        "id": "8",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
+        "condition": {
+          "op": {
+            "name": "IN",
+            "kind": "OTHER_FUNCTION",
+            "syntax": "SPECIAL"
+          },
+          "operands": [
+            {
+              "input": 12,
+              "name": "$12"
+            },
+            {
+              "literal": "Books",
+              "type": {
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 5
+              }
+            },
+            {
+              "literal": "Jewelry",
+              "type": {
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 7
+              }
+            },
+            {
+              "literal": "Sports",
+              "type": {
+                "type": "CHAR",
+                "nullable": false,
+                "precision": 6
+              }
+            }
+          ]
+        },
+        "rowCount": 115500
+      },
+      {
+        "id": "9",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
+        "fields": [
+          "i_item_sk",
+          "i_item_id",
+          "i_item_desc",
+          "i_current_price",
+          "i_class",
+          "i_category"
+        ],
+        "exprs": [
+          {
+            "input": 0,
+            "name": "$0"
+          },
+          {
+            "input": 1,
+            "name": "$1"
+          },
+          {
+            "input": 4,
+            "name": "$4"
+          },
+          {
+            "input": 5,
+            "name": "$5"
+          },
+          {
+            "input": 10,
+            "name": "$10"
+          },
+          {
+            "input": 12,
+            "name": "$12"
+          }
+        ],
+        "rowCount": 115500
+      },
+      {
+        "id": "10",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "op": {
+            "name": "=",
+            "kind": "EQUALS",
+            "syntax": "BINARY"
+          },
+          "operands": [
+            {
+              "input": 0,
+              "name": "$0"
+            },
+            {
+              "input": 4,
+              "name": "$4"
             }
           ]
         },
@@ -1355,17 +1355,17 @@
           "6",
           "9"
         ],
-        "rowCount": 922374382625779072
+        "rowCount": 922374382625779200
       },
       {
         "id": "11",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate",
         "group": [
-          4,
           5,
           6,
           7,
-          8
+          8,
+          9
         ],
         "aggs": [
           {
@@ -1387,7 +1387,7 @@
             "name": null
           }
         ],
-        "rowCount": 92237438262577904
+        "rowCount": 92237438262577920
       },
       {
         "id": "12",
@@ -1502,7 +1502,7 @@
             "name": "$0"
           }
         ],
-        "rowCount": 92237438262577904
+        "rowCount": 92237438262577920
       },
       {
         "id": "13",

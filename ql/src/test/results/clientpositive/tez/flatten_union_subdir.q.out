@@ -60,7 +60,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_nonacid_directinsert_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -171,7 +171,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_mm_directinsert_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -283,7 +283,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_acid_directinsert_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -396,7 +396,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_mm_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -508,7 +508,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_acid_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -621,7 +621,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_mm_unflattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -734,7 +734,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_acid_unflattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -847,7 +847,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_mm_directinsert_unflattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -960,7 +960,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_acid_nondirectinsert_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
