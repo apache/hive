@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.llap.metrics.ReadWriteLockMetrics;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
-import org.apache.logging.slf4j.Log4jMarker;
 import org.apache.tez.common.CallableWithNdc;
 
 import org.apache.hadoop.service.AbstractService;
@@ -50,7 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.Marker;
-import org.slf4j.impl.StaticMarkerBinder;
+import org.slf4j.MarkerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -71,7 +70,7 @@ public class QueryTracker extends AbstractService {
 
   private static final Logger LOG = LoggerFactory.getLogger(QueryTracker.class);
   private static final Marker QUERY_COMPLETE_MARKER =
-      new Log4jMarker(StaticMarkerBinder.getSingleton().getMarkerFactory(), new Log4jQueryCompleteMarker());
+      MarkerFactory.getMarker(Log4jQueryCompleteMarker.EOF_MARKER);
 
   /// Shared singleton MetricsSource instance for all DAG locks
   private static final MetricsSource LOCK_METRICS;
