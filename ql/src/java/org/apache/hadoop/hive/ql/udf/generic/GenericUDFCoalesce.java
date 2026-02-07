@@ -18,16 +18,14 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressionsSupportDecimal64;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.stats.estimator.BranchingStatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
@@ -48,7 +46,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
-  private transient int numberOfDistinctConstants;
+  private transient int firstConstantIndex = -1;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
@@ -56,7 +54,7 @@ public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvi
     argumentOIs = arguments;
 
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
-    Set<Object> distinctConstants = new HashSet<>();
+    firstConstantIndex = -1;
 
     for (int i = 0; i < arguments.length; i++) {
       if (!returnOIResolver.update(arguments[i])) {
@@ -66,12 +64,10 @@ public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvi
             + "\" is expected but \"" + arguments[i].getTypeName()
             + "\" is found");
       }
-      if (arguments[i] instanceof ConstantObjectInspector) {
-        distinctConstants.add(((ConstantObjectInspector) arguments[i]).getWritableConstantValue());
+      if (firstConstantIndex < 0 && arguments[i] instanceof ConstantObjectInspector) {
+        firstConstantIndex = i;
       }
     }
-
-    numberOfDistinctConstants = distinctConstants.size();
 
     return returnOIResolver.get();
   }
@@ -95,19 +91,47 @@ public class GenericUDFCoalesce extends GenericUDF implements StatEstimatorProvi
 
   @Override
   public StatEstimator getStatEstimator() {
-    return new CoalesceStatEstimator(numberOfDistinctConstants);
+    return new CoalesceStatEstimator(firstConstantIndex);
   }
 
-  static class CoalesceStatEstimator extends BranchingStatEstimator {
-    CoalesceStatEstimator(int numberOfDistinctConstants) {
-      super(numberOfDistinctConstants);
+  /**
+   * COALESCE returns the first non-null argument, so only values before (and including)
+   * the first constant are reachable. Constants after the first one can never be returned.
+   */
+  static class CoalesceStatEstimator implements StatEstimator {
+    private final int firstConstantIndex;
+
+    CoalesceStatEstimator(int firstConstantIndex) {
+      this.firstConstantIndex = firstConstantIndex;
     }
 
     @Override
-    protected void addBranchStats(PessimisticStatCombiner combiner, List<ColStatistics> argStats) {
-      for (ColStatistics argStat : argStats) {
-        combiner.add(argStat);
+    public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
+      PessimisticStatCombiner combiner = new PessimisticStatCombiner();
+
+      if (firstConstantIndex == 0) {
+        // First arg is constant - always returns that constant, NDV = 1
+        combiner.add(argStats.get(0));
+        return combiner.getResult();
       }
+
+      // Combine stats of columns before the first constant (or all if no constant)
+      int limit = firstConstantIndex > 0 ? firstConstantIndex : argStats.size();
+      for (int i = 0; i < limit; i++) {
+        combiner.add(argStats.get(i));
+      }
+
+      Optional<ColStatistics> result = combiner.getResult();
+
+      // If there's a constant after columns, add 1 to NDV for that constant
+      if (result.isPresent() && firstConstantIndex > 0) {
+        ColStatistics stat = result.get();
+        if (stat.getCountDistint() > 0) {
+          stat.setCountDistint(stat.getCountDistint() + 1);
+        }
+      }
+
+      return result;
     }
   }
 }

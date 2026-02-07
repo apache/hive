@@ -43,7 +43,9 @@ import java.util.Collections;
 
 import static org.apache.hadoop.hive.ql.optimizer.stats.annotation.StatsRulesProcFactory.FilterStatsRule.extractFloatFromLiteralValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class TestStatsRulesProcFactory {
 
@@ -630,5 +632,49 @@ public class TestStatsRulesProcFactory {
     }
 
     return colStatistics;
+  }
+
+  @Test
+  public void testSatisfyPreconditionJoinKeysEmptyTableZeroRows() {
+    Statistics stats = new Statistics(0, 0, 0, 0);
+    ColStatistics colStats = new ColStatistics("key", "string");
+    colStats.setCountDistint(0L);
+    stats.addToColumnStats(Collections.singletonList(colStats));
+
+    // Empty table (numRows=0) with NDV=0: should return true since NDV=0 is legitimate
+    assertTrue(StatsRulesProcFactory.satisfyPrecondition(stats, Arrays.asList("key")));
+  }
+
+  @Test
+  public void testSatisfyPreconditionJoinKeysEmptyTableOneRow() {
+    Statistics stats = new Statistics(1, 0, 0, 0);
+    ColStatistics colStats = new ColStatistics("key", "string");
+    colStats.setCountDistint(0L);
+    stats.addToColumnStats(Collections.singletonList(colStats));
+
+    // Near-empty table (numRows=1, bumped from 0) with NDV=0: should return true
+    assertTrue(StatsRulesProcFactory.satisfyPrecondition(stats, Arrays.asList("key")));
+  }
+
+  @Test
+  public void testSatisfyPreconditionJoinKeysNonEmptyTableZeroNdv() {
+    Statistics stats = new Statistics(2, 0, 0, 0);
+    ColStatistics colStats = new ColStatistics("key", "string");
+    colStats.setCountDistint(0L);
+    stats.addToColumnStats(Collections.singletonList(colStats));
+
+    // Non-empty table (numRows=2) with NDV=0: should return false (unknown stats)
+    assertFalse(StatsRulesProcFactory.satisfyPrecondition(stats, Arrays.asList("key")));
+  }
+
+  @Test
+  public void testSatisfyPreconditionJoinKeysNonEmptyTablePositiveNdv() {
+    Statistics stats = new Statistics(2, 0, 0, 0);
+    ColStatistics colStats = new ColStatistics("key", "string");
+    colStats.setCountDistint(1L);
+    stats.addToColumnStats(Collections.singletonList(colStats));
+
+    // Non-empty table with positive NDV: should return true
+    assertTrue(StatsRulesProcFactory.satisfyPrecondition(stats, Arrays.asList("key")));
   }
 }

@@ -38,12 +38,14 @@ public abstract class BranchingStatEstimator implements StatEstimator {
   public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
     PessimisticStatCombiner combiner = new PessimisticStatCombiner();
     addBranchStats(combiner, argStats);
-    if (numberOfDistinctConstants > 1) {
-      ColStatistics constantsStat = new ColStatistics("_constants", "string");
-      constantsStat.setCountDistint(numberOfDistinctConstants);
-      combiner.add(constantsStat);
+    Optional<ColStatistics> result = combiner.getResult();
+    if (result.isPresent()) {
+      ColStatistics stat = result.get();
+      if (numberOfDistinctConstants > stat.getCountDistint() && stat.getCountDistint() > 0) {
+        stat.setCountDistint(numberOfDistinctConstants);
+      }
     }
-    return combiner.getResult();
+    return result;
   }
 
   protected abstract void addBranchStats(PessimisticStatCombiner combiner, List<ColStatistics> argStats);

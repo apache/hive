@@ -36,7 +36,8 @@ import org.junit.jupiter.api.Test;
 class TestGenericUDFCoalesceStatEstimator {
 
   @Test
-  void testAllArgumentsConstantDistinctValues() throws UDFArgumentTypeException {
+  void testAllArgumentsConstant() throws UDFArgumentTypeException {
+    // COALESCE('A', 'B', 'C') - first constant 'A' is always returned
     GenericUDFCoalesce udf = new GenericUDFCoalesce();
 
     ObjectInspector constA = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
@@ -50,37 +51,18 @@ class TestGenericUDFCoalesceStatEstimator {
 
     StatEstimator estimator = udf.getStatEstimator();
 
-    Optional<ColStatistics> result = estimator.estimate(Arrays.asList(
-        createColStats("arg1", 1, 0),
-        createColStats("arg2", 1, 0),
-        createColStats("arg3", 1, 0)));
+    ColStatistics arg1Stats = createColStats("arg1", 1, 0);
+    arg1Stats.setAvgColLen(5.0);
+    ColStatistics arg2Stats = createColStats("arg2", 1, 0);
+    arg2Stats.setAvgColLen(25.0);
+    ColStatistics arg3Stats = createColStats("arg3", 1, 0);
+    arg3Stats.setAvgColLen(15.0);
+
+    Optional<ColStatistics> result = estimator.estimate(Arrays.asList(arg1Stats, arg2Stats, arg3Stats));
 
     assertTrue(result.isPresent());
-    assertEquals(3, result.get().getCountDistint());
-  }
-
-  @Test
-  void testAllArgumentsConstantWithDuplicates() throws UDFArgumentTypeException {
-    GenericUDFCoalesce udf = new GenericUDFCoalesce();
-
-    ObjectInspector constA = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-        TypeInfoFactory.stringTypeInfo, new Text("A"));
-    ObjectInspector constA2 = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-        TypeInfoFactory.stringTypeInfo, new Text("A"));
-    ObjectInspector constB = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-        TypeInfoFactory.stringTypeInfo, new Text("B"));
-
-    udf.initialize(new ObjectInspector[]{constA, constA2, constB});
-
-    StatEstimator estimator = udf.getStatEstimator();
-
-    Optional<ColStatistics> result = estimator.estimate(Arrays.asList(
-        createColStats("arg1", 1, 0),
-        createColStats("arg2", 1, 0),
-        createColStats("arg3", 1, 0)));
-
-    assertTrue(result.isPresent());
-    assertEquals(2, result.get().getCountDistint());
+    assertEquals(1, result.get().getCountDistint());
+    assertEquals(5.0, result.get().getAvgColLen());
   }
 
   @Test
@@ -103,6 +85,7 @@ class TestGenericUDFCoalesceStatEstimator {
 
   @Test
   void testMixedConstantAndNonConstantArguments() throws UDFArgumentTypeException {
+    // COALESCE('A', nonConst, 'C') - first arg is constant 'A', always returned, NDV = 1
     GenericUDFCoalesce udf = new GenericUDFCoalesce();
 
     ObjectInspector constA = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
@@ -115,17 +98,19 @@ class TestGenericUDFCoalesceStatEstimator {
 
     StatEstimator estimator = udf.getStatEstimator();
 
+    // Constants have NDV=1, non-constants have their actual NDV
     Optional<ColStatistics> result = estimator.estimate(Arrays.asList(
-        createColStats("arg1", 100, 10),
-        createColStats("arg2", 200, 20),
-        createColStats("arg3", 300, 30)));
+        createColStats("constA", 1, 0),
+        createColStats("col", 200, 20),
+        createColStats("constC", 1, 0)));
 
     assertTrue(result.isPresent());
-    assertEquals(300, result.get().getCountDistint());
+    assertEquals(1, result.get().getCountDistint());
   }
 
   @Test
   void testAllNonConstantArguments() throws UDFArgumentTypeException {
+    // COALESCE(col1, col2, col3) - no constants, NDV = max of all columns
     GenericUDFCoalesce udf = new GenericUDFCoalesce();
 
     ObjectInspector nonConst = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
@@ -144,31 +129,46 @@ class TestGenericUDFCoalesceStatEstimator {
   }
 
   @Test
-  void testConstantArgumentsTakesMaxAvgColLen() throws UDFArgumentTypeException {
+  void testColumnThenConstant() throws UDFArgumentTypeException {
+    // COALESCE(col, 'default') - returns col values OR 'default', NDV = NDV(col) + 1
     GenericUDFCoalesce udf = new GenericUDFCoalesce();
 
-    ObjectInspector constA = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-        TypeInfoFactory.stringTypeInfo, new Text("A"));
-    ObjectInspector constB = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-        TypeInfoFactory.stringTypeInfo, new Text("B"));
-    ObjectInspector constC = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-        TypeInfoFactory.stringTypeInfo, new Text("C"));
+    ObjectInspector nonConst = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector constDefault = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+        TypeInfoFactory.stringTypeInfo, new Text("default"));
 
-    udf.initialize(new ObjectInspector[]{constA, constB, constC});
+    udf.initialize(new ObjectInspector[]{nonConst, constDefault});
 
     StatEstimator estimator = udf.getStatEstimator();
 
-    ColStatistics arg1Stats = createColStats("arg1", 100, 10);
-    arg1Stats.setAvgColLen(5.0);
-    ColStatistics arg2Stats = createColStats("arg2", 200, 20);
-    arg2Stats.setAvgColLen(25.0);
-    ColStatistics arg3Stats = createColStats("arg3", 300, 30);
-    arg3Stats.setAvgColLen(15.0);
-
-    Optional<ColStatistics> result = estimator.estimate(Arrays.asList(arg1Stats, arg2Stats, arg3Stats));
+    Optional<ColStatistics> result = estimator.estimate(Arrays.asList(
+        createColStats("col", 100, 10),
+        createColStats("const", 1, 0)));
 
     assertTrue(result.isPresent());
-    assertEquals(25.0, result.get().getAvgColLen());
+    assertEquals(101, result.get().getCountDistint());
+  }
+
+  @Test
+  void testMultipleColumnsThenConstant() throws UDFArgumentTypeException {
+    // COALESCE(col1, col2, 'default') - returns col1, col2, or 'default', NDV = max(col1, col2) + 1
+    GenericUDFCoalesce udf = new GenericUDFCoalesce();
+
+    ObjectInspector nonConst = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector constDefault = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+        TypeInfoFactory.stringTypeInfo, new Text("default"));
+
+    udf.initialize(new ObjectInspector[]{nonConst, nonConst, constDefault});
+
+    StatEstimator estimator = udf.getStatEstimator();
+
+    Optional<ColStatistics> result = estimator.estimate(Arrays.asList(
+        createColStats("col1", 100, 10),
+        createColStats("col2", 200, 20),
+        createColStats("const", 1, 0)));
+
+    assertTrue(result.isPresent());
+    assertEquals(201, result.get().getCountDistint());
   }
 
   private ColStatistics createColStats(String name, long ndv, long numNulls) {

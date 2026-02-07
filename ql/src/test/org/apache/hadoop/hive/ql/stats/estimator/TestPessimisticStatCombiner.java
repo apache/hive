@@ -27,6 +27,8 @@ import java.util.Optional;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.ColStatistics.Range;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class TestPessimisticStatCombiner {
 
@@ -77,43 +79,22 @@ class TestPessimisticStatCombiner {
     assertEquals(200, combined.getNumNulls());
   }
 
-  @Test
-  void testCombineTakesMaxOfNdv() {
-    ColStatistics stat1 = createStat("col1", "int", 100, 10, 4.0);
-    ColStatistics stat2 = createStat("col2", "int", 200, 20, 4.0);
+  @ParameterizedTest(name = "ndv1={0}, ndv2={1} -> expected={2}")
+  @CsvSource({
+      "100, 200, 200",  // takes max when both known
+      "100, 0, 0",      // unknown (0) in second propagates
+      "0, 200, 0"       // unknown (0) in first propagates
+  })
+  void testCombineNdvBehavior(long ndv1, long ndv2, long expectedNdv) {
+    ColStatistics stat1 = createStat("col1", "int", ndv1, 10, 4.0);
+    ColStatistics stat2 = createStat("col2", "int", ndv2, 20, 4.0);
 
     PessimisticStatCombiner combiner = new PessimisticStatCombiner();
     combiner.add(stat1);
     combiner.add(stat2);
 
     ColStatistics combined = combiner.getResult().get();
-    assertEquals(200, combined.getCountDistint());
-  }
-
-  @Test
-  void testCombineWithUnknownNdvReturnsZero() {
-    ColStatistics stat1 = createStat("col1", "int", 100, 10, 4.0);
-    ColStatistics stat2 = createStat("col2", "int", 0, 20, 4.0);
-
-    PessimisticStatCombiner combiner = new PessimisticStatCombiner();
-    combiner.add(stat1);
-    combiner.add(stat2);
-
-    ColStatistics combined = combiner.getResult().get();
-    assertEquals(0, combined.getCountDistint());
-  }
-
-  @Test
-  void testCombineWithFirstStatUnknownNdvReturnsZero() {
-    ColStatistics stat1 = createStat("col1", "int", 0, 10, 4.0);
-    ColStatistics stat2 = createStat("col2", "int", 200, 20, 4.0);
-
-    PessimisticStatCombiner combiner = new PessimisticStatCombiner();
-    combiner.add(stat1);
-    combiner.add(stat2);
-
-    ColStatistics combined = combiner.getResult().get();
-    assertEquals(0, combined.getCountDistint());
+    assertEquals(expectedNdv, combined.getCountDistint());
   }
 
   @Test
