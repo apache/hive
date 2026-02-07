@@ -462,12 +462,16 @@ public class DropDatabaseHandler
       if (async) {
         rs.shutdown();
       }
-      rs = null;
-      tables = null;
-      functions = null;
-      procedures = null;
-      packages = null;
-      db = null;
+      freeHandler();
     }
+  }
+
+  private void freeHandler() {
+    rs = null;
+    tables = null;
+    functions = null;
+    procedures = null;
+    packages = null;
+    db = null;
   }
 }

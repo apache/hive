@@ -145,7 +145,7 @@ public class SetAggrStatsHandler
           MTable mTable = ms.ensureGetMTable(catName, dbName, tableName);
           for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
             // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-            ret = updatePartitonColStatsInternal(mTable, entry.getValue(),
+            ret = updatePartitionColStatsInternal(mTable, entry.getValue(),
                 request.getValidWriteIdList(), request.getWriteId()) && ret;
           }
         }
@@ -298,7 +298,7 @@ public class SetAggrStatsHandler
           if (useDirectSql) {
             statsMap.put(csNew.getStatsDesc().getPartName(), csNew);
           } else {
-            result = updatePartitonColStatsInternal(mTable, csNew,
+            result = updatePartitionColStatsInternal(mTable, csNew,
                 request.getValidWriteIdList(), request.getWriteId()) && result;
           }
         } else if (isInvalidTxnStats) {
@@ -335,7 +335,7 @@ public class SetAggrStatsHandler
       String validWriteIds, long writeId)
       throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
 
-    if (statsMap.size() == 0) {
+    if (statsMap.isEmpty()) {
       return false;
     }
 
@@ -344,13 +344,13 @@ public class SetAggrStatsHandler
     long numStats = 0;
     long numStatsMax = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.JDBC_MAX_BATCH_SIZE);
     try {
-      for (Map.Entry entry : statsMap.entrySet()) {
-        ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
+      for (Map.Entry<String, ColumnStatistics> entry : statsMap.entrySet()) {
+        ColumnStatistics colStats = entry.getValue();
         normalizeColStatsInput(colStats);
         assert catName.equalsIgnoreCase(colStats.getStatsDesc().getCatName());
         assert dbName.equalsIgnoreCase(colStats.getStatsDesc().getDbName());
         assert tableName.equalsIgnoreCase(colStats.getStatsDesc().getTableName());
-        newStatsMap.put((String) entry.getKey(), colStats);
+        newStatsMap.put(entry.getKey(), colStats);
         numStats += colStats.getStatsObjSize();
 
         if (newStatsMap.size() >= numStatsMax) {
@@ -370,7 +370,7 @@ public class SetAggrStatsHandler
     return true;
   }
 
-  private boolean updatePartitonColStatsInternal(MTable mTable, ColumnStatistics colStats,
+  private boolean updatePartitionColStatsInternal(MTable mTable, ColumnStatistics colStats,
       String validWriteIds, long writeId)
       throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     normalizeColStatsInput(colStats);
@@ -430,13 +430,13 @@ public class SetAggrStatsHandler
       throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
     Map<String, Map<String, String>> result = ms.updatePartitionColumnStatisticsInBatch(statsMap, tbl,
         handler.getTransactionalListeners(), validWriteIds, writeId);
-    if (result != null && result.size() != 0 && handler.getListeners() != null) {
+    if (result != null && !result.isEmpty() && !handler.getListeners().isEmpty()) {
       // The normal listeners, unlike transaction listeners are not using the same transactions used by the update
       // operations. So there is no need of keeping them within the same transactions. If notification to one of
       // the listeners failed, then even if we abort the transaction, we can not revert the notifications sent to the
       // other listeners.
-      for (Map.Entry entry : result.entrySet()) {
-        Map<String, String> parameters = (Map<String, String>) entry.getValue();
+      for (Map.Entry<String, Map<String,String>> entry : result.entrySet()) {
+        Map<String, String> parameters = entry.getValue();
         ColumnStatistics colStats = statsMap.get(entry.getKey());
         List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
         MetaStoreListenerNotifier.notifyEvent(handler.getListeners(),

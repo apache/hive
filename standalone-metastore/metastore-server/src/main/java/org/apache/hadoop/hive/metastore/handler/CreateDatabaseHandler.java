@@ -79,7 +79,7 @@ public class CreateDatabaseHandler
     try {
       Database authDb = new Database(db);
       if (skipAuthorization) {
-        // @TODO could it move to authorization lawyer?
+        // @TODO could it move to authorization layer?
         //null out to skip authorizer URI check
         authDb.setManagedLocationUri(null);
         authDb.setLocationUri(null);
