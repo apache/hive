@@ -80,7 +80,7 @@ public class SetAggrStatsHandler
     this.ms = handler.getMS();
     List<ColumnStatistics> csNews = request.getColStats();
     if (csNews != null && !csNews.isEmpty()) {
-      ColumnStatistics firstColStats = csNews.get(0);
+      ColumnStatistics firstColStats = csNews.getFirst();
       ColumnStatisticsDesc statsDesc = firstColStats.getStatsDesc();
       this.catName = normalizeIdentifier(statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf));
       this.dbName = normalizeIdentifier(statsDesc.getDbName());
@@ -102,7 +102,7 @@ public class SetAggrStatsHandler
       return new SetAggrStatsResult(true);
     }
     // figure out if it is table level or partition level
-    ColumnStatistics firstColStats = csNews.get(0);
+    ColumnStatistics firstColStats = csNews.getFirst();
     ColumnStatisticsDesc statsDesc = firstColStats.getStatsDesc();
     List<String> colNames = new ArrayList<>();
     for (ColumnStatisticsObj obj : firstColStats.getStatsObj()) {
@@ -151,7 +151,7 @@ public class SetAggrStatsHandler
 
   private boolean updateTableColumnStatsWithMerge(List<String> colNames) throws MetaException,
       NoSuchObjectException, InvalidObjectException, InvalidInputException {
-    ColumnStatistics firstColStats = request.getColStats().get(0);
+    ColumnStatistics firstColStats = request.getColStats().getFirst();
     ms.openTransaction();
     boolean isCommitted = false, result = false;
     try {
@@ -176,7 +176,7 @@ public class SetAggrStatsHandler
             request.getValidWriteIdList(), request.getWriteId());
       } else if (isInvalidTxnStats) {
         // For now because the stats state is such as it is, we will invalidate everything.
-        // Overall the sematics here are not clear - we could invalide only some columns, but does
+        // Overall the semantics here are not clear - we could invalidate only some columns, but does
         // that make any physical sense? Could query affect some columns but not others?
         t.setWriteId(request.getWriteId());
         StatsSetupConst.clearColumnStatsState(t.getParameters());
@@ -293,7 +293,7 @@ public class SetAggrStatsHandler
           }
         } else if (isInvalidTxnStats) {
           // For now because the stats state is such as it is, we will invalidate everything.
-          // Overall the sematics here are not clear - we could invalide only some columns, but does
+          // Overall the semantics here are not clear - we could invalidate only some columns, but does
           // that make any physical sense? Could query affect some columns but not others?
           part.setWriteId(request.getWriteId());
           StatsSetupConst.clearColumnStatsState(part.getParameters());

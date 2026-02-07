@@ -915,7 +915,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         cdr.setLocationUri(catalog.getLocationUri());
         cdr.setParameters(Collections.emptyMap());
         cdr.setDescription("Default database for catalog " + catalog.getName());
-        success |= AbstractRequestHandler.offer(this, cdr).success();
+        AbstractRequestHandler.offer(this, cdr).getResult();
 
         if (!transactionalListeners.isEmpty()) {
           transactionalListenersResponses =
@@ -943,6 +943,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       }
       success = true;
     } catch (Exception e) {
+      ex = e;
       throw handleException(e)
           .throwIfInstance(AlreadyExistsException.class, InvalidObjectException.class, MetaException.class)
           .defaultMetaException();
@@ -2847,7 +2848,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         AddPartitionsHandler.AddPartitionsResult addPartsResult = addPartsOp.getResult();
         if (request.isSkipColumnSchemaForPartition()) {
           if (addPartsResult.newParts() != null && !addPartsResult.newParts().isEmpty()) {
-            StorageDescriptor sd = addPartsResult.newParts().get(0).getSd().deepCopy();
+            StorageDescriptor sd = addPartsResult.newParts().getFirst().getSd().deepCopy();
             result.setPartitionColSchema(sd.getCols());
           }
           addPartsResult.newParts().stream().forEach(partition -> partition.getSd().getCols().clear());
@@ -4906,7 +4907,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     // Deprecated API, won't work for transactional tables
     colStats.getStatsDesc().setIsTblLevel(true);
     SetPartitionsStatsRequest setStatsRequest =
-        new SetPartitionsStatsRequest(Arrays.asList(colStats));
+        new SetPartitionsStatsRequest(List.of(colStats));
     setStatsRequest.setWriteId(-1);
     setStatsRequest.setValidWriteIdList(null);
     setStatsRequest.setNeedMerge(false);
@@ -7047,7 +7048,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (columnStatisticsList == null || columnStatisticsList.isEmpty()) {
       return true;
     }
-    ColumnStatisticsDesc statsDesc = columnStatisticsList.get(0).getStatsDesc();
+    ColumnStatisticsDesc statsDesc = columnStatisticsList.getFirst().getStatsDesc();
     String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
     String dbName = statsDesc.getDbName();
     String tableName = statsDesc.getTableName();
