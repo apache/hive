@@ -71,7 +71,7 @@ public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectI
         primitiveTypeInfo = TypeInfoFactory.booleanTypeInfo;
         break;
       case DATE:
-        return IcebergDateObjectInspectorHive3.get();
+        return IcebergDateObjectInspector.get();
       case DECIMAL:
         Types.DecimalType type = (Types.DecimalType) primitiveType;
         return IcebergDecimalObjectInspector.get(type.precision(), type.scale());
@@ -97,13 +97,13 @@ public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectI
       case TIMESTAMP:
         boolean adjustToUTC = ((Types.TimestampType) primitiveType).shouldAdjustToUTC();
         return adjustToUTC ?
-            IcebergTimestampWithZoneObjectInspectorHive3.get() :
-            IcebergTimestampObjectInspectorHive3.get();
+            IcebergTimestampWithZoneObjectInspector.get() :
+            IcebergTimestampObjectInspector.get();
       case TIMESTAMP_NANO:
         boolean adjustUTC = ((Types.TimestampNanoType) primitiveType).shouldAdjustToUTC();
         return adjustUTC ?
-            IcebergTimestampWithZoneObjectInspectorHive3.get(9) :
-            IcebergTimestampObjectInspectorHive3.get(9);
+            IcebergTimestampWithZoneObjectInspector.get(9) :
+            IcebergTimestampObjectInspector.get(9);
       case TIME:
         return IcebergTimeObjectInspector.get();
       default:
