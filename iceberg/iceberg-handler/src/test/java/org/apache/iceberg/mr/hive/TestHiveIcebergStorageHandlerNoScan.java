@@ -68,7 +68,6 @@ import org.apache.iceberg.exceptions.CommitFailedException;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.hadoop.Util;
 import org.apache.iceberg.hive.HiveSchemaUtil;
-import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.TestHelper;
@@ -1037,9 +1036,7 @@ public class TestHiveIcebergStorageHandlerNoScan {
     Properties tableProperties = new Properties();
     tableProperties.putAll(hmsParams);
 
-    if (HiveVersion.min(HiveVersion.HIVE_3)) {
-      expectedIcebergProperties.put("bucketing_version", "2");
-    }
+    expectedIcebergProperties.put("bucketing_version", "2");
     expectedIcebergProperties.put(TableProperties.DELETE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
     expectedIcebergProperties.put(TableProperties.UPDATE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);
     expectedIcebergProperties.put(TableProperties.MERGE_MODE, HiveIcebergStorageHandler.MERGE_ON_READ);

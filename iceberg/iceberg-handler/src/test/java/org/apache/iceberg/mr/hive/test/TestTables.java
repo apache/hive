@@ -50,7 +50,6 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.hadoop.HadoopTables;
 import org.apache.iceberg.hive.HiveCatalog;
-import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
@@ -537,8 +536,7 @@ public abstract class TestTables {
     private final String warehouseLocation;
 
     CustomCatalogTestTables(Configuration conf, TemporaryFolder temp, String catalogName) throws IOException {
-      this(conf, temp, (HiveVersion.min(HiveVersion.HIVE_3) ? "file:" : "") +
-          temp.newFolder("custom", "warehouse").toString(), catalogName);
+      this(conf, temp, "file:" + temp.newFolder("custom", "warehouse").toString(), catalogName);
     }
 
     CustomCatalogTestTables(Configuration conf, TemporaryFolder temp, String warehouseLocation, String catalogName) {
@@ -568,8 +566,7 @@ public abstract class TestTables {
     private final String warehouseLocation;
 
     HadoopCatalogTestTables(Configuration conf, TemporaryFolder temp, String catalogName) throws IOException {
-      this(conf, temp, (HiveVersion.min(HiveVersion.HIVE_3) ? "file:" : "") +
-          temp.newFolder("hadoop", "warehouse").toString(), catalogName);
+      this(conf, temp, "file:" + temp.newFolder("hadoop", "warehouse").toString(), catalogName);
     }
 
     HadoopCatalogTestTables(Configuration conf, TemporaryFolder temp, String warehouseLocation, String catalogName) {
