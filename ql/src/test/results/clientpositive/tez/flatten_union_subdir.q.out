@@ -60,7 +60,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_nonacid_directinsert_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -112,8 +112,8 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_nonacid_directinsert_flattened
 POSTHOOK: Output: default@union_target_nonacid_directinsert_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_nonacid_directinsert_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_nonacid_directinsert_flattened)union_target_nonacid_directinsert_flattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_nonacid_directinsert_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_nonacid_directinsert_flattened
@@ -171,7 +171,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_mm_directinsert_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -223,9 +223,9 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_directinsert_flattened
 POSTHOOK: Output: default@union_target_mm_directinsert_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_mm_directinsert_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_mm_directinsert_flattened)union_target_mm_directinsert_flattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_mm_directinsert_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_mm_directinsert_flattened
@@ -283,7 +283,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_acid_directinsert_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -335,10 +335,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_directinsert_flattened
 POSTHOOK: Output: default@union_target_acid_directinsert_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_acid_directinsert_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_acid_directinsert_flattened)union_target_acid_directinsert_flattened.FieldSchema(name:val, type:string, comment:null), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_acid_directinsert_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_acid_directinsert_flattened
@@ -396,7 +396,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_mm_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -448,9 +448,9 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_flattened
 POSTHOOK: Output: default@union_target_mm_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_mm_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_mm_flattened)union_target_mm_flattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_mm_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_mm_flattened
@@ -508,7 +508,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_acid_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -560,10 +560,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_flattened
 POSTHOOK: Output: default@union_target_acid_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_acid_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_acid_flattened)union_target_acid_flattened.FieldSchema(name:val, type:string, comment:null), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_acid_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_acid_flattened
@@ -621,7 +621,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_mm_unflattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -673,10 +673,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_unflattened
 POSTHOOK: Output: default@union_target_mm_unflattened@dt=20230817
 POSTHOOK: Lineage: union_target_mm_unflattened PARTITION(dt=20230817).val EXPRESSION [(union_target_mm_unflattened)union_target_mm_unflattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_mm_unflattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_mm_unflattened
@@ -734,7 +734,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_acid_unflattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -786,10 +786,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_unflattened
 POSTHOOK: Output: default@union_target_acid_unflattened@dt=20230817
 POSTHOOK: Lineage: union_target_acid_unflattened PARTITION(dt=20230817).val EXPRESSION [(union_target_acid_unflattened)union_target_acid_unflattened.FieldSchema(name:val, type:string, comment:null), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_acid_unflattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_acid_unflattened
@@ -847,7 +847,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_mm_directinsert_unflattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -899,10 +899,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_mm_directinsert_unflattened
 POSTHOOK: Output: default@union_target_mm_directinsert_unflattened@dt=20230817
 POSTHOOK: Lineage: union_target_mm_directinsert_unflattened PARTITION(dt=20230817).val EXPRESSION [(union_target_mm_directinsert_unflattened)union_target_mm_directinsert_unflattened.FieldSchema(name:val, type:string, comment:), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxrwxrwx   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxrwxrwx   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_mm_directinsert_unflattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_mm_directinsert_unflattened
@@ -960,7 +960,7 @@ Stage-3
                     <-Map 1 [CONTAINS] vectorized
                       File Output Operator [FS_57]
                         table:{"name:":"default.union_target_acid_nondirectinsert_flattened"}
-                        Map Join Operator [MAPJOIN_56] (rows=2 width=96)
+                        Map Join Operator [MAPJOIN_56] (rows=2 width=84)
                           Conds:SEL_55._col0=RS_53._col0(Left Outer),Output:["_col0"]
                         <-Map 4 [BROADCAST_EDGE] vectorized
                           BROADCAST [RS_53]
@@ -1012,10 +1012,10 @@ POSTHOOK: Input: default@test1@dt=20230817
 POSTHOOK: Input: default@union_target_acid_nondirectinsert_flattened
 POSTHOOK: Output: default@union_target_acid_nondirectinsert_flattened@dt=20230817
 POSTHOOK: Lineage: union_target_acid_nondirectinsert_flattened PARTITION(dt=20230817).val EXPRESSION [(union_target_acid_nondirectinsert_flattened)union_target_acid_nondirectinsert_flattened.FieldSchema(name:val, type:string, comment:null), (test1)test1.FieldSchema(name:val, type:string, comment:), ]
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
-drwxr-xr-x   - ### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
--rw-rw-rw-   3 ### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+drwxr-xr-x   - konstantin.### USER ### ### GROUP ###          0 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###          ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 konstantin.### USER ### ### GROUP ###        ### SIZE ### ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select * from union_target_acid_nondirectinsert_flattened
 PREHOOK: type: QUERY
 PREHOOK: Input: default@union_target_acid_nondirectinsert_flattened

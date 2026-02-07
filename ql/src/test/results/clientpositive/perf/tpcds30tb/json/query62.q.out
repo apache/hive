@@ -1258,7 +1258,7 @@
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },
@@ -2136,13 +2136,13 @@
           },
           {
             "name": "web_rec_start_date",
-            "ndv": 0,
+            "ndv": 4,
             "minValue": 10089,
             "maxValue": 11550
           },
           {
             "name": "web_rec_end_date",
-            "ndv": 0,
+            "ndv": 3,
             "minValue": 10819,
             "maxValue": 11549
           },

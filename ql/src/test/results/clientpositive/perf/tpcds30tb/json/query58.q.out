@@ -1,4 +1,5 @@
-Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
+Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Reducer 5' is a cross product
+Warning: Map Join MAPJOIN[380][bigTable=?] in task 'Reducer 6' is a cross product
 {
   "CBOPlan": {
     "rels": [
@@ -720,7 +721,7 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },
@@ -1143,7 +1144,7 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },
@@ -1555,7 +1556,7 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },
@@ -1793,25 +1794,6 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
       },
       {
         "id": "16",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "literal": true,
-          "type": {
-            "type": "BOOLEAN",
-            "nullable": false
-          }
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "9",
-          "15"
-        ],
-        "rowCount": 59169.69
-      },
-      {
-        "id": "17",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -1861,7 +1843,7 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
         "rowCount": 9861.615
       },
       {
-        "id": "18",
+        "id": "17",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "d_week_seq"
@@ -1871,6 +1853,25 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
             "input": 4,
             "name": "$4"
           }
+        ],
+        "rowCount": 9861.615
+      },
+      {
+        "id": "18",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "literal": true,
+          "type": {
+            "type": "BOOLEAN",
+            "nullable": false
+          }
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "15",
+          "17"
         ],
         "rowCount": 9861.615
       },
@@ -1898,7 +1899,7 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "16",
+          "9",
           "18"
         ],
         "rowCount": 8.75263053674025E7
@@ -2136,13 +2137,13 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
           },
           {
             "name": "i_rec_start_date",
-            "ndv": 0,
+            "ndv": 4,
             "minValue": 10161,
             "maxValue": 11622
           },
           {
             "name": "i_rec_end_date",
-            "ndv": 0,
+            "ndv": 3,
             "minValue": 10891,
             "maxValue": 11621
           },
@@ -3116,25 +3117,6 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
       },
       {
         "id": "40",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "literal": true,
-          "type": {
-            "type": "BOOLEAN",
-            "nullable": false
-          }
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "34",
-          "39"
-        ],
-        "rowCount": 59169.69
-      },
-      {
-        "id": "41",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -3184,7 +3166,7 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
         "rowCount": 9861.615
       },
       {
-        "id": "42",
+        "id": "41",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "d_week_seq"
@@ -3194,6 +3176,25 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
             "input": 4,
             "name": "$4"
           }
+        ],
+        "rowCount": 9861.615
+      },
+      {
+        "id": "42",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "literal": true,
+          "type": {
+            "type": "BOOLEAN",
+            "nullable": false
+          }
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "39",
+          "41"
         ],
         "rowCount": 9861.615
       },
@@ -3221,7 +3222,7 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "40",
+          "34",
           "42"
         ],
         "rowCount": 8.75263053674025E7
@@ -3979,25 +3980,6 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
       },
       {
         "id": "63",
-        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
-        "condition": {
-          "literal": true,
-          "type": {
-            "type": "BOOLEAN",
-            "nullable": false
-          }
-        },
-        "joinType": "inner",
-        "algorithm": "none",
-        "cost": "not available",
-        "inputs": [
-          "57",
-          "62"
-        ],
-        "rowCount": 59169.69
-      },
-      {
-        "id": "64",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter",
         "condition": {
           "op": {
@@ -4047,7 +4029,7 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
         "rowCount": 9861.615
       },
       {
-        "id": "65",
+        "id": "64",
         "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject",
         "fields": [
           "d_week_seq"
@@ -4057,6 +4039,25 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
             "input": 4,
             "name": "$4"
           }
+        ],
+        "rowCount": 9861.615
+      },
+      {
+        "id": "65",
+        "relOp": "org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin",
+        "condition": {
+          "literal": true,
+          "type": {
+            "type": "BOOLEAN",
+            "nullable": false
+          }
+        },
+        "joinType": "inner",
+        "algorithm": "none",
+        "cost": "not available",
+        "inputs": [
+          "62",
+          "64"
         ],
         "rowCount": 9861.615
       },
@@ -4084,7 +4085,7 @@ Warning: Map Join MAPJOIN[375][bigTable=?] in task 'Map 5' is a cross product
         "algorithm": "none",
         "cost": "not available",
         "inputs": [
-          "63",
+          "57",
           "65"
         ],
         "rowCount": 8.75263053674025E7

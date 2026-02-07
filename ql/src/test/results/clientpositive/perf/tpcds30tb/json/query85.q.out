@@ -1016,7 +1016,7 @@
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },

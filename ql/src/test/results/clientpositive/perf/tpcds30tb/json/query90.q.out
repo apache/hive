@@ -688,13 +688,13 @@ Warning: Map Join MAPJOIN[149][bigTable=?] in task 'Reducer 2' is a cross produc
           },
           {
             "name": "wp_rec_start_date",
-            "ndv": 0,
+            "ndv": 4,
             "minValue": 10107,
             "maxValue": 11568
           },
           {
             "name": "wp_rec_end_date",
-            "ndv": 0,
+            "ndv": 3,
             "minValue": 10837,
             "maxValue": 11567
           },

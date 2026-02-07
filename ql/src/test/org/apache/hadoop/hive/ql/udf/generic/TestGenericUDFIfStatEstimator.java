@@ -27,10 +27,12 @@ import java.util.Optional;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.junit.jupiter.api.Test;
 
 class TestGenericUDFIfStatEstimator {
@@ -166,7 +168,7 @@ class TestGenericUDFIfStatEstimator {
             createColStats("else_col", 1, 0)));
 
     assertTrue(result.isPresent());
-    assertEquals(2, result.get().getCountDistint());
+    assertEquals(1, result.get().getCountDistint());
   }
 
   @Test
@@ -178,6 +180,29 @@ class TestGenericUDFIfStatEstimator {
         TypeInfoFactory.stringTypeInfo, null);
     ObjectInspector elseOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
         TypeInfoFactory.stringTypeInfo, null);
+
+    udf.initialize(new ObjectInspector[]{conditionOI, thenOI, elseOI});
+
+    StatEstimator estimator = udf.getStatEstimator();
+
+    Optional<ColStatistics> result = estimator.estimate(
+        Arrays.asList(createColStats("cond", 2, 0),
+            createColStats("then_col", 1, 0),
+            createColStats("else_col", 1, 0)));
+
+    assertTrue(result.isPresent());
+    assertEquals(1, result.get().getCountDistint());
+  }
+
+  @Test
+  void testTimestampConstantAndNullConstant() throws UDFArgumentException {
+    GenericUDFIf udf = new GenericUDFIf();
+
+    ObjectInspector conditionOI = PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
+    ObjectInspector thenOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+        TypeInfoFactory.timestampTypeInfo, new TimestampWritableV2(Timestamp.valueOf("2011-01-01 01:01:01")));
+    ObjectInspector elseOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
+        TypeInfoFactory.timestampTypeInfo, null);
 
     udf.initialize(new ObjectInspector[]{conditionOI, thenOI, elseOI});
 

@@ -686,7 +686,7 @@
           },
           {
             "name": "d_date",
-            "ndv": 0,
+            "ndv": 76511,
             "minValue": -25566,
             "maxValue": 47482
           },
@@ -2361,13 +2361,13 @@
           },
           {
             "name": "cc_rec_start_date",
-            "ndv": 0,
+            "ndv": 4,
             "minValue": 10227,
             "maxValue": 11688
           },
           {
             "name": "cc_rec_end_date",
-            "ndv": 0,
+            "ndv": 3,
             "minValue": 10957,
             "maxValue": 11687
           },

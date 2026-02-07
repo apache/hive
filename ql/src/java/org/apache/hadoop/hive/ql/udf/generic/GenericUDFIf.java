@@ -165,7 +165,13 @@ public class GenericUDFIf extends GenericUDF implements StatEstimatorProvider {
     if (thenIsConstant && elseIsConstant) {
       Object thenValue = ((ConstantObjectInspector) arguments[1]).getWritableConstantValue();
       Object elseValue = ((ConstantObjectInspector) arguments[2]).getWritableConstantValue();
-      numberOfDistinctConstants = Objects.equals(thenValue, elseValue) ? 1 : 2;
+      if (thenValue == null && elseValue == null) {
+        numberOfDistinctConstants = 0;
+      } else if (thenValue == null || elseValue == null) {
+        numberOfDistinctConstants = 1;
+      } else {
+         numberOfDistinctConstants = Objects.equals(thenValue, elseValue) ? 1 : 2;
+      }
     } else if (thenIsConstant || elseIsConstant) {
       numberOfDistinctConstants = 1;
     } else {
