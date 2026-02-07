@@ -31,7 +31,7 @@ spec:
         app: beeline
     spec:
       containers:
-      - name: loop
+      - name: hive-toolbox
         image: hive:test
         command:
         - timeout
