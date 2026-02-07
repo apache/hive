@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.RawStore;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -86,6 +87,10 @@ public class SetAggrStatsHandler
       this.dbName = normalizeIdentifier(statsDesc.getDbName());
       this.tableName = normalizeIdentifier(statsDesc.getTableName());
       this.t = ms.getTable(catName, dbName, tableName);
+      if (this.t == null) {
+        throw new NoSuchObjectException("Table " +
+            TableName.getQualified(catName, dbName, tableName) + " does not exist");
+      }
       if (statsDesc.isIsTblLevel() && request.getColStatsSize() != 1) {
         // there should be only one ColumnStatistics
         throw new MetaException(
@@ -188,8 +193,7 @@ public class SetAggrStatsHandler
         result = true;
       }
 
-      ms.commitTransaction();
-      isCommitted = true;
+      isCommitted = ms.commitTransaction();
     } finally {
       if (!isCommitted) {
         ms.rollbackTransaction();
@@ -258,8 +262,9 @@ public class SetAggrStatsHandler
       // another single call to get all the partition objects
       List<Partition> partitions = ms.getPartitionsByNames(catName, dbName, tableName, partitionNames);
       Map<String, Partition> mapToPart = new HashMap<>();
-      for (int index = 0; index < partitionNames.size(); index++) {
-        mapToPart.put(partitionNames.get(index), partitions.get(index));
+      for (Partition p : partitions) {
+        String partName = Warehouse.makePartName(t.getPartitionKeys(), p.getValues());
+        mapToPart.put(partName, p);
       }
 
       MTable mTable = ms.ensureGetMTable(catName, dbName, tableName);
@@ -271,6 +276,11 @@ public class SetAggrStatsHandler
         boolean isInvalidTxnStats = csOld != null
             && csOld.isSetIsStatsCompliant() && !csOld.isIsStatsCompliant();
         Partition part = mapToPart.get(entry.getKey());
+        if (part == null) {
+          LOG.warn("Partition {} does not exist, skip updating the column statistics for this partition",
+              entry.getKey());
+          continue;
+        }
         if (isInvalidTxnStats) {
           // No columns can be merged; a shortcut for getMergableCols.
           csNew.setStatsObj(Lists.newArrayList());
@@ -307,8 +317,7 @@ public class SetAggrStatsHandler
               + " are not accurate to merge.");
         }
       }
-      ms.commitTransaction();
-      isCommitted = true;
+      isCommitted = ms.commitTransaction();
       // updatePartitionColStatsInBatch starts/commit transaction internally. As there is no write or select for update
       // operations is done in this transaction, it is safe to commit it before calling updatePartitionColStatsInBatch.
       if (!statsMap.isEmpty()) {
@@ -361,7 +370,7 @@ public class SetAggrStatsHandler
     return true;
   }
 
-  public boolean updatePartitonColStatsInternal(MTable mTable, ColumnStatistics colStats,
+  private boolean updatePartitonColStatsInternal(MTable mTable, ColumnStatistics colStats,
       String validWriteIds, long writeId)
       throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
     normalizeColStatsInput(colStats);

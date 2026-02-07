@@ -231,8 +231,9 @@ public class CreateDatabaseHandler
         wh.getDnsPath(new Path(passedInURI)) : wh.determineDatabasePath(cat, db);
     Path dbMgdPath = (passedInManagedURI != null) ? wh.getDnsPath(new Path(passedInManagedURI)) : null;
 
-    skipAuthorization |= ((passedInURI == null && passedInManagedURI == null) ||
-        (defaultDbExtPath.equals(dbExtPath) && defaultDbMgdPath.equals(dbMgdPath)));
+    skipAuthorization = ((passedInURI == null && passedInManagedURI == null) ||
+        (defaultDbExtPath.equals(dbExtPath) &&
+            (dbMgdPath == null || defaultDbMgdPath.equals(dbMgdPath))));
 
     db.setLocationUri(dbExtPath.toString());
     if (dbMgdPath != null) {
