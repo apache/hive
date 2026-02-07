@@ -90,7 +90,7 @@
   </build>
   <profiles>
     <profile>
-      <id>docker-integration-tests</id>
+      <id>docker</id>
       <properties>
         <skip.docker.integration.tests>false</skip.docker.integration.tests>
       </properties>

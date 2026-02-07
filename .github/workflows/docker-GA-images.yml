@@ -158,7 +158,7 @@ jobs:
         # On workflow_dispatch, the checked-out source code and libraries could be inconsistent with the specified Hive release
         if: github.event_name != 'workflow_dispatch'
         run: |
-          mvn --batch-mode test -Pitests -Pdocker-integration-tests -pl itests/test-docker
+          mvn --batch-mode test -Pitests -Pdocker -pl itests/test-docker
 
       - name: Test HiveServer2
         run: |
