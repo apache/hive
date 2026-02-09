@@ -36,7 +36,7 @@ import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 
-class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultValuesWriter {
+class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter {
 
   private final GenericRecord rowDataTemplate;
   private final List<DataFile> replacedDataFiles;

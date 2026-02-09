@@ -54,6 +54,8 @@ import org.apache.parquet.schema.Type;
 
 final class ParquetVariantRecordReader implements RecordReader<NullWritable, VectorizedRowBatch> {
 
+  private static final String INVALID_VARIANT_STRUCT = "Invalid Variant struct for column ";
+
   private final RecordReader<NullWritable, VectorizedRowBatch> delegate;
   private final ParquetFileReader parquetReader;
 
@@ -272,13 +274,13 @@ final class ParquetVariantRecordReader implements RecordReader<NullWritable, Vec
     variantStruct.isRepeating = false;
 
     if (variantStruct.fields[0] == null) {
-      throw new IOException("Invalid Variant vector structure for column " +
+      throw new IOException(INVALID_VARIANT_STRUCT +
           Arrays.toString(vc.physicalPath()) + ": metadata vector is null.");
     }
     variantStruct.fields[0].isRepeating = false;
 
     if (variantStruct.fields[1] == null) {
-      throw new IOException("Invalid Variant vector structure for column " +
+      throw new IOException(INVALID_VARIANT_STRUCT +
           Arrays.toString(vc.physicalPath()) + ": value vector is null.");
     }
     variantStruct.fields[1].isRepeating = false;

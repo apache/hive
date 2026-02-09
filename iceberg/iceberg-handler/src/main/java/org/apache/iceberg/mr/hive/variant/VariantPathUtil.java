@@ -32,7 +32,6 @@ public final class VariantPathUtil {
   public static final String METADATA = "metadata";
   public static final String VALUE = "value";
   public static final String TYPED_VALUE = "typed_value";
-
   public static final String TYPED_VALUE_SEGMENT = ".typed_value.";
 
   private VariantPathUtil() {

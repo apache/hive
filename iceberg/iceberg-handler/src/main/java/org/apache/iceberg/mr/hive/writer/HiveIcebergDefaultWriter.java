@@ -39,13 +39,13 @@ import org.apache.iceberg.types.Types.NestedField;
  * sample of records to initialize VARIANT {@code typed_value} schema inference before the first Parquet file is
  * created.
  */
-abstract class HiveIcebergDefaultValuesWriter extends HiveIcebergWriterBase {
+abstract class HiveIcebergDefaultWriter extends HiveIcebergWriterBase {
 
   private final int currentSpecId;
   private final Set<String> missingColumns;
   private final List<NestedField> missingOrStructFields;
 
-  HiveIcebergDefaultValuesWriter(
+  HiveIcebergDefaultWriter(
       Table table,
       HiveFileWriterFactory fileWriterFactory,
       OutputFileFactory dataFileFactory,

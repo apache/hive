@@ -31,7 +31,7 @@ import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 
-class HiveIcebergRecordWriter extends HiveIcebergDefaultValuesWriter {
+class HiveIcebergRecordWriter extends HiveIcebergDefaultWriter {
 
   HiveIcebergRecordWriter(Table table, HiveFileWriterFactory fileWriterFactory,
       OutputFileFactory dataFileFactory, Context context) {
