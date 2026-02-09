@@ -59,6 +59,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
@@ -258,6 +259,7 @@ public final class Utilities {
   public static final String MAPNAME = "Map ";
   public static final String REDUCENAME = "Reducer ";
   public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
+  public static final String CREATE_TIME = "create_time";
   public static final String SNAPSHOT_REF = "snapshot_ref";
 
   @Deprecated
@@ -5093,5 +5095,48 @@ public final class Utilities {
       }
     }
     return suffix;
+  }
+
+  /**
+   * Stores the creation time of the given table in the provided configuration.
+   * <p>
+   * The value is written under a composite key of the form:
+   * {@code &lt;dbName&gt;.&lt;tableName&gt;.&lt;CREATE_TIME&gt;}.
+   * </p>
+   *
+   * @param conf
+   *     configuration to store the table creation time; must not be {@code null}
+   * @param table
+   *     table whose database and name are used to construct the configuration key;
+   *     must not be {@code null}
+   * @param tableCreateTime
+   *     table creation time to store, represented as a string
+   */
+  public static void setTableCreateTime(Configuration conf, Table table) {
+    Objects.requireNonNull(table, "Cannot get table create time. Table object is expected to be non-null.");
+    String tableCreateTime = String.valueOf(table.getCreateTime());
+    String fullTableName = String.format("%s.%s", table.getDbName(), table.getTableName());
+    conf.set(String.format("%s.%s", fullTableName, CREATE_TIME), tableCreateTime);
+  }
+
+  /**
+   * Retrieves the table creation time from the configuration.
+   * <p>
+   * The value is expected to be stored under the key
+   * {@code &lt;tableName&gt;.&lt;CREATE_TIME&gt;}. If the value is not present,
+   * this method returns {@code 0}.
+   * </p>
+   *
+   * @param conf
+   *     configuration containing the table creation time; must not be {@code null}
+   * @param tableName
+   *     fully qualified table name ({@code dbName.tableName})
+   *     used to construct the configuration key
+   * @return
+   *     the table creation time, or {@code 0} if not set
+   */
+  public static int getTableCreateTime(Configuration conf, String tableName) {
+    String createTime = conf.get(String.format("%s.%s", tableName, CREATE_TIME));
+    return createTime == null ? 0 : Integer.parseInt(createTime);
   }
 }

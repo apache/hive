@@ -57,7 +57,7 @@ import org.apache.hadoop.mapred.JobConf;
  * read as part of map-reduce framework
  **/
 public class TableScanOperator extends Operator<TableScanDesc> implements
-    Serializable, VectorizationContextRegion {
+    Serializable, VectorizationContextRegion, IConfigureJobConf {
   private static final long serialVersionUID = 1L;
 
   private VectorizationContext taskVectorizationContext;
@@ -86,6 +86,15 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   private String schemaEvolutionColumnsTypes;
 
   private ProbeDecodeContext probeDecodeContextSet;
+
+  @Override
+  public void configureJobConf(JobConf job) {
+    Table table = getConf().getTableMetadata();
+    // Safety check: this may be null in certain scenarios, particularly in test cases.
+    if (table != null) {
+      Utilities.setTableCreateTime(job, table);
+    }
+  }
 
   /**
    * Inner wrapper class for TS ProbeDecode optimization
