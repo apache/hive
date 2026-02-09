@@ -817,8 +817,7 @@ public final class FunctionRegistry {
     // Does the same thing as getFunctionInfo, except for getting the function info.
     fn = fn.toLowerCase();
     return (FunctionUtils.isQualifiedFunctionName(fn) || getFunctionInfo(fn) != null) ? fn
-        : FunctionUtils.qualifyFunctionName(
-        fn, SessionState.get().getCurrentDatabase().toLowerCase());
+        : FunctionUtils.qualifyFunctionName(fn);
   }
 
   public static FunctionInfo getFunctionInfo(String functionName) throws SemanticException {
