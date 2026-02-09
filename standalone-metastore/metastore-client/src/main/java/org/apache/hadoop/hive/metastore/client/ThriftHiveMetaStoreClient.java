@@ -1530,6 +1530,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     try {
       while (!resp.isFinished() && !Thread.currentThread().isInterrupted()) {
         resp = client.drop_database_req(req);
+        req.setId(resp.getId());
         if (resp.getMessage() != null) {
           LOG.info(resp.getMessage());
         }
@@ -1706,6 +1707,7 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     try {
       while (!resp.isFinished() && !Thread.currentThread().isInterrupted()) {
         resp = client.drop_table_req(dropTableReq);
+        dropTableReq.setId(resp.getId());
         if (resp.getMessage() != null) {
           LOG.info(resp.getMessage());
         }

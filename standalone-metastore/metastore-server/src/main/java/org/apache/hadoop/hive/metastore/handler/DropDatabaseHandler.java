@@ -212,24 +212,7 @@ public class DropDatabaseHandler
     pkgRequest.setDbName(name);
     packages = defaultEmptyList(rs.listPackages(pkgRequest));
 
-    if (!request.isCascade()) {
-      if (!tableNames.isEmpty()) {
-        throw new InvalidOperationException(
-            "Database " + db.getName() + " is not empty. One or more tables exist.");
-      }
-      if (!functions.isEmpty()) {
-        throw new InvalidOperationException(
-            "Database " + db.getName() + " is not empty. One or more functions exist.");
-      }
-      if (!procedures.isEmpty()) {
-        throw new InvalidOperationException(
-            "Database " + db.getName() + " is not empty. One or more stored procedures exist.");
-      }
-      if (!packages.isEmpty()) {
-        throw new InvalidOperationException(
-            "Database " + db.getName() + " is not empty. One or more packages exist.");
-      }
-    }
+    validateCascadeDrop(tableNames);
     Path path = new Path(db.getLocationUri()).getParent();
     if (!handler.getWh().isWritable(path)) {
       throw new MetaException("Database not dropped since its external warehouse location " + path +
@@ -269,6 +252,27 @@ public class DropDatabaseHandler
       }
     }
     result.setFunctionCmPaths(funcNeedCmPaths);
+  }
+
+  private void validateCascadeDrop(List<String> tableNames) throws InvalidOperationException {
+    if (!request.isCascade()) {
+      if (!tableNames.isEmpty()) {
+        throw new InvalidOperationException(
+            "Database " + db.getName() + " is not empty. One or more tables exist.");
+      }
+      if (!functions.isEmpty()) {
+        throw new InvalidOperationException(
+            "Database " + db.getName() + " is not empty. One or more functions exist.");
+      }
+      if (!procedures.isEmpty()) {
+        throw new InvalidOperationException(
+            "Database " + db.getName() + " is not empty. One or more stored procedures exist.");
+      }
+      if (!packages.isEmpty()) {
+        throw new InvalidOperationException(
+            "Database " + db.getName() + " is not empty. One or more packages exist.");
+      }
+    }
   }
 
   private void checkTablePathPermission(RawStore rs, List<String> tableNames) throws MetaException {

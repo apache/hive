@@ -413,27 +413,27 @@ public class CreateTableHandler
     String catName = tbl.getCatName();
     // Check that constraints have catalog name properly set first
     if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())
-        && !constraints.getPrimaryKeys().get(0).isSetCatName()) {
+        && !constraints.getPrimaryKeys().getFirst().isSetCatName()) {
       constraints.getPrimaryKeys().forEach(constraint -> constraint.setCatName(catName));
     }
     if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())
-        && !constraints.getForeignKeys().get(0).isSetCatName()) {
+        && !constraints.getForeignKeys().getFirst().isSetCatName()) {
       constraints.getForeignKeys().forEach(constraint -> constraint.setCatName(catName));
     }
     if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())
-        && !constraints.getUniqueConstraints().get(0).isSetCatName()) {
+        && !constraints.getUniqueConstraints().getFirst().isSetCatName()) {
       constraints.getUniqueConstraints().forEach(constraint -> constraint.setCatName(catName));
     }
     if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())
-        && !constraints.getNotNullConstraints().get(0).isSetCatName()) {
+        && !constraints.getNotNullConstraints().getFirst().isSetCatName()) {
       constraints.getNotNullConstraints().forEach(constraint -> constraint.setCatName(catName));
     }
     if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())
-        && !constraints.getDefaultConstraints().get(0).isSetCatName()) {
+        && !constraints.getDefaultConstraints().getFirst().isSetCatName()) {
       constraints.getDefaultConstraints().forEach(constraint -> constraint.setCatName(catName));
     }
     if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())
-        && !constraints.getCheckConstraints().get(0).isSetCatName()) {
+        && !constraints.getCheckConstraints().getFirst().isSetCatName()) {
       constraints.getCheckConstraints().forEach(constraint -> constraint.setCatName(catName));
     }
   }

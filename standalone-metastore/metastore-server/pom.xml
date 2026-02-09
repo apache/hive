@@ -23,7 +23,6 @@
   <name>Hive Metastore Server</name>
   <properties>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
-    <reflections.version>0.10.2</reflections.version>
   </properties>
   <dependencies>
     <dependency>
