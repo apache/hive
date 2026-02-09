@@ -818,17 +818,20 @@ public class StatsUtils {
       cs.setAvgColLen(csd.getStringStats().getAvgColLen());
       cs.setBitVectors(csd.getStringStats().getBitVectors());
     } else if (colTypeLowerCase.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
-      if (csd.getBooleanStats().getNumFalses() > 0 && csd.getBooleanStats().getNumTrues() > 0) {
-        cs.setCountDistint(2);
-      } else if (csd.getBooleanStats().getNumFalses() < 0 || csd.getBooleanStats().getNumTrues() < 0) {
-        // At least one is unknown (-1) - assume typical boolean has both values
-        cs.setCountDistint(2);
-      } else {
-        // Both >= 0 but not both > 0 - one value type confirmed absent (or all NULL)
+      long numTrues = csd.getBooleanStats().getNumTrues();
+      long numFalses = csd.getBooleanStats().getNumFalses();
+      if (numTrues == 0 && numFalses == 0) {
+        // All NULL column - no non-null distinct values
+        cs.setCountDistint(0);
+      } else if (numTrues == 0 || numFalses == 0) {
+        // One value type confirmed absent (=0), other is present (>0) or unknown (<0)
         cs.setCountDistint(1);
+      } else {
+        // Both != 0: either both present (>0), both unknown (<0), or one present + one unknown
+        cs.setCountDistint(2);
       }
-      cs.setNumTrues(csd.getBooleanStats().getNumTrues());
-      cs.setNumFalses(csd.getBooleanStats().getNumFalses());
+      cs.setNumTrues(numTrues);
+      cs.setNumFalses(numFalses);
       cs.setNumNulls(csd.getBooleanStats().getNumNulls());
       cs.setAvgColLen(JavaDataModel.get().primitive1());
     } else if (colTypeLowerCase.equals(serdeConstants.BINARY_TYPE_NAME)) {

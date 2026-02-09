@@ -345,6 +345,111 @@ class TestStatsUtils {
   }
 
   @Test
+  void testGetColStatisticsBooleanAllNull() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(0);
+    boolStats.setNumFalses(0);
+    boolStats.setNumNulls(100);  // all NULL
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertNotNull(cs);
+    assertEquals(0, cs.getCountDistint(), "Boolean NDV should be 0 for all-NULL column");
+  }
+
+  @Test
+  void testGetColStatisticsBooleanOnlyTrueValues() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(100);
+    boolStats.setNumFalses(0);  // no FALSE values
+    boolStats.setNumNulls(10);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertNotNull(cs);
+    assertEquals(1, cs.getCountDistint(), "Boolean NDV should be 1 when only TRUE values present");
+  }
+
+  @Test
+  void testGetColStatisticsBooleanOnlyFalseValues() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(0);  // no TRUE values
+    boolStats.setNumFalses(100);
+    boolStats.setNumNulls(10);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertNotNull(cs);
+    assertEquals(1, cs.getCountDistint(), "Boolean NDV should be 1 when only FALSE values present");
+  }
+
+  @Test
+  void testGetColStatisticsBooleanNoTrueUnknownFalse() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(0);   // confirmed no TRUE values
+    boolStats.setNumFalses(-1); // unknown FALSE count
+    boolStats.setNumNulls(10);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertNotNull(cs);
+    assertEquals(1, cs.getCountDistint(), "Boolean NDV should be 1 when TRUE is 0 and FALSE is unknown");
+  }
+
+  @Test
+  void testGetColStatisticsBooleanUnknownTrueNoFalse() {
+    ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    cso.setColName("bool_col");
+    cso.setColType(serdeConstants.BOOLEAN_TYPE_NAME);
+
+    BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
+    boolStats.setNumTrues(-1);  // unknown TRUE count
+    boolStats.setNumFalses(0);  // confirmed no FALSE values
+    boolStats.setNumNulls(10);
+
+    ColumnStatisticsData data = new ColumnStatisticsData();
+    data.setBooleanStats(boolStats);
+    cso.setStatsData(data);
+
+    ColStatistics cs = StatsUtils.getColStatistics(cso, "bool_col");
+
+    assertNotNull(cs);
+    assertEquals(1, cs.getCountDistint(), "Boolean NDV should be 1 when TRUE is unknown and FALSE is 0");
+  }
+
+  @Test
   void testUpdateStatsPreservesUnknownNumNulls() {
     Statistics stats = new Statistics(1000, 8000, 0, 0);
     ColStatistics cs = createColStats("col1", 100, -1); // unknown numNulls
