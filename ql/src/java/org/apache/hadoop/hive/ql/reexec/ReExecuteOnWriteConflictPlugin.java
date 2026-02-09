@@ -26,29 +26,38 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
+
 public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
   private static final Logger LOG = LoggerFactory.getLogger(ReExecuteOnWriteConflictPlugin.class);
   private static boolean retryPossible;
 
-  private static final String validationException = "org.apache.iceberg.exceptions.ValidationException";
+  private static final Set<String> RETRYABLE_EXCEPTION_CLASS_NAMES = Set.of(
+      "org.apache.iceberg.exceptions.ValidationException",
+      "org.apache.iceberg.exceptions.CommitFailedException"
+  );
 
   private static final class LocalHook implements ExecuteWithHookContext {
     @Override
-    public void run(HookContext hookContext) throws Exception {
-      if (hookContext.getHookType() == HookContext.HookType.ON_FAILURE_HOOK) {
-        Throwable exception = hookContext.getException();
-        
-        if (exception != null && exception.getMessage() != null) {
-          Throwable cause = Throwables.getRootCause(exception);
+    public void run(HookContext hookContext) {
+      if (hookContext.getHookType() != HookContext.HookType.ON_FAILURE_HOOK) {
+        return;
+      }
+      Throwable exception = hookContext.getException();
+      if (exception == null) {
+        return;
+      }
+      Throwable rootCause = Throwables.getRootCause(exception);
 
-          if (cause.getClass().getName().equals(validationException)) {
-            retryPossible = true;
-            LOG.info("Retrying query due to write conflict.");
-          }
-          LOG.info("Got exception message: {} retryPossible: {}", exception.getMessage(), retryPossible);
-        }
+      if (isRetryable(rootCause)) {
+        LOG.info("Write conflict detected ({}), retrying query.", rootCause.getClass().getName());
+        retryPossible = true;
       }
     }
+  }
+
+  private static boolean isRetryable(Throwable t) {
+    return RETRYABLE_EXCEPTION_CLASS_NAMES.contains(t.getClass().getName());
   }
 
   @Override

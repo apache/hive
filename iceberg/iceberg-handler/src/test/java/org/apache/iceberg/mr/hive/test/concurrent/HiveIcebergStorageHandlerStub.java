@@ -51,7 +51,7 @@ public class HiveIcebergStorageHandlerStub extends HiveIcebergStorageHandler {
   @Override
   public HiveIcebergOutputCommitter getOutputCommitter() {
 
-    return new HiveIcebergOutputCommitter() {
+    return new HiveIcebergOutputCommitter(conf) {
       @Override
       public void commitJobs(List<JobContext> originalContextList, Context.Operation operation) throws IOException {
         int queryIndex = ThreadContext.getQueryIndex();

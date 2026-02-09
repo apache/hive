@@ -1531,6 +1531,10 @@ public class CachedStore implements RawStore, Configurable {
     return newTable;
   }
 
+  @Override public void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException {
+    rawStore.updateTableParams(updates);
+  }
+
   @Override public void updateCreationMetadata(String catName, String dbname, String tablename, CreationMetadata cm)
       throws MetaException {
     rawStore.updateCreationMetadata(catName, dbname, tablename, cm);

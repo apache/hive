@@ -355,6 +355,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("alter_table_req\n");
   }
 
+  void update_table_params(const std::vector<TableParamsUpdate> & updates) {
+    // Your implementation goes here
+    printf("update_table_params\n");
+  }
+
   void add_partition(Partition& _return, const Partition& new_part) {
     // Your implementation goes here
     printf("add_partition\n");

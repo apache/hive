@@ -86,6 +86,7 @@ import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.Transaction;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.expressions.Expression;
@@ -185,8 +186,13 @@ public class IcebergTableUtil {
     if (skipCache) {
       return tableLoadFunc.apply(null);
     } else {
-      return SessionStateUtil.getResource(configuration, tableIdentifier).filter(o -> o instanceof Table)
-          .map(o -> (Table) o).orElseGet(() -> {
+      return SessionStateUtil.getResource(configuration, tableIdentifier)
+          .filter(Table.class::isInstance) // cleaner than instanceof lambda
+          .map(Table.class::cast)
+          .map(tbl -> Optional.ofNullable(IcebergAcidUtil.getTransaction(tbl))
+              .map(Transaction::table)
+              .orElse(tbl))
+          .orElseGet(() -> {
             LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog",
                 tableIdentifier);
             return tableLoadFunc.apply(null);

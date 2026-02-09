@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -82,6 +83,8 @@ class DriverTxnHandler {
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
+
+  private static final Set<HiveOperation> COMMIT_OR_ROLLBACK = Set.of(HiveOperation.COMMIT, HiveOperation.ROLLBACK);
 
   private final DriverContext driverContext;
   private final DriverState driverState;
@@ -567,11 +570,19 @@ class DriverTxnHandler {
   void destroy(String queryIdFromDriver) {
     // We need cleanup transactions, even if we did not acquired locks yet
     // However TxnManager is bound to session, so wee need to check if it is already handling a new query
+
+    HiveTxnManager txnManager = Optional.ofNullable(driverContext)
+        .map(DriverContext::getTxnManager)
+        .orElse(null);
+
+    HiveOperation op = Optional.ofNullable(driverContext)
+        .map(DriverContext::getQueryState).map(QueryState::getHiveOperation)
+        .orElse(null);
+
     boolean isTxnOpen =
-        driverContext != null &&
-        driverContext.getTxnManager() != null &&
-        driverContext.getTxnManager().isTxnOpen() &&
-        org.apache.commons.lang3.StringUtils.equals(queryIdFromDriver, driverContext.getTxnManager().getQueryid());
+        txnManager != null && txnManager.isTxnOpen() &&
+        (txnManager.isImplicitTransactionOpen(context) || COMMIT_OR_ROLLBACK.contains(op)) &&
+        org.apache.commons.lang3.StringUtils.equals(queryIdFromDriver, txnManager.getQueryid());
 
     release(!hiveLocks.isEmpty() || isTxnOpen);
   }

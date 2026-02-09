@@ -133,6 +133,7 @@ import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.iceberg.BaseMetastoreTableOperations;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.BaseTransaction;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataOperations;
@@ -346,7 +347,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
                 HiveCustomStorageHandlerUtils.WRITE_OPERATION_CONFIG_PREFIX + tableName)));
       }
       boolean isMergeTaskEnabled = Boolean.parseBoolean(tableDesc.getProperty(
-              HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED + tableName));
+          HiveCustomStorageHandlerUtils.MERGE_TASK_ENABLED + tableName));
       if (isMergeTaskEnabled) {
         HiveCustomStorageHandlerUtils.setMergeTaskEnabled(jobConf, tableName, true);
       }
@@ -555,9 +556,13 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
           throw new UncheckedIOException(e);
         }
 
-        table.updatePartitionStatistics()
+        Transaction txn = IcebergAcidUtil.getOrCreateTransaction(table, conf);
+        txn.table().updatePartitionStatistics()
             .setPartitionStatistics(statsFile)
             .commit();
+        if (txn.getClass() == BaseTransaction.class) {
+          txn.commitTransaction();
+        }
       }
     }
     return getBasicStatistics(partish);
@@ -574,7 +579,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
             recordSchema, table.io().newInputFile(statsFile.path()))) {
           PartitionStats partitionStats = Iterables.tryFind(recordIterator, stats -> {
             PartitionSpec spec = table.specs().get(stats.specId());
-            PartitionData data  = IcebergTableUtil.toPartitionData(stats.partition(), partitionType,
+            PartitionData data = IcebergTableUtil.toPartitionData(stats.partition(), partitionType,
                 spec.partitionType());
             return spec.partitionToPath(data).equals(partish.getPartition().getName());
           }).orNull();
@@ -678,9 +683,14 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         }
         return false;
       }
-      tbl.updateStatistics()
+
+      Transaction txn = IcebergAcidUtil.getOrCreateTransaction(tbl, conf);
+      txn.table().updateStatistics()
           .setStatistics(statisticsFile)
           .commit();
+      if (txn.getClass() == BaseTransaction.class) {
+        txn.commitTransaction();
+      }
       return true;
 
     } catch (Exception e) {
@@ -850,8 +860,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     }
     return switch (writeEntity.getWriteType()) {
       case INSERT_OVERWRITE -> LockType.EXCL_WRITE;
-      case UPDATE, DELETE -> sharedWrite ?
-        LockType.SHARED_WRITE : LockType.EXCL_WRITE;
+      case UPDATE, DELETE -> sharedWrite ? LockType.SHARED_WRITE : LockType.EXCL_WRITE;
       default -> LockType.SHARED_WRITE;
     };
   }
@@ -898,7 +907,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public DynamicPartitionCtx createDPContext(
-          HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation)
+      HiveConf hiveConf, org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation)
       throws SemanticException {
     // delete records are already clustered by partition spec id and the hash of the partition struct
     // there is no need to do any additional sorting based on partition columns
@@ -999,7 +1008,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     }
   }
 
-  private void addCustomSortExpr(Table table,  org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+  private void addCustomSortExpr(Table table, org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Operation writeOperation, DynamicPartitionCtx dpCtx,
       List<TransformSpec> transformSpecs) {
     List<Types.NestedField> fields = table.schema().columns();
@@ -1094,7 +1103,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public HiveIcebergOutputCommitter getOutputCommitter() {
-    return new HiveIcebergOutputCommitter();
+    return new HiveIcebergOutputCommitter(conf);
   }
 
   @Override

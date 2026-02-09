@@ -1938,6 +1938,14 @@ public interface IMetaStoreClient extends AutoCloseable {
    * @throws MetaException something went wrong, usually in the RDBMS
    * @throws TException general thrift error
    */
+
+  /**
+   * Multi-table table-parameter update.
+   */
+  default void updateTableParams(List<TableParamsUpdate> updates) throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support updating table params");
+  }
+
   void createDatabase(Database db)
       throws InvalidObjectException, AlreadyExistsException, MetaException, TException;
 

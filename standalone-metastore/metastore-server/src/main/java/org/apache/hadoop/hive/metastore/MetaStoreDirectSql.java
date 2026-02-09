@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -90,6 +91,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -2879,5 +2881,60 @@ class MetaStoreDirectSql {
         ImmutableList.of("\"TBL_ID\"", "\"PARAM_KEY\"", dbType.toVarChar("\"PARAM_VALUE\"")));
     Query query = pm.newQuery("javax.jdo.query.SQL", statement);
     return (long) query.executeWithArray(newValue, table.getId(), key, expectedValue);
+  }
+
+  /**
+   * Update parameters for multiple tables. For each table:
+   *  - enforce CAS on the provided expected key/value (default metadata_location)
+   *  - diff desired params vs current and delete/update/insert accordingly
+   * Table resolution happens per update via the provided resolver.
+   */
+  public void updateTableParams(List<TableParamsUpdate> updates, TableResolver resolver)
+      throws MetaException {
+    if (!pm.currentTransaction().isActive()) {
+      throw new MetaException("Direct SQL batch update requires an active transaction");
+    }
+    if (updates == null || updates.isEmpty()) {
+      return;
+    }
+
+    List<Long> tableIds = new ArrayList<>(updates.size());
+    Map<Long, Optional<Map<String, String>>> tableParamsOpt = new HashMap<>();
+
+    for (TableParamsUpdate item : updates) {
+      String dbName = item.getDb_name();
+      String tableName = item.getTable_name();
+      Table tbl = resolver.resolve(item.getCat_name(), dbName, tableName);
+
+      Map<String, String> newParams = item.getParams();
+      if (newParams == null || newParams.isEmpty()) {
+        continue;
+      }
+
+      String expectedKey = item.getExpected_param_key();
+      String expectedVal = item.getExpected_param_value();
+
+      if (expectedKey != null) {
+        if (!newParams.containsKey(expectedKey)) {
+          throw new MetaException("Expected key must be present in params for "
+              + dbName + "." + tableName);
+        }
+        long affected = updateTableParam(tbl, expectedKey, expectedVal, newParams.get(expectedKey));
+        if (affected != 1) {
+          throw new MetaException("The table has been modified. The parameter value for key '"
+              + expectedKey + "' is different");
+        }
+      }
+      tableIds.add(tbl.getId());
+      tableParamsOpt.put(tbl.getId(), Optional.of(newParams));
+    }
+
+    new DirectSqlUpdateParams(pm, dbType, batchSize)
+        .run("\"TABLE_PARAMS\"", "\"TBL_ID\"", tableIds, tableParamsOpt);
+  }
+
+  @FunctionalInterface
+  public interface TableResolver {
+    Table resolve(String catName, String dbName, String tableName) throws MetaException;
   }
 }
