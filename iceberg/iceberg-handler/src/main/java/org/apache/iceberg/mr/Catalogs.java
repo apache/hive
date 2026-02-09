@@ -90,7 +90,7 @@ public final class Catalogs {
   public static final String MATERIALIZED_VIEW_VERSION_PROPERTY_KEY =
           "iceberg.materialized.view.version";
   public static final String MATERIALIZED_VIEW_ORIGINAL_TEXT = "iceberg.materialized.view.original.text";
-  private static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = "_storage_table";
+  public static final String MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX = "_storage_table";
 
   private Catalogs() {
   }
@@ -301,6 +301,7 @@ public final class Catalogs {
     Schema schema = schema(props);
     PartitionSpec spec = spec(props, schema);
     String location = props.getProperty(LOCATION);
+    String storageTableLocation = location + MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX;
     String catalogName = props.getProperty(InputFormatConfig.CATALOG_NAME);
 
     Optional<Catalog> catalog = loadCatalog(conf, catalogName);
@@ -316,7 +317,8 @@ public final class Catalogs {
     Map<String, String> map = filterIcebergTableProperties(props);
     String storageTableIdentifier = name + MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX;
     Table storageTable = catalog.get().buildTable(TableIdentifier.parse(storageTableIdentifier), schema)
-            .withPartitionSpec(spec).withLocation(location).withProperties(map).withSortOrder(sortOrder).create();
+            .withPartitionSpec(spec).withLocation(storageTableLocation).withProperties(map).withSortOrder(sortOrder)
+            .create();
 
     Map<String, String> viewProperties = Maps.newHashMapWithExpectedSize(2);
     viewProperties.put(MATERIALIZED_VIEW_PROPERTY_KEY, "true");

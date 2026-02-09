@@ -67,6 +67,7 @@ import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.hadoop.HadoopConfigurable;
 import org.apache.iceberg.hadoop.HadoopFileIO;
 import org.apache.iceberg.hadoop.Util;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.io.OutputFile;
 import org.apache.iceberg.mapping.NameMapping;
@@ -241,6 +242,10 @@ public class HiveTableUtil {
     if (table == null &&
           config.getBoolean(hive_metastoreConstants.TABLE_IS_CTAS, false) &&
           StringUtils.isNotBlank(location)) {
+      String type = config.get(InputFormatConfig.TABLE_TYPE);
+      if (HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equals(type)) {
+        location += Catalogs.MATERIALIZED_VIEW_STORAGE_TABLE_IDENTIFIER_SUFFIX;
+      }
       table = readTableObjectFromFile(location, config);
     }
     checkAndSetIoConfig(config, table);
