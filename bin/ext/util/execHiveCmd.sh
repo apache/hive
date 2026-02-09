@@ -42,6 +42,36 @@ execHiveCmd () {
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
   fi
 
+  # For services that may encounter SLF4J conflicts (schemaTool, beeline),
+  # filter out old SLF4J 1.x jars from HADOOP_CLASSPATH to prevent binding conflicts
+  if [[ "$SERVICE" =~ ^(schemaTool|beeline)$ ]]; then
+    # Filter HADOOP_CLASSPATH to remove paths with old SLF4J/log4j bindings
+    if [ "$HADOOP_CLASSPATH" != "" ]; then
+      FILTERED_CP=""
+      IFS=':' read -ra CP_ARRAY <<< "$HADOOP_CLASSPATH"
+      for cp_entry in "${CP_ARRAY[@]}"; do
+        # Skip wildcard paths pointing to Tez/Hadoop lib directories that contain old SLF4J
+        # This prevents slf4j-log4j12-1.7.x from being loaded alongside slf4j-api-2.0.x
+        if [[ "$cp_entry" == */tez*/lib/* || "$cp_entry" == */tez*/* ]] && [[ "$cp_entry" == *"*"* ]]; then
+          continue
+        fi
+        if [[ "$cp_entry" == */hadoop*/lib/* ]] && [[ "$cp_entry" == *"*"* ]]; then
+          continue
+        fi
+        # Skip explicit SLF4J 1.x jar paths
+        if [[ "$cp_entry" == *slf4j-log4j12* || "$cp_entry" == *slf4j-reload4j* ]]; then
+          continue
+        fi
+        if [ "$FILTERED_CP" == "" ]; then
+          FILTERED_CP="$cp_entry"
+        else
+          FILTERED_CP="${FILTERED_CP}:${cp_entry}"
+        fi
+      done
+      export HADOOP_CLASSPATH="$FILTERED_CP"
+    fi
+  fi
+
   # hadoop 20 or newer - skip the aux_jars option. picked up from hiveconf
   exec $HADOOP jar ${HIVE_LIB}/$JAR $CLASS $HIVE_OPTS "$@"
 }
