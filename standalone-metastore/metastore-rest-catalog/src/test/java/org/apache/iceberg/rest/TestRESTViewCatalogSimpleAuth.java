@@ -35,8 +35,8 @@ class TestRESTViewCatalogSimpleAuth extends BaseRESTViewCatalogTests {
   @Override
   protected Map<String, String> getDefaultClientConfiguration() {
     return Map.of(
-        "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
-        "header.x-actor-username", "USER_1"
+      "uri", REST_CATALOG_EXTENSION.getRestEndpoint(),
+      "header.x-actor-username", "USER_1"
     );
   }
 }

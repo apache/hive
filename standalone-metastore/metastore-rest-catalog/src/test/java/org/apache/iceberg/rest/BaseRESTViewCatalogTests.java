@@ -48,7 +48,9 @@ abstract class BaseRESTViewCatalogTests extends ViewCatalogTests<RESTCatalog> {
 
   @AfterAll
   void teardownAll() throws Exception {
-    catalog.close();
+    if (catalog != null) {
+      catalog.close();
+    }
   }
 
   @Override
