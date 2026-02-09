@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.TxnCoordinator;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
@@ -29,7 +30,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
-import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -40,11 +42,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
-import org.apache.hadoop.hive.metastore.api.DataOperationType;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -178,6 +177,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
   //Contains database under replication name for hive replication transactions (dump and load operation)
   private String replPolicy;
+  
+  private TxnCoordinator txnCoordinator;
 
   /**
    * We do this on every call to make sure TM uses same MS connection as is used by the caller (Driver,
@@ -261,6 +262,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       } else {
         txnId = getMS().openTxn(user, txnType);
       }
+      txnCoordinator = null;
       stmtId = 0;
       numStatements = 0;
       tableWriteIds.clear();
@@ -512,18 +514,46 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   private void clearLocksAndHB() {
-    lockMgr.clearLocalLockRecords();
-    stopHeartbeat();
+    if (lockMgr != null) {
+      stopHeartbeat();
+      lockMgr.clearLocalLockRecords();
+    }
   }
 
   private void resetTxnInfo() {
     txnId = 0;
+    txnCoordinator = null;
     stmtId = -1;
     numStatements = 0;
     tableWriteIds.clear();
     shouldReallocateWriteIds = false;
     queryId = null;
     replPolicy = null;
+  }
+
+  public <T extends TxnCoordinator> T getOrSetTxnCoordinator(
+      Class<T> clazz, Function<IMetaStoreClient, T> creator) {
+    if (txnCoordinator == null && creator != null) {
+      try {
+        txnCoordinator = creator.apply(getMS());
+        numStatements = 1;
+      } catch (LockException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return clazz.cast(txnCoordinator);
+  }
+
+  private TxnCoordinator getTxnCoordinator() throws LockException {
+    if (txnCoordinator == null) {
+      txnCoordinator = getDefaultCoordinator();
+    }
+    return txnCoordinator;
+  }
+
+  private TxnCoordinator getDefaultCoordinator() throws LockException {
+    return new AcidTxnCoordinator(
+        (HiveConf) getConf(), getMS(), replPolicy, txnId);
   }
 
   @Override
@@ -563,14 +593,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     try {
       // do all new clear in clearLocksAndHB method to make sure that same code is there for replCommitTxn flow.
       clearLocksAndHB();
-      LOG.debug("Committing txn " + JavaUtils.txnIdToString(txnId));
-      CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
-      commitTxnRequest.setExclWriteEnabled(conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
-      if (replPolicy != null) {
-        commitTxnRequest.setReplPolicy(replPolicy);
-        commitTxnRequest.setTxn_type(TxnType.DEFAULT);
-      }
-      getMS().commitTxn(commitTxnRequest);
+      getTxnCoordinator().commit();
+
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
@@ -579,13 +603,34 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LOG.error(le.getMessage());
       throw le;
     } catch (TException e) {
-      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
-          e);
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     } finally {
       // do all new reset in resetTxnInfo method to make sure that same code is there for replCommitTxn flow.
       resetTxnInfo();
     }
   }
+
+  @Override
+  public void rollbackTxn() throws LockException {
+    if (!isTxnOpen()) {
+      throw new RuntimeException("Attempt to rollback before opening a transaction");
+    }
+    try {
+      clearLocksAndHB();
+      getTxnCoordinator().rollback();
+
+    } catch (NoSuchTxnException e) {
+      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
+      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
+    } catch(TxnAbortedException e) {
+      throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId));
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    } finally {
+      resetTxnInfo();
+    }
+  }
+
   @Override
   public void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException {
     try {
@@ -609,36 +654,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       } catch (TException | LockException e) {
         throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
       }
-  }
-
-  @Override
-  public void rollbackTxn() throws LockException {
-    if (!isTxnOpen()) {
-      throw new RuntimeException("Attempt to rollback before opening a transaction");
-    }
-    try {
-      clearLocksAndHB();
-      LOG.debug("Rolling back " + JavaUtils.txnIdToString(txnId));
-      
-      if (replPolicy != null) {
-        getMS().replRollbackTxn(txnId, replPolicy, TxnType.DEFAULT);
-      } else {
-        AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnId);
-        abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_ROLLBACK.getErrorCode());
-        getMS().rollbackTxn(abortTxnRequest);
-      }
-    } catch (NoSuchTxnException e) {
-      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
-      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
-    
-    } catch(TxnAbortedException e) {
-      throw new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(txnId));
-    
-    } catch (TException e) {
-      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
-    } finally {
-      resetTxnInfo();
-    }
   }
 
   @Override
@@ -961,17 +976,21 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public boolean isTxnOpen() {
-    return txnId > 0;
+    return txnId > 0 ||
+        txnCoordinator != null && txnCoordinator.hasPendingWork();
   }
+
   @Override
   public long getCurrentTxnId() {
     return txnId;
   }
+
   @Override
   public int getStmtIdAndIncrement() {
     assert isTxnOpen();
     return stmtId++;
   }
+
   @Override
   public int getCurrentStmtId() {
     assert isTxnOpen();

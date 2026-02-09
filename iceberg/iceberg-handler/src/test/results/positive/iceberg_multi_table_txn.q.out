@@ -1,0 +1,141 @@
+PREHOOK: query: drop table if exists iceberg_txn_t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists iceberg_txn_t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: drop table if exists iceberg_txn_t2
+PREHOOK: type: DROPTABLE
+PREHOOK: Output: database:default
+POSTHOOK: query: drop table if exists iceberg_txn_t2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Output: database:default
+PREHOOK: query: create external table iceberg_txn_t1(a int) stored by iceberg
+tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_txn_t1
+POSTHOOK: query: create external table iceberg_txn_t1(a int) stored by iceberg
+tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_txn_t1
+PREHOOK: query: create external table iceberg_txn_t2(a int) stored by iceberg
+tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_txn_t2
+POSTHOOK: query: create external table iceberg_txn_t2(a int) stored by iceberg
+tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_txn_t2
+PREHOOK: query: from (
+  select 1 as a union all select 2
+) s
+insert into iceberg_txn_t1
+  select a
+insert into iceberg_txn_t2
+  select a + 10
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_txn_t1
+PREHOOK: Output: default@iceberg_txn_t2
+POSTHOOK: query: from (
+  select 1 as a union all select 2
+) s
+insert into iceberg_txn_t1
+  select a
+insert into iceberg_txn_t2
+  select a + 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_txn_t1
+POSTHOOK: Output: default@iceberg_txn_t2
+PREHOOK: query: select * from iceberg_txn_t1 order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_txn_t1 order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+PREHOOK: query: select * from iceberg_txn_t2 order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_txn_t2 order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+11
+12
+PREHOOK: query: start transaction
+PREHOOK: type: START TRANSACTION
+POSTHOOK: query: start transaction
+POSTHOOK: type: START TRANSACTION
+PREHOOK: query: insert into iceberg_txn_t1 values (3)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@iceberg_txn_t1
+POSTHOOK: query: insert into iceberg_txn_t1 values (3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@iceberg_txn_t1
+PREHOOK: query: update iceberg_txn_t2 set a = a + 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t2
+PREHOOK: Output: default@iceberg_txn_t2
+PREHOOK: Output: default@iceberg_txn_t2
+POSTHOOK: query: update iceberg_txn_t2 set a = a + 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t2
+POSTHOOK: Output: default@iceberg_txn_t2
+POSTHOOK: Output: default@iceberg_txn_t2
+PREHOOK: query: commit
+PREHOOK: type: COMMIT
+POSTHOOK: query: commit
+POSTHOOK: type: COMMIT
+PREHOOK: query: select * from iceberg_txn_t1 order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_txn_t1 order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1
+2
+3
+PREHOOK: query: select * from iceberg_txn_t2 order by a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@iceberg_txn_t2
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from iceberg_txn_t2 order by a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@iceberg_txn_t2
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+12
+13
+PREHOOK: query: drop table if exists iceberg_txn_t1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@iceberg_txn_t1
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_txn_t1
+POSTHOOK: query: drop table if exists iceberg_txn_t1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@iceberg_txn_t1
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_txn_t1
+PREHOOK: query: drop table if exists iceberg_txn_t2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@iceberg_txn_t2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@iceberg_txn_t2
+POSTHOOK: query: drop table if exists iceberg_txn_t2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@iceberg_txn_t2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@iceberg_txn_t2

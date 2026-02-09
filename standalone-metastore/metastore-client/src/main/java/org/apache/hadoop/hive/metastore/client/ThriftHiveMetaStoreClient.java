@@ -502,6 +502,11 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
   }
 
   @Override
+  public void updateTableParams(List<TableParamsUpdate> updates) throws TException {
+    client.update_table_params(updates);
+  }
+
+  @Override
   public void renamePartition(String catName, String dbname, String tableName, List<String> part_vals,
       Partition newPart, String validWriteIds, long txnId, boolean makeCopy) throws TException {
     RenamePartitionRequest req = new RenamePartitionRequest(dbname, tableName, part_vals, newPart);

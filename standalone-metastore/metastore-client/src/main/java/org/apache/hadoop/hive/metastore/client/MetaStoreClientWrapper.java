@@ -857,6 +857,11 @@ public abstract class MetaStoreClientWrapper extends BaseMetaStoreClient {
   }
 
   @Override
+  public void updateTableParams(List<TableParamsUpdate> updates) throws TException {
+    delegate.updateTableParams(updates);
+  }
+
+  @Override
   public long allocateTableWriteId(long txnId, String dbName, String tableName, boolean reallocate)
       throws TException {
     return delegate.allocateTableWriteId(txnId, dbName, tableName, reallocate);

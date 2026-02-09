@@ -23,12 +23,15 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
 import org.apache.hadoop.hive.ql.io.RowLineageInfo;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionKey;
@@ -36,9 +39,11 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
+import org.apache.iceberg.Transaction;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.hive.HiveTxnCoordinator;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.mr.mapreduce.RowLineageReader;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
@@ -216,6 +221,30 @@ public class IcebergAcidUtil {
     for (int sourceIdx = start, targetIdx = 0; targetIdx < len; ++sourceIdx, ++targetIdx) {
       target.set(targetIdx, source.get(sourceIdx));
     }
+  }
+
+  public static Transaction getOrCreateTransaction(Table table, Configuration conf) {
+    HiveTxnManager txnManager = Optional.ofNullable(SessionState.get())
+        .map(SessionState::getTxnMgr).orElse(null);
+    if (txnManager == null) {
+      return table.newTransaction();
+    }
+    HiveTxnCoordinator txnCoordinator = txnManager.getOrSetTxnCoordinator(
+        HiveTxnCoordinator.class, msClient -> new HiveTxnCoordinator(conf, msClient));
+    return txnCoordinator != null ?
+        txnCoordinator.getOrCreateTransaction(table) : table.newTransaction();
+  }
+
+  public static Transaction getTransaction(Table table) {
+    HiveTxnManager txnManager = Optional.ofNullable(SessionState.get())
+        .map(SessionState::getTxnMgr).orElse(null);
+    if (txnManager == null) {
+      return null;
+    }
+    HiveTxnCoordinator txnCoordinator = txnManager.getOrSetTxnCoordinator(
+        HiveTxnCoordinator.class, null);
+    return txnCoordinator != null ?
+        txnCoordinator.getTransaction(table) : null;
   }
 
   public static class VirtualColumnAwareIterator<T> implements CloseableIterator<T> {
