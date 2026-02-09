@@ -179,6 +179,7 @@ import org.apache.iceberg.expressions.Projections;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.StrictMetricsEvaluator;
 import org.apache.iceberg.hadoop.ConfigProperties;
+import org.apache.iceberg.hive.HiveOperationsBase;
 import org.apache.iceberg.hive.HiveSchemaUtil;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
@@ -1663,6 +1664,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       .forEach(entry -> map.put(entry.getKey(), entry.getValue()));
 
     String location;
+    String objectType = "ICEBERG";
     Schema schema;
     PartitionSpec spec;
     String bytes;
@@ -1700,6 +1702,12 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       }
 
       location = map.get(hive_metastoreConstants.META_TABLE_LOCATION);
+      objectType = map.get(hive_metastoreConstants.META_OBJECT_TYPE);
+
+      if (TableType.MATERIALIZED_VIEW.name().equals(map.get(hive_metastoreConstants.META_OBJECT_TYPE))) {
+        objectType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
+      }
+
       bytes = SerializationUtil.serializeToBase64(null);
 
       try {
@@ -1717,6 +1725,10 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     if (StringUtils.isNotBlank(location)) {
       map.put(InputFormatConfig.TABLE_LOCATION, location);
     }
+    if (StringUtils.isNotBlank(objectType)) {
+      map.put(InputFormatConfig.TABLE_TYPE, objectType);
+    }
+
     String schemaJson = SchemaParser.toJson(schema);
     map.put(InputFormatConfig.TABLE_SCHEMA, schemaJson);
     // save schema into table props as well to avoid repeatedly hitting the HMS during serde initializations

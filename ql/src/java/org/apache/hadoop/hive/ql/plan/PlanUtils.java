@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -365,6 +366,8 @@ public final class PlanUtils {
       properties.setProperty(
           hive_metastoreConstants.META_TABLE_NAME, crtViewDesc.getViewName());
     }
+
+    properties.setProperty(hive_metastoreConstants.META_OBJECT_TYPE, TableType.MATERIALIZED_VIEW.name());
     return ret;
   }
 

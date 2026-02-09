@@ -461,11 +461,61 @@ Outdated for Rewriting:	No
 # Materialized View Source table information	 	 
 Table name          	Snapshot            	 
 default.tbl_ice     	SnapshotContext{snapshotId=#SnapshotId#}	 
+PREHOOK: query: create external table tbl_ice_v2(d int, e string, f int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_ice_v2
+POSTHOOK: query: create external table tbl_ice_v2(d int, e string, f int) stored by iceberg stored as orc tblproperties ('format-version'='2')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_ice_v2
+PREHOOK: query: insert into tbl_ice_v2 values (1, 'one v2', 50), (4, 'four v2', 53), (5, 'five v2', 54)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tbl_ice_v2
+POSTHOOK: query: insert into tbl_ice_v2 values (1, 'one v2', 50), (4, 'four v2', 53), (5, 'five v2', 54)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tbl_ice_v2
+PREHOOK: query: create materialized view mat1_multiple_tables stored by iceberg as
+select tbl_ice.b, tbl_ice.c, sum(tbl_ice_v2.f)
+from tbl_ice
+join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52
+group by tbl_ice.b, tbl_ice.c
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@tbl_ice
+PREHOOK: Input: default@tbl_ice_v2
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mat1_multiple_tables
+#### A masked pattern was here ####
+POSTHOOK: query: create materialized view mat1_multiple_tables stored by iceberg as
+select tbl_ice.b, tbl_ice.c, sum(tbl_ice_v2.f)
+from tbl_ice
+join tbl_ice_v2 on tbl_ice.a=tbl_ice_v2.d where tbl_ice.c > 52
+group by tbl_ice.b, tbl_ice.c
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@tbl_ice
+POSTHOOK: Input: default@tbl_ice_v2
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mat1_multiple_tables
+#### A masked pattern was here ####
+POSTHOOK: Lineage: mat1_multiple_tables._c2 EXPRESSION [(tbl_ice_v2)tbl_ice_v2.FieldSchema(name:f, type:int, comment:null), ]
+POSTHOOK: Lineage: mat1_multiple_tables.b SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: mat1_multiple_tables.c SIMPLE [(tbl_ice)tbl_ice.FieldSchema(name:c, type:int, comment:null), ]
+PREHOOK: query: delete from tbl_ice_v2 where d = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tbl_ice_v2
+PREHOOK: Output: default@tbl_ice_v2
+POSTHOOK: query: delete from tbl_ice_v2 where d = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tbl_ice_v2
+POSTHOOK: Output: default@tbl_ice_v2
 PREHOOK: query: SHOW MATERIALIZED VIEWS
 PREHOOK: type: SHOWMATERIALIZEDVIEWS
 POSTHOOK: query: SHOW MATERIALIZED VIEWS
 POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 # MV Name           	Rewriting Enabled   	Mode                	Incremental rebuild 
+mat1_multiple_tables	Yes                 	Manual refresh      	Available for insert operations only
 mat1_orc            	Yes                 	Manual refresh      	Available for insert operations only
 mat1_orc_partitioned	Yes                 	Manual refresh      	Available for insert operations only
 mat2_orc            	Yes                 	Manual refresh      	Available for insert operations only
