@@ -704,6 +704,8 @@
             <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
             <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
             <hive.metastore.warehouse.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.external.dir>
+            <metastore.warehouse.catalog.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.catalog.dir>
+            <hive.metastore.warehouse.catalog.external.dir>${test.warehouse.scheme}${test.warehouse.external.dir}</hive.metastore.warehouse.catalog.external.dir>
           </systemPropertyVariables>
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>

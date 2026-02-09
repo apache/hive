@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -388,14 +389,34 @@ public class EximUtil {
 
   private static void updateIfCustomDbLocations(Database database, Configuration conf) throws SemanticException {
     try {
-      String whLocatoion = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL,
-              MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE));
-      Path dbDerivedLoc = new Path(whLocatoion, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
+      String catName = database.getCatalogName();
+      String dbName = database.getName().toLowerCase();
+      boolean isDefaultCatalog = Warehouse.DEFAULT_CATALOG_NAME.equals(catName);
+
+      // external warehouse root
+      String whLocation = MetastoreConf.getVar(conf,
+              isDefaultCatalog ? MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL : MetastoreConf.ConfVars.WAREHOUSE_CATALOG_EXTERNAL,
+              MetastoreConf.getVar(conf,
+                      isDefaultCatalog ? MetastoreConf.ConfVars.WAREHOUSE : MetastoreConf.ConfVars.WAREHOUSE_CATALOG));
+
+      if (!isDefaultCatalog) {
+        whLocation = new Path(whLocation, catName).toString();
+      }
+
+      Path dbDerivedLoc = new Path(whLocation, dbName + DATABASE_PATH_SUFFIX);
       String defaultDbLoc = Utilities.getQualifiedPath((HiveConf) conf, dbDerivedLoc);
       database.putToParameters(ReplConst.REPL_IS_CUSTOM_DB_LOC,
               Boolean.toString(!defaultDbLoc.equals(database.getLocationUri())));
-      String whManagedLocatoion = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE);
-      Path dbDerivedManagedLoc = new Path(whManagedLocatoion, database.getName().toLowerCase()
+
+      // managed warehouse root
+      String whManagedLocatoion = MetastoreConf.getVar(conf,
+              isDefaultCatalog ? MetastoreConf.ConfVars.WAREHOUSE
+                      : MetastoreConf.ConfVars.WAREHOUSE_CATALOG);
+
+      if (!isDefaultCatalog) {
+        whManagedLocatoion = new Path(whManagedLocatoion, catName).toString();
+      }
+      Path dbDerivedManagedLoc = new Path(whManagedLocatoion, dbName
               + DATABASE_PATH_SUFFIX);
       String defaultDbManagedLoc = Utilities.getQualifiedPath((HiveConf) conf, dbDerivedManagedLoc);
       database.getParameters().put(ReplConst.REPL_IS_CUSTOM_DB_MANAGEDLOC, Boolean.toString(

@@ -56,12 +56,12 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
         if (desc.getManagedLocationUri() != null) {
           database.setManagedLocationUri(desc.getManagedLocationUri());
         }
-        makeLocationQualified(database); // TODO catalog. Add catalog prefix for db location. Depend on HIVE-29241.
+        makeLocationQualified(database);
         if (database.getLocationUri().equalsIgnoreCase(database.getManagedLocationUri())) {
           throw new HiveException("Managed and external locations for database cannot be the same");
         }
       } else if (desc.getDatabaseType() == DatabaseType.REMOTE) {
-        makeLocationQualified(database); // TODO catalog. Add catalog prefix for db location. Depend on HIVE-29241.
+        makeLocationQualified(database);
         database.setConnector_name(desc.getConnectorName());
         database.setRemote_dbname(desc.getRemoteDbName());
       } else { // should never be here
@@ -81,34 +81,62 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
   }
 
   private void makeLocationQualified(Database database) throws HiveException {
+    String catalogName = database.getCatalogName().toLowerCase();
+    String dbName = database.getName().toLowerCase();
+    boolean isDefaultCatalog = Warehouse.DEFAULT_CATALOG_NAME.equalsIgnoreCase(catalogName);
+
+    // -------- External location --------
     if (database.isSetLocationUri()) {
       database.setLocationUri(Utilities.getQualifiedPath(context.getConf(), new Path(database.getLocationUri())));
     } else {
-      // Location is not set we utilize WAREHOUSE_EXTERNAL together with database name
-      String rootDir = MetastoreConf.getVar(context.getConf(), MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL);
-      if (rootDir == null || rootDir.trim().isEmpty()) {
-        // Fallback plan
-        LOG.warn(String.format(
-            "%s is not set, falling back to %s. This could cause external tables to use to managed tablespace.",
-            MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname(), MetastoreConf.ConfVars.WAREHOUSE.getVarname()));
-        rootDir = MetastoreConf.getVar(context.getConf(), MetastoreConf.ConfVars.WAREHOUSE);
-      }
-      Path path = new Path(rootDir, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
-      String qualifiedPath = Utilities.getQualifiedPath(context.getConf(), path);
-      database.setLocationUri(qualifiedPath);
+      String rootDir = getExternalRootDir(isDefaultCatalog);
+      Path path = buildDbPath(rootDir, catalogName, dbName, isDefaultCatalog);
+      database.setLocationUri(Utilities.getQualifiedPath(context.getConf(), path));
     }
 
+    // -------- Managed location --------
     if (database.isSetManagedLocationUri()) {
       database.setManagedLocationUri(Utilities.getQualifiedPath(context.getConf(),
           new Path(database.getManagedLocationUri())));
     } else {
-      // ManagedLocation is not set we utilize WAREHOUSE together with database name 
-      String rootDir = MetastoreConf.getVar(context.getConf(), MetastoreConf.ConfVars.WAREHOUSE);
-      Path path = new Path(rootDir, database.getName().toLowerCase() + DATABASE_PATH_SUFFIX);
+      String rootDir = MetastoreConf.getVar(
+              context.getConf(),
+              isDefaultCatalog
+                      ? MetastoreConf.ConfVars.WAREHOUSE
+                      : MetastoreConf.ConfVars.WAREHOUSE_CATALOG
+      );
+
+      Path path = buildDbPath(rootDir, catalogName, dbName, isDefaultCatalog);
       String qualifiedPath = Utilities.getQualifiedPath(context.getConf(), path);
       if (!qualifiedPath.equals(database.getLocationUri())) {
         database.setManagedLocationUri(qualifiedPath);
       }
     }
+  }
+
+  private Path buildDbPath(String rootDir, String catalogName, String dbName, boolean isDefaultCatalog) {
+    return isDefaultCatalog
+            ? new Path(rootDir, dbName + DATABASE_PATH_SUFFIX)
+            : new Path(rootDir + "/" + catalogName, dbName + DATABASE_PATH_SUFFIX);
+  }
+
+  private String getExternalRootDir(boolean isDefaultCatalog) {
+    MetastoreConf.ConfVars externalVar = isDefaultCatalog
+            ? MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL
+            : MetastoreConf.ConfVars.WAREHOUSE_CATALOG_EXTERNAL;
+
+    String rootDir = MetastoreConf.getVar(context.getConf(), externalVar);
+    if (rootDir != null && !rootDir.trim().isEmpty()) {
+      return rootDir;
+    }
+
+    MetastoreConf.ConfVars fallbackVar = isDefaultCatalog
+            ? MetastoreConf.ConfVars.WAREHOUSE
+            : MetastoreConf.ConfVars.WAREHOUSE_CATALOG;
+
+    LOG.warn("{} is not set, falling back to {}. This could cause external tables to use managed tablespace.",
+            externalVar.getVarname(), fallbackVar.getVarname());
+
+    return MetastoreConf.getVar(context.getConf(), fallbackVar);
   }
 }

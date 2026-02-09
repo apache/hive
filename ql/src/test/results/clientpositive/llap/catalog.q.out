@@ -3,14 +3,12 @@ PREHOOK: type: SHOWCATALOGS
 POSTHOOK: query: SHOW CATALOGS
 POSTHOOK: type: SHOWCATALOGS
 hive
-#### A masked pattern was here ####
+PREHOOK: query: CREATE CATALOG test_cat COMMENT 'Hive test catalog' PROPERTIES('type'='NATIVE')
 PREHOOK: type: CREATECATALOG
 PREHOOK: Output: catalog:test_cat
-PREHOOK: Output: hdfs://### HDFS PATH ###
-#### A masked pattern was here ####
+POSTHOOK: query: CREATE CATALOG test_cat COMMENT 'Hive test catalog' PROPERTIES('type'='NATIVE')
 POSTHOOK: type: CREATECATALOG
 POSTHOOK: Output: catalog:test_cat
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DESC CATALOG test_cat
 PREHOOK: type: DESCCATALOG
 PREHOOK: Input: catalog:test_cat
