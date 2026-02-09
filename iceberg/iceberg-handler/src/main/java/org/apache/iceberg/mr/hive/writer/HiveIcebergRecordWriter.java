@@ -31,7 +31,7 @@ import org.apache.iceberg.mr.hive.FilesForCommit;
 import org.apache.iceberg.mr.hive.writer.WriterBuilder.Context;
 import org.apache.iceberg.mr.mapred.Container;
 
-class HiveIcebergRecordWriter extends SchemaInferringDefaultsWriter {
+class HiveIcebergRecordWriter extends HiveIcebergDefaultWriter {
 
   HiveIcebergRecordWriter(Table table, HiveFileWriterFactory fileWriterFactory,
       OutputFileFactory dataFileFactory, Context context) {
@@ -41,7 +41,7 @@ class HiveIcebergRecordWriter extends SchemaInferringDefaultsWriter {
   @Override
   public void write(Writable row) throws IOException {
     Record record = ((Container<Record>) row).get();
-    writeOrBuffer(record);
+    write(record);
   }
 
   @Override
