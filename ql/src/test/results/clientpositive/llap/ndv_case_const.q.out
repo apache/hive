@@ -1,0 +1,755 @@
+PREHOOK: query: CREATE TABLE t (cond INT, c2 STRING, c100 STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: CREATE TABLE t (cond INT, c2 STRING, c100 STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: ALTER TABLE t UPDATE STATISTICS SET('numRows'='10000','rawDataSize'='1000000')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t UPDATE STATISTICS SET('numRows'='10000','rawDataSize'='1000000')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: ALTER TABLE t UPDATE STATISTICS FOR COLUMN cond SET('numDVs'='10','numNulls'='0')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t UPDATE STATISTICS FOR COLUMN cond SET('numDVs'='10','numNulls'='0')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: ALTER TABLE t UPDATE STATISTICS FOR COLUMN c2 SET('numDVs'='2','numNulls'='0','avgColLen'='5','maxColLen'='10')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t UPDATE STATISTICS FOR COLUMN c2 SET('numDVs'='2','numNulls'='0','avgColLen'='5','maxColLen'='10')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: ALTER TABLE t UPDATE STATISTICS FOR COLUMN c100 SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10')
+PREHOOK: type: ALTERTABLE_UPDATETABLESTATS
+PREHOOK: Input: default@t
+PREHOOK: Output: default@t
+POSTHOOK: query: ALTER TABLE t UPDATE STATISTICS FOR COLUMN c100 SET('numDVs'='100','numNulls'='0','avgColLen'='5','maxColLen'='10')
+POSTHOOK: type: ALTERTABLE_UPDATETABLESTATS
+POSTHOOK: Input: default@t
+POSTHOOK: Output: default@t
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' ELSE 'C' END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' ELSE 'C' END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN ('A') WHEN ((cond = 2)) THEN ('B') ELSE ('C') END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' WHEN cond=3 THEN 'A' ELSE 'B' END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' WHEN cond=3 THEN 'A' ELSE 'B' END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN ('A') WHEN ((cond = 2)) THEN ('B') WHEN ((cond = 3)) THEN ('A') ELSE ('B') END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' ELSE NULL END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' ELSE NULL END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN ('A') WHEN ((cond = 2)) THEN ('B') ELSE (null) END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN NULL WHEN cond=2 THEN 'A' ELSE 'B' END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN NULL WHEN cond=2 THEN 'A' ELSE 'B' END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN (null) WHEN ((cond = 2)) THEN ('A') ELSE ('B') END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN NULL WHEN cond=2 THEN NULL WHEN cond=3 THEN 'A' ELSE 'B' END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN NULL WHEN cond=2 THEN NULL WHEN cond=3 THEN 'A' ELSE 'B' END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond) IN (1, 2)) THEN (null) WHEN ((cond = 3)) THEN ('A') ELSE ('B') END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN NULL WHEN cond=2 THEN 'A' WHEN cond=3 THEN NULL ELSE 'B' END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN NULL WHEN cond=2 THEN 'A' WHEN cond=3 THEN NULL ELSE 'B' END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN (null) WHEN ((cond = 2)) THEN ('A') WHEN ((cond = 3)) THEN (null) ELSE ('B') END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 40000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 85 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN NULL WHEN cond=2 THEN NULL WHEN cond=3 THEN c100 ELSE 'A' END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN NULL WHEN cond=2 THEN NULL WHEN cond=3 THEN c100 ELSE 'A' END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 930000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond) IN (1, 2)) THEN (null) WHEN ((cond = 3)) THEN (c100) ELSE ('A') END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 930000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.9899
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 101 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 101 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 101 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 101 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN c2 WHEN cond=2 THEN c100 ELSE 'A' END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN c2 WHEN cond=2 THEN c100 ELSE 'A' END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 1820000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN (c2) WHEN ((cond = 2)) THEN (c100) ELSE ('A') END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 1820000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN c2 WHEN cond=2 THEN c100 ELSE c2 END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN c2 WHEN cond=2 THEN c100 ELSE c2 END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 1820000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN (c2) WHEN ((cond = 2)) THEN (c100) ELSE (c2) END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 1820000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' WHEN cond=3 THEN 'C' ELSE c2 END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' WHEN cond=3 THEN 'C' ELSE c2 END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 930000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN ('A') WHEN ((cond = 2)) THEN ('B') WHEN ((cond = 3)) THEN ('C') ELSE (c2) END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 930000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' ELSE c100 END x FROM t) sub GROUP BY x
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN SELECT x FROM (SELECT CASE WHEN cond=1 THEN 'A' WHEN cond=2 THEN 'B' ELSE c100 END x FROM t) sub GROUP BY x
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t
+                  Statistics: Num rows: 10000 Data size: 930000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: CASE WHEN ((cond = 1)) THEN ('A') WHEN ((cond = 2)) THEN ('B') ELSE (c100) END (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 10000 Data size: 930000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 100 Data size: 8900 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
