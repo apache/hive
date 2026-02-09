@@ -112,6 +112,63 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Build Hive Image locally
+        uses: docker/build-push-action@v4
+        with:
+          context: ./packaging/src/docker/
+          file: ./packaging/src/docker/Dockerfile
+          push: false
+          load: true
+          tags: hive:test
+          build-args:
+            |
+            HIVE_VERSION=${{ env.HIVE_VERSION }}
+            HADOOP_VERSION=${{ env.HADOOP_VERSION }}
+            TEZ_VERSION=${{ env.TEZ_VERSION }}
+            BUILD_ENV=${{ env.BUILD_ENV }}
+
+      - name: Build Standalone Metastore Image locally
+        uses: docker/build-push-action@v4
+        with:
+          context: ./standalone-metastore/packaging/src/docker/
+          file: ./standalone-metastore/packaging/src/docker/Dockerfile
+          push: false
+          load: true
+          tags: hive:standalone-metastore-test
+          build-args:
+            |
+            HIVE_VERSION=${{ env.HIVE_VERSION }}
+            HADOOP_VERSION=${{ env.HADOOP_VERSION }}
+            BUILD_ENV=${{ env.BUILD_ENV }}
+
+      - name: Create k8s cluster
+        uses: helm/kind-action@v1
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Load images
+        run: kind load docker-image hive:test hive:standalone-metastore-test --name chart-testing
+
+      - name: Deploy Hive
+        run: |
+          ./itests/test-docker/scripts/setup.sh
+
+      - name: Run JUnit
+        # On workflow_dispatch, the checked-out source code and libraries could be inconsistent with the specified Hive release
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          mvn --batch-mode test -Pitests -Pdocker -pl itests/test-docker
+
+      - name: Test HiveServer2
+        run: |
+          ./itests/test-docker/scripts/test_hive_server2.sh
+
+      - name: Clean up k8s
+        run: |
+          ./itests/test-docker/scripts/teardown.sh
+          kind delete cluster --name chart-testing
+
       - name: Build and push Hive Image to docker hub
         uses: docker/build-push-action@v4
         with:
@@ -141,8 +198,16 @@ jobs:
             HADOOP_VERSION=${{ env.HADOOP_VERSION }}
             BUILD_ENV=${{ env.BUILD_ENV }}
 
-      - name: Dump disk usage on failure
-        if: failure()
+      - name: Dump resource space at the end
+        run: |
+          df -h
+          free -h
+
+      - name: Dump resource usage on failure
+        if: failure() || cancelled()
         run: |
           df -h
           du -xh / --max-depth=3 2>/dev/null | sort -h | tail -50
+          free -h
+          ps aux --sort -rss | head -n 30
+          kubectl get pods
