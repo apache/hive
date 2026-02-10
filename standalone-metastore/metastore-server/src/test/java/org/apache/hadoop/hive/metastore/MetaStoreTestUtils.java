@@ -284,7 +284,7 @@ public class MetaStoreTestUtils {
         }
         return;
       } catch (Exception e) {
-        if (retries++ > -1) { //give up
+        if (retries++ > 60) { //give up
           // Metastore URI is not visible from the ZooKeeper yet.
           LOG.error("Unable to get metastore URI from the ZooKeeper: " + e.getMessage());
           throw e;
