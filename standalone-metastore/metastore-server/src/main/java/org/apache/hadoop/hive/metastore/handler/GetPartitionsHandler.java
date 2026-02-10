@@ -80,7 +80,7 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
 
   @Override
   protected void beforeExecute() throws TException, IOException {
-    this.args = request.getGetPartitionsArgs();
+    args = request.getGetPartitionsArgs();
     if (request.isGetPartitionValues()) {
       getMethod = GetPartitionsMethod.VALUES;
     } else if (args.getExpr() != null) {
@@ -95,16 +95,16 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
       getMethod = GetPartitionsMethod.ALL;
     }
     
-    this.catName = normalizeIdentifier(request.getTableName().getCat());
-    this.dbName = normalizeIdentifier(request.getTableName().getDb());
-    this.tblName = normalizeIdentifier(request.getTableName().getTable());
-    this.conf = handler.getConf();
-    this.rs = handler.getMS();
-    this.filterHook = handler.getMetaFilterHook();
-    this.isServerFilterEnabled = filterHook != null;
+    catName = normalizeIdentifier(request.getTableName().getCat());
+    dbName = normalizeIdentifier(request.getTableName().getDb());
+    tblName = normalizeIdentifier(request.getTableName().getTable());
+    conf = handler.getConf();
+    rs = handler.getMS();
+    filterHook = handler.getMetaFilterHook();
+    isServerFilterEnabled = filterHook != null;
     GetTableRequest getTableRequest = new GetTableRequest(dbName, tblName);
     getTableRequest.setCatName(catName);
-    this.table = handler.get_table_core(getTableRequest);
+    table = handler.get_table_core(getTableRequest);
     ((HMSHandler) handler).firePreEvent(new PreReadTableEvent(table, handler));
     authorizeTableForPartitionMetadata();
 
@@ -148,11 +148,9 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     return new GetPartitionsResult<>(List.of(resp), true);
   }
 
-  private void checkLimitNumberOfPartitionsByPs(List<String> partVals, int requestMax)
-      throws TException {
+  private void checkLimitNumberOfPartitionsByPs(List<String> partVals, int requestMax) throws TException {
     if (exceedsPartitionFetchLimit(requestMax)) {
-      checkLimitNumberOfPartitions(tblName, rs.getNumPartitionsByPs(catName, dbName, tblName,
-          partVals));
+      checkLimitNumberOfPartitions(tblName, rs.getNumPartitionsByPs(catName, dbName, tblName, partVals));
     }
   }
 
@@ -185,8 +183,7 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
    * @throws NoSuchObjectException
    * @throws MetaException
    */
-  private void authorizeTableForPartitionMetadata()
-      throws NoSuchObjectException, MetaException {
+  private void authorizeTableForPartitionMetadata() throws NoSuchObjectException, MetaException {
     FilterUtils.checkDbAndTableFilters(
         isServerFilterEnabled, filterHook, catName, dbName, tblName);
   }
@@ -197,7 +194,11 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     rs.openTransaction();
     try {
       checkLimitNumberOfPartitions(tblName, args.getPartNames().size());
-      ret = rs.getPartitionsByNames(catName, dbName, tblName, args);
+      if (args.getUserName() != null) {
+        ret = rs.listPartitionsPsWithAuth(catName, dbName, tblName, args);
+      } else {
+        ret = rs.getPartitionsByNames(catName, dbName, tblName, args);
+      }
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
 
       // If requested add column statistics in each of the partition objects
@@ -467,7 +468,7 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
 
   public static List<Partition> getPartitions(Consumer<TableName> preHook,
       Consumer<Pair<GetPartitionsResult, Exception>> postHook, IHMSHandler handler, TableName tableName,
-      GetPartitionsArgs args, boolean assumeResult) throws NoSuchObjectException, MetaException {
+      GetPartitionsArgs args, boolean assumeUniqResult) throws NoSuchObjectException, MetaException {
     Exception ex = null;
     GetPartitionsResult result = null;
     try {
@@ -477,14 +478,37 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
       result = getPartsHandler.getResult();
       List<Partition> partitions = result.result();
-      if (assumeResult && (partitions == null || partitions.isEmpty())) {
-        // Create a new dummy GetPartitionsResult for postHook to consume
-        result = new GetPartitionsResult(List.of(), false);
-        throw new NoSuchObjectException(tableName + " partition not found");
+      if (assumeUniqResult) {
+        List<FieldSchema> partitionKeys = getPartsHandler.table.getPartitionKeys();
+        String requestPartName = null;
+        if (args.getPart_vals() != null) {
+          requestPartName = Warehouse.makePartName(partitionKeys, args.getPart_vals());
+        } else if (args.getPartNames() != null) {
+          requestPartName = args.getPartNames().getFirst();
+        }
+        if (partitions == null || partitions.isEmpty()) {
+          throw new NoSuchObjectException(tableName + " partition: " + requestPartName + " not found");
+        } else if (partitions.size() > 1) {
+          throw new MetaException(
+              "Expecting only one partition but more than one partitions are found.");
+        } else {
+          // See ObjectStore getPartitionWithAuth
+          // We need to compare partition name with requested name since some DBs
+          // (like MySQL, Derby) considers 'a' = 'a ' whereas others like (Postgres,
+          // Oracle) doesn't exhibit this problem.
+          Partition partition = partitions.getFirst();
+          String partName = Warehouse.makePartName(partitionKeys, partition.getValues());
+          if (!partName.equals(requestPartName)) {
+            throw new MetaException("Expecting a partition with name " + requestPartName
+                + ", but metastore is returning a partition with name " + partName + ".");
+          }
+        }
       }
       return partitions;
     } catch (Exception e) {
       ex = e;
+      // Create a new dummy GetPartitionsResult for postHook to consume
+      result = new GetPartitionsResult(List.of(), false);
       throw handleException(e).throwIfInstance(NoSuchObjectException.class, MetaException.class)
           .defaultMetaException();
     } finally {
@@ -534,7 +558,7 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     }
   }
 
-  public static void validatePartVals(IHMSHandler handler,
+  public static String validatePartVals(IHMSHandler handler,
       TableName tableName, List<String> partVals) throws MetaException, NoSuchObjectException {
     if (partVals == null || partVals.isEmpty()) {
       throw new MetaException("The partVals is null or empty");
@@ -547,5 +571,6 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
       throw new MetaException("Unmatched partition values, partition keys size: " +
           size + ", partition values size: " + partVals.size());
     }
+    return Warehouse.makePartName(table.getPartitionKeys(), partVals);
   }
 }

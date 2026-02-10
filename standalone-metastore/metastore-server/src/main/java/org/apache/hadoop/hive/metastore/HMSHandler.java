@@ -3174,12 +3174,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws MetaException, NoSuchObjectException, TException {
     String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
     TableName tableName = new TableName(catName, req.getDbName(), req.getTblName());
-    GetPartitionsHandler.validatePartVals(this, tableName, req.getPartVals());
+    String partName = GetPartitionsHandler.validatePartVals(this, tableName, req.getPartVals());
     List<Partition> partitions = GetPartitionsHandler.getPartitions(
         t -> startTableFunction("get_partition_req", catName, t.getDb(), t.getTable()),
         rex -> endFunction("get_partition_req",
             rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tableName.toString()),
-        this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().part_vals(req.getPartVals()).build(),
+        this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(List.of(partName)).build(),
         true);
     return new GetPartitionResponse(partitions.getFirst());
   }
@@ -3268,14 +3268,14 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
     TableName tableName = new TableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
-    GetPartitionsHandler.validatePartVals(this, tableName, part_vals);
+    String partName = GetPartitionsHandler.validatePartVals(this, tableName, part_vals);
     List<Partition> partitions = GetPartitionsHandler.getPartitions(
         t ->  startFunction("get_partition_with_auth",
             " : tbl=" + t + samplePartitionValues(part_vals) + getGroupsCountAndUsername(user_name,group_names)),
         rex ->   endFunction("get_partition_with_auth",
             rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tbl_name),
         this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder()
-                .part_vals(part_vals).userName(user_name).groupNames(group_names).build(), true);
+                .partNames(List.of(partName)).userName(user_name).groupNames(group_names).build(), true);
     return partitions.getFirst();
   }
 
