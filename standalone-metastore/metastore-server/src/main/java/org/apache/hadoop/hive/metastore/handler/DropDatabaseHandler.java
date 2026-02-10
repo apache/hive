@@ -67,6 +67,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.checkT
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isDbReplicationTarget;
 import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdentifier;
 
+@SuppressWarnings("unused")
 @RequestHandler(requestBody = DropDatabaseRequest.class, supportAsync = true, metricAlias = "drop_database_req")
 public class DropDatabaseHandler
     extends AbstractRequestHandler<DropDatabaseRequest, DropDatabaseHandler.DropDatabaseResult> {
@@ -465,12 +466,16 @@ public class DropDatabaseHandler
       if (async) {
         rs.shutdown();
       }
-      rs = null;
-      tables = null;
-      functions = null;
-      procedures = null;
-      packages = null;
-      db = null;
+      freeHandler();
     }
+  }
+
+  private void freeHandler() {
+    rs = null;
+    tables = null;
+    functions = null;
+    procedures = null;
+    packages = null;
+    db = null;
   }
 }
