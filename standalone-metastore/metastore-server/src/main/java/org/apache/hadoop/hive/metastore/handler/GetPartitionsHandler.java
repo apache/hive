@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.handler;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -128,8 +127,6 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     if (request.isFetchPartNames()) {
       List<String> ret = rs.listPartitionNamesPs(catName, dbName, tblName,
           args.getPart_vals(), (short) args.getMax());
-      ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
-          filterHook, catName, dbName, tblName, ret);
       return new GetPartitionsResult<>(ret, true);
     } else {
       List<Partition> ret;
@@ -147,7 +144,7 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     PartitionValuesResponse resp = rs.listPartitionValues(catName, dbName, tblName, request.getPartitionKeys(),
         request.isApplyDistinct(), args.getFilter(), request.isAscending(),
         request.getPartitionOrders(), args.getMax());
-    return new GetPartitionsResult<>(Arrays.asList(resp), true);
+    return new GetPartitionsResult<>(List.of(resp), true);
   }
 
   private void checkLimitNumberOfPartitionsByPs(List<String> partVals, int requestMax)
@@ -172,7 +169,6 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
       ret = rs.getPartitionsByFilter(catName, dbName, tblName, args);
     }
 
-    ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
     return new GetPartitionsResult<>(ret, true);
   }
 
@@ -245,14 +241,11 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
   private GetPartitionsResult getPartitions() throws TException {
     if (request.isFetchPartNames()) {
       List<String> ret = rs.listPartitionNames(catName, dbName, tblName, (short) args.getMax());
-      ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
-          filterHook, catName, dbName, tblName, ret);
       return new GetPartitionsResult<>(ret, true);
     } else {
       List<Partition> ret;
       checkLimitNumberOfPartitionsByFilter(NO_FILTER_STRING, args.getMax());
       ret = rs.listPartitionsPsWithAuth(catName, dbName, tblName, args);
-      ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
       return new GetPartitionsResult<>(ret, true);
     }
   }
@@ -267,8 +260,6 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     if (request.isFetchPartNames()) {
       List<String> ret = rs.listPartitionNames(catName, dbName, tblName,
           args.getDefaultPartName(), args.getExpr(), args.getOrder(), args.getMax());
-      ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
-          filterHook, catName, dbName, tblName, ret);
       return new GetPartitionsResult(ret, true);
     } else {
       List<Partition> partitions = new LinkedList<>();
@@ -308,13 +299,28 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
   }
 
   @Override
+  protected void afterExecute(GetPartitionsResult<T> result) throws TException, IOException {
+    if (result != null && result.success()) {
+      List ret = result.result();
+      if (request.isFetchPartNames()) {
+        ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
+            filterHook, catName, dbName, tblName, ret);
+      } else if (!request.isGetPartitionValues() && getMethod != GetPartitionsMethod.NAMES) {
+        // GetPartitionsMethod.NAMES has already selected the result
+        ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
+      }
+      result.setResult(ret);
+    }
+  }
+
+  @Override
   protected String getMessagePrefix() {
     return "GetPartitionsHandler [" + id + "] -  Get partitions from " +
         TableName.getQualified(catName, dbName, tblName) + ":";
   }
 
   public static class GetPartitionsResult<T> implements Result {
-    private final List<T> result;
+    private List<T> result;
     private final boolean success;
     private boolean hasUnknownPartitions;
 
@@ -325,6 +331,10 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
 
     public void setHasUnknownPartitions(boolean unknownPartitions) {
       this.hasUnknownPartitions = unknownPartitions;
+    }
+
+    public void setResult(List<T> result) {
+      this.result = result;
     }
 
     public boolean hasUnknownPartitions() {

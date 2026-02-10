@@ -3485,8 +3485,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         (int) maxParts, filter);
     Exception ex = null;
     try {
-      // This is serious black magic, as the following 2 lines do nothing AFAICT but without them
-      // the subsequent call to listPartitionValues fails.
       getPartitionsRequest.setApplyDistinct(request.isApplyDistinct());
       getPartitionsRequest.setAscending(request.isAscending());
       getPartitionsRequest.setPartitionKeys(request.getPartitionKeys());
