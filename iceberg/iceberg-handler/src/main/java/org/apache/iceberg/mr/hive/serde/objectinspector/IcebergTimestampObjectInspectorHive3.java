@@ -30,27 +30,27 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 
-public class IcebergTimestampObjectInspector extends AbstractPrimitiveJavaObjectInspector
+public class IcebergTimestampObjectInspectorHive3 extends AbstractPrimitiveJavaObjectInspector
     implements TimestampObjectInspector, WriteObjectInspector {
 
-  private static final IcebergTimestampObjectInspector INSTANCE =
-      new IcebergTimestampObjectInspector(TypeInfoFactory.timestampTypeInfo);
+  private static final IcebergTimestampObjectInspectorHive3 INSTANCE =
+      new IcebergTimestampObjectInspectorHive3(TypeInfoFactory.timestampTypeInfo);
 
-  private static final IcebergTimestampObjectInspector NANO_INSTANCE =
-      new IcebergTimestampObjectInspector(TypeInfoFactory.nanoTimestampTypeInfo);
+  private static final IcebergTimestampObjectInspectorHive3 NANO_INSTANCE =
+      new IcebergTimestampObjectInspectorHive3(TypeInfoFactory.nanoTimestampTypeInfo);
 
-  public static IcebergTimestampObjectInspector get() {
+  public static IcebergTimestampObjectInspectorHive3 get() {
     return INSTANCE;
   }
 
-  public static IcebergTimestampObjectInspector get(int precision) {
+  public static IcebergTimestampObjectInspectorHive3 get(int precision) {
     if (precision == 9) {
       return NANO_INSTANCE;
     }
     return INSTANCE;
   }
 
-  private IcebergTimestampObjectInspector(PrimitiveTypeInfo typeInfo) {
+  private IcebergTimestampObjectInspectorHive3(PrimitiveTypeInfo typeInfo) {
     super(typeInfo);
   }
 

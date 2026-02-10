@@ -32,11 +32,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TestIcebergTimestampWithZoneObjectInspector {
+public class TestIcebergTimestampWithZoneObjectInspectorHive3 {
 
   @Test
   public void testIcebergTimestampLocalTZObjectInspector() {
-    IcebergTimestampWithZoneObjectInspector oi = IcebergTimestampWithZoneObjectInspector.get();
+    IcebergTimestampWithZoneObjectInspectorHive3 oi = IcebergTimestampWithZoneObjectInspectorHive3.get();
 
     Assertions.assertEquals(ObjectInspector.Category.PRIMITIVE, oi.getCategory());
     Assertions.assertEquals(PrimitiveObjectInspector.PrimitiveCategory.TIMESTAMPLOCALTZ,

@@ -29,11 +29,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TestIcebergDateObjectInspector {
+public class TestIcebergDateObjectInspectorHive3 {
 
   @Test
   public void testIcebergDateObjectInspector() {
-    DateObjectInspector oi = IcebergDateObjectInspector.get();
+    DateObjectInspector oi = IcebergDateObjectInspectorHive3.get();
 
     Assertions.assertEquals(ObjectInspector.Category.PRIMITIVE, oi.getCategory());
     Assertions.assertEquals(PrimitiveObjectInspector.PrimitiveCategory.DATE,

@@ -92,7 +92,7 @@ public class TestIcebergObjectInspector {
     Assertions.assertEquals(3, dateField.getFieldID());
     Assertions.assertEquals("date_field", dateField.getFieldName());
     Assertions.assertEquals("date comment", dateField.getFieldComment());
-    Assertions.assertEquals("org.apache.iceberg.mr.hive.serde.objectinspector.IcebergDateObjectInspector",
+    Assertions.assertEquals("org.apache.iceberg.mr.hive.serde.objectinspector.IcebergDateObjectInspectorHive3",
         dateField.getFieldObjectInspector().getClass().getName());
 
     // decimal
@@ -155,7 +155,7 @@ public class TestIcebergObjectInspector {
     Assertions.assertEquals(11, timestampField.getFieldID());
     Assertions.assertEquals("timestamp_field", timestampField.getFieldName());
     Assertions.assertEquals("timestamp comment", timestampField.getFieldComment());
-    Assertions.assertEquals(IcebergTimestampObjectInspector.get(),
+    Assertions.assertEquals(IcebergTimestampObjectInspectorHive3.get(),
         timestampField.getFieldObjectInspector());
 
     // timestamp with tz
@@ -163,7 +163,7 @@ public class TestIcebergObjectInspector {
     Assertions.assertEquals(12, timestampTzField.getFieldID());
     Assertions.assertEquals("timestamptz_field", timestampTzField.getFieldName());
     Assertions.assertEquals("timestamptz comment", timestampTzField.getFieldComment());
-    Assertions.assertEquals(IcebergTimestampWithZoneObjectInspector.get(),
+    Assertions.assertEquals(IcebergTimestampWithZoneObjectInspectorHive3.get(),
         timestampTzField.getFieldObjectInspector());
 
     // UUID
