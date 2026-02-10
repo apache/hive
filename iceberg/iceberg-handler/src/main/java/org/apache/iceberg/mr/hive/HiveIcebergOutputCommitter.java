@@ -612,9 +612,10 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
    */
   private void commitCompaction(Table table, Long snapshotId, long startTime, FilesForCommit results,
       String partitionPath, long fileSizeThreshold) {
-    List<DataFile> existingDataFiles = IcebergCompactionUtil.getDataFiles(table, partitionPath, fileSizeThreshold);
+    List<DataFile> existingDataFiles =
+        IcebergCompactionUtil.getDataFiles(table, snapshotId, partitionPath, fileSizeThreshold);
     List<DeleteFile> existingDeleteFiles = fileSizeThreshold == -1 ?
-        IcebergCompactionUtil.getDeleteFiles(table, partitionPath) : Collections.emptyList();
+        IcebergCompactionUtil.getDeleteFiles(table, snapshotId, partitionPath) : Collections.emptyList();
 
     RewriteFiles rewriteFiles = table.newRewrite();
     existingDataFiles.forEach(rewriteFiles::deleteFile);
