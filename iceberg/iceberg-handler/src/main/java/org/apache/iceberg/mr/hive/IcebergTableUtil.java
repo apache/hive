@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +39,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -54,7 +52,6 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.AlterTableExecuteSpec;
@@ -64,8 +61,6 @@ import org.apache.hadoop.hive.ql.parse.TransformSpec.TransformType;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
-import org.apache.hadoop.util.Sets;
-import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.DeleteFiles;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
@@ -696,26 +691,6 @@ public class IcebergTableUtil {
         spec);
   }
 
-  public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
-      throws MetaException, HiveException {
-    if (icebergTable == null || partitionPath == null || partitionPath.isEmpty()) {
-      throw new HiveException("Table and partitionPath must not be null or empty.");
-    }
-
-    // Extract field names from the path: "field1=val1/field2=val2" → [field1, field2]
-    List<String> fieldNames = Lists.newArrayList(Warehouse.makeSpecFromName(partitionPath).keySet());
-
-    return icebergTable.specs().values().stream()
-        .filter(spec -> {
-          List<String> specFieldNames = spec.fields().stream()
-              .map(PartitionField::name)
-              .toList();
-          return specFieldNames.equals(fieldNames);
-        })
-        .findFirst() // Supposed to be only one matching spec
-        .orElseThrow(() -> new HiveException("No matching partition spec found for partition path: " + partitionPath));
-  }
-
   public static TransformSpec getTransformSpec(Table table, String transformName, int sourceId) {
     TransformSpec spec = TransformSpec.fromString(transformName.toUpperCase(),
         table.schema().findColumnName(sourceId));
@@ -767,26 +742,15 @@ public class IcebergTableUtil {
             .anyMatch(id -> id != table.spec().specId());
   }
 
-  public static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,
-      Boolean latestSpecOnly) {
-    Set<String> partitions = Sets.newHashSet();
-    int tableSpecId = icebergTable.spec().specId();
-    for (T file : files) {
-      if (latestSpecOnly == null || latestSpecOnly.equals(file.specId() == tableSpecId)) {
-        String partName = icebergTable.specs().get(file.specId()).partitionToPath(file.partition());
-        partitions.add(partName);
-      }
-    }
-    return partitions;
-  }
-
-  public static List<Partition> convertNameToMetastorePartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
+  public static List<Partition> convertNameToHivePartition(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Collection<String> partNames) {
     List<Partition> partitions = Lists.newArrayList();
     for (String partName : partNames) {
-      Map<String, String> partSpecMap = Maps.newLinkedHashMap();
-      Warehouse.makeSpecFromName(partSpecMap, new Path(partName), null);
-      partitions.add(new DummyPartition(hmsTable, partName, partSpecMap));
+      try {
+        partitions.add(new DummyPartition(hmsTable, partName, Warehouse.makeSpecFromName(partName)));
+      } catch (MetaException e) {
+        LOG.error(e.getMessage(), e);
+      }
     }
     return partitions;
   }

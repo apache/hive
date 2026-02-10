@@ -2054,7 +2054,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   public List<Partition> getPartitions(org.apache.hadoop.hive.ql.metadata.Table hmsTable,
       Map<String, String> partitionSpec, boolean latestSpecOnly) throws SemanticException {
     List<String> partNames = IcebergTableUtil.getPartitionNames(conf, hmsTable, partitionSpec, latestSpecOnly);
-    return IcebergTableUtil.convertNameToMetastorePartition(hmsTable, partNames);
+    return IcebergTableUtil.convertNameToHivePartition(hmsTable, partNames);
   }
 
   public boolean isPartitioned(org.apache.hadoop.hive.ql.metadata.Table hmsTable) {
@@ -2207,7 +2207,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
       return Collections.emptyList();
     }
     Table icebergTable = IcebergTableUtil.getTable(conf, hmsTable.getTTable());
-    return MetastoreUtil.getPartitionKeys(icebergTable, icebergTable.spec().specId());
+    return MetastoreUtil.getPartitionKeys(icebergTable);
   }
 
   @Override

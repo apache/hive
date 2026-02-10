@@ -22,7 +22,6 @@ package org.apache.iceberg.hive;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -46,6 +45,7 @@ import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.types.Types;
 import org.apache.thrift.TException;
 
 public class MetastoreUtil {
@@ -112,16 +112,18 @@ public class MetastoreUtil {
     }
   }
 
-  public static List<FieldSchema> getPartitionKeys(org.apache.iceberg.Table table, int specId) {
-    Schema schema = table.specs().get(specId).schema();
-    List<FieldSchema> hiveSchema = HiveSchemaUtil.convert(schema);
-    Map<String, String> colNameToColType = hiveSchema.stream()
-        .collect(Collectors.toMap(FieldSchema::getName, FieldSchema::getType));
-    return table.specs().get(specId).fields().stream()
-        .map(partField -> new FieldSchema(
-            schema.findColumnName(partField.sourceId()),
-            colNameToColType.get(schema.findColumnName(partField.sourceId())),
-            String.format("Transform: %s", partField.transform().toString()))
+  public static List<FieldSchema> getPartitionKeys(org.apache.iceberg.Table table) {
+    Schema schema = table.spec().schema();
+
+    return table.spec().fields().stream()
+        .map(partField -> {
+              Types.NestedField col = schema.findField(partField.sourceId());
+              return new FieldSchema(
+                  col.name(),
+                  HiveSchemaUtil.convertToTypeString(col.type()),
+                  "Transform: %s".formatted(partField.transform())
+              );
+            }
         )
         .toList();
   }
@@ -134,7 +136,7 @@ public class MetastoreUtil {
     result.setDbName(tableName.getDb());
     result.setTableName(tableName.getTable());
     result.setTableType(TableType.EXTERNAL_TABLE.toString());
-    result.setPartitionKeys(getPartitionKeys(table, table.spec().specId()));
+    result.setPartitionKeys(getPartitionKeys(table));
     TableMetadata metadata = ((BaseTable) table).operations().current();
     long maxHiveTablePropertySize = conf.getLong(HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE,
         HiveOperationsBase.HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
