@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -465,16 +466,20 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
   }
 
   public static List<Partition> getPartitions(Consumer<TableName> preHook,
-      Consumer<Exception> postHook, IHMSHandler handler, TableName tableName,
+      Consumer<Pair<GetPartitionsResult, Exception>> postHook, IHMSHandler handler, TableName tableName,
       GetPartitionsArgs args, boolean assumeResult) throws NoSuchObjectException, MetaException {
     Exception ex = null;
+    GetPartitionsResult result = null;
     try {
       GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args);
       preHook.accept(tableName);
       GetPartitionsHandler<Partition> getPartsHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
-      List<Partition> partitions = getPartsHandler.getResult().result();
+      result = getPartsHandler.getResult();
+      List<Partition> partitions = result.result();
       if (assumeResult && (partitions == null || partitions.isEmpty())) {
+        // Create a new dummy GetPartitionsResult for postHook to consume
+        result = new GetPartitionsResult(List.of(), false);
         throw new NoSuchObjectException(tableName + " partition not found");
       }
       return partitions;
@@ -483,45 +488,49 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
       throw handleException(e).throwIfInstance(NoSuchObjectException.class, MetaException.class)
           .defaultMetaException();
     } finally {
-      postHook.accept(ex);
+      postHook.accept(Pair.of(result, ex));
     }
   }
 
   public static GetPartitionsResult<Partition> getPartitionsResult(
       Consumer<TableName> preHook,
-      Consumer<Exception> postHook,
+      Consumer<Pair<GetPartitionsResult, Exception>> postHook,
       IHMSHandler handler, TableName tableName,
       GetPartitionsArgs args) throws TException {
+    GetPartitionsResult result = null;
     Exception ex = null;
     try {
       GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args);
       preHook.accept(tableName);
       GetPartitionsHandler<Partition> getPartsHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
-      return getPartsHandler.getResult();
+      result = getPartsHandler.getResult();
+      return result;
     } catch (Exception e) {
       ex = e;
       throw handleException(ex).defaultTException();
     } finally {
-      postHook.accept(ex);
+      postHook.accept(Pair.of(result, ex));
     }
   }
 
   public static GetPartitionsResult<String> getPartitionNames(Consumer<TableName> preExecutor,
-      Consumer<Exception> postConsumer, IHMSHandler handler, TableName tableName,
+      Consumer<Pair<GetPartitionsResult, Exception>> postConsumer, IHMSHandler handler, TableName tableName,
       GetPartitionsArgs args) throws TException {
     Exception ex = null;
+    GetPartitionsResult result = null;
     try {
       preExecutor.accept(tableName);
       GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args, true);
       GetPartitionsHandler<String> getPartNamesHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
-      return getPartNamesHandler.getResult();
+      result = getPartNamesHandler.getResult();
+      return result;
     } catch (Exception e) {
       ex = e;
       throw handleException(ex).defaultTException();
     } finally {
-      postConsumer.accept(ex);
+      postConsumer.accept(Pair.of(result, ex));
     }
   }
 
