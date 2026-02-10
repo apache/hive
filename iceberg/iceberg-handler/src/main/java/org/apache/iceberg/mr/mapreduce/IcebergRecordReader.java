@@ -167,7 +167,9 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     CloseableIterable<T> iterable = switch (file.format()) {
       case AVRO -> newAvroIterable(inputFile, task, readSchema);
       case ORC -> newOrcIterable(inputFile, task, residual, readSchema);
-      case PARQUET -> newParquetIterable(inputFile, task, residual, readSchema);
+      case PARQUET -> newParquetIterable(inputFile, task,
+          HiveIcebergInputFormat.residualForReaderPruning(task, getContext().getConfiguration()),
+          readSchema);
       default -> throw new UnsupportedOperationException(
           String.format("Cannot read %s file: %s", file.format().name(), file.location()));
     };

@@ -37,10 +37,13 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFVariantGet;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
@@ -250,13 +253,90 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
       checkListAndMap(fieldDesc, pathToRoot, p);
       getNestedColsFromExprNodeDesc(childDesc, p, paths);
     } else {
-      List<ExprNodeDesc> children = desc.getChildren();
-      if (children != null) {
-        for (ExprNodeDesc c : children) {
-          getNestedColsFromExprNodeDesc(c, pathToRoot, paths);
+      // Try variant-specific optimization first
+      boolean handled = false;
+      if (desc instanceof ExprNodeGenericFuncDesc funcDesc
+          && funcDesc.getGenericUDF() instanceof GenericUDFVariantGet) {
+        handled = tryHandleVariantGet(funcDesc, pathToRoot, paths);
+      }
+
+      // If not handled (generic UDF or dynamic variant path), traverse children
+      if (!handled) {
+        List<ExprNodeDesc> children = desc.getChildren();
+        if (children != null) {
+          for (ExprNodeDesc c : children) {
+            getNestedColsFromExprNodeDesc(c, pathToRoot, paths);
+          }
         }
       }
     }
+  }
+
+  /**
+   * Extracts nested column paths from variant_get expressions for projection pushdown optimization.
+   *
+   * <p>This enables downstream readers (e.g., ParquetVariantRecordReader) to skip reading
+   * unneeded shredded variant fields from storage, significantly reducing I/O.
+   */
+  private static boolean tryHandleVariantGet(
+      ExprNodeGenericFuncDesc funcDesc, FieldNode pathToRoot, List<FieldNode> paths) {
+    List<ExprNodeDesc> children = funcDesc.getChildren();
+    
+    // Semantic analyzer should enforce at least 2 arguments
+    if (children == null || children.size() < 2) {
+      throw new IllegalStateException(
+          "GenericUDFVariantGet should have at least 2 arguments after semantic analysis");
+    }
+    
+    // If path argument is not a constant, we cannot extract it at compile time
+    if (!(children.get(1) instanceof ExprNodeConstantDesc)) {
+      return false; // Dynamic path - fallback to reading full column
+    }
+
+    // Extract and normalize the JSONPath
+    String path = ((ExprNodeConstantDesc) children.get(1)).getValue().toString();
+    if (path.startsWith("$")) {
+      path = path.substring(1);
+    }
+    if (path.startsWith(".")) {
+      path = path.substring(1);
+    }
+    if (path.isEmpty()) {
+      return false; // Root access - read full variant
+    }
+
+    String[] segments = path.split("\\.");
+
+    // Build FieldNode chain from leaf to root
+    // For $.address.city: city -> address -> (pathToRoot)
+    FieldNode currentTail = pathToRoot;
+    for (int i = segments.length - 1; i >= 0; i--) {
+      String seg = segments[i];
+      
+      // Strip array index: items[0] -> items
+      int bracket = seg.indexOf('[');
+      if (bracket > 0) {
+        seg = seg.substring(0, bracket);
+      }
+      
+      if (seg.isEmpty()) {
+        continue;
+      }
+
+      FieldNode fn = new FieldNode(seg);
+      if (currentTail != null) {
+        fn.addFieldNodes(currentTail);
+      }
+      currentTail = fn;
+    }
+
+    // Attach the variant path chain to the column
+    if (currentTail != null) {
+      getNestedColsFromExprNodeDesc(children.getFirst(), currentTail, paths);
+      return true;
+    }
+
+    return false; // All segments were empty - shouldn't happen with valid path
   }
 
   private static void checkListAndMap(ExprNodeDesc desc, FieldNode pathToRoot, FieldNode fn) {

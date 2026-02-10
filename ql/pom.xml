@@ -168,11 +168,6 @@
     </dependency>
     <!-- inter-project -->
     <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-bundle</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.amazonaws.secretsmanager</groupId>
       <artifactId>aws-secretsmanager-caching-java</artifactId>
     </dependency>

@@ -42,17 +42,11 @@ import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFacto
 import org.apache.hadoop.hive.metastore.events.*;
 import org.apache.hadoop.hive.metastore.handler.AbstractRequestHandler;
 import org.apache.hadoop.hive.metastore.handler.AddPartitionsHandler;
-import org.apache.hadoop.hive.metastore.handler.CreateTableHandler;
-import org.apache.hadoop.hive.metastore.handler.DropDatabaseHandler;
 import org.apache.hadoop.hive.metastore.handler.DropPartitionsHandler;
-import org.apache.hadoop.hive.metastore.handler.DropTableHandler;
-import org.apache.hadoop.hive.metastore.handler.TruncateTableHandler;
-import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
-import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.properties.PropertyException;
 import org.apache.hadoop.hive.metastore.properties.PropertyManager;
@@ -75,9 +69,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.jdo.JDOException;
 import java.io.IOException;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.nio.ByteBuffer;
-import java.security.PrivilegedExceptionAction;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -918,11 +910,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ms.createCatalog(catalog);
 
         // Create a default database inside the catalog
-        Database db = new Database(DEFAULT_DATABASE_NAME,
-            "Default database for catalog " + catalog.getName(), catalog.getLocationUri(),
-            Collections.emptyMap());
-        db.setCatalogName(catalog.getName());
-        create_database_core(ms, db);
+        CreateDatabaseRequest cdr = new CreateDatabaseRequest(DEFAULT_DATABASE_NAME);
+        cdr.setCatalogName(catalog.getName());
+        cdr.setLocationUri(catalog.getLocationUri());
+        cdr.setParameters(Collections.emptyMap());
+        cdr.setDescription("Default database for catalog " + catalog.getName());
+        AbstractRequestHandler.offer(this, cdr).getResult();
 
         if (!transactionalListeners.isEmpty()) {
           transactionalListenersResponses =
@@ -949,9 +942,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         }
       }
       success = true;
-    } catch (AlreadyExistsException|InvalidObjectException|MetaException e) {
+    } catch (Exception e) {
       ex = e;
-      throw e;
+      throw handleException(e)
+          .throwIfInstance(AlreadyExistsException.class, InvalidObjectException.class, MetaException.class)
+          .defaultMetaException();
     } finally {
       endFunction("create_catalog", success, ex);
     }
@@ -1132,194 +1127,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  // Assumes that the catalog has already been set.
-  private void create_database_core(RawStore ms, final Database db)
-      throws AlreadyExistsException, InvalidObjectException, MetaException {
-    if (!MetaStoreUtils.validateName(db.getName(), conf)) {
-      throw new InvalidObjectException(db.getName() + " is not a valid database name");
-    }
-
-    Catalog cat = null;
-    try {
-      cat = getMS().getCatalog(db.getCatalogName());
-    } catch (NoSuchObjectException e) {
-      LOG.error("No such catalog " + db.getCatalogName());
-      throw new InvalidObjectException("No such catalog " + db.getCatalogName());
-    }
-    boolean skipAuthorization = false;
-    String passedInURI = db.getLocationUri();
-    String passedInManagedURI = db.getManagedLocationUri();
-    if (passedInURI == null && passedInManagedURI == null) {
-      skipAuthorization = true;
-    }
-    final Path defaultDbExtPath = wh.getDefaultDatabasePath(db.getName(), true);
-    final Path defaultDbMgdPath = wh.getDefaultDatabasePath(db.getName(), false);
-    final Path dbExtPath = (passedInURI != null) ? wh.getDnsPath(new Path(passedInURI)) : wh.determineDatabasePath(cat, db);
-    final Path dbMgdPath = (passedInManagedURI != null) ? wh.getDnsPath(new Path(passedInManagedURI)) : null;
-
-    if ((defaultDbExtPath.equals(dbExtPath) && defaultDbMgdPath.equals(dbMgdPath)) &&
-        ((dbMgdPath == null) || dbMgdPath.equals(defaultDbMgdPath))) {
-      skipAuthorization = true;
-    }
-
-    if ( skipAuthorization ) {
-      //null out to skip authorizer URI check
-      db.setLocationUri(null);
-      db.setManagedLocationUri(null);
-    }else{
-      db.setLocationUri(dbExtPath.toString());
-      if (dbMgdPath != null) {
-        db.setManagedLocationUri(dbMgdPath.toString());
-      }
-    }
-    if (db.getOwnerName() == null){
-      try {
-        db.setOwnerName(SecurityUtils.getUGI().getShortUserName());
-      }catch (Exception e){
-        LOG.warn("Failed to get owner name for create database operation.", e);
-      }
-    }
-    long time = System.currentTimeMillis()/1000;
-    db.setCreateTime((int) time);
-    boolean success = false;
-    boolean madeManagedDir = false;
-    boolean madeExternalDir = false;
-    boolean isReplicated = isDbReplicationTarget(db);
-    Map<String, String> transactionalListenersResponses = Collections.emptyMap();
-    try {
-      firePreEvent(new PreCreateDatabaseEvent(db, this));
-      //reinstate location uri for metastore db.
-      if (skipAuthorization == true){
-        db.setLocationUri(dbExtPath.toString());
-        if (dbMgdPath != null) {
-          db.setManagedLocationUri(dbMgdPath.toString());
-        }
-      }
-      if (db.getCatalogName() != null && !db.getCatalogName().
-          equals(Warehouse.DEFAULT_CATALOG_NAME)) {
-        if (!wh.isDir(dbExtPath)) {
-          LOG.debug("Creating database path " + dbExtPath);
-          if (!wh.mkdirs(dbExtPath)) {
-            throw new MetaException("Unable to create database path " + dbExtPath +
-                ", failed to create database " + db.getName());
-          }
-          madeExternalDir = true;
-        }
-      } else {
-        if (dbMgdPath != null) {
-          try {
-            // Since this may be done as random user (if doAs=true) he may not have access
-            // to the managed directory. We run this as an admin user
-            madeManagedDir = UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Boolean>() {
-              @Override public Boolean run() throws MetaException {
-                if (!wh.isDir(dbMgdPath)) {
-                  LOG.info("Creating database path in managed directory " + dbMgdPath);
-                  if (!wh.mkdirs(dbMgdPath)) {
-                    throw new MetaException("Unable to create database managed path " + dbMgdPath + ", failed to create database " + db.getName());
-                  }
-                  return true;
-                }
-                return false;
-              }
-            });
-            if (madeManagedDir) {
-              LOG.info("Created database path in managed directory " + dbMgdPath);
-            } else if (!isInTest || !isDbReplicationTarget(db)) { // Hive replication tests doesn't drop the db after each test
-              throw new MetaException(
-                  "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName());
-            }
-          } catch (IOException | InterruptedException e) {
-            throw new MetaException(
-                "Unable to create database managed directory " + dbMgdPath + ", failed to create database " + db.getName() + ":" + e.getMessage());
-          }
-        }
-        if (dbExtPath != null) {
-          try {
-            madeExternalDir = UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Boolean>() {
-              @Override public Boolean run() throws MetaException {
-                if (!wh.isDir(dbExtPath)) {
-                  LOG.info("Creating database path in external directory " + dbExtPath);
-                  return wh.mkdirs(dbExtPath);
-                }
-                return false;
-              }
-            });
-            if (madeExternalDir) {
-              LOG.info("Created database path in external directory " + dbExtPath);
-            } else {
-              LOG.warn("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
-                  + "StorageBasedAuthorizationProvider is enabled");
-            }
-          } catch (IOException | InterruptedException | UndeclaredThrowableException e) {
-            throw new MetaException("Failed to create external path " + dbExtPath + " for database " + db.getName() + ". This may result in access not being allowed if the "
-                + "StorageBasedAuthorizationProvider is enabled: " + e.getMessage());
-          }
-        } else {
-          LOG.info("Database external path won't be created since the external warehouse directory is not defined");
-        }
-      }
-
-      ms.openTransaction();
-      ms.createDatabase(db);
-
-      if (!transactionalListeners.isEmpty()) {
-        transactionalListenersResponses =
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventType.CREATE_DATABASE,
-                new CreateDatabaseEvent(db, true, this, isReplicated));
-      }
-
-      success = ms.commitTransaction();
-    } finally {
-      if (!success) {
-        ms.rollbackTransaction();
-
-        if (db.getCatalogName() != null && !db.getCatalogName().
-            equals(Warehouse.DEFAULT_CATALOG_NAME)) {
-          if (madeManagedDir && dbMgdPath != null) {
-            wh.deleteDir(dbMgdPath, true, db);
-          }
-        } else {
-          if (madeManagedDir && dbMgdPath != null) {
-            try {
-              UserGroupInformation.getLoginUser().doAs(new PrivilegedExceptionAction<Void>() {
-                @Override public Void run() throws Exception {
-                  wh.deleteDir(dbMgdPath, true, db);
-                  return null;
-                }
-              });
-            } catch (IOException | InterruptedException e) {
-              LOG.error(
-                  "Couldn't delete managed directory " + dbMgdPath + " after " + "it was created for database " + db.getName() + " " + e.getMessage());
-            }
-          }
-
-          if (madeExternalDir && dbExtPath != null) {
-            try {
-              UserGroupInformation.getCurrentUser().doAs(new PrivilegedExceptionAction<Void>() {
-                @Override public Void run() throws Exception {
-                  wh.deleteDir(dbExtPath, true, db);
-                  return null;
-                }
-              });
-            } catch (IOException | InterruptedException e) {
-              LOG.error("Couldn't delete external directory " + dbExtPath + " after " + "it was created for database "
-                  + db.getName() + " " + e.getMessage());
-            }
-          }
-        }
-      }
-
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-            EventType.CREATE_DATABASE,
-            new CreateDatabaseEvent(db, success, this, isReplicated),
-            null,
-            transactionalListenersResponses, ms);
-      }
-    }
-  }
-
   @Override
   @Deprecated
   public void create_database(final Database db)
@@ -1353,6 +1160,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (!createDatabaseRequest.isSetCatalogName()) {
       createDatabaseRequest.setCatalogName(getDefaultCatalog(conf));
     }
+
     try {
       try {
         if (null != get_database_core(createDatabaseRequest.getCatalogName(), createDatabaseRequest.getDatabaseName())) {
@@ -1361,40 +1169,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       } catch (NoSuchObjectException e) {
         // expected
       }
-
-      Database db = new Database(createDatabaseRequest.getDatabaseName(), createDatabaseRequest.getDescription(),
-              createDatabaseRequest.getLocationUri() ,createDatabaseRequest.getParameters());
-      if (createDatabaseRequest.isSetPrivileges()) {
-        db.setPrivileges(createDatabaseRequest.getPrivileges());
-      }
-      if (createDatabaseRequest.isSetOwnerName()) {
-        db.setOwnerName(createDatabaseRequest.getOwnerName());
-      }
-      if (createDatabaseRequest.isSetOwnerType()) {
-        db.setOwnerType(createDatabaseRequest.getOwnerType());
-      }
-      db.setCatalogName(createDatabaseRequest.getCatalogName());
-      if (createDatabaseRequest.isSetCreateTime()) {
-        db.setCreateTime(createDatabaseRequest.getCreateTime());
-      } else {
-        db.setCreateTime((int)(System.currentTimeMillis() / 1000));
-      }
-      if (createDatabaseRequest.isSetManagedLocationUri()) {
-        db.setManagedLocationUri(createDatabaseRequest.getManagedLocationUri());
-      }
-      if (createDatabaseRequest.isSetType()) {
-        db.setType(createDatabaseRequest.getType());
-      }
-      if (createDatabaseRequest.isSetDataConnectorName()) {
-        db.setConnector_name(createDatabaseRequest.getDataConnectorName());
-      }
-      if (createDatabaseRequest.isSetRemote_dbname()) {
-        db.setRemote_dbname(createDatabaseRequest.getRemote_dbname());
-      }
-      create_database_core(getMS(), db);
-      createDatabaseRequest.setLocationUri(db.getLocationUri());
-      createDatabaseRequest.setManagedLocationUri(db.getManagedLocationUri());
-      success = true;
+      success = AbstractRequestHandler.offer(this, createDatabaseRequest).success();
     } catch (Exception e) {
       ex = e;
       throw handleException(e)
@@ -1582,9 +1357,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     Exception ex = null;
     try {
-      DropDatabaseHandler dropDatabaseOp = AbstractRequestHandler.offer(this, req);
-      AbstractRequestHandler.RequestStatus status = dropDatabaseOp.getRequestStatus();
-      return status.toAsyncOperationResp();
+      return AbstractRequestHandler.offer(this, req).getRequestStatus().toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
       // Reset the id of the request in case of RetryingHMSHandler retries
@@ -2046,8 +1819,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     boolean success = false;
     Exception ex = null;
     try {
-      CreateTableHandler createTableOp = AbstractRequestHandler.offer(this, req);
-      success = createTableOp.success();
+      success = AbstractRequestHandler.offer(this, req).success();
     } catch (Exception e) {
       LOG.warn("create_table_req got ", e);
       ex = e;
@@ -2391,11 +2163,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
   }
 
-  private boolean is_table_exists(RawStore ms, String catName, String dbname, String name)
-      throws MetaException {
-    return (ms.getTable(catName, dbname, name, null) != null);
-  }
-
   @Override
   @Deprecated
   public void drop_table(final String dbname, final String name, final boolean deleteData)
@@ -2428,9 +2195,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         ", async: " + dropReq.isAsyncDrop() + ", id: " + dropReq.getId());
     Exception ex = null;
     try {
-      DropTableHandler dropTableOp = AbstractRequestHandler.offer(this, dropReq);
-      AbstractRequestHandler.RequestStatus status = dropTableOp.getRequestStatus();
-      return status.toAsyncOperationResp();
+      return AbstractRequestHandler.offer(this, dropReq).getRequestStatus().toAsyncOperationResp();
     } catch (Exception e) {
       ex = e;
       // Here we get an exception, the RetryingHMSHandler might retry the call,
@@ -2473,8 +2238,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Exception ex = null;
     boolean success = false;
     try {
-      TruncateTableHandler truncateTable = AbstractRequestHandler.offer(this, req);
-      success = truncateTable.success();
+      success =  AbstractRequestHandler.offer(this, req).success();
       return new TruncateTableResponse();
     } catch (Exception e) {
       ex = e;
@@ -3094,7 +2858,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         AddPartitionsHandler.AddPartitionsResult addPartsResult = addPartsOp.getResult();
         if (request.isSkipColumnSchemaForPartition()) {
           if (addPartsResult.newParts() != null && !addPartsResult.newParts().isEmpty()) {
-            StorageDescriptor sd = addPartsResult.newParts().get(0).getSd().deepCopy();
+            StorageDescriptor sd = addPartsResult.newParts().getFirst().getSd().deepCopy();
             result.setPartitionColSchema(sd.getCols());
           }
           addPartsResult.newParts().stream().forEach(partition -> partition.getSd().getCols().clear());
@@ -5151,7 +4915,13 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Override
   public boolean update_table_column_statistics(ColumnStatistics colStats) throws TException {
     // Deprecated API, won't work for transactional tables
-    return updateTableColumnStatsInternal(colStats, null, -1);
+    colStats.getStatsDesc().setIsTblLevel(true);
+    SetPartitionsStatsRequest setStatsRequest =
+        new SetPartitionsStatsRequest(List.of(colStats));
+    setStatsRequest.setWriteId(-1);
+    setStatsRequest.setValidWriteIdList(null);
+    setStatsRequest.setNeedMerge(false);
+    return set_aggr_stats_for(setStatsRequest);
   }
 
   @Override
@@ -5165,193 +4935,26 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (req.isNeedMerge()) {
       throw new InvalidInputException("Merge is not supported for non-aggregate stats");
     }
-    ColumnStatistics colStats = req.getColStatsIterator().next();
-    boolean ret = updateTableColumnStatsInternal(colStats,
-        req.getValidWriteIdList(), req.getWriteId());
+    req.getColStats().getFirst().getStatsDesc().setIsTblLevel(true);
+    SetPartitionsStatsRequest setStatsRequest = new SetPartitionsStatsRequest(req.getColStats());
+    setStatsRequest.setWriteId(req.getWriteId());
+    setStatsRequest.setValidWriteIdList(req.getValidWriteIdList());
+    setStatsRequest.setNeedMerge(false);
+    setStatsRequest.setEngine(req.getEngine());
+    boolean ret = set_aggr_stats_for(setStatsRequest);
     return new SetPartitionsStatsResponse(ret);
-  }
-
-  private boolean updateTableColumnStatsInternal(ColumnStatistics colStats,
-                                                 String validWriteIds, long writeId)
-      throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    normalizeColStatsInput(colStats);
-
-    startFunction("write_column_statistics", ":  table=" + TableName.getQualified(
-        colStats.getStatsDesc().getCatName(), colStats.getStatsDesc().getDbName(),
-        colStats.getStatsDesc().getTableName()));
-
-    Map<String, String> parameters = null;
-    getMS().openTransaction();
-    boolean committed = false;
-    try {
-      parameters = getMS().updateTableColumnStatistics(colStats, validWriteIds, writeId);
-      if (parameters != null) {
-        Table tableObj = getMS().getTable(colStats.getStatsDesc().getCatName(),
-            colStats.getStatsDesc().getDbName(),
-            colStats.getStatsDesc().getTableName(), validWriteIds);
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-              EventType.UPDATE_TABLE_COLUMN_STAT,
-              new UpdateTableColumnStatEvent(colStats, tableObj, parameters,
-                  writeId, this));
-        }
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-              EventType.UPDATE_TABLE_COLUMN_STAT,
-              new UpdateTableColumnStatEvent(colStats, tableObj, parameters,
-                  writeId,this));
-        }
-      }
-      committed = getMS().commitTransaction();
-    } finally {
-      if (!committed) {
-        getMS().rollbackTransaction();
-      }
-      endFunction("write_column_statistics", parameters != null, null,
-          colStats.getStatsDesc().getTableName());
-    }
-
-    return parameters != null;
-  }
-
-  private void normalizeColStatsInput(ColumnStatistics colStats) throws MetaException {
-    // TODO: is this really needed? this code is propagated from HIVE-1362 but most of it is useless.
-    ColumnStatisticsDesc statsDesc = colStats.getStatsDesc();
-    statsDesc.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName().toLowerCase() : getDefaultCatalog(conf));
-    statsDesc.setDbName(statsDesc.getDbName().toLowerCase());
-    statsDesc.setTableName(statsDesc.getTableName().toLowerCase());
-    statsDesc.setPartName(statsDesc.getPartName());
-    long time = System.currentTimeMillis() / 1000;
-    statsDesc.setLastAnalyzed(time);
-
-    for (ColumnStatisticsObj statsObj : colStats.getStatsObj()) {
-      statsObj.setColName(statsObj.getColName().toLowerCase());
-      statsObj.setColType(statsObj.getColType().toLowerCase());
-    }
-    colStats.setStatsDesc(statsDesc);
-    colStats.setStatsObj(colStats.getStatsObj());
-  }
-
-  public boolean updatePartitonColStatsInternal(Table tbl, MTable mTable, ColumnStatistics colStats,
-                                                 String validWriteIds, long writeId)
-      throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
-    normalizeColStatsInput(colStats);
-
-    ColumnStatisticsDesc csd = colStats.getStatsDesc();
-    String catName = csd.getCatName(), dbName = csd.getDbName(), tableName = csd.getTableName();
-    startFunction("write_partition_column_statistics", ":  db=" + dbName  + " table=" + tableName
-        + " part=" + csd.getPartName());
-
-    boolean ret = false;
-
-    Map<String, String> parameters;
-    List<String> partVals;
-    boolean committed = false;
-    getMS().openTransaction();
-    
-    try {
-      tbl = Optional.ofNullable(tbl).orElse(getTable(catName, dbName, tableName));
-      mTable = Optional.ofNullable(mTable).orElse(getMS().ensureGetMTable(catName, dbName, tableName));
-      partVals = getPartValsFromName(tbl, csd.getPartName());
-      parameters = getMS().updatePartitionColumnStatistics(tbl, mTable, colStats, partVals, validWriteIds, writeId);
-      if (parameters != null) {
-        if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.UPDATE_PARTITION_COLUMN_STAT,
-                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
-                          writeId, this));
-        }
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-                  EventType.UPDATE_PARTITION_COLUMN_STAT,
-                  new UpdatePartitionColumnStatEvent(colStats, partVals, parameters, tbl,
-                          writeId, this));
-        }
-      }
-      committed = getMS().commitTransaction();
-    } finally {
-      if (!committed) {
-        getMS().rollbackTransaction();
-      }
-      endFunction("write_partition_column_statistics", ret != false, null, tableName);
-    }
-    return parameters != null;
-  }
-
-  private void updatePartitionColStatsForOneBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
-                                                     String validWriteIds, long writeId)
-          throws NoSuchObjectException, MetaException, InvalidObjectException, InvalidInputException {
-    Map<String, Map<String, String>> result =
-        getMS().updatePartitionColumnStatisticsInBatch(statsMap, tbl, transactionalListeners, validWriteIds, writeId);
-    if (result != null && result.size() != 0 && listeners != null) {
-      // The normal listeners, unlike transaction listeners are not using the same transactions used by the update
-      // operations. So there is no need of keeping them within the same transactions. If notification to one of
-      // the listeners failed, then even if we abort the transaction, we can not revert the notifications sent to the
-      // other listeners.
-      for (Map.Entry entry : result.entrySet()) {
-        Map<String, String> parameters = (Map<String, String>) entry.getValue();
-        ColumnStatistics colStats = statsMap.get(entry.getKey());
-        List<String> partVals = getPartValsFromName(tbl, colStats.getStatsDesc().getPartName());
-        MetaStoreListenerNotifier.notifyEvent(listeners,
-                EventMessage.EventType.UPDATE_PARTITION_COLUMN_STAT,
-                new UpdatePartitionColumnStatEvent(colStats, partVals, parameters,
-                        tbl, writeId, this));
-      }
-    }
-  }
-
-  private boolean updatePartitionColStatsInBatch(Table tbl, Map<String, ColumnStatistics> statsMap,
-                                                 String validWriteIds, long writeId)
-          throws MetaException, InvalidObjectException, NoSuchObjectException, InvalidInputException {
-
-    if (statsMap.size() == 0) {
-      return false;
-    }
-
-    String catalogName = tbl.getCatName();
-    String dbName = tbl.getDbName();
-    String tableName = tbl.getTableName();
-
-    startFunction("updatePartitionColStatsInBatch", ":  db=" + dbName + " table=" + tableName);
-    long start = System.currentTimeMillis();
-
-    Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
-    long numStats = 0;
-    long numStatsMax = MetastoreConf.getIntVar(conf, ConfVars.JDBC_MAX_BATCH_SIZE);
-    try {
-      for (Map.Entry entry : statsMap.entrySet()) {
-        ColumnStatistics colStats = (ColumnStatistics) entry.getValue();
-        normalizeColStatsInput(colStats);
-        assert catalogName.equalsIgnoreCase(colStats.getStatsDesc().getCatName());
-        assert dbName.equalsIgnoreCase(colStats.getStatsDesc().getDbName());
-        assert tableName.equalsIgnoreCase(colStats.getStatsDesc().getTableName());
-        newStatsMap.put((String) entry.getKey(), colStats);
-        numStats += colStats.getStatsObjSize();
-
-        if (newStatsMap.size() >= numStatsMax) {
-          updatePartitionColStatsForOneBatch(tbl, newStatsMap, validWriteIds, writeId);
-          newStatsMap.clear();
-          numStats = 0;
-        }
-      }
-      if (numStats != 0) {
-        updatePartitionColStatsForOneBatch(tbl, newStatsMap, validWriteIds, writeId);
-      }
-    } finally {
-      endFunction("updatePartitionColStatsInBatch", true, null, tableName);
-      long end = System.currentTimeMillis();
-      float sec = (end - start) / 1000F;
-      LOG.info("updatePartitionColStatsInBatch took " + sec + " seconds for " + statsMap.size() + " stats");
-    }
-    return true;
   }
 
   @Override
   public boolean update_partition_column_statistics(ColumnStatistics colStats) throws TException {
     // Deprecated API.
-    return updatePartitonColStatsInternal(null, null, colStats, null, -1);
+    SetPartitionsStatsRequest setStatsRequest =
+        new SetPartitionsStatsRequest(Arrays.asList(colStats));
+    setStatsRequest.setWriteId(-1);
+    setStatsRequest.setValidWriteIdList(null);
+    setStatsRequest.setNeedMerge(false);
+    return set_aggr_stats_for(setStatsRequest);
   }
-
 
   @Override
   public SetPartitionsStatsResponse update_partition_column_statistics_req(
@@ -5364,9 +4967,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     if (req.isNeedMerge()) {
       throw new InvalidInputException("Merge is not supported for non-aggregate stats");
     }
-    ColumnStatistics colStats = req.getColStatsIterator().next();
-    boolean ret = updatePartitonColStatsInternal(null, null, colStats,
-        req.getValidWriteIdList(), req.getWriteId());
+    SetPartitionsStatsRequest setStatsRequest = new SetPartitionsStatsRequest(req.getColStats());
+    setStatsRequest.setWriteId(req.getWriteId());
+    setStatsRequest.setValidWriteIdList(req.getValidWriteIdList());
+    setStatsRequest.setNeedMerge(false);
+    setStatsRequest.setEngine(req.getEngine());
+    boolean ret = set_aggr_stats_for(setStatsRequest);
     return new SetPartitionsStatsResponse(ret);
   }
 
@@ -7447,213 +7053,32 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
-  public boolean set_aggr_stats_for(SetPartitionsStatsRequest request) throws TException {
-    boolean ret = true;
-    List<ColumnStatistics> csNews = request.getColStats();
-    if (csNews == null || csNews.isEmpty()) {
-      return ret;
+  public boolean set_aggr_stats_for(SetPartitionsStatsRequest req) throws TException {
+    List<ColumnStatistics> columnStatisticsList = req.getColStats();
+    if (columnStatisticsList == null || columnStatisticsList.isEmpty()) {
+      return true;
     }
-    // figure out if it is table level or partition level
-    ColumnStatistics firstColStats = csNews.get(0);
-    ColumnStatisticsDesc statsDesc = firstColStats.getStatsDesc();
+    ColumnStatisticsDesc statsDesc = columnStatisticsList.getFirst().getStatsDesc();
     String catName = statsDesc.isSetCatName() ? statsDesc.getCatName() : getDefaultCatalog(conf);
     String dbName = statsDesc.getDbName();
     String tableName = statsDesc.getTableName();
-    List<String> colNames = new ArrayList<>();
-    for (ColumnStatisticsObj obj : firstColStats.getStatsObj()) {
-      colNames.add(obj.getColName());
-    }
-    if (statsDesc.isIsTblLevel()) {
-      // there should be only one ColumnStatistics
-      if (request.getColStatsSize() != 1) {
-        throw new MetaException(
-            "Expecting only 1 ColumnStatistics for table's column stats, but find "
-                + request.getColStatsSize());
-      }
-      if (request.isSetNeedMerge() && request.isNeedMerge()) {
-        return updateTableColumnStatsWithMerge(catName, dbName, tableName, colNames, request);
-      } else {
-        // This is the overwrite case, we do not care about the accuracy.
-        return updateTableColumnStatsInternal(firstColStats,
-            request.getValidWriteIdList(), request.getWriteId());
-      }
-    } else {
-      // partition level column stats merging
-      // note that we may have two or more duplicate partition names.
-      // see autoColumnStats_2.q under TestMiniLlapLocalCliDriver
-      Map<String, ColumnStatistics> newStatsMap = new HashMap<>();
-      for (ColumnStatistics csNew : csNews) {
-        String partName = csNew.getStatsDesc().getPartName();
-        if (newStatsMap.containsKey(partName)) {
-          MetaStoreServerUtils.mergeColStats(csNew, newStatsMap.get(partName));
-        }
-        newStatsMap.put(partName, csNew);
-      }
-
-      if (request.isSetNeedMerge() && request.isNeedMerge()) {
-        ret = updatePartColumnStatsWithMerge(catName, dbName, tableName,
-            colNames, newStatsMap, request);
-      } else { // No merge.
-        Table t = getTable(catName, dbName, tableName);
-        MTable mTable = getMS().ensureGetMTable(catName, dbName, tableName);
-        // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-        if (MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL)) {
-          ret = updatePartitionColStatsInBatch(t, newStatsMap,
-                  request.getValidWriteIdList(), request.getWriteId());
-        } else {
-          for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
-            // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-            ret = updatePartitonColStatsInternal(t, mTable, entry.getValue(),
-                    request.getValidWriteIdList(), request.getWriteId()) && ret;
-          }
-        }
-      }
-    }
-    return ret;
-  }
-
-  private boolean updatePartColumnStatsWithMerge(String catName, String dbName, String tableName,
-                                                 List<String> colNames, Map<String, ColumnStatistics> newStatsMap, SetPartitionsStatsRequest request)
-      throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
-    RawStore ms = getMS();
-    ms.openTransaction();
-    boolean isCommitted = false, result = false;
+    startFunction("set_aggr_stats_for",
+        ": db=" + dbName + " tab=" + tableName + " needMerge=" + req.isNeedMerge() +
+            " isTblLevel=" + statsDesc.isIsTblLevel());
+    Exception ex = null;
+    boolean success = false;
     try {
-      // a single call to get all column stats for all partitions
-      List<String> partitionNames = new ArrayList<>();
-      partitionNames.addAll(newStatsMap.keySet());
-      List<ColumnStatistics> csOlds = ms.getPartitionColumnStatistics(catName, dbName, tableName,
-          partitionNames, colNames, request.getEngine(), request.getValidWriteIdList());
-      if (newStatsMap.values().size() != csOlds.size()) {
-        // some of the partitions miss stats.
-        LOG.debug("Some of the partitions miss stats.");
-      }
-      Map<String, ColumnStatistics> oldStatsMap = new HashMap<>();
-      for (ColumnStatistics csOld : csOlds) {
-        oldStatsMap.put(csOld.getStatsDesc().getPartName(), csOld);
-      }
-
-      // another single call to get all the partition objects
-      List<Partition> partitions = ms.getPartitionsByNames(catName, dbName, tableName, partitionNames);
-      Map<String, Partition> mapToPart = new HashMap<>();
-      for (int index = 0; index < partitionNames.size(); index++) {
-        mapToPart.put(partitionNames.get(index), partitions.get(index));
-      }
-
-      Table t = getTable(catName, dbName, tableName);
-      MTable mTable = getMS().ensureGetMTable(catName, dbName, tableName);
-      Map<String, ColumnStatistics> statsMap =  new HashMap<>();
-      boolean useDirectSql = MetastoreConf.getBoolVar(getConf(), ConfVars.TRY_DIRECT_SQL);
-      for (Map.Entry<String, ColumnStatistics> entry : newStatsMap.entrySet()) {
-        ColumnStatistics csNew = entry.getValue();
-        ColumnStatistics csOld = oldStatsMap.get(entry.getKey());
-        boolean isInvalidTxnStats = csOld != null
-            && csOld.isSetIsStatsCompliant() && !csOld.isIsStatsCompliant();
-        Partition part = mapToPart.get(entry.getKey());
-        if (isInvalidTxnStats) {
-          // No columns can be merged; a shortcut for getMergableCols.
-          csNew.setStatsObj(Lists.newArrayList());
-        } else {
-          // we first use getParameters() to prune the stats
-          MetaStoreServerUtils.getMergableCols(csNew, part.getParameters());
-          // we merge those that can be merged
-          if (csOld != null && csOld.getStatsObjSize() != 0 && !csNew.getStatsObj().isEmpty()) {
-            MetaStoreServerUtils.mergeColStats(csNew, csOld);
-          }
-        }
-
-        if (!csNew.getStatsObj().isEmpty()) {
-          // We don't short-circuit on errors here anymore. That can leave acid stats invalid.
-          if (useDirectSql) {
-            statsMap.put(csNew.getStatsDesc().getPartName(), csNew);
-          } else {
-            result = updatePartitonColStatsInternal(t, mTable, csNew,
-                    request.getValidWriteIdList(), request.getWriteId()) && result;
-          }
-        } else if (isInvalidTxnStats) {
-          // For now because the stats state is such as it is, we will invalidate everything.
-          // Overall the sematics here are not clear - we could invalide only some columns, but does
-          // that make any physical sense? Could query affect some columns but not others?
-          part.setWriteId(request.getWriteId());
-          StatsSetupConst.clearColumnStatsState(part.getParameters());
-          StatsSetupConst.setBasicStatsState(part.getParameters(), StatsSetupConst.FALSE);
-          ms.alterPartition(catName, dbName, tableName, part.getValues(), part,
-              request.getValidWriteIdList());
-          result = false;
-        } else {
-          // TODO: why doesn't the original call for non acid tables invalidate the stats?
-          LOG.debug("All the column stats " + csNew.getStatsDesc().getPartName()
-              + " are not accurate to merge.");
-        }
-      }
-      ms.commitTransaction();
-      isCommitted = true;
-      // updatePartitionColStatsInBatch starts/commit transaction internally. As there is no write or select for update
-      // operations is done in this transaction, it is safe to commit it before calling updatePartitionColStatsInBatch.
-      if (!statsMap.isEmpty()) {
-        updatePartitionColStatsInBatch(t, statsMap,  request.getValidWriteIdList(), request.getWriteId());
-      }
+      success = AbstractRequestHandler.offer(this, req).success();
+      return success;
+    } catch (Exception e) {
+      ex = e;
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+          .convertIfInstance(IOException.class, MetaException.class)
+          .defaultMetaException();
     } finally {
-      if (!isCommitted) {
-        ms.rollbackTransaction();
-      }
+      endFunction("set_aggr_stats_for", success, ex,
+          TableName.getQualified(catName, dbName, tableName));
     }
-    return result;
-  }
-
-
-  private boolean updateTableColumnStatsWithMerge(String catName, String dbName, String tableName,
-                                                  List<String> colNames, SetPartitionsStatsRequest request) throws MetaException,
-      NoSuchObjectException, InvalidObjectException, InvalidInputException {
-    ColumnStatistics firstColStats = request.getColStats().get(0);
-    RawStore ms = getMS();
-    ms.openTransaction();
-    boolean isCommitted = false, result = false;
-    try {
-      ColumnStatistics csOld = ms.getTableColumnStatistics(catName, dbName, tableName, colNames,
-          request.getEngine(), request.getValidWriteIdList());
-      // we first use the valid stats list to prune the stats
-      boolean isInvalidTxnStats = csOld != null
-          && csOld.isSetIsStatsCompliant() && !csOld.isIsStatsCompliant();
-      if (isInvalidTxnStats) {
-        // No columns can be merged; a shortcut for getMergableCols.
-        firstColStats.setStatsObj(Lists.newArrayList());
-      } else {
-        Table t = getTable(catName, dbName, tableName);
-        MetaStoreServerUtils.getMergableCols(firstColStats, t.getParameters());
-
-        // we merge those that can be merged
-        if (csOld != null && csOld.getStatsObjSize() != 0 && !firstColStats.getStatsObj().isEmpty()) {
-          MetaStoreServerUtils.mergeColStats(firstColStats, csOld);
-        }
-      }
-
-      if (!firstColStats.getStatsObj().isEmpty()) {
-        result = updateTableColumnStatsInternal(firstColStats,
-            request.getValidWriteIdList(), request.getWriteId());
-      } else if (isInvalidTxnStats) {
-        // For now because the stats state is such as it is, we will invalidate everything.
-        // Overall the sematics here are not clear - we could invalide only some columns, but does
-        // that make any physical sense? Could query affect some columns but not others?
-        Table t = getTable(catName, dbName, tableName);
-        t.setWriteId(request.getWriteId());
-        StatsSetupConst.clearColumnStatsState(t.getParameters());
-        StatsSetupConst.setBasicStatsState(t.getParameters(), StatsSetupConst.FALSE);
-        ms.alterTable(catName, dbName, tableName, t, request.getValidWriteIdList());
-      } else {
-        // TODO: why doesn't the original call for non acid tables invalidate the stats?
-        LOG.debug("All the column stats are not accurate to merge.");
-        result = true;
-      }
-
-      ms.commitTransaction();
-      isCommitted = true;
-    } finally {
-      if (!isCommitted) {
-        ms.rollbackTransaction();
-      }
-    }
-    return result;
   }
 
   private Table getTable(String catName, String dbName, String tableName)

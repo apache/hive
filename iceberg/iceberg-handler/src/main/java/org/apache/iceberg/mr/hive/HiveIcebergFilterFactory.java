@@ -41,8 +41,10 @@ import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.expressions.UnboundTerm;
+import org.apache.iceberg.mr.hive.variant.VariantPathUtil;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.transforms.Transforms;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.DateTimeUtil;
 import org.apache.iceberg.util.NaNUtil;
@@ -110,7 +112,9 @@ public class HiveIcebergFilterFactory {
    */
   private static Expression translateLeaf(PredicateLeaf leaf) {
     TransformSpec transformSpec = TransformSpec.fromStringWithColumnName(leaf.getColumnName());
-    UnboundTerm<Object> column = SchemaUtils.toTerm(transformSpec);
+    String columnName = transformSpec.getColumnName();
+
+    UnboundTerm<Object> column = toTerm(columnName, leaf, transformSpec);
 
     switch (leaf.getOperator()) {
       case EQUALS:
@@ -139,6 +143,69 @@ public class HiveIcebergFilterFactory {
       default:
         throw new UnsupportedOperationException("Unknown operator: " + leaf.getOperator());
     }
+  }
+
+  private static UnboundTerm<Object> toTerm(String columnName, PredicateLeaf leaf, TransformSpec transformSpec) {
+    UnboundTerm<Object> column = tryVariantExtractTerm(columnName, leaf);
+    if (column != null) {
+      return column;
+    }
+    return SchemaUtils.toTerm(transformSpec);
+  }
+
+  /**
+   * Converts a shredded variant pseudo-column (e.g. {@code data.typed_value.age}) into an Iceberg variant extract term
+   * (e.g. {@code extract(data, "$.age", "long")}).
+   *
+   * <p>This enables Iceberg to prune manifests/files using variant metrics produced when variant shredding is enabled.
+   */
+  private static UnboundTerm<Object> tryVariantExtractTerm(String columnName, PredicateLeaf leaf) {
+    int typedIdx = columnName.indexOf(VariantPathUtil.TYPED_VALUE_SEGMENT);
+    if (typedIdx < 0) {
+      return null;
+    }
+
+    String variantColumn = columnName.substring(0, typedIdx);
+    String extractedPath =
+        columnName.substring(typedIdx + VariantPathUtil.TYPED_VALUE_SEGMENT.length());
+    if (variantColumn.isEmpty() || extractedPath.isEmpty()) {
+      return null;
+    }
+
+    Type.PrimitiveType icebergType = extractPrimitiveType(leaf);
+    if (icebergType == null) {
+      return null;
+    }
+
+    // Build an RFC9535 shorthand JSONPath-like path: "$.field" or "$.a.b"
+    String jsonPath = "$." + extractedPath;
+    try {
+      return Expressions.extract(variantColumn, jsonPath, icebergType.toString());
+    } catch (RuntimeException e) {
+      // Invalid path/type; fall back to normal reference handling.
+      return null;
+    }
+  }
+
+  private static Type.PrimitiveType extractPrimitiveType(PredicateLeaf leaf) {
+    // Returned types must serialize (via toString) into Iceberg primitive type strings accepted by
+    // Types.fromPrimitiveString.
+    return switch (leaf.getType()) {
+      case LONG -> Types.LongType.get();
+      case FLOAT ->
+        // Hive SARG uses FLOAT for both float/double; using double is the safest default.
+          Types.DoubleType.get();
+      case STRING -> Types.StringType.get();
+      case BOOLEAN -> Types.BooleanType.get();
+      case DATE -> Types.DateType.get();
+      case TIMESTAMP ->
+        // Iceberg timestamps are represented as micros in a long, but the Iceberg type is timestamp.
+          Types.TimestampType.withoutZone();
+      case DECIMAL ->
+        // Precision/scale are not available in the SARG leaf type.
+          null;
+      default -> null;
+    };
   }
 
   // PredicateLeafImpl has a work-around for Kryo serialization with java.util.Date objects where it converts values to
