@@ -284,7 +284,9 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
       } else {
         hasUnknownPartitions = rs.getPartitionsByExpr(catName, dbName, tblName, partitions, args);
       }
-      return new GetPartitionsResult<>(partitions, hasUnknownPartitions);
+      GetPartitionsResult result = new GetPartitionsResult<>(partitions, true);
+      result.setHasUnknownPartitions(hasUnknownPartitions);
+      return result;
     }
   }
 
@@ -311,8 +313,32 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
         TableName.getQualified(catName, dbName, tblName) + ":";
   }
 
-  public record GetPartitionsResult<T>(List<T> result, boolean success) implements Result {
+  public static class GetPartitionsResult<T> implements Result {
+    private final List<T> result;
+    private final boolean success;
+    private boolean hasUnknownPartitions;
 
+    public GetPartitionsResult(List<T> getPartsResult, boolean success) {
+      this.result = getPartsResult;
+      this.success = success;
+    }
+
+    public void setHasUnknownPartitions(boolean unknownPartitions) {
+      this.hasUnknownPartitions = unknownPartitions;
+    }
+
+    public boolean hasUnknownPartitions() {
+      return hasUnknownPartitions;
+    }
+
+    @Override
+    public boolean success() {
+      return success;
+    }
+
+    public List<T> result() {
+      return result;
+    }
   }
 
   public static class GetPartitionsRequest extends TAbstractBase {

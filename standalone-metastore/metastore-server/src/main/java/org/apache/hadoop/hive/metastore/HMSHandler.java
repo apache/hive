@@ -3176,7 +3176,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     TableName tableName = new TableName(catName, req.getDbName(), req.getTblName());
     GetPartitionsHandler.validatePartVals(this, tableName, req.getPartVals());
     List<Partition> partitions = GetPartitionsHandler.getPartitions(
-        t -> startTableFunction("get_partition_req", catName, t.getDb(), t.getCat()),
+        t -> startTableFunction("get_partition_req", catName, t.getDb(), t.getTable()),
         ex -> endFunction("get_partition_req", ex == null, ex, tableName.toString()),
         this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().part_vals(req.getPartVals()).build(),
         true);
@@ -4837,7 +4837,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     Table table = get_table_core(getTableRequest);
     List<PartitionSpec> partitionSpecs =
         MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table, result.result());
-    return new PartitionsSpecByExprResult(partitionSpecs, result.success());
+    return new PartitionsSpecByExprResult(partitionSpecs, result.hasUnknownPartitions());
   }
 
   @Override
@@ -4858,7 +4858,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
                 .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
                 .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
                 .includeParamKeyPattern(req.getIncludeParamKeyPattern()).build());
-    return new PartitionsByExprResult(result.result(), result.success());
+    return new PartitionsByExprResult(result.result(), result.hasUnknownPartitions());
   }
 
   @Override
@@ -4921,7 +4921,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     request.setEngine(gpbnr.getEngine());
     request.setGetColStats(gpbnr.isSetGet_col_stats() && gpbnr.isGet_col_stats());
     request.setProcessorId(gpbnr.getProcessorIdentifier());
-    request.setProcessorCapabilities(request.getProcessorCapabilities());
+    request.setProcessorCapabilities(gpbnr.getProcessorCapabilities());
     startTableFunction("get_partitions_by_names", tableName.getCat(), tableName.getDb(), tableName.getTable());
     Exception ex = null;
     try {
