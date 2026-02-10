@@ -54,7 +54,6 @@ import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.mr.hive.variant.VariantFilterRewriter;
 import org.apache.iceberg.mr.hive.vector.HiveIcebergVectorizedRecordReader;
-import org.apache.iceberg.mr.mapred.AbstractMapredIcebergRecordReader;
 import org.apache.iceberg.mr.mapred.Container;
 import org.apache.iceberg.mr.mapred.MapredIcebergInputFormat;
 import org.apache.iceberg.mr.mapreduce.IcebergInputFormat;
