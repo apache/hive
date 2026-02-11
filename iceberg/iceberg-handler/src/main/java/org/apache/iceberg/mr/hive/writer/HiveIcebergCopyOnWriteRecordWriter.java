@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.hadoop.io.Writable;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
@@ -42,10 +43,11 @@ class HiveIcebergCopyOnWriteRecordWriter extends HiveIcebergDefaultWriter {
   private final List<DataFile> replacedDataFiles;
 
   HiveIcebergCopyOnWriteRecordWriter(Table table, HiveFileWriterFactory writerFactory,
-      OutputFileFactory deleteFileFactory, Context context) {
+      OutputFileFactory deleteFileFactory, boolean shouldAddRowLineage, Context context) {
     super(table, writerFactory, deleteFileFactory, context);
 
-    this.rowDataTemplate = GenericRecord.create(table.schema());
+    this.rowDataTemplate = GenericRecord.create(
+        shouldAddRowLineage ? MetadataColumns.schemaWithRowLineage(table.schema()) : table.schema());
     this.replacedDataFiles = Lists.newArrayList();
   }
 

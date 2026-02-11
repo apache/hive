@@ -40,6 +40,7 @@ public class SessionStateUtil {
   public static final String DEFAULT_TABLE_LOCATION = "defaultLocation";
   public static final String MISSING_COLUMNS = "missingColumns";
   public static final String COLUMN_DEFAULTS = "columnDefaults";
+  public static final String ROW_LINEAGE = "rowLineage";
 
   private SessionStateUtil() {
   }

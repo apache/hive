@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.io;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * IOContext basically contains the position information of the current
@@ -52,6 +53,7 @@ public class IOContext {
   private  RecordIdentifier ri;
   private boolean isDeletedRecord;
   private PositionDeleteInfo pdi;
+  private RowLineageInfo rowLineageInfo;
 
   public static enum Comparison {
     GREATER,
@@ -194,6 +196,14 @@ public class IOContext {
 
   public PositionDeleteInfo getPositionDeleteInfo() {
     return pdi;
+  }
+
+  public void parseRowLineageInfo(JobConf cconfiguration) {
+    this.rowLineageInfo = RowLineageInfo.parseFromConf(cconfiguration);
+  }
+
+  public RowLineageInfo getRowLineageInfo() {
+    return rowLineageInfo;
   }
 
   public boolean isDeletedRecord() {

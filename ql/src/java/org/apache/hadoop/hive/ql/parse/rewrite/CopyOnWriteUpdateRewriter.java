@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.RowLineageUtils;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -36,6 +37,8 @@ import org.apache.hadoop.hive.ql.parse.rewrite.sql.SqlGeneratorFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.hadoop.hive.ql.metadata.RowLineageUtils.addSourceColumnsForRowLineage;
 
 public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
 
@@ -56,6 +59,8 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
   public ParseUtils.ReparseResult rewrite(Context context, UpdateStatement updateBlock)
       throws SemanticException {
 
+    boolean isRowLineageSupported =
+        org.apache.hadoop.hive.ql.metadata.RowLineageUtils.supportsRowLineage(updateBlock.getTargetTable());
     String filePathCol = HiveUtils.unparseIdentifier(VirtualColumn.FILE_PATH.getName(), conf);
     MultiInsertSqlGenerator sqlGenerator = sqlGeneratorFactory.createSqlGenerator();
 
@@ -70,7 +75,7 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
       whereClause = context.getTokenRewriteStream().toString(
           wherePredicateNode.getTokenStartIndex(), wherePredicateNode.getTokenStopIndex());
       
-      cowWithClauseBuilder.appendWith(sqlGenerator, filePathCol, whereClause);
+      cowWithClauseBuilder.appendWith(sqlGenerator, null, filePathCol, whereClause, true, isRowLineageSupported, "");
       sqlGenerator.append("insert into table ");
 
       columnOffset = sqlGenerator.getDeleteValues(Context.Operation.UPDATE).size();
@@ -102,7 +107,7 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
         setColExprs.put(columnOffset + i, setCol);
       }
     }
-
+    RowLineageUtils.setRowLineageColumns(isRowLineageSupported, sqlGenerator, conf);
     sqlGenerator.append(" from ");
     sqlGenerator.appendTargetTableName();
 
@@ -113,6 +118,7 @@ public class CopyOnWriteUpdateRewriter implements Rewriter<UpdateStatement> {
       sqlGenerator.append("\nselect ");
       sqlGenerator.appendAcidSelectColumns(Context.Operation.DELETE);
       sqlGenerator.removeLastChar();
+      addSourceColumnsForRowLineage(isRowLineageSupported, sqlGenerator, "", conf);
       sqlGenerator.append(" from ");
       sqlGenerator.appendTargetTableName();
       // Add the inverted where clause, since we want to hold the records which doesn't satisfy the condition.

@@ -41,6 +41,7 @@ import org.apache.iceberg.DeleteFile;
 import org.apache.iceberg.FileContent;
 import org.apache.iceberg.FileFormat;
 import org.apache.iceberg.FileScanTask;
+import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.ScanTask;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.Table;
@@ -79,6 +80,7 @@ public class WriterBuilder {
   // To specify whether to write the actual row data while writing the delete files.
   public static final String ICEBERG_DELETE_SKIPROWDATA = "iceberg.delete.skiprowdata";
   public static final boolean ICEBERG_DELETE_SKIPROWDATA_DEFAULT = true;
+  private boolean shouldAddRowLineageColumns = false;
 
   private WriterBuilder(Table table, UnaryOperator<String> ops) {
     this.table = table;
@@ -126,7 +128,7 @@ public class WriterBuilder {
 
     HiveFileWriterFactory writerFactory = HiveFileWriterFactory.builderFor(table)
         .dataFileFormat(context.dataFileFormat())
-        .dataSchema(table.schema())
+        .dataSchema(shouldAddRowLineageColumns ? MetadataColumns.schemaWithRowLineage(table.schema()) : table.schema())
         .deleteFileFormat(context.deleteFileFormat())
         .positionDeleteRowSchema(context.skipRowData() || !context.inputOrdered() ?
             // SortingPositionOnlyDeleteWriter doesn't support rawData in delete schema
@@ -137,7 +139,8 @@ public class WriterBuilder {
     boolean isCOW = IcebergTableUtil.isCopyOnWriteMode(operation, table.properties()::getOrDefault);
 
     if (isCOW) {
-      writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory, context);
+      writer = new HiveIcebergCopyOnWriteRecordWriter(table, writerFactory, dataFileFactory, shouldAddRowLineageColumns,
+          context);
     } else {
       writer = switch (operation) {
         case DELETE ->
@@ -207,6 +210,11 @@ public class WriterBuilder {
       return deleteFile.content() != FileContent.EQUALITY_DELETES;
     }
     return ContentFileUtil.isFileScoped(deleteFile);
+  }
+
+  public WriterBuilder addRowLineageColumns(boolean isRowLineage) {
+    this.shouldAddRowLineageColumns = isRowLineage;
+    return this;
   }
 
   static class Context {
