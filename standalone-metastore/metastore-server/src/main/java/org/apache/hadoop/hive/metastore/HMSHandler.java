@@ -23,8 +23,6 @@ import com.facebook.fb303.fb_status;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Striped;
 import org.apache.commons.collections4.CollectionUtils;
@@ -3108,38 +3106,26 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String catName = dropPartitionReq.getCatName();
     String tbl_name = dropPartitionReq.getTblName();
     List<String> part_vals = dropPartitionReq.getPartVals();
-    boolean ret = false;
-    Exception ex = null;
-    try {
-      Table t = getMS().getTable(catName, dbName, tbl_name,  null);
-      if (t == null) {
-        throw new InvalidObjectException(dbName + "." + tbl_name
-            + " table not found");
-      }
-      List<String> partNames = new ArrayList<>();
-      if (part_vals == null || part_vals.isEmpty()) {
-        part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
-      }
-      partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
-      startPartitionFunction("drop_partition_req", catName, dbName, tbl_name, part_vals);
-      LOG.info("Partition values: {}", part_vals);
-      RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
-      DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
-      request.setCatName(catName);
-      request.setIfExists(false);
-      request.setNeedResult(false);
-      request.setDeleteData(dropPartitionReq.isDeleteData());
-      request.setEnvironmentContext(dropPartitionReq.getEnvironmentContext());
-      drop_partitions_req(request);
-      return true;
-    } catch (Exception e) {
-      ex = e;
-      handleException(e).convertIfInstance(InvalidObjectException.class, NoSuchObjectException.class)
-          .rethrowException(e);
-    } finally {
-      endFunction("drop_partition_req", ret, ex, tbl_name);
+    Table t = getMS().getTable(catName, dbName, tbl_name,  null);
+    if (t == null) {
+      throw new InvalidObjectException(dbName + "." + tbl_name
+          + " table not found");
     }
-    return ret;
+    List<String> partNames = new ArrayList<>();
+    if (part_vals == null || part_vals.isEmpty()) {
+      part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
+    }
+    partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
+    LOG.info("drop_partition_req partition values: {}", part_vals);
+    RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
+    DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
+    request.setCatName(catName);
+    request.setIfExists(false);
+    request.setNeedResult(false);
+    request.setDeleteData(dropPartitionReq.isDeleteData());
+    request.setEnvironmentContext(dropPartitionReq.getEnvironmentContext());
+    drop_partitions_req(request);
+    return true;
   }
 
   /**
@@ -3150,23 +3136,15 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   @Deprecated
   public Partition get_partition(final String db_name, final String tbl_name,
                                  final List<String> part_vals) throws MetaException, NoSuchObjectException {
-    String[] parsedDbName = parseDbName(db_name, conf);
-    startPartitionFunction("get_partition", parsedDbName[CAT_NAME], parsedDbName[DB_NAME],
-        tbl_name, part_vals);
-
-    Partition ret = null;
-    Exception ex = null;
     try {
+      String[] parsedDbName = parseDbName(db_name, conf);
       GetPartitionRequest getPartitionRequest = new GetPartitionRequest(parsedDbName[DB_NAME], tbl_name, part_vals);
       getPartitionRequest.setCatName(parsedDbName[CAT_NAME]);
-      ret = get_partition_req(getPartitionRequest).getPartition();
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class).defaultMetaException();
-    } finally {
-      endFunction("get_partition", ret != null, ex, tbl_name);
+      return get_partition_req(getPartitionRequest).getPartition();
+    } catch (TException e) {
+      throw handleException(e).throwIfInstance(MetaException.class, NoSuchObjectException.class)
+          .defaultMetaException();
     }
-    return ret;
   }
 
   @Override
@@ -3182,31 +3160,6 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
         this, tableName, new GetPartitionsArgs.GetPartitionsArgsBuilder().partNames(List.of(partName)).build(),
         true);
     return new GetPartitionResponse(partitions.getFirst());
-  }
-
-  /**
-   * Fire a pre-event for read table operation, if there are any
-   * pre-event listeners registered
-   */
-  private void fireReadTablePreEvent(String catName, String dbName, String tblName)
-      throws MetaException, NoSuchObjectException {
-    if(preListeners.size() > 0) {
-      Supplier<Table> tableSupplier = Suppliers.memoize(new Supplier<Table>() {
-        @Override public Table get() {
-          try {
-            Table t = getMS().getTable(catName, dbName, tblName, null);
-            if (t == null) {
-              throw new NoSuchObjectException(TableName.getQualified(catName, dbName, tblName)
-                  + " table not found");
-            }
-            return t;
-          } catch(MetaException | NoSuchObjectException e) {
-            throw new RuntimeException(e);
-          }
-        }
-      });
-      firePreEvent(new PreReadTableEvent(tableSupplier, this));
-    }
   }
 
   /**
@@ -3434,22 +3387,10 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   public List<String> get_partition_names(final String db_name, final String tbl_name,
                                           final short max_parts) throws NoSuchObjectException, MetaException {
     String[] parsedDbName = parseDbName(db_name, conf);
-    startPartitionFunction("get_partition_names", parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name, max_parts);
-    fireReadTablePreEvent(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
-    List<String> ret = null;
-    Exception ex = null;
-    try {
-      PartitionsRequest partitionReq = new PartitionsRequest(parsedDbName[DB_NAME], tbl_name);
-      partitionReq.setCatName(parsedDbName[CAT_NAME]);
-      partitionReq.setMaxParts(max_parts);
-      ret = fetch_partition_names_req(partitionReq);
-    } catch (Exception e) {
-      ex = e;
-      throw newMetaException(e);
-    } finally {
-      endFunction("get_partition_names", ret != null, ex, tbl_name);
-    }
-    return ret;
+    PartitionsRequest partitionReq = new PartitionsRequest(parsedDbName[DB_NAME], tbl_name);
+    partitionReq.setCatName(parsedDbName[CAT_NAME]);
+    partitionReq.setMaxParts(max_parts);
+    return fetch_partition_names_req(partitionReq);
   }
 
   @Override
