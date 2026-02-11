@@ -45,14 +45,25 @@ execHiveCmd () {
   # For services that may encounter SLF4J conflicts (schemaTool, beeline),
   # filter out old SLF4J 1.x jars from HADOOP_CLASSPATH to prevent binding conflicts
   if [[ "$SERVICE" =~ ^(schemaTool|beeline)$ ]]; then
+    echo "DEBUG: Starting SLF4J conflict check for SERVICE=$SERVICE"
+    echo "DEBUG: HIVE_CONF_DIR=$HIVE_CONF_DIR"
+    echo "DEBUG: HIVE_HOME=$HIVE_HOME"
+    echo "DEBUG: Initial HADOOP_CLIENT_OPTS=$HADOOP_CLIENT_OPTS"
+
     # Force Log4j2 to use the fresh config from the build, ignoring stale /etc/hive path
     # This ensures monitorInterval=30 is actually applied even when /etc/hive exists
     if [ -f "${HIVE_CONF_DIR}/hive-log4j2.properties" ]; then
+      echo "DEBUG: Found config in HIVE_CONF_DIR"
       export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_CONF_DIR}/hive-log4j2.properties"
     elif [ -f "${HIVE_HOME}/conf/hive-log4j2.properties" ]; then
+      echo "DEBUG: Found config in HIVE_HOME/conf"
       export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_HOME}/conf/hive-log4j2.properties"
+    else
+      echo "DEBUG: No local hive-log4j2.properties found"
     fi
-    
+
+    echo "DEBUG: Final HADOOP_CLIENT_OPTS=$HADOOP_CLIENT_OPTS"
+
     # Filter HADOOP_CLASSPATH to remove paths with old SLF4J/log4j bindings
     if [ "$HADOOP_CLASSPATH" != "" ]; then
       FILTERED_CP=""
