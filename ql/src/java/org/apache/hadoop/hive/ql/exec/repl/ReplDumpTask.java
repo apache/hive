@@ -94,7 +94,6 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.metric.PreOptimizedBootstrapDum
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.FailoverMetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
-import org.apache.hadoop.hive.ql.parse.repl.metric.event.Metadata.ReplicationType;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -342,8 +341,10 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           } else {
             LOG.info("Previous Dump is not yet loaded. Skipping this iteration.");
           }
-          ReplUtils.reportStatusInReplicationMetrics(getName(), Status.SKIPPED, null, conf,
-                  work.dbNameOrPattern, work.isBootstrap() ? ReplicationType.BOOTSTRAP: ReplicationType.INCREMENTAL);
+          // Saving the executionId of last successful dump to be used in UI
+          DumpMetaData lastWrittenDmd = new DumpMetaData(previousValidHiveDumpPath, conf);
+          ReplUtils.reportStatusInReplicationMetricsWithLastExecutionId(
+                  getName(), Status.SKIPPED, lastWrittenDmd.getDumpExecutionId(), null, conf);
         }
       }
     } catch (RuntimeException e) {
@@ -940,6 +941,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     long estimatedNumEvents = evFetcher.getDbNotificationEventsCount(work.eventFrom, dbName, work.eventTo,
         maxEventLimit);
     try {
+      // Persisting the dump metadata with the execution ID early allows concurrent LOAD operations to associate
+      // with this DUMP cycle. This file will be overwritten with the final metadata in the finally block.
+      long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+      dmd.setDump(DumpType.INCREMENTAL, null, null, cmRoot, executionId, false);
+      dmd.write(true);
+
       IncrementalDumpLogger replLogger =
           new IncrementalDumpLogger(dbName, dumpRoot.toString(), estimatedNumEvents, work.eventFrom, work.eventTo,
               maxEventLimit);
@@ -1364,6 +1371,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         FileList extTableFileList = createTableFileList(dumpRoot, EximUtil.FILE_LIST_EXTERNAL, conf);
         FileList snapPathFileList = isSnapshotEnabled ? createTableFileList(
             SnapshotUtils.getSnapshotFileListPath(dumpRoot), EximUtil.FILE_LIST_EXTERNAL_SNAPSHOT_CURRENT, conf) : null) {
+      // Persisting the dump metadata with the execution ID early allows concurrent LOAD operations to associate
+      // with this DUMP cycle. This file will be overwritten with the final metadata in the finally block.
+      long executionId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
+      dmd.setDump(DumpType.BOOTSTRAP, null, null, cmRoot, executionId, false);
+      dmd.write(true);
+
       ExportService exportService = new ExportService(conf);
       for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
         LOG.debug("Dumping db: " + dbName);
