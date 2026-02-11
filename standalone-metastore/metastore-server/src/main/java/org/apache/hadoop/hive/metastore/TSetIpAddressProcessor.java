@@ -23,6 +23,7 @@ import java.net.Socket;
 
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore.Iface;
+import org.apache.hadoop.hive.metastore.handler.BaseHandler;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
@@ -56,6 +57,6 @@ public class TSetIpAddressProcessor<I extends Iface> extends ThriftHiveMetastore
   }
 
   protected void setIpAddress(final Socket inSocket) {
-    HMSHandler.setThreadLocalIpAddress(inSocket.getInetAddress().getHostAddress());
+    BaseHandler.setThreadLocalIpAddress(inSocket.getInetAddress().getHostAddress());
   }
 }

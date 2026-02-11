@@ -60,7 +60,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
 
   private final Set<String> supportedCatalogs = new HashSet<String>();
 
-  TransactionalValidationListener(Configuration conf) {
+  public TransactionalValidationListener(Configuration conf) {
     super(conf);
     supportedCatalogs.add("hive");
   }
