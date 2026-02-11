@@ -26,7 +26,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,11 +42,14 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.common.type.TimestampUtils;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -117,7 +119,7 @@ public class HiveIcebergTestUtils {
               PrimitiveObjectInspectorFactory.writableFloatObjectInspector,
               PrimitiveObjectInspectorFactory.writableDoubleObjectInspector,
               PrimitiveObjectInspectorFactory.writableDateObjectInspector,
-              PrimitiveObjectInspectorFactory.writableTimestampObjectInspector,
+              PrimitiveObjectInspectorFactory.writableTimestampTZObjectInspector,
               PrimitiveObjectInspectorFactory.writableTimestampObjectInspector,
               PrimitiveObjectInspectorFactory.writableStringObjectInspector,
               PrimitiveObjectInspectorFactory.writableBinaryObjectInspector,
@@ -182,9 +184,11 @@ public class HiveIcebergTestUtils {
         new LongWritable(record.get(2, Long.class)),
         new FloatWritable(record.get(3, Float.class)),
         new DoubleWritable(record.get(4, Double.class)),
-        new DateWritable((int) record.get(5, LocalDate.class).toEpochDay()),
-        new TimestampWritable(Timestamp.from(record.get(6, OffsetDateTime.class).toInstant())),
-        new TimestampWritable(Timestamp.valueOf(record.get(7, LocalDateTime.class))),
+        new DateWritableV2((int) record.get(5, LocalDate.class).toEpochDay()),
+        new TimestampLocalTZWritable(new TimestampTZ(record.get(6, OffsetDateTime.class)
+            .toZonedDateTime())),
+        new TimestampWritableV2(Timestamp.ofEpochSecond(record.get(7, LocalDateTime.class)
+            .toEpochSecond(ZoneOffset.UTC))),
         new Text(record.get(8, String.class)),
         new BytesWritable(record.get(9, byte[].class)),
         new BytesWritable(ByteBuffers.toByteArray(record.get(10, ByteBuffer.class))),

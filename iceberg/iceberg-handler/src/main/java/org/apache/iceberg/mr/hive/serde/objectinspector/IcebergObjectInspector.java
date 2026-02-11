@@ -27,47 +27,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.common.DynMethods;
-import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.TypeUtil;
 import org.apache.iceberg.types.Types;
 
 public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectInspector> {
-
-  // get the correct inspectors depending on whether we're working with Hive2 or Hive3 dependencies
-  // we need to do this because there is a breaking API change in Date/TimestampObjectInspector
-  // between Hive2 and Hive3
-  private static final String DATE_INSPECTOR_CLASS =
-      HiveVersion.min(HiveVersion.HIVE_3) ?
-              "org.apache.iceberg.mr.hive.serde.objectinspector.IcebergDateObjectInspectorHive3" :
-              "org.apache.iceberg.mr.hive.serde.objectinspector.IcebergDateObjectInspector";
-
-  public static final ObjectInspector DATE_INSPECTOR = DynMethods.builder("get")
-          .impl(DATE_INSPECTOR_CLASS)
-          .buildStatic()
-          .invoke();
-
-  private static final String TIMESTAMP_INSPECTOR_CLASS =
-      HiveVersion.min(HiveVersion.HIVE_3) ?
-              "org.apache.iceberg.mr.hive.serde.objectinspector.IcebergTimestampObjectInspectorHive3" :
-              "org.apache.iceberg.mr.hive.serde.objectinspector.IcebergTimestampObjectInspector";
-
-  private static final String TIMESTAMPTZ_INSPECTOR_CLASS =
-      HiveVersion.min(HiveVersion.HIVE_3) ?
-              "org.apache.iceberg.mr.hive.serde.objectinspector.IcebergTimestampWithZoneObjectInspectorHive3" :
-              "org.apache.iceberg.mr.hive.serde.objectinspector.IcebergTimestampWithZoneObjectInspector";
-
-  public static final ObjectInspector TIMESTAMP_INSPECTOR = DynMethods.builder("get")
-          .impl(TIMESTAMP_INSPECTOR_CLASS)
-          .buildStatic()
-          .invoke();
-
-  public static final ObjectInspector TIMESTAMP_INSPECTOR_WITH_TZ = DynMethods.builder("get")
-          .impl(TIMESTAMPTZ_INSPECTOR_CLASS)
-          .buildStatic()
-          .invoke();
-
   public static ObjectInspector create(@Nullable Schema schema) {
     if (schema == null) {
       return IcebergRecordObjectInspector.empty();
@@ -107,7 +71,7 @@ public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectI
         primitiveTypeInfo = TypeInfoFactory.booleanTypeInfo;
         break;
       case DATE:
-        return DATE_INSPECTOR;
+        return IcebergDateObjectInspectorHive3.get();
       case DECIMAL:
         Types.DecimalType type = (Types.DecimalType) primitiveType;
         return IcebergDecimalObjectInspector.get(type.precision(), type.scale());
@@ -132,7 +96,9 @@ public final class IcebergObjectInspector extends TypeUtil.SchemaVisitor<ObjectI
         return IcebergUUIDObjectInspector.get();
       case TIMESTAMP:
         boolean adjustToUTC = ((Types.TimestampType) primitiveType).shouldAdjustToUTC();
-        return adjustToUTC ? TIMESTAMP_INSPECTOR_WITH_TZ : TIMESTAMP_INSPECTOR;
+        return adjustToUTC ?
+            IcebergTimestampWithZoneObjectInspectorHive3.get() :
+            IcebergTimestampObjectInspectorHive3.get();
       case TIMESTAMP_NANO:
         boolean adjustUTC = ((Types.TimestampNanoType) primitiveType).shouldAdjustToUTC();
         return adjustUTC ?

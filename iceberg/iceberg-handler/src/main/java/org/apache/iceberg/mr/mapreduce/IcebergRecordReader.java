@@ -41,9 +41,7 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.ScanTaskGroup;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.Table;
 import org.apache.iceberg.avro.Avro;
-import org.apache.iceberg.common.DynMethods;
 import org.apache.iceberg.data.CachingDeleteLoader;
 import org.apache.iceberg.data.DeleteFilter;
 import org.apache.iceberg.data.DeleteLoader;
@@ -55,13 +53,13 @@ import org.apache.iceberg.data.orc.GenericOrcReader;
 import org.apache.iceberg.data.parquet.GenericParquetReaders;
 import org.apache.iceberg.encryption.EncryptedFiles;
 import org.apache.iceberg.expressions.Expression;
-import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.CloseableIterator;
 import org.apache.iceberg.io.InputFile;
 import org.apache.iceberg.mapping.NameMappingParser;
 import org.apache.iceberg.mr.hive.HiveIcebergInputFormat;
 import org.apache.iceberg.mr.hive.IcebergAcidUtil;
+import org.apache.iceberg.mr.hive.vector.HiveVectorizedReader;
 import org.apache.iceberg.orc.ORC;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
@@ -71,27 +69,6 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.PartitionUtil;
 
 public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T> {
-
-  private static final String HIVE_VECTORIZED_READER_CLASS = "org.apache.iceberg.mr.hive.vector.HiveVectorizedReader";
-  private static final DynMethods.StaticMethod HIVE_VECTORIZED_READER_BUILDER;
-
-  static {
-    if (HiveVersion.min(HiveVersion.HIVE_3)) {
-      HIVE_VECTORIZED_READER_BUILDER = DynMethods.builder("reader")
-          .impl(HIVE_VECTORIZED_READER_CLASS,
-                  Table.class,
-                  Path.class,
-                  FileScanTask.class,
-                  Map.class,
-                  TaskAttemptContext.class,
-                  Expression.class,
-                  Schema.class)
-                .buildStatic();
-    } else {
-      HIVE_VECTORIZED_READER_BUILDER = null;
-    }
-  }
-
   private Iterator<FileScanTask> tasks;
   private CloseableIterator<T> currentIterator;
   private T current;
@@ -141,15 +118,13 @@ public final class IcebergRecordReader<T> extends AbstractIcebergRecordReader<T>
     Preconditions.checkArgument(!task.file().format().equals(FileFormat.AVRO),
         "Vectorized execution is not yet supported for Iceberg avro tables. " +
         "Please turn off vectorization and retry the query.");
-    Preconditions.checkArgument(HiveVersion.min(HiveVersion.HIVE_3),
-        "Vectorized read is unsupported for Hive 2 integration.");
 
     Path path = new Path(task.file().location());
     Map<Integer, ?> idToConstant = constantsMap(task, HiveIdentityPartitionConverters::convertConstant);
     Expression residual = HiveIcebergInputFormat.residualForTask(task, getContext().getConfiguration());
 
     // TODO: We have to take care of the EncryptionManager when LLAP and vectorization is used
-    CloseableIterable<T> iterator = HIVE_VECTORIZED_READER_BUILDER.invoke(table, path, task,
+    CloseableIterable<T> iterator = (CloseableIterable<T>) HiveVectorizedReader.reader(table, path, task,
         idToConstant, getContext(), residual, readSchema);
 
     return applyResidualFiltering(iterator, residual, readSchema);

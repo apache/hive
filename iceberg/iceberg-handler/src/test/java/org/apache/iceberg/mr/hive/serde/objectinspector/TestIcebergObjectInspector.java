@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.iceberg.Schema;
-import org.apache.iceberg.hive.HiveVersion;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.types.Types;
 import org.junit.jupiter.api.Assertions;
@@ -93,13 +92,8 @@ public class TestIcebergObjectInspector {
     Assertions.assertEquals(3, dateField.getFieldID());
     Assertions.assertEquals("date_field", dateField.getFieldName());
     Assertions.assertEquals("date comment", dateField.getFieldComment());
-    if (HiveVersion.min(HiveVersion.HIVE_3)) {
-      Assertions.assertEquals("org.apache.iceberg.mr.hive.serde.objectinspector.IcebergDateObjectInspectorHive3",
-          dateField.getFieldObjectInspector().getClass().getName());
-    } else {
-      Assertions.assertEquals("org.apache.iceberg.mr.hive.serde.objectinspector.IcebergDateObjectInspector",
-          dateField.getFieldObjectInspector().getClass().getName());
-    }
+    Assertions.assertEquals("org.apache.iceberg.mr.hive.serde.objectinspector.IcebergDateObjectInspectorHive3",
+        dateField.getFieldObjectInspector().getClass().getName());
 
     // decimal
     StructField decimalField = soi.getStructFieldRef("decimal_field");
