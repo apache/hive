@@ -313,6 +313,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     tableDesc.getProperties().put(InputFormatConfig.OPERATION_TYPE_PREFIX + tableDesc.getTableName(), opType);
     SessionStateUtil.getResource(conf, SessionStateUtil.MISSING_COLUMNS)
         .ifPresent(cols -> map.put(SessionStateUtil.MISSING_COLUMNS, String.join(",", (HashSet<String>) cols)));
+    SessionStateUtil.getResource(conf, SessionStateUtil.ROW_LINEAGE)
+        .ifPresent(v -> map.put(SessionStateUtil.ROW_LINEAGE, v.toString()));
 
   }
 
@@ -1807,6 +1809,11 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
   @Override
   public boolean areSnapshotsSupported() {
     return true;
+  }
+
+  @Override
+  public boolean supportsRowLineage(Map<String, String> tableProperties) {
+    return IcebergTableUtil.supportsRowLineage(tableProperties);
   }
 
   @Override

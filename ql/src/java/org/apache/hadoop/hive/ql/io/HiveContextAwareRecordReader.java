@@ -134,6 +134,7 @@ public abstract class HiveContextAwareRecordReader<K extends WritableComparable,
         } else {
           ioCxtRef.parseRecordIdentifier(jobConf);
           ioCxtRef.parsePositionDeleteInfo(jobConf);
+          ioCxtRef.parseRowLineageInfo(jobConf);
         }
       }
       return retVal;

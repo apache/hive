@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -64,10 +65,12 @@ public class HiveIcebergOutputFormat implements OutputFormat<NullWritable, Conta
     // It gets the config from the FileSinkOperator which has its own config for every target table
     Table table = HiveTableUtil.deserializeTable(jc, jc.get(hive_metastoreConstants.META_TABLE_NAME));
     setWriterLevelConfiguration(jc, table);
+    boolean shouldAddRowLineageColumns = jc.getBoolean(SessionStateUtil.ROW_LINEAGE, false);
 
     return WriterBuilder.builderFor(table, jc::get)
         .queryId(jc.get(HiveConf.ConfVars.HIVE_QUERY_ID.varname))
         .attemptID(taskAttemptID)
+        .addRowLineageColumns(shouldAddRowLineageColumns)
         .build();
   }
 

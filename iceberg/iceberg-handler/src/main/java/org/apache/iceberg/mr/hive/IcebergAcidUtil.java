@@ -27,6 +27,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.PositionDeleteInfo;
+import org.apache.hadoop.hive.ql.io.RowLineageInfo;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.MetadataColumns;
@@ -39,6 +40,7 @@ import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.io.CloseableIterator;
+import org.apache.iceberg.mr.mapreduce.RowLineageReader;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.types.Types;
@@ -71,6 +73,9 @@ public class IcebergAcidUtil {
     VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.PARTITION_HASH.getName(), PARTITION_STRUCT_META_COL);
     VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.FILE_PATH.getName(), MetadataColumns.FILE_PATH);
     VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.ROW_POSITION.getName(), MetadataColumns.ROW_POSITION);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.ROW_LINEAGE_ID.getName(), MetadataColumns.ROW_ID);
+    VIRTUAL_COLS_TO_META_COLS.put(VirtualColumn.LAST_UPDATED_SEQUENCE_NUMBER.getName(),
+        MetadataColumns.LAST_UPDATED_SEQUENCE_NUMBER);
   }
 
   private static final Types.NestedField PARTITION_HASH_META_COL = Types.NestedField.required(
@@ -248,6 +253,8 @@ public class IcebergAcidUtil {
           IcebergAcidUtil.parseFilePath(rec),
           IcebergAcidUtil.parseFilePosition(rec),
           StringUtils.EMPTY);
+      RowLineageInfo.setRowLineageInfoIntoConf(RowLineageReader.readRowId(rec),
+          RowLineageReader.readLastUpdatedSequenceNumber(rec), conf);
       return (T) current;
     }
   }

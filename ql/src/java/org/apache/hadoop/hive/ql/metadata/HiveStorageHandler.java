@@ -791,6 +791,14 @@ public interface HiveStorageHandler extends Configurable {
   }
 
   /**
+   * Gets whether this storage handler supports row lineage.
+   * @return true means row lineage is supported false otherwise
+   */
+  default boolean supportsRowLineage(Map<String, String> table) {
+    return false;
+  }
+
+  /**
    * Query the most recent unique snapshot's context of the passed table.
    * @param table - {@link org.apache.hadoop.hive.ql.metadata.Table} which snapshot context should be returned.
    * @return {@link SnapshotContext} wraps the snapshotId or null if no snapshot present.
