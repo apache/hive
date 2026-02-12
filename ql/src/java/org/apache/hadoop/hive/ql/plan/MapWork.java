@@ -658,8 +658,18 @@ public class MapWork extends BaseWork {
   @Override
   public void configureJobConf(JobConf job) {
     super.configureJobConf(job);
+    // Configure each table only once, even if we read thousands of its partitions.
+    // This avoids repeating expensive work (like loading storage drivers) for every single partition.
+    Set<TableDesc> processedTables = new HashSet<>();
+
     for (PartitionDesc partition : aliasToPartnInfo.values()) {
-      PlanUtils.configureJobConf(partition.getTableDesc(), job);
+      TableDesc tableDesc = partition.getTableDesc();
+
+      // If we haven't seen this table before, configure it and remember it.
+      // If we have seen it, skip it.
+      if (tableDesc != null && processedTables.add(tableDesc)) {
+        PlanUtils.configureJobConf(tableDesc, job);
+      }
     }
     Collection<Operator<?>> mappers = aliasToWork.values();
     for (IConfigureJobConf icjc : OperatorUtils.findOperators(mappers, IConfigureJobConf.class)) {
