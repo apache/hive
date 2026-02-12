@@ -492,7 +492,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private static double rangedSelectivity(KllFloatsSketch kll, float val1, float val2) {
     float[] splitPoints = new float[] { val1, val2 };
     double[] boundaries = kll.getCDF(splitPoints, QuantileSearchCriteria.EXCLUSIVE);
-    return boundaries[1] - boundaries[0];
+    // due to the way the KLL sketch is constructed,
+    // it is not possible to differentiate selectivity values below the error
+    // (e.g., if the error is 2%, a real selectivity of 1.5% might be estimated as 0% by KLL)
+    double normalizedRankError = kll.getNormalizedRankError(false);
+    return Math.max(boundaries[1] - boundaries[0], normalizedRankError);
   }
 
   /**
