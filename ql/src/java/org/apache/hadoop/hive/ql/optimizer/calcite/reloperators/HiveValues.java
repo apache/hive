@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.reloperators;
 import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Values;
 import org.apache.calcite.rel.type.RelDataType;
@@ -39,6 +40,10 @@ public class HiveValues extends Values implements HiveRelNode {
   public HiveValues(RelOptCluster cluster, RelDataType rowType, ImmutableList<ImmutableList<RexLiteral>> tuples,
                     RelTraitSet traits) {
     super(cluster, rowType, tuples, traits);
+  }
+
+  public HiveValues(RelInput input) {
+    super(input);
   }
 
   @Override

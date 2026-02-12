@@ -24,6 +24,7 @@ import java.util.Set;
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Aggregate;
@@ -32,12 +33,15 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
+import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttle;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 
 public class HiveAggregate extends Aggregate implements HiveRelNode {
 
@@ -49,6 +53,30 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
       List<AggregateCall> aggCalls) {
     super(cluster, TraitsUtil.getDefaultTraitSet(cluster), child, false,
             groupSet, groupSets, aggCalls);
+  }
+
+  public HiveAggregate(RelInput input) {
+    this(
+        input.getCluster(),
+        input.getTraitSet(),
+        input.getInput(),
+        input.getBitSet("group"),
+        input.getBitSetList("groups"),
+        input.getAggregateCalls("aggs")
+            .stream()
+            .map(call -> HiveAggregate.replaceAggFunction(input.getInput().getRowType(), call))
+            .toList());
+  }
+
+  private static AggregateCall replaceAggFunction(RelDataType rowType, AggregateCall aggCall) {
+    // Fix the return type of the agg function
+    SqlAggFunction aggFunction = SqlFunctionConverter.getCalciteAggFn(
+        aggCall.getAggregation().getName(),
+        SqlTypeUtil.projectTypes(rowType, aggCall.getArgList()),
+        aggCall.getType());
+    return AggregateCall.create(aggFunction, aggCall.isDistinct(), aggCall.isApproximate(), aggCall.ignoreNulls(),
+        aggCall.getArgList(), aggCall.filterArg, aggCall.distinctKeys, aggCall.getCollation(), aggCall.getType(),
+        aggCall.getName());
   }
 
   @Override
