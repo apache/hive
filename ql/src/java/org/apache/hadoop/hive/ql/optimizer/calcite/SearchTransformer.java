@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.rel.type.RelDataType;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
@@ -26,6 +27,7 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.RangeSets;
 import org.apache.calcite.util.Sarg;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -95,6 +97,12 @@ public class SearchTransformer<C extends Comparable<C>> {
     }
     orList.addAll(consumer.nodes);
     RexNode x = RexUtil.composeDisjunction(rexBuilder, orList);
+    if (unknownContext == RexUnknownAs.UNKNOWN) {
+      RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+      RelDataType booleanType = typeFactory.createTypeWithNullability(
+              typeFactory.createSqlType(SqlTypeName.BOOLEAN), type.isNullable());
+      x = rexBuilder.makeCast(booleanType, x, true);
+    }
 
     if (sarg.nullAs == RexUnknownAs.FALSE && unknownContext != RexUnknownAs.FALSE) {
       RexNode notNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, ref);

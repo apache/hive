@@ -1,0 +1,72 @@
+PREHOOK: query: CREATE TABLE main_table (
+    id_col STRING,
+    join_key STRING,
+    int_col_to_test INT,
+    misc_attr STRING
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@main_table
+POSTHOOK: query: CREATE TABLE main_table (
+    id_col STRING,
+    join_key STRING,
+    int_col_to_test INT,
+    misc_attr STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@main_table
+PREHOOK: query: CREATE TABLE lookup_table (
+    lookup_key STRING,
+    replacement_val INT
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@lookup_table
+POSTHOOK: query: CREATE TABLE lookup_table (
+    lookup_key STRING,
+    replacement_val INT
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@lookup_table
+PREHOOK: query: EXPLAIN CBO
+SELECT
+    CASE
+        WHEN base.int_col_to_test IS NULL
+             OR base.int_col_to_test = ''
+             OR base.int_col_to_test = 0
+        THEN COALESCE(lkup.replacement_val, 0)
+        ELSE base.int_col_to_test
+    END AS final_calculated_column
+FROM main_table base
+JOIN lookup_table lkup ON base.join_key = lkup.lookup_key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@lookup_table
+PREHOOK: Input: default@main_table
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT
+    CASE
+        WHEN base.int_col_to_test IS NULL
+             OR base.int_col_to_test = ''
+             OR base.int_col_to_test = 0
+        THEN COALESCE(lkup.replacement_val, 0)
+        ELSE base.int_col_to_test
+    END AS final_calculated_column
+FROM main_table base
+JOIN lookup_table lkup ON base.join_key = lkup.lookup_key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@lookup_table
+POSTHOOK: Input: default@main_table
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(final_calculated_column=[CASE($2, $4, $1)])
+  HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(join_key=[$1], int_col_to_test=[$2], EXPR$0=[CAST(OR(IS NULL($2), =($2, 0))):BOOLEAN NOT NULL])
+      HiveFilter(condition=[IS NOT NULL($1)])
+        HiveTableScan(table=[[default, main_table]], table:alias=[base])
+    HiveProject(lookup_key=[$0], EXPR$0=[CASE(IS NOT NULL($1), $1, 0)])
+      HiveFilter(condition=[IS NOT NULL($0)])
+        HiveTableScan(table=[[default, lookup_table]], table:alias=[lkup])
+
