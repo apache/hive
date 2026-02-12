@@ -1107,7 +1107,15 @@ public class HiveRelOptUtil extends RelOptUtil {
     Set<Integer> needed = new HashSet<>();
     for (RelFieldCollation fc : sortCollation.getFieldCollations()) {
       needed.add(fc.getFieldIndex());
-      final RexNode node = project.getProjects().get(map.getTarget(fc.getFieldIndex()));
+      int target;
+      try {
+        target = map.getTarget(fc.getFieldIndex());
+      } catch (Mappings.NoElementException e) {
+        // If there is no mapping for this field, we cannot push down the sort
+        LOG.error("Missing target mapping: {}", e.toString());
+        return null;
+      }
+      final RexNode node = project.getProjects().get(target);
       if (node.isA(SqlKind.CAST)) {
         // Check whether it is a monotonic preserving cast, otherwise we cannot push
         final RexCall cast = (RexCall) node;
