@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.client;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.utils.FilterUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.RetryingExecutor;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -91,6 +93,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.createThriftPartitionsReq;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
@@ -675,8 +678,6 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
 
   private void open() throws MetaException {
     isConnected = false;
-    TTransportException tte = null;
-    MetaException recentME = null;
     boolean useSSL = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_SSL);
     boolean useSasl = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL);
     String clientAuthMode = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.METASTORE_CLIENT_AUTH_MODE);
@@ -688,91 +689,63 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
     if (clientAuthMode != null) {
       usePasswordAuth = "PLAIN".equalsIgnoreCase(clientAuthMode);
     }
-
-    for (int attempt = 0; !isConnected && attempt < retries; ++attempt) {
-      for (URI store : metastoreUris) {
-        LOG.info("Trying to connect to metastore with URI ({}) in {} transport mode", store,
-            transportMode);
-        try {
-          try {
-            if (isHttpTransportMode) {
-              transport = createHttpClient(store, useSSL);
-            } else {
-              transport = createBinaryClient(store, useSSL);
-            }
-          } catch (TTransportException te) {
-            tte = te;
-            throw new MetaException(te.toString());
+    AtomicReference<Throwable> recentEx = new AtomicReference<>();
+    Predicate<Throwable> retryPolicy = ex -> {
+      recentEx.set(ex);
+      return !isConnected && (ex instanceof MetaException || ex instanceof TTransportException);
+    };
+    AtomicInteger inx = new AtomicInteger(0);
+    isConnected = new RetryingExecutor<>(retries * metastoreUris.length, () -> {
+      URI store = metastoreUris[inx.getAndIncrement() % metastoreUris.length];
+      LOG.info("Trying to connect to metastore with URI ({}) in {} transport mode", store, transportMode);
+      if (isHttpTransportMode) {
+        transport = createHttpClient(store, useSSL);
+      } else {
+        transport = createBinaryClient(store, useSSL);
+      }
+      final TProtocol protocol;
+      if (useCompactProtocol) {
+        protocol = new TCompactProtocol(transport);
+      } else {
+        protocol = new TBinaryProtocol(transport);
+      }
+      client = new ThriftHiveMetastore.Client(protocol);
+      if (!transport.isOpen()) {
+        transport.open();
+        final int newCount = connCount.incrementAndGet();
+        if (useSSL) {
+          LOG.info(
+              "Opened an SSL connection to metastore, current connections: {}",
+              newCount);
+          if (LOG.isTraceEnabled()) {
+            LOG.trace("METASTORE SSL CONNECTION TRACE - open [{}]",
+                System.identityHashCode(this), new Exception());
           }
-
-          final TProtocol protocol;
-          if (useCompactProtocol) {
-            protocol = new TCompactProtocol(transport);
-          } else {
-            protocol = new TBinaryProtocol(transport);
+        } else {
+          LOG.info("Opened a connection to metastore, URI ({}) "
+              + "current connections: {}", store, newCount);
+          if (LOG.isTraceEnabled()) {
+            LOG.trace("METASTORE CONNECTION TRACE - open [{}]",
+                System.identityHashCode(this), new Exception());
           }
-          client = new ThriftHiveMetastore.Client(protocol);
-          try {
-            if (!transport.isOpen()) {
-              transport.open();
-              final int newCount = connCount.incrementAndGet();
-              if (useSSL) {
-                LOG.info(
-                    "Opened an SSL connection to metastore, current connections: {}",
-                    newCount);
-                if (LOG.isTraceEnabled()) {
-                  LOG.trace("METASTORE SSL CONNECTION TRACE - open [{}]",
-                      System.identityHashCode(this), new Exception());
-                }
-              } else {
-                LOG.info("Opened a connection to metastore, URI ({}) "
-                    + "current connections: {}", store, newCount);
-                if (LOG.isTraceEnabled()) {
-                  LOG.trace("METASTORE CONNECTION TRACE - open [{}]",
-                      System.identityHashCode(this), new Exception());
-                }
-              }
-            }
-            isConnected = true;
-          } catch (TTransportException e) {
-            tte = e;
-            String errMsg = String.format("Failed to connect to the MetaStore Server URI (%s) in %s "
-                + "transport mode",   store, transportMode);
-            LOG.warn(errMsg);
-            LOG.debug(errMsg, e);
-          }
-
-          if (isConnected && !useSasl && !usePasswordAuth && !isHttpTransportMode &&
-              MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI)) {
-            // Call set_ugi, only in unsecure mode.
-            try {
-              UserGroupInformation ugi = SecurityUtils.getUGI();
-              client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
-            } catch (IOException e) {
-              LOG.warn("Failed to find ugi of client set_ugi() is not successful, Continuing without it.", e);
-            } catch (TException e) {
-              LOG.warn("set_ugi() not successful, Likely cause: new client talking to old server. "
-                  + "Continuing without it.", e);
-            }
-          }
-        } catch (MetaException e) {
-          recentME = e;
-          String errMsg = "Failed to connect to metastore with URI (" + store
-              + ") transport mode:" + transportMode + " in attempt " + attempt;
-          LOG.error(errMsg, e);
-        }
-        if (isConnected) {
-          // Set the beeline session modified metaConfVars for new HMS connection
-          overlaySessionModifiedMetaConf();
-          break;
         }
       }
-      // Wait before launching the next round of connection retries.
-      if (!isConnected && retryDelaySeconds > 0) {
-        try {
-          LOG.info("Waiting " + retryDelaySeconds + " seconds before next connection attempt.");
-          Thread.sleep(retryDelaySeconds * 1000);
-        } catch (InterruptedException ignore) {}
+      return true;
+    }).sleepInterval(retryDelaySeconds * 1000)
+        .commandName("open")
+        .onRetry(retryPolicy).runWithMetaException();
+
+    if (!useSasl && !usePasswordAuth && !isHttpTransportMode &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.EXECUTE_SET_UGI)) {
+      // Call set_ugi, only in unsecure mode.
+      try {
+        UserGroupInformation ugi = SecurityUtils.getUGI();
+        client.set_ugi(ugi.getUserName(), Arrays.asList(ugi.getGroupNames()));
+      } catch (IOException e) {
+        LOG.warn("Failed to find ugi of client set_ugi() is not successful, Continuing without it.", e);
+      } catch (TException e) {
+        LOG.warn("set_ugi() not successful, Likely cause: new client talking to old server. "
+            + "Continuing without it.", e);
       }
     }
 
@@ -781,15 +754,14 @@ public class ThriftHiveMetaStoreClient extends BaseMetaStoreClient {
       // be null. When MetaException wraps TTransportException, tte will be set so stringify that
       // directly.
       String exceptionString = "Unknown exception";
-      if (tte != null) {
-        exceptionString = StringUtils.stringifyException(tte);
-      } else if (recentME != null) {
-        exceptionString = StringUtils.stringifyException(recentME);
+      if (recentEx.get() != null) {
+        exceptionString = StringUtils.stringifyException(recentEx.get());
       }
       throw new MetaException("Could not connect to meta store using any of the URIs provided." +
           " Most recent failure: " + exceptionString);
     }
-
+    // Set the beeline session modified metaConfVars for new HMS connection
+    overlaySessionModifiedMetaConf();
     snapshotActiveConf();
   }
 
