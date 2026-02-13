@@ -19,33 +19,22 @@
 
 package org.apache.iceberg.mr.hive.test.concurrent;
 
-import java.io.IOException;
-import java.util.List;
-import org.apache.hadoop.hive.ql.Context;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.iceberg.hive.HiveTxnCoordinator;
 import org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter;
-import org.apache.iceberg.mr.hive.HiveIcebergStorageHandler;
 
-public class HiveIcebergStorageHandlerStub extends HiveIcebergStorageHandler {
+public class XAHiveIcebergStorageHandlerStub extends HiveIcebergStorageHandlerStub {
 
   @Override
   public HiveIcebergOutputCommitter getOutputCommitter() {
+    HiveTxnManager txnManager = SessionState.get().getTxnMgr();
 
-    return new HiveIcebergOutputCommitter() {
+    txnManager.getOrSetTxnCoordinator(
+        HiveTxnCoordinator.class,
+        msClient -> new XAHiveTxnCoordinatorStub(conf, msClient));
 
-      @Override
-      public void commitJobs(List<JobContext> contexts, Context.Operation operation) throws IOException {
-        PhaserCommitDecorator.execute(
-            () -> super.commitJobs(contexts, operation));
-      }
-    };
+    return super.getOutputCommitter();
   }
 
-  @Override
-  public void validateCurrentSnapshot(TableDesc tableDesc) {
-    super.validateCurrentSnapshot(tableDesc);
-    // Notify the phaser that the snapshot validation has completed, allowing waiting threads to proceed
-    PhaserCommitDecorator.onSnapshotValidated();
-  }
 }

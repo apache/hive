@@ -1131,7 +1131,7 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
 
   @Override
   public HiveIcebergOutputCommitter getOutputCommitter() {
-    return new HiveIcebergOutputCommitter(conf);
+    return new HiveIcebergOutputCommitter();
   }
 
   @Override
