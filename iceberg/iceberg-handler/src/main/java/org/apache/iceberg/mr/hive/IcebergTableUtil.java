@@ -187,7 +187,7 @@ public class IcebergTableUtil {
       return tableLoadFunc.apply(null);
     } else {
       return SessionStateUtil.getResource(configuration, tableIdentifier)
-          .filter(Table.class::isInstance) // cleaner than instanceof lambda
+          .filter(Table.class::isInstance)
           .map(Table.class::cast)
           .map(tbl -> Optional.ofNullable(IcebergAcidUtil.getTransaction(tbl))
               .map(Transaction::table)

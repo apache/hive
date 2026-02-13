@@ -17,39 +17,21 @@
  * under the License.
  */
 
-package org.apache.iceberg.hive;
+package org.apache.iceberg.mr.hive.test.concurrent;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.iceberg.ClientPool;
-import org.apache.iceberg.TableMetadata;
-import org.apache.iceberg.io.FileIO;
+import org.apache.iceberg.hive.HiveTxnCoordinator;
 import org.apache.thrift.TException;
 
-/**
- * TableOperations that only writes metadata files during commit.
- * Skips HMS reads, locking, and persistence — all handled by the coordinator.
- */
-public class StagingTableOperations extends HiveTableOperations {
+public class XAHiveTxnCoordinatorStub extends HiveTxnCoordinator {
 
-  private String newMetadataLocation;
-
-  public StagingTableOperations(
-      Configuration conf,
-      ClientPool<IMetaStoreClient, TException> metaClients,
-      FileIO fileIO,
-      String catalogName,
-      String database,
-      String table) {
-    super(conf, metaClients, fileIO, catalogName, database, table);
+  public XAHiveTxnCoordinatorStub(Configuration conf, IMetaStoreClient msClient) {
+    super(conf, msClient);
   }
 
   @Override
-  protected void doCommit(TableMetadata base, TableMetadata metadata) {
-    newMetadataLocation = writeNewMetadataIfRequired(base == null, metadata);
-  }
-
-  public String metadataLocation() {
-    return newMetadataLocation;
+  public void commit() throws TException {
+    PhaserCommitDecorator.execute(super::commit);
   }
 }

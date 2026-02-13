@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.io.RowLineageInfo;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.session.SessionStateUtil;
 import org.apache.iceberg.ContentFile;
 import org.apache.iceberg.MetadataColumns;
 import org.apache.iceberg.PartitionKey;
@@ -227,6 +228,13 @@ public class IcebergAcidUtil {
     HiveTxnManager txnManager = Optional.ofNullable(SessionState.get())
         .map(SessionState::getTxnMgr).orElse(null);
     if (txnManager == null) {
+      return table.newTransaction();
+    }
+    boolean isExplicitTxnOpen = txnManager.isTxnOpen() && !txnManager.isImplicitTransactionOpen(null);
+    int outputCount = SessionStateUtil.getOutputTableCount(conf)
+        .orElse(1);
+
+    if (!isExplicitTxnOpen && outputCount < 2) {
       return table.newTransaction();
     }
     HiveTxnCoordinator txnCoordinator = txnManager.getOrSetTxnCoordinator(

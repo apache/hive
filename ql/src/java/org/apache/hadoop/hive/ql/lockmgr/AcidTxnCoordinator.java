@@ -43,7 +43,7 @@ public class AcidTxnCoordinator implements TxnCoordinator {
   private final HiveConf conf;
   private final IMetaStoreClient msClient;
   private final String replPolicy;
-  private final long txnId;
+  private long txnId;
 
   public AcidTxnCoordinator(
       HiveConf conf, IMetaStoreClient msClient, String replPolicy, long txnId) {
@@ -62,23 +62,35 @@ public class AcidTxnCoordinator implements TxnCoordinator {
       commitTxnRequest.setReplPolicy(replPolicy);
       commitTxnRequest.setTxn_type(TxnType.DEFAULT);
     }
-    msClient.commitTxn(commitTxnRequest);
+    try {
+      msClient.commitTxn(commitTxnRequest);
+    } finally {
+      resetTxnInfo();
+    }
   }
 
   @Override
   public void rollback() throws TException {
     LOG.debug("Rolling back {}", JavaUtils.txnIdToString(txnId));
-    if (replPolicy != null) {
-      msClient.replRollbackTxn(txnId, replPolicy, TxnType.DEFAULT);
-    } else {
-      AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnId);
-      abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_ROLLBACK.getErrorCode());
-      msClient.rollbackTxn(abortTxnRequest);
+    try {
+      if (replPolicy != null) {
+        msClient.replRollbackTxn(txnId, replPolicy, TxnType.DEFAULT);
+      } else {
+        AbortTxnRequest abortTxnRequest = new AbortTxnRequest(txnId);
+        abortTxnRequest.setErrorCode(TxnErrorMsg.ABORT_ROLLBACK.getErrorCode());
+        msClient.rollbackTxn(abortTxnRequest);
+      }
+    } finally {
+      resetTxnInfo();
     }
   }
 
   private boolean isTxnOpen() {
     return txnId > 0;
+  }
+
+  private void resetTxnInfo() {
+    txnId = 0;
   }
 
   @Override

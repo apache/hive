@@ -21,41 +21,55 @@ package org.apache.iceberg.hive;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.TxnCoordinator;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
-import org.apache.iceberg.BaseMetastoreOperations;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.iceberg.BaseTable;
+import org.apache.iceberg.BlobMetadata;
 import org.apache.iceberg.HiveTransaction;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.Transaction;
+import org.apache.iceberg.exceptions.CleanableFailure;
+import org.apache.iceberg.exceptions.CommitFailedException;
+import org.apache.iceberg.exceptions.CommitStateUnknownException;
+import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.util.Tasks;
 import org.apache.thrift.TException;
+
+import static org.apache.iceberg.TableProperties.COMMIT_MAX_RETRY_WAIT_MS;
+import static org.apache.iceberg.TableProperties.COMMIT_MAX_RETRY_WAIT_MS_DEFAULT;
+import static org.apache.iceberg.TableProperties.COMMIT_MIN_RETRY_WAIT_MS;
+import static org.apache.iceberg.TableProperties.COMMIT_MIN_RETRY_WAIT_MS_DEFAULT;
+import static org.apache.iceberg.TableProperties.COMMIT_NUM_RETRIES;
+import static org.apache.iceberg.TableProperties.COMMIT_NUM_RETRIES_DEFAULT;
+import static org.apache.iceberg.TableProperties.COMMIT_TOTAL_RETRY_TIME_MS;
+import static org.apache.iceberg.TableProperties.COMMIT_TOTAL_RETRY_TIME_MS_DEFAULT;
 
 /**
  * Transaction coordinator that aggregates Iceberg table commits and performs atomic HMS updates
  * across multiple tables using {@code updateTableParams}.
  */
-public final class HiveTxnCoordinator implements TxnCoordinator {
+public class HiveTxnCoordinator implements TxnCoordinator {
 
   private final Configuration conf;
   private final IMetaStoreClient msClient;
 
-  private final Map<String, HiveTransaction> stagedCommits = Maps.newConcurrentMap();
+  private final Map<String, HiveTransaction> stagedUpdates = Maps.newConcurrentMap();
 
   public HiveTxnCoordinator(Configuration conf, IMetaStoreClient msClient) {
     this.conf = conf;
     this.msClient = msClient;
-  }
-
-  @Override
-  public boolean hasPendingWork() {
-    return !stagedCommits.isEmpty();
   }
 
   public Transaction getOrCreateTransaction(org.apache.iceberg.Table table) {
@@ -67,25 +81,52 @@ public final class HiveTxnCoordinator implements TxnCoordinator {
         baseTable.operations() instanceof HiveTableOperations ops)) {
       return table.newTransaction();
     }
-    return stagedCommits.computeIfAbsent(
+    return stagedUpdates.computeIfAbsent(
         table.name(), ignored -> new HiveTransaction(table, ops));
   }
 
   public Transaction getTransaction(org.apache.iceberg.Table table) {
-    return stagedCommits.get(table.name());
+    return stagedUpdates.get(table.name());
   }
 
   @Override
   public synchronized void commit() throws TException {
-    if (stagedCommits.isEmpty()) {
+    if (stagedUpdates.isEmpty()) {
       return;
     }
 
-    // Sort commits by table name for deterministic ordering
-    List<Map.Entry<String, HiveTransaction>> updates = Lists.newArrayList(stagedCommits.entrySet());
+    List<Map.Entry<String, HiveTransaction>> updates = Lists.newArrayList(stagedUpdates.entrySet());
     updates.sort(Map.Entry.comparingByKey());
 
-    attemptCommit(updates);
+    TableMetadata base = updates.getFirst().getValue()
+        .startMetadata();
+
+    try {
+      Tasks.foreach(1)
+          .retry(base.propertyAsInt(COMMIT_NUM_RETRIES, COMMIT_NUM_RETRIES_DEFAULT))
+          .exponentialBackoff(
+              base.propertyAsInt(COMMIT_MIN_RETRY_WAIT_MS, COMMIT_MIN_RETRY_WAIT_MS_DEFAULT),
+              base.propertyAsInt(COMMIT_MAX_RETRY_WAIT_MS, COMMIT_MAX_RETRY_WAIT_MS_DEFAULT),
+              base.propertyAsInt(COMMIT_TOTAL_RETRY_TIME_MS, COMMIT_TOTAL_RETRY_TIME_MS_DEFAULT),
+              2.0 /* exponential */)
+          .onlyRetryOn(CommitFailedException.class)
+          .run(i -> doCommit(updates));
+
+    } catch (CommitStateUnknownException e) {
+      throw MetaStoreUtils.newMetaException(e);
+
+    } catch (ValidationException | CommitFailedException e) {
+      // All retries exhausted — clean up manifests, metadata files, and uncommitted files
+      cleanUpOnCommitFailure(e);
+      throw MetaStoreUtils.newMetaException(e);
+
+    } catch (RuntimeException e) {
+      cleanUpOnCommitFailure(e);
+      throw e;
+
+    } finally {
+      clearState();
+    }
   }
 
   @Override
@@ -93,8 +134,88 @@ public final class HiveTxnCoordinator implements TxnCoordinator {
     clearState();
   }
 
-  private void clearState() {
-    stagedCommits.clear();
+  @Override
+  public boolean hasPendingWork() {
+    return !stagedUpdates.isEmpty();
+  }
+
+  private void doCommit(List<Map.Entry<String, HiveTransaction>> updates) {
+    List<TableParamsUpdate> payload = Lists.newArrayList();
+    List<HiveLock> locks = Lists.newArrayList();
+
+    try {
+      for (Map.Entry<String, HiveTransaction> entry : updates) {
+        HiveTransaction hiveTxn = entry.getValue();
+
+        // 1. WRITE: stage transaction (writes metadata file only)
+        hiveTxn.commitTransaction();
+
+        TableMetadata base = hiveTxn.startMetadata();
+        HiveTableOperations ops = hiveTxn.ops();
+
+        // 2. LOCK
+        HiveLock lock = ops.lockObject(base);
+        lock.lock();
+        locks.add(lock);
+
+        // 3. VERIFY under lock: refresh from HMS via original ops
+        TableMetadata current = ops.refresh();
+
+        if (!Objects.equals(base.metadataFileLocation(), current.metadataFileLocation())) {
+          throw new CommitFailedException(
+              "Base metadata location '%s' is not same as the current table metadata location '%s' for %s",
+              base.metadataFileLocation(), current.metadataFileLocation(), entry.getKey());
+        }
+
+        // 4. Build payload using staged metadata
+        TableParamsUpdate paramsUpdate = buildTableParamsUpdate(
+            base, hiveTxn.currentMetadata(), ops, hiveTxn.stagingOps().metadataLocation());
+        payload.add(paramsUpdate);
+      }
+
+      // 5. PERSIST: batch commit (CAS guaranteed to pass — verified under lock)
+      locks.forEach(HiveLock::ensureActive);
+      msClient.updateTableParams(payload);
+
+      // Verify locks still active after persist — if lost, commit state is unknown
+      try {
+        locks.forEach(HiveLock::ensureActive);
+      } catch (LockException le) {
+        throw new CommitStateUnknownException(
+            "Failed to heartbeat for hive lock while committing changes. " +
+            "This can lead to a concurrent commit attempt be able to overwrite this commit. " +
+            "Please check the commit history. If you are running into this issue, try reducing " +
+            "iceberg.hive.lock-heartbeat-interval-ms.",
+            le);
+      }
+
+      releaseLocks(locks);
+
+    } catch (CommitStateUnknownException e) {
+      // Commit may have succeeded — do NOT clean up metadata/manifests, only release locks
+      releaseLocks(locks);
+      throw e;
+
+    } catch (LockException e) {
+      // Lock acquisition or pre-persist ensureActive failed — safe to retry
+      releaseLocks(locks);
+      throw new CommitFailedException(e);
+
+    } catch (TException e) {
+      if (isCasFailure(e)) {
+        releaseLocks(locks);
+        throw new CommitFailedException(e,
+            "The table %s.%s has been modified concurrently",
+            payload.getLast().getDb_name(), payload.getLast().getTable_name());
+      }
+      // Non-CAS TException from updateTableParams — we can't tell if the batch update was applied
+      releaseLocks(locks);
+      throw new CommitStateUnknownException(e);
+
+    } catch (RuntimeException e) {
+      releaseLocks(locks);
+      throw e;
+    }
   }
 
   private TableParamsUpdate buildTableParamsUpdate(
@@ -120,6 +241,11 @@ public final class HiveTxnCoordinator implements TxnCoordinator {
         maxPropSize,
         base.metadataFileLocation());
 
+    List<String> colNames = getStatsColumnNames(newMetadata);
+    if (!colNames.isEmpty()) {
+      StatsSetupConst.setColumnStatsState(tbl.getParameters(), colNames);
+    }
+
     TableParamsUpdate newParams = new TableParamsUpdate();
     newParams.setDb_name(ops.database());
     newParams.setTable_name(ops.table());
@@ -132,70 +258,49 @@ public final class HiveTxnCoordinator implements TxnCoordinator {
     return newParams;
   }
 
-  private void attemptCommit(List<Map.Entry<String, HiveTransaction>> updates) throws TException {
-    List<TableParamsUpdate> payload = Lists.newArrayList();
-    List<HiveTransaction> txns = Lists.newArrayList();
-    List<HiveLock> locks = Lists.newArrayList();
+  private static List<String> getStatsColumnNames(TableMetadata metadata) {
+    Stream<BlobMetadata> colStatsBlobs = metadata.statisticsFiles().stream()
+        .flatMap(sf -> sf.blobMetadata().stream())
+        .filter(blob -> ColumnStatisticsObj.class.getSimpleName().equals(blob.type()));
 
-    try {
-      for (Map.Entry<String, HiveTransaction> entry : updates) {
-        HiveTransaction hiveTxn = entry.getValue();
-
-        // Stage the transaction and track it for potential reset on retry
-        hiveTxn.commitTransaction();
-        txns.add(hiveTxn);
-
-        TableMetadata base = hiveTxn.startMetadata();
-        TableMetadata newMetadata = hiveTxn.currentMetadata();
-        HiveTableOperations ops = hiveTxn.ops();
-
-        String newMetadataFileLocation = hiveTxn.stagingOps().metadataLocation();
-
-        // Acquire lock - if this fails, txn is already in list for cleanup
-        HiveLock lock = ops.lockObject(base);
-        lock.lock();
-        locks.add(lock);
-
-        // Build and add the HMS update payload
-        TableParamsUpdate paramsUpdate = buildTableParamsUpdate(base, newMetadata, ops, newMetadataFileLocation);
-        payload.add(paramsUpdate);
-      }
-
-      // Ensure all locks are active
-      locks.forEach(HiveLock::ensureActive);
-
-      msClient.updateTableParams(payload);
-
-      // Success - release locks and clear state
-      releaseLocks(locks);
-      clearState();
-
-    } catch (Exception e) {
-      cleanupFailedCommit(txns, locks);
-      throw e;
+    if (metadata.spec().isUnpartitioned()) {
+      // For unpartitioned tables: each blob is a column
+      return colStatsBlobs
+          .flatMap(blob -> blob.fields().stream())
+          .map(fieldId -> metadata.schema().findColumnName(fieldId))
+          .toList();
     }
+
+    // For partitioned tables: each blob is a partition containing all columns,
+    // take the first blob and fetch all columns from its fields list
+    return colStatsBlobs.findFirst()
+        .map(blob -> blob.fields().stream()
+            .map(fieldId -> metadata.schema().findColumnName(fieldId))
+            .toList())
+        .orElse(List.of());
   }
 
-  private void cleanupFailedCommit(List<HiveTransaction> txns, List<HiveLock> locks) {
-    cleanupMetadata(txns);
-    releaseLocks(locks);
-    clearState();
-  }
-
-  private void cleanupMetadata(List<HiveTransaction> txns) {
-    txns.forEach(txn -> {
-      String metadataLocation = txn.stagingOps().metadataLocation();
-      if (metadataLocation != null) {
-        HiveOperationsBase.cleanupMetadata(
-            txn.ops().io(),
-            BaseMetastoreOperations.CommitStatus.FAILURE.name(),
-            metadataLocation);
-      }
-    });
+  private static boolean isCasFailure(TException ex) {
+    return ex.getMessage() != null &&
+        ex.getMessage().contains("The table has been modified. The parameter value for key '" +
+            HiveTableOperations.METADATA_LOCATION_PROP +
+            "' is");
   }
 
   private void releaseLocks(List<HiveLock> locks) {
     locks.forEach(HiveLock::unlock);
+  }
+
+  private void cleanUpOnCommitFailure(Exception ex) {
+    stagedUpdates.values().forEach(txn -> {
+      if (!txn.ops().requireStrictCleanup() || ex instanceof CleanableFailure) {
+        txn.cleanUpOnCommitFailure();
+      }
+    });
+  }
+
+  private void clearState() {
+    stagedUpdates.clear();
   }
 
 }
