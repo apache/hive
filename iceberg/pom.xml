@@ -29,7 +29,7 @@
     <iceberg.version>1.10.0</iceberg.version>
     <kryo-shaded.version>4.0.3</kryo-shaded.version>
     <iceberg.mockito-core.version>5.2.0</iceberg.mockito-core.version>
-    <iceberg.avro.version>1.12.0</iceberg.avro.version>
+    <iceberg.avro.version>1.12.1</iceberg.avro.version>
     <spotless.maven.plugin.version>2.44.4</spotless.maven.plugin.version>
     <google.errorprone.version>2.29.2</google.errorprone.version>
     <assertj.version>3.27.3</assertj.version>
