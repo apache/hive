@@ -69,9 +69,14 @@ public class HMSCatalogFactory {
    */
   private Catalog createCatalog() {
     final Map<String, String> properties = new TreeMap<>();
-    MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
     final String configUri = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS);
-    if (configUri != null) {
+    // Clear THRIFT_URIS so HiveCatalog doesn't accidentally use Thrift connection
+    // when REST Catalog is embedded in HMS (same JVM). HiveCatalog reads from Configuration
+    // as fallback, so clearing it ensures it uses embedded connection when "uri" is not set.
+    MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "");
+    // Only set "uri" property if THRIFT_URIS was configured (standalone mode)
+    // This tells HiveCatalog to use Thrift connection to external HMS
+    if (configUri != null && !configUri.isEmpty()) {
       properties.put("uri", configUri);
     }
     final String configWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE);
@@ -81,6 +86,8 @@ public class HMSCatalogFactory {
     final String configExtWarehouse = MetastoreConf.getVar(configuration, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL);
     if (configExtWarehouse != null) {
       properties.put("external-warehouse", configExtWarehouse);
+      // HiveCatalog reads this property directly from Configuration, not from properties map
+      configuration.set(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getHiveName(), configExtWarehouse);
     }
     if (configuration.get(SERVLET_ID_KEY) != null) {
       // For the testing purpose. HiveCatalog caches a metastore client in a static field. As our tests can spin up
