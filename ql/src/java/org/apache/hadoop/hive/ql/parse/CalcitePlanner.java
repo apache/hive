@@ -366,6 +366,7 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
+import static org.apache.hadoop.hive.ql.exec.Utilities.unescapeHiveJdbcIdentifier;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.HiveMaterializedViewASTSubQueryRewriteShuttle.getMaterializedViewByAST;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ANY;
 
@@ -3177,8 +3178,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
               LOG.warn("No password found for accessing {} table via JDBC", fullyQualifiedTabName);
             }
             final String catalogName = tabMetaData.getProperty(Constants.JDBC_CATALOG);
-            final String schemaName = tabMetaData.getProperty(Constants.JDBC_SCHEMA);
-            final String tableName = tabMetaData.getProperty(Constants.JDBC_TABLE);
+            final String schemaName = unescapeHiveJdbcIdentifier(tabMetaData.getProperty(Constants.JDBC_SCHEMA));
+            final String tableName = unescapeHiveJdbcIdentifier(tabMetaData.getProperty(Constants.JDBC_TABLE));
 
             DataSource ds = JdbcSchema.dataSource(url, driver, user, pswd);
             SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.INSTANCE, ds);

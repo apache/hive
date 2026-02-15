@@ -15,14 +15,68 @@
 package org.apache.hive.storage.jdbc.conf;
 
 public enum DatabaseType {
-  MYSQL,
+  // Default quote is "
   H2,
   DB2,
   DERBY,
   ORACLE,
   POSTGRES,
-  MSSQL,
-  METASTORE,
   JETHRO_DATA,
-  HIVE
+  MSSQL,
+  
+  // Special quote cases
+  MYSQL("`"),
+  MARIADB("`"),
+  HIVE("`"),
+  
+  // METASTORE will be resolved to another type
+  METASTORE(null, null);
+  
+  // Keeping start and end quote separate to allow for future DBs 
+  // that may have different start and end quotes
+  private final String startQuote;
+  private final String endQuote;
+  
+  DatabaseType() {
+    this("\"", "\"");
+  }
+  
+  DatabaseType(String quote) {
+    this(quote, quote);
+  }
+  
+  DatabaseType(String startQuote, String endQuote) {
+    this.startQuote = startQuote;
+    this.endQuote = endQuote;
+  }
+
+  /**
+   * Helper to safely get the DatabaseType from a string.
+   * 
+   * @param dbType The string from configuration properties.
+   * @return The matching DatabaseType.
+   * @throws IllegalArgumentException if the dbType is null or not a valid type.
+   */
+  public static DatabaseType from(String dbType) {
+    if (dbType == null) {
+      throw new IllegalArgumentException("Database type string cannot be null");
+    }
+    // METASTORE must be handled before valueOf
+    if (METASTORE.name().equalsIgnoreCase(dbType)) {
+      return METASTORE;
+    }
+    try {
+      return valueOf(dbType.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Invalid database type: " + dbType, e);
+    }
+  }
+
+  public String getStartQuote() {
+    return startQuote;
+  }
+
+  public String getEndQuote() {
+    return endQuote;
+  }
 }
