@@ -65,7 +65,8 @@ public abstract class DatabaseRule extends ExternalResource {
   public abstract String getInitialJdbcUrl();
 
   @Override
-  public abstract void before() throws Exception;
+  public abstract void before();
+
   @Override
   public abstract void after();
 
