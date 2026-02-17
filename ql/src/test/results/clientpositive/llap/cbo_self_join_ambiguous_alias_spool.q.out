@@ -1,0 +1,35 @@
+PREHOOK: query: create table t1 (key int, value int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: create table t1 (key int, value int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+Warning: Shuffle Join MERGEJOIN[16][tables = [$hdt$_0, cte_suggestion_0]] in Stage 'Reducer 3' is a cross product
+PREHOOK: query: explain cbo
+select *
+from (select key from t1 where value = 10) a
+join (select key from t1 where value = 10) b
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cte_suggestion_0
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select *
+from (select key from t1 where value = 10) a
+join (select key from t1 where value = 10) b
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cte_suggestion_0
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a.key=[$0], b.key=[$1])
+  HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(key=[$0])
+      HiveTableSpool(table=[[cte, cte_suggestion_0]])
+        HiveProject(key=[$0])
+          HiveFilter(condition=[=($1, 10)])
+            HiveTableScan(table=[[default, t1]], table:alias=[t1])
+    HiveTableScan(table=[[cte, cte_suggestion_0]], table:alias=[cte_suggestion_0])
+
