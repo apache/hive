@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.TxnCoordinator;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -34,7 +33,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.iceberg.BaseTable;
-import org.apache.iceberg.BlobMetadata;
 import org.apache.iceberg.HiveTransaction;
 import org.apache.iceberg.TableMetadata;
 import org.apache.iceberg.Transaction;
@@ -177,7 +175,7 @@ public class HiveTxnCoordinator implements TxnCoordinator {
       locks.forEach(HiveLock::ensureActive);
       msClient.updateTableParams(payload);
 
-      // Verify locks still active after persist — if lost, commit state is unknown
+      // 6. Verify locks still active after persist — if lost, commit state is unknown
       try {
         locks.forEach(HiveLock::ensureActive);
       } catch (LockException le) {
@@ -241,10 +239,7 @@ public class HiveTxnCoordinator implements TxnCoordinator {
         maxPropSize,
         base.metadataFileLocation());
 
-    List<String> colNames = getStatsColumnNames(newMetadata);
-    if (!colNames.isEmpty()) {
-      StatsSetupConst.setColumnStatsState(tbl.getParameters(), colNames);
-    }
+    populateStatsState(newMetadata, tbl);
 
     TableParamsUpdate newParams = new TableParamsUpdate();
     newParams.setDb_name(ops.database());
@@ -258,25 +253,35 @@ public class HiveTxnCoordinator implements TxnCoordinator {
     return newParams;
   }
 
-  private static List<String> getStatsColumnNames(TableMetadata metadata) {
-    Stream<BlobMetadata> colStatsBlobs = metadata.statisticsFiles().stream()
-        .flatMap(sf -> sf.blobMetadata().stream())
-        .filter(blob -> ColumnStatisticsObj.class.getSimpleName().equals(blob.type()));
-
-    if (metadata.spec().isUnpartitioned()) {
-      // For unpartitioned tables: each blob is a column
-      return colStatsBlobs
-          .flatMap(blob -> blob.fields().stream())
-          .map(fieldId -> metadata.schema().findColumnName(fieldId))
-          .toList();
+  private static void populateStatsState(TableMetadata metadata, Table tbl) {
+    if (metadata.spec().isUnpartitioned() || !metadata.partitionStatisticsFiles().isEmpty()) {
+      StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.TRUE);
     }
+    List<String> colNames = getStatsColumnNames(metadata);
+    if (!colNames.isEmpty()) {
+      StatsSetupConst.setColumnStatsState(tbl.getParameters(), colNames);
+    }
+  }
 
-    // For partitioned tables: each blob is a partition containing all columns,
-    // take the first blob and fetch all columns from its fields list
-    return colStatsBlobs.findFirst()
-        .map(blob -> blob.fields().stream()
-            .map(fieldId -> metadata.schema().findColumnName(fieldId))
-            .toList())
+  private static List<String> getStatsColumnNames(TableMetadata metadata) {
+    // Find the first statistics file that contains ColumnStatisticsObj blobs.
+    return metadata.statisticsFiles().stream()
+        .filter(sf -> sf.blobMetadata().stream()
+            .anyMatch(blob -> ColumnStatisticsObj.class.getSimpleName().equals(blob.type())))
+        .findFirst()
+        .map(sf -> {
+          // Unpartitioned: each blob = one column, need all blobs' fields.
+          // Partitioned: first blob has ALL column field IDs.
+          if (metadata.spec().isUnpartitioned()) {
+            return sf.blobMetadata().stream()
+                .flatMap(blob -> blob.fields().stream())
+                .map(fieldId -> metadata.schema().findColumnName(fieldId))
+                .toList();
+          }
+          return sf.blobMetadata().getFirst().fields().stream()
+              .map(fieldId -> metadata.schema().findColumnName(fieldId))
+              .toList();
+        })
         .orElse(List.of());
   }
 
