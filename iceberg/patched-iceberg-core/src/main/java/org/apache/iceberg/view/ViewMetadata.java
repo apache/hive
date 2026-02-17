@@ -87,9 +87,6 @@ public interface ViewMetadata extends Serializable {
   @Nullable
   String metadataFileLocation();
 
-  @Nullable
-  Long maxStalenessMs();
-
   default ViewVersion version(int versionId) {
     return versionsById().get(versionId);
   }
@@ -227,11 +224,6 @@ public interface ViewMetadata extends Serializable {
 
     public Builder setMetadataLocation(String newMetadataLocation) {
       this.metadataLocation = newMetadataLocation;
-      return this;
-    }
-
-    public Builder setMaxStalenessMs(Long maxStalenessMs) {
-      this.maxStalenessMs = maxStalenessMs;
       return this;
     }
 
@@ -516,8 +508,7 @@ public interface ViewMetadata extends Serializable {
               retainedHistory,
               properties,
               changes,
-              metadataLocation,
-              maxStalenessMs);
+              metadataLocation);
     }
 
     @VisibleForTesting

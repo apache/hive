@@ -21,7 +21,6 @@ package org.apache.iceberg.view;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.annotation.Nullable;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,4 @@ interface StorageTable extends Serializable {
   List<String> namespace();
 
   String name();
-
-  @Nullable
-  RefreshState refreshState();
 }

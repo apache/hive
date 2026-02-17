@@ -56,9 +56,9 @@ public interface VersionBuilder<T> {
    */
   T withDefaultNamespace(Namespace namespace);
 
-  T withMaxStalenessMs(long maxStalenessMs);
-
   T withStorageTable(String matViewStorageTable);
 
   T withRefreshState(RefreshState matViewRefreshState);
+
+  T withCreateTime(Long createTime);
 }

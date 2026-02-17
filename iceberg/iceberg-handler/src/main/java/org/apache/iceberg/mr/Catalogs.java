@@ -19,18 +19,20 @@
 
 package org.apache.iceberg.mr;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.iceberg.CatalogUtil;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionSpecParser;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.SchemaParser;
+import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SortOrder;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.catalog.Catalog;
@@ -41,9 +43,14 @@ import org.apache.iceberg.hive.HMSTablePropertyHelper;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;
+import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
+import org.apache.iceberg.view.ImmutableRefreshState;
+import org.apache.iceberg.view.ImmutableSourceState;
+import org.apache.iceberg.view.RefreshState;
+import org.apache.iceberg.view.SourceState;
 import org.apache.iceberg.view.View;
-import org.jetbrains.annotations.NotNull;
+import org.apache.iceberg.view.ViewVersion;
 
 /**
  * Class for catalog resolution and accessing the common functions for {@link Catalog} API.
@@ -74,7 +81,6 @@ public final class Catalogs {
   public static final String NAME = "name";
   public static final String LOCATION = "location";
   public static final String SNAPSHOT_REF = "snapshot_ref";
-  public static final String MAX_STALENESS_MS = "max-staleness-ms";
 
   private static final String NO_CATALOG_TYPE = "no catalog";
 
@@ -297,7 +303,9 @@ public final class Catalogs {
   }
 
   public static MaterializedView createMaterializedView(
-          Configuration conf, Properties props, String viewOriginalText, String viewExpandedText) {
+          Configuration conf, Properties props, String viewOriginalText, String viewExpandedText,
+          CreationMetadata creationMetadata) {
+
     Schema schema = schema(props);
     PartitionSpec spec = spec(props, schema);
     String location = props.getProperty(LOCATION);
@@ -325,10 +333,47 @@ public final class Catalogs {
     viewProperties.put(MATERIALIZED_VIEW_STORAGE_TABLE_PROPERTY_KEY, storageTableIdentifier);
     viewProperties.put(MATERIALIZED_VIEW_ORIGINAL_TEXT, viewOriginalText);
 
-    Long maxStalenessMs = getMaxStalenessMs(conf, props);
-//    SourceState sourceState = ImmutableSourceState.of("table");
-//      SourceState sourceState = ImmutableSourceState.of("table");
-//    RefreshState refreshState = ImmutableRefreshState
+    long createTime = System.currentTimeMillis();
+
+    List<SourceState> sourceStates = Lists.newArrayList();
+
+    for (var sourceTable : creationMetadata.getSourceTables()) {
+      SourceState.SourceStateType type = sourceTable.getTable().getViewExpandedText() == null ?
+              SourceState.SourceStateType.TABLE :
+              SourceState.SourceStateType.VIEW;
+
+      String dbName = sourceTable.getTable().getDbName();
+      String sourceTableName = sourceTable.getTable().getTableName();
+      String sourceTableNamespace = "default";
+      String sourceTableCatalog = sourceTable.getTable().isSetCatName() ? sourceTable.getTable().getCatName() : null;
+      Catalog tableCatalog = loadCatalog(conf, sourceTableCatalog).orElse(catalog.get());
+      UUID uuid = null;
+      Snapshot snapshot = null;
+      ViewVersion version = null;
+
+      switch (type) {
+        case TABLE -> {
+          Table icebergTable = tableCatalog.loadTable(TableIdentifier.parse(dbName + "." + sourceTableName));
+          uuid = icebergTable.uuid();
+          snapshot = icebergTable.currentSnapshot();
+
+          SourceState sourcestate = ImmutableSourceState.of(type, sourceTableName, sourceTableNamespace, catalogName,
+                  uuid, snapshot.snapshotId(), null, null);
+          sourceStates.add(sourcestate);
+        }
+        case VIEW -> {
+          var icebergView = ((ViewCatalog) tableCatalog).loadView(TableIdentifier.parse(sourceTableName));
+          uuid = icebergView.uuid();
+          version = icebergView.currentVersion();
+
+          SourceState sourcestate = ImmutableSourceState.of(type, sourceTableName, sourceTableNamespace, catalogName,
+                  uuid, null, null, version.versionId());
+          sourceStates.add(sourcestate);
+        }
+      }
+    }
+
+    RefreshState refreshState = ImmutableRefreshState.of(1, sourceStates, createTime);
 
     TableIdentifier viewIdentifier = TableIdentifier.parse(name);
     View mv = viewCatalog.buildView(viewIdentifier)
@@ -337,21 +382,12 @@ public final class Catalogs {
             .withQuery("hive", viewExpandedText)
             .withSchema(schema)
             .withProperties(viewProperties)
-            .withMaxStalenessMs(maxStalenessMs)
             .withStorageTable(storageTableIdentifier)
-//            .withRefreshState()
+            .withRefreshState(refreshState)
+            .withCreateTime(createTime)
             .create();
 
     return new MaterializedView(mv, storageTable);
-  }
-
-  private static @NotNull Long getMaxStalenessMs(Configuration conf, Properties props) {
-    if (!props.containsKey(MAX_STALENESS_MS)) {
-      return HiveConf.getTimeVar(conf,
-              HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW, TimeUnit.MINUTES);
-    }
-
-    return Long.parseLong(props.getProperty(MAX_STALENESS_MS));
   }
 
   public static class MaterializedView {

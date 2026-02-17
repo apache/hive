@@ -83,4 +83,7 @@ public interface ViewVersion {
 
   @Nullable
   StorageTable storageTable();
+
+  @Nullable
+  RefreshState refreshState();
 }

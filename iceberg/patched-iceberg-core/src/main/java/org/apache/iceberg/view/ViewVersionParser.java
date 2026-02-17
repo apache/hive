@@ -42,6 +42,10 @@ public class ViewVersionParser {
   private static final String STORAGE_TABLE = "storage-table";
   private static final String NAMESPACE = "namespace";
   private static final String NAME = "name";
+  private static final String REFRESH_STATE = "refresh-state";
+  private static final String VIEW_VERSION_ID = "view-version-id";
+  private static final String SOURCE_STATES = "source-states";
+  private static final String REFRESH_TIMESTAMP_MS = "refresh-timestamp-ms";
 
   private ViewVersionParser() {
 
@@ -83,6 +87,22 @@ public class ViewVersionParser {
       generator.writeEndObject();
     }
 
+    if (version.refreshState() != null) {
+      generator.writeObjectFieldStart(REFRESH_STATE);
+
+      generator.writeNumberField(VIEW_VERSION_ID, version.refreshState().viewVersionId());
+
+      generator.writeArrayFieldStart(SOURCE_STATES);
+      for (SourceState sourceState : version.refreshState().sourceStates()) {
+        SourceStateParser.toJson(sourceState, generator);
+      }
+      generator.writeEndArray();
+
+      generator.writeNumberField(REFRESH_TIMESTAMP_MS, version.refreshState().refreshStartTimestampMs());
+
+      generator.writeEndObject();
+    }
+
     generator.writeEndObject();
   }
 
@@ -120,25 +140,49 @@ public class ViewVersionParser {
     Namespace defaultNamespace =
             Namespace.of(JsonUtil.getStringArray(JsonUtil.get(DEFAULT_NAMESPACE, node)));
 
+    StorageTable storageTable = null;
     JsonNode serializedStorageTable = JsonUtil.get(STORAGE_TABLE, node);
-    JsonNode serializedNamespace = JsonUtil.get(NAMESPACE, serializedStorageTable);
-    Preconditions.checkArgument(
-            serializedNamespace.isArray(),
-            "Cannot parse namespace from non-array: %s",
-            serializedNamespace);
-    List<String> namespace = JsonUtil.getStringList(NAMESPACE, serializedStorageTable);
-    String name = JsonUtil.getString(NAME, serializedStorageTable);
-    StorageTable storageTable = ImmutableStorageTable.of(namespace, name, null);
+    if (serializedStorageTable != null) {
+      JsonNode serializedNamespace = JsonUtil.get(NAMESPACE, serializedStorageTable);
+      Preconditions.checkArgument(
+          serializedNamespace.isArray(),
+          "Cannot parse namespace from non-array: %s",
+          serializedNamespace);
+      List<String> namespace = JsonUtil.getStringList(NAMESPACE, serializedStorageTable);
+      String name = JsonUtil.getString(NAME, serializedStorageTable);
+      storageTable = ImmutableStorageTable.of(namespace, name);
+    }
+
+    RefreshState refreshState = null;
+    JsonNode serializedRefreshState = JsonUtil.get(REFRESH_STATE, node);
+    if (serializedRefreshState != null) {
+      Integer viewVersionId = JsonUtil.getInt(VIEW_VERSION_ID, serializedRefreshState);
+
+      JsonNode serializedSourceStates = JsonUtil.get(SOURCE_STATES, serializedRefreshState);
+      Preconditions.checkArgument(
+          serializedSourceStates.isArray(),
+          "Cannot parse source states from non-array: %s",
+          serializedSourceStates
+      );
+      ImmutableList.Builder<SourceState> sourceStates = ImmutableList.builder();
+      for (JsonNode serializedSourceState : serializedSourceStates) {
+        sourceStates.add(SourceStateParser.fromJson(serializedSourceState));
+      }
+
+      Long refreshTimestampMs = JsonUtil.getLong(REFRESH_TIMESTAMP_MS, serializedRefreshState);
+      refreshState = ImmutableRefreshState.of(viewVersionId, sourceStates.build(), refreshTimestampMs);
+    }
 
     return ImmutableViewVersion.builder()
-            .versionId(versionId)
-            .timestampMillis(timestamp)
-            .schemaId(schemaId)
-            .summary(summary)
-            .defaultNamespace(defaultNamespace)
-            .defaultCatalog(defaultCatalog)
-            .representations(representations.build())
-            .storageTable(storageTable)
-            .build();
+      .versionId(versionId)
+      .timestampMillis(timestamp)
+      .schemaId(schemaId)
+      .summary(summary)
+      .defaultNamespace(defaultNamespace)
+      .defaultCatalog(defaultCatalog)
+      .representations(representations.build())
+      .storageTable(storageTable)
+      .refreshState(refreshState)
+      .build();
   }
 }

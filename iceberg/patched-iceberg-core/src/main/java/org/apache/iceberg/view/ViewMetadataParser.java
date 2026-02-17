@@ -74,9 +74,6 @@ public class ViewMetadataParser {
     gen.writeStringField(VIEW_UUID, metadata.uuid());
     gen.writeNumberField(FORMAT_VERSION, metadata.formatVersion());
     gen.writeStringField(LOCATION, metadata.location());
-    if (metadata.maxStalenessMs() != null) {
-      gen.writeNumberField("max-staleness-ms", metadata.maxStalenessMs());
-    }
 
     if (!metadata.properties().isEmpty()) {
       JsonUtil.writeStringMap(PROPERTIES, metadata.properties(), gen);
@@ -156,8 +153,6 @@ public class ViewMetadataParser {
       historyEntries.add(ViewHistoryEntryParser.fromJson(vLog));
     }
 
-    Long maxStalenessMs = JsonUtil.getLongOrNull(MAX_STALENESS_MS, json);
-
     return ImmutableViewMetadata.of(
             uuid,
             formatVersion,
@@ -168,8 +163,7 @@ public class ViewMetadataParser {
             historyEntries,
             properties,
             ImmutableList.of(),
-            metadataLocation,
-            maxStalenessMs);
+            metadataLocation);
   }
 
   public static void overwrite(ViewMetadata metadata, OutputFile outputFile) {
