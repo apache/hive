@@ -19,13 +19,11 @@
 
 package org.apache.iceberg;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import org.apache.iceberg.hive.HiveTableOperations;
 import org.apache.iceberg.hive.StagingTableOperations;
-import org.apache.iceberg.io.FileIO;
-import org.apache.iceberg.relocated.com.google.common.collect.Sets;
-import org.apache.iceberg.util.Tasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +31,14 @@ import org.slf4j.LoggerFactory;
  * Transaction implementation that stages metadata changes for atomic batch HMS updates across
  * multiple tables.
  *
- * <p>Extends BaseTransaction to leverage Iceberg's retry and conflict resolution logic while
+ * <p>Extends BaseTransaction to reuse its update tracking and commit machinery while
  * capturing metadata locations instead of publishing directly to HMS.
  */
 public class HiveTransaction extends BaseTransaction {
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveTransaction.class);
+
+  private static final MethodHandle CLEANUP_HANDLE = initCleanupHandle();
 
   private final HiveTableOperations hiveOps;
   private final StagingTableOperations stagingOps;
@@ -53,6 +53,7 @@ public class HiveTransaction extends BaseTransaction {
     this.stagingOps = stagingOps;
   }
 
+  @Override
   public HiveTableOperations ops() {
     return hiveOps;
   }
@@ -68,61 +69,13 @@ public class HiveTransaction extends BaseTransaction {
    * <p>Called by the coordinator when the batch HMS update fails after staging succeeded.
    */
   public void cleanUpOnCommitFailure() {
-    // clean up manifests and manifest lists from new snapshots
-    cleanAllUpdates();
-
+    try {
+      CLEANUP_HANDLE.invoke(this);
+    } catch (Throwable t) {
+      throw new IllegalStateException("Failed to invoke cleanUpOnCommitFailure", t);
+    }
     // delete the staged metadata JSON file
     deleteMetadataFile();
-
-    // delete uncommitted files tracked by the base transaction
-    deleteUncommittedFiles();
-  }
-
-  /**
-   * Deletes manifest files and manifest lists produced by new snapshots in this transaction.
-   * Uses metadata diff (current vs start) to identify new snapshots and their artifacts.
-   */
-  private void cleanAllUpdates() {
-    FileIO io = stagingOps.io();
-
-    // Collect all manifest paths from the base metadata — these must NOT be deleted
-    Set<String> baseManifestPaths = Sets.newHashSet();
-    for (Snapshot snapshot : startMetadata().snapshots()) {
-      try {
-        snapshot.allManifests(io).forEach(m -> baseManifestPaths.add(m.path()));
-      } catch (RuntimeException e) {
-        LOG.warn("Failed to read base manifests for cleanup", e);
-      }
-    }
-
-    // Find new snapshots added by this transaction and clean their artifacts
-    Set<Long> baseSnapshotIds = startMetadata().snapshots().stream()
-        .map(Snapshot::snapshotId)
-        .collect(Collectors.toSet());
-
-    for (Snapshot snapshot : currentMetadata().snapshots()) {
-      if (baseSnapshotIds.contains(snapshot.snapshotId())) {
-        continue;
-      }
-
-      // Delete new manifest files (not from base)
-      try {
-        for (ManifestFile manifest : snapshot.allManifests(io)) {
-          if (!baseManifestPaths.contains(manifest.path())) {
-            io.deleteFile(manifest.path());
-          }
-        }
-      } catch (RuntimeException e) {
-        LOG.warn("Failed to clean manifests for snapshot {}", snapshot.snapshotId(), e);
-      }
-
-      // Delete the manifest list
-      try {
-        io.deleteFile(snapshot.manifestListLocation());
-      } catch (RuntimeException e) {
-        LOG.warn("Failed to clean manifest list {}", snapshot.manifestListLocation(), e);
-      }
-    }
   }
 
   /**
@@ -139,13 +92,19 @@ public class HiveTransaction extends BaseTransaction {
     }
   }
 
-  /**
-   * Deletes uncommitted files tracked during the transaction (e.g. replaced data files).
-   */
-  private void deleteUncommittedFiles() {
-    Tasks.foreach(deletedFiles())
-        .suppressFailureWhenFinished()
-        .onFailure((file, exc) -> LOG.warn("Failed to delete uncommitted file: {}", file, exc))
-        .run(stagingOps.io()::deleteFile);
+  private static MethodHandle initCleanupHandle() {
+    try {
+      MethodHandles.Lookup lookup =
+          MethodHandles.privateLookupIn(BaseTransaction.class, MethodHandles.lookup());
+      return lookup.findSpecial(
+          BaseTransaction.class,
+          "cleanUpOnCommitFailure",
+          MethodType.methodType(void.class),
+          BaseTransaction.class
+      );
+    } catch (Exception e) {
+      throw new ExceptionInInitializerError(e);
+    }
   }
+
 }

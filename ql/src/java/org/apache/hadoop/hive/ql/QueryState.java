@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
@@ -196,6 +197,11 @@ public class QueryState {
 
   public long getNumModifiedRows() {
     return numModifiedRows;
+  }
+
+  public boolean isTxnOpen() {
+    return Optional.ofNullable(txnManager).map(HiveTxnManager::isTxnOpen)
+        .orElse(false);
   }
 
   public void setNumModifiedRows(long numModifiedRows) {

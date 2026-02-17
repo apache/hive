@@ -1968,6 +1968,10 @@ public class StatsUtils {
     return !table.isNonNative() || table.getStorageHandler().canProvidePartitionStatistics(table);
   }
 
+  public static boolean checkCanProvideColumnStats(Table table) {
+    return !table.isNonNative() || table.getStorageHandler().canProvideColStatistics(table);
+  }
+
   /**
    * Are the basic stats for the table up-to-date for query planning.
    * Can run additional checks compared to the version in StatsSetupConst.
