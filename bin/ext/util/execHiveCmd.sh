@@ -50,14 +50,14 @@ execHiveCmd () {
     echo "DEBUG: HIVE_HOME=$HIVE_HOME"
     echo "DEBUG: Initial HADOOP_CLIENT_OPTS=$HADOOP_CLIENT_OPTS"
 
-    # Force Log4j2 to use the fresh config from the build, ignoring stale /etc/hive path
-    # This ensures monitorInterval=30 is actually applied even when /etc/hive exists
-    if [ -f "${HIVE_CONF_DIR}/hive-log4j2.properties" ]; then
-      echo "DEBUG: Found config in HIVE_CONF_DIR"
-      export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_CONF_DIR}/hive-log4j2.properties"
-    elif [ -f "${HIVE_HOME}/conf/hive-log4j2.properties" ]; then
-      echo "DEBUG: Found config in HIVE_HOME/conf"
+    # [FIX]: Check HIVE_HOME/conf FIRST. This ensures we use the built config with the fix.
+    if [ -f "${HIVE_HOME}/conf/hive-log4j2.properties" ]; then
+      echo "DEBUG: Found config in HIVE_HOME/conf (Priority)"
       export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_HOME}/conf/hive-log4j2.properties"
+    # Only fall back to the system default if the build config is missing
+    elif [ -f "${HIVE_CONF_DIR}/hive-log4j2.properties" ]; then
+      echo "DEBUG: Found config in HIVE_CONF_DIR (Fallback)"
+      export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_CONF_DIR}/hive-log4j2.properties"
     else
       echo "DEBUG: No local hive-log4j2.properties found"
     fi
