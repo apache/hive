@@ -209,7 +209,7 @@ public class TestHiveMaterializedViewRegistry extends CompactorOnTezTest {
 
     createMaterializedViewDesc.setViewOriginalText("select a,b,c from " + TABLE1 + " where a > 0 or a is null");
     createMaterializedViewDesc.setViewExpandedText("select `t1`.`a`,`t1`.`b`,`t1`.`c` from `" + DB + "`.`" + TABLE1 + "` where `t1`.`a` > 0 or `t1`.`a` is null");
-    createMaterializedViewDesc.setSchema(
+    createMaterializedViewDesc.setCols(
             asList(new FieldSchema("a", "int", null),
                     new FieldSchema("b", "string", null),
                     new FieldSchema("c", "float", null)));
