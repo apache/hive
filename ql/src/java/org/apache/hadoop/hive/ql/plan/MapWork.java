@@ -667,7 +667,8 @@ public class MapWork extends BaseWork {
 
       // If we haven't seen this table before, configure it and remember it.
       // If we have seen it, skip it.
-      if (tableDesc != null && processedTables.add(tableDesc)) {
+      if (tableDesc != null && !processedTables.contains(tableDesc)) {
+        processedTables.add(tableDesc);
         PlanUtils.configureJobConf(tableDesc, job);
       }
     }
