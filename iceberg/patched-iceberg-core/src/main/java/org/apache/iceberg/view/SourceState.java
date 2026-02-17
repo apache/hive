@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.view;
 
+import java.util.UUID;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 @SuppressWarnings("ImmutablesStyle")
@@ -28,8 +30,7 @@ public interface SourceState {
 
   enum SourceStateType {
     TABLE,
-    VIEW,
-    MATERIALIZED_VIEW;
+    VIEW;
 
 
     @Override
@@ -38,5 +39,16 @@ public interface SourceState {
     }
   }
 
-  String type();
+  SourceStateType type();
+  String name();
+  String nameSpace();
+  @Nullable
+  String catalog();
+  UUID uuid();
+  @Nullable
+  Long snapshotId();
+  @Nullable
+  String ref();
+  @Nullable
+  Integer versionId();
 }

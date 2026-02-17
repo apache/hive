@@ -197,7 +197,8 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
                         conf,
                         tableProperties,
                         viewOriginalText,
-                        viewExpandedText);
+                        viewExpandedText,
+                        hmsTable.getCreationMetadata());
 
         String tableIdentifier = tableProperties.getProperty(Catalogs.NAME);
         SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);

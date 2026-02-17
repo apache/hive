@@ -24,12 +24,11 @@ import org.immutables.value.Value;
 
 @SuppressWarnings("ImmutablesStyle")
 @Value.Immutable(builder = false)
-@Value.Style(allParameters = true, visibilityString = "PACKAGE", jdkOnly = true)
+@Value.Style(allParameters = true, visibilityString = "PUBLIC", jdkOnly = true)
 public interface RefreshState {
   int viewVersionId();
 
   List<SourceState> sourceStates();
 
   long refreshStartTimestampMs();
-
 }

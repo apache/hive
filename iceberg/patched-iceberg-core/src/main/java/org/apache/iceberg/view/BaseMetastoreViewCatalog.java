@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog implements ViewCatalog {
   private static final Logger LOG = LoggerFactory.getLogger(BaseMetastoreViewCatalog.class);
+  private static final int startingVersionId = 1;
 
   protected abstract ViewOperations newViewOps(TableIdentifier identifier);
 
@@ -82,9 +83,9 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
     private String defaultCatalog = null;
     private Schema schema = null;
     private String location = null;
-    private Long maxStalenessMs = 0L;
     private String storageTableName;
     private RefreshState refreshState;
+    private Long createTime;
 
     protected BaseViewBuilder(TableIdentifier identifier) {
       Preconditions.checkArgument(
@@ -147,12 +148,6 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
     }
 
     @Override
-    public ViewBuilder withMaxStalenessMs(long newMaxStalenessMs) {
-      this.maxStalenessMs = newMaxStalenessMs;
-      return this;
-    }
-
-    @Override
     public ViewBuilder withStorageTable(String matViewStorageTable) {
       this.storageTableName = matViewStorageTable;
       return this;
@@ -179,6 +174,12 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
     @Override
     public ViewBuilder withLocation(String newLocation) {
       this.location = newLocation;
+      return this;
+    }
+
+    @Override
+    public ViewBuilder withCreateTime(Long createTimeInMs) {
+      this.createTime = createTimeInMs;
       return this;
     }
 
@@ -213,25 +214,21 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
       Preconditions.checkState(
               null != defaultNamespace, "Cannot create view without specifying a default namespace");
 
-      // Todo: finish refreshState after Iceberg team figured it out
-//      SourceState sourceState = ImmutableSourceState.of("table");
-//      RefreshState refreshState = ImmutableRefreshState.of(1, List.of(sourceState), 1L);
       StorageTable storageTable = ImmutableStorageTable.of(
-              Arrays.asList(defaultNamespace.levels()),
-              storageTableName,
-              null
+              Arrays.asList(this.identifier.namespace().levels()), storageTableName
       );
 
       ViewVersion viewVersion =
               ImmutableViewVersion.builder()
-                      .versionId(1)
+                      .versionId(startingVersionId)
                       .schemaId(schema.schemaId())
                       .addAllRepresentations(representations)
                       .defaultNamespace(defaultNamespace)
                       .defaultCatalog(defaultCatalog)
-                      .timestampMillis(System.currentTimeMillis())
+                      .timestampMillis(createTime)
                       .putAllSummary(EnvironmentContext.get())
                       .storageTable(storageTable)
+                      .refreshState(refreshState)
                       .build();
 
       properties.putAll(viewOverrideProperties());
@@ -241,7 +238,6 @@ public abstract class BaseMetastoreViewCatalog extends BaseMetastoreCatalog impl
                       .setProperties(properties)
                       .setLocation(null != location ? location : defaultWarehouseLocation(identifier))
                       .setCurrentVersion(viewVersion, schema)
-                      .setMaxStalenessMs(maxStalenessMs)
                       .build();
 
       try {
