@@ -38,7 +38,10 @@ import org.slf4j.LoggerFactory;
 
 public class SimpleJWTAuthenticator {
   private static final Logger LOG = LoggerFactory.getLogger(SimpleJWTAuthenticator.class.getName());
-  private static final Set<JOSEObjectType> ACCEPTABLE_TYPES = Sets.newHashSet(null, JOSEObjectType.JWT);
+  // Accept both traditional "JWT" and RFC 9068 "at+jwt" (access token as JWT) - Keycloak and other
+  // OIDC providers may use "at+jwt" when configured for RFC 9068 compliance.
+  private static final Set<JOSEObjectType> ACCEPTABLE_TYPES =
+      Sets.newHashSet(null, JOSEObjectType.JWT, new JOSEObjectType("at+jwt"));
 
   private final JWTValidator validator;
 
