@@ -318,7 +318,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
         String tableType;
         if (resource.get() instanceof Catalogs.MaterializedView) {
           tableType = HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE;
-          table = resource.map(o -> ((Catalogs.MaterializedView) o).getStotageTable()).get();
+          table = resource.map(o -> ((Catalogs.MaterializedView) o).getStorageTable()).get();
         } else {
           tableType = "ICEBERG";
           table = resource.map(o -> (Table) o)
@@ -452,7 +452,7 @@ public class HiveIcebergOutputCommitter extends OutputCommitter {
 
       table = Optional.ofNullable(table).orElseGet(() -> {
         if (HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(outputTable.tableType)) {
-          return Catalogs.loadMaterializedView(conf, catalogProperties).getStotageTable();
+          return Catalogs.loadMaterializedView(conf, catalogProperties).getStorageTable();
         }
         return IcebergTableUtil.getTable(conf, catalogProperties);
       });

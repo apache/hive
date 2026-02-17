@@ -158,7 +158,7 @@ public class HiveIcebergSerDe extends AbstractSerDe {
 
   private Table getIcebergDbObject(Configuration conf, Properties serDeProperties) {
     if ("iceberg-view".equalsIgnoreCase(serDeProperties.getProperty("table_type"))) {
-      return IcebergTableUtil.getMaterializedView(conf, serDeProperties, false).getStotageTable();
+      return IcebergTableUtil.getMaterializedView(conf, serDeProperties, false).getStorageTable();
     }
     return  IcebergTableUtil.getTable(conf, serDeProperties);
   }

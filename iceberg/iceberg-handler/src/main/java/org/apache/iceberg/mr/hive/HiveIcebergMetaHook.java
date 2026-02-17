@@ -204,7 +204,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
         SessionStateUtil.addResource(conf, InputFormatConfig.CTAS_TABLE_NAME, tableIdentifier);
         SessionStateUtil.addResource(conf, tableIdentifier, mv);
 
-        HiveTableUtil.createFileForTableObject(mv.getStotageTable(), conf);
+        HiveTableUtil.createFileForTableObject(mv.getStorageTable(), conf);
         return;
       } else {
         table = Catalogs.createTable(conf, tableProperties);

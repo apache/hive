@@ -392,19 +392,19 @@ public final class Catalogs {
 
   public static class MaterializedView {
     private View view;
-    private Table stotageTable;
+    private Table storageTable;
 
-    public MaterializedView(View view, Table stotageTable) {
+    public MaterializedView(View view, Table storageTable) {
       this.view = view;
-      this.stotageTable = stotageTable;
+      this.storageTable = storageTable;
     }
 
     public View getView() {
       return view;
     }
 
-    public Table getStotageTable() {
-      return stotageTable;
+    public Table getStorageTable() {
+      return storageTable;
     }
   }
 
