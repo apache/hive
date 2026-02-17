@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -100,7 +101,7 @@ public class TestMapWork {
     mapWork.configureJobConf(jobConf);
 
     // Then the table's create time should be present in the JobConf
-    String fullTableName = dbName + "." + tableName;
+    String fullTableName = TableName.getDbTable(dbName, tableName);
     assertEquals(
         createTime,
         Utilities.getTableCreateTime(jobConf, fullTableName));

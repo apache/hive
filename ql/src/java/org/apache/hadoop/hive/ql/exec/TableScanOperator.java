@@ -89,10 +89,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   @Override
   public void configureJobConf(JobConf job) {
-    Table table = getConf().getTableMetadata();
-    // Safety check: this may be null in certain scenarios, particularly in test cases.
-    if (table != null) {
-      Utilities.setTableCreateTime(job, table);
+    // Safety checks: table metadata may be null in certain scenarios, particularly in test cases.
+    if (getConf() != null && getConf().getTableMetadata() != null) {
+      Utilities.setTableCreateTime(job, getConf().getTableMetadata());
     }
   }
 

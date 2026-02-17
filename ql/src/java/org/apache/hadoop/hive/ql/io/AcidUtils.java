@@ -3326,7 +3326,7 @@ public class AcidUtils {
 
     // Check whether the table was re-created after being stored in the cache.
     // The value null check avoids a noisy log message during the initial lookup, when no cache entry exists.
-    if (value != null && tableCreateTimeInCache < tableCreateTime) {
+    if (value != null && tableCreateTimeInCache != tableCreateTime) {
       LOG.info("Table {} was recreated (at: {}) since it was stored in acid cache (at: {}), invalidating entry",
           writeIdList.getTableName(), tableCreateTime, tableCreateTimeInCache);
       recompute = true;

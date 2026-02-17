@@ -5109,14 +5109,11 @@ public final class Utilities {
    * @param table
    *     table whose database and name are used to construct the configuration key;
    *     must not be {@code null}
-   * @param tableCreateTime
-   *     table creation time to store, represented as a string
    */
   public static void setTableCreateTime(Configuration conf, Table table) {
     Objects.requireNonNull(table, "Cannot get table create time. Table object is expected to be non-null.");
-    String tableCreateTime = String.valueOf(table.getCreateTime());
-    String fullTableName = String.format("%s.%s", table.getDbName(), table.getTableName());
-    conf.set(String.format("%s.%s", fullTableName, CREATE_TIME), tableCreateTime);
+    String fullTableName = TableName.getDbTable(table.getDbName(), table.getTableName());
+    conf.setInt(String.format("%s.%s", fullTableName, CREATE_TIME), table.getCreateTime());
   }
 
   /**
@@ -5136,7 +5133,6 @@ public final class Utilities {
    *     the table creation time, or {@code 0} if not set
    */
   public static int getTableCreateTime(Configuration conf, String tableName) {
-    String createTime = conf.get(String.format("%s.%s", tableName, CREATE_TIME));
-    return createTime == null ? 0 : Integer.parseInt(createTime);
+    return conf.getInt(String.format("%s.%s", tableName, CREATE_TIME), 0);
   }
 }
