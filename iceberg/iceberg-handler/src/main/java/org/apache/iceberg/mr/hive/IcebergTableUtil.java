@@ -164,7 +164,7 @@ public class IcebergTableUtil {
             });
 
     if (TableType.MATERIALIZED_VIEW.name().equalsIgnoreCase(hmsTable.getTableType())) {
-      return getMaterializedView(configuration, hmsTable, skipCache).getStotageTable();
+      return getMaterializedView(configuration, hmsTable, skipCache).getStorageTable();
     }
 
     return getTable(configuration, properties, skipCache);
@@ -200,7 +200,7 @@ public class IcebergTableUtil {
               Object tableType = properties.get(HiveMetaHook.TABLE_TYPE);
               if (tableType != null &&
                       HiveOperationsBase.ICEBERG_VIEW_TYPE_VALUE.equalsIgnoreCase(tableType.toString())) {
-                tab = Catalogs.loadMaterializedView(configuration, props).getStotageTable();
+                tab = Catalogs.loadMaterializedView(configuration, props).getStorageTable();
               } else {
                 tab = Catalogs.loadTable(configuration, props);
               }
@@ -227,7 +227,7 @@ public class IcebergTableUtil {
         }
 
         if (resource.get() instanceof Catalogs.MaterializedView) {
-          return ((Catalogs.MaterializedView) resource.get()).getStotageTable();
+          return ((Catalogs.MaterializedView) resource.get()).getStorageTable();
         }
       }
 
