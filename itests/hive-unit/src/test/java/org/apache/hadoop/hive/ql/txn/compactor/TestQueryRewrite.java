@@ -67,7 +67,7 @@ public class TestQueryRewrite extends CompactorOnTezTest {
   }
 
   @Test
-  public void testQueryIsNotRewrittenWhenMVIsDropped() throws Exception {
+  public void testQueryIsNotRewrittenWhenMVIsDroppedButTheRegistryIsNotRefreshed() throws Exception {
 
     // Simulate a multi HS2 cluster.
     // Drop the MV using a direct API call to HMS. This is similar to what happens when the drop MV is executed by
@@ -80,7 +80,7 @@ public class TestQueryRewrite extends CompactorOnTezTest {
   }
 
   @Test
-  public void testQueryIsNotRewrittenWhenMVIsDisabledForRewrite() throws Exception {
+  public void testQueryIsNotRewrittenWhenMVIsDisabledForRewriteButTheRegistryIsNotRefreshed() throws Exception {
     Table mvTable = Hive.get().getTable(DB, MV1);
     mvTable.setRewriteEnabled(false);
 
