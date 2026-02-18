@@ -18,7 +18,7 @@ HiveJoin(condition=[AND(=($1, $7), =($2, $16))], joinType=[inner], algorithm=[no
         HiveFilter(condition=[AND(=($10, 7), IS NOT NULL($25))])
           HiveTableScan(table=[[default, store]], table:alias=[store])
 
-Warning: Map Join MAPJOIN[219][bigTable=?] in task 'Reducer 15' is a cross product
+Warning: Map Join MAPJOIN[231][bigTable=?] in task 'Reducer 12' is a cross product
 CBO PLAN:
 HiveProject(c_last_name=[$0], c_first_name=[$1], s_store_name=[$2], paid=[$3])
   HiveJoin(condition=[>($3, $4)], joinType=[inner], algorithm=[none], cost=[not available])

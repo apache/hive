@@ -39,8 +39,8 @@ HiveProject(d_date_sk=[$0], d_year=[CAST(1999):INTEGER], d_moy=[CAST(1):INTEGER]
   HiveFilter(condition=[AND(=($6, 1999), =($8, 1))])
     HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
-Warning: Map Join MAPJOIN[320][bigTable=?] in task 'Reducer 16' is a cross product
-Warning: Map Join MAPJOIN[322][bigTable=?] in task 'Reducer 17' is a cross product
+Warning: Map Join MAPJOIN[320][bigTable=?] in task 'Reducer 11' is a cross product
+Warning: Map Join MAPJOIN[322][bigTable=?] in task 'Reducer 12' is a cross product
 CBO PLAN:
 HiveProject(_c0=[$0])
   HiveAggregate(group=[{}], agg#0=[sum($0)])

@@ -86,9 +86,9 @@ HiveProject(ss_item_sk=[$0])
                   HiveFilter(condition=[AND(IS NOT NULL($7), IS NOT NULL($9), IS NOT NULL($11))])
                     HiveTableScan(table=[[default, item]], table:alias=[iws])
 
-Warning: Map Join MAPJOIN[1163][bigTable=?] in task 'Reducer 4' is a cross product
-Warning: Map Join MAPJOIN[1265][bigTable=?] in task 'Reducer 28' is a cross product
-Warning: Map Join MAPJOIN[1283][bigTable=?] in task 'Reducer 31' is a cross product
+Warning: Map Join MAPJOIN[1167][bigTable=?] in task 'Reducer 3' is a cross product
+Warning: Map Join MAPJOIN[1245][bigTable=?] in task 'Reducer 19' is a cross product
+Warning: Map Join MAPJOIN[1311][bigTable=?] in task 'Reducer 28' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
   HiveProject(channel=[$0], i_brand_id=[$1], i_class_id=[$2], i_category_id=[$3], _c4=[$4], _c5=[$5])

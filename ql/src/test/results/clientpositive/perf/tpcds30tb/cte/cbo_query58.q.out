@@ -18,8 +18,8 @@ HiveProject(d_date_sk=[$0], d_date=[$2])
   HiveFilter(condition=[IS NOT NULL($2)])
     HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
 
-Warning: Map Join MAPJOIN[385][bigTable=?] in task 'Map 17' is a cross product
-Warning: Map Join MAPJOIN[393][bigTable=?] in task 'Map 16' is a cross product
+Warning: Map Join MAPJOIN[385][bigTable=?] in task 'Map 13' is a cross product
+Warning: Map Join MAPJOIN[393][bigTable=?] in task 'Map 12' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(ss_items.item_id=[$4], ss_item_rev=[$7], ss_dev=[*(/(/($7, +(+($7, $5), $1)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], cs_item_rev=[$5], cs_dev=[*(/(/($5, +(+($7, $5), $1)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], ws_item_rev=[$1], ws_dev=[*(/(/($1, +(+($7, $5), $1)), 3:DECIMAL(10, 0)), 100:DECIMAL(10, 0))], average=[/(+(+($7, $5), $1), 3:DECIMAL(10, 0))])

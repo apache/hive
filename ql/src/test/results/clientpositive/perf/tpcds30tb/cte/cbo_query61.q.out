@@ -22,7 +22,7 @@ HiveProject(s_store_sk=[$0])
   HiveFilter(condition=[=($27, -7:DECIMAL(1, 0))])
     HiveTableScan(table=[[default, store]], table:alias=[store])
 
-Warning: Map Join MAPJOIN[247][bigTable=?] in task 'Reducer 10' is a cross product
+Warning: Map Join MAPJOIN[249][bigTable=?] in task 'Reducer 17' is a cross product
 CBO PLAN:
 HiveProject(promotions=[$0], total=[$1], _c2=[*(/(CAST($0):DECIMAL(15, 4), CAST($1):DECIMAL(15, 4)), 100:DECIMAL(10, 0))])
   HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])

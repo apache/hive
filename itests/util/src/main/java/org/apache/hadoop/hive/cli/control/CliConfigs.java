@@ -349,7 +349,15 @@ public class CliConfigs {
       setQueryDir("ql/src/test/queries/clientpositive/perf");
       setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds30tb/cte");
       setResultsDir("ql/src/test/results/clientpositive/perf/tpcds30tb/cte");
-      setHiveConfDir("data/conf/perf/tpcds30tb/cte");
+      setHiveConfDir("data/conf/perf/tpcds30tb/tez");
+      Map<HiveConf.ConfVars, String> conf = new EnumMap<>(HiveConf.ConfVars.class);
+      conf.put(HiveConf.ConfVars.HIVE_CTE_SUGGESTER_TYPE, "CBO");
+      conf.put(
+          HiveConf.ConfVars.HIVE_CTE_SUGGESTER_CLASS,
+          "org.apache.hadoop.hive.ql.optimizer.calcite.CommonTableExpressionPrintSuggester");
+      conf.put(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD, "1");
+      conf.put(HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY, "false");
+      setCustomConfigValueMap(conf);
       setClusterType(MiniClusterType.LLAP_LOCAL);
       setMetastoreType("postgres.tpcds");
       // At the moment only makes sense to check CBO plans

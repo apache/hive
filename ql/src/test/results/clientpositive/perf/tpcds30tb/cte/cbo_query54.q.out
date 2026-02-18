@@ -8,10 +8,10 @@ HiveFilter(condition=[AND(=($6, 1999), =($8, 3), IS NOT NULL($3))])
 
 Warning: Map Join MAPJOIN[304][bigTable=?] in task 'Map 3' is a cross product
 Warning: Map Join MAPJOIN[298][bigTable=?] in task 'Map 3' is a cross product
-Warning: Map Join MAPJOIN[358][bigTable=?] in task 'Map 21' is a cross product
 Warning: Map Join MAPJOIN[359][bigTable=?] in task 'Map 21' is a cross product
-Warning: Map Join MAPJOIN[378][bigTable=?] in task 'Map 23' is a cross product
+Warning: Map Join MAPJOIN[360][bigTable=?] in task 'Map 21' is a cross product
 Warning: Map Join MAPJOIN[379][bigTable=?] in task 'Map 23' is a cross product
+Warning: Map Join MAPJOIN[380][bigTable=?] in task 'Map 23' is a cross product
 CBO PLAN:
 HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   HiveProject(segment=[$0], num_customers=[$1], segment_base=[*($0, 50)])
