@@ -3317,13 +3317,23 @@ public class AcidUtils {
     //dbName + tableName + dir
     String key = writeIdList.getTableName() + "_" + candidateDirectory.toString();
     DirInfoValue value = dirCache.getIfPresent(key);
+    int tableCreateTimeInCache = value == null ? -1 : value.getTableCreateTime();
+    int tableCreateTime = Utilities.getTableCreateTime(conf, writeIdList.getTableName());
 
     // in case of open/aborted txns, recompute dirInfo
     long[] exceptions = writeIdList.getInvalidWriteIds();
     boolean recompute = (exceptions != null && exceptions.length > 0);
 
+    // Check whether the table was re-created after being stored in the cache.
+    // The value null check avoids a noisy log message during the initial lookup, when no cache entry exists.
+    if (value != null && tableCreateTimeInCache != tableCreateTime) {
+      LOG.info("Table {} was recreated (at: {}) since it was stored in acid cache (at: {}), invalidating entry",
+          writeIdList.getTableName(), tableCreateTime, tableCreateTimeInCache);
+      recompute = true;
+    }
+
     if (recompute) {
-      LOG.info("invalidating cache entry for key: {}", key);
+      LOG.info("Invalidating cache entry for key: {}", key);
       dirCache.invalidate(key);
       value = null;
     }
@@ -3343,7 +3353,7 @@ public class AcidUtils {
     if (recompute || (value == null)) {
       AcidDirectory dirInfo = getAcidState(fileSystem.get(), candidateDirectory, conf,
           writeIdList, useFileIds, ignoreEmptyFiles);
-      value = new DirInfoValue(writeIdList.writeToString(), dirInfo);
+      value = new DirInfoValue(writeIdList.writeToString(), dirInfo, tableCreateTime);
 
       if (value.dirInfo != null && value.dirInfo.getBaseDirectory() != null
           && value.dirInfo.getCurrentDirectories().isEmpty()) {
@@ -3405,12 +3415,14 @@ public class AcidUtils {
   }
 
   static class DirInfoValue {
-    private String txnString;
-    private AcidDirectory dirInfo;
+    private final String txnString;
+    private final AcidDirectory dirInfo;
+    private final int tableCreateTime;
 
-    DirInfoValue(String txnString, AcidDirectory dirInfo) {
+    DirInfoValue(String txnString, AcidDirectory dirInfo, int tableCreateTime) {
       this.txnString = txnString;
       this.dirInfo = dirInfo;
+      this.tableCreateTime = tableCreateTime;
     }
 
     String getTxnString() {
@@ -3419,6 +3431,10 @@ public class AcidUtils {
 
     AcidDirectory getDirInfo() {
       return dirInfo;
+    }
+
+    int getTableCreateTime() {
+      return tableCreateTime;
     }
   }
 

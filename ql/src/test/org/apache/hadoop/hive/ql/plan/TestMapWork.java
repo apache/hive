@@ -26,7 +26,13 @@ import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.mapred.JobConf;
 
 import org.junit.Test;
 
@@ -69,4 +75,35 @@ public class TestMapWork {
         mapWork.getCacheAffinity());
   }
 
+  @Test
+  public void testConfigureJobConfPropagatesTableCreateTime() {
+    // Given a table with a realistic create time
+    String dbName = "test_db";
+    String tableName = "test_table";
+    int createTime = 1770653453;
+
+    Table table = new Table(dbName, tableName);
+    table.setCreateTime(createTime);
+
+    // And a TableScanOperator configured for that table
+    TableScanDesc tsDesc = new TableScanDesc(table);
+    CompilationOpContext cCtx = new CompilationOpContext();
+    TableScanOperator tsOp = new TableScanOperator(cCtx);
+    tsOp.setConf(tsDesc);
+
+    // And a MapWork that uses this TableScanOperator as a root
+    MapWork mapWork = new MapWork();
+    mapWork.getAliasToWork().put("t", tsOp);
+
+    JobConf jobConf = new JobConf();
+
+    // When configuring the job from the MapWork
+    mapWork.configureJobConf(jobConf);
+
+    // Then the table's create time should be present in the JobConf
+    String fullTableName = TableName.getDbTable(dbName, tableName);
+    assertEquals(
+        createTime,
+        Utilities.getTableCreateTime(jobConf, fullTableName));
+  }
 }
