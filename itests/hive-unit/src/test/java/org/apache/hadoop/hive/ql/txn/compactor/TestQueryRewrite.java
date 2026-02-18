@@ -70,7 +70,7 @@ public class TestQueryRewrite extends CompactorOnTezTest {
   public void testQueryIsNotRewrittenWhenMVIsDropped() throws Exception {
 
     // Simulate a multi HS2 cluster.
-    // Drop the MV using a direct API call to HMS. This is similar what happening when the drop MV is executed by
+    // Drop the MV using a direct API call to HMS. This is similar to what happens when the drop MV is executed by
     // another HS2.
     // In this case the MV is not removed from HiveMaterializedViewsRegistry of HS2 which runs the explain query.
     msClient.dropTable(DB, MV1);
