@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
@@ -27,7 +26,6 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUnknownAs;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.RangeSets;
 import org.apache.calcite.util.Sarg;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -61,14 +59,16 @@ public class SearchTransformer<C extends Comparable<C>> {
   private final RexNode ref;
   private final Sarg<C> sarg;
   private final RexUnknownAs unknownContext;
-  protected final RelDataType type;
+  protected final RelDataType operandType;
+  protected final RelDataType expressionType;
 
   public SearchTransformer(RexBuilder rexBuilder, RexCall search, final RexUnknownAs unknownContext) {
     this.rexBuilder = rexBuilder;
     ref = search.getOperands().get(0);
     RexLiteral literal = (RexLiteral) search.operands.get(1);
     sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
-    type = literal.getType();
+    operandType = literal.getType();
+    expressionType = search.getType();
     this.unknownContext = unknownContext;
   }
 
@@ -76,7 +76,7 @@ public class SearchTransformer<C extends Comparable<C>> {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
 
-    RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, type, ref);
+    RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, operandType, ref);
     RangeSets.forEach(sarg.rangeSet, consumer);
 
     List<RexNode> orList = new ArrayList<>();
@@ -97,18 +97,17 @@ public class SearchTransformer<C extends Comparable<C>> {
     }
     orList.addAll(consumer.nodes);
     RexNode x = RexUtil.composeDisjunction(rexBuilder, orList);
-    if (unknownContext == RexUnknownAs.UNKNOWN) {
-      RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
-      RelDataType booleanType = typeFactory.createTypeWithNullability(
-              typeFactory.createSqlType(SqlTypeName.BOOLEAN), type.isNullable());
-      x = rexBuilder.makeCast(booleanType, x, true);
-    }
 
     if (sarg.nullAs == RexUnknownAs.FALSE && unknownContext != RexUnknownAs.FALSE) {
       RexNode notNull = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, ref);
       x = RexUtil.composeConjunction(rexBuilder, Arrays.asList(notNull, x));
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
+
+    if (!expressionType.equals(x.getType()) && x instanceof RexCall transformedCall) {
+      x = rexBuilder.makeCall(expressionType, transformedCall.getOperator(), transformedCall.getOperands());
+    }
+
     return x;
   }
 
