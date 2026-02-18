@@ -530,16 +530,32 @@ POSTHOOK: Input: default@src_txn_2
 228	val_228
 229	val_229
 229	val_229
+PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@partition_mv_1
+PREHOOK: Output: default@partition_mv_1
+POSTHOOK: query: DROP MATERIALIZED VIEW partition_mv_1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@partition_mv_1
+POSTHOOK: Output: default@partition_mv_1
+PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_4
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@partition_mv_4
+PREHOOK: Output: default@partition_mv_4
+POSTHOOK: query: DROP MATERIALIZED VIEW partition_mv_4
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@partition_mv_4
+POSTHOOK: Output: default@partition_mv_4
 PREHOOK: query: EXPLAIN
 SELECT * FROM src_txn_2 where key > 224 and key < 226
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_mv_1
+PREHOOK: Input: default@partition_mv_3
 PREHOOK: Input: default@src_txn_2
 #### A masked pattern was here ####
 POSTHOOK: query: EXPLAIN
 SELECT * FROM src_txn_2 where key > 224 and key < 226
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_mv_1
+POSTHOOK: Input: default@partition_mv_3
 POSTHOOK: Input: default@src_txn_2
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
@@ -551,7 +567,7 @@ STAGE PLANS:
       limit: -1
       Processor Tree:
         TableScan
-          alias: default.partition_mv_1
+          alias: default.partition_mv_3
           filterExpr: ((UDFToDouble(key) > 224.0D) and (UDFToDouble(key) < 226.0D)) (type: boolean)
           Filter Operator
             predicate: ((UDFToDouble(key) > 224.0D) and (UDFToDouble(key) < 226.0D)) (type: boolean)
@@ -562,26 +578,18 @@ STAGE PLANS:
 
 PREHOOK: query: SELECT * FROM src_txn_2 where key > 223 and key < 225
 PREHOOK: type: QUERY
-PREHOOK: Input: default@partition_mv_1
-PREHOOK: Input: default@partition_mv_1@key=224
+PREHOOK: Input: default@partition_mv_3
+PREHOOK: Input: default@partition_mv_3@key=224
 PREHOOK: Input: default@src_txn_2
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM src_txn_2 where key > 223 and key < 225
 POSTHOOK: type: QUERY
-POSTHOOK: Input: default@partition_mv_1
-POSTHOOK: Input: default@partition_mv_1@key=224
+POSTHOOK: Input: default@partition_mv_3
+POSTHOOK: Input: default@partition_mv_3@key=224
 POSTHOOK: Input: default@src_txn_2
 #### A masked pattern was here ####
 224	val_224
 224	val_224
-PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_1
-PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@partition_mv_1
-PREHOOK: Output: default@partition_mv_1
-POSTHOOK: query: DROP MATERIALIZED VIEW partition_mv_1
-POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@partition_mv_1
-POSTHOOK: Output: default@partition_mv_1
 PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_2
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@partition_mv_2
@@ -598,14 +606,6 @@ POSTHOOK: query: DROP MATERIALIZED VIEW partition_mv_3
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@partition_mv_3
 POSTHOOK: Output: default@partition_mv_3
-PREHOOK: query: DROP MATERIALIZED VIEW partition_mv_4
-PREHOOK: type: DROP_MATERIALIZED_VIEW
-PREHOOK: Input: default@partition_mv_4
-PREHOOK: Output: default@partition_mv_4
-POSTHOOK: query: DROP MATERIALIZED VIEW partition_mv_4
-POSTHOOK: type: DROP_MATERIALIZED_VIEW
-POSTHOOK: Input: default@partition_mv_4
-POSTHOOK: Output: default@partition_mv_4
 PREHOOK: query: DROP TABLE src_txn_2
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@src_txn_2
