@@ -353,7 +353,8 @@ public class CliConfigs {
       setClusterType(MiniClusterType.LLAP_LOCAL);
       setMetastoreType("postgres.tpcds");
       // At the moment only makes sense to check CBO plans
-      Set<Integer> skipQueries = ImmutableSet.of(64); // Skipped due to HIVE-29249
+      // TODO: Skip query64 till HIVE-29466 is fixed
+      Set<Integer> skipQueries = ImmutableSet.of(64);
       for (int i = 1; i < 100; i++) {
         if (skipQueries.contains(i)) {
           continue;
