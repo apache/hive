@@ -23,6 +23,18 @@
   <artifactId>hive-it-iceberg-qfile</artifactId>
   <packaging>jar</packaging>
   <name>Hive Integration - QFile Iceberg Tests</name>
+  <repositories>
+    <repository>
+      <id>central</id>
+      <url>https://repo.maven.apache.org/maven2</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
   </properties>
