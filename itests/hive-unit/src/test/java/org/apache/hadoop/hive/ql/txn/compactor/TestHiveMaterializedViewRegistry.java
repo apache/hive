@@ -51,7 +51,7 @@ public class TestHiveMaterializedViewRegistry extends CompactorOnTezTest {
     super.setup();
 
     executeStatementOnDriverSilently("drop materialized view if exists " + MV1, driver);
-    executeStatementOnDriverSilently("drop table if exists" + TABLE1 , driver);
+    executeStatementOnDriverSilently("drop table if exists " + TABLE1 , driver);
 
     executeStatementOnDriver("create table " + TABLE1 + "(a int, b string, c float) stored as orc TBLPROPERTIES ('transactional'='true')", driver);
     executeStatementOnDriver("insert into " + TABLE1 + "(a,b, c) values (1, 'one', 1.1), (2, 'two', 2.2), (NULL, NULL, NULL)", driver);
