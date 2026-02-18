@@ -42,39 +42,26 @@ execHiveCmd () {
     HIVE_LIB=`cygpath -w "$HIVE_LIB"`
   fi
 
-  # For services that may encounter SLF4J conflicts (schemaTool, beeline),
+  # For services that may encounter SLF4J conflicts (schemaTool, schematool, beeline),
   # filter out old SLF4J 1.x jars from HADOOP_CLASSPATH to prevent binding conflicts
-  if [[ "$SERVICE" =~ ^(schemaTool|beeline)$ ]]; then
-    echo "DEBUG: Starting SLF4J conflict check for SERVICE=$SERVICE"
-    echo "DEBUG: HIVE_CONF_DIR=$HIVE_CONF_DIR"
-    echo "DEBUG: HIVE_HOME=$HIVE_HOME"
-    echo "DEBUG: Initial HADOOP_CLIENT_OPTS=$HADOOP_CLIENT_OPTS"
-
+  if [[ "$SERVICE" =~ ^(schemaTool|schematool|beeline)$ ]]; then
     # [FIX]: Check HIVE_HOME/conf FIRST. This ensures we use the built config with the fix.
     if [ -f "${HIVE_HOME}/conf/hive-log4j2.properties" ]; then
-      echo "DEBUG: Found config in HIVE_HOME/conf (Priority)"
       export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_HOME}/conf/hive-log4j2.properties"
     # Only fall back to the system default if the build config is missing
     elif [ -f "${HIVE_CONF_DIR}/hive-log4j2.properties" ]; then
-      echo "DEBUG: Found config in HIVE_CONF_DIR (Fallback)"
       export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_CONF_DIR}/hive-log4j2.properties"
-    else
-      echo "DEBUG: No local hive-log4j2.properties found"
     fi
-
-    echo "DEBUG: Final HADOOP_CLIENT_OPTS=$HADOOP_CLIENT_OPTS"
 
     # Filter HADOOP_CLASSPATH to remove paths with old SLF4J/log4j bindings
     if [ "$HADOOP_CLASSPATH" != "" ]; then
       FILTERED_CP=""
       IFS=':' read -ra CP_ARRAY <<< "$HADOOP_CLASSPATH"
       for cp_entry in "${CP_ARRAY[@]}"; do
-        # Skip wildcard paths pointing to Tez/Hadoop lib directories that contain old SLF4J
-        # This prevents slf4j-log4j12-1.7.x from being loaded alongside slf4j-api-2.0.x
-        if [[ "$cp_entry" == */tez*/lib/* || "$cp_entry" == */tez*/* ]] && [[ "$cp_entry" == *"*"* ]]; then
-          continue
-        fi
-        if [[ "$cp_entry" == */hadoop*/lib/* ]] && [[ "$cp_entry" == *"*"* ]]; then
+        # Skip only specific SLF4J 1.x binding jars by filename
+        if [[ "$(basename "$cp_entry")" == slf4j-log4j12-*.jar || \
+              "$(basename "$cp_entry")" == slf4j-reload4j-*.jar || \
+              "$(basename "$cp_entry")" == log4j-slf4j-impl-*.jar ]]; then
           continue
         fi
         # Skip explicit SLF4J 1.x jar paths
