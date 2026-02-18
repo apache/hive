@@ -108,7 +108,7 @@ class TestMaterializedViewMap {
   void testGetByTableNameFromEmptyCache() {
     MaterializedViewMap emptyCache = new MaterializedViewMap();
 
-    assertThat(emptyCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
+    assertThat(emptyCache.get(defaultMV1.getFullTableName()), is(nullValue()));
   }
 
   @Test
@@ -125,7 +125,7 @@ class TestMaterializedViewMap {
   void testAdd() {
     materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1.getFullTableName()), is(defaultMaterialization1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).stream().findFirst().get(), is(defaultMaterialization1));
     assertThat(materializedViewMap.isEmpty(), is(false));
@@ -138,7 +138,7 @@ class TestMaterializedViewMap {
     materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
     materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1.getFullTableName()), is(defaultMaterialization1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).stream().findFirst().get(), is(defaultMaterialization1));
     assertThat(materializedViewMap.values().size(), is(1));
@@ -165,8 +165,8 @@ class TestMaterializedViewMap {
     materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
     materializedViewMap.putIfAbsent(defaultMV1Same, defaultMaterialization1Same);
 
-    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
-    assertThat(materializedViewMap.get(defaultMV1Same.getDbName(), defaultMV1Same.getTableName()), is(defaultMaterialization1Same));
+    assertThat(materializedViewMap.get(defaultMV1.getFullTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1Same.getFullTableName()), is(defaultMaterialization1Same));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(2));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1Same));
@@ -179,8 +179,8 @@ class TestMaterializedViewMap {
     materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
     materializedViewMap.putIfAbsent(db1MV1, db1Materialization1);
 
-    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
-    assertThat(materializedViewMap.get(db1MV1.getDbName(), db1MV1.getTableName()), is(db1Materialization1));
+    assertThat(materializedViewMap.get(defaultMV1.getFullTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(db1MV1.getFullTableName()), is(db1Materialization1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(2));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(db1Materialization1));
@@ -203,7 +203,7 @@ class TestMaterializedViewMap {
   void testRefreshWhenMVWasNotCached() {
     materializedViewMap.refresh(defaultMV1, defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1.getFullTableName()), is(defaultMaterialization1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
     assertThat(materializedViewMap.isEmpty(), is(false));
@@ -218,7 +218,7 @@ class TestMaterializedViewMap {
     materializedViewMap.refresh(defaultMV1, defaultMV1, newMaterialization);
 
     assertThat(newMaterialization, is(not(defaultMaterialization1)));
-    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(newMaterialization));
+    assertThat(materializedViewMap.get(defaultMV1.getFullTableName()), is(newMaterialization));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(newMaterialization));
     assertThat(materializedViewMap.isEmpty(), is(false));
@@ -231,7 +231,7 @@ class TestMaterializedViewMap {
     materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
     materializedViewMap.refresh(defaultMV1Same, defaultMV1, defaultMaterialization1);
 
-    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultMaterialization1));
+    assertThat(materializedViewMap.get(defaultMV1.getFullTableName()), is(defaultMaterialization1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).size(), is(1));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()), hasItem(defaultMaterialization1));
     assertThat(materializedViewMap.isEmpty(), is(false));
@@ -245,7 +245,7 @@ class TestMaterializedViewMap {
 
     materializedViewMap.remove(defaultMV1);
 
-    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
+    assertThat(materializedViewMap.get(defaultMV1.getFullTableName()), is(nullValue()));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).isEmpty(), is(true));
     assertThat(materializedViewMap.isEmpty(), is(true));
     assertThat(materializedViewMap.values().isEmpty(), is(true));
@@ -255,9 +255,9 @@ class TestMaterializedViewMap {
   void testRemoveByTableName() {
     materializedViewMap.putIfAbsent(defaultMV1, defaultMaterialization1);
 
-    materializedViewMap.remove(defaultMV1.getDbName(), defaultMV1.getTableName());
+    materializedViewMap.remove(defaultMV1.getFullTableName());
 
-    assertThat(materializedViewMap.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
+    assertThat(materializedViewMap.get(defaultMV1.getFullTableName()), is(nullValue()));
     assertThat(materializedViewMap.get(defaultMaterialization1.getAst()).isEmpty(), is(true));
     assertThat(materializedViewMap.isEmpty(), is(true));
     assertThat(materializedViewMap.values().isEmpty(), is(true));

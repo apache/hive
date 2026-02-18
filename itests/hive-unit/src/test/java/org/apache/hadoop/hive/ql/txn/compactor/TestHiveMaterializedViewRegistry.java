@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.hive.common.MaterializationSnapshot;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateMaterializedViewDesc;
@@ -45,6 +46,7 @@ public class TestHiveMaterializedViewRegistry extends CompactorOnTezTest {
   private static final String DB = "default";
   private static final String TABLE1 = "t1";
   private static final String MV1 = "mat1";
+  private static final TableName MV1_NAME = new TableName("hive", DB, MV1);
 
   @Override
   public void setup() throws Exception {
@@ -74,7 +76,7 @@ public class TestHiveMaterializedViewRegistry extends CompactorOnTezTest {
     HiveMaterializedViewsRegistry.get().refresh(Hive.get());
 
     HiveRelOptMaterialization materialization =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(DB, MV1, RewriteAlgorithm.ALL);
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(MV1_NAME, RewriteAlgorithm.ALL);
 
     Assert.assertEquals(DB, materialization.qualifiedTableName.get(0));
     Assert.assertEquals(MV1, materialization.qualifiedTableName.get(1));
@@ -90,7 +92,7 @@ public class TestHiveMaterializedViewRegistry extends CompactorOnTezTest {
     HiveMaterializedViewsRegistry.get().refresh(Hive.get());
 
     HiveRelOptMaterialization materialization =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(DB, MV1, RewriteAlgorithm.ALL);
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(MV1_NAME, RewriteAlgorithm.ALL);
     Assert.assertNull(materialization);
   }
 
@@ -115,7 +117,7 @@ public class TestHiveMaterializedViewRegistry extends CompactorOnTezTest {
     HiveMaterializedViewsRegistry.get().refresh(Hive.get());
 
     HiveRelOptMaterialization materialization =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(DB, MV1, RewriteAlgorithm.ALL);
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(MV1_NAME, RewriteAlgorithm.ALL);
 
     Assert.assertEquals(DB, materialization.qualifiedTableName.get(0));
     Assert.assertEquals(MV1, materialization.qualifiedTableName.get(1));
@@ -141,7 +143,7 @@ public class TestHiveMaterializedViewRegistry extends CompactorOnTezTest {
     HiveMaterializedViewsRegistry.get().refresh(Hive.get());
 
     HiveRelOptMaterialization materialization =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(DB, MV1, RewriteAlgorithm.ALL);
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(MV1_NAME, RewriteAlgorithm.ALL);
     Assert.assertNull(materialization);
   }
 
@@ -163,7 +165,7 @@ public class TestHiveMaterializedViewRegistry extends CompactorOnTezTest {
     HiveMaterializedViewsRegistry.get().refresh(Hive.get());
 
     HiveRelOptMaterialization materialization =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(DB, MV1, RewriteAlgorithm.ALL);
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(MV1_NAME, RewriteAlgorithm.ALL);
 
     Assert.assertEquals(DB, materialization.qualifiedTableName.get(0));
     Assert.assertEquals(MV1, materialization.qualifiedTableName.get(1));
@@ -182,7 +184,7 @@ public class TestHiveMaterializedViewRegistry extends CompactorOnTezTest {
     HiveMaterializedViewsRegistry.get().refresh(Hive.get());
 
     HiveRelOptMaterialization materialization =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(DB, MV1, RewriteAlgorithm.ALL);
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(MV1_NAME, RewriteAlgorithm.ALL);
     Assert.assertNull(materialization);
   }
 

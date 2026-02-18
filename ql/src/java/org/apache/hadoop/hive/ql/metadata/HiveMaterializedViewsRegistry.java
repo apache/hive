@@ -187,8 +187,7 @@ public final class HiveMaterializedViewsRegistry {
                 .collect(Collectors.toSet());
 
         for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
-          RelOptMaterialization existingMV = getRewritingMaterializedView(
-                  mvTable.getDbName(), mvTable.getTableName(), ALL);
+          RelOptMaterialization existingMV = getRewritingMaterializedView(mvTable.getFullTableName(), ALL);
           if (existingMV != null) {
             // We replace if the existing MV is not newer
             Table existingMVTable = HiveMaterializedViewUtils.extractTable(existingMV);
@@ -295,8 +294,7 @@ public final class HiveMaterializedViewsRegistry {
    * Update the materialized view in the registry (if materialized view exists).
    */
   public void refreshMaterializedView(HiveConf conf, Table materializedViewTable) {
-    RelOptMaterialization cached = materializedViewMap.get(
-        materializedViewTable.getDbName(), materializedViewTable.getTableName());
+    RelOptMaterialization cached = materializedViewMap.get(materializedViewTable.getFullTableName());
     if (cached == null) {
       return;
     }
@@ -345,7 +343,7 @@ public final class HiveMaterializedViewsRegistry {
    * Removes the materialized view from the cache (based on qualified name), if exists.
    */
   public void dropMaterializedView(TableName tableName) {
-    materializedViewMap.remove(tableName.getDb(), tableName.getTable());
+    materializedViewMap.remove(tableName);
   }
 
   /**
@@ -365,18 +363,18 @@ public final class HiveMaterializedViewsRegistry {
    * @return the collection of materialized views, or the empty collection if none
    */
   public HiveRelOptMaterialization getRewritingMaterializedView(
-          String dbName, String viewName, Set<RewriteAlgorithm> scope) {
-    HiveRelOptMaterialization materialization = materializedViewMap.get(dbName, viewName);
+          TableName viewName, Set<RewriteAlgorithm> scope) {
+    HiveRelOptMaterialization materialization = materializedViewMap.get(viewName);
     if (materialization == null) {
-      LOG.debug("Materialized view {}.{} not found in registry", dbName, viewName);
+      LOG.debug("Materialized view {} not found in registry", viewName);
       return null;
     }
     if (!materialization.isSupported(scope)) {
-      LOG.debug("Materialized view {}.{} is not available for rewrite algorithm(s) {}", dbName, viewName, scope);
+      LOG.debug("Materialized view {} is not available for rewrite algorithm(s) {}", viewName, scope);
       return null;
     }
 
-    LOG.debug("Found materialized view {}.{} in registry", dbName, viewName);
+    LOG.debug("Found materialized view {} in registry", viewName);
     return materialization;
   }
 

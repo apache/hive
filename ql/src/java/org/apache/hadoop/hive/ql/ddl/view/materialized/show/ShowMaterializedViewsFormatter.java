@@ -137,7 +137,7 @@ abstract class ShowMaterializedViewsFormatter {
   @NotNull
   private static String formatIncrementalRebuildMode(Table materializedView) {
     HiveRelOptMaterialization relOptMaterialization = HiveMaterializedViewsRegistry.get().
-        getRewritingMaterializedView(materializedView.getDbName(), materializedView.getTableName(), ALL);
+        getRewritingMaterializedView(materializedView.getFullTableName(), ALL);
 
     if (relOptMaterialization == null) {
       return NOT_AVAILABLE.getMessage();

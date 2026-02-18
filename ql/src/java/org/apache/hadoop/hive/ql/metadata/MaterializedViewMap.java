@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.slf4j.Logger;
@@ -69,11 +70,11 @@ public class MaterializedViewMap {
   }
 
   private String genKey(Table materializedViewTable) {
-    return genKey(materializedViewTable.getDbName(), materializedViewTable.getTableName());
+    return genKey(materializedViewTable.getFullTableName());
   }
 
-  private String genKey(String dbName, String viewName) {
-    return dbName + viewName;
+  private String genKey(TableName tableName) {
+    return tableName.toString();
   }
 
   void refresh(
@@ -146,21 +147,21 @@ public class MaterializedViewMap {
     }
   }
 
-  public void remove(String dbName, String tableName) {
-    materializedViews.computeIfPresent(genKey(dbName, tableName), (mvTableName, materialization) -> {
+  public void remove(TableName viewName) {
+    materializedViews.computeIfPresent(genKey(viewName), (mvTableName, materialization) -> {
       remove(materialization, HiveMaterializedViewUtils.extractTable(materialization));
       return null;
     });
 
-    LOG.debug("Materialized view {}.{} removed from registry", dbName, tableName);
+    LOG.debug("Materialized view {} removed from registry", viewName);
   }
 
   public Collection<HiveRelOptMaterialization> values() {
     return materializedViews.values();
   }
 
-  HiveRelOptMaterialization get(String dbName, String viewName) {
-    return materializedViews.get(genKey(dbName, viewName));
+  HiveRelOptMaterialization get(TableName viewName) {
+    return materializedViews.get(genKey(viewName));
   }
 
   public Collection<HiveRelOptMaterialization> get(ASTNode astNode) {

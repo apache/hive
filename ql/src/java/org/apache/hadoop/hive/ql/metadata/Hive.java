@@ -2381,7 +2381,7 @@ public class Hive implements AutoCloseable {
         // It passed the test, load
         HiveRelOptMaterialization relOptMaterialization =
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(
-                materializedViewTable.getDbName(), materializedViewTable.getTableName(), scope);
+                materializedViewTable.getFullTableName(), scope);
         if (relOptMaterialization != null) {
           Table cachedMaterializedViewTable = extractTable(relOptMaterialization);
           if (cachedMaterializedViewTable.equals(materializedViewTable)) {
