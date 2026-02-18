@@ -321,9 +321,11 @@ public class TezSessionState {
     final Map<String, LocalResource> commonLocalResources = new HashMap<>();
     final boolean llapMode = "llap".equalsIgnoreCase(HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
 
-    commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
+    //commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
+    LOG.info("SKIP ADDING RESOURCE FOR TESTING: {}", appJarLr);
     for (LocalResource lr : this.resources.localizedResources) {
-      commonLocalResources.put(DagUtils.getBaseName(lr), lr);
+      LOG.info("SKIP ADDING RESOURCE FOR TESTING: {}", lr);
+      //commonLocalResources.put(DagUtils.getBaseName(lr), lr);
     }
 
     if (llapMode) {
