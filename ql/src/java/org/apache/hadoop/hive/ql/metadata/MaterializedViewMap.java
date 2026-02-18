@@ -115,7 +115,7 @@ public class MaterializedViewMap {
   }
 
   public void remove(Table materializedViewTable) {
-    // Delete only if the create time for the input materialized view table and the table
+    // Delete only if the input materialized view table and the table
     // in the map match. Otherwise, keep the one in the map.
     materializedViews.computeIfPresent(genKey(materializedViewTable), (mvTableName, oldMaterialization) -> {
       Table oldTable = HiveMaterializedViewUtils.extractTable(oldMaterialization);
