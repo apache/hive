@@ -206,7 +206,7 @@ public final class HiveMaterializedViewsRegistry {
         }
 
         for (TableName tableName : remaining) {
-          dropMaterializedView(tableName.getDb(), tableName.getTable());
+          dropMaterializedView(tableName);
         }
 
         LOG.info("Materialized views registry has been refreshed");
@@ -344,8 +344,8 @@ public final class HiveMaterializedViewsRegistry {
   /**
    * Removes the materialized view from the cache (based on qualified name), if exists.
    */
-  public void dropMaterializedView(String dbName, String tableName) {
-    materializedViewMap.remove(dbName, tableName);
+  public void dropMaterializedView(TableName tableName) {
+    materializedViewMap.remove(tableName.getDb(), tableName.getTable());
   }
 
   /**

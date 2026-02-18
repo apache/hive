@@ -54,7 +54,7 @@ public class DropMaterializedViewOperation extends DDLOperation<DropMaterialized
 
     // TODO: API w/catalog name
     context.getDb().dropTable(table, false);
-    HiveMaterializedViewsRegistry.get().dropMaterializedView(table.getDbName(), table.getTableName());
+    HiveMaterializedViewsRegistry.get().dropMaterializedView(table.getFullTableName());
     DDLUtils.addIfAbsentByName(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK), context);
 
     return 0;
