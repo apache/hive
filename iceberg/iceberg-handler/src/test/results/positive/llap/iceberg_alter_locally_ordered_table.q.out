@@ -158,7 +158,6 @@ STAGE PLANS:
                           key expressions: _col0 (type: int), _col1 (type: string)
                           null sort order: az
                           sort order: -+
-                          Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string)
                         Select Operator
