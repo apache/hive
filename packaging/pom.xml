@@ -184,6 +184,9 @@
                 <MIT>
                   https?://(www\.)?opensource\.org/licenses/mit(-license.php)?
                 </MIT>
+                <public-domain-1.0.html>
+                  https?://creativecommons\.org/publicdomain/zero/1\.0/?
+                </public-domain-1.0.html>
               </licenseUrlFileNames>
               <licenseUrlFileNameSanitizers>
                 <licenseUrlFileNameSanitizer>
