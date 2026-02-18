@@ -63,7 +63,7 @@ POSTHOOK: Input: default@main_table
 CBO PLAN:
 HiveProject(final_calculated_column=[CASE($2, $4, $1)])
   HiveJoin(condition=[=($0, $3)], joinType=[inner], algorithm=[none], cost=[not available])
-    HiveProject(join_key=[$1], int_col_to_test=[$2], EXPR$0=[CAST(OR(IS NULL($2), =($2, 0))):BOOLEAN NOT NULL])
+    HiveProject(join_key=[$1], int_col_to_test=[$2], EXPR$0=[OR(IS NULL($2), =($2, 0))])
       HiveFilter(condition=[IS NOT NULL($1)])
         HiveTableScan(table=[[default, main_table]], table:alias=[base])
     HiveProject(lookup_key=[$0], EXPR$0=[CASE(IS NOT NULL($1), $1, 0)])
