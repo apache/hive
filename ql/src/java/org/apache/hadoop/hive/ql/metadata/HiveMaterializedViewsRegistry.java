@@ -89,6 +89,7 @@ import com.google.common.collect.ImmutableList;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.hadoop.hive.ql.metadata.RewriteAlgorithm.ALL;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 
 /**
  * Registry for materialized views. The goal of this cache is to avoid parsing and creating
@@ -182,8 +183,7 @@ public final class HiveMaterializedViewsRegistry {
     try {
       if (initialized.get()) {
         Set<TableName> remaining = getRewritingMaterializedViews().stream()
-                .map(materialization -> new TableName(
-                        "hive", materialization.qualifiedTableName.get(0), materialization.qualifiedTableName.get(1)))
+                .map(materialization -> extractTable(materialization).getFullTableName())
                 .collect(Collectors.toSet());
 
         for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
