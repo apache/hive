@@ -890,9 +890,9 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
           Pair::first, Collectors.mapping(Pair::second, Collectors.toList())));
   }
 
-  private List<TransformSpec> getSortTransformSpec(Table table) {
-    return table.sortOrder().fields().stream().map(s ->
-            IcebergTableUtil.getTransformSpec(table, s.transform().toString(), s.sourceId()))
+  private List<TransformSpec> getWriteSortTransformSpecs(Table table) {
+    return table.sortOrder().fields().stream()
+        .map(s -> IcebergTableUtil.getTransformSpec(table, s.transform().toString(), s.sourceId()))
         .toList();
   }
 
@@ -913,11 +913,16 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         hiveConf.getVar(ConfVars.DEFAULT_PARTITION_NAME),
         hiveConf.getIntVar(ConfVars.DYNAMIC_PARTITION_MAX_PARTS_PER_NODE));
 
+    // Add Iceberg partition transforms as custom partition expressions.
+    // These are required for clustering by partition spec/values for clustered writers.
     if (table.spec().isPartitioned() &&
-          hiveConf.getIntVar(ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD) >= 0) {
-      addCustomSortExpr(table, hmsTable, writeOperation, dpCtx, getPartitionTransformSpec(hmsTable));
+        hiveConf.getIntVar(ConfVars.HIVE_OPT_SORT_DYNAMIC_PARTITION_THRESHOLD) >= 0) {
+      addCustomPartitionTransformExpressions(table, hmsTable, writeOperation, dpCtx,
+          getPartitionTransformSpec(hmsTable));
     }
 
+    // Add write sort order expressions as custom sort expressions.
+    // These are used ONLY for sorting within reducers, NOT for distribution.
     SortOrder sortOrder = table.sortOrder();
     if (sortOrder.isSorted()) {
       List<Integer> customSortPositions = Lists.newLinkedList();
@@ -943,7 +948,8 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
         }
       }
 
-      addCustomSortExpr(table, hmsTable, writeOperation, dpCtx, getSortTransformSpec(table));
+      addCustomWriteSortExpressions(table, hmsTable, writeOperation, dpCtx,
+          getWriteSortTransformSpecs(table));
     }
 
     // Even if table has no explicit sort order, honor z-order if configured
@@ -999,21 +1005,43 @@ public class HiveIcebergStorageHandler extends DefaultStorageHandler implements 
     }
   }
 
-  private void addCustomSortExpr(Table table,  org.apache.hadoop.hive.ql.metadata.Table hmsTable,
-      Operation writeOperation, DynamicPartitionCtx dpCtx,
-      List<TransformSpec> transformSpecs) {
+  private void addCustomPartitionTransformExpressions(Table table,
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation,
+      DynamicPartitionCtx dpCtx, List<TransformSpec> transformSpecs) {
+    Map<String, Integer> fieldOrderMap = buildFieldOrderMap(table);
+    int offset = getWriteRowOffset(hmsTable, writeOperation);
+
+    dpCtx.addCustomPartitionExpressions(transformSpecs.stream()
+        .map(spec -> IcebergTransformSortFunctionUtil.getCustomTransformExpr(
+            spec, fieldOrderMap.get(spec.getColumnName()) + offset))
+        .collect(Collectors.toList()));
+  }
+
+  private void addCustomWriteSortExpressions(Table table,
+      org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation,
+      DynamicPartitionCtx dpCtx, List<TransformSpec> transformSpecs) {
+    Map<String, Integer> fieldOrderMap = buildFieldOrderMap(table);
+    int offset = getWriteRowOffset(hmsTable, writeOperation);
+
+    dpCtx.addCustomSortExpressions(transformSpecs.stream()
+        .map(spec -> IcebergTransformSortFunctionUtil.getCustomTransformExpr(
+            spec, fieldOrderMap.get(spec.getColumnName()) + offset))
+        .collect(Collectors.toList()));
+  }
+
+  private Map<String, Integer> buildFieldOrderMap(Table table) {
     List<Types.NestedField> fields = table.schema().columns();
     Map<String, Integer> fieldOrderMap = Maps.newHashMapWithExpectedSize(fields.size());
     for (int i = 0; i < fields.size(); ++i) {
       fieldOrderMap.put(fields.get(i).name(), i);
     }
+    return fieldOrderMap;
+  }
 
-    int offset = (shouldOverwrite(hmsTable, writeOperation) ?
-        ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA : acidSelectColumns(hmsTable, writeOperation)).size();
-
-    dpCtx.addCustomSortExpressions(transformSpecs.stream().map(spec ->
-        IcebergTransformSortFunctionUtil.getCustomSortExprs(spec, fieldOrderMap.get(spec.getColumnName()) + offset)
-    ).collect(Collectors.toList()));
+  private int getWriteRowOffset(org.apache.hadoop.hive.ql.metadata.Table hmsTable, Operation writeOperation) {
+    return (shouldOverwrite(hmsTable, writeOperation) ?
+        ACID_VIRTUAL_COLS_AS_FIELD_SCHEMA :
+        acidSelectColumns(hmsTable, writeOperation)).size();
   }
 
   @Override
