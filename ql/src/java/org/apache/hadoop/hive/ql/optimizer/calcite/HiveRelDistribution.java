@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import java.util.Objects;
 import org.apache.calcite.plan.RelMultipleTrait;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTrait;
@@ -96,11 +95,9 @@ public class HiveRelDistribution implements RelDistribution {
       tmp.put(aMapping.source, aMapping.target);
     }
 
-    keys.stream()
-        .map(tmp::get)
-        .filter(Objects::nonNull)
-        .forEach(newKeys::add);
-    
+    for (Integer key : keys) {
+      newKeys.add(tmp.get(key));
+    }
     return new HiveRelDistribution(type, newKeys);
   }
 
