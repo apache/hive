@@ -1107,12 +1107,11 @@ public class HiveRelOptUtil extends RelOptUtil {
     Set<Integer> needed = new HashSet<>();
     for (RelFieldCollation fc : sortCollation.getFieldCollations()) {
       needed.add(fc.getFieldIndex());
-      int target;
-      try {
-        target = map.getTarget(fc.getFieldIndex());
-      } catch (Mappings.NoElementException e) {
+      int target = map.getTargetOpt(fc.getFieldIndex());
+      if (target == -1) {
         // If there is no mapping for this field, we cannot push down the sort
-        LOG.error("Missing target mapping: {}", e.toString());
+        LOG.debug("Missing target mapping for field index: {}. Cannot apply " +
+            "HiveProjectSort[Exchange]TransposeRule", fc.getFieldIndex());
         return null;
       }
       final RexNode node = project.getProjects().get(target);
