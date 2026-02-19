@@ -382,7 +382,7 @@ public class QTestUtil {
           continue;
         }
         db.dropTable(dbName, tblName, true, true, fsType == FsType.ENCRYPTED_HDFS);
-        HiveMaterializedViewsRegistry.get().dropMaterializedView(tblObj.getDbName(), tblObj.getTableName());
+        HiveMaterializedViewsRegistry.get().dropMaterializedView(tblObj.getFullTableName());
       }
     }
 

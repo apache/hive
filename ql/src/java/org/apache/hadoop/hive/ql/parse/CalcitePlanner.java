@@ -2085,7 +2085,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       for (RelOptMaterialization materialization : materializations) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Adding materialization {} to the planner; the plan is:\n{}", materialization.qualifiedTableName,
-              RelOptUtil.toString(materialization.queryRel));
+                  RelOptUtil.toString(materialization.queryRel));
         }
         planner.addMaterialization(materialization);
       }
@@ -2105,20 +2105,25 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final String ruleExclusionRegex = conf.get(ConfVars.HIVE_CBO_RULE_EXCLUSION_REGEX.varname, "");
       if (!ruleExclusionRegex.isEmpty()) {
         LOG.info("The CBO rules matching the following regex are excluded from planning: {}",
-            ruleExclusionRegex);
+                ruleExclusionRegex);
         planner.setRuleDescExclusionFilter(Pattern.compile(ruleExclusionRegex));
       }
       planner.setRoot(basePlan);
-      basePlan = planner.findBestExp();
-      // Remove view-based rewriting rules from planner
-      planner.clear();
+      try {
+        return planner.findBestExp();
+      } catch (Exception ex) {
+        LOG.warn("Error while performing materialized view based query rewrite", ex);
+        return basePlan;
+      } finally {
+        // Remove view-based rewriting rules from planner
+        planner.clear();
 
-      // Restore default cost model
-      optCluster.invalidateMetadataQuery();
-      RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
+        // Restore default cost model
+        optCluster.invalidateMetadataQuery();
+        RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.of(mdProvider));
 
-      perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
-      return basePlan;
+        perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: View-based rewriting");
+      }
     }
 
     private RelNode applyCteRewriting(RelOptPlanner planner,  RelNode basePlan, RelMetadataProvider mdProvider, RexExecutor executorProvider) {
