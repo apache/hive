@@ -1109,9 +1109,7 @@ public class HiveRelOptUtil extends RelOptUtil {
       needed.add(fc.getFieldIndex());
       int target = map.getTargetOpt(fc.getFieldIndex());
       if (target == -1) {
-        // If there is no mapping for this field, we cannot push down the sort
-        LOG.debug("Missing target mapping for field index: {}. Cannot apply " +
-            "HiveProjectSort[Exchange]TransposeRule", fc.getFieldIndex());
+        // If there is no mapping for this field, we return null early.
         return null;
       }
       final RexNode node = project.getProjects().get(target);
