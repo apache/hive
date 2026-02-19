@@ -59,14 +59,16 @@ public class SearchTransformer<C extends Comparable<C>> {
   private final RexNode ref;
   private final Sarg<C> sarg;
   private final RexUnknownAs unknownContext;
-  protected final RelDataType type;
+  protected final RelDataType operandType;
+  protected final RelDataType expressionType;
 
   public SearchTransformer(RexBuilder rexBuilder, RexCall search, final RexUnknownAs unknownContext) {
     this.rexBuilder = rexBuilder;
     ref = search.getOperands().get(0);
     RexLiteral literal = (RexLiteral) search.operands.get(1);
     sarg = Objects.requireNonNull(literal.getValueAs(Sarg.class), "Sarg");
-    type = literal.getType();
+    operandType = literal.getType();
+    expressionType = search.getType();
     this.unknownContext = unknownContext;
   }
 
@@ -74,7 +76,7 @@ public class SearchTransformer<C extends Comparable<C>> {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
 
-    RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, type, ref);
+    RangeConverter<C> consumer = new RangeConverter<>(rexBuilder, operandType, ref);
     RangeSets.forEach(sarg.rangeSet, consumer);
 
     List<RexNode> orList = new ArrayList<>();
@@ -101,6 +103,11 @@ public class SearchTransformer<C extends Comparable<C>> {
       x = RexUtil.composeConjunction(rexBuilder, Arrays.asList(notNull, x));
     }
     perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.SEARCH_TRANSFORMER);
+
+    if (!expressionType.equals(x.getType()) && x instanceof RexCall transformedCall) {
+      x = rexBuilder.makeCall(expressionType, transformedCall.getOperator(), transformedCall.getOperands());
+    }
+
     return x;
   }
 
