@@ -44,6 +44,7 @@ import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
 import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.core.Spool;
+import org.apache.calcite.rel.core.TableSpool;
 import org.apache.calcite.rel.core.Window.RexWinAggCall;
 import org.apache.calcite.rel.rules.MultiJoin;
 import org.apache.calcite.rel.type.RelDataType;
@@ -266,6 +267,10 @@ public class PlanModifierForASTConv {
       if (rel instanceof DruidQuery dq) {
         aliases.add(((HiveTableScan) dq.getTableScan()).getTableAlias().toLowerCase());
         return dq;
+      }
+      if (rel instanceof TableSpool spool) {
+        aliases.add(spool.getTable().getQualifiedName().getLast().toLowerCase());
+        return spool;
       }
       return super.visit(rel);
     }
