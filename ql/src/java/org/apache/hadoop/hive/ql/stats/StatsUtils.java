@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -509,7 +510,7 @@ public class StatsUtils {
         if (csPK.getRange() != null && csFK.getRange() != null) {
           ColStatistics.Range pkRange = csPK.getRange();
           ColStatistics.Range fkRange = csFK.getRange();
-          return isWithin(fkRange, pkRange);
+          return isWithin(fkRange, pkRange, Number::longValue);
         }
       }
     }
@@ -546,13 +547,22 @@ public class StatsUtils {
     return 0;
   }
 
-  private static boolean isWithin(ColStatistics.Range range1, ColStatistics.Range range2) {
-    if (range1.minValue != null && range2.minValue != null && range1.maxValue != null &&
-        range2.maxValue != null) {
-      if (range1.minValue.longValue() >= range2.minValue.longValue() &&
-          range1.maxValue.longValue() <= range2.maxValue.longValue()) {
-        return true;
-      }
+  /**
+   * Returns whether range r1 is fully contained within r2. The comparison is done by applying
+   * the converter function to the min and max values of both ranges.
+   * @param r1 the first range
+   * @param r2 the second range
+   * @param converter the converter function to apply to the min and max values of the ranges
+   * @return true if r1 is fully contained within r2, false otherwise
+   */
+  public static <T extends Comparable<T>> boolean isWithin(ColStatistics.Range r1, ColStatistics.Range r2,
+      Function<Number, T> converter) {
+    if (r1.minValue != null && r2.minValue != null && r1.maxValue != null && r2.maxValue != null) {
+      T r1Min = converter.apply(r1.minValue);
+      T r1Max = converter.apply(r1.maxValue);
+      T r2Min = converter.apply(r2.minValue);
+      T r2Max = converter.apply(r2.maxValue);
+      return r1Min.compareTo(r2Min) >= 0 && r1Max.compareTo(r2Max) <= 0;
     }
     return false;
   }

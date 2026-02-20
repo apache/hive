@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -232,12 +233,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return false;
     }
 
-    // we need to check that the possible values of the input to the cast are all within the type range of the cast
-    // otherwise the CAST introduces some modulo-like behavior (*)
+    // Check that the possible values of the input column are all within the type range of the cast
+    // otherwise the CAST introduces some modulo-like behavior
     ColStatistics colStat = colStats.getFirst();
-    ColStatistics.Range range = colStat.getRange();
-    if (range == null || range.minValue == null || Double.isNaN(
-        range.minValue.doubleValue()) || range.maxValue == null || Double.isNaN(range.maxValue.doubleValue())) {
+    ColStatistics.Range colRange = colStat.getRange();
+    if (colRange == null) {
       return false;
     }
 
@@ -266,12 +266,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       // unknown type, do not remove the cast
       return false;
     }
-
-    // see (*)
-    if (range.minValue.doubleValue() < min || range.maxValue.doubleValue() > max) {
-      return false;
-    }
-    return true;
+    ColStatistics.Range typeRange = new ColStatistics.Range(min, max);
+    return StatsUtils.isWithin(colRange, typeRange, Number::doubleValue);
   }
 
   /**
