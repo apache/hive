@@ -206,8 +206,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       rewrittenAST = ParseUtils.parse(rewrittenInsertStatement, ctx);
       this.ctx.addSubContext(ctx);
 
-      if (!this.ctx.isExplainPlan() && (AcidUtils.isTransactionalTable(table) ||
-              table.isNonNative() && table.getStorageHandler().areSnapshotsSupported())) {
+      if (!this.ctx.isExplainPlan() && (AcidUtils.isTransactionalTable(table))) {
         // Acquire lock for the given materialized view. Only one rebuild per materialized view can be triggered at a
         // given time, as otherwise we might produce incorrect results if incremental maintenance is triggered.
         HiveTxnManager txnManager = getTxnMgr();
