@@ -33,6 +33,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
@@ -204,36 +205,31 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   /**
-   * If the cast can be removed, just return its operand and adjust the boundaries if necessary.
+   * Return whether the expression is a removable cast based on stats and type bounds.
    *
    * <p>
-   *   In Hive, if a value cannot be represented by the cast, the result of the cast is NULL,
-   *   and therefore cannot fulfill the predicate. So the possible range of the values
-   *   is limited by the range of possible values of the type.
+   * In Hive, if a value cannot be represented by the cast, the result of the cast is NULL,
+   * and therefore cannot fulfill the predicate. So the possible range of the values
+   * is limited by the range of possible values of the type.
    * </p>
    *
-   * <p>
-   *   Special care is taken to support the cast to DECIMAL(precision, scale):
-   *   The cast to DECIMAL rounds the value the same way as {@link RoundingMode#HALF_UP}.
-   *   The boundaries are adjusted accordingly.
-   * </p>
-   *
-   * @param cast a RexCall of type {@link SqlKind#CAST}
+   * @param exp       the expression to check
    * @param tableScan the table that provides the statistics
-   * @param rangeBoundaries see {@link #adjustBoundariesForDecimal(RexCall, MutableObject, MutableObject)}; might get modified
-   * @param typeBoundaries see {@link #adjustBoundariesForDecimal(RexCall, MutableObject, MutableObject)}; might get modified
-   * @return the operand if the cast can be removed, otherwise the cast itself
+   * @return true if the expression is a removable cast, false otherwise
    */
-  private RexNode removeCastIfPossible(RexCall cast, HiveTableScan tableScan,
-      MutableObject<FloatInterval> rangeBoundaries, MutableObject<FloatInterval> typeBoundaries) {
+  private boolean isRemovableCast(RexNode exp, HiveTableScan tableScan) {
+    if(SqlKind.CAST != exp.getKind()) {
+      return false;
+    }
+    RexCall cast = (RexCall) exp;
     RexNode op0 = cast.getOperands().getFirst();
     if (!(op0 instanceof RexInputRef)) {
-      return cast;
+      return false;
     }
     int index = ((RexInputRef) op0).getIndex();
     final List<ColStatistics> colStats = tableScan.getColStat(Collections.singletonList(index));
     if (colStats.isEmpty()) {
-      return cast;
+      return false;
     }
 
     // we need to check that the possible values of the input to the cast are all within the type range of the cast
@@ -242,7 +238,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     ColStatistics.Range range = colStat.getRange();
     if (range == null || range.minValue == null || Double.isNaN(
         range.minValue.doubleValue()) || range.maxValue == null || Double.isNaN(range.maxValue.doubleValue())) {
-      return cast;
+      return false;
     }
 
     SqlTypeName type = cast.getType().getSqlTypeName();
@@ -268,32 +264,36 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       break;
     default:
       // unknown type, do not remove the cast
-      return cast;
+      return false;
     }
 
     // see (*)
     if (range.minValue.doubleValue() < min || range.maxValue.doubleValue() > max) {
-      return cast;
+      return false;
     }
-
-    if (type == SqlTypeName.DECIMAL) {
-      adjustBoundariesForDecimal(cast, rangeBoundaries, typeBoundaries);
-    }
-
-    return op0;
+    return true;
   }
 
   /**
-   * Adjust the boundaries for a DECIMAL cast.
+   * Adjust the type boundaries if necessary.
+   *
+   * <p>
+   *   Special care is taken to support the cast to DECIMAL(precision, scale):
+   *   The cast to DECIMAL rounds the value the same way as {@link RoundingMode#HALF_UP}.
+   *   The boundaries are adjusted accordingly.
+   * </p>
    *
    * @param rangeBoundaries boundaries of the range predicate
    * @param typeBoundaries if not null, will be set to the boundaries of the type range
    */
-  private static void adjustBoundariesForDecimal(RexCall cast, MutableObject<FloatInterval> rangeBoundaries,
+  private static void adjustTypeBoundaries(RelDataType type, MutableObject<FloatInterval> rangeBoundaries,
       MutableObject<FloatInterval> typeBoundaries) {
+    if (type.getSqlTypeName() != SqlTypeName.DECIMAL) {
+      return;
+    }
     // values outside the representable range are cast to NULL, so adapt the boundaries
-    int precision = cast.getType().getPrecision();
-    int scale = cast.getType().getScale();
+    int precision = type.getPrecision();
+    int scale = type.getScale();
     int digits = precision - scale;
     // the cast does some rounding, i.e., CAST(99.9499 AS DECIMAL(3,1)) = 99.9
     // but CAST(99.95 AS DECIMAL(3,1)) = NULL
@@ -358,8 +358,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     final HiveTableScan scan = (HiveTableScan) childRel;
     int inputRefOpIndex = 1 - literalOpIdx;
     RexNode node = operands.get(inputRefOpIndex);
-    if (node.getKind().equals(SqlKind.CAST)) {
-      node = removeCastIfPossible((RexCall) node, scan, boundaries, null);
+    if (isRemovableCast(node, scan)) {
+      adjustTypeBoundaries(node.getType(), boundaries, null);
+      node = RexUtil.removeCast(node);
     }
 
     int inputRefIndex = -1;
@@ -439,8 +440,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
           new FloatInterval(Float.NEGATIVE_INFINITY, true, Float.POSITIVE_INFINITY, true)) : null;
 
       RexNode expr = operands.get(1); // expr to be checked by the BETWEEN
-      if (expr.getKind().equals(SqlKind.CAST)) {
-        expr = removeCastIfPossible((RexCall) expr, scan, rangeBoundaries, typeBoundaries);
+      if (isRemovableCast(expr, scan)) {
+        adjustTypeBoundaries(expr.getType(), rangeBoundaries, typeBoundaries);
+        expr = RexUtil.removeCast(expr);
       }
 
       int inputRefIndex = -1;
