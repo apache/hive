@@ -135,6 +135,7 @@ import org.apache.calcite.util.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.CteSuggesterType;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
@@ -636,7 +637,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             // unfortunately making prunedPartitions immutable is not possible
             // here with SemiJoins not all tables are costed in CBO, so their
             // PartitionList is not evaluated until the run phase.
-            getMetaData(getQB(), true);
+            getMetaData(getQB(), CteSuggesterType.CBO.enabled(conf));
 
             disableJoinMerge = defaultJoinMerge;
             sinkOp = genPlan(getQB());
@@ -1727,7 +1728,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.POSTJOIN_ORDERING);
       // Perform the CTE rewriting near the end of CBO transformations to avoid interference of the new HiveTableSpool 
       // operator with other rules (especially those related to constant folding and branch pruning).
-      if (!forViewCreation) {
+      if (!forViewCreation && CteSuggesterType.CBO.enabled(conf)) {
         calcitePlan = applyCteRewriting(planner, calcitePlan, mdProvider.getMetadataProvider(), executorProvider);
         if (LOG.isDebugEnabled()) {
           LOG.debug("Plan after CTE rewriting:\n{}", RelOptUtil.toString(calcitePlan));
