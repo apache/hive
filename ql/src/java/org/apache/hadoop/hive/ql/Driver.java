@@ -277,8 +277,7 @@ public class Driver implements IDriver {
             driverTxnHandler.setWriteIdForAcidFileSinks();
           }
           // Since we're reusing the compiled plan, we need to update its start time for current run
-          driverContext.getPlan().setQueryStartTime(
-              driverContext.getQueryDisplay().getQueryStartTime());
+          driverContext.recordQueryStartTime();
           driverContext.setRetrial(false);
         }
         // Re-check snapshot only in case we had to release locks and open a new transaction,

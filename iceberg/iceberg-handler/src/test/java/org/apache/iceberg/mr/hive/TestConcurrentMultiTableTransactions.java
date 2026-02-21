@@ -38,10 +38,10 @@ import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 
 @WithMockedStorageHandler
-public class TestXAConflictingDataFiles extends HiveIcebergStorageHandlerWithEngineBase {
+public class TestConcurrentMultiTableTransactions extends HiveIcebergStorageHandlerWithEngineBase {
 
   public static final String XA_STORAGE_HANDLER_STUB =
-      "'org.apache.iceberg.mr.hive.test.concurrent.XAHiveIcebergStorageHandlerStub'";
+      "'org.apache.iceberg.mr.hive.test.concurrent.HiveIcebergStorageHandlerTxnStub'";
 
   @Parameters(name = "fileFormat={0}, catalog={1}, isVectorized={2}, formatVersion={3}")
   public static Collection<Object[]> parameters() {

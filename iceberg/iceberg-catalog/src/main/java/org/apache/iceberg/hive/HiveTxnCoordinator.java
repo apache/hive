@@ -108,19 +108,17 @@ public class HiveTxnCoordinator implements TxnCoordinator {
               base.propertyAsInt(COMMIT_TOTAL_RETRY_TIME_MS, COMMIT_TOTAL_RETRY_TIME_MS_DEFAULT),
               2.0 /* exponential */)
           .onlyRetryOn(CommitFailedException.class)
-          .run(i -> doCommit(updates));
+          .run(i -> {
+            try {
+              doCommit(updates);
+            } catch (RuntimeException e) {
+              cleanUpOnCommitFailure(e);
+              throw e;
+            }
+          });
 
-    } catch (CommitStateUnknownException e) {
+    } catch (ValidationException e) {
       throw MetaStoreUtils.newMetaException(e);
-
-    } catch (ValidationException | CommitFailedException e) {
-      // All retries exhausted — clean up manifests, metadata files, and uncommitted files
-      cleanUpOnCommitFailure(e);
-      throw MetaStoreUtils.newMetaException(e);
-
-    } catch (RuntimeException e) {
-      cleanUpOnCommitFailure(e);
-      throw e;
 
     } finally {
       clearState();
@@ -187,32 +185,21 @@ public class HiveTxnCoordinator implements TxnCoordinator {
             le);
       }
 
-      releaseLocks(locks);
-
-    } catch (CommitStateUnknownException e) {
-      // Commit may have succeeded — do NOT clean up metadata/manifests, only release locks
-      releaseLocks(locks);
-      throw e;
-
     } catch (LockException e) {
       // Lock acquisition or pre-persist ensureActive failed — safe to retry
-      releaseLocks(locks);
       throw new CommitFailedException(e);
 
     } catch (TException e) {
       if (isCasFailure(e)) {
-        releaseLocks(locks);
         throw new CommitFailedException(e,
             "The table %s.%s has been modified concurrently",
             payload.getLast().getDb_name(), payload.getLast().getTable_name());
       }
       // Non-CAS TException from updateTableParams — we can't tell if the batch update was applied
-      releaseLocks(locks);
       throw new CommitStateUnknownException(e);
 
-    } catch (RuntimeException e) {
+    } finally {
       releaseLocks(locks);
-      throw e;
     }
   }
 
@@ -297,6 +284,9 @@ public class HiveTxnCoordinator implements TxnCoordinator {
   }
 
   private void cleanUpOnCommitFailure(Exception ex) {
+    if (ex instanceof CommitStateUnknownException) {
+      return;
+    }
     stagedUpdates.values().forEach(txn -> {
       if (!txn.ops().requireStrictCleanup() || ex instanceof CleanableFailure) {
         txn.cleanUpOnCommitFailure();

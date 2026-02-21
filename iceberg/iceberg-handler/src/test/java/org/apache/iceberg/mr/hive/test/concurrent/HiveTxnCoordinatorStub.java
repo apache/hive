@@ -24,9 +24,9 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.iceberg.hive.HiveTxnCoordinator;
 import org.apache.thrift.TException;
 
-public class XAHiveTxnCoordinatorStub extends HiveTxnCoordinator {
+public class HiveTxnCoordinatorStub extends HiveTxnCoordinator {
 
-  public XAHiveTxnCoordinatorStub(Configuration conf, IMetaStoreClient msClient) {
+  public HiveTxnCoordinatorStub(Configuration conf, IMetaStoreClient msClient) {
     super(conf, msClient);
   }
 

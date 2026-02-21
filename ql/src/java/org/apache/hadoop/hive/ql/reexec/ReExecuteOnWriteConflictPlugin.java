@@ -26,16 +26,11 @@ import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
-
 public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
   private static final Logger LOG = LoggerFactory.getLogger(ReExecuteOnWriteConflictPlugin.class);
   private static boolean retryPossible;
 
-  private static final Set<String> RETRYABLE_EXCEPTION_CLASS_NAMES = Set.of(
-      "org.apache.iceberg.exceptions.ValidationException",
-      "org.apache.iceberg.exceptions.CommitFailedException"
-  );
+  private static final String validationException = "org.apache.iceberg.exceptions.ValidationException";
 
   private static final class LocalHook implements ExecuteWithHookContext {
     @Override
@@ -57,7 +52,7 @@ public class ReExecuteOnWriteConflictPlugin implements IReExecutionPlugin {
   }
 
   private static boolean isRetryable(Throwable t) {
-    return RETRYABLE_EXCEPTION_CLASS_NAMES.contains(t.getClass().getName());
+    return validationException.equals(t.getClass().getName());
   }
 
   @Override
