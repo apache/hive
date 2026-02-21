@@ -3051,15 +3051,47 @@ public class StatsRulesProcFactory {
         final Map<String, ExprNodeDesc> columnExprMap = lop.getColumnExprMap();
         final RowSchema schema = lop.getSchema();
 
+        int numSelectCols = parents.get(LateralViewJoinOperator.SELECT_TAG).getSchema().getSignature().size();
+
+        List<ColumnInfo> selectColInfos = new ArrayList<>(numSelectCols);
+        Map<String, ExprNodeDesc> selectExprMap = new HashMap<>();
+
+        List<ColumnInfo> udtfColInfos = new ArrayList<>(Math.max(0, schema.getSignature().size() - numSelectCols));
+        Map<String, ExprNodeDesc> udtfExprMap = new HashMap<>();
+
+        // Strictly isolate both the Schema and Expression Map by parent
+        List<ColumnInfo> signature = schema.getSignature();
+        for (int i = 0; i < signature.size(); i++) {
+          ColumnInfo ci = signature.get(i);
+          String internalName = ci.getInternalName();
+
+          if (i < numSelectCols) {
+            selectColInfos.add(ci);
+            if (columnExprMap.containsKey(internalName)) {
+              selectExprMap.put(internalName, columnExprMap.get(internalName));
+            }
+          } else {
+            udtfColInfos.add(ci);
+            if (columnExprMap.containsKey(internalName)) {
+              udtfExprMap.put(internalName, columnExprMap.get(internalName));
+            }
+          }
+        }
+
+        RowSchema selectSchema = new RowSchema(selectColInfos);
+        RowSchema udtfSchema = new RowSchema(udtfColInfos);
+
+        // Select branch stats
         joinedStats.updateColumnStatsState(selectStats.getColumnStatsState());
         final List<ColStatistics> selectColStats = StatsUtils
-                .getColStatisticsFromExprMap(conf, selectStats, columnExprMap, schema);
+                .getColStatisticsFromExprMap(conf, selectStats, selectExprMap, selectSchema);
         StatsUtils.scaleColStatistics(selectColStats, factor);
         joinedStats.addToColumnStats(selectColStats);
 
+        // UDTF branch stats
         joinedStats.updateColumnStatsState(udtfStats.getColumnStatsState());
         final List<ColStatistics> udtfColStats = StatsUtils
-                .getColStatisticsFromExprMap(conf, udtfStats, columnExprMap, schema);
+                .getColStatisticsFromExprMap(conf, udtfStats, udtfExprMap, udtfSchema);
         joinedStats.addToColumnStats(udtfColStats);
       }
 

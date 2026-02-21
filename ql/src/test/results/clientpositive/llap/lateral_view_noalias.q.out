@@ -294,5 +294,3 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@lv_noalias
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-key1	100	key1	100
-key2	200	key2	200
