@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.iceberg.hive.HiveTxnCoordinator;
 import org.apache.iceberg.mr.hive.HiveIcebergOutputCommitter;
 
-public class XAHiveIcebergStorageHandlerStub extends HiveIcebergStorageHandlerStub {
+public class HiveIcebergStorageHandlerTxnStub extends HiveIcebergStorageHandlerStub {
 
   @Override
   public HiveIcebergOutputCommitter getOutputCommitter() {
@@ -32,7 +32,7 @@ public class XAHiveIcebergStorageHandlerStub extends HiveIcebergStorageHandlerSt
 
     txnManager.getOrSetTxnCoordinator(
         HiveTxnCoordinator.class,
-        msClient -> new XAHiveTxnCoordinatorStub(conf, msClient));
+        msClient -> new HiveTxnCoordinatorStub(conf, msClient));
 
     return super.getOutputCommitter();
   }
