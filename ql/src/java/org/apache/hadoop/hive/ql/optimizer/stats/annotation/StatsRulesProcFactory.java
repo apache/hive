@@ -3049,37 +3049,23 @@ public class StatsRulesProcFactory {
 
       if (satisfyPrecondition(selectStats) && satisfyPrecondition(udtfStats)) {
         final Map<String, ExprNodeDesc> columnExprMap = lop.getColumnExprMap();
-        final RowSchema schema = lop.getSchema();
+        final List<ColumnInfo> signature = lop.getSchema().getSignature();
+        final int numSelColumns = lop.getConf().getNumSelColumns();
 
-        int numSelectCols = parents.get(LateralViewJoinOperator.SELECT_TAG).getSchema().getSignature().size();
+        // Split schemas using subList
+        RowSchema selectSchema = new RowSchema(new ArrayList<>(signature.subList(0, numSelColumns)));
+        RowSchema udtfSchema = new RowSchema(new ArrayList<>(signature.subList(numSelColumns, signature.size())));
 
-        List<ColumnInfo> selectColInfos = new ArrayList<>(numSelectCols);
+        // Filter expression maps to avoid cross-contamination in getColStatisticsFromExprMap
         Map<String, ExprNodeDesc> selectExprMap = new HashMap<>();
-
-        List<ColumnInfo> udtfColInfos = new ArrayList<>(Math.max(0, schema.getSignature().size() - numSelectCols));
         Map<String, ExprNodeDesc> udtfExprMap = new HashMap<>();
-
-        // Strictly isolate both the Schema and Expression Map by parent
-        List<ColumnInfo> signature = schema.getSignature();
         for (int i = 0; i < signature.size(); i++) {
-          ColumnInfo ci = signature.get(i);
-          String internalName = ci.getInternalName();
-
-          if (i < numSelectCols) {
-            selectColInfos.add(ci);
-            if (columnExprMap.containsKey(internalName)) {
-              selectExprMap.put(internalName, columnExprMap.get(internalName));
-            }
-          } else {
-            udtfColInfos.add(ci);
-            if (columnExprMap.containsKey(internalName)) {
-              udtfExprMap.put(internalName, columnExprMap.get(internalName));
-            }
+          String name = signature.get(i).getInternalName();
+          ExprNodeDesc expr = columnExprMap.get(name);
+          if (expr != null) {
+            (i < numSelColumns ? selectExprMap : udtfExprMap).put(name, expr);
           }
         }
-
-        RowSchema selectSchema = new RowSchema(selectColInfos);
-        RowSchema udtfSchema = new RowSchema(udtfColInfos);
 
         // Select branch stats
         joinedStats.updateColumnStatsState(selectStats.getColumnStatsState());
