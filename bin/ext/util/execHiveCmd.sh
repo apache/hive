@@ -45,13 +45,25 @@ execHiveCmd () {
   # For services that may encounter SLF4J conflicts (schemaTool, schematool, beeline),
   # filter out old SLF4J 1.x jars from HADOOP_CLASSPATH to prevent binding conflicts
   if [[ "$SERVICE" =~ ^(schemaTool|schematool|beeline)$ ]]; then
-    # [FIX]: Check HIVE_HOME/conf FIRST. This ensures we use the built config with the fix.
+    # [FIX]: Prefer packaged Hive configs first so CI does not depend on host /etc/hive content.
     if [ -f "${HIVE_HOME}/conf/hive-log4j2.properties" ]; then
       export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_HOME}/conf/hive-log4j2.properties"
-    # Only fall back to the system default if the build config is missing
+    # Packaged dist may only ship the template; materialize a .properties file so Log4j2
+    # selects the PropertiesConfiguration parser (it infers parser from filename extension).
+    elif [ -f "${HIVE_HOME}/conf/hive-log4j2.properties.template" ]; then
+      HIVE_LOG4J2_DIR="$(mktemp -d -t hive-log4j2.XXXXXX)"
+      HIVE_LOG4J2_FILE="${HIVE_LOG4J2_DIR}/hive-log4j2.properties"
+      cp "${HIVE_HOME}/conf/hive-log4j2.properties.template" "${HIVE_LOG4J2_FILE}"
+      export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_LOG4J2_FILE}"
+    # Only fall back to system default if packaged configs are missing
     elif [ -f "${HIVE_CONF_DIR}/hive-log4j2.properties" ]; then
       export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_CONF_DIR}/hive-log4j2.properties"
     fi
+
+    # CRITICAL: Tell Hadoop to load Hive's jars FIRST, overriding globally-installed
+    # Hadoop/Tez jars that contain old SLF4J 1.x bindings. This prevents the multiple
+    # SLF4J binding conflict seen in CI environments.
+    export HADOOP_USER_CLASSPATH_FIRST=true
 
     # Filter HADOOP_CLASSPATH to remove paths with old SLF4J/log4j bindings
     if [ "$HADOOP_CLASSPATH" != "" ]; then
