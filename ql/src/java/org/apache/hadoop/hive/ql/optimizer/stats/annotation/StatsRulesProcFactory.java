@@ -3057,13 +3057,20 @@ public class StatsRulesProcFactory {
         RowSchema udtfSchema = new RowSchema(new ArrayList<>(signature.subList(numSelColumns, signature.size())));
 
         // Filter expression maps to avoid cross-contamination in getColStatisticsFromExprMap
-        Map<String, ExprNodeDesc> selectExprMap = new HashMap<>();
-        Map<String, ExprNodeDesc> udtfExprMap = new HashMap<>();
+        Map<String, ExprNodeDesc> selectExprMap = Maps.newHashMapWithExpectedSize(numSelColumns);
+        Map<String, ExprNodeDesc> udtfExprMap = Maps.newHashMapWithExpectedSize(signature.size() - numSelColumns);
         for (int i = 0; i < signature.size(); i++) {
           String name = signature.get(i).getInternalName();
           ExprNodeDesc expr = columnExprMap.get(name);
-          if (expr != null) {
-            (i < numSelColumns ? selectExprMap : udtfExprMap).put(name, expr);
+
+          if (expr == null) {
+            continue;
+          }
+
+          if (i < numSelColumns) {
+            selectExprMap.put(name, expr);
+          } else {
+            udtfExprMap.put(name, expr);
           }
         }
 
