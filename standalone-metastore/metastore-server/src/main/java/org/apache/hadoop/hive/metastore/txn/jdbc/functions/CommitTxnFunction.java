@@ -125,10 +125,12 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
     }
 
     CommitInfo commitInfo = prepareWriteSetAndCheckConflicts(
-        jdbcResource, context, txnid, txnType, isReplayedReplTxn);
-    char isUpdateDelete = toUpdateDeleteFlag(commitInfo.isUpdateOrDelete());
+        jdbcResource, context,
+        txnid, txnType, isReplayedReplTxn);
 
-    handleCompletedTxnComponents(jdbcResource, txnid, txnType, isUpdateDelete, isReplayedReplTxn, sourceTxnId);
+    handleCompletedTxnComponents(
+        jdbcResource,
+        txnid, txnType, commitInfo.opFlag(), isReplayedReplTxn, sourceTxnId);
 
     if (rqst.isSetKeyValue()) {
       updateKeyValueAssociatedWithTxn(jdbcResource, rqst);
@@ -403,10 +405,6 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
       LOG.info("Expected to move at least one record from txn_components to "
           + "completed_txn_components when committing txn! {}", JavaUtils.txnIdToString(txnid));
     }
-  }
-
-  private static char toUpdateDeleteFlag(boolean isUpdateOrDelete) {
-    return isUpdateOrDelete ? 'Y' : 'N';
   }
 
   private void updateReplId(MultiDataSourceJdbcResource jdbcResource, ReplLastIdInfo replLastIdInfo)
@@ -728,6 +726,10 @@ public class CommitTxnFunction implements TransactionalFunction<TxnType> {
 
     public boolean isEmpty() {
       return commitId == null;
+    }
+
+    public char opFlag() {
+      return isUpdateOrDelete ? 'Y' : 'N';
     }
   }
 
