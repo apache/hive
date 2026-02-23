@@ -1,0 +1,28 @@
+PREHOOK: query: CREATE TABLE test (col1 string, col2 string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test
+POSTHOOK: query: CREATE TABLE test (col1 string, col2 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test
+PREHOOK: query: EXPLAIN CBO
+SELECT col1, col2 FROM test
+WHERE col2 = 'a'
+DISTRIBUTE BY col1, col2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN CBO
+SELECT col1, col2 FROM test
+WHERE col2 = 'a'
+DISTRIBUTE BY col1, col2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSortExchange(distribution=[hash[0]], collation=[[]])
+  HiveProject(col1=[$0], col2=[CAST(_UTF-16LE'a':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])
+    HiveFilter(condition=[=($1, _UTF-16LE'a')])
+      HiveTableScan(table=[[default, test]], table:alias=[test])
+
