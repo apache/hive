@@ -35,7 +35,6 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.StatisticsTestUtils;
@@ -61,7 +60,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.Collections;
-import java.util.Objects;
 
 import static org.apache.calcite.sql.type.SqlTypeName.BIGINT;
 import static org.apache.calcite.sql.type.SqlTypeName.DOUBLE;
@@ -150,7 +148,7 @@ public class TestFilterSelectivityEstimator {
   private ColStatistics stats;
   private RelNode scan;
   private RexNode currentInputRef;
-  private final MutableObject<float[]> currentValues = new MutableObject<>();
+  private int currentValuesSize;
 
   @BeforeClass
   public static void beforeClass() {
@@ -189,9 +187,9 @@ public class TestFilterSelectivityEstimator {
 
   @Before
   public void before() {
-    currentValues.setValue(VALUES);
+    currentValuesSize = VALUES.length;
     doReturn(tableType).when(tableMock).getRowType();
-    when(tableMock.getRowCount()).thenAnswer(a -> (double) Objects.requireNonNull(currentValues.getValue()).length);
+    when(tableMock.getRowCount()).thenAnswer(a -> (double) currentValuesSize);
 
     RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, schemaMock);
     HiveTableScan tableScan =
@@ -210,7 +208,7 @@ public class TestFilterSelectivityEstimator {
    * Note: call this method only at the beginning of a test method.
    */
   private void useFieldWithValues(String fieldname, float[] values, KllFloatsSketch sketch) {
-    currentValues.setValue(values);
+    currentValuesSize = values.length;
     stats.setHistogram(sketch.toByteArray());
     stats.setRange(rangeOf(values));
     int fieldIndex = scan.getRowType().getFieldNames().indexOf(fieldname);
@@ -860,10 +858,6 @@ public class TestFilterSelectivityEstimator {
         REX_BUILDER.getTypeFactory().createSqlType(SqlTypeName.TIMESTAMP));
   }
 
-  private static RexLiteral literalDate(String date) {
-    return REX_BUILDER.makeLiteral(epochDay(date), REX_BUILDER.getTypeFactory().createSqlType(SqlTypeName.DATE));
-  }
-
   private RexNode literalFloat(float f) {
     return REX_BUILDER.makeLiteral(f, type(SqlTypeName.FLOAT));
   }
@@ -878,9 +872,4 @@ public class TestFilterSelectivityEstimator {
   private static long timestamp(String timestamp) {
     return timestampMillis(timestamp) / 1000;
   }
-
-  private static int epochDay(String date) {
-    return (int) LocalDate.parse(date).toEpochDay();
-  }
-
 }
