@@ -296,14 +296,25 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     float upperUniverse = upperInclusive ? typeRangeExtent : Math.nextUp(typeRangeExtent);
     float lower = Math.max(adjusted1, lowerUniverse);
     float upper = Math.min(adjusted2, upperUniverse);
-    rangeBoundaries.setValue(Range.range(lower, range.lowerBoundType(), upper, range.upperBoundType()));
+    rangeBoundaries.setValue(makeRange(lower, range.lowerBoundType(), upper, range.upperBoundType()));
     if (typeBoundaries != null) {
-      typeBoundaries.setValue(Range.range(
+      typeBoundaries.setValue(makeRange(
           lowerUniverse,
           range.lowerBoundType(),
           upperUniverse,
           range.upperBoundType()));
     }
+  }
+
+  private static Range<Float> makeRange(float lower, BoundType lowerType, float upper, BoundType upperType) {
+    if (lower > upper) {
+      return Range.closedOpen(0f, 0f);
+    }
+    if (lower == upper && lowerType == BoundType.OPEN && upperType == BoundType.OPEN) {
+      return Range.closedOpen(0f, 0f);
+    }
+
+    return Range.range(lower, lowerType, upper, upperType);
   }
 
   private double computeRangePredicateSelectivity(RexCall call, SqlKind op) {
@@ -422,13 +433,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         return inverseBool ? computeNotEqualitySelectivity(call) : computeFunctionSelectivity(call);
       }
 
-      // TODO: This case should never appear during planning; verify and consider removing test cases
-      if (leftValue > rightValue) {
-        // invalid range, return 0 for BETWEEN and 1 for NOT BETWEEN
-        return inverseBool ? 1.0 : 0.0;
-      }
-
-      MutableObject<Range<Float>> rangeBoundaries = new MutableObject<>(Range.closed(leftValue, rightValue));
+      MutableObject<Range<Float>> rangeBoundaries =
+          new MutableObject<>(makeRange(leftValue, BoundType.CLOSED, rightValue, BoundType.CLOSED));
       MutableObject<Range<Float>> typeBoundaries =
           inverseBool ? new MutableObject<>(Range.closed(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY)) : null;
 
