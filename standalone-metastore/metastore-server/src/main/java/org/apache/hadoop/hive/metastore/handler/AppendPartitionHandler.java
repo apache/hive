@@ -179,7 +179,7 @@ public class AppendPartitionHandler
   }
 
   @Override
-  protected String getMessagePrefix() {
+  public String toString() {
     return "AppendPartitionHandler [" + id + "] -  Append partition for " +
         TableName.getQualified(catName, dbName, tableName) + ":";
   }

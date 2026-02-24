@@ -186,10 +186,6 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
             protected A execute() throws TException, IOException {
               throw new UnsupportedOperationException();
             }
-            @Override
-            public String getMessagePrefix() {
-              throw new UnsupportedOperationException();
-            }
           };
         }
       }
@@ -214,7 +210,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
   }
 
   public RequestStatus getRequestStatus() throws TException {
-    String logMsgPrefix = getMessagePrefix();
+    String logMsgPrefix = toString();
     if (future == null) {
       throw new IllegalStateException(logMsgPrefix + " hasn't started yet");
     }
@@ -272,7 +268,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
     if (!future.isDone()) {
       future.cancel(true);
       aborted.set(true);
-      LOG.warn("{} is still running, but a close signal is sent out", getMessagePrefix());
+      LOG.warn("{} is still running, but a close signal is sent out", this);
     }
     executor.shutdown();
   }
@@ -288,7 +284,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
     RequestStatus resp = getRequestStatus();
     if (!resp.finished) {
       throw new IllegalStateException("Result is un-available as " +
-          getMessagePrefix() + " is still running");
+          this + " is still running");
     }
     return (A) result;
   }
@@ -320,13 +316,6 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
   }
 
   /**
-   * Get the prefix for logging the message on polling the handler's status.
-   *
-   * @return message prefix
-   */
-  protected abstract String getMessagePrefix();
-
-  /**
    * Get the handler's progress that will show at the client.
    *
    * @return the progress
@@ -351,7 +340,7 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
 
   public void checkInterrupted() throws MetaException {
     if (aborted.get()) {
-      throw new MetaException(getMessagePrefix() + " has been interrupted");
+      throw new MetaException(this + " has been interrupted");
     }
   }
 

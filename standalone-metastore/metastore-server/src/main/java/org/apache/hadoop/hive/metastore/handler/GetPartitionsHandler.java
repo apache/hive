@@ -316,7 +316,7 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
   }
 
   @Override
-  protected String getMessagePrefix() {
+  public String toString() {
     return "GetPartitionsHandler [" + id + "] -  Get partitions from " +
         TableName.getQualified(catName, dbName, tblName) + ":";
   }

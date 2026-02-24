@@ -286,7 +286,7 @@ public class TruncateTableHandler
   }
 
   @Override
-  protected String getMessagePrefix() {
+  public String toString() {
     return "TruncateTableHandler [" + id + "] -  truncate table for " +
         TableName.getQualified(catName, dbName, table.getTableName()) + ":";
   }

@@ -286,7 +286,7 @@ public class DropPartitionsHandler
   }
 
   @Override
-  protected String getMessagePrefix() {
+  public String toString() {
     return "DropPartitionsHandler [" + id + "] -  Drop partitions from " + tableName + ":";
   }
 
