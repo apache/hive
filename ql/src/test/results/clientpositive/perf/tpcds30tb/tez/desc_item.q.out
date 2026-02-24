@@ -1,0 +1,349 @@
+# col_name            	data_type           	comment             
+i_item_sk           	bigint              	                    
+i_item_id           	string              	                    
+i_rec_start_date    	date                	                    
+i_rec_end_date      	date                	                    
+i_item_desc         	varchar(200)        	                    
+i_current_price     	decimal(7,2)        	                    
+i_wholesale_cost    	decimal(7,2)        	                    
+i_brand_id          	int                 	                    
+i_brand             	char(50)            	                    
+i_class_id          	int                 	                    
+i_class             	char(50)            	                    
+i_category_id       	int                 	                    
+i_category          	char(50)            	                    
+i_manufact_id       	int                 	                    
+i_manufact          	char(50)            	                    
+i_size              	char(20)            	                    
+i_formulation       	char(20)            	                    
+i_color             	char(20)            	                    
+i_units             	char(10)            	                    
+i_container         	char(10)            	                    
+i_manager_id        	int                 	                    
+i_product_name      	char(50)            	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	4                   
+	numRows             	462000              
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.item        	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_i	 
+Column Name:        	i_item_sk           	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.item        	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_itid_nn	 
+Column Name:        	i_item_id           	 
+	 	 
+col_name            	i_item_sk           
+data_type           	bigint              
+min                 	1                   
+max                 	462000              
+num_nulls           	0                   
+distinct_count      	464811              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_item_id           
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	247524              
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_rec_start_date    
+data_type           	date                
+min                 	1997-10-27          
+max                 	2001-10-27          
+num_nulls           	1164                
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_rec_end_date      
+data_type           	date                
+min                 	1999-10-27          
+max                 	2001-10-26          
+num_nulls           	231000              
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_item_desc         
+data_type           	varchar(200)        
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	341846              
+avg_col_len         	100.20375757575758  
+max_col_len         	200                 
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_current_price     
+data_type           	decimal(7,2)        
+min                 	0.09                
+max                 	99.99               
+num_nulls           	1167                
+distinct_count      	9391                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_wholesale_cost    
+data_type           	decimal(7,2)        
+min                 	0.02                
+max                 	89.74               
+num_nulls           	1120                
+distinct_count      	7343                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_brand_id          
+data_type           	int                 
+min                 	1001001             
+max                 	10016017            
+num_nulls           	1139                
+distinct_count      	962                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_brand             
+data_type           	char(50)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	742                 
+avg_col_len         	16.118655844155843  
+max_col_len         	22                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_class_id          
+data_type           	int                 
+min                 	1                   
+max                 	16                  
+num_nulls           	1117                
+distinct_count      	16                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_class             
+data_type           	char(50)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	99                  
+avg_col_len         	7.769021645021645   
+max_col_len         	15                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_category_id       
+data_type           	int                 
+min                 	1                   
+max                 	10                  
+num_nulls           	1141                
+distinct_count      	10                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_category          
+data_type           	char(50)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	11                  
+avg_col_len         	5.8889545454545456  
+max_col_len         	11                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_manufact_id       
+data_type           	int                 
+min                 	1                   
+max                 	1000                
+num_nulls           	1152                
+distinct_count      	987                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_manufact          
+data_type           	char(50)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	1004                
+avg_col_len         	11.263051948051949  
+max_col_len         	15                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_size              
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	8                   
+avg_col_len         	4.321158008658009   
+max_col_len         	11                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_formulation       
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	344236              
+avg_col_len         	19.94922077922078   
+max_col_len         	20                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_color             
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	95                  
+avg_col_len         	5.367439393939394   
+max_col_len         	10                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_units             
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	21                  
+avg_col_len         	4.178255411255411   
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_container         
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	6.9825              
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_manager_id        
+data_type           	int                 
+min                 	1                   
+max                 	100                 
+num_nulls           	1124                
+distinct_count      	104                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}
+col_name            	i_product_name      
+data_type           	char(50)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	461487              
+avg_col_len         	22.832253246753247  
+max_col_len         	30                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"i_brand\":\"true\",\"i_brand_id\":\"true\",\"i_category\":\"true\",\"i_category_id\":\"true\",\"i_class\":\"true\",\"i_class_id\":\"true\",\"i_color\":\"true\",\"i_container\":\"true\",\"i_current_price\":\"true\",\"i_formulation\":\"true\",\"i_item_desc\":\"true\",\"i_item_id\":\"true\",\"i_item_sk\":\"true\",\"i_manager_id\":\"true\",\"i_manufact\":\"true\",\"i_manufact_id\":\"true\",\"i_product_name\":\"true\",\"i_rec_end_date\":\"true\",\"i_rec_start_date\":\"true\",\"i_size\":\"true\",\"i_units\":\"true\",\"i_wholesale_cost\":\"true\"}}

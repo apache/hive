@@ -1,0 +1,414 @@
+# col_name            	data_type           	comment             
+web_site_sk         	bigint              	                    
+web_site_id         	string              	                    
+web_rec_start_date  	date                	                    
+web_rec_end_date    	date                	                    
+web_name            	varchar(50)         	                    
+web_open_date_sk    	bigint              	                    
+web_close_date_sk   	bigint              	                    
+web_class           	varchar(50)         	                    
+web_manager         	varchar(40)         	                    
+web_mkt_id          	int                 	                    
+web_mkt_class       	varchar(50)         	                    
+web_mkt_desc        	varchar(100)        	                    
+web_market_manager  	varchar(40)         	                    
+web_company_id      	int                 	                    
+web_company_name    	char(50)            	                    
+web_street_number   	char(10)            	                    
+web_street_name     	varchar(60)         	                    
+web_street_type     	char(15)            	                    
+web_suite_number    	char(10)            	                    
+web_city            	varchar(60)         	                    
+web_county          	varchar(30)         	                    
+web_state           	char(2)             	                    
+web_zip             	char(10)            	                    
+web_country         	varchar(20)         	                    
+web_gmt_offset      	decimal(5,2)        	                    
+web_tax_percentage  	decimal(5,2)        	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	1                   
+	numRows             	84                  
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.web_site    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_ws	 
+Column Name:        	web_site_sk         	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.web_site    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_web_d1	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:web_close_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_web_d2	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:web_open_date_sk	Key Sequence:1      
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.web_site    	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_wsid_nn	 
+Column Name:        	web_site_id         	 
+	 	 
+col_name            	web_site_sk         
+data_type           	bigint              
+min                 	1                   
+max                 	84                  
+num_nulls           	0                   
+distinct_count      	84                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_site_id         
+data_type           	string              
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	42                  
+avg_col_len         	16.0                
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_rec_start_date  
+data_type           	date                
+min                 	1997-08-16          
+max                 	2001-08-16          
+num_nulls           	2                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_rec_end_date    
+data_type           	date                
+min                 	1999-08-16          
+max                 	2001-08-15          
+num_nulls           	42                  
+distinct_count      	3                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_name            
+data_type           	varchar(50)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	15                  
+avg_col_len         	6.142857142857143   
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_open_date_sk    
+data_type           	bigint              
+min                 	2450118             
+max                 	2450807             
+num_nulls           	1                   
+distinct_count      	42                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_close_date_sk   
+data_type           	bigint              
+min                 	2440993             
+max                 	2446218             
+num_nulls           	15                  
+distinct_count      	28                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_class           
+data_type           	varchar(50)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	6.916666666666667   
+max_col_len         	7                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_manager         
+data_type           	varchar(40)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	60                  
+avg_col_len         	12.464285714285714  
+max_col_len         	19                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_mkt_id          
+data_type           	int                 
+min                 	1                   
+max                 	6                   
+num_nulls           	1                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_mkt_class       
+data_type           	varchar(50)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	65                  
+avg_col_len         	34.714285714285715  
+max_col_len         	49                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_mkt_desc        
+data_type           	varchar(100)        
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	64                  
+avg_col_len         	64.61904761904762   
+max_col_len         	98                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_market_manager  
+data_type           	varchar(40)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	66                  
+avg_col_len         	12.773809523809524  
+max_col_len         	18                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_company_id      
+data_type           	int                 
+min                 	1                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	6                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_company_name    
+data_type           	char(50)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	3.7976190476190474  
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_street_number   
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	58                  
+avg_col_len         	2.892857142857143   
+max_col_len         	3                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_street_name     
+data_type           	varchar(60)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	80                  
+avg_col_len         	8.94047619047619    
+max_col_len         	16                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_street_type     
+data_type           	char(15)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	3.8452380952380953  
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_suite_number    
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	51                  
+avg_col_len         	7.904761904761905   
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_city            
+data_type           	varchar(60)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	52                  
+avg_col_len         	8.738095238095237   
+max_col_len         	15                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_county          
+data_type           	varchar(30)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	58                  
+avg_col_len         	13.833333333333334  
+max_col_len         	22                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_state           
+data_type           	char(2)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	30                  
+avg_col_len         	2.0                 
+max_col_len         	2                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_zip             
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	56                  
+avg_col_len         	5.0                 
+max_col_len         	5                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_country         
+data_type           	varchar(20)         
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	12.845238095238095  
+max_col_len         	13                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_gmt_offset      
+data_type           	decimal(5,2)        
+min                 	-8                  
+max                 	-5                  
+num_nulls           	1                   
+distinct_count      	4                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}
+col_name            	web_tax_percentage  
+data_type           	decimal(5,2)        
+min                 	0                   
+max                 	0.12                
+num_nulls           	1                   
+distinct_count      	13                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"web_city\":\"true\",\"web_class\":\"true\",\"web_close_date_sk\":\"true\",\"web_company_id\":\"true\",\"web_company_name\":\"true\",\"web_country\":\"true\",\"web_county\":\"true\",\"web_gmt_offset\":\"true\",\"web_manager\":\"true\",\"web_market_manager\":\"true\",\"web_mkt_class\":\"true\",\"web_mkt_desc\":\"true\",\"web_mkt_id\":\"true\",\"web_name\":\"true\",\"web_open_date_sk\":\"true\",\"web_rec_end_date\":\"true\",\"web_rec_start_date\":\"true\",\"web_site_id\":\"true\",\"web_site_sk\":\"true\",\"web_state\":\"true\",\"web_street_name\":\"true\",\"web_street_number\":\"true\",\"web_street_type\":\"true\",\"web_suite_number\":\"true\",\"web_tax_percentage\":\"true\",\"web_zip\":\"true\"}}

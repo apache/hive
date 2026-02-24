@@ -1,0 +1,560 @@
+# col_name            	data_type           	comment             
+ws_sold_time_sk     	bigint              	                    
+ws_ship_date_sk     	bigint              	                    
+ws_item_sk          	bigint              	                    
+ws_bill_customer_sk 	bigint              	                    
+ws_bill_cdemo_sk    	bigint              	                    
+ws_bill_hdemo_sk    	bigint              	                    
+ws_bill_addr_sk     	bigint              	                    
+ws_ship_customer_sk 	bigint              	                    
+ws_ship_cdemo_sk    	bigint              	                    
+ws_ship_hdemo_sk    	bigint              	                    
+ws_ship_addr_sk     	bigint              	                    
+ws_web_page_sk      	bigint              	                    
+ws_web_site_sk      	bigint              	                    
+ws_ship_mode_sk     	bigint              	                    
+ws_warehouse_sk     	bigint              	                    
+ws_promo_sk         	bigint              	                    
+ws_order_number     	bigint              	                    
+ws_quantity         	int                 	                    
+ws_wholesale_cost   	decimal(7,2)        	                    
+ws_list_price       	decimal(7,2)        	                    
+ws_sales_price      	decimal(7,2)        	                    
+ws_ext_discount_amt 	decimal(7,2)        	                    
+ws_ext_sales_price  	decimal(7,2)        	                    
+ws_ext_wholesale_cost	decimal(7,2)        	                    
+ws_ext_list_price   	decimal(7,2)        	                    
+ws_ext_tax          	decimal(7,2)        	                    
+ws_coupon_amt       	decimal(7,2)        	                    
+ws_ext_ship_cost    	decimal(7,2)        	                    
+ws_net_paid         	decimal(7,2)        	                    
+ws_net_paid_inc_tax 	decimal(7,2)        	                    
+ws_net_paid_inc_ship	decimal(7,2)        	                    
+ws_net_paid_inc_ship_tax	decimal(7,2)        	                    
+ws_net_profit       	decimal(7,2)        	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ws_sold_date_sk     	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	5472                
+	numPartitions       	1824                
+	numRows             	21600036511         
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.web_sales   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_ws2	 
+Column Name:        	ws_item_sk          	 
+Column Name:        	ws_order_number     	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.web_sales   	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_b_c	 
+Parent Column Name:default.customer.c_customer_sk	Column Name:ws_bill_customer_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_b_cd	 
+Parent Column Name:default.customer_demographics.cd_demo_sk	Column Name:ws_bill_cdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_b_hd	 
+Parent Column Name:default.household_demographics.hd_demo_sk	Column Name:ws_bill_hdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_d2	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:ws_sold_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_i	 
+Parent Column Name:default.item.i_item_sk	Column Name:ws_item_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_p	 
+Parent Column Name:default.promotion.p_promo_sk	Column Name:ws_promo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_s_cd	 
+Parent Column Name:default.customer_demographics.cd_demo_sk	Column Name:ws_ship_cdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_s_d	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:ws_ship_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_s_hd	 
+Parent Column Name:default.household_demographics.hd_demo_sk	Column Name:ws_ship_hdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_sm	 
+Parent Column Name:default.ship_mode.sm_ship_mode_sk	Column Name:ws_ship_mode_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_t	 
+Parent Column Name:default.time_dim.t_time_sk	Column Name:ws_sold_time_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_w2	 
+Parent Column Name:default.warehouse.w_warehouse_sk	Column Name:ws_warehouse_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_wp	 
+Parent Column Name:default.web_page.wp_web_page_sk	Column Name:ws_web_page_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_ws_ws	 
+Parent Column Name:default.web_site.web_site_sk	Column Name:ws_web_site_sk	Key Sequence:1      
+	 	 
+col_name            	ws_sold_date_sk     
+data_type           	bigint              
+min                 	2450816             
+max                 	2452642             
+num_nulls           	0                   
+distinct_count      	1824                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_sold_date_sk\":\"true\"}}
+col_name            	ws_sold_time_sk     
+data_type           	bigint              
+min                 	0                   
+max                 	86399               
+num_nulls           	5398758             
+distinct_count      	85503               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_sold_time_sk\":\"true\"}}
+col_name            	ws_ship_date_sk     
+data_type           	bigint              
+min                 	2450817             
+max                 	2452762             
+num_nulls           	5395948             
+distinct_count      	1902                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ship_date_sk\":\"true\"}}
+col_name            	ws_item_sk          
+data_type           	bigint              
+min                 	1                   
+max                 	462000              
+num_nulls           	0                   
+distinct_count      	462000              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_item_sk\":\"true\"}}
+col_name            	ws_bill_customer_sk 
+data_type           	bigint              
+min                 	1                   
+max                 	80000000            
+num_nulls           	5393412             
+distinct_count      	78525965            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_bill_customer_sk\":\"true\"}}
+col_name            	ws_bill_cdemo_sk    
+data_type           	bigint              
+min                 	1                   
+max                 	1920800             
+num_nulls           	5396321             
+distinct_count      	1920801             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_bill_cdemo_sk\":\"true\"}}
+col_name            	ws_bill_hdemo_sk    
+data_type           	bigint              
+min                 	1                   
+max                 	7200                
+num_nulls           	5398741             
+distinct_count      	7201                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_bill_hdemo_sk\":\"true\"}}
+col_name            	ws_bill_addr_sk     
+data_type           	bigint              
+min                 	1                   
+max                 	40000000            
+num_nulls           	5397515             
+distinct_count      	40000001            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_bill_addr_sk\":\"true\"}}
+col_name            	ws_ship_customer_sk 
+data_type           	bigint              
+min                 	1                   
+max                 	80000000            
+num_nulls           	5396238             
+distinct_count      	78525965            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ship_customer_sk\":\"true\"}}
+col_name            	ws_ship_cdemo_sk    
+data_type           	bigint              
+min                 	1                   
+max                 	1920800             
+num_nulls           	5402783             
+distinct_count      	1920801             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ship_cdemo_sk\":\"true\"}}
+col_name            	ws_ship_hdemo_sk    
+data_type           	bigint              
+min                 	1                   
+max                 	7200                
+num_nulls           	5392926             
+distinct_count      	7201                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ship_hdemo_sk\":\"true\"}}
+col_name            	ws_ship_addr_sk     
+data_type           	bigint              
+min                 	1                   
+max                 	40000000            
+num_nulls           	5401852             
+distinct_count      	40000001            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ship_addr_sk\":\"true\"}}
+col_name            	ws_web_page_sk      
+data_type           	bigint              
+min                 	1                   
+max                 	4602                
+num_nulls           	5397537             
+distinct_count      	4556                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_web_page_sk\":\"true\"}}
+col_name            	ws_web_site_sk      
+data_type           	bigint              
+min                 	1                   
+max                 	84                  
+num_nulls           	5397968             
+distinct_count      	85                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_web_site_sk\":\"true\"}}
+col_name            	ws_ship_mode_sk     
+data_type           	bigint              
+min                 	1                   
+max                 	20                  
+num_nulls           	5399960             
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ship_mode_sk\":\"true\"}}
+col_name            	ws_warehouse_sk     
+data_type           	bigint              
+min                 	1                   
+max                 	27                  
+num_nulls           	5401366             
+distinct_count      	27                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_warehouse_sk\":\"true\"}}
+col_name            	ws_promo_sk         
+data_type           	bigint              
+min                 	1                   
+max                 	2300                
+num_nulls           	5399913             
+distinct_count      	2301                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_promo_sk\":\"true\"}}
+col_name            	ws_order_number     
+data_type           	bigint              
+min                 	1                   
+max                 	1800000000          
+num_nulls           	0                   
+distinct_count      	1800000000          
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_order_number\":\"true\"}}
+col_name            	ws_quantity         
+data_type           	int                 
+min                 	1                   
+max                 	100                 
+num_nulls           	5398532             
+distinct_count      	101                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_quantity\":\"true\"}}
+col_name            	ws_wholesale_cost   
+data_type           	decimal(7,2)        
+min                 	1                   
+max                 	100                 
+num_nulls           	5396854             
+distinct_count      	9382                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_wholesale_cost\":\"true\"}}
+col_name            	ws_list_price       
+data_type           	decimal(7,2)        
+min                 	1                   
+max                 	300                 
+num_nulls           	5402683             
+distinct_count      	31080               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_list_price\":\"true\"}}
+col_name            	ws_sales_price      
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	300                 
+num_nulls           	5404115             
+distinct_count      	31054               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_sales_price\":\"true\"}}
+col_name            	ws_ext_discount_amt 
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	29982               
+num_nulls           	5400149             
+distinct_count      	1141615             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ext_discount_amt\":\"true\"}}
+col_name            	ws_ext_sales_price  
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	29970               
+num_nulls           	5399678             
+distinct_count      	1155428             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ext_sales_price\":\"true\"}}
+col_name            	ws_ext_wholesale_cost
+data_type           	decimal(7,2)        
+min                 	1                   
+max                 	10000               
+num_nulls           	5400686             
+distinct_count      	381232              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ext_wholesale_cost\":\"true\"}}
+col_name            	ws_ext_list_price   
+data_type           	decimal(7,2)        
+min                 	1                   
+max                 	30000               
+num_nulls           	5396771             
+distinct_count      	1208442             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ext_list_price\":\"true\"}}
+col_name            	ws_ext_tax          
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	2682.9              
+num_nulls           	5395170             
+distinct_count      	233719              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ext_tax\":\"true\"}}
+col_name            	ws_coupon_amt       
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	28824               
+num_nulls           	5396172             
+distinct_count      	1659025             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_coupon_amt\":\"true\"}}
+col_name            	ws_ext_ship_cost    
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	14950               
+num_nulls           	5397394             
+distinct_count      	564319              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_ext_ship_cost\":\"true\"}}
+col_name            	ws_net_paid         
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	29970               
+num_nulls           	5397419             
+distinct_count      	1870760             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_net_paid\":\"true\"}}
+col_name            	ws_net_paid_inc_tax 
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	32492.9             
+num_nulls           	5398356             
+distinct_count      	2521035             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_net_paid_inc_tax\":\"true\"}}
+col_name            	ws_net_paid_inc_ship
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	44263               
+num_nulls           	0                   
+distinct_count      	2577850             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_net_paid_inc_ship\":\"true\"}}
+col_name            	ws_net_paid_inc_ship_tax
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	46389.84            
+num_nulls           	0                   
+distinct_count      	3413793             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_net_paid_inc_ship_tax\":\"true\"}}
+col_name            	ws_net_profit       
+data_type           	decimal(7,2)        
+min                 	-10000              
+max                 	19980               
+num_nulls           	0                   
+distinct_count      	2074138             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"ws_net_profit\":\"true\"}}
