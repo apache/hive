@@ -456,18 +456,16 @@ public abstract class CompactorTest {
       boolean allBucketsPresent, long visibilityId) throws Exception {
     String partValue = (p == null) ? null : p.getValues().getFirst();
     Path location = new Path(getLocation(t.getTableName(), partValue));
-    String filename = null;
 
-    switch (type) {
-      case BASE -> filename = AcidUtils.addVisibilitySuffix(AcidUtils.BASE_PREFIX + maxTxn, visibilityId);
+    String filename = switch (type) {
+      case BASE -> AcidUtils.addVisibilitySuffix(AcidUtils.BASE_PREFIX + maxTxn, visibilityId);
       case LENGTH_FILE, // Fall through to delta
-           DELTA -> filename = AcidUtils.addVisibilitySuffix(makeDeltaDirName(minTxn, maxTxn), visibilityId);
-      case LEGACY -> {
-        // handled below
-      }
+           DELTA -> AcidUtils.addVisibilitySuffix(makeDeltaDirName(minTxn, maxTxn), visibilityId);
+      case LEGACY -> // handled below
+          null;
       case null, default ->
           throw new IllegalStateException("Unexpected type: " + type);
-    }
+    };
 
     FileSystem fs = FileSystem.get(conf);
     for (int bucket = 0; bucket < numBuckets; bucket++) {
@@ -735,7 +733,13 @@ public abstract class CompactorTest {
   }
 
   protected long compactInTxn(CompactionRequest rqst) throws Exception {
-    return compactInTxn(rqst, CommitAction.COMMIT);
+    long compactorTxnId = compactInTxn(rqst, CommitAction.COMMIT);
+
+    // Wait for the cooldown period so the Cleaner can see the last committed txn as the highest committed watermark
+    // TODO: doesn't belong here, should probably be moved to CompactorTest#startCleaner()
+    Thread.sleep(MetastoreConf.getTimeVar(
+        conf, ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+    return compactorTxnId;
   }
 
   long compactInTxn(CompactionRequest rqst, CommitAction commitAction) throws Exception {
@@ -769,14 +773,11 @@ public abstract class CompactorTest {
 
     switch (commitAction) {
       case MARK_COMPACTED ->
-        txnHandler.markCompacted(ci);
+          txnHandler.markCompacted(ci);
 
       case COMMIT -> {
         txnHandler.markCompacted(ci);
         txnHandler.commitTxn(new CommitTxnRequest(compactorTxnId));
-
-        Thread.sleep(MetastoreConf.getTimeVar(
-            conf, ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
       }
       case ABORT ->
           txnHandler.abortTxn(new AbortTxnRequest(compactorTxnId));
