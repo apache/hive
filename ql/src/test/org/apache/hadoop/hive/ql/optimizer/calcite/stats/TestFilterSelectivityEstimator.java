@@ -29,8 +29,7 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlBinaryOperator;
-import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
@@ -81,12 +80,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestFilterSelectivityEstimator {
-
-  private static final SqlBinaryOperator GT = SqlStdOperatorTable.GREATER_THAN;
-  private static final SqlBinaryOperator GE = SqlStdOperatorTable.GREATER_THAN_OR_EQUAL;
-  private static final SqlBinaryOperator LT = SqlStdOperatorTable.LESS_THAN;
-  private static final SqlBinaryOperator LE = SqlStdOperatorTable.LESS_THAN_OR_EQUAL;
-  private static final SqlOperator BETWEEN = HiveBetween.INSTANCE;
 
   private static final float[] VALUES = { 1, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 7 };
   private static final float[] VALUES2 = {
@@ -599,7 +592,7 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityWithCast() {
+  public void testRangePredicateWithCast() {
     useFieldWithValues("f_numeric", VALUES, KLL);
     checkSelectivity(3 / 13.f, ge(cast("f_numeric", TINYINT), int5));
     checkSelectivity(10 / 13.f, lt(cast("f_numeric", TINYINT), int5));
@@ -620,7 +613,7 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityWithCast2() {
+  public void testRangePredicateWithCast2() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     RelDataType decimal3s1 = decimalType(3, 1);
     checkSelectivity(4 / 28.f, ge(cast("f_numeric", decimal3s1), literalFloat(1)));
@@ -695,14 +688,26 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityTimestamp() {
+  public void testRangePredicateOnTimestamp() {
     useFieldWithValues("f_timestamp", VALUES_TIME, KLL_TIME);
     checkTimeFieldOnMidnightTimestamps(currentInputRef);
     checkTimeFieldOnIntraDayTimestamps(currentInputRef);
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityDate() {
+  public void testRangePredicateOnTimestampWithCast() {
+    useFieldWithValues("f_timestamp", VALUES_TIME, KLL_TIME);
+    RexNode expr1 = cast("f_timestamp", SqlTypeName.DATE);
+    checkTimeFieldOnMidnightTimestamps(expr1);
+    checkTimeFieldOnIntraDayTimestamps(expr1);
+
+    RexNode expr2 = cast("f_timestamp", SqlTypeName.TIMESTAMP);
+    checkTimeFieldOnMidnightTimestamps(expr2);
+    checkTimeFieldOnIntraDayTimestamps(expr2);
+  }
+
+  @Test
+  public void testRangePredicateOnDate() {
     useFieldWithValues("f_date", VALUES_TIME, KLL_TIME);
     checkTimeFieldOnMidnightTimestamps(currentInputRef);
 
@@ -711,26 +716,17 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityDateWithCast() {
+  public void testRangePredicateOnDateWithCast() {
     useFieldWithValues("f_date", VALUES_TIME, KLL_TIME);
-    RexNode field1 = cast("f_date", SqlTypeName.DATE);
-    checkTimeFieldOnMidnightTimestamps(field1);
-    checkTimeFieldOnIntraDayTimestamps(field1);
+    checkTimeFieldOnMidnightTimestamps(cast("f_date", SqlTypeName.DATE));
+    checkTimeFieldOnMidnightTimestamps(cast("f_date", SqlTypeName.TIMESTAMP));
 
-    RexNode field2 = cast("f_date", SqlTypeName.TIMESTAMP);
-    checkTimeFieldOnMidnightTimestamps(field2);
-    checkTimeFieldOnIntraDayTimestamps(field2);
+    // it does not make sense to compare with "2020-11-05T11:23:45Z",
+    // as that value would not be stored as-is in a date column, but as "2020-11-05" instead
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityTimestampWithCast() {
-    useFieldWithValues("f_timestamp", VALUES_TIME, KLL_TIME);
-    checkTimeFieldOnMidnightTimestamps(cast("f_timestamp", SqlTypeName.DATE));
-    checkTimeFieldOnMidnightTimestamps(cast("f_timestamp", SqlTypeName.TIMESTAMP));
-  }
-
-  @Test
-  public void testComputeRangePredicateSelectivityBetweenWithCastDecimal2_1() {
+  public void testBetweenWithCastDecimal2s1() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     float total = VALUES2.length;
     float universe = 2; // the number of values that "survive" the cast
@@ -741,10 +737,10 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityBetweenWithCastDecimal3_1() {
+  public void testBetweenWithCastDecimal3s1() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     float total = VALUES2.length;
-    float universe = 7;
+    float universe = 7; // the number of values that "survive" the cast
     RexNode cast = REX_BUILDER.makeCast(decimalType(3, 1), inputRef0);
     checkBetweenSelectivity(0, universe, total, cast, 100f, 1000f);
     checkBetweenSelectivity(4, universe, total, cast, 1f, 100f);
@@ -752,10 +748,10 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityBetweenWithCastDecimal4_1() {
+  public void testBetweenWithCastDecimal4s1() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     float total = VALUES2.length;
-    float universe = 23;
+    float universe = 23; // the number of values that "survive" the cast
     RexNode cast = REX_BUILDER.makeCast(decimalType(4, 1), inputRef0);
     // the values between -999.94999... and 999.94999... (both inclusive) pass through the cast
     // the values between 99.95 and 100 are rounded up to 100, so they fulfill the BETWEEN
@@ -765,10 +761,10 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testComputeRangePredicateSelectivityBetweenWithCastDecimal7_1() {
+  public void testBetweenWithCastDecimal7s1() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     float total = VALUES2.length;
-    float universe = 26;
+    float universe = 26; // the number of values that "survive" the cast
     RexNode cast = REX_BUILDER.makeCast(decimalType(7, 1), inputRef0);
     checkBetweenSelectivity(14, universe, total, cast, 100, 1000);
     checkBetweenSelectivity(14, universe, total, cast, 1f, 100f);
@@ -779,26 +775,11 @@ public class TestFilterSelectivityEstimator {
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(filter.toString(), expectedSelectivity, estimator.estimateSelectivity(filter), DELTA);
 
-    // swap equation, e.g., col < 5 becomes 5 > col; selectivity stays the same
-    RexCall call = (RexCall) filter;
-    SqlOperator operator = ((RexCall) filter).getOperator();
-    SqlOperator swappedOp;
-    if (operator == LE) {
-      swappedOp = GE;
-    } else if (operator == LT) {
-      swappedOp = GT;
-    } else if (operator == GE) {
-      swappedOp = LE;
-    } else if (operator == GT) {
-      swappedOp = LT;
-    } else if (operator == BETWEEN) {
-      // BETWEEN cannot be swapped
-      return;
-    } else {
-      throw new UnsupportedOperationException();
+    // convert "col OP value" to "value INVERSE_OP col", and check it
+    RexNode inverted = RexUtil.invert(REX_BUILDER, (RexCall) filter);
+    if (inverted != null) {
+      Assert.assertEquals(filter.toString(), expectedSelectivity, estimator.estimateSelectivity(inverted), DELTA);
     }
-    RexNode swapped = REX_BUILDER.makeCall(swappedOp, call.getOperands().get(1), call.getOperands().get(0));
-    Assert.assertEquals(filter.toString(), expectedSelectivity, estimator.estimateSelectivity(swapped), DELTA);
   }
 
   private void checkBetweenSelectivity(float expectedEntries, float universe, float total, RexNode value, float lower,
@@ -830,19 +811,19 @@ public class TestFilterSelectivityEstimator {
   }
 
   private RexNode ge(RexNode expr, RexNode value) {
-    return REX_BUILDER.makeCall(GE, expr, value);
+    return REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, expr, value);
   }
 
   private RexNode gt(RexNode expr, RexNode value) {
-    return REX_BUILDER.makeCall(GT, expr, value);
+    return REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, expr, value);
   }
 
   private RexNode le(RexNode expr, RexNode value) {
-    return REX_BUILDER.makeCall(LE, expr, value);
+    return REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, expr, value);
   }
 
   private RexNode lt(RexNode expr, RexNode value) {
-    return REX_BUILDER.makeCall(LT, expr, value);
+    return REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, expr, value);
   }
 
   private static RelDataType type(SqlTypeName typeName) {

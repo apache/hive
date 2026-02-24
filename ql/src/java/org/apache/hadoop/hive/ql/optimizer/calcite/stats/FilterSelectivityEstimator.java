@@ -332,6 +332,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     List<RexNode> operands = call.getOperands();
     final Optional<Float> leftLiteral = extractLiteral(operands.get(0));
     final Optional<Float> rightLiteral = extractLiteral(operands.get(1));
+    // ensure that there's exactly one literal
     if ((leftLiteral.isPresent()) == (rightLiteral.isPresent())) {
       return defaultSelectivity;
     }
@@ -520,7 +521,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       value = ((GregorianCalendar) boundValueObject).toInstant().getEpochSecond();
       break;
     default:
-      LOG.warn("Unsupported type for comparator selectivity evaluation using histogram: {}", typeName);
       return Optional.empty();
     }
     return Optional.of(value);
