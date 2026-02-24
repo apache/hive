@@ -308,9 +308,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         : predicateRange.upperEndpoint() - adjust;
     float lower = Math.max(adjusted1, typeRange.lowerEndpoint());
     float upper = Math.min(adjusted2, typeRange.upperEndpoint());
+    // the boundaries might result in an invalid range (e.g., left > right)
+    // in that case the predicate does not select anything, and we return an empty range
     return makeRange(lower, predicateRange.lowerBoundType(), upper, predicateRange.upperBoundType());
     }
 
+  /**
+   * If the arguments lead to a valid range, it is returned, otherwise an empty array is returned.
+   */
   private static Range<Float> makeRange(float lower, BoundType lowerType, float upper, BoundType upperType) {
     if (lower > upper) {
       return Range.closedOpen(0f, 0f);
@@ -386,7 +391,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     }
 
     final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
-    // convert the condition to a range val1 <= x < val2 for rangedSelectivity(...)
     double rawSelectivity = rangedSelectivity(kll, boundaries);
     return scaleSelectivityToNullableValues(kll, rawSelectivity, scan);
   }
@@ -464,7 +468,6 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
       final List<ColStatistics> colStats = scan.getColStat(Collections.singletonList(inputRefIndex));
       if (!colStats.isEmpty() && isHistogramAvailable(colStats.get(0))) {
-        // convert the condition to a range val1 <= x < val2 for rangedSelectivity(...)
         final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
         double rawSelectivity = rangedSelectivity(kll, rangeBoundaries);
         if (inverseBool) {
@@ -717,6 +720,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @return the selectivity of "val1 &lt;= column &lt; val2"
    */
   private static double rangedSelectivity(KllFloatsSketch kll, Range<Float> boundaries) {
+    // convert the condition to a range val1 <= x < val2
     float newLower = BoundType.CLOSED.equals(boundaries.lowerBoundType()) ? boundaries.lowerEndpoint()
         : Math.nextUp(boundaries.lowerEndpoint());
     float newUpper = BoundType.OPEN.equals(boundaries.upperBoundType()) ? boundaries.upperEndpoint()
