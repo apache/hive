@@ -47,7 +47,6 @@ import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.ImmutableBitSet;
-import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.datasketches.kll.KllFloatsSketch;
 import org.apache.datasketches.memory.Memory;
 import org.apache.datasketches.quantilescommon.QuantileSearchCriteria;
@@ -258,53 +257,59 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   }
 
   /**
-   * Adjust the type boundaries if necessary.
+   * Get the range of values that are rounded to valid values of a DECIMAL type.
    *
-   * <p>
-   *   Special care is taken to support the cast to DECIMAL(precision, scale):
-   *   The cast to DECIMAL rounds the value the same way as {@link RoundingMode#HALF_UP}.
-   *   The boundaries are adjusted accordingly.
-   * </p>
-   *
-   * @param rangeBoundaries boundaries of the range predicate
-   * @param typeBoundaries if not null, will be set to the boundaries of the type range
+   * @param type the DECIMAL type
+   * @param lowerBound the lower bound type of the result
+   * @param upperBound the upper bound type of the result
+   * @return the range of the type
    */
-  private static void adjustTypeBoundaries(RelDataType type, MutableObject<Range<Float>> rangeBoundaries,
-      MutableObject<Range<Float>> typeBoundaries) {
-    if (type.getSqlTypeName() != SqlTypeName.DECIMAL) {
-      return;
-    }
+  private static Range<Float> getRangeOfDecimalType(RelDataType type, BoundType lowerBound, BoundType upperBound) {
     // values outside the representable range are cast to NULL, so adapt the boundaries
-    int precision = type.getPrecision();
-    int scale = type.getScale();
-    int digits = precision - scale;
+    int digits = type.getPrecision() - type.getScale();
     // the cast does some rounding, i.e., CAST(99.9499 AS DECIMAL(3,1)) = 99.9
     // but CAST(99.95 AS DECIMAL(3,1)) = NULL
-    float adjust = (float) (5 * Math.pow(10, -(scale + 1)));
+    float adjust = (float) (5 * Math.pow(10, -(type.getScale() + 1)));
     // the range of values supported by the type is interval [-typeRangeExtent, typeRangeExtent] (both inclusive)
     // e.g., the typeRangeExt is 99.94999 for DECIMAL(3,1)
     float typeRangeExtent = Math.nextDown((float) (Math.pow(10, digits) - adjust));
 
-    Range<Float> range = rangeBoundaries.getValue();
     // the resulting value of +- adjust would be rounded up, so in some cases we need to use Math.nextDown
-    boolean lowerInclusive = BoundType.CLOSED.equals(range.lowerBoundType());
-    boolean upperInclusive = BoundType.CLOSED.equals(range.upperBoundType());
-    float adjusted1 = lowerInclusive ? range.lowerEndpoint() - adjust : Math.nextDown(range.lowerEndpoint() + adjust);
-    float adjusted2 = upperInclusive ? Math.nextDown(range.upperEndpoint() + adjust) : range.upperEndpoint() - adjust;
-
+    boolean lowerInclusive = BoundType.CLOSED.equals(lowerBound);
+    boolean upperInclusive = BoundType.CLOSED.equals(upperBound);
     float lowerUniverse = lowerInclusive ? -typeRangeExtent : Math.nextDown(-typeRangeExtent);
     float upperUniverse = upperInclusive ? typeRangeExtent : Math.nextUp(typeRangeExtent);
-    float lower = Math.max(adjusted1, lowerUniverse);
-    float upper = Math.min(adjusted2, upperUniverse);
-    rangeBoundaries.setValue(makeRange(lower, range.lowerBoundType(), upper, range.upperBoundType()));
-    if (typeBoundaries != null) {
-      typeBoundaries.setValue(makeRange(
-          lowerUniverse,
-          range.lowerBoundType(),
-          upperUniverse,
-          range.upperBoundType()));
-    }
+    return makeRange(lowerUniverse, lowerBound, upperUniverse, upperBound);
   }
+
+  /**
+   * Adjust the type boundaries if necessary.
+   *
+   * <p>
+   * Special care is taken to support the cast to DECIMAL(precision, scale):
+   * The cast to DECIMAL rounds the value the same way as {@link RoundingMode#HALF_UP}.
+   * The boundaries are adjusted accordingly.
+   * </p>
+   *
+   * @param predicateRange boundaries of the range predicate
+   * @param type the DECIMAL type
+   * @param typeRange the boundaries of the type range
+   * @return the adjusted boundary
+   */
+  private static Range<Float> adjustRangeToDecimalType(Range<Float> predicateRange, RelDataType type,
+      Range<Float> typeRange) {
+    float adjust = (float) (5 * Math.pow(10, -(type.getScale() + 1)));
+    // the resulting value of +- adjust would be rounded up, so in some cases we need to use Math.nextDown
+    boolean lowerInclusive = BoundType.CLOSED.equals(predicateRange.lowerBoundType());
+    boolean upperInclusive = BoundType.CLOSED.equals(predicateRange.upperBoundType());
+    float adjusted1 = lowerInclusive ? predicateRange.lowerEndpoint() - adjust
+        : Math.nextDown(predicateRange.lowerEndpoint() + adjust);
+    float adjusted2 = upperInclusive ? Math.nextDown(predicateRange.upperEndpoint() + adjust)
+        : predicateRange.upperEndpoint() - adjust;
+    float lower = Math.max(adjusted1, typeRange.lowerEndpoint());
+    float upper = Math.min(adjusted2, typeRange.upperEndpoint());
+    return makeRange(lower, predicateRange.lowerBoundType(), upper, predicateRange.upperBoundType());
+    }
 
   private static Range<Float> makeRange(float lower, BoundType lowerType, float upper, BoundType upperType) {
     if (lower > upper) {
@@ -350,15 +355,18 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     BoundType[] inclusive = new BoundType[] { BoundType.CLOSED, BoundType.CLOSED };
     boundaryValues[boundaryIdx] = value;
     inclusive[boundaryIdx] = openBound ? BoundType.OPEN : BoundType.CLOSED;
-    MutableObject<Range<Float>> boundaries =
-        new MutableObject<>(Range.range(boundaryValues[0], inclusive[0], boundaryValues[1], inclusive[1]));
+    Range<Float> boundaries = Range.range(boundaryValues[0], inclusive[0], boundaryValues[1], inclusive[1]);
 
     // extract the column index from the other operator
     final HiveTableScan scan = (HiveTableScan) childRel;
     int inputRefOpIndex = 1 - literalOpIdx;
     RexNode node = operands.get(inputRefOpIndex);
     if (isRemovableCast(node, scan)) {
-      adjustTypeBoundaries(node.getType(), boundaries, null);
+      if (node.getType().getSqlTypeName() == SqlTypeName.DECIMAL) {
+        Range<Float> rangeOfDecimalType =
+            getRangeOfDecimalType(node.getType(), boundaries.lowerBoundType(), boundaries.upperBoundType());
+        boundaries = adjustRangeToDecimalType(boundaries, node.getType(), rangeOfDecimalType);
+      }
       node = RexUtil.removeCast(node);
     }
 
@@ -378,7 +386,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
 
     final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
     // convert the condition to a range val1 <= x < val2 for rangedSelectivity(...)
-    double rawSelectivity = rangedSelectivity(kll, boundaries.getValue());
+    double rawSelectivity = rangedSelectivity(kll, boundaries);
     return scaleSelectivityToNullableValues(kll, rawSelectivity, scan);
   }
 
@@ -433,14 +441,14 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
         return inverseBool ? computeNotEqualitySelectivity(call) : computeFunctionSelectivity(call);
       }
 
-      MutableObject<Range<Float>> rangeBoundaries =
-          new MutableObject<>(makeRange(leftValue, BoundType.CLOSED, rightValue, BoundType.CLOSED));
-      MutableObject<Range<Float>> typeBoundaries =
-          inverseBool ? new MutableObject<>(Range.closed(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY)) : null;
+      Range<Float> rangeBoundaries = makeRange(leftValue, BoundType.CLOSED, rightValue, BoundType.CLOSED);
+      Range<Float> typeBoundaries = inverseBool ? Range.closed(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY) : null;
 
       RexNode expr = operands.get(1); // expr to be checked by the BETWEEN
       if (isRemovableCast(expr, scan)) {
-        adjustTypeBoundaries(expr.getType(), rangeBoundaries, typeBoundaries);
+        typeBoundaries =
+            getRangeOfDecimalType(expr.getType(), rangeBoundaries.lowerBoundType(), rangeBoundaries.upperBoundType());
+        rangeBoundaries = adjustRangeToDecimalType(rangeBoundaries, expr.getType(), typeBoundaries);
         expr = RexUtil.removeCast(expr);
       }
 
@@ -457,11 +465,11 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       if (!colStats.isEmpty() && isHistogramAvailable(colStats.get(0))) {
         // convert the condition to a range val1 <= x < val2 for rangedSelectivity(...)
         final KllFloatsSketch kll = KllFloatsSketch.heapify(Memory.wrap(colStats.get(0).getHistogram()));
-        double rawSelectivity = rangedSelectivity(kll, rangeBoundaries.getValue());
+        double rawSelectivity = rangedSelectivity(kll, rangeBoundaries);
         if (inverseBool) {
           // when inverseBool == true, this is a NOT_BETWEEN and selectivity must be inverted
           // if there's a cast, the inversion is with respect to its codomain (range of the values of the cast)
-          double typeRangeSelectivity = rangedSelectivity(kll, typeBoundaries.getValue());
+          double typeRangeSelectivity = rangedSelectivity(kll, typeBoundaries);
           rawSelectivity = typeRangeSelectivity - rawSelectivity;
         }
         return scaleSelectivityToNullableValues(kll, rawSelectivity, scan);
