@@ -30,115 +30,217 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.iceberg.rest.standalone.IcebergCatalogConfiguration;
 import org.apache.iceberg.rest.standalone.StandaloneRESTCatalogServer;
-import org.junit.After;
-import org.junit.Before;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
+import org.junit.AfterClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.test.context.TestContext;
+import org.springframework.test.context.TestExecutionListener;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Integration test for Standalone REST Catalog Server.
- * 
+ * Integration test for Standalone REST Catalog Server with Spring Boot.
+ *
  * Tests that the standalone server can:
- * 1. Start independently of HMS
+ * 1. Start independently of HMS using Spring Boot
  * 2. Connect to an external HMS instance
  * 3. Serve REST Catalog requests
- * 4. Provide health check endpoint
+ * 4. Provide health check endpoints (liveness and readiness)
+ * 5. Expose Prometheus metrics
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(
+    classes = TestStandaloneRESTCatalogServer.TestRestCatalogApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration"
+    }
+)
+@ContextConfiguration(initializers = TestStandaloneRESTCatalogServer.RestCatalogTestContextInitializer.class)
+@TestExecutionListeners(
+    listeners = TestStandaloneRESTCatalogServer.HmsStartupListener.class,
+    mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
+)
 public class TestStandaloneRESTCatalogServer {
   private static final Logger LOG = LoggerFactory.getLogger(TestStandaloneRESTCatalogServer.class);
-  
-  private Configuration hmsConf;
-  private Configuration restCatalogConf;
-  private int hmsPort;
-  private StandaloneRESTCatalogServer restCatalogServer;
-  private File warehouseDir;
-  private File hmsTempDir;
-  
-  @Before
-  public void setup() throws Exception {
-    // Setup temporary directories
-    hmsTempDir = new File(System.getProperty("java.io.tmpdir"), "test-hms-" + System.currentTimeMillis());
-    hmsTempDir.mkdirs();
-    warehouseDir = new File(hmsTempDir, "warehouse");
-    warehouseDir.mkdirs();
-    
-    // Configure and start embedded HMS
-    hmsConf = MetastoreConf.newMetastoreConf();
-    MetaStoreTestUtils.setConfForStandloneMode(hmsConf);
-    
-    String jdbcUrl = String.format("jdbc:derby:memory:%s;create=true",
-        new File(hmsTempDir, "metastore_db").getAbsolutePath());
-    MetastoreConf.setVar(hmsConf, ConfVars.CONNECT_URL_KEY, jdbcUrl);
-    MetastoreConf.setVar(hmsConf, ConfVars.WAREHOUSE, warehouseDir.getAbsolutePath());
-    MetastoreConf.setVar(hmsConf, ConfVars.WAREHOUSE_EXTERNAL, warehouseDir.getAbsolutePath());
-    
-    // Start HMS
-    hmsPort = MetaStoreTestUtils.startMetaStoreWithRetry(
-        HadoopThriftAuthBridge.getBridge(), hmsConf, true, false, false, false);
-    LOG.info("Started embedded HMS on port: {}", hmsPort);
-    
-    // Configure standalone REST Catalog server
-    restCatalogConf = MetastoreConf.newMetastoreConf();
-    String hmsUri = "thrift://localhost:" + hmsPort;
-    MetastoreConf.setVar(restCatalogConf, ConfVars.THRIFT_URIS, hmsUri);
-    MetastoreConf.setVar(restCatalogConf, ConfVars.WAREHOUSE, warehouseDir.getAbsolutePath());
-    MetastoreConf.setVar(restCatalogConf, ConfVars.WAREHOUSE_EXTERNAL, warehouseDir.getAbsolutePath());
-    
-    // Configure REST Catalog servlet
-    int restPort = MetaStoreTestUtils.findFreePort();
-    MetastoreConf.setLongVar(restCatalogConf, ConfVars.CATALOG_SERVLET_PORT, restPort);
-    MetastoreConf.setVar(restCatalogConf, ConfVars.ICEBERG_CATALOG_SERVLET_PATH, "iceberg");
-    MetastoreConf.setVar(restCatalogConf, ConfVars.CATALOG_SERVLET_AUTH, "none");
-    
-    // Start standalone REST Catalog server
-    restCatalogServer = new StandaloneRESTCatalogServer(restCatalogConf);
-    restCatalogServer.start();
-    LOG.info("Started standalone REST Catalog server on port: {}", restCatalogServer.getPort());
-  }
-  
-  @After
-  public void teardown() {
-    if (restCatalogServer != null) {
-      restCatalogServer.stop();
+
+  @LocalServerPort
+  private int port;
+
+  @Autowired
+  private StandaloneRESTCatalogServer server;
+
+  private static Configuration hmsConf;
+  private static int hmsPort;
+  private static File warehouseDir;
+  private static File hmsTempDir;
+
+  /**
+   * Starts HMS before the Spring ApplicationContext loads.
+   * Spring loads the context before @BeforeClass, so we use a TestExecutionListener
+   * which runs before context initialization.
+   * @Order ensures this runs before other listeners that might trigger context load.
+   */
+  @Order(Ordered.HIGHEST_PRECEDENCE)
+  public static class HmsStartupListener implements TestExecutionListener {
+    @Override
+    public void beforeTestClass(TestContext testContext) throws Exception {
+      if (hmsPort > 0) {
+        return; // Already started
+      }
+      hmsTempDir = new File(System.getProperty("java.io.tmpdir"), "test-hms-" + System.currentTimeMillis());
+      hmsTempDir.mkdirs();
+      warehouseDir = new File(hmsTempDir, "warehouse");
+      warehouseDir.mkdirs();
+
+      hmsConf = MetastoreConf.newMetastoreConf();
+      MetaStoreTestUtils.setConfForStandloneMode(hmsConf);
+
+      String jdbcUrl = String.format("jdbc:derby:memory:%s;create=true",
+          new File(hmsTempDir, "metastore_db").getAbsolutePath());
+      MetastoreConf.setVar(hmsConf, ConfVars.CONNECT_URL_KEY, jdbcUrl);
+      MetastoreConf.setVar(hmsConf, ConfVars.WAREHOUSE, warehouseDir.getAbsolutePath());
+      MetastoreConf.setVar(hmsConf, ConfVars.WAREHOUSE_EXTERNAL, warehouseDir.getAbsolutePath());
+
+      hmsPort = MetaStoreTestUtils.startMetaStoreWithRetry(
+          HadoopThriftAuthBridge.getBridge(), hmsConf, true, false, false, false);
+      LOG.info("Started embedded HMS on port: {} (before Spring context)", hmsPort);
     }
+  }
+
+  /**
+   * Minimal Spring Boot application for tests. Excludes StandaloneRESTCatalogServer
+   * so we provide it via RestCatalogTestContextInitializer (with HMS-backed Configuration).
+   */
+  @SpringBootApplication
+  @Import(IcebergCatalogConfiguration.class)
+  public static class TestRestCatalogApplication {}
+
+  /**
+   * Registers Configuration and StandaloneRESTCatalogServer before the context loads.
+   * Mirrors production main() - we create both and register them, so Spring uses our
+   * Configuration (with THRIFT_URIS from HMS) and never tries to instantiate the server.
+   */
+  public static class RestCatalogTestContextInitializer
+      implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    @Override
+    public void initialize(ConfigurableApplicationContext context) {
+      Configuration restCatalogConf = MetastoreConf.newMetastoreConf();
+      String hmsUri = "thrift://localhost:" + hmsPort;
+      MetastoreConf.setVar(restCatalogConf, ConfVars.THRIFT_URIS, hmsUri);
+      MetastoreConf.setVar(restCatalogConf, ConfVars.WAREHOUSE, warehouseDir.getAbsolutePath());
+      MetastoreConf.setVar(restCatalogConf, ConfVars.WAREHOUSE_EXTERNAL, warehouseDir.getAbsolutePath());
+      MetastoreConf.setVar(restCatalogConf, ConfVars.ICEBERG_CATALOG_SERVLET_PATH, "iceberg");
+      MetastoreConf.setVar(restCatalogConf, ConfVars.CATALOG_SERVLET_AUTH, "none");
+      MetastoreConf.setLongVar(restCatalogConf, ConfVars.CATALOG_SERVLET_PORT, 0);
+      context.getBeanFactory().registerSingleton("hadoopConfiguration", restCatalogConf);
+      StandaloneRESTCatalogServer server = new StandaloneRESTCatalogServer(restCatalogConf);
+      context.getBeanFactory().registerSingleton("standaloneRESTCatalogServer", server);
+    }
+  }
+
+  @AfterClass
+  public static void teardownClass() {
     if (hmsPort > 0) {
       MetaStoreTestUtils.close(hmsPort);
     }
     if (hmsTempDir != null && hmsTempDir.exists()) {
-      deleteDirectory(hmsTempDir);
+      deleteDirectoryStatic(hmsTempDir);
     }
   }
-  
+
+  private static void deleteDirectoryStatic(File directory) {
+    if (directory.exists()) {
+      File[] files = directory.listFiles();
+      if (files != null) {
+        for (File file : files) {
+          if (file.isDirectory()) {
+            deleteDirectoryStatic(file);
+          } else {
+            file.delete();
+          }
+        }
+      }
+      directory.delete();
+    }
+  }
+
   @Test(timeout = 60000)
-  public void testHealthCheck() throws Exception {
-    LOG.info("=== Test: Health Check ===");
-    
-    String healthUrl = "http://localhost:" + restCatalogServer.getPort() + "/health";
+  public void testLivenessProbe() throws Exception {
+    LOG.info("=== Test: Liveness Probe (Kubernetes) ===");
+
+    String livenessUrl = "http://localhost:" + port + "/actuator/health/liveness";
     try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-      HttpGet request = new HttpGet(healthUrl);
+      HttpGet request = new HttpGet(livenessUrl);
       try (CloseableHttpResponse response = httpClient.execute(request)) {
-        assertEquals("Health check should return 200", 200, response.getStatusLine().getStatusCode());
-        LOG.info("Health check passed");
+        assertEquals("Liveness probe should return 200", 200, response.getStatusLine().getStatusCode());
+        String body = EntityUtils.toString(response.getEntity());
+        assertTrue("Liveness should be UP", body.contains("UP"));
+        LOG.info("Liveness probe passed: {}", body);
       }
     }
   }
-  
+
+  @Test(timeout = 60000)
+  public void testReadinessProbe() throws Exception {
+    LOG.info("=== Test: Readiness Probe (Kubernetes) ===");
+
+    String readinessUrl = "http://localhost:" + port + "/actuator/health/readiness";
+    try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+      HttpGet request = new HttpGet(readinessUrl);
+      try (CloseableHttpResponse response = httpClient.execute(request)) {
+        assertEquals("Readiness probe should return 200", 200, response.getStatusLine().getStatusCode());
+        String body = EntityUtils.toString(response.getEntity());
+        assertTrue("Readiness should be UP", body.contains("UP"));
+        LOG.info("Readiness probe passed: {}", body);
+      }
+    }
+  }
+
+  @Test(timeout = 60000)
+  public void testPrometheusMetrics() throws Exception {
+    LOG.info("=== Test: Prometheus Metrics (for K8s HPA) ===");
+
+    String metricsUrl = "http://localhost:" + port + "/actuator/prometheus";
+    try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+      HttpGet request = new HttpGet(metricsUrl);
+      try (CloseableHttpResponse response = httpClient.execute(request)) {
+        assertEquals("Metrics endpoint should return 200", 200, response.getStatusLine().getStatusCode());
+        String body = EntityUtils.toString(response.getEntity());
+        assertTrue("Should contain JVM metrics", body.contains("jvm_memory"));
+        LOG.info("Prometheus metrics available");
+      }
+    }
+  }
+
   @Test(timeout = 60000)
   public void testRESTCatalogConfig() throws Exception {
     LOG.info("=== Test: REST Catalog Config Endpoint ===");
-    
-    String configUrl = restCatalogServer.getRestEndpoint() + "/v1/config";
+
+    String configUrl = "http://localhost:" + port + "/iceberg/v1/config";
     try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
       HttpGet request = new HttpGet(configUrl);
       try (CloseableHttpResponse response = httpClient.execute(request)) {
         assertEquals("Config endpoint should return 200", 200, response.getStatusLine().getStatusCode());
-        
+
         String responseBody = EntityUtils.toString(response.getEntity());
         LOG.info("Config response: {}", responseBody);
         // ConfigResponse should contain endpoints, defaults, and overrides
@@ -147,14 +249,14 @@ public class TestStandaloneRESTCatalogServer {
       }
     }
   }
-  
+
   @Test(timeout = 60000)
   public void testRESTCatalogNamespaceOperations() throws Exception {
     LOG.info("=== Test: REST Catalog Namespace Operations ===");
-    
-    String namespacesUrl = restCatalogServer.getRestEndpoint() + "/v1/namespaces";
+
+    String namespacesUrl = "http://localhost:" + port + "/iceberg/v1/namespaces";
     String namespaceName = "testdb";
-    
+
     try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
       // List namespaces (before creation)
       HttpGet listRequest = new HttpGet(namespacesUrl);
@@ -162,66 +264,50 @@ public class TestStandaloneRESTCatalogServer {
       try (CloseableHttpResponse response = httpClient.execute(listRequest)) {
         assertEquals("List namespaces should return 200", 200, response.getStatusLine().getStatusCode());
       }
-      
+
       // Create namespace - REST Catalog API requires JSON body with namespace array
       HttpPost createRequest = new HttpPost(namespacesUrl);
       createRequest.setHeader("Content-Type", "application/json");
       String jsonBody = "{\"namespace\":[\"" + namespaceName + "\"]}";
       createRequest.setEntity(new StringEntity(jsonBody, "UTF-8"));
-      
+
       try (CloseableHttpResponse response = httpClient.execute(createRequest)) {
         assertEquals("Create namespace should return 200", 200, response.getStatusLine().getStatusCode());
       }
-      
+
       // Verify namespace exists by checking it in the list
       HttpGet listAfterRequest = new HttpGet(namespacesUrl);
       listAfterRequest.setHeader("Content-Type", "application/json");
       try (CloseableHttpResponse response = httpClient.execute(listAfterRequest)) {
-        assertEquals("List namespaces after creation should return 200", 
+        assertEquals("List namespaces after creation should return 200",
             200, response.getStatusLine().getStatusCode());
-        
+
         String responseBody = EntityUtils.toString(response.getEntity());
         LOG.info("Namespaces list response: {}", responseBody);
         assertTrue("Response should contain created namespace", responseBody.contains(namespaceName));
       }
-      
+
       // Verify namespace exists by getting it directly
-      String getNamespaceUrl = restCatalogServer.getRestEndpoint() + "/v1/namespaces/" + namespaceName;
+      String getNamespaceUrl = "http://localhost:" + port + "/iceberg/v1/namespaces/" + namespaceName;
       HttpGet getRequest = new HttpGet(getNamespaceUrl);
       getRequest.setHeader("Content-Type", "application/json");
       try (CloseableHttpResponse response = httpClient.execute(getRequest)) {
-        assertEquals("Get namespace should return 200", 
+        assertEquals("Get namespace should return 200",
             200, response.getStatusLine().getStatusCode());
         String responseBody = EntityUtils.toString(response.getEntity());
         LOG.info("Get namespace response: {}", responseBody);
         assertTrue("Response should contain namespace", responseBody.contains(namespaceName));
       }
     }
-    
+
     LOG.info("Namespace operations passed");
   }
-  
+
   @Test(timeout = 60000)
   public void testServerPort() {
     LOG.info("=== Test: Server Port ===");
-    assertTrue("Server port should be > 0", restCatalogServer.getPort() > 0);
-    assertNotNull("REST endpoint should not be null", restCatalogServer.getRestEndpoint());
-    LOG.info("Server port: {}, Endpoint: {}", restCatalogServer.getPort(), restCatalogServer.getRestEndpoint());
-  }
-  
-  private void deleteDirectory(File directory) {
-    if (directory.exists()) {
-      File[] files = directory.listFiles();
-      if (files != null) {
-        for (File file : files) {
-          if (file.isDirectory()) {
-            deleteDirectory(file);
-          } else {
-            file.delete();
-          }
-        }
-      }
-      directory.delete();
-    }
+    assertTrue("Server port should be > 0", port > 0);
+    assertNotNull("REST endpoint should not be null", server.getRestEndpoint());
+    LOG.info("Server port: {}, Endpoint: {}", port, server.getRestEndpoint());
   }
 }
