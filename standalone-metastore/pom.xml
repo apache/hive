@@ -410,7 +410,7 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
-        <version>2.0.13</version>
+        <version>${slf4j.version}</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>

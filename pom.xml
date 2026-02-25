@@ -241,17 +241,6 @@
     <nimbus-oauth.version>11.28</nimbus-oauth.version>
   </properties>
   <repositories>
-    <!-- This needs to be removed before checking in-->
-    <repository>
-      <id>central</id>
-      <name>central</name>
-      <url>https://repo.maven.apache.org/maven2</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-    </repository>
     <repository>
       <!-- shibboleth doesn't publish artifacts on maven central
         See https://wiki.shibboleth.net/confluence/display/DEV/Use+of+Maven+Central -->
@@ -645,6 +634,18 @@
         </exclusions>
       </dependency>
       <dependency>
+        <groupId>org.apache.kudu</groupId>
+        <artifactId>kudu-test-utils</artifactId>
+        <version>${kudu.version}</version>
+        <exclusions>
+          <!-- SLF4J 1.x binding; conflicts with log4j-slf4j2-impl (SLF4J 2.x) -->
+          <exclusion>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
         <groupId>org.apache.orc</groupId>
         <artifactId>orc-core</artifactId>
         <version>${orc.version}</version>
@@ -943,7 +944,7 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jcl-over-slf4j</artifactId>
-        <version>2.0.13</version>
+        <version>${slf4j.version}</version>
       </dependency>
       <dependency>
         <groupId>xerces</groupId>
@@ -1014,10 +1015,6 @@
             <artifactId>slf4j-reload4j</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>ch.qos.reload4j</groupId>
-            <artifactId>reload4j</artifactId>
-          </exclusion>
-          <exclusion>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
@@ -1064,10 +1061,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
           </exclusion>
-          <exclusion>
-            <groupId>ch.qos.reload4j</groupId>
-            <artifactId>reload4j</artifactId>
-          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -1082,10 +1075,6 @@
           <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>ch.qos.reload4j</groupId>
-            <artifactId>reload4j</artifactId>
           </exclusion>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1119,10 +1108,6 @@
             <artifactId>slf4j-reload4j</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>ch.qos.reload4j</groupId>
-            <artifactId>reload4j</artifactId>
-          </exclusion>
-          <exclusion>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
@@ -1148,10 +1133,6 @@
           <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>ch.qos.reload4j</groupId>
-            <artifactId>reload4j</artifactId>
           </exclusion>
           <exclusion>
             <groupId>org.jline</groupId>
@@ -1187,10 +1168,6 @@
           <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>ch.qos.reload4j</groupId>
-            <artifactId>reload4j</artifactId>
           </exclusion>
           <exclusion>
             <groupId>commons-logging</groupId>
@@ -1392,10 +1369,6 @@
           <exclusion>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-reload4j</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>ch.qos.reload4j</groupId>
-            <artifactId>reload4j</artifactId>
           </exclusion>
         </exclusions>
       </dependency>

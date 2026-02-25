@@ -60,6 +60,10 @@ execHiveCmd () {
       export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.configurationFile=file://${HIVE_CONF_DIR}/hive-log4j2.properties"
     fi
 
+    # Prevent Log4j2 from being reconfigured after initialization
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.disableShutdownHook=true"
+    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.shutdownHookEnabled=false"
+
     # CRITICAL: Tell Hadoop to load Hive's jars FIRST, overriding globally-installed
     # Hadoop/Tez jars that contain old SLF4J 1.x bindings. This prevents the multiple
     # SLF4J binding conflict seen in CI environments.
@@ -73,11 +77,14 @@ execHiveCmd () {
         # Skip only specific SLF4J 1.x binding jars by filename
         if [[ "$(basename "$cp_entry")" == slf4j-log4j12-*.jar || \
               "$(basename "$cp_entry")" == slf4j-reload4j-*.jar || \
-              "$(basename "$cp_entry")" == log4j-slf4j-impl-*.jar ]]; then
+              "$(basename "$cp_entry")" == log4j-slf4j-impl-*.jar || \
+              "$(basename "$cp_entry")" == reload4j-*.jar ]]; then
           continue
         fi
-        # Skip explicit SLF4J 1.x jar paths
-        if [[ "$cp_entry" == *slf4j-log4j12* || "$cp_entry" == *slf4j-reload4j* ]]; then
+        # Skip explicit SLF4J 1.x jar paths and reload4j
+        if [[ "$cp_entry" == *slf4j-log4j12* || \
+              "$cp_entry" == *slf4j-reload4j* || \
+              "$cp_entry" == */reload4j-* ]]; then
           continue
         fi
         if [ "$FILTERED_CP" == "" ]; then
