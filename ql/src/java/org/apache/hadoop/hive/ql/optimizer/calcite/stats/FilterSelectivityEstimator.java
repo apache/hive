@@ -252,8 +252,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       // unknown type, do not remove the cast
       return false;
     }
-    ColStatistics.Range typeRange = new ColStatistics.Range(min, max);
-    return StatsUtils.isWithin(colRange, typeRange, Number::doubleValue);
+    // are all values of the input column accepted by the cast?
+    return min < colRange.minValue.doubleValue() && colRange.maxValue.doubleValue() < max;
   }
 
   /**
