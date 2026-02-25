@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -223,7 +222,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     // otherwise the CAST introduces some modulo-like behavior
     ColStatistics colStat = colStats.getFirst();
     ColStatistics.Range colRange = colStat.getRange();
-    if (colRange == null) {
+    if (colRange == null || colRange.minValue == null || colRange.maxValue == null) {
       return false;
     }
 
@@ -311,7 +310,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     // the boundaries might result in an invalid range (e.g., left > right)
     // in that case the predicate does not select anything, and we return an empty range
     return makeRange(lower, predicateRange.lowerBoundType(), upper, predicateRange.upperBoundType());
-    }
+  }
 
   /**
    * If the arguments lead to a valid range, it is returned, otherwise an empty array is returned.
