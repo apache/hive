@@ -30,7 +30,10 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.iceberg.rest.standalone.IcebergCatalogConfiguration;
 import org.apache.iceberg.rest.standalone.StandaloneRESTCatalogServer;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,9 +41,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.test.context.TestContext;
 import org.springframework.test.context.TestExecutionListener;
 import org.springframework.test.context.TestExecutionListeners;
@@ -62,13 +68,13 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-    classes = {StandaloneRESTCatalogServer.class, TestStandaloneRESTCatalogServer.TestConfig.class},
+    classes = TestStandaloneRESTCatalogServer.TestRestCatalogApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
-        "spring.main.allow-bean-definition-overriding=true",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration"
     }
 )
+@ContextConfiguration(initializers = TestStandaloneRESTCatalogServer.RestCatalogTestContextInitializer.class)
 @TestExecutionListeners(
     listeners = TestStandaloneRESTCatalogServer.HmsStartupListener.class,
     mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS
@@ -91,7 +97,9 @@ public class TestStandaloneRESTCatalogServer {
    * Starts HMS before the Spring ApplicationContext loads.
    * Spring loads the context before @BeforeClass, so we use a TestExecutionListener
    * which runs before context initialization.
+   * @Order ensures this runs before other listeners that might trigger context load.
    */
+  @Order(Ordered.HIGHEST_PRECEDENCE)
   public static class HmsStartupListener implements TestExecutionListener {
     @Override
     public void beforeTestClass(TestContext testContext) throws Exception {
@@ -119,14 +127,22 @@ public class TestStandaloneRESTCatalogServer {
   }
 
   /**
-   * Test configuration that provides the Configuration bean.
-   * Spring injects this into StandaloneRESTCatalogServer constructor.
+   * Minimal Spring Boot application for tests. Excludes StandaloneRESTCatalogServer
+   * so we provide it via RestCatalogTestContextInitializer (with HMS-backed Configuration).
    */
-  @TestConfiguration
-  public static class TestConfig {
-    @Bean
-    public Configuration hadoopConfiguration() {
-      // Create Configuration for REST Catalog (standard Hive approach)
+  @SpringBootApplication
+  @Import(IcebergCatalogConfiguration.class)
+  public static class TestRestCatalogApplication {}
+
+  /**
+   * Registers Configuration and StandaloneRESTCatalogServer before the context loads.
+   * Mirrors production main() - we create both and register them, so Spring uses our
+   * Configuration (with THRIFT_URIS from HMS) and never tries to instantiate the server.
+   */
+  public static class RestCatalogTestContextInitializer
+      implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    @Override
+    public void initialize(ConfigurableApplicationContext context) {
       Configuration restCatalogConf = MetastoreConf.newMetastoreConf();
       String hmsUri = "thrift://localhost:" + hmsPort;
       MetastoreConf.setVar(restCatalogConf, ConfVars.THRIFT_URIS, hmsUri);
@@ -134,9 +150,10 @@ public class TestStandaloneRESTCatalogServer {
       MetastoreConf.setVar(restCatalogConf, ConfVars.WAREHOUSE_EXTERNAL, warehouseDir.getAbsolutePath());
       MetastoreConf.setVar(restCatalogConf, ConfVars.ICEBERG_CATALOG_SERVLET_PATH, "iceberg");
       MetastoreConf.setVar(restCatalogConf, ConfVars.CATALOG_SERVLET_AUTH, "none");
-      // HMSCatalogFactory returns null when CATALOG_SERVLET_PORT is -1; use 0 for Spring Boot managed port
       MetastoreConf.setLongVar(restCatalogConf, ConfVars.CATALOG_SERVLET_PORT, 0);
-      return restCatalogConf;
+      context.getBeanFactory().registerSingleton("hadoopConfiguration", restCatalogConf);
+      StandaloneRESTCatalogServer server = new StandaloneRESTCatalogServer(restCatalogConf);
+      context.getBeanFactory().registerSingleton("standaloneRESTCatalogServer", server);
     }
   }
 
