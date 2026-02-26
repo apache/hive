@@ -71,7 +71,7 @@ PREHOOK: Input: default@mat1
 POSTHOOK: query: show create table mat1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@mat1
-CREATE TABLE `mat1`(
+CREATE EXTERNAL TABLE `mat1`(
   `b` string, 
   `c` int)
 ROW FORMAT SERDE 
@@ -149,6 +149,15 @@ POSTHOOK: query: drop materialized view mat1
 POSTHOOK: type: DROP_MATERIALIZED_VIEW
 POSTHOOK: Input: default@mat1
 POSTHOOK: Output: default@mat1
+PREHOOK: query: select 1 as hello
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select 1 as hello
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
 PREHOOK: query: create materialized view mat1_orc stored by iceberg stored as orc tblproperties ('format-version'='1', 'max-staleness-ms'='1000') as
 select tbl_ice.b, tbl_ice.c from tbl_ice where tbl_ice.c > 52
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
@@ -181,7 +190,7 @@ PREHOOK: Input: default@mat1_orc
 POSTHOOK: query: show create table mat1_orc
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@mat1_orc
-CREATE TABLE `mat1_orc`(
+CREATE EXTERNAL TABLE `mat1_orc`(
   `b` string, 
   `c` int)
 ROW FORMAT SERDE 

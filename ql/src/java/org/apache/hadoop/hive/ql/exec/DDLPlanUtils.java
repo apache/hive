@@ -905,7 +905,11 @@ public class DDLPlanUtils {
   }
 
   private String getExternal(Table table) {
-    return table.getTableType() == TableType.EXTERNAL_TABLE ? "EXTERNAL " : "";
+    // check if it is an iceberg materialized view
+    boolean isIcebergMaterializedView = table.getTableType() == TableType.MATERIALIZED_VIEW &&
+        "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler".equals(table.getStorageHandler().getClass().getName());
+
+    return table.getTableType() == TableType.EXTERNAL_TABLE || isIcebergMaterializedView ? "EXTERNAL " : "";
   }
 
   private String getColumns(Table table) {
