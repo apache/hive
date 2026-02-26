@@ -204,14 +204,14 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         }
         table.setParameters(tableProps);
       } else {
-        cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
+        cols.addAll(Hive.getFieldsFromDeserializer(colName, deserializer, context.getConf()));
         colStats.addAll(context.getDb().getTableColumnStatistics(table, colNames, false));
       }
     } else {
       List<String> partitions = new ArrayList<>();
       String partName = part.getName();
       partitions.add(partName);
-      cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
+      cols.addAll(Hive.getFieldsFromDeserializer(colName, deserializer, context.getConf()));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
           table.getDbName(), table.getTableName(), partitions, colNames, false);
       List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(partName);
@@ -241,7 +241,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void getColumnsForNotPartitionKeyColumn(Table table, List<FieldSchema> cols, List<ColumnStatisticsObj> colStats,
       Deserializer deserializer, List<String> colNames, Map<String, String> tableProps)
       throws HiveException {
-    cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath(), deserializer, context.getConf()));
+    cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath().split("\\.")[2], deserializer,
+            context.getConf()));
     List<String> parts = context.getDb().getPartitionNames(table, (short) -1);
     
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, colNames, parts, false);

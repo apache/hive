@@ -203,7 +203,10 @@ public class HiveMetaStoreUtils {
         String fieldTypeName = structField.getFieldObjectInspector().getTypeName();
         String fieldComment = determineFieldComment(structField.getFieldComment(), noCommentFromDeserializer);
 
-        str_fields.add(new FieldSchema(fieldName, fieldTypeName, fieldComment));
+        boolean shouldAddField = names.length > 1 || fieldName.equals(names[0]);
+        if (shouldAddField) {
+          str_fields.add(new FieldSchema(fieldName, fieldTypeName, fieldComment));
+        }
       }
     }
     return str_fields;
