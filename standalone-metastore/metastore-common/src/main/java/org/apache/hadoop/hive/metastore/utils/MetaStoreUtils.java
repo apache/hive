@@ -406,7 +406,10 @@ public class MetaStoreUtils {
   }
 
   public static boolean isExternal(Map<String, String> tableParams){
-    return isPropertyTrue(tableParams, "EXTERNAL");
+    String storageHandler = tableParams.get("storage_handler");
+    boolean isIceberg = "org.apache.iceberg.mr.hive.HiveIcebergStorageHandler".equals(storageHandler);
+
+    return isPropertyTrue(tableParams, "EXTERNAL") || isIceberg;
   }
 
   public static boolean isPropertyTrue(Map<String, String> tableParams, String prop) {

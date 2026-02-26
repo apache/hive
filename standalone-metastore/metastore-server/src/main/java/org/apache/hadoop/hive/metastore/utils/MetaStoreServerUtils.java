@@ -1775,9 +1775,13 @@ public class MetaStoreServerUtils {
   }
 
   public static boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
+    return checkTableDataShouldBeDeleted(tbl, deleteData, false);
+  }
+
+  public static boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData, boolean purgeExternalTableBasedOnHiveConf) {
     if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
-      // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
-      return MetaStoreUtils.isExternalTablePurge(tbl);
+      // External table data can be deleted if HIVE_EXTERNALTABLE_PURGE_DEFAULT is true or EXTERNAL_TABLE_PURGE is true
+      return purgeExternalTableBasedOnHiveConf || MetaStoreUtils.isExternalTablePurge(tbl);
     }
     return deleteData;
   }

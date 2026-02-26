@@ -157,7 +157,9 @@ public class DropTableHandler
     if (tbl.getSd() == null) {
       throw new MetaException("Table metadata is corrupted");
     }
-    tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, request.isDeleteData());
+
+    boolean purgeExternalTableBasedOnHiveConf = handler.getConf().getBoolean("hive.external.table.purge.default", false);
+    tableDataShouldBeDeleted = checkTableDataShouldBeDeleted(tbl, request.isDeleteData(),purgeExternalTableBasedOnHiveConf );
     if (tbl.getSd().getLocation() != null) {
       tblPath = new Path(tbl.getSd().getLocation());
     }
