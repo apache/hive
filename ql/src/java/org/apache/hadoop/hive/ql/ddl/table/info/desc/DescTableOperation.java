@@ -204,14 +204,14 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         }
         table.setParameters(tableProps);
       } else {
-        cols.addAll(Hive.getFieldsFromDeserializer(colName, deserializer, context.getConf()));
+        cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colNames));
         colStats.addAll(context.getDb().getTableColumnStatistics(table, colNames, false));
       }
     } else {
       List<String> partitions = new ArrayList<>();
       String partName = part.getName();
       partitions.add(partName);
-      cols.addAll(Hive.getFieldsFromDeserializer(colName, deserializer, context.getConf()));
+      cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colNames));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
           table.getDbName(), table.getTableName(), partitions, colNames, false);
       List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(partName);
@@ -219,6 +219,23 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         colStats.addAll(partitionColStat);
       }
     }
+  }
+
+  private List<FieldSchema> getFilteredFieldsFromDeserializer(Table table, Deserializer deserializer,
+    List<String> targetColNames) throws HiveException {
+    List<FieldSchema> allFields = Hive.getFieldsFromDeserializer(table.getTableName(), deserializer, context.getConf());
+    List<FieldSchema> filteredFields = new ArrayList<>();
+    
+    for (FieldSchema field : allFields) {
+      for (String colName : targetColNames) {
+        if (field.getName().equalsIgnoreCase(colName)) {
+          filteredFields.add(field);
+          break;
+        }
+      }
+    }
+    
+  return filteredFields;
   }
 
   private void getColumnDataForPartitionKeyColumn(Table table, List<FieldSchema> cols,
@@ -241,8 +258,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void getColumnsForNotPartitionKeyColumn(Table table, List<FieldSchema> cols, List<ColumnStatisticsObj> colStats,
       Deserializer deserializer, List<String> colNames, Map<String, String> tableProps)
       throws HiveException {
-    cols.addAll(Hive.getFieldsFromDeserializer(desc.getColumnPath().split("\\.")[2], deserializer,
-            context.getConf()));
+    cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colNames));
     List<String> parts = context.getDb().getPartitionNames(table, (short) -1);
     
     AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, colNames, parts, false);
