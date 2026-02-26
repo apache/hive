@@ -214,6 +214,7 @@ public class OTELExporter extends Thread {
     attributes.put(AttributeKey.stringKey("UserName"), query.getUserName());
     attributes.put(AttributeKey.stringKey("State"), query.getState());
     attributes.put(AttributeKey.stringKey("SessionId"), query.getSessionId());
+    attributes.put(AttributeKey.stringKey("FScounters"), query.getCounters().toString());
     return attributes;
   }
 

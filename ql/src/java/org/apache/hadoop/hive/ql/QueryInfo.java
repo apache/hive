@@ -18,7 +18,12 @@
 package org.apache.hadoop.hive.ql;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-
+import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
+import org.apache.tez.common.counters.CounterGroup;
+import org.apache.tez.common.counters.FileSystemCounter;
+import org.apache.tez.common.counters.TezCounter;
+import org.apache.tez.common.counters.TezCounters;
+import org.json.JSONObject;
 /**
  * The class is synchronized, as WebUI may access information about a running query.
  */
@@ -33,6 +38,8 @@ public class QueryInfo {
   private Long endTime;
   private String state;
   private QueryDisplay queryDisplay;
+
+  private TezRuntimeContext tezRuntimeContext;
 
   private String operationLogLocation;
 
@@ -105,6 +112,25 @@ public class QueryInfo {
 
   public synchronized void setEndTime() {
     this.endTime = System.currentTimeMillis();
+  }
+
+  public synchronized void setTezRuntimeContext(TezRuntimeContext trc) {this.tezRuntimeContext = trc;}
+
+  public synchronized TezRuntimeContext getTezRuntimeContext() {return this.tezRuntimeContext;}
+
+  public synchronized JSONObject getCounters() {
+    JSONObject countersJson = new JSONObject();
+    if (this.tezRuntimeContext != null){
+      TezCounters counters = this.tezRuntimeContext.getCounters();
+      if (counters != null) {
+        for (CounterGroup group : counters) {
+          for (TezCounter counter : group) {
+            countersJson.put(group.getName() + " - " + counter.getDisplayName(), counter.getValue());
+          }
+        }
+      }
+    }
+    return countersJson;
   }
 
   public synchronized void setRuntime(long runtime) {

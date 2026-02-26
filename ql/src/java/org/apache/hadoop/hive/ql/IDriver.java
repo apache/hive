@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -40,6 +41,8 @@ public interface IDriver extends CommandProcessor {
   CommandProcessorResponse compileAndRespond(String statement) throws CommandProcessorException;
 
   QueryPlan getPlan();
+
+  TezRuntimeContext getTezRuntimeContext();
 
   QueryState getQueryState();
 

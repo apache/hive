@@ -5737,11 +5737,11 @@ public class HiveConf extends Configuration {
     REWRITE_POLICY("hive.rewrite.data.policy", "DEFAULT", 
         "Defines the rewrite policy, the valid values are those defined in RewritePolicy enum"),
 
-    HIVE_OTEL_METRICS_FREQUENCY_SECONDS("hive.otel.metrics.frequency.seconds", "0s",
+    HIVE_OTEL_METRICS_FREQUENCY_SECONDS("hive.otel.metrics.frequency.seconds", "2s",
         new TimeValidator(TimeUnit.SECONDS),
         "Frequency at which the OTEL Metrics are refreshed, A value of 0 or less disable the feature"),
 
-    HIVE_OTEL_COLLECTOR_ENDPOINT("hive.otel.collector.endpoint", "",
+    HIVE_OTEL_COLLECTOR_ENDPOINT("hive.otel.collector.endpoint", "http://otelcollector:5650",
         "The endpoint to send all OTLP traces, metrics, and logs to. Often the address of an OpenTelemetry Collector."
             + " Must be a URL with a scheme of either http or https based on the use of TLS/"),
 
