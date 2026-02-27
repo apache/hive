@@ -82,14 +82,7 @@ public final class HiveRelJsonSchemaReader {
     return RelJson.create().toType(typeFactory, value);
   }
 
-  private static class TableInfo {
-    private final RelDataType rowType;
-    private final double rowCount;
-
-    TableInfo(RelDataType rowType, double rowCount) {
-      this.rowType = rowType;
-      this.rowCount = rowCount;
-    }
+  private record TableInfo(RelDataType rowType, double rowCount) {
   }
 
   private static final class MapRelOptSchema implements RelOptSchema {
