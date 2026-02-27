@@ -110,7 +110,7 @@ class TestHiveRelJsonReader {
         "query73.q.out",
         "query83.q.out"),
     /**
-     * A normalizer for aggregate function discrepancies. At the moment the deserializer fails to
+     * A normalizer for COUNT function discrepancies. At the moment the deserializer fails to
      * distinguish between COUNT (from {@link org.apache.calcite.sql.fun.SqlStdOperatorTable}) and
      * count (from {@link org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction})
      * operators. The deserializer always picks the latter no matter which one is really present
@@ -119,7 +119,7 @@ class TestHiveRelJsonReader {
      * Normalizes the input line by converting occurrences of the COUNT aggregate function name to lowercase implicitly
      * converting the SQL standard operator to Hive built-in.
      */
-    AGG_FUNCTION(
+    COUNT(
         Pattern.compile("COUNT\\(", Pattern.CASE_INSENSITIVE),
         String::toLowerCase,
         "query6.q.out",
