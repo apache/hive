@@ -3308,47 +3308,29 @@ class MetaStoreDirectSql {
   }
 
   /**
-      a helper function which will firstly get the current COLUMN_STATS_ACCURATE parameter on table level
-      secondly convert the JSON String into map, and update the information in it, and convert it back to JSON
-      thirdly update the COLUMN_STATS_ACCURATE parameter with the new value on table level using directSql
+      a helper function which will get the current COLUMN_STATS_ACCURATE parameter on table level
+      and update the COLUMN_STATS_ACCURATE parameter with the new value on table level using directSql
    */
   public long updateColumnStatsAccurateForTable(Table table, List<String> droppedCols) throws MetaException {
-    String currentValue = table.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+    Map<String, String> params = table.getParameters();
+    // get the current COLUMN_STATS_ACCURATE
+    String currentValue = params.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
     if (currentValue == null) {
       return 0;
     }
-
     try {
-      ObjectMapper mapper = new ObjectMapper();
-
-      // Deserialize the JSON into a map
-      Map<String, Object> statsMap = mapper.readValue(currentValue, new TypeReference<Map<String, Object>>() {});
-
-      // Get the COLUMN_STATS object if it exists
-      Object columnStatsObj = statsMap.get(StatsSetupConst.COLUMN_STATS);
-
-      if (columnStatsObj instanceof Map) {
-        Map<String, String> columnStats = (Map<String, String>) columnStatsObj;
-
-        boolean removeAll = droppedCols == null || droppedCols.isEmpty() || droppedCols.size() == columnStats.size();
-
-        if (removeAll) {
-          // Remove entire column stats
-          statsMap.remove(StatsSetupConst.COLUMN_STATS);
-        } else {
-          // Remove only the dropped columns
-          for (String col : droppedCols) {
-            if (col != null) {
-              columnStats.remove(col.toLowerCase());
-            }
-          }
-        }
+      // if the dropping columns is empty, that means we delete all the columns
+      if (droppedCols == null || droppedCols.isEmpty()) {
+        StatsSetupConst.clearColumnStatsState(params);
+      } else {
+        StatsSetupConst.removeColumnStatsState(params, droppedCols);
       }
 
-      // Serialize the map into a new JSON string
-      String updatedValue = mapper.writeValueAsString(statsMap);
-
-      // Update the COLUMN_STATS_ACCURATE parameter
+      String updatedValue = params.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+      // if the COL_STATS_ACCURATE has changed, then update it using directSql
+      if (currentValue.equals(updatedValue)) {
+        return 0;
+      }
       return updateTableParam(table, StatsSetupConst.COLUMN_STATS_ACCURATE, currentValue, updatedValue);
     } catch (Exception e) {
       throw new MetaException("Failed to parse/update COLUMN_STATS_ACCURATE: " + e.getMessage());

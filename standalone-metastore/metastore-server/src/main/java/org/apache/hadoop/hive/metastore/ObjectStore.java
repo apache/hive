@@ -69,6 +69,10 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -10038,9 +10042,23 @@ public class ObjectStore implements RawStore, Configurable {
       } finally {
         b.closeAllQueries();
       }
-      // Update COLUMN_STATS_ACCURATE after stats are dropped
-      Table tbl = getTable(catName, dbName, tableName);
-      directSql.updateColumnStatsAccurateForPartitions(catName, dbName, tbl, partNames, colNames);
+      MTable mTable = getMTable(catName, dbName, tableName);
+      List<Partition> parts = getPartitionsByNames(catName, dbName, tableName, partNames);
+      for (Partition partition : parts) {
+        Map<String, String> partitionParams = partition.getParameters();
+        if (partitionParams == null) {
+          partitionParams = new HashMap<>();
+          partition.setParameters(partitionParams);
+        }
+
+        if (colNames == null || colNames.isEmpty()) {
+          // drop ALL column stats => remove the key entirely
+          StatsSetupConst.clearColumnStatsState(partitionParams);
+        } else {
+          StatsSetupConst.removeColumnStatsState(partitionParams, colNames);
+        }
+      }
+      alterPartitionsViaJdo(mTable, partNames, parts, null);
       ret = commitTransaction();
     } finally {
       rollbackAndCleanup(ret, null);
@@ -10063,15 +10081,8 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        MetaStoreDirectSql d = directSql; // snapshot
-        if (d == null) {
-          // Initialize the directSql again in case it became null in-between
-          String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
-          schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
-          d = new MetaStoreDirectSql(pm, conf, schema);
-        }
-        if (d.deleteTableColumnStatistics(getTable().getId(), colNames, engine)) {
-          d.updateColumnStatsAccurateForTable(getTable(), colNames);
+        if (directSql.deleteTableColumnStatistics(getTable().getId(), colNames, engine)) {
+          directSql.updateColumnStatsAccurateForTable(getTable(), colNames);
           return true;
         }
         return false;
@@ -10107,8 +10118,11 @@ public class ObjectStore implements RawStore, Configurable {
       query.setFilter(filter);
       query.declareParameters(parameters);
       List<Object> params = new ArrayList<>();
-      params.add(tableName == null ? null : normalizeIdentifier(tableName));
-      params.add(dbName == null ? null : normalizeIdentifier(dbName));
+      if (tableName == null || dbName == null) {
+        throw new InvalidInputException("tableName and dbName cannot be null");
+      }
+      params.add(normalizeIdentifier(tableName));
+      params.add(normalizeIdentifier(dbName));
       params.add(catName == null ? null : normalizeIdentifier(catName));
       if (colNames != null && !colNames.isEmpty()) {
         List<String> normalizedColNames = new ArrayList<>();
@@ -10130,14 +10144,18 @@ public class ObjectStore implements RawStore, Configurable {
             + tableName + " col=" + String.join(", ", colNames));
       }
       if (mStatsObjColl != null) {
-        pm.deletePersistentAll(mStatsObjColl);
         // Update COLUMN_STATS_ACCURATE to reflect the deletion
-        Table tbl = getTable(catName, dbName, tableName);
-        // Initialize the directSql again in case it became null in-between
-        String schema = PersistenceManagerProvider.getProperty("javax.jdo.mapping.Schema");
-        schema = org.apache.commons.lang3.StringUtils.defaultIfBlank(schema, null);
-        directSql = new MetaStoreDirectSql(pm, conf, schema); // Use the original colNames (can be null or empty)
-        directSql.updateColumnStatsAccurateForTable(tbl, colNames);
+        Table table = getTable(catName, dbName, tableName);
+        Map<String, String> tableParams = table.getParameters();
+        // get the current COLUMN_STATS_ACCURATE
+        String currentValue = tableParams.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+        // if the dropping columns is empty, that means we delete all the columns
+        if (colNames == null || colNames.isEmpty()) {
+          StatsSetupConst.clearColumnStatsState(tableParams);
+        } else {
+          StatsSetupConst.removeColumnStatsState(tableParams, colNames);
+        }
+        alterTable(catName, dbName, tableName, table, null);
       } else {
         throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
                 " table=" + tableName + " col=" + (colNames != null ? String.join(", ", colNames) : "ALL"));
