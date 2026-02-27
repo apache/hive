@@ -174,12 +174,6 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
   /**
    * Check if user can access the table associated with the partition. If not, then throw exception
    * so user cannot access partitions associated with this table
-   * We are not calling Pre event listener for authorization because it requires getting the
-   * table object from DB, more overhead. Instead ,we call filter hook to filter out table if user
-   * has no access. Filter hook only requires table name, not table object. That saves DB access for
-   * table object, and still achieve the same purpose: checking if user can access the specified
-   * table
-   *
    * @throws NoSuchObjectException
    * @throws MetaException
    */

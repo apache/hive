@@ -3408,7 +3408,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     } catch (TException ex) {
       if (ex instanceof NoSuchObjectException e) {
         // Keep it here just because some tests in TestListPartitions assume NoSuchObjectException
-        // if the input is invalid.
+        // if the input is invalid at first sight.
         if (StringUtils.isBlank(dbName) || StringUtils.isBlank(tableName.getTable())) {
           throw e;
         }

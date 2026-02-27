@@ -370,6 +370,11 @@ public abstract class AbstractRequestHandler<T extends TBase, A extends Abstract
     }
   }
 
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + " [" + id + "]";
+  }
+
   private static boolean validateHandler(Class<? extends AbstractRequestHandler> clz) {
     if (Modifier.isAbstract(clz.getModifiers())) {
       return false;
