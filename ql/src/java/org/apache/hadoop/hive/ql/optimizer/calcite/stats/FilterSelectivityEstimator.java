@@ -488,8 +488,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       float leftValue = leftLiteral.get();
       float rightValue = rightLiteral.get();
 
-      final Object inverseBoolValueObject = ((RexLiteral) operands.getFirst()).getValue();
-      boolean inverseBool = Boolean.parseBoolean(inverseBoolValueObject.toString());
+      boolean inverseBool = RexLiteral.booleanValue(operands.getFirst());
       // when they are equal it's an equality predicate, we cannot handle it as "BETWEEN"
       if (Objects.equals(leftValue, rightValue)) {
         return inverseBool ? computeNotEqualitySelectivity(call) : computeFunctionSelectivity(call);
