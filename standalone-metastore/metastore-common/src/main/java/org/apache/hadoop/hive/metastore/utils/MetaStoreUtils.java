@@ -302,6 +302,10 @@ public class MetaStoreUtils {
     return HiveMetaHook.ICEBERG.equalsIgnoreCase(params.get(HiveMetaHook.TABLE_TYPE));
   }
 
+  public static boolean isIcebergTable(Properties params) {
+    return HiveMetaHook.ICEBERG.equalsIgnoreCase((String) params.get(HiveMetaHook.TABLE_TYPE));
+  }
+
   public static boolean isTranslatedToExternalTable(Table table) {
     Map<String, String> params = table.getParameters();
     return params != null && MetaStoreUtils.isPropertyTrue(params, HiveMetaHook.EXTERNAL)
