@@ -1878,6 +1878,9 @@ class MetaStoreDirectSql {
     if (queryText.endsWith("AND")) {
       queryText = queryText.substring(0, queryText.length()-3);
     }
+    queryText += """
+    ORDER BY %1$s."CONSTRAINT_NAME" ASC, %1$s."POSITION ASC"
+    """.formatted(KEY_CONSTRAINTS);
     List<String> pms = new ArrayList<String>();
     pms.add(catName);
     if (foreign_db_name != null) {
