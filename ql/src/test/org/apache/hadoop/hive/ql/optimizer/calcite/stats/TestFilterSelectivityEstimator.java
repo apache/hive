@@ -61,8 +61,6 @@ import java.time.ZoneOffset;
 import java.util.Collections;
 
 import static org.apache.calcite.sql.type.SqlTypeName.BIGINT;
-import static org.apache.calcite.sql.type.SqlTypeName.DOUBLE;
-import static org.apache.calcite.sql.type.SqlTypeName.FLOAT;
 import static org.apache.calcite.sql.type.SqlTypeName.INTEGER;
 import static org.apache.calcite.sql.type.SqlTypeName.SMALLINT;
 import static org.apache.calcite.sql.type.SqlTypeName.TINYINT;
@@ -96,7 +94,17 @@ public class TestFilterSelectivityEstimator {
       // 100.05f and its two predecessors and successors
       100.04999f, 100.049995f, 100.05f, 100.05001f, 100.05002f,
       // some values
-      1_000f, 10_000f, 100_000f, 1_000_000f, 10_000_000f };
+      1_000f, 10_000f, 100_000f, 1_000_000f, 1e19f };
+  private static final float[] VALUES3 = {
+      // the closest floats that are CAST to the integer types, and one below and above the range
+      -9.223373E18f, -9.223372E18f, 9.223372E18f, 9.223373E18f,  // long
+      -2.147484E9f, -2.1474836E9f, 2.1474836E9f, 2.147484E9f, // integer
+      -32769.0f, -32768.996f, 32767.998f, 32768.0f, // short
+      -129f, -128.99998f, 127.99999f, 128.0f, // byte
+      // numbers for checking the rounding when casting to integer types
+      10f, 10.0001f, 10.9999f, 11f,
+      // corresponding negative values
+      -11f, -10.9999f, -10.0001f, -10f };
 
   /**
    * Both dates and timestamps are converted to epoch seconds.
@@ -109,6 +117,7 @@ public class TestFilterSelectivityEstimator {
 
   private static final KllFloatsSketch KLL = StatisticsTestUtils.createKll(VALUES);
   private static final KllFloatsSketch KLL2 = StatisticsTestUtils.createKll(VALUES2);
+  private static final KllFloatsSketch KLL3 = StatisticsTestUtils.createKll(VALUES3);
   private static final KllFloatsSketch KLL_TIME = StatisticsTestUtils.createKll(VALUES_TIME);
   private static final float DELTA = 1e-7f;
   private static final RexBuilder REX_BUILDER = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
@@ -161,6 +170,10 @@ public class TestFilterSelectivityEstimator {
     boolTrue = REX_BUILDER.makeLiteral(true, TYPE_FACTORY.createSqlType(SqlTypeName.BOOLEAN), true);
     RelDataTypeFactory.Builder b = new RelDataTypeFactory.Builder(TYPE_FACTORY);
     b.add("f_numeric", decimalType(38, 25));
+    b.add("f_tinyint", TYPE_FACTORY.createSqlType(TINYINT));
+    b.add("f_smallint", TYPE_FACTORY.createSqlType(SMALLINT));
+    b.add("f_integer", integerType);
+    b.add("f_bigint", TYPE_FACTORY.createSqlType(BIGINT));
     b.add("f_timestamp", SqlTypeName.TIMESTAMP);
     b.add("f_date", SqlTypeName.DATE).build();
     tableType = b.build();
@@ -592,6 +605,35 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
+  public void testRangePredicateCastInteger() {
+    // use VALUES2, even if the tested types cannot represent its values
+    // we're only interested in whether the cast to a smaller integer type results in the default selectivity
+    useFieldWithValues("f_tinyint", VALUES2, KLL2);
+    checkSelectivity(16 / 28.f, ge(cast("f_tinyint", TINYINT), int5));
+    checkSelectivity(18 / 28.f, ge(cast("f_tinyint", SMALLINT), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_tinyint", INTEGER), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_tinyint", BIGINT), int5));
+
+    useFieldWithValues("f_smallint", VALUES2, KLL2);
+    checkSelectivity(1 / 3.f, ge(cast("f_smallint", TINYINT), int5));
+    checkSelectivity(18 / 28.f, ge(cast("f_smallint", SMALLINT), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_smallint", INTEGER), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_smallint", BIGINT), int5));
+
+    useFieldWithValues("f_integer", VALUES2, KLL2);
+    checkSelectivity(1 / 3.f, ge(cast("f_integer", TINYINT), int5));
+    checkSelectivity(1 / 3.f, ge(cast("f_integer", SMALLINT), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_integer", INTEGER), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_integer", BIGINT), int5));
+
+    useFieldWithValues("f_bigint", VALUES2, KLL2);
+    checkSelectivity(1 / 3.f, ge(cast("f_bigint", TINYINT), int5));
+    checkSelectivity(1 / 3.f, ge(cast("f_bigint", SMALLINT), int5));
+    checkSelectivity(1 / 3.f, ge(cast("f_bigint", INTEGER), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_bigint", BIGINT), int5));
+  }
+
+  @Test
   public void testRangePredicateWithCast() {
     useFieldWithValues("f_numeric", VALUES, KLL);
     checkSelectivity(3 / 13.f, ge(cast("f_numeric", TINYINT), int5));
@@ -603,13 +645,6 @@ public class TestFilterSelectivityEstimator {
     checkSelectivity(1 / 13f, lt(cast("f_numeric", TINYINT), int2));
     checkSelectivity(5 / 13f, gt(cast("f_numeric", TINYINT), int2));
     checkSelectivity(8 / 13f, le(cast("f_numeric", TINYINT), int2));
-
-    // check some types
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", INTEGER), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", SMALLINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", BIGINT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", FLOAT), int5));
-    checkSelectivity(3 / 13.f, ge(cast("f_numeric", DOUBLE), int5));
   }
 
   @Test
@@ -657,8 +692,8 @@ public class TestFilterSelectivityEstimator {
 
     // the cast would apply a modulo operation to the values outside the range of the cast
     // so instead a default selectivity should be returned
-    checkSelectivity(1 / 3.f, lt(cast("f_numeric", TINYINT), literalFloat(100)));
-    checkSelectivity(1 / 3.f, lt(cast("f_numeric", TINYINT), literalFloat(100)));
+    checkSelectivity(1 / 3.f, lt(cast("f_integer", TINYINT), literalFloat(100)));
+    checkSelectivity(1 / 3.f, lt(cast("f_integer", TINYINT), literalFloat(100)));
   }
 
   private void checkTimeFieldOnMidnightTimestamps(RexNode field) {
@@ -726,7 +761,85 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testBetweenWithCastDecimal2s1() {
+  public void testBetweenWithCastToTinyIntCheckRounding() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 10; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", TINYINT);
+    // check rounding of positive numbers
+    checkBetweenSelectivity(3, universe, total, cast, 0, 10);
+    checkBetweenSelectivity(3, universe, total, cast, 0, 10.9f);
+    checkBetweenSelectivity(4, universe, total, cast, 0, 11);
+    checkBetweenSelectivity(4, universe, total, cast, 10, 20);
+    checkBetweenSelectivity(1, universe, total, cast, 10.9999f, 20);
+    checkBetweenSelectivity(1, universe, total, cast, 11, 20);
+
+    // check rounding of negative numbers
+    checkBetweenSelectivity(4, universe, total, cast, -20, -10);
+    checkBetweenSelectivity(1, universe, total, cast, -20, -10.9f);
+    checkBetweenSelectivity(1, universe, total, cast, -20, -11);
+    checkBetweenSelectivity(3, universe, total, cast, -10, 0);
+    checkBetweenSelectivity(3, universe, total, cast, -10.9999f, 0);
+    checkBetweenSelectivity(4, universe, total, cast, -11, 0);
+  }
+
+  @Test
+  public void testBetweenWithCastToTinyInt() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 10; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", TINYINT);
+    checkBetweenSelectivity(5, universe, total, cast, 0, 1e20f);
+    checkBetweenSelectivity(5, universe, total, cast, -1e20f, 0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToSmallInt() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 14; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", SMALLINT);
+    checkBetweenSelectivity(7, universe, total, cast, 0, 1e20f);
+    checkBetweenSelectivity(7, universe, total, cast, -1e20f, 0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToInteger() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 18; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", INTEGER);
+    checkBetweenSelectivity(9, universe, total, cast, 0, 1e20f);
+    checkBetweenSelectivity(9, universe, total, cast, -1e20f, 0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToBigInt() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 22; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", BIGINT);
+    checkBetweenSelectivity(11, universe, total, cast, 0, 1e20f);
+    checkBetweenSelectivity(11, universe, total, cast, -1e20f, 0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToSmallInt2() {
+    useFieldWithValues("f_numeric", VALUES2, KLL2);
+    float total = VALUES2.length;
+    float universe = 23; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", TINYINT);
+    //checkBetweenSelectivity(8, universe, total, cast, 100f, 1000f);
+    //checkBetweenSelectivity(17, universe, total, cast, 1f, 100f);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToDecimal2s1() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     float total = VALUES2.length;
     float universe = 2; // the number of values that "survive" the cast
@@ -737,7 +850,7 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testBetweenWithCastDecimal3s1() {
+  public void testBetweenWithCastToDecimal3s1() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     float total = VALUES2.length;
     float universe = 7; // the number of values that "survive" the cast
@@ -748,7 +861,7 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testBetweenWithCastDecimal4s1() {
+  public void testBetweenWithCastToDecimal4s1() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     float total = VALUES2.length;
     float universe = 23; // the number of values that "survive" the cast
@@ -761,7 +874,7 @@ public class TestFilterSelectivityEstimator {
   }
 
   @Test
-  public void testBetweenWithCastDecimal7s1() {
+  public void testBetweenWithCastToDecimal7s1() {
     useFieldWithValues("f_numeric", VALUES2, KLL2);
     float total = VALUES2.length;
     float universe = 26; // the number of values that "survive" the cast

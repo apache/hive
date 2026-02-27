@@ -218,6 +218,27 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return false;
     }
 
+    SqlTypeName targetType = cast.getType().getSqlTypeName();
+    SqlTypeName sourceType = op0.getType().getSqlTypeName();
+
+    switch (sourceType) {
+    case TINYINT, SMALLINT, INTEGER, BIGINT:
+      // additional checks are needed
+      break;
+    case FLOAT, DOUBLE, DECIMAL, TIMESTAMP, DATE:
+      return true;
+    default:
+      // unknown type, do not remove the cast
+      return false;
+    }
+
+    // If the source type is completely within the target type, the cast is lossless
+    Range<Float> targetRange = getRangeOfType(cast.getType(), BoundType.CLOSED, BoundType.CLOSED);
+    Range<Float> sourceRange = getRangeOfType(op0.getType(), BoundType.CLOSED, BoundType.CLOSED);
+    if (sourceRange.equals(targetRange.intersection(sourceRange))) {
+      return true;
+    }
+
     // Check that the possible values of the input column are all within the type range of the cast
     // otherwise the CAST introduces some modulo-like behavior
     ColStatistics colStat = colStats.getFirst();
@@ -226,43 +247,41 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return false;
     }
 
-    SqlTypeName type = cast.getType().getSqlTypeName();
 
-    double min;
-    double max;
-    switch (type) {
-    case TINYINT, SMALLINT, INTEGER, BIGINT:
-      min = ((Number) type.getLimit(false, SqlTypeName.Limit.OVERFLOW, false, -1, -1)).doubleValue();
-      max = ((Number) type.getLimit(true, SqlTypeName.Limit.OVERFLOW, false, -1, -1)).doubleValue();
-      break;
-    case TIMESTAMP, DATE:
-      min = Long.MIN_VALUE;
-      max = Long.MAX_VALUE;
-      break;
-    case FLOAT:
-      min = -Float.MAX_VALUE;
-      max = Float.MAX_VALUE;
-      break;
-    case DOUBLE, DECIMAL:
-      min = -Double.MAX_VALUE;
-      max = Double.MAX_VALUE;
-      break;
-    default:
-      // unknown type, do not remove the cast
-      return false;
-    }
     // are all values of the input column accepted by the cast?
+    double min = ((Number) targetType.getLimit(false, SqlTypeName.Limit.OVERFLOW, false, -1, -1)).doubleValue();
+    double max = ((Number) targetType.getLimit(true, SqlTypeName.Limit.OVERFLOW, false, -1, -1)).doubleValue();
     return min < colRange.minValue.doubleValue() && colRange.maxValue.doubleValue() < max;
   }
 
   /**
-   * Get the range of values that are rounded to valid values of a DECIMAL type.
+   * Get the range of values that are rounded to valid values of a type.
    *
-   * @param type the DECIMAL type
+   * @param type the type
    * @param lowerBound the lower bound type of the result
    * @param upperBound the upper bound type of the result
    * @return the range of the type
    */
+  private static Range<Float> getRangeOfType(RelDataType type, BoundType lowerBound, BoundType upperBound) {
+    switch (type.getSqlTypeName()) {
+    // in case of integer types,
+    case TINYINT:
+      return Range.closed(-128.99998f, 127.99999f);
+    case SMALLINT:
+      return Range.closed(-32768.996f, 32767.998f);
+    case INTEGER:
+      return Range.closed(-2.1474836E9f, 2.1474836E9f);
+    case BIGINT:
+      return Range.closed(-9.223372E18f, 9.223372E18f);
+    case DECIMAL:
+      return getRangeOfDecimalType(type, lowerBound, upperBound);
+    case DATE, TIMESTAMP:
+      return Range.closed((float) Long.MIN_VALUE, (float) Long.MAX_VALUE);
+    default:
+      throw new IllegalStateException("Unsupported type: " + type);
+    }
+  }
+
   private static Range<Float> getRangeOfDecimalType(RelDataType type, BoundType lowerBound, BoundType upperBound) {
     // values outside the representable range are cast to NULL, so adapt the boundaries
     int digits = type.getPrecision() - type.getScale();
@@ -295,21 +314,54 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    * @param typeRange the boundaries of the type range
    * @return the adjusted boundary
    */
-  private static Range<Float> adjustRangeToDecimalType(Range<Float> predicateRange, RelDataType type,
+  private static Range<Float> adjustRangeToType(Range<Float> predicateRange, RelDataType type,
       Range<Float> typeRange) {
-    float adjust = (float) (5 * Math.pow(10, -(type.getScale() + 1)));
-    // the resulting value of +- adjust would be rounded up, so in some cases we need to use Math.nextDown
     boolean lowerInclusive = BoundType.CLOSED.equals(predicateRange.lowerBoundType());
     boolean upperInclusive = BoundType.CLOSED.equals(predicateRange.upperBoundType());
-    float adjusted1 = lowerInclusive ? predicateRange.lowerEndpoint() - adjust
-        : Math.nextDown(predicateRange.lowerEndpoint() + adjust);
-    float adjusted2 = upperInclusive ? Math.nextDown(predicateRange.upperEndpoint() + adjust)
-        : predicateRange.upperEndpoint() - adjust;
-    float lower = Math.max(adjusted1, typeRange.lowerEndpoint());
-    float upper = Math.min(adjusted2, typeRange.upperEndpoint());
-    // the boundaries might result in an invalid range (e.g., left > right)
-    // in that case the predicate does not select anything, and we return an empty range
-    return makeRange(lower, predicateRange.lowerBoundType(), upper, predicateRange.upperBoundType());
+    switch (type.getSqlTypeName()) {
+    case TINYINT, SMALLINT, INTEGER, BIGINT: {
+      // when casting a floating point, its values are rounded towards 0
+      // i.e, 10.99 is rounded to 10, and -10.99 is rounded to -10
+      // to take this into account, the predicate range is transformed in the following ways
+      // [10.0, 15.0] -> [10, 15.99999]
+      // (10.0, 15.0) -> [11, 14.99999]
+      // [10.2, 15.2] -> [11, 15.99999]
+      // (10.2, 15.2) -> [11, 15.99999]
+
+      // [-15.0, -10.0] -> [-15.9999, -10]
+      // (-15.0, -10.0) -> [-14.9999, -11]
+      // [-15.2, -10.2] -> [-15.9999, -11]
+      // (-15.2, -10.2) -> [-15.9999, -11]
+
+      // normalize the range to make the formulas easier
+      Range<Float> range = convertRangeToClosedOpen(predicateRange);
+      Range<Float> typeClosedOpen = convertRangeToClosedOpen(typeRange);
+      float rangeLower = (range.lowerEndpoint() >= 0 ? (float) Math.ceil(range.lowerEndpoint())
+          : Math.nextUp(-(float) Math.ceil(Math.nextUp(-range.lowerEndpoint()))));
+      float rangeUpper = range.upperEndpoint() >= 0 ? Math.nextDown((float) Math.ceil(range.upperEndpoint()))
+          : Math.nextUp((float) -Math.ceil(-range.upperEndpoint()));
+      float lower = Math.max(typeClosedOpen.lowerEndpoint(), rangeLower);
+      float upper = Math.min(typeClosedOpen.upperEndpoint(), rangeUpper);
+      return makeRange(lower, BoundType.CLOSED, upper, BoundType.OPEN);
+    }
+    case DECIMAL: {
+      float adjust = (float) (5 * Math.pow(10, -(type.getScale() + 1)));
+      // the resulting value of +- adjust would be rounded up, so in some cases we need to use Math.nextDown
+      float adjusted1 = lowerInclusive ? predicateRange.lowerEndpoint() - adjust
+          : Math.nextDown(predicateRange.lowerEndpoint() + adjust);
+      float adjusted2 = upperInclusive ? Math.nextDown(predicateRange.upperEndpoint() + adjust)
+          : predicateRange.upperEndpoint() - adjust;
+      float lower = Math.max(adjusted1, typeRange.lowerEndpoint());
+      float upper = Math.min(adjusted2, typeRange.upperEndpoint());
+      // the boundaries might result in an invalid range (e.g., left > right)
+      // in that case the predicate does not select anything, and we return an empty range
+      return makeRange(lower, predicateRange.lowerBoundType(), upper, predicateRange.upperBoundType());
+    }
+    case TIMESTAMP, DATE:
+      return predicateRange;
+    default:
+      return typeRange.intersection(predicateRange);
+    }
   }
 
   /**
@@ -367,11 +419,9 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     int inputRefOpIndex = 1 - literalOpIdx;
     RexNode node = operands.get(inputRefOpIndex);
     if (isRemovableCast(node, scan)) {
-      if (node.getType().getSqlTypeName() == SqlTypeName.DECIMAL) {
-        Range<Float> rangeOfDecimalType =
-            getRangeOfDecimalType(node.getType(), boundaries.lowerBoundType(), boundaries.upperBoundType());
-        boundaries = adjustRangeToDecimalType(boundaries, node.getType(), rangeOfDecimalType);
-      }
+      Range<Float> rangeOfDecimalType =
+          getRangeOfType(node.getType(), boundaries.lowerBoundType(), boundaries.upperBoundType());
+      boundaries = adjustRangeToType(boundaries, node.getType(), rangeOfDecimalType);
       node = RexUtil.removeCast(node);
     }
 
@@ -451,8 +501,8 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       RexNode expr = operands.get(1); // expr to be checked by the BETWEEN
       if (isRemovableCast(expr, scan)) {
         typeBoundaries =
-            getRangeOfDecimalType(expr.getType(), rangeBoundaries.lowerBoundType(), rangeBoundaries.upperBoundType());
-        rangeBoundaries = adjustRangeToDecimalType(rangeBoundaries, expr.getType(), typeBoundaries);
+            getRangeOfType(expr.getType(), rangeBoundaries.lowerBoundType(), rangeBoundaries.upperBoundType());
+        rangeBoundaries = adjustRangeToType(rangeBoundaries, expr.getType(), typeBoundaries);
         expr = RexUtil.removeCast(expr);
       }
 
@@ -720,12 +770,22 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
    */
   private static double rangedSelectivity(KllFloatsSketch kll, Range<Float> boundaries) {
     // convert the condition to a range val1 <= x < val2
-    float newLower = BoundType.CLOSED.equals(boundaries.lowerBoundType()) ? boundaries.lowerEndpoint()
-        : Math.nextUp(boundaries.lowerEndpoint());
-    float newUpper = BoundType.OPEN.equals(boundaries.upperBoundType()) ? boundaries.upperEndpoint()
-        : Math.nextUp(boundaries.upperEndpoint());
-    Range<Float> closedOpen = Range.closedOpen(newLower, newUpper);
+    Range<Float> closedOpen = convertRangeToClosedOpen(boundaries);
     return rangedSelectivity(kll, closedOpen.lowerEndpoint(), closedOpen.upperEndpoint());
+  }
+
+  /**
+   * Normalizes the range to the form "val1 &lt;= column &lt; val2".
+   */
+  private static Range<Float> convertRangeToClosedOpen(Range<Float> boundaries) {
+    boolean leftClosed = BoundType.CLOSED.equals(boundaries.lowerBoundType());
+    boolean rightOpen = BoundType.OPEN.equals(boundaries.upperBoundType());
+    if (leftClosed && rightOpen) {
+      return boundaries;
+    }
+    float newLower = leftClosed ? boundaries.lowerEndpoint() : Math.nextUp(boundaries.lowerEndpoint());
+    float newUpper = rightOpen ? boundaries.upperEndpoint() : Math.nextUp(boundaries.upperEndpoint());
+    return Range.closedOpen(newLower, newUpper);
   }
 
   /**
