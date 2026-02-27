@@ -200,18 +200,19 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
         if (table.isPartitionKey(colNames.get(0))) {
           getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps);
         } else {
-          getColumnsForNotPartitionKeyColumn(table, cols, colStats, deserializer, colNames, tableProps);
+          getColumnsForNotPartitionKeyColumn(table, cols, colStats, deserializer, colName,
+              tableProps);
         }
         table.setParameters(tableProps);
       } else {
-        cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colNames));
+        cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colName));
         colStats.addAll(context.getDb().getTableColumnStatistics(table, colNames, false));
       }
     } else {
       List<String> partitions = new ArrayList<>();
       String partName = part.getName();
       partitions.add(partName);
-      cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colNames));
+      cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colName));
       Map<String, List<ColumnStatisticsObj>> partitionColumnStatistics = context.getDb().getPartitionColumnStatistics(
           table.getDbName(), table.getTableName(), partitions, colNames, false);
       List<ColumnStatisticsObj> partitionColStat = partitionColumnStatistics.get(partName);
@@ -222,20 +223,20 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   }
 
   private List<FieldSchema> getFilteredFieldsFromDeserializer(Table table, Deserializer deserializer,
-    List<String> targetColNames) throws HiveException {
+      String targetColName) throws HiveException {
     List<FieldSchema> allFields = Hive.getFieldsFromDeserializer(table.getTableName(), deserializer, context.getConf());
     List<FieldSchema> filteredFields = new ArrayList<>();
     
     for (FieldSchema field : allFields) {
-      for (String colName : targetColNames) {
-        if (field.getName().equalsIgnoreCase(colName)) {
-          filteredFields.add(field);
-          break;
-        }
+      if (field.getName() != null && targetColName.equalsIgnoreCase(field.getName())) {
+        // The ObjectInspector normalizes column names to lowercase.
+        // To ensure the column name casing is same as in query, setting it back.
+        field.setName(targetColName);
+        filteredFields.add(field);
       }
     }
     
-  return filteredFields;
+    return filteredFields;
   }
 
   private void getColumnDataForPartitionKeyColumn(Table table, List<FieldSchema> cols,
@@ -256,18 +257,18 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   }
 
   private void getColumnsForNotPartitionKeyColumn(Table table, List<FieldSchema> cols, List<ColumnStatisticsObj> colStats,
-      Deserializer deserializer, List<String> colNames, Map<String, String> tableProps)
+      Deserializer deserializer, String colName, Map<String, String> tableProps)
       throws HiveException {
-    cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colNames));
+    cols.addAll(getFilteredFieldsFromDeserializer(table, deserializer, colName));
     List<String> parts = context.getDb().getPartitionNames(table, (short) -1);
-    
-    AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, colNames, parts, false);
+    List<String> colNamesLowerCase = new ArrayList<>();
+    AggrStats aggrStats = context.getDb().getAggrColStatsFor(table, Lists.newArrayList(colName.toLowerCase()), parts, false);
     colStats.addAll(aggrStats.getColStats());
     
     if (parts.size() == aggrStats.getPartsFound()) {
-      StatsSetupConst.setColumnStatsState(tableProps, colNames);
+      StatsSetupConst.setColumnStatsState(tableProps, Lists.newArrayList(colName.toLowerCase()));
     } else {
-      StatsSetupConst.removeColumnStatsState(tableProps, colNames);
+      StatsSetupConst.removeColumnStatsState(tableProps, Lists.newArrayList(colName.toLowerCase()));
     }
   }
 
