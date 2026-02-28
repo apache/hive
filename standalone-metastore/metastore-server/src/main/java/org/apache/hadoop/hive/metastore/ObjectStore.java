@@ -9568,6 +9568,7 @@ public class ObjectStore implements RawStore, Configurable {
       boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
     final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
     final boolean enableKll = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_KLL);
+    final boolean timestampAsLong = MetastoreConf.getBoolVar(getConf(), ConfVars.HIVE_STATS_LEGACY_TIMESTAMP_AS_LONG);
     return new GetStatHelper(normalizeIdentifier(catName), normalizeIdentifier(dbName),
         normalizeIdentifier(tableName), allowSql, allowJdo, null) {
       @Override
@@ -9591,7 +9592,8 @@ public class ObjectStore implements RawStore, Configurable {
           if (desc.getLastAnalyzed() > mStat.getLastAnalyzed()) {
             desc.setLastAnalyzed(mStat.getLastAnalyzed());
           }
-          statObjs.add(StatObjectConverter.getTableColumnStatisticsObj(mStat, enableBitVector, enableKll));
+          statObjs.add(
+              StatObjectConverter.getTableColumnStatisticsObj(mStat, enableBitVector, enableKll, timestampAsLong));
           Deadline.checkTimeout();
         }
         ColumnStatistics colStat = new ColumnStatistics(desc, statObjs);
@@ -9692,6 +9694,7 @@ public class ObjectStore implements RawStore, Configurable {
       String engine, boolean allowSql, boolean allowJdo) throws MetaException, NoSuchObjectException {
     final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
     final boolean enableKll = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_KLL);
+    final boolean timestampAsLong = MetastoreConf.getBoolVar(getConf(), ConfVars.HIVE_STATS_LEGACY_TIMESTAMP_AS_LONG);
     return new GetListHelper<ColumnStatistics>(catName, dbName, tableName, allowSql, allowJdo) {
       @Override
       protected List<ColumnStatistics> getSqlResult(
@@ -9724,7 +9727,8 @@ public class ObjectStore implements RawStore, Configurable {
             csd = StatObjectConverter.getPartitionColumnStatisticsDesc(mStatsObj);
             curList = new ArrayList<>(colNames.size());
           }
-          curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj, enableBitVector, enableKll));
+          curList.add(StatObjectConverter.getPartitionColumnStatisticsObj(mStatsObj, enableBitVector, enableKll,
+              timestampAsLong));
           lastPartName = partName;
           Deadline.checkTimeout();
         }

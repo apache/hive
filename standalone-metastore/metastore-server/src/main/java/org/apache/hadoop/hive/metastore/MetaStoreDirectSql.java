@@ -1805,7 +1805,6 @@ class MetaStoreDirectSql {
     return partsFound;
   }
 
-
   @SuppressWarnings("unchecked")
   private <T> T executeWithArray(Query query, Object[] params, String sql) throws MetaException {
     return executeWithArray(query, params, sql, -1);
