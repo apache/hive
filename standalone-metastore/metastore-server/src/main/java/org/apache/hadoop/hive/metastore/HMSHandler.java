@@ -3106,25 +3106,29 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     String catName = dropPartitionReq.getCatName();
     String tbl_name = dropPartitionReq.getTblName();
     List<String> part_vals = dropPartitionReq.getPartVals();
-    Table t = getMS().getTable(catName, dbName, tbl_name,  null);
-    if (t == null) {
-      throw new InvalidObjectException(dbName + "." + tbl_name
-          + " table not found");
+    try {
+      Table t = getMS().getTable(catName, dbName, tbl_name, null);
+      if (t == null) {
+        throw new InvalidObjectException(dbName + "." + tbl_name + " table not found");
+      }
+      List<String> partNames = new ArrayList<>();
+      if (part_vals == null || part_vals.isEmpty()) {
+        part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
+      }
+      partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
+      LOG.info("drop_partition_req partition values: {}", part_vals);
+      RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
+      DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
+      request.setCatName(catName);
+      request.setIfExists(false);
+      request.setNeedResult(false);
+      request.setDeleteData(dropPartitionReq.isDeleteData());
+      request.setEnvironmentContext(dropPartitionReq.getEnvironmentContext());
+      drop_partitions_req(request);
+    } catch (Exception e) {
+      handleException(e).convertIfInstance(InvalidObjectException.class, NoSuchObjectException.class)
+          .rethrowException(e);
     }
-    List<String> partNames = new ArrayList<>();
-    if (part_vals == null || part_vals.isEmpty()) {
-      part_vals = getPartValsFromName(t, dropPartitionReq.getPartName());
-    }
-    partNames.add(Warehouse.makePartName(t.getPartitionKeys(), part_vals));
-    LOG.info("drop_partition_req partition values: {}", part_vals);
-    RequestPartsSpec requestPartsSpec = RequestPartsSpec.names(partNames);
-    DropPartitionsRequest request = new DropPartitionsRequest(dbName, tbl_name, requestPartsSpec);
-    request.setCatName(catName);
-    request.setIfExists(false);
-    request.setNeedResult(false);
-    request.setDeleteData(dropPartitionReq.isDeleteData());
-    request.setEnvironmentContext(dropPartitionReq.getEnvironmentContext());
-    drop_partitions_req(request);
     return true;
   }
 
