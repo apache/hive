@@ -28,5 +28,8 @@ select * from test_tbl where b like '___';
 select * from test_tbl where b like '%%%';
 select * from test_tbl where b like '%\\\\%';
 
-
-
+select * from test_tbl where b like 'a.*';
+select * from test_tbl where b like 'd.\%.*';
+select * from test_tbl where b like 'd.\\%.*';
+select * from test_tbl where b like 'd.\\\\%.*';
+select * from test_tbl where b like '.\\_.*';
