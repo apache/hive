@@ -29,8 +29,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
 import org.apache.hadoop.hive.metastore.LockRequestBuilder;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockMaterializationRebuildRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
@@ -56,6 +58,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
@@ -473,6 +476,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       return Collections.emptyList();
     }
     List<LockComponent> globalLocks = new ArrayList<LockComponent>();
+    String currentCatalog = HiveUtils.getCurrentCatalogOrDefault(conf);
     for (String lockName : lockNames.split(",")) {
       lockName = lockName.trim();
       if (StringUtils.isEmpty(lockName)) {
@@ -481,6 +485,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       LockComponentBuilder compBuilder = new LockComponentBuilder();
       compBuilder.setExclusive();
       compBuilder.setOperationType(DataOperationType.NO_TXN);
+      compBuilder.setCatName(currentCatalog);
       compBuilder.setDbName(GLOBAL_LOCKS);
       compBuilder.setTableName(lockName);
 
@@ -1024,11 +1029,18 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
+  public LockResponse acquireMaterializationRebuildLock(String dbName, String tableName,
+                                                        long txnId) throws LockException {
+    return acquireMaterializationRebuildLock(new LockMaterializationRebuildRequest(Warehouse.DEFAULT_CATALOG_NAME,
+        dbName, tableName, txnId));
+  }
+
+  @Override
+  public LockResponse acquireMaterializationRebuildLock(LockMaterializationRebuildRequest rqst) throws LockException {
     // Acquire lock
     LockResponse lockResponse;
     try {
-      lockResponse = getMS().lockMaterializationRebuild(dbName, tableName, txnId);
+      lockResponse = getMS().lockMaterializationRebuild(rqst);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -1039,11 +1051,12 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       long heartbeatInterval = getHeartbeatInterval(conf);
       assert heartbeatInterval > 0;
       MaterializationRebuildLockHeartbeater heartbeater = new MaterializationRebuildLockHeartbeater(
-          this, dbName, tableName, queryId, txnId);
+          this, rqst.getCatName(), rqst.getDbName(), rqst.getTableName(), queryId, rqst.getTnxId());
       ScheduledFuture<?> task = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
       heartbeater.task.set(task);
       LOG.debug("Started heartbeat for materialization rebuild lock for {} with delay/interval = {}/{} {} for query: {}",
-          AcidUtils.getFullTableName(dbName, tableName), initialDelay, heartbeatInterval, TimeUnit.MILLISECONDS, queryId);
+          AcidUtils.getFullTableName(rqst.getDbName(), rqst.getTableName()), initialDelay, heartbeatInterval,
+          TimeUnit.MILLISECONDS, queryId);
     }
     return lockResponse;
   }
@@ -1057,9 +1070,11 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
-  private boolean heartbeatMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
+  private boolean heartbeatMaterializationRebuildLock(String catName, String dbName, String tableName,
+                                                      long txnId) throws LockException {
     try {
-      return getMS().heartbeatLockMaterializationRebuild(dbName, tableName, txnId);
+      return getMS().heartbeatLockMaterializationRebuild(new LockMaterializationRebuildRequest(catName,
+          dbName, tableName, txnId));
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
@@ -1150,16 +1165,18 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private static class MaterializationRebuildLockHeartbeater implements Runnable {
 
     private final DbTxnManager txnMgr;
+    private final String catName;
     private final String dbName;
     private final String tableName;
     private final String queryId;
     private final long txnId;
     private final AtomicReference<ScheduledFuture<?>> task;
 
-    MaterializationRebuildLockHeartbeater(DbTxnManager txnMgr, String dbName, String tableName,
+    MaterializationRebuildLockHeartbeater(DbTxnManager txnMgr, String catName, String dbName, String tableName,
         String queryId, long txnId) {
       this.txnMgr = txnMgr;
       this.queryId = queryId;
+      this.catName = catName;
       this.dbName = dbName;
       this.tableName = tableName;
       this.txnId = txnId;
@@ -1175,7 +1192,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           AcidUtils.getFullTableName(dbName, tableName), queryId);
       boolean refreshed;
       try {
-        refreshed = txnMgr.heartbeatMaterializationRebuildLock(dbName, tableName, txnId);
+        refreshed = txnMgr.heartbeatMaterializationRebuildLock(catName, dbName, tableName, txnId);
       } catch (LockException e) {
         LOG.error("Failed trying to acquire lock", e);
         throw new RuntimeException(e);

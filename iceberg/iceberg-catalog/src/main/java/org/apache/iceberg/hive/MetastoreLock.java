@@ -78,6 +78,7 @@ public class MetastoreLock implements HiveLock {
 
   private final ClientPool<IMetaStoreClient, TException> metaClients;
 
+  private final String catalogName;
   private final String databaseName;
   private final String tableName;
   private final String fullName;
@@ -100,6 +101,7 @@ public class MetastoreLock implements HiveLock {
                        String catalogName, String databaseName, String tableName) {
     this.metaClients = metaClients;
     this.fullName = catalogName + "." + databaseName + "." + tableName;
+    this.catalogName = catalogName;
     this.databaseName = databaseName;
     this.tableName = tableName;
 
@@ -179,8 +181,8 @@ public class MetastoreLock implements HiveLock {
   @SuppressWarnings("checkstyle:CyclomaticComplexity")
   private long acquireLock() throws LockException {
     if (hmsLockId.isPresent()) {
-      throw new IllegalArgumentException(String.format("HMS lock ID=%s already acquired for table %s.%s",
-          hmsLockId.get(), databaseName, tableName));
+      throw new IllegalArgumentException(String.format("HMS lock ID=%s already acquired for table %s.%s.%s",
+          hmsLockId.get(), catalogName, databaseName, tableName));
     }
     LockInfo lockInfo = createLock();
 
@@ -212,12 +214,13 @@ public class MetastoreLock implements HiveLock {
                 lockInfo.lockState = newState;
                 if (newState.equals(LockState.WAITING)) {
                   throw new WaitingForLockException(String.format(
-                          "Waiting for lock on table %s.%s", databaseName, tableName));
+                          "Waiting for lock on table %s.%s.%s", catalogName, databaseName, tableName));
                 }
               } catch (InterruptedException e) {
                 Thread.interrupted(); // Clear the interrupt status flag
                 LOG.warn(
-                        "Interrupted while waiting for lock on table {}.{}",
+                        "Interrupted while waiting for lock on table {}.{}.{}",
+                        catalogName,
                         databaseName,
                         tableName,
                         e);
@@ -239,19 +242,19 @@ public class MetastoreLock implements HiveLock {
     if (!lockInfo.lockState.equals(LockState.ACQUIRED)) {
       // timeout and do not have lock acquired
       if (timeout) {
-        throw new LockException("Timed out after %s ms waiting for lock on %s.%s",
-                duration, databaseName, tableName);
+        throw new LockException("Timed out after %s ms waiting for lock on %s.%s.%s",
+                duration, catalogName, databaseName, tableName);
       }
 
       if (thriftError != null) {
         throw new LockException(
-                thriftError, "Metastore operation failed for %s.%s", databaseName, tableName);
+                thriftError, "Metastore operation failed for %s.%s.%s", catalogName, databaseName, tableName);
       }
 
       // Just for safety. We should not get here.
       throw new LockException(
-              "Could not acquire the lock on %s.%s, lock request ended in state %s",
-              databaseName, tableName, lockInfo.lockState);
+              "Could not acquire the lock on %s.%s.%s, lock request ended in state %s",
+              catalogName, databaseName, tableName, lockInfo.lockState);
     } else {
       return lockInfo.lockId;
     }
@@ -277,6 +280,7 @@ public class MetastoreLock implements HiveLock {
 
     LockComponent lockComponent =
             new LockComponent(LockType.EXCL_WRITE, LockLevel.TABLE, databaseName);
+    lockComponent.setCatName(catalogName);
     lockComponent.setTablename(tableName);
     LockRequest lockRequest =
             new LockRequest(
@@ -318,27 +322,32 @@ public class MetastoreLock implements HiveLock {
                         }
                       }
 
-                      throw new LockException("Failed to find lock for table %s.%s", databaseName, tableName);
+                      throw new LockException("Failed to find lock for table %s.%s.%s", catalogName, databaseName,
+                          tableName);
                     } catch (InterruptedException e) {
                       Thread.currentThread().interrupt();
                       interrupted.set(true);
                       LOG.warn(
-                              "Interrupted while trying to find lock for table {}.{}", databaseName, tableName, e);
+                              "Interrupted while trying to find lock for table {}.{}.{}", catalogName, databaseName,
+                          tableName, e);
                       throw new LockException(
-                              e, "Interrupted while trying to find lock for table %s.%s", databaseName, tableName);
+                              e, "Interrupted while trying to find lock for table %s.%s.%s", catalogName, databaseName,
+                          tableName);
                     }
                   } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     interrupted.set(true);
-                    LOG.warn("Interrupted while creating lock on table {}.{}", databaseName, tableName, e);
+                    LOG.warn("Interrupted while creating lock on table {}.{}.{}", catalogName, databaseName,
+                        tableName, e);
                     throw new LockException(
-                            e, "Interrupted while creating lock on table %s.%s", databaseName, tableName);
+                            e, "Interrupted while creating lock on table %s.%s.%s", catalogName, databaseName,
+                        tableName);
                   }
                 },
                 LockException.class);
 
     // This should be initialized always, or exception should be thrown.
-    LOG.debug("Lock {} created for table {}.{}", lockInfo, databaseName, tableName);
+    LOG.debug("Lock {} created for table {}.{}.{}", lockInfo, catalogName, databaseName, tableName);
     return lockInfo;
   }
 
@@ -354,13 +363,14 @@ public class MetastoreLock implements HiveLock {
             HiveVersion.min(HiveVersion.HIVE_2),
             "Minimally Hive 2 HMS client is needed to find the Lock using the showLocks API call");
     ShowLocksRequest showLocksRequest = new ShowLocksRequest();
+    showLocksRequest.setCatname(catalogName);
     showLocksRequest.setDbname(databaseName);
     showLocksRequest.setTablename(tableName);
     ShowLocksResponse response;
     try {
       response = metaClients.run(client -> client.showLocks(showLocksRequest));
     } catch (TException e) {
-      throw new LockException(e, "Failed to find lock for table %s.%s", databaseName, tableName);
+      throw new LockException(e, "Failed to find lock for table %s.%s.%s", catalogName, databaseName, tableName);
     }
     for (ShowLocksResponseElement lock : response.getLocks()) {
       if (lock.getAgentInfo().equals(agentInfo)) {
@@ -403,19 +413,22 @@ public class MetastoreLock implements HiveLock {
         // Interrupted unlock. We try to unlock one more time if we have a lockId
         try {
           Thread.interrupted(); // Clear the interrupt status flag for now, so we can retry unlock
-          LOG.warn("Interrupted unlock we try one more time {}.{}", databaseName, tableName, ie);
+          LOG.warn("Interrupted unlock we try one more time {}.{}.{}", catalogName, databaseName,
+              tableName, ie);
           doUnlock(id);
         } catch (Exception e) {
-          LOG.warn("Failed to unlock even on 2nd attempt {}.{}", databaseName, tableName, e);
+          LOG.warn("Failed to unlock even on 2nd attempt {}.{}.{}", catalogName, databaseName,
+              tableName, e);
         } finally {
           Thread.currentThread().interrupt(); // Set back the interrupt status
         }
       } else {
         Thread.currentThread().interrupt(); // Set back the interrupt status
-        LOG.warn("Interrupted finding locks to unlock {}.{}", databaseName, tableName, ie);
+        LOG.warn("Interrupted finding locks to unlock {}.{}.{}", catalogName, databaseName,
+            tableName, ie);
       }
     } catch (Exception e) {
-      LOG.warn("Failed to unlock {}.{}", databaseName, tableName, e);
+      LOG.warn("Failed to unlock {}.{}.{}", catalogName, databaseName, tableName, e);
     }
   }
 

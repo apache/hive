@@ -4673,27 +4673,55 @@ public interface IMetaStoreClient extends AutoCloseable {
    * Acquire the materialization rebuild lock for a given view. We need to specify the fully
    * qualified name of the materialized view and the open transaction ID so we can identify
    * uniquely the lock.
+   * @deprecated use lockMaterializationRebuild(LockMaterializationRebuildRequest rqst)
    * @param dbName db name for the materialized view
    * @param tableName table name for the materialized view
    * @param txnId transaction id for the rebuild
    * @return the response from the metastore, where the lock id is equal to the txn id and
    * the status can be either ACQUIRED or NOT ACQUIRED
    */
+  @Deprecated
   default LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
+    return lockMaterializationRebuild(new LockMaterializationRebuildRequest(Warehouse.DEFAULT_CATALOG_NAME,
+        dbName, tableName, txnId));
+  }
+
+  /**
+   * Acquire the materialization rebuild lock for a given view. We need to specify the fully
+   * qualified name of the materialized view and the open transaction ID so we can identify
+   * uniquely the lock.
+   * @param rqst object of type LockMaterializationRebuildRequest
+   * @return the response from the metastore, where the lock id is equal to the txn id and
+   * the status can be either ACQUIRED or NOT ACQUIRED
+   */
+  default LockResponse lockMaterializationRebuild(LockMaterializationRebuildRequest rqst) throws TException {
     throw new UnsupportedOperationException("MetaStore client does not support acquiring materialization rebuild lock");
   }
 
 
   /**
    * Method to refresh the acquisition of a given materialization rebuild lock.
+   * @deprecated use heartbeatLockMaterializationRebuild(LockMaterializationRebuildRequest rqst)
    * @param dbName db name for the materialized view
    * @param tableName table name for the materialized view
    * @param txnId transaction id for the rebuild
    * @return true if the lock could be renewed, false otherwise
    */
+  @Deprecated
   default boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
-     throw new UnsupportedOperationException("MetaStore client does not support heartbeating materialization " +
-         "rebuild lock");
+    return heartbeatLockMaterializationRebuild(new LockMaterializationRebuildRequest(Warehouse.DEFAULT_CATALOG_NAME,
+         dbName, tableName, txnId));
+  }
+
+  /**
+   * Method to refresh the acquisition of a given materialization rebuild lock.
+   * @param rqst object of type LockMaterializationRebuildRequest
+   * @return true if the lock could be renewed, false otherwise
+   */
+  default boolean heartbeatLockMaterializationRebuild(LockMaterializationRebuildRequest rqst)
+      throws TException {
+    throw new UnsupportedOperationException("MetaStore client does not support heartbeating materialization " +
+        "rebuild lock");
   }
 
   /** Adds a RuntimeStat for metastore persistence. */

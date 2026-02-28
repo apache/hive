@@ -54,11 +54,12 @@ public class ShowLocksHandler implements QueryHandler<ShowLocksResponse> {
 
   @Override
   public String getParameterizedQueryString(DatabaseProduct databaseProduct) throws MetaException {
-    return 
-        "SELECT \"HL_LOCK_EXT_ID\", \"HL_TXNID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", " +
-        "\"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", \"HL_ACQUIRED_AT\", \"HL_USER\", \"HL_HOST\", \"HL_LOCK_INT_ID\"," +
-        "\"HL_BLOCKEDBY_EXT_ID\", \"HL_BLOCKEDBY_INT_ID\", \"HL_AGENT_INFO\" FROM \"HIVE_LOCKS\"" +
+    return
+        "SELECT \"HL_LOCK_EXT_ID\", \"HL_TXNID\", \"HL_CATALOG\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", " +
+        "\"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", \"HL_ACQUIRED_AT\", \"HL_USER\", \"HL_HOST\", " +
+        "\"HL_LOCK_INT_ID\", \"HL_BLOCKEDBY_EXT_ID\", \"HL_BLOCKEDBY_INT_ID\", \"HL_AGENT_INFO\" FROM \"HIVE_LOCKS\" " +
         "WHERE " +
+            "(\"HL_CATALOG\" = :catName OR :catName IS NULL) AND " +
             "(\"HL_DB\" = :dbName OR :dbName IS NULL) AND " +
             "(\"HL_TABLE\" = :tableName OR :tableName IS NULL) AND " +
             "(\"HL_PARTITION\" = :partition OR :partition IS NULL) AND " +
@@ -68,6 +69,7 @@ public class ShowLocksHandler implements QueryHandler<ShowLocksResponse> {
   @Override
   public SqlParameterSource getQueryParameters() {
     return new MapSqlParameterSource()
+        .addValue("catName", request.getCatname(), Types.VARCHAR)
         .addValue("dbName", request.getDbname(), Types.VARCHAR)
         .addValue("tableName", request.getTablename(), Types.VARCHAR)
         .addValue("partition", request.getPartname(), Types.VARCHAR)
@@ -84,11 +86,12 @@ public class ShowLocksHandler implements QueryHandler<ShowLocksResponse> {
       e.setLockid(rs.getLong(1));
       long txnid = rs.getLong(2);
       if (!rs.wasNull()) e.setTxnid(txnid);
-      e.setDbname(rs.getString(3));
-      e.setTablename(rs.getString(4));
-      String partition = rs.getString(5);
+      e.setCatname(rs.getString(3));
+      e.setDbname(rs.getString(4));
+      e.setTablename(rs.getString(5));
+      String partition = rs.getString(6);
       if (partition != null) e.setPartname(partition);
-      switch (rs.getString(6).charAt(0)) {
+      switch (rs.getString(7).charAt(0)) {
         case LOCK_ACQUIRED:
           e.setState(LockState.ACQUIRED);
           break;
@@ -96,29 +99,29 @@ public class ShowLocksHandler implements QueryHandler<ShowLocksResponse> {
           e.setState(LockState.WAITING);
           break;
         default:
-          throw new SQLException("Unknown lock state " + rs.getString(6).charAt(0));
+          throw new SQLException("Unknown lock state " + rs.getString(7).charAt(0));
       }
 
-      char lockChar = rs.getString(7).charAt(0);
+      char lockChar = rs.getString(8).charAt(0);
       LockType lockType = LockTypeUtil.getLockTypeFromEncoding(lockChar)
           .orElseThrow(() -> new SQLException("Unknown lock type: " + lockChar));
       e.setType(lockType);
 
-      e.setLastheartbeat(rs.getLong(8));
-      long acquiredAt = rs.getLong(9);
+      e.setLastheartbeat(rs.getLong(9));
+      long acquiredAt = rs.getLong(10);
       if (!rs.wasNull()) e.setAcquiredat(acquiredAt);
-      e.setUser(rs.getString(10));
-      e.setHostname(rs.getString(11));
-      e.setLockIdInternal(rs.getLong(12));
-      long id = rs.getLong(13);
+      e.setUser(rs.getString(11));
+      e.setHostname(rs.getString(12));
+      e.setLockIdInternal(rs.getLong(13));
+      long id = rs.getLong(14);
       if (!rs.wasNull()) {
         e.setBlockedByExtId(id);
       }
-      id = rs.getLong(14);
+      id = rs.getLong(15);
       if (!rs.wasNull()) {
         e.setBlockedByIntId(id);
       }
-      e.setAgentInfo(rs.getString(15));
+      e.setAgentInfo(rs.getString(16));
       sortedList.add(new LockInfoExt(e));
     }
     //this ensures that "SHOW LOCKS" prints the locks in the same order as they are examined

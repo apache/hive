@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.LockMaterializationRebuildRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
@@ -362,10 +363,22 @@ public interface HiveTxnManager {
    * Acquire the materialization rebuild lock for a given view. We need to specify the fully
    * qualified name of the materialized view and the open transaction ID so we can identify
    * uniquely the lock.
+   * @deprecated use acquireMaterializationRebuildLock(LockMaterializationRebuildRequest rqst)
    * @return the response from the metastore, where the lock id is equal to the txn id and
    * the status can be either ACQUIRED or NOT ACQUIRED
    */
+  @Deprecated
   LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
+      throws LockException;
+
+ /**
+  * Acquire the materialization rebuild lock for a given view. We need to specify the fully
+  * qualified name of the materialized view and the open transaction ID so we can identify
+  * uniquely the lock.
+  * @return the response from the metastore, where the lock id is equal to the txn id and
+  * the status can be either ACQUIRED or NOT ACQUIRED
+  */
+  LockResponse acquireMaterializationRebuildLock(LockMaterializationRebuildRequest rqst)
       throws LockException;
 
  /**

@@ -719,8 +719,10 @@ public class TestCompactionTxnHandler {
 
     List<LockComponent> components = new ArrayList<>();
 
-    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "mytable", null, DataOperationType.UPDATE));
-    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "hive", "mydb",
+        "mytable", null, DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "hive", "mydb",
+        "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
 
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnid);
@@ -982,8 +984,10 @@ public class TestCompactionTxnHandler {
     long txnId = openTxn();
 
     List<LockComponent> components = new ArrayList<>();
-    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "mytable", "mypartition=myvalue", DataOperationType.UPDATE));
-    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "hive", "mydb",
+        "mytable", "mypartition=myvalue", DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "hive", "mydb",
+        "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
 
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnId);
@@ -1017,8 +1021,10 @@ public class TestCompactionTxnHandler {
     long txnId = openTxn();
 
     List<LockComponent> components = new ArrayList<>();
-    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "mytable", "mypartition=myvalue", DataOperationType.UPDATE));
-    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb", "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "hive", "mydb",
+        "mytable", "mypartition=myvalue", DataOperationType.UPDATE));
+    components.add(createLockComponent(LockType.SHARED_WRITE, LockLevel.DB, "hive", "mydb",
+        "yourtable", "mypartition=myvalue", DataOperationType.UPDATE));
 
     LockRequest req = new LockRequest(components, "me", "localhost");
     req.setTxnid(txnId);
@@ -1082,8 +1088,11 @@ public class TestCompactionTxnHandler {
     txnHandler.markCompacted(ci);
   }
 
-  private LockComponent createLockComponent(LockType lockType, LockLevel lockLevel, String dbName, String tableName, String partitionName, DataOperationType dataOperationType){
+  private LockComponent createLockComponent(LockType lockType, LockLevel lockLevel, String catName,
+                                            String dbName, String tableName, String partitionName,
+                                            DataOperationType dataOperationType){
     LockComponent lockComponent = new LockComponent(lockType, lockLevel, dbName);
+    lockComponent.setCatName(catName);
     lockComponent.setTablename(tableName);
     lockComponent.setPartitionname(partitionName);
     lockComponent.setOperationType(dataOperationType);

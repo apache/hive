@@ -673,6 +673,7 @@ public class TestCompactionMetrics  extends CompactorTest {
     openTxn(TxnType.REPL_CREATED);
 
     LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, t.getDbName());
+    comp.setCatName(t.getCatName());
     comp.setTablename(t.getTableName());
     comp.setOperationType(DataOperationType.UPDATE);
 

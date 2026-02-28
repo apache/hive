@@ -443,6 +443,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
     requestBuilder.setTransactionId(txnId);
 
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
+        .setCatName(conn.getTable().getCatName())
         .setDbName(conn.getDatabase())
         .setTableName(conn.getTable().getTableName())
         .setSharedRead()

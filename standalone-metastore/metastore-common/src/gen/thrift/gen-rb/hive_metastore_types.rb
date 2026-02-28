@@ -544,6 +544,8 @@ class ShowLocksRequest; end
 
 class ShowLocksResponseElement; end
 
+class LockMaterializationRebuildRequest; end
+
 class ShowLocksResponse; end
 
 class HeartbeatRequest; end
@@ -4339,6 +4341,7 @@ class LockComponent
   OPERATIONTYPE = 6
   ISTRANSACTIONAL = 7
   ISDYNAMICPARTITIONWRITE = 8
+  CATNAME = 9
 
   FIELDS = {
     TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::LockType},
@@ -4348,7 +4351,8 @@ class LockComponent
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
     OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType},
     ISTRANSACTIONAL => {:type => ::Thrift::Types::BOOL, :name => 'isTransactional', :default => false, :optional => true},
-    ISDYNAMICPARTITIONWRITE => {:type => ::Thrift::Types::BOOL, :name => 'isDynamicPartitionWrite', :default => false, :optional => true}
+    ISDYNAMICPARTITIONWRITE => {:type => ::Thrift::Types::BOOL, :name => 'isDynamicPartitionWrite', :default => false, :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4474,13 +4478,15 @@ class ShowLocksRequest
   PARTNAME = 3
   ISEXTENDED = 4
   TXNID = 5
+  CATNAME = 6
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
     PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partname', :optional => true},
     ISEXTENDED => {:type => ::Thrift::Types::BOOL, :name => 'isExtended', :default => false, :optional => true},
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true}
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catname', :default => %q"hive", :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -4509,6 +4515,7 @@ class ShowLocksResponseElement
   BLOCKEDBYEXTID = 14
   BLOCKEDBYINTID = 15
   LOCKIDINTERNAL = 16
+  CATNAME = 17
 
   FIELDS = {
     LOCKID => {:type => ::Thrift::Types::I64, :name => 'lockid'},
@@ -4526,7 +4533,8 @@ class ShowLocksResponseElement
     AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :optional => true},
     BLOCKEDBYEXTID => {:type => ::Thrift::Types::I64, :name => 'blockedByExtId', :optional => true},
     BLOCKEDBYINTID => {:type => ::Thrift::Types::I64, :name => 'blockedByIntId', :optional => true},
-    LOCKIDINTERNAL => {:type => ::Thrift::Types::I64, :name => 'lockIdInternal', :optional => true}
+    LOCKIDINTERNAL => {:type => ::Thrift::Types::I64, :name => 'lockIdInternal', :optional => true},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catname'}
   }
 
   def struct_fields; FIELDS; end
@@ -4539,12 +4547,39 @@ class ShowLocksResponseElement
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field lastheartbeat is unset!') unless @lastheartbeat
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field user is unset!') unless @user
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hostname is unset!') unless @hostname
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catname is unset!') unless @catname
     unless @state.nil? || ::LockState::VALID_VALUES.include?(@state)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
     end
     unless @type.nil? || ::LockType::VALID_VALUES.include?(@type)
       raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
     end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class LockMaterializationRebuildRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  TABLENAME = 3
+  TNXID = 4
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    TNXID => {:type => ::Thrift::Types::I64, :name => 'tnxId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tnxId is unset!') unless @tnxId
   end
 
   ::Thrift::Struct.generate_accessors self

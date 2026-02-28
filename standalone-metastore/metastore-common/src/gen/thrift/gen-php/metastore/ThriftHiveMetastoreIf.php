@@ -1934,6 +1934,16 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function heartbeat_lock_materialization_rebuild($dbName, $tableName, $txnId);
     /**
+     * @param \metastore\LockMaterializationRebuildRequest $req
+     * @return \metastore\LockResponse
+     */
+    public function get_lock_materialization_rebuild_req(\metastore\LockMaterializationRebuildRequest $req);
+    /**
+     * @param \metastore\LockMaterializationRebuildRequest $req
+     * @return bool
+     */
+    public function heartbeat_lock_materialization_rebuild_req(\metastore\LockMaterializationRebuildRequest $req);
+    /**
      * @param \metastore\RuntimeStat $stat
      * @throws \metastore\MetaException
      */

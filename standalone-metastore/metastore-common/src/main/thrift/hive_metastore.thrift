@@ -1246,7 +1246,8 @@ struct LockComponent {
     5: optional string partitionname,
     6: optional DataOperationType operationType = DataOperationType.UNSET,
     7: optional bool isTransactional = false,
-    8: optional bool isDynamicPartitionWrite = false
+    8: optional bool isDynamicPartitionWrite = false,
+    9: optional string catName = "hive"
 }
 
 struct LockRequest {
@@ -1282,6 +1283,7 @@ struct ShowLocksRequest {
     3: optional string partname,
     4: optional bool isExtended=false,
     5: optional i64 txnid,
+    6: optional string catname="hive",
 }
 
 struct ShowLocksResponseElement {
@@ -1301,6 +1303,14 @@ struct ShowLocksResponseElement {
     14: optional i64 blockedByExtId,
     15: optional i64 blockedByIntId,
     16: optional i64 lockIdInternal,
+    17: required string catname,
+}
+
+struct LockMaterializationRebuildRequest {
+    1: required string catName,
+    2: required string dbName,
+    3: required string tableName,
+    4: required i64 tnxId,
 }
 
 struct ShowLocksResponse {
@@ -3308,8 +3318,13 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void add_serde(1: SerDeInfo serde) throws(1:AlreadyExistsException o1, 2:MetaException o2)
   SerDeInfo get_serde(1: GetSerdeRequest rqst) throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
+  // Deprecated use get_lock_materialization_rebuild_req(rqst)
   LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
+  // Deprecated use heartbeat_lock_materialization_rebuild_req(rqst)
   bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
+
+  LockResponse get_lock_materialization_rebuild_req(1: LockMaterializationRebuildRequest req)
+  bool heartbeat_lock_materialization_rebuild_req(1: LockMaterializationRebuildRequest req)
 
   void add_runtime_stats(1: RuntimeStat stat) throws(1:MetaException o1)
   list<RuntimeStat> get_runtime_stats(1: GetRuntimeStatsRequest rqst) throws(1:MetaException o1)

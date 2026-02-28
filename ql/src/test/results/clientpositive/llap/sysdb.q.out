@@ -639,6 +639,7 @@ hive_locks	hl_acquired_at
 hive_locks	hl_agent_info
 hive_locks	hl_blockedby_ext_id
 hive_locks	hl_blockedby_int_id
+hive_locks	hl_catalog
 hive_locks	hl_db
 hive_locks	hl_heartbeat_count
 hive_locks	hl_host
@@ -672,6 +673,8 @@ locks	blockedby_ext_id
 locks	blockedby_ext_id
 locks	blockedby_int_id
 locks	blockedby_int_id
+locks	catalog
+locks	catalog
 locks	db
 locks	db
 locks	heartbeat_count
@@ -1120,8 +1123,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@columns_v2
 #### A masked pattern was here ####
 a	decimal(10,2)	0
-acquired_at	string	9
-acquired_at	string	9
+acquired_at	string	10
+acquired_at	string	10
 action_expression	string	4
 active_execution_id	bigint	8
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5

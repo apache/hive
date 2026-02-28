@@ -223,6 +223,7 @@ public class TestHiveMetaStoreTxns {
   public void testLocks() throws Exception {
     LockRequestBuilder rqstBuilder = new LockRequestBuilder();
     rqstBuilder.addLockComponent(new LockComponentBuilder()
+        .setCatName(Warehouse.DEFAULT_CATALOG_NAME)
         .setDbName("mydb")
         .setTableName("mytable")
         .setPartitionName("MyPartition=MyValue")
@@ -230,12 +231,14 @@ public class TestHiveMetaStoreTxns {
         .setOperationType(DataOperationType.NO_TXN)
         .build());
     rqstBuilder.addLockComponent(new LockComponentBuilder()
+        .setCatName(Warehouse.DEFAULT_CATALOG_NAME)
         .setDbName("mydb")
         .setTableName("yourtable")
         .setSharedWrite()
         .setOperationType(DataOperationType.NO_TXN)
         .build());
     rqstBuilder.addLockComponent(new LockComponentBuilder()
+        .setCatName(Warehouse.DEFAULT_CATALOG_NAME)
         .setDbName("yourdb")
         .setOperationType(DataOperationType.NO_TXN)
         .setSharedRead()
@@ -262,6 +265,7 @@ public class TestHiveMetaStoreTxns {
     LockRequestBuilder rqstBuilder = new LockRequestBuilder();
     rqstBuilder.setTransactionId(txnid)
       .addLockComponent(new LockComponentBuilder()
+        .setCatName(Warehouse.DEFAULT_CATALOG_NAME)
         .setDbName("mydb")
         .setTableName("mytable")
         .setPartitionName("MyPartition=MyValue")
@@ -269,12 +273,14 @@ public class TestHiveMetaStoreTxns {
         .setOperationType(DataOperationType.UPDATE)
         .build())
       .addLockComponent(new LockComponentBuilder()
+        .setCatName(Warehouse.DEFAULT_CATALOG_NAME)
         .setDbName("mydb")
         .setTableName("yourtable")
         .setSharedWrite()
         .setOperationType(DataOperationType.UPDATE)
         .build())
       .addLockComponent(new LockComponentBuilder()
+        .setCatName(Warehouse.DEFAULT_CATALOG_NAME)
         .setDbName("yourdb")
         .setSharedRead()
         .setOperationType(DataOperationType.SELECT)

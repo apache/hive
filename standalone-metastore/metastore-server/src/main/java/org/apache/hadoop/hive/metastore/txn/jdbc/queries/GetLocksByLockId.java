@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class GetLocksByLockId implements QueryHandler<List<LockInfo>> {
 
-  private static final String noSelectQuery = " \"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", " +
+  private static final String noSelectQuery = " \"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_CATALOG\", " +
       "\"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_TXNID\" " +
       "FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = :extLockId";
   

@@ -14760,11 +14760,12 @@ class LockComponent(object):
      - operationType
      - isTransactional
      - isDynamicPartitionWrite
+     - catName
 
     """
 
 
-    def __init__(self, type=None, level=None, dbname=None, tablename=None, partitionname=None, operationType=5, isTransactional=False, isDynamicPartitionWrite=False,):
+    def __init__(self, type=None, level=None, dbname=None, tablename=None, partitionname=None, operationType=5, isTransactional=False, isDynamicPartitionWrite=False, catName="hive",):
         self.type = type
         self.level = level
         self.dbname = dbname
@@ -14773,6 +14774,7 @@ class LockComponent(object):
         self.operationType = operationType
         self.isTransactional = isTransactional
         self.isDynamicPartitionWrite = isDynamicPartitionWrite
+        self.catName = catName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -14823,6 +14825,11 @@ class LockComponent(object):
                     self.isDynamicPartitionWrite = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 9:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -14864,6 +14871,10 @@ class LockComponent(object):
         if self.isDynamicPartitionWrite is not None:
             oprot.writeFieldBegin('isDynamicPartitionWrite', TType.BOOL, 8)
             oprot.writeBool(self.isDynamicPartitionWrite)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 9)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -15269,16 +15280,18 @@ class ShowLocksRequest(object):
      - partname
      - isExtended
      - txnid
+     - catname
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partname=None, isExtended=False, txnid=None,):
+    def __init__(self, dbname=None, tablename=None, partname=None, isExtended=False, txnid=None, catname="hive",):
         self.dbname = dbname
         self.tablename = tablename
         self.partname = partname
         self.isExtended = isExtended
         self.txnid = txnid
+        self.catname = catname
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15314,6 +15327,11 @@ class ShowLocksRequest(object):
                     self.txnid = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.STRING:
+                    self.catname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15343,6 +15361,10 @@ class ShowLocksRequest(object):
         if self.txnid is not None:
             oprot.writeFieldBegin('txnid', TType.I64, 5)
             oprot.writeI64(self.txnid)
+            oprot.writeFieldEnd()
+        if self.catname is not None:
+            oprot.writeFieldBegin('catname', TType.STRING, 6)
+            oprot.writeString(self.catname.encode('utf-8') if sys.version_info[0] == 2 else self.catname)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -15381,11 +15403,12 @@ class ShowLocksResponseElement(object):
      - blockedByExtId
      - blockedByIntId
      - lockIdInternal
+     - catname
 
     """
 
 
-    def __init__(self, lockid=None, dbname=None, tablename=None, partname=None, state=None, type=None, txnid=None, lastheartbeat=None, acquiredat=None, user=None, hostname=None, heartbeatCount=0, agentInfo=None, blockedByExtId=None, blockedByIntId=None, lockIdInternal=None,):
+    def __init__(self, lockid=None, dbname=None, tablename=None, partname=None, state=None, type=None, txnid=None, lastheartbeat=None, acquiredat=None, user=None, hostname=None, heartbeatCount=0, agentInfo=None, blockedByExtId=None, blockedByIntId=None, lockIdInternal=None, catname=None,):
         self.lockid = lockid
         self.dbname = dbname
         self.tablename = tablename
@@ -15402,6 +15425,7 @@ class ShowLocksResponseElement(object):
         self.blockedByExtId = blockedByExtId
         self.blockedByIntId = blockedByIntId
         self.lockIdInternal = lockIdInternal
+        self.catname = catname
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -15492,6 +15516,11 @@ class ShowLocksResponseElement(object):
                     self.lockIdInternal = iprot.readI64()
                 else:
                     iprot.skip(ftype)
+            elif fid == 17:
+                if ftype == TType.STRING:
+                    self.catname = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -15566,6 +15595,10 @@ class ShowLocksResponseElement(object):
             oprot.writeFieldBegin('lockIdInternal', TType.I64, 16)
             oprot.writeI64(self.lockIdInternal)
             oprot.writeFieldEnd()
+        if self.catname is not None:
+            oprot.writeFieldBegin('catname', TType.STRING, 17)
+            oprot.writeString(self.catname.encode('utf-8') if sys.version_info[0] == 2 else self.catname)
+            oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
 
@@ -15584,6 +15617,106 @@ class ShowLocksResponseElement(object):
             raise TProtocolException(message='Required field user is unset!')
         if self.hostname is None:
             raise TProtocolException(message='Required field hostname is unset!')
+        if self.catname is None:
+            raise TProtocolException(message='Required field catname is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class LockMaterializationRebuildRequest(object):
+    """
+    Attributes:
+     - catName
+     - dbName
+     - tableName
+     - tnxId
+
+    """
+
+
+    def __init__(self, catName=None, dbName=None, tableName=None, tnxId=None,):
+        self.catName = catName
+        self.dbName = dbName
+        self.tableName = tableName
+        self.tnxId = tnxId
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.tableName = iprot.readString().decode('utf-8', errors='replace') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.I64:
+                    self.tnxId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('LockMaterializationRebuildRequest')
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 1)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.tableName is not None:
+            oprot.writeFieldBegin('tableName', TType.STRING, 3)
+            oprot.writeString(self.tableName.encode('utf-8') if sys.version_info[0] == 2 else self.tableName)
+            oprot.writeFieldEnd()
+        if self.tnxId is not None:
+            oprot.writeFieldBegin('tnxId', TType.I64, 4)
+            oprot.writeI64(self.tnxId)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.catName is None:
+            raise TProtocolException(message='Required field catName is unset!')
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.tableName is None:
+            raise TProtocolException(message='Required field tableName is unset!')
+        if self.tnxId is None:
+            raise TProtocolException(message='Required field tnxId is unset!')
         return
 
     def __repr__(self):
@@ -33608,6 +33741,7 @@ LockComponent.thrift_spec = (
     (6, TType.I32, 'operationType', None, 5, ),  # 6
     (7, TType.BOOL, 'isTransactional', None, False, ),  # 7
     (8, TType.BOOL, 'isDynamicPartitionWrite', None, False, ),  # 8
+    (9, TType.STRING, 'catName', 'UTF8', "hive", ),  # 9
 )
 all_structs.append(LockRequest)
 LockRequest.thrift_spec = (
@@ -33648,6 +33782,7 @@ ShowLocksRequest.thrift_spec = (
     (3, TType.STRING, 'partname', 'UTF8', None, ),  # 3
     (4, TType.BOOL, 'isExtended', None, False, ),  # 4
     (5, TType.I64, 'txnid', None, None, ),  # 5
+    (6, TType.STRING, 'catname', 'UTF8', "hive", ),  # 6
 )
 all_structs.append(ShowLocksResponseElement)
 ShowLocksResponseElement.thrift_spec = (
@@ -33668,6 +33803,15 @@ ShowLocksResponseElement.thrift_spec = (
     (14, TType.I64, 'blockedByExtId', None, None, ),  # 14
     (15, TType.I64, 'blockedByIntId', None, None, ),  # 15
     (16, TType.I64, 'lockIdInternal', None, None, ),  # 16
+    (17, TType.STRING, 'catname', 'UTF8', None, ),  # 17
+)
+all_structs.append(LockMaterializationRebuildRequest)
+LockMaterializationRebuildRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'tableName', 'UTF8', None, ),  # 3
+    (4, TType.I64, 'tnxId', None, None, ),  # 4
 )
 all_structs.append(ShowLocksResponse)
 ShowLocksResponse.thrift_spec = (
