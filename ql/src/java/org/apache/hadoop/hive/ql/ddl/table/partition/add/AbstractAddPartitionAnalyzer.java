@@ -42,6 +42,8 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.HCAT_CUSTOM_DYNAMIC_PATTERN;
+
 /**
  * Analyzer for add partition commands.
  */
@@ -70,7 +72,7 @@ abstract class AbstractAddPartitionAnalyzer extends AbstractAlterTableAnalyzer {
     }
 
     AlterTableAddPartitionDesc desc = new AlterTableAddPartitionDesc(table.getDbName(), table.getTableName(),
-        ifNotExists, partitions);
+        ifNotExists, partitions, conf.get(HCAT_CUSTOM_DYNAMIC_PATTERN));
     Task<DDLWork> ddlTask = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(ddlTask);
 

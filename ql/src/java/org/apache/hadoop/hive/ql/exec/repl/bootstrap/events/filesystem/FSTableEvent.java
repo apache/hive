@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.HCAT_CUSTOM_DYNAMIC_PATTERN;
 
 public class FSTableEvent implements TableEvent {
   private final Path fromPathMetadata;
@@ -179,7 +180,7 @@ public class FSTableEvent implements TableEvent {
           sd.getBucketCols(), sd.getSortCols(), columnStatistics, writeId);
 
       AlterTableAddPartitionDesc addPartitionDesc = new AlterTableAddPartitionDesc(tblDesc.getDatabaseName(),
-          tblDesc.getTableName(), true, ImmutableList.of(partitionDesc));
+          tblDesc.getTableName(), true, ImmutableList.of(partitionDesc), hiveConf.get(HCAT_CUSTOM_DYNAMIC_PATTERN));
       addPartitionDesc.setReplicationSpec(replicationSpec());
       return addPartitionDesc;
     } catch (Exception e) {
