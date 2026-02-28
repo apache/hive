@@ -227,22 +227,17 @@ STAGE PLANS:
                 TableScan
                   alias: foo
                   Statistics: Num rows: 247 Data size: 86848 Basic stats: COMPLETE Column stats: NONE
-                  Top N Key Operator
-                    sort order: +
-                    keys: key (type: string)
-                    null sort order: z
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 247 Data size: 86848 Basic stats: COMPLETE Column stats: NONE
-                    top n: 10
-                    Select Operator
-                      expressions: key (type: string), value (type: string)
-                      outputColumnNames: _col0, _col1
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
+                      null sort order: z
+                      sort order: +
                       Statistics: Num rows: 247 Data size: 86848 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Statistics: Num rows: 247 Data size: 86848 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -320,18 +315,13 @@ STAGE PLANS:
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 247 Data size: 86848 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: string)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
                       null sort order: z
+                      sort order: +
                       Statistics: Num rows: 500 Data size: 175904 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Statistics: Num rows: 500 Data size: 175904 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -343,18 +333,13 @@ STAGE PLANS:
                     expressions: key (type: string), value (type: string)
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 253 Data size: 89056 Basic stats: COMPLETE Column stats: NONE
-                    Top N Key Operator
-                      sort order: +
-                      keys: _col0 (type: string)
+                    Reduce Output Operator
+                      key expressions: _col0 (type: string)
                       null sort order: z
+                      sort order: +
                       Statistics: Num rows: 500 Data size: 175904 Basic stats: COMPLETE Column stats: NONE
-                      top n: 10
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Statistics: Num rows: 500 Data size: 175904 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: string)
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 3 

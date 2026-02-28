@@ -54,9 +54,11 @@ import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
+import org.apache.hadoop.hive.ql.exec.PTFOperator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -1300,9 +1302,10 @@ public class TezCompiler extends TaskCompiler {
       return;
     }
 
+    String topNKeyRegexPattern = buildTopNKeyRegexPattern(procCtx);
     Map<SemanticRule, SemanticNodeProcessor> opRules = new LinkedHashMap<SemanticRule, SemanticNodeProcessor>();
     opRules.put(
-        new RuleRegExp("Top n key optimization", ReduceSinkOperator.getOperatorName() + "%"),
+        new RuleRegExp("Top n key optimization", topNKeyRegexPattern),
         new TopNKeyProcessor(
           HiveConf.getIntVar(procCtx.conf, HiveConf.ConfVars.HIVE_MAX_TOPN_ALLOWED),
           HiveConf.getFloatVar(procCtx.conf, ConfVars.HIVE_TOPN_EFFICIENCY_THRESHOLD),
@@ -1320,6 +1323,49 @@ public class TezCompiler extends TaskCompiler {
     topNodes.addAll(procCtx.parseContext.getTopOps().values());
     SemanticGraphWalker ogw = new DefaultGraphWalker(disp);
     ogw.startWalking(topNodes, null);
+  }
+
+  /*
+   * Build the ReduceSink matching pattern used by TopNKey optimization.
+   *
+   * For ORDER BY / LIMIT queries that do not involve GROUP BY or JOIN,
+   * applying TopNKey results in a performance regression. ReduceSink
+   * operators created only for ordering must therefore be excluded from
+   * TopNKey.
+   *
+   * When ORDER BY or LIMIT is present, restrict TopNKey to ReduceSink
+   * operators that originate from GROUP BY, JOIN, MAPJOIN, LATERAL VIEW
+   * JOIN or PTF query shapes
+   */
+  private static String buildTopNKeyRegexPattern(OptimizeTezProcContext procCtx) {
+    String reduceSinkOp = ReduceSinkOperator.getOperatorName() + "%";
+
+    boolean hasOrderOrLimit =
+            procCtx.parseContext.getQueryProperties().hasLimit() ||
+                    procCtx.parseContext.getQueryProperties().hasOrderBy();
+
+    if (hasPTFReduceSink(procCtx) || !hasOrderOrLimit) {
+      return reduceSinkOp;
+    }
+
+    return "("
+            + GroupByOperator.getOperatorName() + "|"
+            + PTFOperator.getOperatorName() + "|"
+            + JoinOperator.getOperatorName() + "|"
+            + MapJoinOperator.getOperatorName() + "|"
+            + LateralViewJoinOperator.getOperatorName() + "|"
+            + CommonMergeJoinOperator.getOperatorName()
+            + ").*%"
+            + reduceSinkOp;
+  }
+
+  private static boolean hasPTFReduceSink(OptimizeTezProcContext ctx) {
+    for (ReduceSinkOperator rs : ctx.visitedReduceSinks) {
+      if (rs.getConf().isPTFReduceSink()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private boolean findParallelSemiJoinBranch(Operator<?> mapjoin, TableScanOperator bigTableTS,

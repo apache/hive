@@ -611,22 +611,17 @@ GROUP BY "t4"."fname"
                     hive.sql.query.fieldTypes string,bigint
                     hive.sql.query.split false
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
-                  Top N Key Operator
-                    sort order: +
-                    keys: upper(fname) (type: string)
-                    null sort order: z
+                  Select Operator
+                    expressions: $f1 (type: bigint), upper(fname) (type: string)
+                    outputColumnNames: _col1, _col2
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
-                    top n: 5
-                    Select Operator
-                      expressions: $f1 (type: bigint), upper(fname) (type: string)
-                      outputColumnNames: _col1, _col2
+                    Reduce Output Operator
+                      key expressions: _col2 (type: string)
+                      null sort order: z
+                      sort order: +
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col2 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: bigint)
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 

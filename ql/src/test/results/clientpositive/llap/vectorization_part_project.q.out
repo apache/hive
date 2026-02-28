@@ -79,21 +79,16 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesorc_part
                   Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: +
-                    keys: (cdouble + 2.0D) (type: double)
-                    null sort order: z
+                  Select Operator
+                    expressions: (cdouble + 2.0D) (type: double)
+                    outputColumnNames: _col0
                     Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 10
-                    Select Operator
-                      expressions: (cdouble + 2.0D) (type: double)
-                      outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions: _col0 (type: double)
+                      null sort order: z
+                      sort order: +
                       Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: double)
-                        null sort order: z
-                        sort order: +
-                        Statistics: Num rows: 200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
