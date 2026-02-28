@@ -1081,11 +1081,11 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 1003500 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 20
-                    Statistics: Num rows: 20 Data size: 40080 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), _col8 (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 20 Data size: 40080 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
                       ListSink
               Select Operator
                 expressions: array(_col0,_col1) (type: array<string>)
@@ -1099,11 +1099,11 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 1003500 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 20
-                      Statistics: Num rows: 20 Data size: 40080 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
                         expressions: _col0 (type: string), _col8 (type: string)
                         outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 20 Data size: 40080 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 20 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
                         ListSink
 
 PREHOOK: query: select key,X from srcpart lateral view explode(array(key,value)) L as x where (ds='2008-04-08' AND hr='11') limit 20
