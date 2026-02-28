@@ -27,6 +27,7 @@
   <inceptionYear>2008</inceptionYear>
   <properties>
     <checkstyle.version>11.1.0</checkstyle.version>
+    <commons-lang3.version>3.20.0</commons-lang3.version>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
     <netty.version>4.1.127.Final</netty.version>
@@ -59,6 +60,12 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons-lang3.version}</version>
+      <scope>provided</scope>
+    </dependency>
     <!-- compile inter-project -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
