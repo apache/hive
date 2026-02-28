@@ -109,7 +109,6 @@ STAGE PLANS:
                           key expressions: iceberg_zorder(_col0, _col1) (type: binary)
                           null sort order: z
                           sort order: +
-                          Map-reduce partition columns: iceberg_zorder(_col0, _col1) (type: binary)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: string)
                         Select Operator
@@ -610,3 +609,243 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@zorder_props
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@zorder_props
+PREHOOK: query: CREATE TABLE default.zorder_tsdl_test (
+    ts timestamp,
+    dd double,
+    ll int)
+PARTITIONED BY SPEC (bucket(4, ll))
+WRITE ORDERED BY zorder (ts, dd)
+STORED BY iceberg
+STORED As orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@zorder_tsdl_test
+POSTHOOK: query: CREATE TABLE default.zorder_tsdl_test (
+    ts timestamp,
+    dd double,
+    ll int)
+PARTITIONED BY SPEC (bucket(4, ll))
+WRITE ORDERED BY zorder (ts, dd)
+STORED BY iceberg
+STORED As orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@zorder_tsdl_test
+PREHOOK: query: DESCRIBE FORMATTED default.zorder_tsdl_test
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@zorder_tsdl_test
+POSTHOOK: query: DESCRIBE FORMATTED default.zorder_tsdl_test
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@zorder_tsdl_test
+# col_name            	data_type           	comment             
+ts                  	timestamp           	                    
+dd                  	double              	                    
+ll                  	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ll                  	int                 	Transform: bucket[4]
+	 	 
+# Partition Transform Information	 	 
+# col_name            	transform_type      	 
+ll                  	BUCKET[4]           	 
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	EXTERNAL_TABLE      	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"dd\":\"true\",\"ll\":\"true\",\"ts\":\"true\"}}
+	EXTERNAL            	TRUE                
+	bucketing_version   	2                   
+	current-schema      	{\"type\":\"struct\",\"schema-id\":0,\"fields\":[{\"id\":1,\"name\":\"ts\",\"required\":false,\"type\":\"timestamp\"},{\"id\":2,\"name\":\"dd\",\"required\":false,\"type\":\"double\"},{\"id\":3,\"name\":\"ll\",\"required\":false,\"type\":\"int\"}]}
+	default-partition-spec	{\"spec-id\":0,\"fields\":[{\"name\":\"ll_bucket\",\"transform\":\"bucket[4]\",\"source-id\":3,\"field-id\":1000}]}
+	format-version      	2                   
+	iceberg.orc.files.only	true                
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numRows             	0                   
+	parquet.compression 	zstd                
+	rawDataSize         	0                   
+	serialization.format	1                   
+	snapshot-count      	0                   
+	sort.columns        	ts,dd               
+	sort.order          	ZORDER              
+	storage_handler     	org.apache.iceberg.mr.hive.HiveIcebergStorageHandler
+	table_type          	ICEBERG             
+	totalSize           	#Masked#                   
+#### A masked pattern was here ####
+	uuid                	#Masked#
+	write.delete.mode   	merge-on-read       
+	write.format.default	orc                 
+	write.merge.mode    	merge-on-read       
+	write.metadata.delete-after-commit.enabled	true                
+	write.update.mode   	merge-on-read       
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.iceberg.mr.hive.HiveIcebergSerDe	 
+InputFormat:        	org.apache.iceberg.mr.hive.HiveIcebergInputFormat	 
+OutputFormat:       	org.apache.iceberg.mr.hive.HiveIcebergOutputFormat	 
+Compressed:         	No                  	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: EXPLAIN INSERT INTO default.zorder_tsdl_test VALUES (TIMESTAMP '2022-01-01 00:00:00', 0.0, 0)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@zorder_tsdl_test
+POSTHOOK: query: EXPLAIN INSERT INTO default.zorder_tsdl_test VALUES (TIMESTAMP '2022-01-01 00:00:00', 0.0, 0)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@zorder_tsdl_test
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: _dummy_table
+                  Row Limit Per Split: 1
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: array(const struct(TIMESTAMP'2022-01-01 00:00:00',0,0)) (type: array<struct<col1:timestamp,col2:decimal(1,0),col3:int>>)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                    UDTF Operator
+                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
+                      function name: inline
+                      Select Operator
+                        expressions: col1 (type: timestamp), UDFToDouble(col2) (type: double), col3 (type: int)
+                        outputColumnNames: _col0, _col1, _col2
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: iceberg_bucket(_col2, 4) (type: int), iceberg_zorder(_col0, _col1) (type: binary)
+                          null sort order: zz
+                          sort order: ++
+                          Map-reduce partition columns: iceberg_bucket(_col2, 4) (type: int)
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: int)
+                        Select Operator
+                          expressions: _col0 (type: timestamp), _col1 (type: double), _col2 (type: int)
+                          outputColumnNames: ts, dd, ll
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          Group By Operator
+                            aggregations: min(ts), max(ts), count(1), count(ts), compute_bit_vector_hll(ts), min(dd), max(dd), count(dd), compute_bit_vector_hll(dd), min(ll), max(ll), count(ll), compute_bit_vector_hll(ll)
+                            keys: iceberg_bucket(ll, 4) (type: int)
+                            minReductionHashAggr: 0.4
+                            mode: hash
+                            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                            Statistics: Num rows: 1 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+                            Reduce Output Operator
+                              key expressions: _col0 (type: int)
+                              null sort order: z
+                              sort order: +
+                              Map-reduce partition columns: _col0 (type: int)
+                              Statistics: Num rows: 1 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+                              value expressions: _col1 (type: timestamp), _col2 (type: timestamp), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: double), _col7 (type: double), _col8 (type: bigint), _col9 (type: binary), _col10 (type: int), _col11 (type: int), _col12 (type: bigint), _col13 (type: binary)
+            Execution mode: llap
+            LLAP IO: no inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: timestamp), VALUE._col1 (type: double), VALUE._col2 (type: int), KEY.iceberg_bucket(_col2, 4) (type: int), KEY.iceberg_zorder(_col0, _col1) (type: binary)
+                outputColumnNames: _col0, _col1, _col2, iceberg_bucket(_col2, 4), iceberg_zorder(_col0, _col1)
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+                      output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+                      serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+                      name: default.zorder_tsdl_test
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), min(VALUE._col5), max(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: 'TIMESTAMP' (type: string), _col1 (type: timestamp), _col2 (type: timestamp), (_col3 - _col4) (type: bigint), COALESCE(ndv_compute_bit_vector(_col5),0) (type: bigint), _col5 (type: binary), 'DOUBLE' (type: string), _col6 (type: double), _col7 (type: double), (_col3 - _col8) (type: bigint), COALESCE(ndv_compute_bit_vector(_col9),0) (type: bigint), _col9 (type: binary), 'LONG' (type: string), UDFToLong(_col10) (type: bigint), UDFToLong(_col11) (type: bigint), (_col3 - _col12) (type: bigint), COALESCE(ndv_compute_bit_vector(_col13),0) (type: bigint), _col13 (type: binary), named_struct('ll_bucket',_col0) (type: struct<ll_bucket:int>)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
+                  Statistics: Num rows: 1 Data size: 907 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 907 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.iceberg.mr.hive.HiveIcebergInputFormat
+              output format: org.apache.iceberg.mr.hive.HiveIcebergOutputFormat
+              serde: org.apache.iceberg.mr.hive.HiveIcebergSerDe
+              name: default.zorder_tsdl_test
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+      Column Stats Desc:
+          Columns: ts, dd, ll
+          Column Types: timestamp, double, int
+          Table: default.zorder_tsdl_test
+
+PREHOOK: query: INSERT INTO default.zorder_tsdl_test VALUES
+  (TIMESTAMP '2022-01-01 00:00:00', 0.0, 0),
+  (TIMESTAMP '2030-12-31 23:59:59', 9999.99, 1),
+  (TIMESTAMP '2026-06-15 12:00:00', 5000.5, 2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@zorder_tsdl_test
+POSTHOOK: query: INSERT INTO default.zorder_tsdl_test VALUES
+  (TIMESTAMP '2022-01-01 00:00:00', 0.0, 0),
+  (TIMESTAMP '2030-12-31 23:59:59', 9999.99, 1),
+  (TIMESTAMP '2026-06-15 12:00:00', 5000.5, 2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@zorder_tsdl_test
+PREHOOK: query: SELECT * FROM default.zorder_tsdl_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@zorder_tsdl_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM default.zorder_tsdl_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@zorder_tsdl_test
+#### A masked pattern was here ####
+2022-01-01 00:00:00	0.0	0
+2026-06-15 12:00:00	5000.5	2
+2030-12-31 23:59:59	9999.99	1
+PREHOOK: query: DROP TABLE default.zorder_tsdl_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@zorder_tsdl_test
+PREHOOK: Output: database:default
+PREHOOK: Output: default@zorder_tsdl_test
+POSTHOOK: query: DROP TABLE default.zorder_tsdl_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@zorder_tsdl_test
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@zorder_tsdl_test

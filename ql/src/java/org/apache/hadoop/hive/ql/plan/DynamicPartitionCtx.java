@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,6 +55,7 @@ public class DynamicPartitionCtx implements Serializable {
   private int maxPartsPerNode;    // maximum dynamic partitions created per mapper/reducer
   private Pattern whiteListPattern;
   private boolean hasCustomSortExpr = false;
+  private transient List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customPartitionExpressions;
   /**
    * Expressions describing a custom way of sorting the table before write. Expressions can reference simple
    * column descriptions or a tree of expressions containing more columns and UDFs.
@@ -131,6 +133,7 @@ public class DynamicPartitionCtx implements Serializable {
       throw new SemanticException(e);
     }
     this.whiteListPattern = confVal == null || confVal.isEmpty() ? null : Pattern.compile(confVal);
+    this.customPartitionExpressions = new LinkedList<>();
     this.customSortExpressions = new LinkedList<>();
     this.customSortOrder = new LinkedList<>();
     this.customSortNullOrder = new LinkedList<>();
@@ -148,6 +151,8 @@ public class DynamicPartitionCtx implements Serializable {
     this.defaultPartName = dp.defaultPartName;
     this.maxPartsPerNode = dp.maxPartsPerNode;
     this.whiteListPattern = dp.whiteListPattern;
+    this.customPartitionExpressions = new LinkedList<>();
+    addCustomPartitionExpressions(dp.customPartitionExpressions);
     this.customSortExpressions = new LinkedList<>();
     addCustomSortExpressions(dp.customSortExpressions);
     this.customSortOrder = dp.customSortOrder;
@@ -238,8 +243,23 @@ public class DynamicPartitionCtx implements Serializable {
     return this.spPath;
   }
 
+  public List<Function<List<ExprNodeDesc>, ExprNodeDesc>> getCustomPartitionExpressions() {
+    return customPartitionExpressions == null
+        ? Collections.emptyList()
+        : customPartitionExpressions;
+  }
+
+  public void addCustomPartitionExpressions(List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customPartitionExpressions) {
+    if (!org.apache.commons.collections.CollectionUtils.isEmpty(customPartitionExpressions)) {
+      this.hasCustomSortExpr = true;
+      this.customPartitionExpressions.addAll(customPartitionExpressions);
+    }
+  }
+
   public List<Function<List<ExprNodeDesc>, ExprNodeDesc>> getCustomSortExpressions() {
-    return customSortExpressions;
+    return customSortExpressions == null
+        ? Collections.emptyList()
+        : customSortExpressions;
   }
 
   public void addCustomSortExpressions(List<Function<List<ExprNodeDesc>, ExprNodeDesc>> customSortExpressions) {

@@ -264,7 +264,6 @@ STAGE PLANS:
                           key expressions: iceberg_zorder(_col0, _col2) (type: binary)
                           null sort order: z
                           sort order: +
-                          Map-reduce partition columns: iceberg_zorder(_col0, _col2) (type: binary)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: string), _col2 (type: int), _col3 (type: string)
                         Select Operator
