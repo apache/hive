@@ -1,0 +1,199 @@
+PREHOOK: query: CREATE TABLE tbl_t (id int, Point STRUCT<x:INT, y:INT>)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_t
+POSTHOOK: query: CREATE TABLE tbl_t (id int, Point STRUCT<x:INT, y:INT>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_t
+PREHOOK: query: DESCRIBE FORMATTED tbl_t
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_t
+POSTHOOK: query: DESCRIBE FORMATTED tbl_t
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_t
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+point               	struct<x:int,y:int> 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"point\":\"true\"}}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED tbl_t id
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_t
+POSTHOOK: query: DESCRIBE FORMATTED tbl_t id
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_t
+col_name            	id                  
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"point\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED tbl_t Point
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_t
+POSTHOOK: query: DESCRIBE FORMATTED tbl_t Point
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_t
+col_name            	Point               
+data_type           	struct<x:int,y:int> 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"point\":\"true\"}}
+PREHOOK: query: DESCRIBE tbl_t id
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_t
+POSTHOOK: query: DESCRIBE tbl_t id
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_t
+id                  	int                 	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"point\":\"true\"}}	 
+PREHOOK: query: DESCRIBE tbl_t Point
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_t
+POSTHOOK: query: DESCRIBE tbl_t Point
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_t
+x                   	int                 	from deserializer   
+y                   	int                 	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"id\":\"true\",\"point\":\"true\"}}	 
+PREHOOK: query: CREATE TABLE tbl_part(id int, Point STRUCT<x:INT, y:INT>) PARTITIONED BY (name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tbl_part
+POSTHOOK: query: CREATE TABLE tbl_part(id int, Point STRUCT<x:INT, y:INT>) PARTITIONED BY (name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tbl_part
+PREHOOK: query: DESCRIBE FORMATTED tbl_part
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_part
+POSTHOOK: query: DESCRIBE FORMATTED tbl_part
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_part
+# col_name            	data_type           	comment             
+id                  	int                 	                    
+point               	struct<x:int,y:int> 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+name                	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: DESCRIBE FORMATTED tbl_part id
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_part
+POSTHOOK: query: DESCRIBE FORMATTED tbl_part id
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_part
+col_name            	id                  
+data_type           	int                 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"id\":\"true\"}}
+PREHOOK: query: DESCRIBE FORMATTED tbl_part Point
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_part
+POSTHOOK: query: DESCRIBE FORMATTED tbl_part Point
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_part
+col_name            	Point               
+data_type           	struct<x:int,y:int> 
+min                 	                    
+max                 	                    
+num_nulls           	                    
+distinct_count      	                    
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"point\":\"true\"}}
+PREHOOK: query: DESCRIBE tbl_part id
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_part
+POSTHOOK: query: DESCRIBE tbl_part id
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_part
+id                  	int                 	from deserializer   
+PREHOOK: query: DESCRIBE tbl_part Point
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@tbl_part
+POSTHOOK: query: DESCRIBE tbl_part Point
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@tbl_part
+x                   	int                 	from deserializer   
+y                   	int                 	from deserializer   
