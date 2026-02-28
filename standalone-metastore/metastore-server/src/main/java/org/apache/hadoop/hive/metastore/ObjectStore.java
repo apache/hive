@@ -75,6 +75,7 @@ import javax.jdo.identity.IntIdentity;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -178,6 +179,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
@@ -571,6 +573,33 @@ public class ObjectStore implements RawStore, Configurable {
       protected Long getJdoResult(GetHelper<Long> ctx) throws MetaException, NoSuchObjectException, InvalidObjectException {
         throw new UnsupportedOperationException(
             "Cannot update parameter with JDO, make sure direct SQL is enabled");
+      }
+    }.run(false);
+  }
+
+  @Override
+  public void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException {
+    if (updates == null || updates.isEmpty()) {
+      return;
+    }
+
+    new GetListHelper<Void>(null, null, null, true, false) {
+      @Override
+      protected List<Void> getSqlResult(GetHelper<List<Void>> ctx) throws MetaException {
+        boolean success = false;
+        try {
+          openTransaction();
+          directSql.updateTableParams(updates, ObjectStore.this::getTable);
+          success = commitTransaction();
+        } finally {
+          rollbackAndCleanup(success, null);
+        }
+        return null;
+      }
+
+      @Override
+      protected List<Void> getJdoResult(GetHelper<List<Void>> ctx) {
+        throw new UnsupportedOperationException("UnsupportedOperationException");
       }
     }.run(false);
   }
@@ -1608,10 +1637,13 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Table
-  getTable(String catName, String dbName, String tableName)
+  public Table getTable(String catName, String dbName, String tableName)
       throws MetaException {
-    return getTable(catName, dbName, tableName, null);
+    return getTable(
+        ObjectUtils.defaultIfNull(catName, getDefaultCatalog(conf)),
+        dbName, tableName,
+        null
+    );
   }
 
   @Override

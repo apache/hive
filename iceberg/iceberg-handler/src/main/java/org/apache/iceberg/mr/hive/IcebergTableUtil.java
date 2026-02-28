@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -77,34 +78,40 @@ import org.apache.iceberg.PartitionData;
 import org.apache.iceberg.PartitionField;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.PartitionStatisticsFile;
+import org.apache.iceberg.PartitionStats;
 import org.apache.iceberg.Partitioning;
 import org.apache.iceberg.PartitionsTable;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.Snapshot;
 import org.apache.iceberg.SnapshotRef;
+import org.apache.iceberg.SnapshotSummary;
 import org.apache.iceberg.StatisticsFile;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.Table;
 import org.apache.iceberg.TableProperties;
+import org.apache.iceberg.TableScan;
+import org.apache.iceberg.Transaction;
 import org.apache.iceberg.UpdatePartitionSpec;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.expressions.Evaluator;
 import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
-import org.apache.iceberg.expressions.ResidualEvaluator;
-import org.apache.iceberg.expressions.UnboundTerm;
 import org.apache.iceberg.hive.IcebergCatalogProperties;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.io.FileIO;
 import org.apache.iceberg.mr.Catalogs;
 import org.apache.iceberg.mr.InputFormatConfig;
 import org.apache.iceberg.puffin.BlobMetadata;
 import org.apache.iceberg.puffin.Puffin;
 import org.apache.iceberg.puffin.PuffinReader;
 import org.apache.iceberg.relocated.com.google.common.collect.FluentIterable;
+import org.apache.iceberg.relocated.com.google.common.collect.ImmutableMap;
 import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.relocated.com.google.common.collect.Maps;
 import org.apache.iceberg.transforms.Transform;
 import org.apache.iceberg.types.Conversions;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.util.ByteBuffers;
 import org.apache.iceberg.util.Pair;
@@ -126,6 +133,9 @@ public class IcebergTableUtil {
 
   public static final int SPEC_IDX = 1;
   public static final int PART_IDX = 0;
+
+  private static final String SPEC_ID_FIELD = "spec_id";
+  private static final String NULL_VALUE = "null";
 
   private IcebergTableUtil() {
   }
@@ -185,8 +195,13 @@ public class IcebergTableUtil {
     if (skipCache) {
       return tableLoadFunc.apply(null);
     } else {
-      return SessionStateUtil.getResource(configuration, tableIdentifier).filter(o -> o instanceof Table)
-          .map(o -> (Table) o).orElseGet(() -> {
+      return SessionStateUtil.getResource(configuration, tableIdentifier)
+          .filter(Table.class::isInstance)
+          .map(Table.class::cast)
+          .map(tbl -> Optional.ofNullable(IcebergAcidUtil.getTransaction(tbl))
+              .map(Transaction::table)
+              .orElse(tbl))
+          .orElseGet(() -> {
             LOG.debug("Iceberg table {} is not found in QueryState. Loading table from configured catalog",
                 tableIdentifier);
             return tableLoadFunc.apply(null);
@@ -445,120 +460,149 @@ public class IcebergTableUtil {
     return toPartitionData(projection, targetKeyType);
   }
 
-  public static Expression generateExprForIdentityPartition(Table table, Map<String, String> partitionSpec,
-      boolean latestSpecOnly) throws SemanticException {
+  /**
+   * Builds a filter expression for data table operations (deleteFromRowFilter, FindFiles).
+   * Only supports identity transforms. Keys are partition field names.
+   */
+  static Expression buildPartitionExpr(Table table, Map<String, String> partitionSpec)
+      throws SemanticException {
 
-    Map<String, PartitionField> partitionFields = getPartitionFields(table, latestSpecOnly).stream()
-        .collect(Collectors.toMap(PartitionField::name, Function.identity()));
-
-    return generateExprForIdentityPartition(table, partitionSpec, partitionFields);
+    Map<String, PartitionField> partitionFields = getPartitionFields(table, true).stream()
+        .collect(Collectors.toMap(
+            PartitionField::name, Function.identity())
+        );
+    return buildPartitionExpr(table, partitionSpec, partitionFields);
   }
 
-  public static Expression generateExprForIdentityPartition(Table table, Map<String, String> partitionSpec,
+  static Expression buildPartitionExpr(Table table, Map<String, String> partitionSpec,
       Map<String, PartitionField> partitionFields) throws SemanticException {
 
-    return buildPartitionExpression(
-        partitionSpec,
+    Types.StructType partitionType = Partitioning.partitionType(table);
+
+    return buildExpression(partitionSpec,
         (column, value) ->
-            buildIdentityPartitionPredicate(table, value, partitionFields.get(column)),
-        partitionFields::containsKey
-    );
+            buildIdentityFieldPredicate(partitionType, partitionFields.get(column), value),
+        partitionFields::containsKey);
   }
 
-  public static Expression generateExprFromPartitionSpec(Table table, Map<String, String> partitionSpec,
+  /**
+   * Builds a filter expression for the PARTITIONS metadata table from source column names.
+   * Handles partition evolution by OR-ing predicates across different transforms on the same source column.
+   */
+  private static Expression buildPartitionsFilter(Table table, Map<String, String> partitionSpec,
       boolean latestSpecOnly) throws SemanticException {
 
     // Group partition fields by source column name to handle partition evolution
     // where the same source column may have multiple transforms across different specs
-    Map<String, List<PartitionField>> partitionFieldsBySourceColumn =
-        getPartitionFields(table, latestSpecOnly).stream()
-            .collect(Collectors.groupingBy(
-                pf -> table.schema().findColumnName(pf.sourceId()))
-            );
+    Map<String, List<PartitionField>> bySourceColumn = getPartitionFields(table, latestSpecOnly).stream()
+        .collect(Collectors.groupingBy(pf ->
+            table.schema().findColumnName(pf.sourceId()))
+        );
 
-    return buildPartitionExpression(
-        partitionSpec,
+    return buildExpression(partitionSpec,
         (column, value) ->
-            buildTransformPartitionPredicate(table, value, partitionFieldsBySourceColumn.get(column)),
-        partitionFieldsBySourceColumn::containsKey
-    );
+            buildSourceValuePredicate(table, value, bySourceColumn.get(column)),
+        bySourceColumn::containsKey);
+  }
+
+  /**
+   * Builds a filter expression for the PARTITIONS metadata table from partition field names
+   * with already-transformed values (e.g. {key_bucket_8: 5}).
+   */
+  private static Expression buildPartitionsFilterFromPath(Table table, Map<String, String> partitionSpec)
+      throws SemanticException {
+    Types.StructType partitionType = Partitioning.partitionType(table);
+
+    return buildExpression(partitionSpec,
+        (column, value) ->
+            buildFieldPredicate(partitionType, column, value, "partition."),
+        col -> partitionType.field(col) != null);
+  }
+
+  static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
+    if (latestSpecOnly) {
+      return table.spec().fields();
+    }
+    return table.specs().values().stream()
+        .flatMap(spec -> spec.fields().stream()
+            .filter(f -> !f.transform().isVoid()))
+        .distinct()
+        .toList();
   }
 
   @FunctionalInterface
   private interface PartitionPredicateBuilder {
-    Expression build(String partitionColumn, String partitionValue) throws SemanticException;
+    Expression build(String column, String value) throws SemanticException;
   }
 
-  private static Expression buildPartitionExpression(
-      Map<String, String> partitionSpec,
-      PartitionPredicateBuilder predicateBuilder,
-      Predicate<String> fieldValidator) throws SemanticException {
-
+  private static Expression buildExpression(Map<String, String> partitionSpec,
+      PartitionPredicateBuilder predicateBuilder, Predicate<String> fieldValidator) throws SemanticException {
     Expression predicate = Expressions.alwaysTrue();
-
     for (Map.Entry<String, String> entry : partitionSpec.entrySet()) {
-      String partitionColumn = entry.getKey();
-
-      // Validate field exists
-      if (!fieldValidator.test(partitionColumn)) {
-        throw new SemanticException(
-            "No partition column by the name: %s".formatted(partitionColumn));
+      String column = entry.getKey();
+      if (!fieldValidator.test(column)) {
+        throw new SemanticException("No partition column by the name: %s".formatted(column));
       }
-      Expression columnPredicate = predicateBuilder.build(partitionColumn, entry.getValue());
-      predicate = Expressions.and(predicate, columnPredicate);
+      predicate = Expressions.and(predicate, predicateBuilder.build(column, entry.getValue()));
     }
-
     return predicate;
   }
 
-  private static Expression buildIdentityPartitionPredicate(Table table, String partitionValue,
-      PartitionField partitionField) throws SemanticException {
+  private static Expression buildFieldPredicate(Types.StructType partitionType,
+      String fieldName, String value, String keyPrefix) {
+    String key = keyPrefix + fieldName;
+    Object columnValue = parsePartitionValue(partitionType.field(fieldName).type(), value);
 
-    if (!partitionField.transform().isIdentity()) {
-      throw new SemanticException(
-          "Partition transforms are not supported here: %s".formatted(partitionField.name()));
-    }
-    Types.NestedField sourceField = table.schema().findField(partitionField.sourceId());
-    Object columnValue = Conversions.fromPartitionString(sourceField.type(), partitionValue);
-
-    return Expressions.equal(partitionField.name(), columnValue);
+    return columnValue == null ?
+        Expressions.isNull(key) : Expressions.equal(key, columnValue);
   }
 
-  private static Expression buildTransformPartitionPredicate(Table table, String partitionValue,
+  private static Expression buildIdentityFieldPredicate(Types.StructType partitionType,
+      PartitionField field, String value) throws SemanticException {
+    if (!field.transform().isIdentity()) {
+      throw new SemanticException("Partition transforms are not supported here: %s".formatted(field.name()));
+    }
+    return buildFieldPredicate(partitionType, field.name(), value, "");
+  }
+
+  private static Expression buildSourceValuePredicate(Table table, String partitionValue,
       List<PartitionField> partitionFields) {
 
     // Get source field type from first partition field (all share same source)
     Types.NestedField sourceField = table.schema().findField(
         partitionFields.getFirst().sourceId());
-    Object columnValue = Conversions.fromPartitionString(sourceField.type(), partitionValue);
+    Object columnValue = parsePartitionValue(sourceField.type(), partitionValue);
 
-    Expression predicate = Expressions.alwaysFalse();
+    Expression partitionExpr = Expressions.alwaysFalse();
 
     // Create OR expression for each transform on this source column
     for (PartitionField partitionField : partitionFields) {
-      // Apply the transform to the source value
-      @SuppressWarnings("unchecked")
-      Transform<Object, Object> transform = (Transform<Object, Object>) partitionField.transform();
-      Object transformedValue = transform.bind(sourceField.type()).apply(columnValue);
-
-      TransformSpec transformSpec = TransformSpec.fromString(transform.toString().toUpperCase(), sourceField.name());
-      UnboundTerm<Object> term = SchemaUtils.toTerm(transformSpec);
-
-      predicate = Expressions.or(
-          predicate, Expressions.equal(term, transformedValue));
+      Expression predicate = buildTransformedFieldPredicate(partitionField, columnValue, sourceField);
+      partitionExpr = Expressions.or(partitionExpr, predicate);
     }
 
-    return predicate;
+    return partitionExpr;
   }
 
-  public static List<PartitionField> getPartitionFields(Table table, boolean latestSpecOnly) {
-    if (latestSpecOnly) {
-      return table.spec().fields();
+  private static Expression buildTransformedFieldPredicate(
+      PartitionField partitionField, Object columnValue, Types.NestedField sourceField) {
+    String partitionKey = "partition." + partitionField.name();
+    if (columnValue == null) {
+      return Expressions.isNull(partitionKey);
     }
-    return table.specs().values().stream()
-        .flatMap(spec -> spec.fields().stream())
-        .filter(f -> !f.transform().isVoid())
-        .toList();
+    // Apply the transform to the source value
+    @SuppressWarnings("unchecked")
+    Transform<Object, Object> transform = (Transform<Object, Object>) partitionField.transform();
+    Object transformedValue = transform.bind(sourceField.type()).apply(columnValue);
+
+    return Expressions.equal(partitionKey, transformedValue);
+  }
+
+  private static Object parsePartitionValue(Type type, String value) {
+    boolean isNullValue = NULL_VALUE.equalsIgnoreCase(value) &&
+        !Types.StringType.get().equals(type);
+    return isNullValue ?
+        null : Conversions.fromPartitionString(type, value);
   }
 
   /**
@@ -626,24 +670,40 @@ public class IcebergTableUtil {
       Comparator<Map.Entry<String, Integer>> specIdComparator) throws SemanticException {
     Table icebergTable = getTable(conf, table.getTTable());
 
-    Expression partitionExpr = IcebergTableUtil.generateExprFromPartitionSpec(
-        icebergTable, partitionSpec, latestSpecOnly);
-
-    int latestSpecId = icebergTable.spec().specId();
+    Expression partitionExpr = buildPartitionsFilter(icebergTable, partitionSpec, latestSpecOnly);
     Types.StructType partitionType = Partitioning.partitionType(icebergTable);
+
+    Snapshot snapshot = IcebergTableUtil.getTableSnapshot(icebergTable, table);
+    boolean readsCurrentSnapshot = snapshot != null && snapshot.equals(icebergTable.currentSnapshot());
+
+    if (latestSpecOnly && readsCurrentSnapshot) {
+      partitionExpr = Expressions.and(
+          partitionExpr, Expressions.equal(SPEC_ID_FIELD, icebergTable.spec().specId()));
+    }
 
     PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(
         icebergTable, MetadataTableType.PARTITIONS);
+    Evaluator evaluator = new Evaluator(partitionsTable.schema().asStruct(), partitionExpr);
 
-    try (CloseableIterable<FileScanTask> fileScanTasks = partitionsTable.newScan().planFiles()) {
+    TableScan scan = partitionsTable.newScan().filter(partitionExpr);
+    if (snapshot != null) {
+      scan = scan.useSnapshot(snapshot.snapshotId());
+    }
+
+    try (CloseableIterable<FileScanTask> fileScanTasks = scan.planFiles()) {
       return FluentIterable.from(fileScanTasks)
           .transformAndConcat(task -> task.asDataTask().rows())
-          .transform(row -> extractPartitionDataAndSpec(row, icebergTable, partitionType))
-          .filter(entry -> matchesPartition(entry, partitionExpr, latestSpecOnly, latestSpecId))
-          // Create (partitionPath, specId) entries for sorting
-          .transform(entry -> Maps.immutableEntry(
-              entry.getValue().partitionToPath(entry.getKey()),
-              entry.getValue().specId()))
+          .filter(evaluator::eval)
+          .transform(row -> {
+            PartitionSpec spec = icebergTable.specs().get(row.get(SPEC_IDX, Integer.class));
+            if (!spec.isPartitioned()) {
+              return null;
+            }
+            PartitionData data = toPartitionData(
+                row.get(PART_IDX, StructProjection.class), partitionType, spec.partitionType());
+            return Maps.immutableEntry(spec.partitionToPath(data), spec.specId());
+          })
+          .filter(Objects::nonNull)
           .toSortedList(specIdComparator).stream()
           .map(Map.Entry::getKey)
           .toList();
@@ -654,46 +714,64 @@ public class IcebergTableUtil {
   }
 
   /**
-   * Checks if a partition matches the filter expression and spec requirements.
+   * Returns aggregated partition statistics from the PARTITIONS metadata table as a summary map.
+   * @param table the iceberg table
+   * @param partitionSpec partition spec map for filtering, or null for all partitions
+   * @return summary map with record count, file count, file size, and delete counts
    */
-  private static boolean matchesPartition(Map.Entry<PartitionData, PartitionSpec> entry,
-      Expression filterExpression, boolean latestSpecOnly, int latestSpecId) {
-    PartitionData partitionData = entry.getKey();
-    PartitionSpec spec = entry.getValue();
+  static Map<String, String> getPartitionStats(Table table, Map<String, String> partitionSpec,
+      Snapshot snapshot) throws IOException {
+    PartitionsTable partitionsTable = (PartitionsTable) MetadataTableUtils.createMetadataTableInstance(
+        table, MetadataTableType.PARTITIONS);
 
-    // Filter unpartitioned tables
-    if (!spec.isPartitioned()) {
-      return false;
+    Expression filter;
+    TableScan scan = partitionsTable.newScan();
+    if (snapshot != null) {
+      scan = scan.useSnapshot(snapshot.snapshotId());
     }
-    // Filter by spec ID if requested
-    if (latestSpecOnly && spec.specId() != latestSpecId) {
-      return false;
+    try {
+      filter = buildPartitionsFilterFromPath(table, partitionSpec);
+      scan = scan.filter(filter);
+    } catch (SemanticException e) {
+      throw new IOException("Failed to build partition filter for " + partitionSpec, e);
     }
-    // Check if partition matches filter expression
-    ResidualEvaluator evaluator =
-        ResidualEvaluator.of(spec, filterExpression, false);
 
-    return evaluator
-        .residualFor(partitionData)
-        .isEquivalentTo(Expressions.alwaysTrue());
+    Evaluator evaluator = new Evaluator(partitionsTable.schema().asStruct(), filter);
+    PartitionStats result;
+
+    try (CloseableIterable<FileScanTask> fileScanTasks = scan.planFiles()) {
+      result = FluentIterable.from(fileScanTasks)
+          .transformAndConcat(task -> task.asDataTask().rows())
+          .filter(evaluator::eval)
+          .transform(IcebergTableUtil::recordToPartitionStats)
+          .stream().reduce((left, right) -> {
+            left.appendStats(right);
+            return left;
+          }).orElse(null);
+    }
+
+    if (result == null) {
+      result = new PartitionStats(null, 0);
+    }
+    return toStatsMap(result);
   }
 
-  /**
-   * Extracts partition data and spec from a partitions metadata table row.
-   */
-  private static Map.Entry<PartitionData, PartitionSpec> extractPartitionDataAndSpec(
-      StructLike row, Table icebergTable, Types.StructType partitionType) {
+  static Map<String, String> toStatsMap(PartitionStats stats) {
+    return ImmutableMap.of(
+        SnapshotSummary.TOTAL_DATA_FILES_PROP, String.valueOf(stats.dataFileCount()),
+        SnapshotSummary.TOTAL_RECORDS_PROP, String.valueOf(stats.dataRecordCount()),
+        SnapshotSummary.TOTAL_EQ_DELETES_PROP, String.valueOf(stats.equalityDeleteRecordCount()),
+        SnapshotSummary.TOTAL_POS_DELETES_PROP, String.valueOf(stats.positionDeleteRecordCount()),
+        SnapshotSummary.TOTAL_FILE_SIZE_PROP, String.valueOf(stats.totalDataFileSizeInBytes())
+    );
+  }
 
-    StructLike rawPartition =
-        row.get(IcebergTableUtil.PART_IDX, StructProjection.class);
-
-    PartitionSpec spec = icebergTable.specs().get(
-        row.get(IcebergTableUtil.SPEC_IDX, Integer.class));
-
-    return Maps.immutableEntry(
-        IcebergTableUtil.toPartitionData(
-            rawPartition, partitionType, spec.partitionType()),
-        spec);
+  private static PartitionStats recordToPartitionStats(StructLike record) {
+    PartitionStats stats = new PartitionStats(record.get(PART_IDX, StructLike.class), -1);
+    for (int pos = 2; pos <= 7; pos++) {
+      stats.set(pos, record.get(pos, Object.class));
+    }
+    return stats;
   }
 
   public static PartitionSpec getPartitionSpec(Table icebergTable, String partitionPath)
@@ -759,12 +837,16 @@ public class IcebergTableUtil {
   }
 
   public static boolean hasUndergonePartitionEvolution(Table table) {
-    // The current spec is not necessary the latest which can happen when partition spec was changed to one of
-    // table's past specs.
-    return table.currentSnapshot() != null &&
-        table.currentSnapshot().allManifests(table.io()).parallelStream()
-            .map(ManifestFile::partitionSpecId)
-            .anyMatch(id -> id != table.spec().specId());
+    return table.specs().size() > 1;
+  }
+
+  public static boolean hasUndergonePartitionEvolution(Snapshot snapshot, FileIO io) {
+    if (snapshot == null) {
+      return false;
+    }
+    List<ManifestFile> manifests = snapshot.allManifests(io);
+    return manifests.stream()
+        .anyMatch(m -> m.partitionSpecId() != 0);
   }
 
   public static <T extends ContentFile<?>> Set<String> getPartitionNames(Table icebergTable, Iterable<T> files,

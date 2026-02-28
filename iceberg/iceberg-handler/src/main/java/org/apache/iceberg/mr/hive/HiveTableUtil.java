@@ -172,8 +172,7 @@ public class HiveTableUtil {
       if (isOverwrite) {
         DeleteFiles delete = transaction.newDelete();
         if (partitionSpec != null) {
-          Expression partitionExpr = IcebergTableUtil.generateExprForIdentityPartition(
-              icebergTbl, partitionSpec, true);
+          Expression partitionExpr = IcebergTableUtil.buildPartitionExpr(icebergTbl, partitionSpec);
           delete.deleteFromRowFilter(partitionExpr);
         } else {
           delete.deleteFromRowFilter(Expressions.alwaysTrue());

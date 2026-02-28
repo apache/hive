@@ -96,7 +96,7 @@ class TestDescTableOperation {
       colStats.setCountDistint(100);
       colStats.setAvgColLen(4);
 
-      statsUtils.when(() -> StatsUtils.checkCanProvidePartitionStats(any())).thenReturn(true);
+      statsUtils.when(() -> StatsUtils.checkCanProvideColumnStats(any())).thenReturn(true);
       statsUtils.when(() -> StatsUtils.getColStatsForPartCol(any(), any(), any())).thenReturn(colStats);
 
       // Capture the ColStatistics passed to fillColumnStatisticsData
@@ -107,7 +107,7 @@ class TestDescTableOperation {
       DescTableOperation operation = new DescTableOperation(mockContext, mockDesc);
 
       // Execute - should no longer throw NullPointerException with null values of minValue or maxValue
-      assertDoesNotThrow(() -> operation.execute(),
+      assertDoesNotThrow(operation::execute,
           "Should handle Range with null minValue and maxValue without NPE");
 
       // Verify that the ColStatistics.Range values were correctly passed

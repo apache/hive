@@ -80,32 +80,16 @@ import static org.apache.hadoop.hive.metastore.MetastoreDirectSqlUtils.getModelI
  *
  * This class separates out the update part from MetaStoreDirectSql class.
  */
-class DirectSqlUpdatePart {
+class DirectSqlUpdatePart extends DirectSqlBase{
   private static final Logger LOG = LoggerFactory.getLogger(DirectSqlUpdatePart.class.getName());
 
-  private final PersistenceManager pm;
   private final Configuration conf;
-  private final DatabaseProduct dbType;
-  private final int maxBatchSize;
   private final SQLGenerator sqlGenerator;
 
-  DirectSqlUpdatePart(PersistenceManager pm, Configuration conf,
-                             DatabaseProduct dbType, int batchSize) {
-    this.pm = pm;
+  DirectSqlUpdatePart(PersistenceManager pm, Configuration conf, DatabaseProduct dbType, int batchSize) {
+    super(pm, dbType, batchSize);
     this.conf = conf;
-    this.dbType = dbType;
-    this.maxBatchSize = batchSize;
     sqlGenerator = new SQLGenerator(dbType, conf);
-  }
-
-  void closeDbConn(JDOConnection jdoConn) {
-    try {
-      if (jdoConn != null) {
-        jdoConn.close();
-      }
-    } catch (Exception e) {
-      LOG.warn("Failed to close db connection", e);
-    }
   }
 
   static String quoteString(String input) {
@@ -546,29 +530,8 @@ class DirectSqlUpdatePart {
     updateStorageDescriptorInBatch(idToSd);
   }
 
-  private interface ThrowableConsumer<T> {
-    void accept(T t) throws SQLException, MetaException;
-  }
-
   private <T> List<Long> filterIdsByNonNullValue(List<Long> ids, Map<Long, T> map) {
     return ids.stream().filter(id -> map.get(id) != null).collect(Collectors.toList());
-  }
-
-  private void updateWithStatement(ThrowableConsumer<PreparedStatement> consumer, String query)
-      throws MetaException {
-    JDOConnection jdoConn = pm.getDataStoreConnection();
-    boolean doTrace = LOG.isDebugEnabled();
-    long start = doTrace ? System.nanoTime() : 0;
-    try (PreparedStatement statement =
-             ((Connection) jdoConn.getNativeConnection()).prepareStatement(query)) {
-      consumer.accept(statement);
-      MetastoreDirectSqlUtils.timingTrace(doTrace, query, start, doTrace ? System.nanoTime() : 0);
-    } catch (SQLException e) {
-      LOG.error("Failed to execute update query: " + query, e);
-      throw new MetaException("Unable to execute update due to: " + e.getMessage());
-    } finally {
-      closeDbConn(jdoConn);
-    }
   }
 
   private void updatePartitionsInBatch(Map<List<String>, Long> partValuesToId,
@@ -620,124 +583,9 @@ class DirectSqlUpdatePart {
   }
 
   private void updateParamTableInBatch(String paramTable, String idColumn, List<Long> ids,
-                                       Map<Long, Optional<Map<String, String>>> newParamsOpt) throws MetaException {
-    Map<Long, Map<String, String>> oldParams = getParams(paramTable, idColumn, ids);
-
-    List<Pair<Long, String>> paramsToDelete = new ArrayList<>();
-    List<Pair<Long, Pair<String, String>>> paramsToUpdate = new ArrayList<>();
-    List<Pair<Long, Pair<String, String>>> paramsToAdd = new ArrayList<>();
-
-    for (Long id : ids) {
-      Map<String, String> oldParam = oldParams.getOrDefault(id, new HashMap<>());
-      Map<String, String> newParam = newParamsOpt.get(id).orElseGet(HashMap::new);
-      for (Map.Entry<String, String> entry : oldParam.entrySet()) {
-        String key = entry.getKey();
-        String oldValue = entry.getValue();
-        if (!newParam.containsKey(key)) {
-          paramsToDelete.add(Pair.of(id, key));
-        } else if (!oldValue.equals(newParam.get(key))) {
-          paramsToUpdate.add(Pair.of(id, Pair.of(key, newParam.get(key))));
-        }
-      }
-      List<Pair<Long, Pair<String, String>>> newlyParams = newParam.entrySet().stream()
-          .filter(entry -> !oldParam.containsKey(entry.getKey()))
-          .map(entry -> Pair.of(id, Pair.of(entry.getKey(), entry.getValue())))
-          .collect(Collectors.toList());
-      paramsToAdd.addAll(newlyParams);
-    }
-
-    deleteParams(paramTable, idColumn, paramsToDelete);
-    updateParams(paramTable, idColumn, paramsToUpdate);
-    insertParams(paramTable, idColumn, paramsToAdd);
-  }
-
-  private Map<Long, Map<String, String>> getParams(String paramTable, String idName,
-                                                   List<Long> ids) throws MetaException {
-    Map<Long, Map<String, String>> idToParams = new HashMap<>();
-    Batchable.runBatched(maxBatchSize, ids, new Batchable<Long, Object>() {
-      @Override
-      public List<Object> run(List<Long> input) throws MetaException {
-        String idLists = MetaStoreDirectSql.getIdListForIn(input);
-        String queryText = "select " + idName + ", \"PARAM_KEY\", \"PARAM_VALUE\" from " +
-            paramTable + " where " + idName +  " in (" + idLists + ")";
-        try (QueryWrapper query = new QueryWrapper(pm.newQuery("javax.jdo.query.SQL", queryText))) {
-          List<Object[]> sqlResult = executeWithArray(query.getInnerQuery(), null, queryText);
-          for (Object[] row : sqlResult) {
-            Long id = extractSqlLong(row[0]);
-            String paramKey = extractSqlClob(row[1]);
-            String paramVal = extractSqlClob(row[2]);
-            idToParams.computeIfAbsent(id, key -> new HashMap<>()).put(paramKey, paramVal);
-          }
-        }
-        return null;
-      }
-    });
-    return idToParams;
-  }
-
-  private void deleteParams(String paramTable, String idColumn,
-                            List<Pair<Long, String>> deleteIdKeys) throws MetaException {
-    String deleteStmt = "delete from " + paramTable + " where " + idColumn +  "=? and \"PARAM_KEY\"=?";
-    int maxRows = dbType.getMaxRows(maxBatchSize, 2);
-    updateWithStatement(statement -> Batchable.runBatched(maxRows, deleteIdKeys,
-        new Batchable<Pair<Long, String>, Void>() {
-          @Override
-          public List<Void> run(List<Pair<Long, String>> input) throws SQLException {
-            for (Pair<Long, String> pair : input) {
-              statement.setLong(1, pair.getLeft());
-              statement.setString(2, pair.getRight());
-              statement.addBatch();
-            }
-            statement.executeBatch();
-            return null;
-          }
-        }
-    ), deleteStmt);
-  }
-
-  private void updateParams(String paramTable, String idColumn,
-                            List<Pair<Long, Pair<String, String>>> updateIdAndParams) throws MetaException {
-    List<String> columns = Arrays.asList("\"PARAM_VALUE\"");
-    List<String> conditionKeys = Arrays.asList(idColumn, "\"PARAM_KEY\"");
-    String stmt = TxnUtils.createUpdatePreparedStmt(paramTable, columns, conditionKeys);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
-    updateWithStatement(statement -> Batchable.runBatched(maxRows, updateIdAndParams,
-        new Batchable<Pair<Long, Pair<String, String>>, Object>() {
-          @Override
-          public List<Object> run(List<Pair<Long, Pair<String, String>>> input) throws SQLException {
-            for (Pair<Long, Pair<String, String>> pair : input) {
-              statement.setString(1, pair.getRight().getRight());
-              statement.setLong(2, pair.getLeft());
-              statement.setString(3, pair.getRight().getLeft());
-              statement.addBatch();
-            }
-            statement.executeBatch();
-            return null;
-          }
-        }
-    ), stmt);
-  }
-
-  private void insertParams(String paramTable, String idColumn,
-                            List<Pair<Long, Pair<String, String>>> addIdAndParams) throws MetaException {
-    List<String> columns = Arrays.asList(idColumn, "\"PARAM_KEY\"", "\"PARAM_VALUE\"");
-    String query = TxnUtils.createInsertPreparedStmt(paramTable, columns);
-    int maxRows = dbType.getMaxRows(maxBatchSize, 3);
-    updateWithStatement(statement -> Batchable.runBatched(maxRows, addIdAndParams,
-        new Batchable<Pair<Long, Pair<String, String>>, Void>() {
-          @Override
-          public List<Void> run(List<Pair<Long, Pair<String, String>>> input) throws SQLException {
-            for (Pair<Long, Pair<String, String>> pair : input) {
-              statement.setLong(1, pair.getLeft());
-              statement.setString(2, pair.getRight().getLeft());
-              statement.setString(3, pair.getRight().getRight());
-              statement.addBatch();
-            }
-            statement.executeBatch();
-            return null;
-          }
-        }
-    ), query);
+      Map<Long, Optional<Map<String, String>>> newParamsOpt) throws MetaException {
+    new DirectSqlUpdateParams(pm, dbType, maxBatchSize)
+        .run(paramTable, idColumn, ids, newParamsOpt);
   }
 
   private void updateStorageDescriptorInBatch(Map<Long, StorageDescriptor> idToSd)

@@ -1012,6 +1012,8 @@ class AlterTableRequest;
 
 class AlterTableResponse;
 
+class TableParamsUpdate;
+
 class GetPartitionsFilterSpec;
 
 class GetPartitionsResponse;
@@ -19417,6 +19419,86 @@ class AlterTableResponse : public virtual ::apache::thrift::TBase {
 void swap(AlterTableResponse &a, AlterTableResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const AlterTableResponse& obj);
+
+typedef struct _TableParamsUpdate__isset {
+  _TableParamsUpdate__isset() : cat_name(false), expected_param_key(false), expected_param_value(false) {}
+  bool cat_name :1;
+  bool expected_param_key :1;
+  bool expected_param_value :1;
+} _TableParamsUpdate__isset;
+
+class TableParamsUpdate : public virtual ::apache::thrift::TBase {
+ public:
+
+  TableParamsUpdate(const TableParamsUpdate&);
+  TableParamsUpdate& operator=(const TableParamsUpdate&);
+  TableParamsUpdate() noexcept
+                    : cat_name(),
+                      db_name(),
+                      table_name(),
+                      expected_param_key(),
+                      expected_param_value() {
+  }
+
+  virtual ~TableParamsUpdate() noexcept;
+  std::string cat_name;
+  std::string db_name;
+  std::string table_name;
+  std::map<std::string, std::string>  params;
+  std::string expected_param_key;
+  std::string expected_param_value;
+
+  _TableParamsUpdate__isset __isset;
+
+  void __set_cat_name(const std::string& val);
+
+  void __set_db_name(const std::string& val);
+
+  void __set_table_name(const std::string& val);
+
+  void __set_params(const std::map<std::string, std::string> & val);
+
+  void __set_expected_param_key(const std::string& val);
+
+  void __set_expected_param_value(const std::string& val);
+
+  bool operator == (const TableParamsUpdate & rhs) const
+  {
+    if (__isset.cat_name != rhs.__isset.cat_name)
+      return false;
+    else if (__isset.cat_name && !(cat_name == rhs.cat_name))
+      return false;
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(table_name == rhs.table_name))
+      return false;
+    if (!(params == rhs.params))
+      return false;
+    if (__isset.expected_param_key != rhs.__isset.expected_param_key)
+      return false;
+    else if (__isset.expected_param_key && !(expected_param_key == rhs.expected_param_key))
+      return false;
+    if (__isset.expected_param_value != rhs.__isset.expected_param_value)
+      return false;
+    else if (__isset.expected_param_value && !(expected_param_value == rhs.expected_param_value))
+      return false;
+    return true;
+  }
+  bool operator != (const TableParamsUpdate &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableParamsUpdate & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot) override;
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const override;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TableParamsUpdate &a, TableParamsUpdate &b);
+
+std::ostream& operator<<(std::ostream& out, const TableParamsUpdate& obj);
 
 typedef struct _GetPartitionsFilterSpec__isset {
   _GetPartitionsFilterSpec__isset() : filterMode(false), filters(false) {}

@@ -93,6 +93,14 @@ public class HiveTableOperations extends BaseMetastoreTableOperations
         conf.getLong(HIVE_TABLE_PROPERTY_MAX_SIZE, HIVE_TABLE_PROPERTY_MAX_SIZE_DEFAULT);
   }
 
+  /**
+   * Create a staging operations instance that skips HMS updates and locking.
+   * Used by HiveTransaction to defer HMS updates to coordinator for atomic batch commits.
+   */
+  public StagingTableOperations toStagingOps() {
+    return new StagingTableOperations(conf, metaClients, fileIO, catalogName, database, tableName);
+  }
+
   @Override
   protected String tableName() {
     return fullName;

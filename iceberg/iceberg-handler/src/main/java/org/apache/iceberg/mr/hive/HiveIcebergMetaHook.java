@@ -600,7 +600,7 @@ public class HiveIcebergMetaHook extends BaseHiveIcebergMetaHook {
     for (String partName : partNames) {
       try {
         Map<String, String> partitionSpec = Warehouse.makeSpecFromName(partName);
-        Expression partitionExpr = IcebergTableUtil.generateExprForIdentityPartition(
+        Expression partitionExpr = IcebergTableUtil.buildPartitionExpr(
             icebergTable, partitionSpec, partitionFields);
 
         predicate = Expressions.or(predicate, partitionExpr);

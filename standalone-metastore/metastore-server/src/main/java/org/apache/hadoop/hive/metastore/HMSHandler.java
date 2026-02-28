@@ -6718,6 +6718,11 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   @Override
+  public void update_table_params(List<TableParamsUpdate> updates) throws TException {
+    getMS().updateTableParams(updates);
+  }
+
+  @Override
   public void repl_tbl_writeid_state(ReplTblWriteIdStateRequest rqst) throws TException {
     getTxnHandler().replTableWriteIdState(rqst);
   }

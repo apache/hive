@@ -91,6 +91,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void alter_table_with_environment_context(string dbname, string tbl_name, Table new_tbl, EnvironmentContext environment_context)')
     print('  void alter_table_with_cascade(string dbname, string tbl_name, Table new_tbl, bool cascade)')
     print('  AlterTableResponse alter_table_req(AlterTableRequest req)')
+    print('  void update_table_params( updates)')
     print('  Partition add_partition(Partition new_part)')
     print('  Partition add_partition_with_environment_context(Partition new_part, EnvironmentContext environment_context)')
     print('  i32 add_partitions( new_parts)')
@@ -801,6 +802,12 @@ elif cmd == 'alter_table_req':
         print('alter_table_req requires 1 args')
         sys.exit(1)
     pp.pprint(client.alter_table_req(eval(args[0]),))
+
+elif cmd == 'update_table_params':
+    if len(args) != 1:
+        print('update_table_params requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.update_table_params(eval(args[0]),))
 
 elif cmd == 'add_partition':
     if len(args) != 1:

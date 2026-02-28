@@ -105,6 +105,7 @@ import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
+import org.apache.hadoop.hive.metastore.api.TableParamsUpdate;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMNullablePool;
@@ -590,6 +591,13 @@ public interface RawStore extends Configurable {
    */
   List<Table> getTableObjectsByName(String catName, String dbname, List<String> tableNames)
       throws MetaException, UnknownDBException;
+
+  /**
+   * Multi-table table-parameter update.
+   * @param updates updates to apply.
+   */
+  void updateTableParams(List<TableParamsUpdate> updates) throws MetaException, NoSuchObjectException;
+
 
   /**
    * @param catName catalog name

@@ -194,10 +194,10 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
     List<String> colNames = Lists.newArrayList(colName.toLowerCase());
 
     if (part == null) {
-      if (table.isPartitioned() && StatsUtils.checkCanProvidePartitionStats(table)) {
+      if (table.isPartitioned() && StatsUtils.checkCanProvideColumnStats(table)) {
         Map<String, String> tableProps = table.getParameters() == null ?
             new HashMap<>() : table.getParameters();
-        if (table.isPartitionKey(colNames.get(0))) {
+        if (table.isPartitionKey(colNames.getFirst())) {
           getColumnDataForPartitionKeyColumn(table, cols, colStats, colNames, tableProps);
         } else {
           getColumnsForNotPartitionKeyColumn(table, cols, colStats, deserializer, colNames, tableProps);
@@ -224,7 +224,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void getColumnDataForPartitionKeyColumn(Table table, List<FieldSchema> cols,
       List<ColumnStatisticsObj> colStats, List<String> colNames, Map<String, String> tableProps)
       throws HiveException, MetaException {
-    FieldSchema partCol = table.getPartColByName(colNames.get(0));
+    FieldSchema partCol = table.getPartColByName(colNames.getFirst());
     cols.add(partCol);
     PartitionIterable parts = new PartitionIterable(context.getDb(), table, null,
         MetastoreConf.getIntVar(context.getConf(), MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX));
