@@ -146,7 +146,7 @@ def hdbPodTemplate(closure) {
             envVar(key: 'DOCKER_CERT_PATH', value: '/certs/client')
         ]
     ),
-    containerTemplate(name: 'dind', image: 'docker:20.10-dind',
+    containerTemplate(name: 'dind', image: 'docker:29.1.1-dind',
         alwaysPullImage: true,
         privileged: true,
         envVars: [
