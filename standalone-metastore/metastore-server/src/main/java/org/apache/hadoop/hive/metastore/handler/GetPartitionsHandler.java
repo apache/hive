@@ -34,11 +34,17 @@ import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByFilterRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.GetPartitionsArgs;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -55,7 +61,7 @@ import static org.apache.hadoop.hive.metastore.utils.StringUtils.normalizeIdenti
 // Collect get partitions APIs together
 @SuppressWarnings({"unchecked", "rawtypes"})
 @RequestHandler(requestBody = GetPartitionsHandler.GetPartitionsRequest.class)
-public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartitionsHandler.GetPartitionsRequest,
+public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPartitionsHandler.GetPartitionsRequest<Req>,
     GetPartitionsHandler.GetPartitionsResult<T>> {
   private static final Logger LOG = LoggerFactory.getLogger(GetPartitionsHandler.class);
   private static final String NO_FILTER_STRING = "";
@@ -63,16 +69,10 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
   private String catName;
   private String dbName;
   private String tblName;
-  private GetPartitionsArgs args;
   private Table table;
   private Configuration conf;
-  private GetPartitionsMethod getMethod;
   private MetaStoreFilterHook filterHook;
   private boolean isServerFilterEnabled;
-
-  enum GetPartitionsMethod {
-    EXPR, NAMES, FILTER, PART_VALS, ALL, VALUES
-  }
 
   GetPartitionsHandler(IHMSHandler handler, GetPartitionsRequest request) {
     super(handler, false, request);
@@ -80,21 +80,6 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
 
   @Override
   protected void beforeExecute() throws TException, IOException {
-    args = request.getGetPartitionsArgs();
-    if (request.isGetPartitionValues()) {
-      getMethod = GetPartitionsMethod.VALUES;
-    } else if (args.getExpr() != null) {
-      getMethod = GetPartitionsMethod.EXPR;
-    } else if (args.getFilter() != null) {
-      getMethod = GetPartitionsMethod.FILTER;
-    } else if (args.getPartNames() != null) {
-      getMethod = GetPartitionsMethod.NAMES;
-    } else if (args.getPart_vals() != null) {
-      getMethod = GetPartitionsMethod.PART_VALS;
-    } else {
-      getMethod = GetPartitionsMethod.ALL;
-    }
-    
     catName = normalizeIdentifier(request.getTableName().getCat());
     dbName = normalizeIdentifier(request.getTableName().getDb());
     tblName = normalizeIdentifier(request.getTableName().getTable());
@@ -108,23 +93,31 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     ((HMSHandler) handler).firePreEvent(new PreReadTableEvent(table, handler));
     authorizeTableForPartitionMetadata();
 
-    LOG.info("Starting to get {} of {} using {}", request.isFetchPartNames() ? "partition names" : "partitions",
-        TableName.getQualified(catName, dbName, tblName), getMethod);
+    LOG.info("Starting to get {} of {}", request.isFetchPartNames() ? "partition names" : "partitions",
+        TableName.getQualified(catName, dbName, tblName));
   }
 
   @Override
-  protected GetPartitionsResult<T> execute() throws TException, IOException {
-    return (GetPartitionsResult<T>) switch (getMethod) {
-      case EXPR -> getPartitionsByExpr();
-      case FILTER -> getPartitionsByFilter();
-      case NAMES -> getPartitionsByNames();
-      case PART_VALS -> getPartitionsByVals();
-      case ALL -> getPartitions();
-      case VALUES -> getPartitionValues();
-    };
+  protected GetPartitionsResult execute() throws TException, IOException {
+    Req req = request.getReq();
+    if (req instanceof PartitionValuesRequest pvq) {
+      return getPartitionValues(pvq);
+    } else if (req instanceof GetPartitionsByNamesRequest gpbr) {
+      return getPartitionsByNames(gpbr);
+    } else if (req instanceof PartitionsRequest pr) {
+      return getPartitions(pr);
+    } else if (req instanceof GetPartitionsByFilterRequest fpr) {
+      return getPartitionsByFilter(fpr);
+    } else if (req instanceof PartitionsByExprRequest pber) {
+      return getPartitionsByExpr(pber);
+    } else if (req instanceof GetPartitionsPsWithAuthRequest gpar) {
+      return getPartitionsByVals(gpar);
+    }
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
-  private GetPartitionsResult getPartitionsByVals() throws TException {
+  private GetPartitionsResult getPartitionsByVals(GetPartitionsPsWithAuthRequest gpar) throws TException {
+    GetPartitionsArgs args = GetPartitionsArgs.from(gpar);
     if (request.isFetchPartNames()) {
       List<String> ret = rs.listPartitionNamesPs(catName, dbName, tblName,
           args.getPart_vals(), (short) args.getMax());
@@ -141,10 +134,10 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     }
   }
 
-  private GetPartitionsResult getPartitionValues() throws MetaException {
-    PartitionValuesResponse resp = rs.listPartitionValues(catName, dbName, tblName, request.getPartitionKeys(),
-        request.isApplyDistinct(), args.getFilter(), request.isAscending(),
-        request.getPartitionOrders(), args.getMax());
+  private GetPartitionsResult getPartitionValues(PartitionValuesRequest pvq) throws MetaException {
+    PartitionValuesResponse resp = rs.listPartitionValues(catName, dbName, tblName, pvq.getPartitionKeys(),
+        pvq.isApplyDistinct(), pvq.getFilter(), pvq.isAscending(),
+        pvq.getPartitionOrder(), pvq.getMaxParts());
     return new GetPartitionsResult<>(List.of(resp), true);
   }
 
@@ -154,8 +147,9 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     }
   }
 
-  private GetPartitionsResult<Partition> getPartitionsByFilter() throws TException {
-    List<Partition> ret = null;
+  private GetPartitionsResult<Partition> getPartitionsByFilter(GetPartitionsByFilterRequest filterReq) throws TException {
+    List<Partition> ret;
+    GetPartitionsArgs args = GetPartitionsArgs.from(filterReq);
     if (exceedsPartitionFetchLimit(args.getMax())) {
       // Since partition limit is configured, we need fetch at most (limit + 1) partition names
       int max = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.LIMIT_PARTITION_REQUEST) + 1;
@@ -182,21 +176,18 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
         isServerFilterEnabled, filterHook, catName, dbName, tblName);
   }
 
-  private GetPartitionsResult<Partition> getPartitionsByNames() throws TException {
+  private GetPartitionsResult getPartitionsByNames(GetPartitionsByNamesRequest gpbr) throws TException {
     List<Partition> ret = null;
     boolean success = false;
     rs.openTransaction();
     try {
+      GetPartitionsArgs args = GetPartitionsArgs.from(gpbr);
       checkLimitNumberOfPartitions(tblName, args.getPartNames().size());
-      if (args.getUserName() != null) {
-        ret = rs.listPartitionsPsWithAuth(catName, dbName, tblName, args);
-      } else {
-        ret = rs.getPartitionsByNames(catName, dbName, tblName, args);
-      }
+      ret = rs.getPartitionsByNames(catName, dbName, tblName, args);
       ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
 
       // If requested add column statistics in each of the partition objects
-      if (request.isGetColStats()) {
+      if (gpbr.isGet_col_stats()) {
         // Since each partition may have stats collected for different set of columns, we
         // request them separately.
         for (Partition part: ret) {
@@ -205,9 +196,9 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
               rs.getPartitionColumnStatistics(catName, dbName, tblName,
                   Collections.singletonList(partName),
                   StatsSetupConst.getColumnsHavingStats(part.getParameters()),
-                  request.getEngine());
+                  gpbr.getEngine());
           if (partColStatsList != null && !partColStatsList.isEmpty()) {
-            ColumnStatistics partColStats = partColStatsList.get(0);
+            ColumnStatistics partColStats = partColStatsList.getFirst();
             if (partColStats != null) {
               part.setColStats(partColStats);
             }
@@ -215,14 +206,14 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
         }
       }
 
-      List<String> processorCapabilities = request.getProcessorCapabilities();
+      List<String> processorCapabilities = gpbr.getProcessorCapabilities();
       if (processorCapabilities == null || processorCapabilities.isEmpty() ||
           processorCapabilities.contains("MANAGERAWMETADATA")) {
-        LOG.info("Skipping translation for processor with {}", request.getProcessorId());
+        LOG.info("Skipping translation for processor with {}", gpbr.getProcessorIdentifier());
       } else {
         if (handler.getMetadataTransformer() != null) {
           ret = handler.getMetadataTransformer().transformPartitions(ret, table,
-              processorCapabilities, request.getProcessorId());
+              processorCapabilities, gpbr.getProcessorIdentifier());
         }
       }
       success = rs.commitTransaction();
@@ -234,7 +225,8 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     return new GetPartitionsResult<>(ret, success);
   }
 
-  private GetPartitionsResult getPartitions() throws TException {
+  private GetPartitionsResult getPartitions(PartitionsRequest pr) throws TException {
+    GetPartitionsArgs args = GetPartitionsArgs.from(pr);
     if (request.isFetchPartNames()) {
       List<String> ret = rs.listPartitionNames(catName, dbName, tblName, (short) args.getMax());
       return new GetPartitionsResult<>(ret, true);
@@ -252,10 +244,11 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     }
   }
 
-  private GetPartitionsResult getPartitionsByExpr() throws TException {
+  private GetPartitionsResult getPartitionsByExpr(PartitionsByExprRequest pber) throws TException {
+    GetPartitionsArgs args = GetPartitionsArgs.from(pber);
     if (request.isFetchPartNames()) {
       List<String> ret = rs.listPartitionNames(catName, dbName, tblName,
-          args.getDefaultPartName(), args.getExpr(), args.getOrder(), args.getMax());
+          args.getDefaultPartName(), args.getExpr(), pber.getOrder(), args.getMax());
       return new GetPartitionsResult(ret, true);
     } else {
       List<Partition> partitions = new LinkedList<>();
@@ -301,7 +294,8 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
       if (request.isFetchPartNames()) {
         ret = FilterUtils.filterPartitionNamesIfEnabled(isServerFilterEnabled,
             filterHook, catName, dbName, tblName, ret);
-      } else if (!request.isGetPartitionValues() && getMethod != GetPartitionsMethod.NAMES) {
+      } else if (!(request.req instanceof PartitionValuesRequest) &&
+          !(request.req instanceof GetPartitionsByNamesRequest)) {
         // GetPartitionsMethod.NAMES has already selected the result
         ret = FilterUtils.filterPartitionsIfEnabled(isServerFilterEnabled, filterHook, ret);
       }
@@ -347,112 +341,28 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     }
   }
 
-  public static class GetPartitionsRequest extends TAbstractBase {
+  public static class GetPartitionsRequest<Req> extends TAbstractBase {
     private final TableName tableName;
-    private final GetPartitionsArgs getPartitionsArgs;
     private final boolean fetchPartNames;
-    private String engine;
-    private boolean getColStats;
-    private List<String> processorCapabilities;
-    private String processorId;
+    private final Req req;
 
-    private List<FieldSchema> partitionOrders;
-    private List<FieldSchema> partitionKeys;
-    private boolean applyDistinct;
-    private boolean isAscending;
-    private boolean getPartitionValues;
-
-    public GetPartitionsRequest(TableName tableName,
-        GetPartitionsArgs getPartitionsArgs,
+    public GetPartitionsRequest(Req req, TableName tableName,
         boolean fetchPartNames) {
-      this.getPartitionsArgs = getPartitionsArgs;
       this.tableName = tableName;
       this.fetchPartNames = fetchPartNames;
+      this.req = req;
     }
 
-    public GetPartitionsRequest(TableName tableName,
-        GetPartitionsArgs getPartitionsArgs) {
-      this(tableName, getPartitionsArgs, false);
+    public GetPartitionsRequest(Req req, TableName tableName) {
+      this(req, tableName, false);
     }
 
-    public String getEngine() {
-      return engine;
-    }
-
-    public void setEngine(String engine) {
-      this.engine = engine;
-    }
-
-    public boolean isGetColStats() {
-      return getColStats;
-    }
-
-    public void setGetColStats(boolean getColStats) {
-      this.getColStats = getColStats;
-    }
-
-    public List<String> getProcessorCapabilities() {
-      return processorCapabilities;
-    }
-
-    public void setProcessorCapabilities(List<String> processorCapabilities) {
-      this.processorCapabilities = processorCapabilities;
-    }
-
-    public String getProcessorId() {
-      return processorId;
-    }
-
-    public void setProcessorId(String processorId) {
-      this.processorId = processorId;
-    }
-
-    public boolean isAscending() {
-      return isAscending;
-    }
-
-    public void setAscending(boolean ascending) {
-      isAscending = ascending;
-    }
-
-    public boolean isApplyDistinct() {
-      return applyDistinct;
-    }
-
-    public void setApplyDistinct(boolean applyDistinct) {
-      this.applyDistinct = applyDistinct;
-    }
-
-    public List<FieldSchema> getPartitionKeys() {
-      return partitionKeys;
-    }
-
-    public void setPartitionKeys(List<FieldSchema> partitionKeys) {
-      this.partitionKeys = partitionKeys;
-    }
-
-    public List<FieldSchema> getPartitionOrders() {
-      return partitionOrders;
-    }
-
-    public void setPartitionOrders(List<FieldSchema> partitionOrders) {
-      this.partitionOrders = partitionOrders;
-    }
-
-    public boolean isGetPartitionValues() {
-      return getPartitionValues;
-    }
-
-    public void setGetPartitionValues(boolean getPartitionValues) {
-      this.getPartitionValues = getPartitionValues;
+    public Req getReq() {
+      return req;
     }
 
     public TableName getTableName() {
       return tableName;
-    }
-
-    public GetPartitionsArgs getGetPartitionsArgs() {
-      return getPartitionsArgs;
     }
 
     public boolean isFetchPartNames() {
@@ -460,25 +370,25 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     }
   }
 
-  public static List<Partition> getPartitions(Consumer<TableName> preHook,
+  public static <Req> List<Partition> getPartitions(Consumer<TableName> preHook,
       Consumer<Pair<GetPartitionsResult, Exception>> postHook, IHMSHandler handler, TableName tableName,
-      GetPartitionsArgs args, boolean assumeUniqResult) throws NoSuchObjectException, MetaException {
+      Req req, boolean assumeUniqResult) throws NoSuchObjectException, MetaException {
     Exception ex = null;
     GetPartitionsResult result = null;
     try {
-      GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args);
+      GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(req, tableName);
       preHook.accept(tableName);
-      GetPartitionsHandler<Partition> getPartsHandler =
+      GetPartitionsHandler<Req, Partition> getPartsHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
       result = getPartsHandler.getResult();
       List<Partition> partitions = result.result();
       if (assumeUniqResult) {
         List<FieldSchema> partitionKeys = getPartsHandler.table.getPartitionKeys();
         String requestPartName = null;
-        if (args.getPart_vals() != null) {
-          requestPartName = Warehouse.makePartName(partitionKeys, args.getPart_vals());
-        } else if (args.getPartNames() != null) {
-          requestPartName = args.getPartNames().getFirst();
+        if (req instanceof GetPartitionsPsWithAuthRequest gpar) {
+          requestPartName = Warehouse.makePartName(partitionKeys, gpar.getPartVals());
+        } else if (req instanceof GetPartitionsByNamesRequest gbnr) {
+          requestPartName = gbnr.getNames().getFirst();
         }
         if (partitions == null || partitions.isEmpty()) {
           throw new NoSuchObjectException(tableName + " partition: " + requestPartName + " not found");
@@ -510,17 +420,16 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     }
   }
 
-  public static GetPartitionsResult<Partition> getPartitionsResult(
+  public static <Req> GetPartitionsResult<Partition> getPartitionsResult(
       Consumer<TableName> preHook,
       Consumer<Pair<GetPartitionsResult, Exception>> postHook,
-      IHMSHandler handler, TableName tableName,
-      GetPartitionsArgs args) throws TException {
+      IHMSHandler handler, TableName tableName, Req req) throws TException {
     GetPartitionsResult result = null;
     Exception ex = null;
     try {
-      GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args);
+      GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(req, tableName);
       preHook.accept(tableName);
-      GetPartitionsHandler<Partition> getPartsHandler =
+      GetPartitionsHandler<Req, Partition> getPartsHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
       result = getPartsHandler.getResult();
       return result;
@@ -532,15 +441,15 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
     }
   }
 
-  public static GetPartitionsResult<String> getPartitionNames(Consumer<TableName> preExecutor,
+  public static <Req> GetPartitionsResult<String> getPartitionNames(Consumer<TableName> preExecutor,
       Consumer<Pair<GetPartitionsResult, Exception>> postConsumer, IHMSHandler handler, TableName tableName,
-      GetPartitionsArgs args) throws TException {
+      Req req) throws TException {
     Exception ex = null;
     GetPartitionsResult result = null;
     try {
       preExecutor.accept(tableName);
-      GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(tableName, args, true);
-      GetPartitionsHandler<String> getPartNamesHandler =
+      GetPartitionsRequest getPartitionsRequest = new GetPartitionsRequest(req, tableName, true);
+      GetPartitionsHandler<Req, String> getPartNamesHandler =
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
       result = getPartNamesHandler.getResult();
       return result;
@@ -566,5 +475,12 @@ public class GetPartitionsHandler<T> extends AbstractRequestHandler<GetPartition
           size + ", partition values size: " + partVals.size());
     }
     return Warehouse.makePartName(table.getPartitionKeys(), partVals);
+  }
+
+  public static PartitionsRequest createPartitionsRequest(TableName tableName, int max) {
+    PartitionsRequest pr = new PartitionsRequest(tableName.getDb(), tableName.getTable());
+    pr.setCatName(tableName.getCat());
+    pr.setMaxParts((short) max);
+    return pr;
   }
 }
