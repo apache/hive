@@ -23,6 +23,7 @@ import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationTraitDef;
+import org.apache.calcite.rel.RelInput;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelShuttle;
 import org.apache.calcite.rel.core.Sort;
@@ -49,6 +50,10 @@ public class HiveSortLimit extends Sort implements HiveRelNode {
       RelCollation collation, RexNode offset, RexNode fetch) {
     super(cluster, TraitsUtil.getSortTraitSet(cluster, traitSet, collation), child, collation,
         offset, fetch);
+  }
+
+  public HiveSortLimit(RelInput input) {
+    super(input);
   }
 
   /**
