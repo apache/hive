@@ -2714,8 +2714,8 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
           if (addPartsResult.newParts() != null && !addPartsResult.newParts().isEmpty()) {
             StorageDescriptor sd = addPartsResult.newParts().getFirst().getSd().deepCopy();
             result.setPartitionColSchema(sd.getCols());
+            addPartsResult.newParts().forEach(partition -> partition.getSd().getCols().clear());
           }
-          addPartsResult.newParts().stream().forEach(partition -> partition.getSd().getCols().clear());
         }
         result.setPartitions(addPartsResult.newParts());
       }

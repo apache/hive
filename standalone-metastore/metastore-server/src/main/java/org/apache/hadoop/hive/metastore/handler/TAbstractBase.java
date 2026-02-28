@@ -22,7 +22,6 @@ import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.protocol.TProtocol;
-import org.jetbrains.annotations.NotNull;
 
 public class TAbstractBase implements TBase {
   @Override
@@ -55,7 +54,7 @@ public class TAbstractBase implements TBase {
   }
 
   @Override
-  public int compareTo(@NotNull Object o) {
+  public int compareTo(Object o) {
     throw new UnsupportedOperationException();
   }
 
