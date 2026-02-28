@@ -30,6 +30,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.DriverUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -600,7 +601,7 @@ public class CLIService extends CompositeService implements ICLIService {
   public String getDelegationTokenFromMetaStore(String owner)
       throws HiveSQLException, UnsupportedOperationException, IOException {
     HiveConf hiveConf = getHiveConf();
-    if (!hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL) ||
+    if (!MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.USE_THRIFT_SASL) ||
         !hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS)) {
       throw new UnsupportedOperationException(
           "delegation token is can only be obtained for a secure remote metastore");

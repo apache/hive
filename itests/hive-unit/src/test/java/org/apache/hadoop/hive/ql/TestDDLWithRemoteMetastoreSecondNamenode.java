@@ -30,7 +30,9 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.Metastore;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -84,10 +86,10 @@ public class TestDDLWithRemoteMetastoreSecondNamenode {
 
       // Test with remote metastore service
       int port = MetaStoreTestUtils.startMetaStoreWithRetry();
-      conf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:" + port);
-      conf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
+      MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+      MetastoreConf.setLongVar(conf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 3);
       conf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-      conf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE, new URI(tmppath + "/warehouse").getPath());
+      MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, new URI(tmppath + "/warehouse").getPath());
 
       // Initialize second mocked filesystem (implement only necessary stuff)
       // Physical files are resides in local file system in the similar location

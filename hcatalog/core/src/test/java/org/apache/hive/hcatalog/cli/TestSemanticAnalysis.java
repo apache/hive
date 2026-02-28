@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -69,7 +70,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
           "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe");
       hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
           HCatSemanticAnalyzer.class.getName());
-      hcatConf.setBoolVar(HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES, false);
+      MetastoreConf.setBoolVar(hcatConf, MetastoreConf.ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES, false);
       hcatDriver = DriverFactory.newDriver(hcatConf);
       SessionState.start(new CliSessionState(hcatConf));
     }

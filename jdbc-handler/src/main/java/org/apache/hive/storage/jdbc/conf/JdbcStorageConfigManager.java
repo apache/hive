@@ -16,6 +16,7 @@ package org.apache.hive.storage.jdbc.conf;
 
 import java.io.IOException;
 import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -199,19 +200,19 @@ public class JdbcStorageConfigManager {
   }
 
   private static String getMetastoreConnectionURL(HiveConf conf) {
-    return conf.getVar(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY);
+    return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
   }
 
   private static String getMetastoreDriver(HiveConf conf) {
-    return conf.getVar(HiveConf.ConfVars.METASTORE_CONNECTION_DRIVER);
+    return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER);
   }
 
   private static String getMetastoreJdbcUser(HiveConf conf) {
-    return conf.getVar(HiveConf.ConfVars.METASTORE_CONNECTION_USER_NAME);
+    return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_USER_NAME);
   }
 
   private static String getMetastoreJdbcPasswd(HiveConf conf) throws IOException {
     return ShimLoader.getHadoopShims().getPassword(conf,
-        HiveConf.ConfVars.METASTORE_PWD.varname);
+        MetastoreConf.ConfVars.PWD.getHiveName());
   }
 }

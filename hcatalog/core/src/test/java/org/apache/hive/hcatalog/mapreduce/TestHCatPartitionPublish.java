@@ -120,9 +120,9 @@ public class TestHCatPartitionPublish {
     ExitUtil.resetFirstHaltException();
     Policy.setPolicy(new DerbyPolicy());
 
-    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
-    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_FAILURE_RETRIES, 3);
-    hcatConf.setTimeVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 120, TimeUnit.SECONDS);
+    MetastoreConf.setLongVar(hcatConf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 3);
+    MetastoreConf.setLongVar(hcatConf, MetastoreConf.ConfVars.THRIFT_FAILURE_RETRIES, 3);
+    MetastoreConf.setTimeVar(hcatConf, MetastoreConf.ConfVars.CLIENT_SOCKET_TIMEOUT, 120, TimeUnit.SECONDS);
     hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
         HCatSemanticAnalyzer.class.getName());
     hcatConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
@@ -132,11 +132,11 @@ public class TestHCatPartitionPublish {
     msc = new HiveMetaStoreClient(hcatConf);
     System.setProperty(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, " ");
-    System.setProperty(HiveConf.ConfVars.METASTORE_WAREHOUSE.varname,
+    System.setProperty(MetastoreConf.ConfVars.WAREHOUSE.getHiveName(),
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.WAREHOUSE));
-    System.setProperty(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY.varname,
+    System.setProperty(MetastoreConf.ConfVars.CONNECT_URL_KEY.getHiveName(),
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.CONNECT_URL_KEY));
-    System.setProperty(HiveConf.ConfVars.METASTORE_URIS.varname,
+    System.setProperty(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(),
         MetastoreConf.getVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS));
   }
 

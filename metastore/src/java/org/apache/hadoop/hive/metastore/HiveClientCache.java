@@ -316,7 +316,8 @@ public class HiveClientCache {
     final private int threadId;
 
     private HiveClientCacheKey(HiveConf hiveConf, final int threadId) throws IOException {
-      this.metaStoreURIs = hiveConf.getVar(HiveConf.ConfVars.METASTORE_URIS);
+      // As standalone-metastore is not a dependency for metastore module. Doing in workaround
+      this.metaStoreURIs = hiveConf.get("hive.metastore.uris");
       ugi = Utils.getUGI();
       this.hiveConf = hiveConf;
       this.threadId = threadId;

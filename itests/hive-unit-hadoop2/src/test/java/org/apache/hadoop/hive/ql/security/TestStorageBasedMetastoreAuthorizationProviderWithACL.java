@@ -22,6 +22,7 @@ import static org.apache.hadoop.fs.permission.AclEntryType.GROUP;
 import static org.apache.hadoop.fs.permission.AclEntryType.OTHER;
 import static org.apache.hadoop.fs.permission.AclEntryType.USER;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.After;
 
 import java.lang.reflect.Method;
@@ -90,7 +91,7 @@ public class TestStorageBasedMetastoreAuthorizationProviderWithACL
 
     warehouseDir = new Path(new Path(fs.getUri()), "/warehouse");
     fs.mkdirs(warehouseDir);
-    conf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE, warehouseDir.toString());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE, warehouseDir.toString());
     extWarehouseDir = new Path(new Path(fs.getUri()), "/external");
     fs.mkdirs(extWarehouseDir);
     conf.setVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, extWarehouseDir.toString());

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnErrorMsg;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -575,7 +576,7 @@ public class HiveStrictManagedMigration {
     });
     if (runOptions.shouldModifyManagedTableLocation || runOptions.shouldMoveExternal) {
       Configuration oldConf = new Configuration(conf);
-      HiveConf.setVar(oldConf, HiveConf.ConfVars.METASTORE_WAREHOUSE, runOptions.oldWarehouseRoot);
+      MetastoreConf.setVar(oldConf, MetastoreConf.ConfVars.WAREHOUSE, runOptions.oldWarehouseRoot);
 
       oldWh = ThreadLocal.withInitial(() -> {
         try {
@@ -651,7 +652,7 @@ public class HiveStrictManagedMigration {
         shouldMoveExternal = false;
       } else {
         String currentPathString = shouldModifyManagedTableLocation ?
-          HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_WAREHOUSE) :
+          MetastoreConf.getVar(conf, MetastoreConf.ConfVars.WAREHOUSE) :
           HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL);
         if (arePathsEqual(conf, runOptions.oldWarehouseRoot, currentPathString)) {
           LOG.info("oldWarehouseRoot is the same as the target path {}."

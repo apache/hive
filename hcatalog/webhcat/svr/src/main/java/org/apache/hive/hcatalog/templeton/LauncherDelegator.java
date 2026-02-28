@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -449,7 +450,7 @@ public class LauncherDelegator extends TempletonDelegator {
   void addHiveMetaStoreTokenArg() {
     //in order for this to work hive-site.xml must be on the classpath
     HiveConf hiveConf = new HiveConf();
-    if(!hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL)) {
+    if(!MetastoreConf.getBoolVar(hiveConf, MetastoreConf.ConfVars.USE_THRIFT_SASL)) {
       return;
     }
     secureMeatastoreAccess = true;

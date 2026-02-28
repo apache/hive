@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class BasicStats {
 
       List<Future<BasicStats>> futures = new ArrayList<>();
 
-      int threads = conf.getIntVar(ConfVars.METASTORE_FS_HANDLER_THREADS_COUNT);
+      int threads = MetastoreConf.getIntVar(conf, MetastoreConf.ConfVars.FS_HANDLER_THREADS_COUNT);
 
       final ExecutorService pool;
       if (threads <= 1) {

@@ -22,6 +22,7 @@ package org.apache.hive.hcatalog.api.repl;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.hcatalog.api.HCatClient;
 import org.apache.hive.hcatalog.api.HCatNotificationEvent;
 import org.apache.hive.hcatalog.common.HCatException;
@@ -101,7 +102,7 @@ public class HCatReplicationTaskIterator implements Iterator<ReplicationTask>{
       this.maxEvents = maxEvents;
     }
     batchSize = Integer.parseInt(
-        hcatClient.getConfVal(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX.varname,"50"));
+        hcatClient.getConfVal(MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX.getHiveName(),"50"));
     this.eventCount = 0;
     this.maxPos = hcatClient.getCurrentNotificationEventId();
   }

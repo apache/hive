@@ -186,7 +186,10 @@ public class TestHS2SessionHive {
       throw e;
     }
 
-    miniHS2.getHiveConf().setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:" + miniHS2.getHmsPort());
+    MetastoreConf.setVar(
+        miniHS2.getHiveConf(),
+        MetastoreConf.ConfVars.THRIFT_URIS,
+        "thrift://localhost:" + miniHS2.getHmsPort());
 
     try (Connection conn = DriverManager.
         getConnection(miniHS2.getJdbcURL(), System.getProperty("user.name"), "");

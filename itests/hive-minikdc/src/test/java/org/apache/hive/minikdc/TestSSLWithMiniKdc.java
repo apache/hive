@@ -141,8 +141,8 @@ public class TestSSLWithMiniKdc {
     String hiveKeytab = miniHiveKdc.getKeyTabFile(
         miniHiveKdc.getServicePrincipalForUser(MiniHiveKdc.HIVE_SERVICE_PRINCIPAL));
 
-    conf.setBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL, true);
-    conf.setVar(ConfVars.METASTORE_KERBEROS_PRINCIPAL, hivePrincipal);
-    conf.setVar(ConfVars.METASTORE_KERBEROS_KEYTAB_FILE, hiveKeytab);
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.USE_THRIFT_SASL, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.KERBEROS_PRINCIPAL, hivePrincipal);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.KERBEROS_KEYTAB_FILE, hiveKeytab);
   }
 }

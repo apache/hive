@@ -107,9 +107,9 @@ public class TestHCatClient {
   public static void startMetaStoreServer() throws Exception {
 
     hcatConf = new HiveConf(TestHCatClient.class);
-    String metastoreUri = System.getProperty("test."+HiveConf.ConfVars.METASTORE_URIS.varname);
+    String metastoreUri = System.getProperty("test." + MetastoreConf.ConfVars.THRIFT_URIS.getHiveName());
     if (metastoreUri != null) {
-      hcatConf.setVar(HiveConf.ConfVars.METASTORE_URIS, metastoreUri);
+      MetastoreConf.setVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS, metastoreUri);
       useExternalMS = true;
       return;
     }
@@ -130,9 +130,9 @@ public class TestHCatClient {
     ExitUtil.resetFirstHaltException();
     Policy.setPolicy(new DerbyPolicy());
 
-    hcatConf.setVar(HiveConf.ConfVars.METASTORE_URIS, "thrift://localhost:"
+    MetastoreConf.setVar(hcatConf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:"
       + msPort);
-    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
+    MetastoreConf.setLongVar(hcatConf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 3);
     hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
       HCatSemanticAnalyzer.class.getName());
     hcatConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
@@ -819,7 +819,7 @@ public class TestHCatClient {
         .replace("metastore", "target_metastore"));
       replicationTargetHCatPort = MetaStoreTestUtils.startMetaStoreWithRetry(conf);
       replicationTargetHCatConf = new HiveConf(hcatConf);
-      replicationTargetHCatConf.setVar(HiveConf.ConfVars.METASTORE_URIS,
+      MetastoreConf.setVar(replicationTargetHCatConf, MetastoreConf.ConfVars.THRIFT_URIS,
                                        "thrift://localhost:" + replicationTargetHCatPort);
       isReplicationTargetHCatRunning = true;
     }
@@ -835,7 +835,7 @@ public class TestHCatClient {
   public void testReplicationTaskIter() throws Exception {
 
     Configuration cfg = new Configuration(hcatConf);
-    cfg.set(HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX.varname,"10"); // set really low batch size to ensure batching
+    cfg.set(MetastoreConf.ConfVars.BATCH_RETRIEVE_MAX.getHiveName(),"10"); // set really low batch size to ensure batching
     cfg.set(HiveConf.ConfVars.HIVE_REPL_TASK_FACTORY.varname, EximReplicationTaskFactory.class.getName());
     HCatClient sourceMetastore = HCatClient.create(cfg);
 

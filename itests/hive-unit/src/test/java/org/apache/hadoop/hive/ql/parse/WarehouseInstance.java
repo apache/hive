@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
@@ -129,32 +130,32 @@ public class WarehouseInstance implements Closeable {
       Map<String, String> overridesForHiveConf) throws Exception {
     hiveConf = new HiveConf(miniDFSCluster.getConfiguration(0), TestReplicationScenarios.class);
 
-    String metaStoreUri = System.getProperty("test." + HiveConf.ConfVars.METASTORE_URIS.varname);
+    String metaStoreUri = System.getProperty("test." + MetastoreConf.ConfVars.THRIFT_URIS.getHiveName());
     if (metaStoreUri != null) {
-      hiveConf.setVar(HiveConf.ConfVars.METASTORE_URIS, metaStoreUri);
+      MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.THRIFT_URIS, metaStoreUri);
       return;
     }
 
     //    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_IN_TEST, hiveInTest);
     // turn on db notification listener on meta store
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_WAREHOUSE, warehouseRoot);
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.WAREHOUSE, warehouseRoot);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL, externalTableWarehouseRoot);
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS, LISTENER_CLASS);
+    MetastoreConf.setVar(hiveConf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS, LISTENER_CLASS);
     hiveConf.setBoolVar(HiveConf.ConfVars.REPL_CM_ENABLED, true);
     hiveConf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
     hiveConf.setVar(HiveConf.ConfVars.REPL_CM_DIR, cmRoot);
     hiveConf.setVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR, functionsRoot);
     hiveConf.setBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE, false);
-    hiveConf.setVar(HiveConf.ConfVars.METASTORE_CONNECT_URL_KEY,
+    MetastoreConf.setVar(hiveConf,MetastoreConf.ConfVars.CONNECT_URL_KEY,
         "jdbc:derby:memory:${test.tmp.dir}/APP;create=true");
     hiveConf.setVar(HiveConf.ConfVars.REPL_DIR, this.repldDir);
-    hiveConf.setIntVar(HiveConf.ConfVars.METASTORE_THRIFT_CONNECTION_RETRIES, 3);
+    MetastoreConf.setLongVar(hiveConf, MetastoreConf.ConfVars.THRIFT_CONNECTION_RETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, "");
     if (!hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER).equals("org.apache.hadoop.hive.ql.lockmgr.DbTxnManager")) {
       hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     }
-    hiveConf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
+    hiveConf.set(MetastoreConf.ConfVars.RAW_STORE_IMPL.getHiveName(),
             "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
     System.setProperty(HiveConf.ConfVars.PRE_EXEC_HOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POST_EXEC_HOOKS.varname, " ");

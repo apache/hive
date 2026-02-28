@@ -271,13 +271,13 @@ public class TestDbNotificationListener
     HiveConf conf = new HiveConf();
     //TODO: HIVE-27998: hcatalog tests on Tez
     conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
-    conf.setVar(HiveConf.ConfVars.METASTORE_TRANSACTIONAL_EVENT_LISTENERS,
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS,
         DbNotificationListener.class.getName());
-    conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_LISTENERS, MockMetaStoreEventListener.class.getName());
-    conf.setVar(HiveConf.ConfVars.METASTORE_EVENT_DB_LISTENER_TTL, String.valueOf(EVENTS_TTL) + "s");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_LISTENERS, MockMetaStoreEventListener.class.getName());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, String.valueOf(EVENTS_TTL) + "s");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(HiveConf.ConfVars.FIRE_EVENTS_FOR_DML, true);
-    conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.RAW_STORE_IMPL, DummyRawStoreFailEvent.class.getName());
     MetastoreConf.setTimeVar(conf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANUP_SLEEP_TIME, TimeUnit.SECONDS);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY, JSONMessageEncoder.class.getName());
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,

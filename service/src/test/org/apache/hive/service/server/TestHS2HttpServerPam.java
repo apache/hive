@@ -19,6 +19,7 @@ package org.apache.hive.service.server;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.http.security.PamUserIdentity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -57,7 +58,7 @@ public class TestHS2HttpServerPam {
         MetaStoreTestUtils.findFreePortExcepting(Integer.valueOf(ConfVars.HIVE_SERVER2_WEBUI_PORT.getDefaultValue()));
     hiveConf = new HiveConf();
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
-    hiveConf.set(ConfVars.METASTORE_PWD.varname, metastorePasswd);
+    hiveConf.set(MetastoreConf.ConfVars.PWD.getHiveName(), metastorePasswd);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

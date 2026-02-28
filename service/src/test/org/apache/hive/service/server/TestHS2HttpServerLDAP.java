@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.service.auth.HttpAuthService;
 import org.apache.hive.service.auth.HttpAuthUtils;
 import org.apache.hive.service.auth.PasswdAuthenticationProvider;
@@ -67,7 +68,7 @@ public class TestHS2HttpServerLDAP {
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname, webUIPort.toString());
     hiveConf.set(ConfVars.HIVE_SERVER2_WEBUI_AUTH_METHOD.varname, "LDAP");
-    hiveConf.set(ConfVars.METASTORE_PWD.varname, METASTORE_PASSWD);
+    hiveConf.set(MetastoreConf.ConfVars.PWD.getHiveName(), METASTORE_PASSWD);
     hiveConf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     // query history adds no value to this test, it would just bring iceberg handler dependency, which isn't worth

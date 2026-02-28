@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -388,7 +389,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     readRecords.clear();
 
     Configuration conf = new Configuration();
-    conf.set(HiveConf.ConfVars.METASTORE_INTEGER_JDO_PUSHDOWN.varname,"true");
+    conf.set(MetastoreConf.ConfVars.INTEGER_JDO_PUSHDOWN.getHiveName(),"true");
     Job job = new Job(conf, "hcat mapreduce read test");
     job.setJarByClass(this.getClass());
     job.setMapperClass(HCatMapReduceTest.MapRead.class);
