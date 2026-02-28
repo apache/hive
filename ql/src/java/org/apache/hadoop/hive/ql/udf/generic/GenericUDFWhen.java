@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -29,6 +31,7 @@ import org.apache.hadoop.hive.ql.stats.estimator.PessimisticStatCombiner;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimator;
 import org.apache.hadoop.hive.ql.stats.estimator.StatEstimatorProvider;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 
@@ -59,12 +62,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
 public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider {
   private transient ObjectInspector[] argumentOIs;
   private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private transient int numberOfDistinctConstants;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
 
     argumentOIs = arguments;
     returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
+
+    Set<Object> distinctConstants = new HashSet<>();
 
     for (int i = 0; i + 1 < arguments.length; i += 2) {
       if (!arguments[i].getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
@@ -79,6 +85,7 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
             + "\" is expected but \"" + arguments[i + 1].getTypeName()
             + "\" is found");
       }
+      collectNonNullConstant(arguments[i + 1], distinctConstants);
     }
     if (arguments.length % 2 == 1) {
       int i = arguments.length - 2;
@@ -89,9 +96,21 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
             + "\" is expected but \"" + arguments[i + 1].getTypeName()
             + "\" is found");
       }
+      collectNonNullConstant(arguments[i + 1], distinctConstants);
     }
 
+    numberOfDistinctConstants = distinctConstants.size();
+
     return returnOIResolver.get();
+  }
+
+  private static void collectNonNullConstant(ObjectInspector oi, Set<Object> distinctConstants) {
+    if (oi instanceof ConstantObjectInspector) {
+      Object value = ((ConstantObjectInspector) oi).getWritableConstantValue();
+      if (value != null) {
+        distinctConstants.add(value);
+      }
+    }
   }
 
   @Override
@@ -137,10 +156,15 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
 
   @Override
   public StatEstimator getStatEstimator() {
-    return new WhenStatEstimator();
+    return new WhenStatEstimator(numberOfDistinctConstants);
   }
 
   static class WhenStatEstimator implements StatEstimator {
+    private final int numberOfDistinctConstants;
+
+    WhenStatEstimator(int numberOfDistinctConstants) {
+      this.numberOfDistinctConstants = numberOfDistinctConstants;
+    }
 
     @Override
     public Optional<ColStatistics> estimate(List<ColStatistics> argStats) {
@@ -151,7 +175,14 @@ public class GenericUDFWhen extends GenericUDF implements StatEstimatorProvider 
       if (argStats.size() % 2 == 1) {
         combiner.add(argStats.get(argStats.size() - 1));
       }
-      return combiner.getResult();
+      Optional<ColStatistics> result = combiner.getResult();
+      if (result.isPresent()) {
+        ColStatistics stat = result.get();
+        if (numberOfDistinctConstants > stat.getCountDistint()) {
+          stat.setCountDistint(numberOfDistinctConstants);
+        }
+      }
+      return result;
     }
   }
 }
