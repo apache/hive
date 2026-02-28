@@ -194,8 +194,7 @@ public class GetPartitionsArgs {
     return new GetPartitionsArgsBuilder().partNames(gpbnr.getNames())
         .skipColumnSchemaForPartition(gpbnr.isSkipColumnSchemaForPartition())
         .excludeParamKeyPattern(gpbnr.getExcludeParamKeyPattern())
-        .includeParamKeyPattern(gpbnr.getIncludeParamKeyPattern())
-        .build();
+        .includeParamKeyPattern(gpbnr.getIncludeParamKeyPattern()).build();
   }
 
   public static GetPartitionsArgs from(GetPartitionsPsWithAuthRequest req) {
@@ -204,7 +203,8 @@ public class GetPartitionsArgs {
         .userName(req.getUserName()).groupNames(req.getGroupNames())
         .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
         .includeParamKeyPattern(req.getIncludeParamKeyPattern())
-        .excludeParamKeyPattern(req.getExcludeParamKeyPattern()).partNames(req.getPartNames()).build();
+        .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+        .partNames(req.getPartNames()).build();
   }
 
   public static GetPartitionsArgs from(GetPartitionsByFilterRequest req) {

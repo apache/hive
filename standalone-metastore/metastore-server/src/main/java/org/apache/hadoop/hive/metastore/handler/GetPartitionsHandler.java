@@ -372,7 +372,7 @@ public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPart
 
   public static <Req> List<Partition> getPartitions(Consumer<TableName> preHook,
       Consumer<Pair<GetPartitionsResult, Exception>> postHook, IHMSHandler handler, TableName tableName,
-      Req req, boolean assumeUniqResult) throws NoSuchObjectException, MetaException {
+      Req req, boolean uniqPartition) throws NoSuchObjectException, MetaException {
     Exception ex = null;
     GetPartitionsResult result = null;
     try {
@@ -382,11 +382,15 @@ public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPart
           AbstractRequestHandler.offer(handler, getPartitionsRequest);
       result = getPartsHandler.getResult();
       List<Partition> partitions = result.result();
-      if (assumeUniqResult) {
+      if (uniqPartition) {
         List<FieldSchema> partitionKeys = getPartsHandler.table.getPartitionKeys();
         String requestPartName = null;
         if (req instanceof GetPartitionsPsWithAuthRequest gpar) {
-          requestPartName = Warehouse.makePartName(partitionKeys, gpar.getPartVals());
+          if (gpar.getPartNames() != null && !gpar.getPartNames().isEmpty()) {
+            requestPartName = gpar.getPartNames().getFirst();
+          } else {
+            requestPartName = Warehouse.makePartName(partitionKeys, gpar.getPartVals());
+          }
         } else if (req instanceof GetPartitionsByNamesRequest gbnr) {
           requestPartName = gbnr.getNames().getFirst();
         }
@@ -396,7 +400,7 @@ public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPart
           throw new MetaException(
               "Expecting only one partition but more than one partitions are found.");
         } else {
-          // See ObjectStore getPartitionWithAuth
+          // Check ObjectStore getPartitionWithAuth
           // We need to compare partition name with requested name since some DBs
           // (like MySQL, Derby) considers 'a' = 'a ' whereas others like (Postgres,
           // Oracle) doesn't exhibit this problem.

@@ -3225,12 +3225,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       throws TException {
     String[] parsedDbName = parseDbName(db_name, conf);
     TableName tableName = new TableName(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tbl_name);
-    GetPartitionsHandler.validatePartVals(this, tableName, part_vals);
+    String partName = GetPartitionsHandler.validatePartVals(this, tableName, part_vals);
     GetPartitionsPsWithAuthRequest gpar = new GetPartitionsPsWithAuthRequest(tableName.getDb(), tableName.getTable());
     gpar.setCatName(tableName.getCat());
     gpar.setUserName(user_name);
     gpar.setGroupNames(group_names);
-    gpar.setPartVals(part_vals);
+    gpar.setPartNames(List.of(partName));
     List<Partition> partitions = GetPartitionsHandler.getPartitions(
         t ->  startFunction("get_partition_with_auth",
             " : tbl=" + t + samplePartitionValues(part_vals) + getGroupsCountAndUsername(user_name,group_names)),
@@ -4838,20 +4838,12 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
     }
     String[] dbNameParts = parseDbName(gpbnr.getDb_name(), conf);
     TableName tableName = new TableName(dbNameParts[CAT_NAME], dbNameParts[DB_NAME], gpbnr.getTbl_name());
-    GetPartitionsHandler.GetPartitionsRequest<GetPartitionsByNamesRequest> request =
-        new GetPartitionsHandler.GetPartitionsRequest<>(gpbnr, tableName);
-    startTableFunction("get_partitions_by_names", tableName.getCat(), tableName.getDb(), tableName.getTable());
-    Exception ex = null;
-    try {
-      GetPartitionsHandler<GetPartitionsByNamesRequest, Partition> getPartitionsHandler = AbstractRequestHandler.offer(this, request);
-      List<Partition> partitions = getPartitionsHandler.getResult().result();
-      return new GetPartitionsByNamesResult(partitions);
-    } catch (Exception e) {
-      ex = e;
-      throw handleException(e).defaultTException();
-    } finally {
-      endFunction("get_partitions_by_names", ex == null, ex, tableName.toString());
-    }
+    List<Partition> partitions = GetPartitionsHandler.getPartitionsResult(
+        t ->  startTableFunction("get_partitions_by_names", tableName.getCat(), tableName.getDb(), tableName.getTable()),
+        rex ->  endFunction("get_partitions_by_names",
+            rex.getLeft() != null && rex.getLeft().success(), rex.getRight(), tableName.toString()),
+        this, tableName, gpbnr).result();
+    return new GetPartitionsByNamesResult(partitions);
   }
 
   /**
