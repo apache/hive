@@ -75,7 +75,7 @@ public class StringSubstrColStart extends VectorExpression {
    * @param len length of the bytes the string holds in the byte array
    * @param substrStart the Start index for the substring operation
    */
-  static int getSubstrStartOffset(byte[] utf8String, int start, int len, int substrStart) {
+  public static int getSubstrStartOffset(byte[] utf8String, int start, int len, int substrStart) {
     int end = start + len;
 
     if (substrStart < 0) {
