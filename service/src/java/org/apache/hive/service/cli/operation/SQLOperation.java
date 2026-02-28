@@ -612,11 +612,9 @@ public class SQLOperation extends ExecuteStatementOperation {
         metrics.get().endScope(submittedQryScp.get());
       }
       queryInfo.updateState(state.toString());
-      queryInfo.setTezRuntimeContext(driver.getTezRuntimeContext());
       break;
     case CLOSED:
       queryInfo.setEndTime();
-      queryInfo.setTezRuntimeContext(driver.getTezRuntimeContext());
       break;
     case ERROR:
       queryInfo.setRuntime(getOperationComplete() - getOperationStart());
@@ -625,7 +623,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_FAILED_QUERIES);
       queryInfo.updateState(state.toString());
-      queryInfo.setTezRuntimeContext(driver.getTezRuntimeContext());
       break;
     case FINISHED:
       queryInfo.setRuntime(getOperationComplete() - getOperationStart());
@@ -634,7 +631,6 @@ public class SQLOperation extends ExecuteStatementOperation {
       }
       markQueryMetric(MetricsFactory.getInstance(), MetricsConstant.HS2_SUCCEEDED_QUERIES);
       queryInfo.updateState(state.toString());
-      queryInfo.setTezRuntimeContext(driver.getTezRuntimeContext());
       break;
     case INITIALIZED:
       /* fall through */

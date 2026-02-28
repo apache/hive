@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
 import org.apache.hadoop.hive.ql.lock.CompileLock;
 import org.apache.hadoop.hive.ql.lock.CompileLockFactory;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -908,11 +907,6 @@ public class Driver implements IDriver {
   @Override
   public QueryDisplay getQueryDisplay() {
     return driverContext.getQueryDisplay();
-  }
-
-  @Override
-  public TezRuntimeContext getTezRuntimeContext() {
-    return driverContext.getRuntimeContext();
   }
 
   /**

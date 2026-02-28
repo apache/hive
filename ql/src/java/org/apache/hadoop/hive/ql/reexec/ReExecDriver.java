@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CBOFallbackStrategy;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -157,10 +156,6 @@ public class ReExecDriver implements IDriver {
     return coreDriver.getPlan();
   }
 
-  @Override
-  public TezRuntimeContext getTezRuntimeContext() {
-    return coreDriver.getTezRuntimeContext();
-  }
   @Override
   public QueryState getQueryState() {
     return queryState;

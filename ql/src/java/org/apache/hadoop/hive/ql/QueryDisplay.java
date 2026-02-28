@@ -20,7 +20,12 @@ package org.apache.hadoop.hive.ql;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskResult;
+import org.apache.hadoop.hive.ql.exec.tez.TezRuntimeContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.tez.common.counters.CounterGroup;
+import org.apache.tez.common.counters.FileSystemCounter;
+import org.apache.tez.common.counters.TezCounter;
+import org.apache.tez.common.counters.TezCounters;
 
 import java.io.IOException;
 import java.util.*;
@@ -58,6 +63,7 @@ public class QueryDisplay {
   private String explainPlan;
   private String errorMessage;
   private String queryId;
+  private TezRuntimeContext tezRuntimeContext;
   private long queryStartTime = System.currentTimeMillis();
 
   private final Map<Phase, Map<String, Long>> hmsTimingMap = new HashMap<Phase, Map<String, Long>>();
@@ -303,6 +309,29 @@ public class QueryDisplay {
 
   public synchronized void setExplainPlan(String explainPlan) {
     this.explainPlan = explainPlan;
+  }
+
+  public synchronized void setTezRuntimeContext(TezRuntimeContext trc) {
+    this.tezRuntimeContext = trc;
+  }
+
+  public synchronized TezRuntimeContext getTezRuntimeContext() {
+    return this.tezRuntimeContext;
+  }
+
+  public synchronized JSONObject getCounters() {
+    JSONObject countersJson = new JSONObject();
+    if (this.tezRuntimeContext != null){
+      TezCounters counters = this.tezRuntimeContext.getCounters();
+      if (counters != null) {
+        for (CounterGroup group : counters) {
+          for (TezCounter counter : group) {
+            countersJson.put(group.getName() + " - " + counter.getDisplayName(), counter.getValue());
+          }
+        }
+      }
+    }
+    return countersJson;
   }
 
   /**
