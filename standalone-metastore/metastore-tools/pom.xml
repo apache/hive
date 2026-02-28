@@ -33,7 +33,7 @@
     <jetbrain-annotation.version>16.0.2</jetbrain-annotation.version>
     <standalone.metastore.path.to.root>..</standalone.metastore.path.to.root>
   </properties>
-  <!-- why the f*ck this pom.xml has a dependencyManagement block? -->
+  <!-- Dependency management for metastore tools and benchmarks. -->
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -73,12 +73,6 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-math3</artifactId>
         <version>${commons-math3.version}</version>
-      </dependency>
-      <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>1.7.30</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
       <dependency>

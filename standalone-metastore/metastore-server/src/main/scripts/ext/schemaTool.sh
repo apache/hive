@@ -26,6 +26,40 @@ schemaTool() {
   fi
   JAR=${METASTORE_LIB}/hive-standalone-metastore-server-*.jar
 
+  # Prevent Log4j2 from being reconfigured after initialization
+  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j2.disableShutdownHook=true"
+  export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.shutdownHookEnabled=false"
+
+  # CRITICAL: Tell Hadoop to load metastore jars FIRST to prevent SLF4J binding conflicts
+  export HADOOP_USER_CLASSPATH_FIRST=true
+
+  # Filter HADOOP_CLASSPATH to remove old SLF4J 1.x bindings
+  if [ "$HADOOP_CLASSPATH" != "" ]; then
+    FILTERED_CP=""
+    IFS=':' read -ra CP_ARRAY <<< "$HADOOP_CLASSPATH"
+    for cp_entry in "${CP_ARRAY[@]}"; do
+      # Skip SLF4J 1.x binding jars by filename
+      if [[ "$(basename "$cp_entry")" == slf4j-log4j12-*.jar || \
+            "$(basename "$cp_entry")" == slf4j-reload4j-*.jar || \
+            "$(basename "$cp_entry")" == log4j-slf4j-impl-*.jar || \
+            "$(basename "$cp_entry")" == reload4j-*.jar ]]; then
+        continue
+      fi
+      # Skip explicit SLF4J 1.x jar paths
+      if [[ "$cp_entry" == *slf4j-log4j12* || \
+            "$cp_entry" == *slf4j-reload4j* || \
+            "$cp_entry" == */reload4j-* ]]; then
+        continue
+      fi
+      if [ "$FILTERED_CP" == "" ]; then
+        FILTERED_CP="$cp_entry"
+      else
+        FILTERED_CP="${FILTERED_CP}:${cp_entry}"
+      fi
+    done
+    export HADOOP_CLASSPATH="$FILTERED_CP"
+  fi
+
   # hadoop 20 or newer - skip the aux_jars option and hiveconf
   exec $HADOOP jar $JAR $CLASS "$@"
 }
