@@ -543,7 +543,7 @@ public class AddPartitionsHandler
   }
 
   @Override
-  protected String getMessagePrefix() {
+  public String toString() {
     return "AddPartitionsHandler [" + id + "] -  Add partitions for " + tableName + ":";
   }
 

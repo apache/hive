@@ -19,6 +19,13 @@ package org.apache.hadoop.hive.metastore.client.builder;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByFilterRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsRequest;
+
 public class GetPartitionsArgs {
   private String filter;
   private byte[] expr;
@@ -181,6 +188,51 @@ public class GetPartitionsArgs {
       additionalArgs.skipColumnSchemaForPartition = skipColumnSchemaForPartition;
       return additionalArgs;
     }
+  }
+
+  public static GetPartitionsArgs from(GetPartitionsByNamesRequest gpbnr) {
+    return new GetPartitionsArgsBuilder().partNames(gpbnr.getNames())
+        .skipColumnSchemaForPartition(gpbnr.isSkipColumnSchemaForPartition())
+        .excludeParamKeyPattern(gpbnr.getExcludeParamKeyPattern())
+        .includeParamKeyPattern(gpbnr.getIncludeParamKeyPattern()).build();
+  }
+
+  public static GetPartitionsArgs from(GetPartitionsPsWithAuthRequest req) {
+    return new GetPartitionsArgsBuilder()
+        .part_vals(req.getPartVals()).max(req.getMaxParts())
+        .userName(req.getUserName()).groupNames(req.getGroupNames())
+        .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+        .includeParamKeyPattern(req.getIncludeParamKeyPattern())
+        .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+        .partNames(req.getPartNames()).build();
+  }
+
+  public static GetPartitionsArgs from(GetPartitionsByFilterRequest req) {
+    return new GetPartitionsArgsBuilder()
+        .filter(req.getFilter()).max(req.getMaxParts())
+        .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+        .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+        .includeParamKeyPattern(req.getIncludeParamKeyPattern()).build();
+  }
+
+  public static GetPartitionsArgs from(PartitionsByExprRequest req) {
+    return new GetPartitionsArgsBuilder()
+        .expr(req.getExpr()).defaultPartName(req.getDefaultPartitionName()).max(req.getMaxParts())
+        .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+        .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+        .includeParamKeyPattern(req.getIncludeParamKeyPattern()).build();
+  }
+
+  public static GetPartitionsArgs from(PartitionsRequest req) {
+    return new GetPartitionsArgsBuilder()
+        .includeParamKeyPattern(req.getIncludeParamKeyPattern())
+        .excludeParamKeyPattern(req.getExcludeParamKeyPattern())
+        .skipColumnSchemaForPartition(req.isSkipColumnSchemaForPartition())
+        .max(req.getMaxParts()).build();
+  }
+
+  public static GetPartitionsArgs from(GetPartitionRequest req) {
+    return new GetPartitionsArgsBuilder().part_vals(req.getPartVals()).build();
   }
 
   public static GetPartitionsArgs getAllPartitions() {

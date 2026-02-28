@@ -1618,8 +1618,7 @@ public class TestListPartitions extends MetaStoreClientTest {
               null);
       client.listPartitionValues(request);
       fail("Should have thrown exception");
-    } catch (NullPointerException | TProtocolException e) {
-      //TODO: should not throw different exceptions for different HMS deployment types
+    } catch (MetaException | TProtocolException e) {
     }
   }
 
