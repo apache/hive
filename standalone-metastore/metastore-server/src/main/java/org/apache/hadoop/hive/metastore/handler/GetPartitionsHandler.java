@@ -113,7 +113,7 @@ public class GetPartitionsHandler<Req, T> extends AbstractRequestHandler<GetPart
     } else if (req instanceof GetPartitionsPsWithAuthRequest gpar) {
       return getPartitionsByVals(gpar);
     }
-    throw new UnsupportedOperationException("Not yet implemented");
+    throw new UnsupportedOperationException(req + " not yet implemented");
   }
 
   private GetPartitionsResult getPartitionsByVals(GetPartitionsPsWithAuthRequest gpar) throws TException {
