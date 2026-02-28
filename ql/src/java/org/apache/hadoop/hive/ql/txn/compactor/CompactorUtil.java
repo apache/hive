@@ -317,6 +317,7 @@ public class CompactorUtil {
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
       .setLock(lockType)
       .setOperationType(opType)
+      .setCatName(MetaStoreUtils.getDefaultCatalog(conf))
       .setDbName(ci.dbname)
       .setTableName(ci.tableName)
       .setIsTransactional(true);

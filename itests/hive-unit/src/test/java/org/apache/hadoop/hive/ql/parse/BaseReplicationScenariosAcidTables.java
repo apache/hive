@@ -23,6 +23,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConfForTest;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
@@ -70,6 +71,7 @@ public class BaseReplicationScenariosAcidTables {
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private static final Path REPLICA_EXTERNAL_BASE = new Path("/replica_external_base");
+  protected static final String PRIMARY_CAT_NAME = Warehouse.DEFAULT_CATALOG_NAME;
   protected static String fullyQualifiedReplicaExternalBase;
   static WarehouseInstance primary;
   static WarehouseInstance replica, replicaNonAcid;
@@ -348,8 +350,8 @@ public class BaseReplicationScenariosAcidTables {
     return txns;
   }
 
-  List<Long> allocateWriteIdsForTablesAndAcquireLocks(String primaryDbName, Map<String, Long> tables,
-                                                     TxnStore txnHandler,
+  List<Long> allocateWriteIdsForTablesAndAcquireLocks(String primaryCatName, String primaryDbName,
+                                                      Map<String, Long> tables, TxnStore txnHandler,
                                                      List<Long> txns, HiveConf primaryConf) throws Throwable {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest();
     rqst.setDbName(primaryDbName);
@@ -361,6 +363,7 @@ public class BaseReplicationScenariosAcidTables {
       for (long txnId : txns) {
         LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE,
           primaryDbName);
+        comp.setCatName(primaryCatName);
         comp.setTablename(entry.getKey());
         comp.setOperationType(DataOperationType.UPDATE);
         List<LockComponent> components = new ArrayList<LockComponent>(1);

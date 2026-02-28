@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.LockMaterializationRebuildRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.Materialization;
@@ -301,8 +302,16 @@ public interface TxnStore extends Configurable {
 
   @SqlRetry(lockInternally = true)
   @Transactional(POOL_TX)
+  LockResponse lockMaterializationRebuild(LockMaterializationRebuildRequest rqst) throws MetaException;
+
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
   boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId)
       throws MetaException;
+
+  @SqlRetry(lockInternally = true)
+  @Transactional(POOL_TX)
+  boolean heartbeatLockMaterializationRebuild(LockMaterializationRebuildRequest rqst) throws MetaException;
 
   @SqlRetry(lockInternally = true)
   @Transactional(POOL_TX)

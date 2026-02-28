@@ -171,7 +171,8 @@ public class Msck {
         if (acquireLock && lockRequired && table.getParameters() != null && transactionalTable) {
           // Running MSCK from beeline/cli will make DDL task acquire X lock when repair is enabled, since we are directly
           // invoking msck.repair() without SQL statement, we need to do the same and acquire X lock (repair is default)
-          LockRequest lockRequest = createLockRequest(msckInfo.getDbName(), msckInfo.getTableName());
+          LockRequest lockRequest = createLockRequest(msckInfo.getCatalogName(), msckInfo.getDbName(),
+              msckInfo.getTableName());
           txnId = lockRequest.getTxnid();
           try {
             LockResponse res = getMsc().lock(lockRequest);
@@ -482,7 +483,8 @@ public class Msck {
     }
   }
 
-  private LockRequest createLockRequest(final String dbName, final String tableName) throws TException {
+  private LockRequest createLockRequest(final String catalogName, final String dbName,
+                                        final String tableName) throws TException {
     String username = getUserName();
     long txnId = getMsc().openTxn(username);
     String agentInfo = Thread.currentThread().getName();
@@ -491,6 +493,7 @@ public class Msck {
     requestBuilder.setTransactionId(txnId);
 
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
+        .setCatName(catalogName)
       .setDbName(dbName)
       .setTableName(tableName)
       .setIsTransactional(true)

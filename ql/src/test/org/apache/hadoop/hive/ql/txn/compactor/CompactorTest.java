@@ -286,6 +286,7 @@ public abstract class CompactorTest {
     LockComponentBuilder lockCompBuilder = new LockComponentBuilder()
             .setLock(LockType.SHARED_WRITE)
             .setOperationType(DataOperationType.INSERT)
+            .setCatName(t.getCatName())
             .setDbName(t.getDbName())
             .setTableName(t.getTableName())
             .setIsTransactional(true);

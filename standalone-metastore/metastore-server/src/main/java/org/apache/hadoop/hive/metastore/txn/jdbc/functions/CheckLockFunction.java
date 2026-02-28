@@ -173,14 +173,15 @@ public class CheckLockFunction implements TransactionalFunction<LockResponse> {
 
     String queryStr =
         " \"EX\".*, \"REQ\".\"HL_LOCK_INT_ID\" \"LOCK_INT_ID\", \"REQ\".\"HL_LOCK_TYPE\" \"LOCK_TYPE\" FROM (" +
-            " SELECT \"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\"," +
-            " \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\" FROM \"HIVE_LOCKS\"" +
+            " SELECT \"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_CATALOG\", \"HL_DB\", \"HL_TABLE\", " +
+            "\"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\" FROM \"HIVE_LOCKS\"" +
             " WHERE \"HL_LOCK_EXT_ID\" < " + extLockId + ") \"EX\"" +
             " INNER JOIN (" +
-            " SELECT \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\"," +
-            " \"HL_LOCK_TYPE\" FROM \"HIVE_LOCKS\"" +
+            " SELECT \"HL_LOCK_INT_ID\", \"HL_TXNID\", \"HL_CATALOG\", \"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", " +
+            "\"HL_LOCK_TYPE\" FROM \"HIVE_LOCKS\"" +
             " WHERE \"HL_LOCK_EXT_ID\" = " + extLockId + ") \"REQ\"" +
-            " ON \"EX\".\"HL_DB\" = \"REQ\".\"HL_DB\"" +
+            " ON \"EX\".\"HL_CATALOG\" = \"REQ\".\"HL_CATALOG\"" +
+            " AND \"EX\".\"HL_DB\" = \"REQ\".\"HL_DB\"" +
             " AND (\"EX\".\"HL_TABLE\" IS NULL OR \"REQ\".\"HL_TABLE\" IS NULL" +
             " OR \"EX\".\"HL_TABLE\" = \"REQ\".\"HL_TABLE\"" +
             " AND (\"EX\".\"HL_PARTITION\" IS NULL OR \"REQ\".\"HL_PARTITION\" IS NULL" +

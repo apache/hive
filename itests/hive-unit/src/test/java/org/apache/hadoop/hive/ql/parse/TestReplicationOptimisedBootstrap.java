@@ -563,7 +563,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Map<String, Long> tablesInSecDb = new HashMap<>();
     tablesInSecDb.put("t1", (long) numTxnsForSecDb + 4);
     tablesInSecDb.put("t2", (long) numTxnsForSecDb + 4);
-    List<Long> lockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+    List<Long> lockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName + "_extra",
             tablesInSecDb, txnHandler, txnsForSecDb, primaryConf);
     tearDownLockIds.addAll(lockIdsForSecDb);
 
@@ -576,8 +576,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Map<String, Long> tablesInSourceDb = new HashMap<>();
     tablesInSourceDb.put("t1", (long) numTxnsForPrimaryDb + 6);
     tablesInSourceDb.put("t2", (long) numTxnsForPrimaryDb);
-    List<Long> lockIdsForSourceDb = allocateWriteIdsForTablesAndAcquireLocks(replicatedDbName, tablesInSourceDb, txnHandler,
-            txnsForSourceDb, replica.getConf());
+    List<Long> lockIdsForSourceDb = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, replicatedDbName,
+        tablesInSourceDb, txnHandler, txnsForSourceDb, replica.getConf());
     tearDownLockIds.addAll(lockIdsForSourceDb);
 
     //Open 1 txn with no hive locks acquired
@@ -1092,7 +1092,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Map<String, Long> tablesInSecDb = new HashMap<>();
     tablesInSecDb.put("t1", (long) numTxnsForSecDb);
     tablesInSecDb.put("t2", (long) numTxnsForSecDb);
-    List<Long> lockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+    List<Long> lockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName + "_extra",
             tablesInSecDb, txnHandler, txnsForSecDb, primaryConf);
     tearDownLockIds.addAll(lockIdsForSecDb);
 
@@ -1105,8 +1105,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Map<String, Long> tablesInSourceDb = new HashMap<>();
     tablesInSourceDb.put("t1", (long) numTxnsForPrimaryDb);
     tablesInSourceDb.put("t5", (long) numTxnsForPrimaryDb);
-    List<Long> lockIdsForSourceDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName, tablesInSourceDb, txnHandler,
-            txnsForSourceDb, primary.getConf());
+    List<Long> lockIdsForSourceDb = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName,
+        tablesInSourceDb, txnHandler, txnsForSourceDb, primary.getConf());
     tearDownLockIds.addAll(lockIdsForSourceDb);
 
     //Open 1 txn with no hive locks acquired
@@ -1157,7 +1157,7 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Map<String, Long> newTablesForSecDb = new HashMap<>();
     newTablesForSecDb.put("t1", (long) numTxnsForSecDb + 1);
     newTablesForSecDb.put("t2", (long) numTxnsForSecDb + 1);
-    List<Long> newLockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName + "_extra",
+    List<Long> newLockIdsForSecDb = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName + "_extra",
             newTablesForSecDb, txnHandler, newTxnsForSecDb, primaryConf);
     tearDownLockIds.addAll(newLockIdsForSecDb);
 
@@ -1169,8 +1169,8 @@ public class TestReplicationOptimisedBootstrap extends BaseReplicationScenariosA
     Map<String, Long> newTablesInSourceDb = new HashMap<>();
     newTablesInSourceDb.put("t1", (long) 5);
     newTablesInSourceDb.put("t5", (long) 3);
-    List<Long> newLockIdsForSourceDb = allocateWriteIdsForTablesAndAcquireLocks(primaryDbName, newTablesInSourceDb, txnHandler,
-            newTxnsForSourceDb, primary.getConf());
+    List<Long> newLockIdsForSourceDb = allocateWriteIdsForTablesAndAcquireLocks(PRIMARY_CAT_NAME, primaryDbName,
+        newTablesInSourceDb, txnHandler, newTxnsForSourceDb, primary.getConf());
     tearDownLockIds.addAll(newLockIdsForSourceDb);
 
     //Open 1 txn with no hive locks acquired

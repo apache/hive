@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortCompactResponse;
 import org.apache.hadoop.hive.metastore.api.AbortCompactionRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.HeartbeatRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeRequest;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
+import org.apache.hadoop.hive.metastore.api.LockMaterializationRebuildRequest;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.Materialization;
@@ -770,23 +772,40 @@ public abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   @Override
-  public LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws MetaException {
-    return new LockMaterializationRebuildFunction(dbName, tableName, txnId, mutexAPI).execute(jdbcResource);
+  public LockResponse lockMaterializationRebuild(String dbName, String tableName,
+                                                 long txnId) throws MetaException {
+    return lockMaterializationRebuild(new LockMaterializationRebuildRequest(Warehouse.DEFAULT_CATALOG_NAME,
+        dbName, tableName, txnId));
   }
 
   @Override
-  public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws MetaException {
+  public LockResponse lockMaterializationRebuild(LockMaterializationRebuildRequest rqst) throws MetaException {
+    return new LockMaterializationRebuildFunction(rqst.getDbName(), rqst.getTableName(), rqst.getTnxId(),
+        rqst.getCatName(), mutexAPI).execute(jdbcResource);
+  }
+
+  @Override
+  public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName,
+                                                     long txnId) throws MetaException {
+    return heartbeatLockMaterializationRebuild(new LockMaterializationRebuildRequest(Warehouse.DEFAULT_CATALOG_NAME,
+        dbName, tableName, txnId));
+  }
+
+  @Override
+  public boolean heartbeatLockMaterializationRebuild(LockMaterializationRebuildRequest rqst) throws MetaException {
     int result = jdbcResource.execute(
-            "UPDATE \"MATERIALIZATION_REBUILD_LOCKS\"" +
-                    " SET \"MRL_LAST_HEARTBEAT\" = :lastHeartbeat" +
-                    " WHERE \"MRL_TXN_ID\" = :txnId" +
-                    " AND \"MRL_DB_NAME\" = :dbName" +
-                    " AND \"MRL_TBL_NAME\" = :tblName",
-            new MapSqlParameterSource()
-                    .addValue("lastHeartbeat", Instant.now().toEpochMilli())
-                    .addValue("txnId", txnId)
-                    .addValue("dbName", dbName)
-                    .addValue("tblName", tableName),
+        "UPDATE \"MATERIALIZATION_REBUILD_LOCKS\"" +
+            " SET \"MRL_LAST_HEARTBEAT\" = :lastHeartbeat" +
+            " WHERE \"MRL_TXN_ID\" = :txnId" +
+            " AND \"MRL_CAT_NAME\" = :catName " +
+            " AND \"MRL_DB_NAME\" = :dbName" +
+            " AND \"MRL_TBL_NAME\" = :tblName",
+        new MapSqlParameterSource()
+            .addValue("lastHeartbeat", Instant.now().toEpochMilli())
+            .addValue("txnId", rqst.getTnxId())
+            .addValue("catName", rqst.getCatName())
+            .addValue("dbName", rqst.getDbName())
+            .addValue("tblName", rqst.getTableName()),
         ParameterizedCommand.AT_LEAST_ONE_ROW);
     return result >= 1;
   }

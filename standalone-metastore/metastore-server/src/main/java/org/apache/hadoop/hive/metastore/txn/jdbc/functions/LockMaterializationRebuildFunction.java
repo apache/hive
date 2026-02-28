@@ -36,12 +36,15 @@ public class LockMaterializationRebuildFunction implements TransactionalFunction
 
   private static final Logger LOG = LoggerFactory.getLogger(LockMaterializationRebuildFunction.class);
 
+  private final String catName;
   private final String dbName;
   private final String tableName;
   private final long txnId;
   private final TxnStore.MutexAPI mutexAPI;
 
-  public LockMaterializationRebuildFunction(String dbName, String tableName, long txnId, TxnStore.MutexAPI mutexAPI) {
+  public LockMaterializationRebuildFunction(String dbName, String tableName, long txnId,
+                                            String catName, TxnStore.MutexAPI mutexAPI) {
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.txnId = txnId;
@@ -62,24 +65,25 @@ public class LockMaterializationRebuildFunction implements TransactionalFunction
      */
     try (TxnStore.MutexAPI.LockHandle ignored = mutexAPI.acquireLock(TxnStore.MUTEX_KEY.MaterializationRebuild.name())){
       MapSqlParameterSource params = new MapSqlParameterSource()
+          .addValue("catName", catName)
           .addValue("dbName", dbName)
           .addValue("tableName", tableName);
 
       String selectQ = "SELECT \"MRL_TXN_ID\" FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE" +
-          " \"MRL_DB_NAME\" = :dbName AND \"MRL_TBL_NAME\" = :tableName";
+          " \"MRL_CAT_NAME\" = :catName AND \"MRL_DB_NAME\" = :dbName AND \"MRL_TBL_NAME\" = :tableName";
       if (LOG.isDebugEnabled()) {
         LOG.debug("Going to execute query {}", selectQ);
       }
       boolean found = Boolean.TRUE.equals(jdbcResource.getJdbcTemplate().query(selectQ, params, ResultSet::next));
       
       if(found) {
-        LOG.info("Ignoring request to rebuild {}/{} since it is already being rebuilt", dbName, tableName);
+        LOG.info("Ignoring request to rebuild {}/{}/{} since it is already being rebuilt", catName, dbName, tableName);
         return new LockResponse(txnId, LockState.NOT_ACQUIRED);
       }
       
       String insertQ = "INSERT INTO \"MATERIALIZATION_REBUILD_LOCKS\" " +
-          "(\"MRL_TXN_ID\", \"MRL_DB_NAME\", \"MRL_TBL_NAME\", \"MRL_LAST_HEARTBEAT\") " +
-          "VALUES (:txnId, :dbName, :tableName, " + Instant.now().toEpochMilli() + ")";
+          "(\"MRL_TXN_ID\", \"MRL_CAT_NAME\", \"MRL_DB_NAME\", \"MRL_TBL_NAME\", \"MRL_LAST_HEARTBEAT\") " +
+          "VALUES (:txnId, :catName, :dbName, :tableName, " + Instant.now().toEpochMilli() + ")";
       if (LOG.isDebugEnabled()) {
         LOG.debug("Going to execute update {}", insertQ);
       }

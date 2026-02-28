@@ -80,6 +80,11 @@ public class LockComponentBuilder {
     component.setDbname(dbName);
     return this;
   }
+
+  public LockComponentBuilder setCatName(String catName) {
+    component.setCatName(catName);
+    return this;
+  }
   
   public LockComponentBuilder setOperationType(DataOperationType dop) {
     component.setOperationType(dop);
