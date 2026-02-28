@@ -69,7 +69,7 @@
     <property name="severity" value="error"/>
     <property name="headerFile" value="${config_loc}/asf.header.incremental"/>
     <property name="fileExtensions" value="java"/>
-    <property name="multiLines" value="2"/>
+    <property name="multiLines" value="2,4"/>
   </module>
 
   <!-- Maximum file line length -->
