@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.metastore.dbinstall.rules;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
-
 /**
  * JUnit TestRule for Postgres.
  */
@@ -37,7 +35,7 @@ public class Postgres extends DatabaseRule {
   }
 
   @Override
-  public void before() throws IOException, InterruptedException {
+  public void before() {
     container.start();
   }
 
