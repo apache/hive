@@ -293,7 +293,7 @@ public final class TypeInfoUtils {
     };
 
     private static boolean isTypeChar(char c) {
-      return Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == ' ' || c == '$';
+      return Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == ' ' || c == '$' || c == '-';
     }
 
     /**
