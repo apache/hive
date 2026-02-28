@@ -20,11 +20,13 @@ package org.apache.hadoop.hive.druid.json;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-import org.apache.druid.data.input.ByteBufferInputRowParser;
-import org.apache.druid.data.input.InputRow;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.druid.data.input.avro.AvroBytesDecoder;
+import org.apache.druid.data.input.avro.AvroParsers;
+import org.apache.druid.data.input.impl.MapInputRowParser;
 import org.apache.druid.data.input.impl.ParseSpec;
+import org.apache.druid.java.util.common.parsers.ObjectFlattener;
 
-import javax.validation.constraints.NotNull;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Objects;
@@ -33,33 +35,76 @@ import java.util.Objects;
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-public class AvroStreamInputRowParser implements ByteBufferInputRowParser {
+public class AvroStreamInputRowParser implements ByteBufferInputRowParser
+{
   private final ParseSpec parseSpec;
+  private final Boolean binaryAsString;
+  private final Boolean extractUnionsByType;
   private final AvroBytesDecoder avroBytesDecoder;
+  private final ObjectFlattener<GenericRecord> avroFlattener;
+  private final MapInputRowParser mapParser;
 
-  @JsonCreator public AvroStreamInputRowParser(@JsonProperty("parseSpec") ParseSpec parseSpec,
-      @JsonProperty("avroBytesDecoder") AvroBytesDecoder avroBytesDecoder) {
+  @JsonCreator
+  public AvroStreamInputRowParser(
+      @JsonProperty("parseSpec") ParseSpec parseSpec,
+      @JsonProperty("avroBytesDecoder") AvroBytesDecoder avroBytesDecoder,
+      @JsonProperty("binaryAsString") Boolean binaryAsString,
+      @JsonProperty("extractUnionsByType") Boolean extractUnionsByType
+  )
+  {
     this.parseSpec = Preconditions.checkNotNull(parseSpec, "parseSpec");
     this.avroBytesDecoder = Preconditions.checkNotNull(avroBytesDecoder, "avroBytesDecoder");
+    this.binaryAsString = binaryAsString != null && binaryAsString;
+    this.extractUnionsByType = extractUnionsByType != null && extractUnionsByType;
+    this.avroFlattener = AvroParsers.makeFlattener(parseSpec, false, this.binaryAsString, this.extractUnionsByType);
+    this.mapParser = new MapInputRowParser(parseSpec);
   }
 
-  @NotNull @Override public List<InputRow> parseBatch(ByteBuffer input) {
-    throw new UnsupportedOperationException("This class is only used for JSON serde");
+  @Override
+  public List<InputRow> parseBatch(ByteBuffer input)
+  {
+    return AvroParsers.parseGenericRecord(avroBytesDecoder.parse(input), mapParser, avroFlattener);
   }
 
-  @JsonProperty @Override public ParseSpec getParseSpec() {
+  @JsonProperty
+  @Override
+  public ParseSpec getParseSpec()
+  {
     return parseSpec;
   }
 
-  @JsonProperty public AvroBytesDecoder getAvroBytesDecoder() {
+  @JsonProperty
+  public AvroBytesDecoder getAvroBytesDecoder()
+  {
     return avroBytesDecoder;
   }
 
-  @Override public ByteBufferInputRowParser withParseSpec(ParseSpec parseSpec) {
-    return new AvroStreamInputRowParser(parseSpec, avroBytesDecoder);
+  @JsonProperty
+  public Boolean getBinaryAsString()
+  {
+    return binaryAsString;
   }
 
-  @Override public boolean equals(final Object o) {
+  @JsonProperty
+  public Boolean isExtractUnionsByType()
+  {
+    return extractUnionsByType;
+  }
+
+  @Override
+  public ByteBufferInputRowParser withParseSpec(ParseSpec parseSpec)
+  {
+    return new AvroStreamInputRowParser(
+        parseSpec,
+        avroBytesDecoder,
+        binaryAsString,
+        extractUnionsByType
+    );
+  }
+
+  @Override
+  public boolean equals(final Object o)
+  {
     if (this == o) {
       return true;
     }
@@ -67,10 +112,26 @@ public class AvroStreamInputRowParser implements ByteBufferInputRowParser {
       return false;
     }
     final AvroStreamInputRowParser that = (AvroStreamInputRowParser) o;
-    return Objects.equals(parseSpec, that.parseSpec) && Objects.equals(avroBytesDecoder, that.avroBytesDecoder);
+    return Objects.equals(parseSpec, that.parseSpec) &&
+           Objects.equals(avroBytesDecoder, that.avroBytesDecoder) &&
+           Objects.equals(binaryAsString, that.binaryAsString) &&
+           Objects.equals(extractUnionsByType, that.extractUnionsByType);
   }
 
-  @Override public int hashCode() {
-    return Objects.hash(parseSpec, avroBytesDecoder);
+  @Override
+  public int hashCode()
+  {
+    return Objects.hash(parseSpec, avroBytesDecoder, binaryAsString, extractUnionsByType);
+  }
+
+  @Override
+  public String toString()
+  {
+    return "AvroStreamInputRowParser{" +
+           "parseSpec=" + parseSpec +
+           ", binaryAsString=" + binaryAsString +
+           ", extractUnionsByType=" + extractUnionsByType +
+           ", avroBytesDecoder=" + avroBytesDecoder +
+           '}';
   }
 }

@@ -20,7 +20,9 @@ package org.apache.hadoop.hive.druid.json;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.druid.indexing.seekablestream.SeekableStreamIndexTaskTuningConfig;
 import org.apache.druid.segment.IndexSpec;
+import org.apache.druid.segment.incremental.AppendableIndexSpec;
 import org.apache.druid.segment.writeout.SegmentWriteOutMediumFactory;
 import org.joda.time.Period;
 
@@ -31,32 +33,35 @@ import java.io.File;
  * This class is copied from druid source code
  * in order to avoid adding additional dependencies on druid-indexing-service.
  */
-public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningConfig {
-  @JsonCreator
+public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningConfig
+{
   public KafkaIndexTaskTuningConfig(
-      @JsonProperty("maxRowsInMemory") @Nullable Integer maxRowsInMemory,
-      @JsonProperty("maxBytesInMemory") @Nullable Long maxBytesInMemory,
-      @JsonProperty("maxRowsPerSegment") @Nullable Integer maxRowsPerSegment,
-      @JsonProperty("maxTotalRows") @Nullable Long maxTotalRows,
-      @JsonProperty("intermediatePersistPeriod") @Nullable Period intermediatePersistPeriod,
-      @JsonProperty("basePersistDirectory") @Nullable File basePersistDirectory,
-      @JsonProperty("maxPendingPersists") @Nullable Integer maxPendingPersists,
-      @JsonProperty("indexSpec") @Nullable IndexSpec indexSpec,
-      @JsonProperty("indexSpecForIntermediatePersists") @Nullable IndexSpec indexSpecForIntermediatePersists,
-      // This parameter is left for compatibility when reading existing configs, to be removed in Druid 0.12.
-      @JsonProperty("buildV9Directly") @Nullable Boolean buildV9Directly,
-      @Deprecated @JsonProperty("reportParseExceptions") @Nullable Boolean reportParseExceptions,
-      @JsonProperty("handoffConditionTimeout") @Nullable Long handoffConditionTimeout,
-      @JsonProperty("resetOffsetAutomatically") @Nullable Boolean resetOffsetAutomatically,
-      @JsonProperty("segmentWriteOutMediumFactory") @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory,
-      @JsonProperty("intermediateHandoffPeriod") @Nullable Period intermediateHandoffPeriod,
-      @JsonProperty("logParseExceptions") @Nullable Boolean logParseExceptions,
-      @JsonProperty("maxParseExceptions") @Nullable Integer maxParseExceptions,
-      @JsonProperty("maxSavedParseExceptions") @Nullable Integer maxSavedParseExceptions
-  ) {
+      @Nullable AppendableIndexSpec appendableIndexSpec,
+      @Nullable Integer maxRowsInMemory,
+      @Nullable Long maxBytesInMemory,
+      @Nullable Boolean skipBytesInMemoryOverheadCheck,
+      @Nullable Integer maxRowsPerSegment,
+      @Nullable Long maxTotalRows,
+      @Nullable Period intermediatePersistPeriod,
+      @Nullable File basePersistDirectory,
+      @Nullable Integer maxPendingPersists,
+      @Nullable IndexSpec indexSpec,
+      @Nullable IndexSpec indexSpecForIntermediatePersists,
+      @Nullable Boolean reportParseExceptions,
+      @Nullable Long handoffConditionTimeout,
+      @Nullable Boolean resetOffsetAutomatically,
+      @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory,
+      @Nullable Period intermediateHandoffPeriod,
+      @Nullable Boolean logParseExceptions,
+      @Nullable Integer maxParseExceptions,
+      @Nullable Integer maxSavedParseExceptions
+  )
+  {
     super(
+        appendableIndexSpec,
         maxRowsInMemory,
         maxBytesInMemory,
+        skipBytesInMemoryOverheadCheck,
         maxRowsPerSegment,
         maxTotalRows,
         intermediatePersistPeriod,
@@ -64,7 +69,6 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
         maxPendingPersists,
         indexSpec,
         indexSpecForIntermediatePersists,
-        true,
         reportParseExceptions,
         handoffConditionTimeout,
         resetOffsetAutomatically,
@@ -77,11 +81,59 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
     );
   }
 
+  @JsonCreator
+  private KafkaIndexTaskTuningConfig(
+      @JsonProperty("appendableIndexSpec") @Nullable AppendableIndexSpec appendableIndexSpec,
+      @JsonProperty("maxRowsInMemory") @Nullable Integer maxRowsInMemory,
+      @JsonProperty("maxBytesInMemory") @Nullable Long maxBytesInMemory,
+      @JsonProperty("skipBytesInMemoryOverheadCheck") @Nullable Boolean skipBytesInMemoryOverheadCheck,
+      @JsonProperty("maxRowsPerSegment") @Nullable Integer maxRowsPerSegment,
+      @JsonProperty("maxTotalRows") @Nullable Long maxTotalRows,
+      @JsonProperty("intermediatePersistPeriod") @Nullable Period intermediatePersistPeriod,
+      @JsonProperty("maxPendingPersists") @Nullable Integer maxPendingPersists,
+      @JsonProperty("indexSpec") @Nullable IndexSpec indexSpec,
+      @JsonProperty("indexSpecForIntermediatePersists") @Nullable IndexSpec indexSpecForIntermediatePersists,
+      @Deprecated @JsonProperty("reportParseExceptions") @Nullable Boolean reportParseExceptions,
+      @JsonProperty("handoffConditionTimeout") @Nullable Long handoffConditionTimeout,
+      @JsonProperty("resetOffsetAutomatically") @Nullable Boolean resetOffsetAutomatically,
+      @JsonProperty("segmentWriteOutMediumFactory") @Nullable SegmentWriteOutMediumFactory segmentWriteOutMediumFactory,
+      @JsonProperty("intermediateHandoffPeriod") @Nullable Period intermediateHandoffPeriod,
+      @JsonProperty("logParseExceptions") @Nullable Boolean logParseExceptions,
+      @JsonProperty("maxParseExceptions") @Nullable Integer maxParseExceptions,
+      @JsonProperty("maxSavedParseExceptions") @Nullable Integer maxSavedParseExceptions
+  )
+  {
+    this(
+        appendableIndexSpec,
+        maxRowsInMemory,
+        maxBytesInMemory,
+        skipBytesInMemoryOverheadCheck,
+        maxRowsPerSegment,
+        maxTotalRows,
+        intermediatePersistPeriod,
+        null,
+        maxPendingPersists,
+        indexSpec,
+        indexSpecForIntermediatePersists,
+        reportParseExceptions,
+        handoffConditionTimeout,
+        resetOffsetAutomatically,
+        segmentWriteOutMediumFactory,
+        intermediateHandoffPeriod,
+        logParseExceptions,
+        maxParseExceptions,
+        maxSavedParseExceptions
+    );
+  }
+
   @Override
-  public KafkaIndexTaskTuningConfig withBasePersistDirectory(File dir) {
+  public KafkaIndexTaskTuningConfig withBasePersistDirectory(File dir)
+  {
     return new KafkaIndexTaskTuningConfig(
+        getAppendableIndexSpec(),
         getMaxRowsInMemory(),
         getMaxBytesInMemory(),
+        isSkipBytesInMemoryOverheadCheck(),
         getMaxRowsPerSegment(),
         getMaxTotalRows(),
         getIntermediatePersistPeriod(),
@@ -89,7 +141,6 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
         getMaxPendingPersists(),
         getIndexSpec(),
         getIndexSpecForIntermediatePersists(),
-        true,
         isReportParseExceptions(),
         getHandoffConditionTimeout(),
         isResetOffsetAutomatically(),
@@ -103,26 +154,27 @@ public class KafkaIndexTaskTuningConfig extends SeekableStreamIndexTaskTuningCon
 
 
   @Override
-  public String toString() {
+  public String toString()
+  {
     return "KafkaIndexTaskTuningConfig{" +
-        "maxRowsInMemory=" + getMaxRowsInMemory() +
-        ", maxRowsPerSegment=" + getMaxRowsPerSegment() +
-        ", maxTotalRows=" + getMaxTotalRows() +
-        ", maxBytesInMemory=" + getMaxBytesInMemory() +
-        ", intermediatePersistPeriod=" + getIntermediatePersistPeriod() +
-        ", basePersistDirectory=" + getBasePersistDirectory() +
-        ", maxPendingPersists=" + getMaxPendingPersists() +
-        ", indexSpec=" + getIndexSpec() +
-        ", indexSpecForIntermediatePersists=" + getIndexSpecForIntermediatePersists() +
-        ", reportParseExceptions=" + isReportParseExceptions() +
-        ", handoffConditionTimeout=" + getHandoffConditionTimeout() +
-        ", resetOffsetAutomatically=" + isResetOffsetAutomatically() +
-        ", segmentWriteOutMediumFactory=" + getSegmentWriteOutMediumFactory() +
-        ", intermediateHandoffPeriod=" + getIntermediateHandoffPeriod() +
-        ", logParseExceptions=" + isLogParseExceptions() +
-        ", maxParseExceptions=" + getMaxParseExceptions() +
-        ", maxSavedParseExceptions=" + getMaxSavedParseExceptions() +
-        '}';
+           "maxRowsInMemory=" + getMaxRowsInMemory() +
+           ", maxRowsPerSegment=" + getMaxRowsPerSegment() +
+           ", maxTotalRows=" + getMaxTotalRows() +
+           ", maxBytesInMemory=" + getMaxBytesInMemory() +
+           ", skipBytesInMemoryOverheadCheck=" + isSkipBytesInMemoryOverheadCheck() +
+           ", intermediatePersistPeriod=" + getIntermediatePersistPeriod() +
+           ", maxPendingPersists=" + getMaxPendingPersists() +
+           ", indexSpec=" + getIndexSpec() +
+           ", indexSpecForIntermediatePersists=" + getIndexSpecForIntermediatePersists() +
+           ", reportParseExceptions=" + isReportParseExceptions() +
+           ", handoffConditionTimeout=" + getHandoffConditionTimeout() +
+           ", resetOffsetAutomatically=" + isResetOffsetAutomatically() +
+           ", segmentWriteOutMediumFactory=" + getSegmentWriteOutMediumFactory() +
+           ", intermediateHandoffPeriod=" + getIntermediateHandoffPeriod() +
+           ", logParseExceptions=" + isLogParseExceptions() +
+           ", maxParseExceptions=" + getMaxParseExceptions() +
+           ", maxSavedParseExceptions=" + getMaxSavedParseExceptions() +
+           '}';
   }
 
 }
