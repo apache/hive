@@ -24,7 +24,7 @@ import org.eclipse.jetty.security.authentication.DeferredAuthentication;
 import org.eclipse.jetty.security.authentication.LoginAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
-import org.eclipse.jetty.util.B64Code;
+import java.util.Base64;
 
 import javax.security.sasl.AuthenticationException;
 import javax.servlet.ServletRequest;
@@ -41,9 +41,9 @@ import net.sf.jpam.Pam;
   This class authenticates HS2 web UI via PAM. To authenticate use
 
    * httpGet with header name "Authorization"
-   * and header value "Basic authB64Code"
+   * and header value "Basic authBase64Code"
 
-    where  authB64Code is Base64 string for "login:password"
+    where  authBase64Code is Base64 string for "login:password"
  */
 
 public class PamAuthenticator extends LoginAuthenticator {
@@ -79,7 +79,8 @@ public class PamAuthenticator extends LoginAuthenticator {
           String method = credentials.substring(0, space);
           if ("basic".equalsIgnoreCase(method)) {
             credentials = credentials.substring(space + 1);
-            credentials = B64Code.decode(credentials, StandardCharsets.ISO_8859_1);
+            byte[] decodedBytes = Base64.getDecoder().decode(credentials);
+            credentials = new String(decodedBytes, StandardCharsets.ISO_8859_1);
             int i = credentials.indexOf(':');
             if (i > 0) {
               String username = credentials.substring(0, i);

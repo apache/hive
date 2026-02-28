@@ -35,8 +35,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.util.B64Code;
-import org.eclipse.jetty.util.StringUtil;
+import java.util.Base64;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -89,8 +88,9 @@ public class TestHS2HttpServerLDAP {
       httpclient = builder.build();
 
       HttpGet httpGet = new HttpGet("http://" + HOST + ":" + webUIPort + "/jmx");
-      String authB64Code = B64Code.encode(VALID_USER + ":" + VALID_PASS, StringUtil.__ISO_8859_1);
-      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authB64Code);
+      String credentials = VALID_USER + ":" + VALID_PASS;
+      String authBase64Code = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.ISO_8859_1));
+      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authBase64Code);
       httpclient.execute(httpGet);
 
       Assert.assertTrue(isAuthorized(httpCookieStore.getCookies()));
@@ -110,8 +110,9 @@ public class TestHS2HttpServerLDAP {
       httpclient = builder.build();
 
       HttpGet httpGet = new HttpGet("http://" + HOST + ":" + webUIPort + "/jmx");
-      String authB64Code = B64Code.encode(INVALID_USER + ":" + INVALID_PASS, StringUtil.__ISO_8859_1);
-      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authB64Code);
+      String credentials = INVALID_USER + ":" + INVALID_PASS;
+      String authBase64Code = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.ISO_8859_1));
+      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authBase64Code);
       httpclient.execute(httpGet);
 
       Assert.assertFalse(isAuthorized(httpCookieStore.getCookies()));

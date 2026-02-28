@@ -27,8 +27,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.UserIdentity;
-import org.eclipse.jetty.util.B64Code;
-import org.eclipse.jetty.util.StringUtil;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -90,8 +90,9 @@ public class TestHS2HttpServerPam {
       httpclient = HttpClients.createDefault();
 
       HttpGet httpGet = new HttpGet("http://" + host + ":" + webUIPort);
-      String authB64Code = B64Code.encode(username + ":" + password, StringUtil.__ISO_8859_1);
-      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authB64Code);
+      String credentials = username + ":" + password;
+      String authBase64Code = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.ISO_8859_1));
+      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authBase64Code);
       CloseableHttpResponse response = httpclient.execute(httpGet);
       Assert.assertTrue(response.toString().contains(Integer.toString(HttpURLConnection.HTTP_OK)));
 
@@ -111,8 +112,9 @@ public class TestHS2HttpServerPam {
       httpclient = HttpClients.createDefault();
 
       HttpGet httpGet = new HttpGet("http://" + host + ":" + webUIPort);
-      String authB64Code = B64Code.encode(username + ":" + password, StringUtil.__ISO_8859_1);
-      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authB64Code);
+      String credentials = username + ":" + password;
+      String authBase64Code = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.ISO_8859_1));
+      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authBase64Code);
       CloseableHttpResponse response = httpclient.execute(httpGet);
       Assert.assertTrue(response.toString().contains(Integer.toString(HttpURLConnection.HTTP_UNAUTHORIZED)));
 
@@ -132,8 +134,9 @@ public class TestHS2HttpServerPam {
       httpclient = HttpClients.createDefault();
 
       HttpGet httpGet = new HttpGet("http://" + host + ":" + webUIPort);
-      String authB64Code = B64Code.encode(username + ":" + password, StringUtil.__ISO_8859_1);
-      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authB64Code);
+      String credentials = username + ":" + password;
+      String authBase64Code = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.ISO_8859_1));
+      httpGet.setHeader(HttpHeader.AUTHORIZATION.asString(), "Basic " + authBase64Code);
       CloseableHttpResponse response = httpclient.execute(httpGet);
       Assert.assertTrue(response.toString().contains(Integer.toString(HttpURLConnection.HTTP_UNAUTHORIZED)));
 

@@ -157,10 +157,10 @@
     <jackson.version>2.16.1</jackson.version>
     <jamon.plugin.version>2.3.4</jamon.plugin.version>
     <jamon-runtime.version>2.4.1</jamon-runtime.version>
-    <javax-servlet.version>3.1.0</javax-servlet.version>
+    <javax-servlet.version>4.0.1</javax-servlet.version>
     <javolution.version>5.5.1</javolution.version>
     <jettison.version>1.5.4</jettison.version>
-    <jetty.version>9.4.57.v20241219</jetty.version>
+    <jetty.version>10.0.24</jetty.version>
     <jersey.version>1.19.4</jersey.version>
     <!-- HIVE-28992: only upgrade to newer than 3.25.0 if you tested the prompt -->
     <jline.version>3.25.0</jline.version>
@@ -778,6 +778,12 @@
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
         <version>${jetty.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.eclipse.jetty.toolchain</groupId>
+            <artifactId>jetty-servlet-api</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
@@ -808,6 +814,7 @@
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
         <version>${javax-servlet.version}</version>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.datanucleus</groupId>
