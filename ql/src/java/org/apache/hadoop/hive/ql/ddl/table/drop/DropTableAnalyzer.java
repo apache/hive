@@ -49,17 +49,17 @@ public class DropTableAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
     TableName qualTabName = getQualifiedTableName((ASTNode) root.getChild(0));
-    String tableName = qualTabName.getNotEmptyDbTable();
+//    String tableName = qualTabName.getNotEmptyDbTable();
     boolean ifExists = (root.getFirstChildWithType(HiveParser.TOK_IFEXISTS) != null);
     boolean throwException = !ifExists && !HiveConf.getBoolVar(conf, ConfVars.DROP_IGNORES_NON_EXISTENT);
     //Authorize database for drop table command
     // Skip db object if database doesn't exist
-    Database database  = getDatabase(qualTabName.getDb(),false);
+    Database database  = getDatabase(qualTabName.getCat(), qualTabName.getDb(),false);
     if (database != null) {
       outputs.add(new WriteEntity(database, WriteType.DDL_SHARED));
     }
 
-    Table table = getTable(tableName, throwException);
+    Table table = getTable(qualTabName, throwException);
     if (table != null) {
       inputs.add(new ReadEntity(table));
 
@@ -70,7 +70,7 @@ public class DropTableAnalyzer extends BaseSemanticAnalyzer {
 
     boolean purge = (root.getFirstChildWithType(HiveParser.KW_PURGE) != null);
     ReplicationSpec replicationSpec = new ReplicationSpec(root);
-    DropTableDesc desc = new DropTableDesc(tableName, ifExists, purge, replicationSpec);
+    DropTableDesc desc = new DropTableDesc(qualTabName, ifExists, purge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

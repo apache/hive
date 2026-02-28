@@ -108,10 +108,11 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer<Object> 
     return tableHandle != null && AcidUtils.isFullAcidTable(tableHandle);
   }
 
-  private static String getTmptTableNameForExport(Table exportTable) {
+  private static TableName getTmptTableNameForExport(Table exportTable) {
+    String tmpTableCat = exportTable.getCatName();
     String tmpTableDb = exportTable.getDbName();
     String tmpTableName = exportTable.getTableName() + "_" + UUID.randomUUID().toString().replace('-', '_');
-    return Warehouse.getQualifiedName(tmpTableDb, tmpTableName);
+    return TableName.fromString(tmpTableName, tmpTableCat, tmpTableDb);
   }
 
   /**
@@ -134,8 +135,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer<Object> 
 
     //need to create the table "manually" rather than creating a task since it has to exist to
     // compile the insert into T...
-    final String newTableName = getTmptTableNameForExport(exportTable); //this is db.table
-    final TableName newTableNameRef = HiveTableName.of(newTableName);
+    final TableName newTableName = getTmptTableNameForExport(exportTable); //this is db.table
     Map<String, String> tblProps = new HashMap<>();
     tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.FALSE.toString());
     String location;
@@ -190,7 +190,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer<Object> 
      the partition spec in the Export command.  These of course don't exist yet since we've not
      ran the insert stmt yet!!!!!!!
       */
-    Task<ExportWork> exportTask = ExportSemanticAnalyzer.analyzeExport(ast, newTableName, db, conf, inputs, outputs);
+    Task<ExportWork> exportTask = ExportSemanticAnalyzer.analyzeExport(ast, newTableName.toString(), db, conf, inputs, outputs);
 
     // Add an alter table task to set transactional props
     // do it after populating temp table so that it's written as non-transactional table but
@@ -198,7 +198,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer<Object> 
     // IMPORT is done for this archive and target table doesn't exist, it will be created as Acid.
     Map<String, String> mapProps = new HashMap<>();
     mapProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, Boolean.TRUE.toString());
-    AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(newTableNameRef, null, null, false,
+    AlterTableSetPropertiesDesc alterTblDesc = new AlterTableSetPropertiesDesc(newTableName, null, null, false,
         mapProps, false, false, null);
     addExportTask(rootTasks, exportTask, TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
 
@@ -226,8 +226,8 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer<Object> 
    * for EXPORT command.
    */
   private StringBuilder generateExportQuery(List<FieldSchema> partCols, ASTNode tokRefOrNameExportTable,
-      ASTNode tableTree, String newTableName) throws SemanticException {
-    StringBuilder rewrittenQueryStr = new StringBuilder("insert into ").append(newTableName);
+      ASTNode tableTree, TableName newTableName) throws SemanticException {
+    StringBuilder rewrittenQueryStr = new StringBuilder("insert into ").append(newTableName.toString());
     addPartitionColsToInsert(partCols, rewrittenQueryStr);
     rewrittenQueryStr.append(" select * from ").append(getFullTableNameForSQL(tokRefOrNameExportTable));
     //builds partition spec so we can build suitable WHERE clause

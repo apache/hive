@@ -243,12 +243,27 @@ tableName
 @init { gParent.pushMsg("table name", state); }
 @after { gParent.popMsg(state); }
     :
-    db=identifier DOT tab=identifier (DOT meta=identifier)?
-    {tables.add(new ImmutablePair<>($db.text, $tab.text));}
-    -> ^(TOK_TABNAME $db $tab $meta?)
-    |
-    tab=identifier
-    {tables.add(new ImmutablePair<>(null, $tab.text));}
+    // case 1：catalog.db.table(.meta)?
+    (cat=identifier DOT db=identifier DOT tab=identifier (DOT meta=identifier)?)
+    =>
+    cat=identifier DOT db=identifier DOT tab=identifier (DOT meta=identifier)?
+    {
+        tables.add(new ImmutablePair<>($cat.text + "." + $db.text, $tab.text));
+    }
+    -> ^(TOK_TABNAME $cat $db $tab $meta?)
+
+    // case 2：db.table
+    | db=identifier DOT tab=identifier
+    {
+        tables.add(new ImmutablePair<>($db.text, $tab.text));
+    }
+    -> ^(TOK_TABNAME $db $tab)
+
+    // case 3：table
+    | tab=identifier
+    {
+        tables.add(new ImmutablePair<>(null, $tab.text));
+    }
     -> ^(TOK_TABNAME $tab)
     ;
 

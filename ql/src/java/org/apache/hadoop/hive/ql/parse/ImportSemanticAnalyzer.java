@@ -521,14 +521,16 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private static Task<?> dropTableTask(Table table, EximUtil.SemanticAnalyzerWrapperContext x,
                                        ReplicationSpec replicationSpec) {
-    DropTableDesc dropTblDesc = new DropTableDesc(table.getTableName(), true, false, replicationSpec);
+    TableName tableName = TableName.fromString(table.getTableName(), table.getCatalogName(), table.getDbName());
+    DropTableDesc dropTblDesc = new DropTableDesc(tableName, true, false, replicationSpec);
     return TaskFactory.get(new DDLWork(x.getInputs(), x.getOutputs(), dropTblDesc), x.getConf());
   }
 
   private static Task<?> dropTableTask(Table table, EximUtil.SemanticAnalyzerWrapperContext x,
                                        ReplicationSpec replicationSpec, String dumpRoot,
                                        ReplicationMetricCollector metricCollector) {
-    DropTableDesc dropTblDesc = new DropTableDesc(table.getTableName(), true, false, replicationSpec);
+    TableName tableName = TableName.fromString(table.getTableName(), table.getCatalogName(), table.getDbName());
+    DropTableDesc dropTblDesc = new DropTableDesc(tableName, true, false, replicationSpec);
     return TaskFactory.get(new DDLWork(x.getInputs(), x.getOutputs(), dropTblDesc,
             true, dumpRoot, metricCollector), x.getConf());
   }
