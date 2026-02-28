@@ -1,0 +1,15 @@
+DESCRIBE FORMATTED web_page;
+DESCRIBE FORMATTED web_page wp_web_page_sk;
+DESCRIBE FORMATTED web_page wp_web_page_id;
+DESCRIBE FORMATTED web_page wp_rec_start_date;
+DESCRIBE FORMATTED web_page wp_rec_end_date;
+DESCRIBE FORMATTED web_page wp_creation_date_sk;
+DESCRIBE FORMATTED web_page wp_access_date_sk;
+DESCRIBE FORMATTED web_page wp_autogen_flag;
+DESCRIBE FORMATTED web_page wp_customer_sk;
+DESCRIBE FORMATTED web_page wp_url;
+DESCRIBE FORMATTED web_page wp_type;
+DESCRIBE FORMATTED web_page wp_char_count;
+DESCRIBE FORMATTED web_page wp_link_count;
+DESCRIBE FORMATTED web_page wp_image_count;
+DESCRIBE FORMATTED web_page wp_max_ad_count;

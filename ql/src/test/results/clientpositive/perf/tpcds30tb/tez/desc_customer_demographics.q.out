@@ -1,0 +1,160 @@
+# col_name            	data_type           	comment             
+cd_demo_sk          	bigint              	                    
+cd_gender           	char(1)             	                    
+cd_marital_status   	char(1)             	                    
+cd_education_status 	char(20)            	                    
+cd_purchase_estimate	int                 	                    
+cd_credit_rating    	char(10)            	                    
+cd_dep_count        	int                 	                    
+cd_dep_employed_count	int                 	                    
+cd_dep_college_count	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2                   
+	numRows             	1920800             
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.customer_demographics	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_cd	 
+Column Name:        	cd_demo_sk          	 
+col_name            	cd_demo_sk          
+data_type           	bigint              
+min                 	1                   
+max                 	1920800             
+num_nulls           	0                   
+distinct_count      	1993369             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+col_name            	cd_gender           
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	2                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+col_name            	cd_marital_status   
+data_type           	char(1)             
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	5                   
+avg_col_len         	1.0                 
+max_col_len         	1                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+col_name            	cd_education_status 
+data_type           	char(20)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	9.571428571428571   
+max_col_len         	15                  
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+col_name            	cd_purchase_estimate
+data_type           	int                 
+min                 	500                 
+max                 	10000               
+num_nulls           	0                   
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+col_name            	cd_credit_rating    
+data_type           	char(10)            
+min                 	                    
+max                 	                    
+num_nulls           	0                   
+distinct_count      	4                   
+avg_col_len         	7.0                 
+max_col_len         	9                   
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+col_name            	cd_dep_count        
+data_type           	int                 
+min                 	0                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+col_name            	cd_dep_employed_count
+data_type           	int                 
+min                 	0                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+col_name            	cd_dep_college_count
+data_type           	int                 
+min                 	0                   
+max                 	6                   
+num_nulls           	0                   
+distinct_count      	7                   
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}

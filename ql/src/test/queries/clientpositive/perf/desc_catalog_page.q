@@ -1,0 +1,10 @@
+DESCRIBE FORMATTED catalog_page;
+DESCRIBE FORMATTED catalog_page cp_catalog_page_sk;
+DESCRIBE FORMATTED catalog_page cp_catalog_page_id;
+DESCRIBE FORMATTED catalog_page cp_start_date_sk;
+DESCRIBE FORMATTED catalog_page cp_end_date_sk;
+DESCRIBE FORMATTED catalog_page cp_department;
+DESCRIBE FORMATTED catalog_page cp_catalog_number;
+DESCRIBE FORMATTED catalog_page cp_catalog_page_number;
+DESCRIBE FORMATTED catalog_page cp_description;
+DESCRIBE FORMATTED catalog_page cp_type;

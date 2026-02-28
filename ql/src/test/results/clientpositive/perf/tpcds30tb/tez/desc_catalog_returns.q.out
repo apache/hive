@@ -1,0 +1,460 @@
+# col_name            	data_type           	comment             
+cr_returned_time_sk 	bigint              	                    
+cr_item_sk          	bigint              	                    
+cr_refunded_customer_sk	bigint              	                    
+cr_refunded_cdemo_sk	bigint              	                    
+cr_refunded_hdemo_sk	bigint              	                    
+cr_refunded_addr_sk 	bigint              	                    
+cr_returning_customer_sk	bigint              	                    
+cr_returning_cdemo_sk	bigint              	                    
+cr_returning_hdemo_sk	bigint              	                    
+cr_returning_addr_sk	bigint              	                    
+cr_call_center_sk   	bigint              	                    
+cr_catalog_page_sk  	bigint              	                    
+cr_ship_mode_sk     	bigint              	                    
+cr_warehouse_sk     	bigint              	                    
+cr_reason_sk        	bigint              	                    
+cr_order_number     	bigint              	                    
+cr_return_quantity  	int                 	                    
+cr_return_amount    	decimal(7,2)        	                    
+cr_return_tax       	decimal(7,2)        	                    
+cr_return_amt_inc_tax	decimal(7,2)        	                    
+cr_fee              	decimal(7,2)        	                    
+cr_return_ship_cost 	decimal(7,2)        	                    
+cr_refunded_cash    	decimal(7,2)        	                    
+cr_reversed_charge  	decimal(7,2)        	                    
+cr_store_credit     	decimal(7,2)        	                    
+cr_net_loss         	decimal(7,2)        	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+cr_returned_date_sk 	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2104                
+	numPartitions       	2104                
+	numRows             	4320980099          
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.catalog_returns	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_cr	 
+Column Name:        	cr_item_sk          	 
+Column Name:        	cr_order_number     	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.catalog_returns	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_cc	 
+Parent Column Name:default.call_center.cc_call_center_sk	Column Name:cr_call_center_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_cd1	 
+Parent Column Name:default.customer_demographics.cd_demo_sk	Column Name:cr_refunded_cdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_cd2	 
+Parent Column Name:default.customer_demographics.cd_demo_sk	Column Name:cr_returning_cdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_cp	 
+Parent Column Name:default.catalog_page.cp_catalog_page_sk	Column Name:cr_catalog_page_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_cs	 
+Parent Column Name:default.catalog_sales.cs_order_number	Column Name:cr_order_number	Key Sequence:2      
+Parent Column Name:default.catalog_sales.cs_item_sk	Column Name:cr_item_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_d1	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:cr_returned_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_hd1	 
+Parent Column Name:default.household_demographics.hd_demo_sk	Column Name:cr_refunded_hdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_hd2	 
+Parent Column Name:default.household_demographics.hd_demo_sk	Column Name:cr_returning_hdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_i	 
+Parent Column Name:default.item.i_item_sk	Column Name:cr_item_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_r	 
+Parent Column Name:default.reason.r_reason_sk	Column Name:cr_reason_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_sm	 
+Parent Column Name:default.ship_mode.sm_ship_mode_sk	Column Name:cr_ship_mode_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_t	 
+Parent Column Name:default.time_dim.t_time_sk	Column Name:cr_returned_time_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_cr_w2	 
+Parent Column Name:default.warehouse.w_warehouse_sk	Column Name:cr_warehouse_sk	Key Sequence:1      
+	 	 
+col_name            	cr_returned_date_sk 
+data_type           	bigint              
+min                 	2450821             
+max                 	2452924             
+num_nulls           	0                   
+distinct_count      	2104                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_returned_date_sk\":\"true\"}}
+col_name            	cr_returned_time_sk 
+data_type           	bigint              
+min                 	0                   
+max                 	86399               
+num_nulls           	0                   
+distinct_count      	85503               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_returned_time_sk\":\"true\"}}
+col_name            	cr_item_sk          
+data_type           	bigint              
+min                 	1                   
+max                 	462000              
+num_nulls           	0                   
+distinct_count      	462000              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_item_sk\":\"true\"}}
+col_name            	cr_refunded_customer_sk
+data_type           	bigint              
+min                 	1                   
+max                 	80000000            
+num_nulls           	85570940            
+distinct_count      	78525965            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_refunded_customer_sk\":\"true\"}}
+col_name            	cr_refunded_cdemo_sk
+data_type           	bigint              
+min                 	1                   
+max                 	1920800             
+num_nulls           	85597394            
+distinct_count      	1920801             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_refunded_cdemo_sk\":\"true\"}}
+col_name            	cr_refunded_hdemo_sk
+data_type           	bigint              
+min                 	1                   
+max                 	7200                
+num_nulls           	86357210            
+distinct_count      	7201                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_refunded_hdemo_sk\":\"true\"}}
+col_name            	cr_refunded_addr_sk 
+data_type           	bigint              
+min                 	1                   
+max                 	40000000            
+num_nulls           	86010351            
+distinct_count      	40000001            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_refunded_addr_sk\":\"true\"}}
+col_name            	cr_returning_customer_sk
+data_type           	bigint              
+min                 	1                   
+max                 	80000000            
+num_nulls           	85474436            
+distinct_count      	77511828            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_returning_customer_sk\":\"true\"}}
+col_name            	cr_returning_cdemo_sk
+data_type           	bigint              
+min                 	1                   
+max                 	1920800             
+num_nulls           	86106479            
+distinct_count      	1920801             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_returning_cdemo_sk\":\"true\"}}
+col_name            	cr_returning_hdemo_sk
+data_type           	bigint              
+min                 	1                   
+max                 	7200                
+num_nulls           	86448348            
+distinct_count      	7201                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_returning_hdemo_sk\":\"true\"}}
+col_name            	cr_returning_addr_sk
+data_type           	bigint              
+min                 	1                   
+max                 	40000000            
+num_nulls           	85962741            
+distinct_count      	40000001            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_returning_addr_sk\":\"true\"}}
+col_name            	cr_call_center_sk   
+data_type           	bigint              
+min                 	1                   
+max                 	60                  
+num_nulls           	86030813            
+distinct_count      	61                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_call_center_sk\":\"true\"}}
+col_name            	cr_catalog_page_sk  
+data_type           	bigint              
+min                 	1                   
+max                 	38675               
+num_nulls           	86393192            
+distinct_count      	27932               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_catalog_page_sk\":\"true\"}}
+col_name            	cr_ship_mode_sk     
+data_type           	bigint              
+min                 	1                   
+max                 	20                  
+num_nulls           	85420923            
+distinct_count      	20                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_ship_mode_sk\":\"true\"}}
+col_name            	cr_warehouse_sk     
+data_type           	bigint              
+min                 	1                   
+max                 	27                  
+num_nulls           	87169865            
+distinct_count      	27                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_warehouse_sk\":\"true\"}}
+col_name            	cr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	72                  
+num_nulls           	85898318            
+distinct_count      	73                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_reason_sk\":\"true\"}}
+col_name            	cr_order_number     
+data_type           	bigint              
+min                 	2                   
+max                 	4800000000          
+num_nulls           	0                   
+distinct_count      	2681654419          
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_order_number\":\"true\"}}
+col_name            	cr_return_quantity  
+data_type           	int                 
+min                 	1                   
+max                 	100                 
+num_nulls           	86588006            
+distinct_count      	101                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_return_quantity\":\"true\"}}
+col_name            	cr_return_amount    
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	28805.04            
+num_nulls           	86331027            
+distinct_count      	973170              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_return_amount\":\"true\"}}
+col_name            	cr_return_tax       
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	2511.58             
+num_nulls           	85987660            
+distinct_count      	169232              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_return_tax\":\"true\"}}
+col_name            	cr_return_amt_inc_tax
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	30891.32            
+num_nulls           	86728266            
+distinct_count      	1689965             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_return_amt_inc_tax\":\"true\"}}
+col_name            	cr_fee              
+data_type           	decimal(7,2)        
+min                 	0.5                 
+max                 	100                 
+num_nulls           	86339953            
+distinct_count      	9408                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_fee\":\"true\"}}
+col_name            	cr_return_ship_cost 
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	14273.28            
+num_nulls           	85431070            
+distinct_count      	501353              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_return_ship_cost\":\"true\"}}
+col_name            	cr_refunded_cash    
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	26955.24            
+num_nulls           	85973987            
+distinct_count      	1257293             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_refunded_cash\":\"true\"}}
+col_name            	cr_reversed_charge  
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	24033.84            
+num_nulls           	85908139            
+distinct_count      	895564              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_reversed_charge\":\"true\"}}
+col_name            	cr_store_credit     
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	24886.13            
+num_nulls           	85962943            
+distinct_count      	906118              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_store_credit\":\"true\"}}
+col_name            	cr_net_loss         
+data_type           	decimal(7,2)        
+min                 	0.5                 
+max                 	16346.37            
+num_nulls           	86722511            
+distinct_count      	996464              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"cr_net_loss\":\"true\"}}

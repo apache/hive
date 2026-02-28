@@ -1,0 +1,15 @@
+DESCRIBE FORMATTED warehouse;
+DESCRIBE FORMATTED warehouse w_warehouse_sk;
+DESCRIBE FORMATTED warehouse w_warehouse_id;
+DESCRIBE FORMATTED warehouse w_warehouse_name;
+DESCRIBE FORMATTED warehouse w_warehouse_sq_ft;
+DESCRIBE FORMATTED warehouse w_street_number;
+DESCRIBE FORMATTED warehouse w_street_name;
+DESCRIBE FORMATTED warehouse w_street_type;
+DESCRIBE FORMATTED warehouse w_suite_number;
+DESCRIBE FORMATTED warehouse w_city;
+DESCRIBE FORMATTED warehouse w_county;
+DESCRIBE FORMATTED warehouse w_state;
+DESCRIBE FORMATTED warehouse w_zip;
+DESCRIBE FORMATTED warehouse w_country;
+DESCRIBE FORMATTED warehouse w_gmt_offset;

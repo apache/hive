@@ -1,0 +1,6 @@
+DESCRIBE FORMATTED household_demographics;
+DESCRIBE FORMATTED household_demographics hd_demo_sk;
+DESCRIBE FORMATTED household_demographics hd_income_band_sk;
+DESCRIBE FORMATTED household_demographics hd_buy_potential;
+DESCRIBE FORMATTED household_demographics hd_dep_count;
+DESCRIBE FORMATTED household_demographics hd_vehicle_count;

@@ -1,0 +1,347 @@
+# col_name            	data_type           	comment             
+sr_return_time_sk   	bigint              	                    
+sr_item_sk          	bigint              	                    
+sr_customer_sk      	bigint              	                    
+sr_cdemo_sk         	bigint              	                    
+sr_hdemo_sk         	bigint              	                    
+sr_addr_sk          	bigint              	                    
+sr_store_sk         	bigint              	                    
+sr_reason_sk        	bigint              	                    
+sr_ticket_number    	bigint              	                    
+sr_return_quantity  	int                 	                    
+sr_return_amt       	decimal(7,2)        	                    
+sr_return_tax       	decimal(7,2)        	                    
+sr_return_amt_inc_tax	decimal(7,2)        	                    
+sr_fee              	decimal(7,2)        	                    
+sr_return_ship_cost 	decimal(7,2)        	                    
+sr_refunded_cash    	decimal(7,2)        	                    
+sr_reversed_charge  	decimal(7,2)        	                    
+sr_store_credit     	decimal(7,2)        	                    
+sr_net_loss         	decimal(7,2)        	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+sr_returned_date_sk 	bigint              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2004                
+	numPartitions       	2004                
+	numRows             	8634166995          
+	rawDataSize         	0                   
+	totalSize           	#Masked#
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# Constraints	 	 
+	 	 
+# Primary Key	 	 
+Table:              	default.store_returns	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_pk_sr	 
+Column Name:        	sr_item_sk          	 
+Column Name:        	sr_ticket_number    	 
+	 	 
+# Foreign Keys	 	 
+Table:              	default.store_returns	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_sr_cd	 
+Parent Column Name:default.customer_demographics.cd_demo_sk	Column Name:sr_cdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_sr_hd	 
+Parent Column Name:default.household_demographics.hd_demo_sk	Column Name:sr_hdemo_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_sr_i	 
+Parent Column Name:default.item.i_item_sk	Column Name:sr_item_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_sr_r	 
+Parent Column Name:default.reason.r_reason_sk	Column Name:sr_reason_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_sr_ret_d	 
+Parent Column Name:default.date_dim.d_date_sk	Column Name:sr_returned_date_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_sr_s	 
+Parent Column Name:default.store.s_store_sk	Column Name:sr_store_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_sr_ss	 
+Parent Column Name:default.store_sales.ss_ticket_number	Column Name:sr_ticket_number	Key Sequence:2      
+Parent Column Name:default.store_sales.ss_item_sk	Column Name:sr_item_sk	Key Sequence:1      
+	 	 
+Constraint Name:    	tpcds_bin_partitioned_orc_30000_sr_t	 
+Parent Column Name:default.time_dim.t_time_sk	Column Name:sr_return_time_sk	Key Sequence:1      
+	 	 
+col_name            	sr_returned_date_sk 
+data_type           	bigint              
+min                 	2450820             
+max                 	2452822             
+num_nulls           	0                   
+distinct_count      	2004                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	                    
+comment             	                    
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_returned_date_sk\":\"true\"}}
+col_name            	sr_return_time_sk   
+data_type           	bigint              
+min                 	28799               
+max                 	61199               
+num_nulls           	300784428           
+distinct_count      	32389               
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_return_time_sk\":\"true\"}}
+col_name            	sr_item_sk          
+data_type           	bigint              
+min                 	1                   
+max                 	462000              
+num_nulls           	0                   
+distinct_count      	462000              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_item_sk\":\"true\"}}
+col_name            	sr_customer_sk      
+data_type           	bigint              
+min                 	1                   
+max                 	80000000            
+num_nulls           	301618456           
+distinct_count      	78525965            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_customer_sk\":\"true\"}}
+col_name            	sr_cdemo_sk         
+data_type           	bigint              
+min                 	1                   
+max                 	1920800             
+num_nulls           	299997441           
+distinct_count      	1920801             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_cdemo_sk\":\"true\"}}
+col_name            	sr_hdemo_sk         
+data_type           	bigint              
+min                 	1                   
+max                 	7200                
+num_nulls           	302930967           
+distinct_count      	7201                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_hdemo_sk\":\"true\"}}
+col_name            	sr_addr_sk          
+data_type           	bigint              
+min                 	1                   
+max                 	40000000            
+num_nulls           	303772352           
+distinct_count      	40000001            
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_addr_sk\":\"true\"}}
+col_name            	sr_store_sk         
+data_type           	bigint              
+min                 	1                   
+max                 	1702                
+num_nulls           	302208371           
+distinct_count      	870                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_store_sk\":\"true\"}}
+col_name            	sr_reason_sk        
+data_type           	bigint              
+min                 	1                   
+max                 	72                  
+num_nulls           	301249895           
+distinct_count      	73                  
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_reason_sk\":\"true\"}}
+col_name            	sr_ticket_number    
+data_type           	bigint              
+min                 	1                   
+max                 	7200000000          
+num_nulls           	0                   
+distinct_count      	5114579988          
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_ticket_number\":\"true\"}}
+col_name            	sr_return_quantity  
+data_type           	int                 
+min                 	1                   
+max                 	100                 
+num_nulls           	302186765           
+distinct_count      	101                 
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_return_quantity\":\"true\"}}
+col_name            	sr_return_amt       
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	19643               
+num_nulls           	301764035           
+distinct_count      	715216              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_return_amt\":\"true\"}}
+col_name            	sr_return_tax       
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	1714.37             
+num_nulls           	303581421           
+distinct_count      	141365              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_return_tax\":\"true\"}}
+col_name            	sr_return_amt_inc_tax
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	21018.01            
+num_nulls           	300825383           
+distinct_count      	1520430             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_return_amt_inc_tax\":\"true\"}}
+col_name            	sr_fee              
+data_type           	decimal(7,2)        
+min                 	0.5                 
+max                 	100                 
+num_nulls           	302189490           
+distinct_count      	9408                
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_fee\":\"true\"}}
+col_name            	sr_return_ship_cost 
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	9975                
+num_nulls           	299866176           
+distinct_count      	363000              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_return_ship_cost\":\"true\"}}
+col_name            	sr_refunded_cash    
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	18413.33            
+num_nulls           	301929419           
+distinct_count      	1187970             
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_refunded_cash\":\"true\"}}
+col_name            	sr_reversed_charge  
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	18104.5             
+num_nulls           	301828118           
+distinct_count      	926355              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_reversed_charge\":\"true\"}}
+col_name            	sr_store_credit     
+data_type           	decimal(7,2)        
+min                 	0                   
+max                 	17792.48            
+num_nulls           	302591855           
+distinct_count      	937950              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_store_credit\":\"true\"}}
+col_name            	sr_net_loss         
+data_type           	decimal(7,2)        
+min                 	0.5                 
+max                 	11008.17            
+num_nulls           	301103088           
+distinct_count      	851834              
+avg_col_len         	                    
+max_col_len         	                    
+num_trues           	                    
+num_falses          	                    
+bit_vector          	HL                  
+comment             	from deserializer   
+COLUMN_STATS_ACCURATE	{\"COLUMN_STATS\":{\"sr_net_loss\":\"true\"}}
