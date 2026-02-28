@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -89,5 +90,43 @@ public class TestTezSessionState {
     LOG.info("Checking if scratch dir exists: {}", scratchDirPath.get());
     Assert.assertFalse("Scratch dir is not supposed to exist after cleanup: " + scratchDirPath.get(),
         Files.exists(Paths.get(scratchDirPath.get())));
+  }
+
+  /**
+   * Tests whether commonLocalResources is populated with app jar and localized resources when opening
+   * a Tez session.
+   */
+  @Test
+  public void testCommonLocalResourcesPopulatedOnSessionOpen() throws Exception {
+    Path jarPath = Files.createTempFile("test-jar", ".jar");
+    Files.write(jarPath, "testCommonLocalResourcesPopulated".getBytes(), StandardOpenOption.APPEND);
+
+    HiveConf hiveConf = new HiveConfForTest(getClass());
+    hiveConf.set("hive.security.authorization.manager",
+        "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdConfOnlyAuthorizerFactory");
+    SessionState.start(hiveConf);
+
+    TezSessionState.HiveResources resources =
+        new TezSessionState.HiveResources(new org.apache.hadoop.fs.Path("/tmp"));
+
+    TezSessionState tempSession = new TezSessionState(SessionState.get().getSessionId(), hiveConf);
+
+    LocalResource localizedLr = tempSession.createJarLocalResource(jarPath.toUri().toString());
+    resources.localizedResources.add(localizedLr);
+
+    final TezSessionState sessionStateForTest = new TezSessionState(SessionState.get().getSessionId(), hiveConf) {
+      @Override
+      void openInternalUnsafe(boolean isAsync, SessionState.LogHelper console) {
+        Map<String, LocalResource> commonLocalResources = buildCommonLocalResources();
+        Assert.assertEquals("commonLocalResources must contain exactly 2 jars (hive-exec app jar + localized test jar)",
+            2, commonLocalResources.size());
+        Assert.assertTrue("commonLocalResources must contain the hive-exec app jar",
+            commonLocalResources.keySet().stream().anyMatch(k -> k.contains("hive-exec")));
+        Assert.assertTrue("commonLocalResources must contain the added localized test jar",
+            commonLocalResources.containsKey(DagUtils.getBaseName(localizedLr)));
+      }
+    };
+
+    sessionStateForTest.open(resources);
   }
 }
