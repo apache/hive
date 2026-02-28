@@ -73,6 +73,10 @@ import javax.jdo.Transaction;
 import javax.jdo.datastore.JDOConnection;
 import javax.jdo.identity.IntIdentity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -9991,7 +9995,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        return directSql.deletePartitionColumnStats(catName, dbName, tableName, partNames, colNames, engine);
+        if (directSql.deletePartitionColumnStats(catName, dbName, tableName, partNames, colNames, engine)){
+          directSql.updateColumnStatsAccurateForPartitions(catName, dbName, getTable(), partNames, colNames);
+          return true;
+        }
+        return false;
       }
       @Override
       protected Boolean getJdoResult(GetHelper<Boolean> ctx)
@@ -10062,6 +10070,23 @@ public class ObjectStore implements RawStore, Configurable {
       } finally {
         b.closeAllQueries();
       }
+      MTable mTable = getMTable(catName, dbName, tableName);
+      List<Partition> parts = getPartitionsByNames(catName, dbName, tableName, partNames);
+      for (Partition partition : parts) {
+        Map<String, String> partitionParams = partition.getParameters();
+        if (partitionParams == null) {
+          partitionParams = new HashMap<>();
+          partition.setParameters(partitionParams);
+        }
+
+        if (colNames == null || colNames.isEmpty()) {
+          // drop ALL column stats => remove the key entirely
+          StatsSetupConst.clearColumnStatsState(partitionParams);
+        } else {
+          StatsSetupConst.removeColumnStatsState(partitionParams, colNames);
+        }
+      }
+      alterPartitionsViaJdo(mTable, partNames, parts, null);
       ret = commitTransaction();
     } finally {
       rollbackAndCleanup(ret, null);
@@ -10084,7 +10109,11 @@ public class ObjectStore implements RawStore, Configurable {
       }
       @Override
       protected Boolean getSqlResult(GetHelper<Boolean> ctx) throws MetaException {
-        return directSql.deleteTableColumnStatistics(getTable().getId(), colNames, engine);
+        if (directSql.deleteTableColumnStatistics(getTable().getId(), colNames, engine)) {
+          directSql.updateColumnStatsAccurateForTable(getTable(), colNames);
+          return true;
+        }
+        return false;
       }
       @Override
       protected Boolean getJdoResult(GetHelper<Boolean> ctx)
@@ -10117,14 +10146,17 @@ public class ObjectStore implements RawStore, Configurable {
       query.setFilter(filter);
       query.declareParameters(parameters);
       List<Object> params = new ArrayList<>();
+      if (tableName == null || dbName == null) {
+        throw new InvalidInputException("tableName and dbName cannot be null");
+      }
       params.add(normalizeIdentifier(tableName));
       params.add(normalizeIdentifier(dbName));
-      params.add(normalizeIdentifier(catName));
+      params.add(catName == null ? null : normalizeIdentifier(catName));
       if (colNames != null && !colNames.isEmpty()) {
         List<String> normalizedColNames = new ArrayList<>();
         for (String colName : colNames){
           // trim the extra spaces, and change to lowercase
-          normalizedColNames.add(normalizeIdentifier(colName));
+          normalizedColNames.add(colName == null ? null : normalizeIdentifier(colName));
         }
         params.add(normalizedColNames);
       }
@@ -10138,6 +10170,23 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
             + tableName + " col=" + String.join(", ", colNames));
+      }
+      if (mStatsObjColl != null) {
+        // Update COLUMN_STATS_ACCURATE to reflect the deletion
+        Table table = getTable(catName, dbName, tableName);
+        Map<String, String> tableParams = table.getParameters();
+        // get the current COLUMN_STATS_ACCURATE
+        String currentValue = tableParams.get(StatsSetupConst.COLUMN_STATS_ACCURATE);
+        // if the dropping columns is empty, that means we delete all the columns
+        if (colNames == null || colNames.isEmpty()) {
+          StatsSetupConst.clearColumnStatsState(tableParams);
+        } else {
+          StatsSetupConst.removeColumnStatsState(tableParams, colNames);
+        }
+        alterTable(catName, dbName, tableName, table, null);
+      } else {
+        throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName +
+                " table=" + tableName + " col=" + (colNames != null ? String.join(", ", colNames) : "ALL"));
       }
       ret = commitTransaction();
     } finally {
