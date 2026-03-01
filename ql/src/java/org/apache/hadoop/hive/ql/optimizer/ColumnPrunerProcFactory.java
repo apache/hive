@@ -807,8 +807,7 @@ public final class ColumnPrunerProcFactory {
         for (FieldNode col : cols) {
           int index = originalOutputColumnNames.indexOf(col.getFieldName());
           Table tab = cppCtx.getParseContext().getViewProjectToTableSchema().get(op);
-          List<FieldSchema> fullFieldList = new ArrayList<FieldSchema>(tab.getCols());
-          fullFieldList.addAll(tab.getPartCols());
+          List<FieldSchema> fullFieldList = new ArrayList<FieldSchema>(tab.getAllCols());
           cppCtx.getParseContext().getColumnAccessInfo()
               .add(tab.getCompleteName(), fullFieldList.get(index).getName());
         }

@@ -511,7 +511,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
 
     // Partition spec was already validated by caller when create TableSpec object.
     // So, need not validate inpPartSpec here.
-    List<FieldSchema> parts = table.getPartCols();
+    List<FieldSchema> parts = table.getPartCols(true);
     if (tableTree.getChildCount() >= 2) {
       ASTNode partSpecNode = (ASTNode) tableTree.getChild(1);
       inpPartSpec = new HashMap<>(partSpecNode.getChildCount());
@@ -561,7 +561,7 @@ public class LoadSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     rewrittenQueryStr.append(getFullTableNameForSQL((ASTNode)(tableTree.getChild(0))));
-    addPartitionColsToInsert(table.getPartCols(), inpPartSpec, rewrittenQueryStr);
+    addPartitionColsToInsert(table.getPartCols(true), inpPartSpec, rewrittenQueryStr);
     rewrittenQueryStr.append(" select * from ");
     rewrittenQueryStr.append(tempTblName);
 

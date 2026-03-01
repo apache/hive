@@ -175,7 +175,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer<Object> 
     //now generate insert statement
     //insert into newTableName select * from ts <where partition spec>
     StringBuilder rewrittenQueryStr = generateExportQuery(
-            newTable.getPartCols(), tokRefOrNameExportTable, (ASTNode) tokRefOrNameExportTable.parent, newTableName);
+            newTable.getPartCols(true), tokRefOrNameExportTable, (ASTNode) tokRefOrNameExportTable.parent, newTableName);
     ReparseResult rr = ParseUtils.parseRewrittenQuery(ctx, rewrittenQueryStr);
     Context rewrittenCtx = rr.rewrittenCtx;
     rewrittenCtx.setIsUpdateDeleteMerge(false); //it's set in parseRewrittenQuery()

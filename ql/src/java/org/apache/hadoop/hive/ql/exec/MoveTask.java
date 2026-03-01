@@ -633,7 +633,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   private DataContainer handleStaticParts(Hive db, Table table, LoadTableDesc tbd,
       TaskInformation ti) throws HiveException, IOException, InvalidOperationException {
-    List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),  tbd.getPartitionSpec());
+    List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(true),  tbd.getPartitionSpec());
     db.validatePartitionNameCharacters(partVals);
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("loadPartition called from " + tbd.getSourcePath()

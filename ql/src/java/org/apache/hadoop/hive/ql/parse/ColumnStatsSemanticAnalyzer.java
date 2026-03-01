@@ -278,7 +278,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
     if (isPartitionStats) {
       if (partTransformSpec == null) {
-        for (FieldSchema fs : tbl.getPartCols()) {
+        for (FieldSchema fs : tbl.getPartCols(true)) {
           String identifier = unparseIdentifier(fs.getName(), conf);
           rewrittenQueryBuilder.append(", ").append(identifier);
           columnNamesBuilder.append(", ").append(identifier);

@@ -96,8 +96,8 @@ public class SplitUpdateRewriter implements Rewriter<UpdateStatement> {
 
       insertValues.add(sqlGenerator.qualify(identifier));
     }
-    if (updateBlock.getTargetTable().getPartCols() != null) {
-      updateBlock.getTargetTable().getPartCols().forEach(
+    if (updateBlock.getTargetTable().getPartCols(true) != null) {
+      updateBlock.getTargetTable().getPartCols(true).forEach(
           fieldSchema -> insertValues.add(sqlGenerator.qualify(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf))));
     }
 

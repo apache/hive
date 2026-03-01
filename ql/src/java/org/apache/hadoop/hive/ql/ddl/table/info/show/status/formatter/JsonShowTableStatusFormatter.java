@@ -69,7 +69,7 @@ public class JsonShowTableStatusFormatter extends ShowTableStatusFormatter {
 
     builder.put("partitioned", table.isPartitioned());
     if (table.isPartitioned()) {
-      builder.put("partitionColumns", JsonDescTableFormatter.createColumnsInfo(table.getPartCols(),
+      builder.put("partitionColumns", JsonDescTableFormatter.createColumnsInfo(table.getPartCols(true),
           Collections.emptyList()));
     }
 
