@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -27,7 +26,10 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
@@ -43,6 +45,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -51,24 +54,75 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
 
+import static org.apache.calcite.sql.type.SqlTypeName.BIGINT;
+import static org.apache.calcite.sql.type.SqlTypeName.INTEGER;
+import static org.apache.calcite.sql.type.SqlTypeName.SMALLINT;
+import static org.apache.calcite.sql.type.SqlTypeName.TINYINT;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.betweenSelectivity;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.greaterThanOrEqualSelectivity;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.greaterThanSelectivity;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.isHistogramAvailable;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.lessThanOrEqualSelectivity;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.stats.FilterSelectivityEstimator.lessThanSelectivity;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestFilterSelectivityEstimator {
 
   private static final float[] VALUES = { 1, 2, 2, 2, 2, 2, 2, 2, 3, 4, 5, 6, 7 };
+  private static final float[] VALUES2 = {
+      // rounding for DECIMAL(3,1)
+      // -99.95f and its two predecessors and successors
+      -99.95001f, -99.950005f, -99.95f, -99.94999f, -99.94998f,
+      // some values
+      0f, 1f, 10f,
+      // rounding for DECIMAL(3,1)
+      // 99.95f and its two predecessors and successors
+      99.94998f, 99.94999f, 99.95f, 99.950005f, 99.95001f,
+      // 100f and its two predecessors and successors
+      99.999985f, 99.99999f, 100f, 100.00001f, 100.000015f,
+      // 100.05f and its two predecessors and successors
+      100.04999f, 100.049995f, 100.05f, 100.05001f, 100.05002f,
+      // some values
+      1_000f, 10_000f, 100_000f, 1_000_000f, 1e19f };
+  private static final float[] VALUES3 = {
+      // the closest floats that are CAST to the integer types, and one below and above the range
+      -9.223373E18f, -9.223372E18f, 9.223372E18f, 9.223373E18f,  // long
+      -2.147484E9f, -2.1474836E9f, 2.1474836E9f, 2.147484E9f, // integer
+      -32769.0f, -32768.996f, 32767.998f, 32768.0f, // short
+      -129f, -128.99998f, 127.99999f, 128.0f, // byte
+      // numbers for checking the rounding when casting to integer types
+      10f, 10.0001f, 10.9999f, 11f,
+      // corresponding negative values
+      -11f, -10.9999f, -10.0001f, -10f };
+
+  /**
+   * Both dates and timestamps are converted to epoch seconds.
+   * <p>
+   * See {@link org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp#evaluate(GenericUDF.DeferredObject[])}.
+   */
+  private static final float[] VALUES_TIME = {
+      timestamp("2020-11-01"), timestamp("2020-11-02"), timestamp("2020-11-03"), timestamp("2020-11-04"),
+      timestamp("2020-11-05T11:23:45Z"), timestamp("2020-11-06"), timestamp("2020-11-07") };
+
   private static final KllFloatsSketch KLL = StatisticsTestUtils.createKll(VALUES);
-  private static final float DELTA = Float.MIN_VALUE;
+  private static final KllFloatsSketch KLL2 = StatisticsTestUtils.createKll(VALUES2);
+  private static final KllFloatsSketch KLL3 = StatisticsTestUtils.createKll(VALUES3);
+  private static final KllFloatsSketch KLL_TIME = StatisticsTestUtils.createKll(VALUES_TIME);
+  private static final float DELTA = 1e-7f;
   private static final RexBuilder REX_BUILDER = new RexBuilder(new JavaTypeFactoryImpl(new HiveTypeSystemImpl()));
   private static final RelDataTypeFactory TYPE_FACTORY = REX_BUILDER.getTypeFactory();
+
   private static RelOptCluster relOptCluster;
   private static RexNode intMinus1;
   private static RexNode int0;
@@ -85,7 +139,6 @@ public class TestFilterSelectivityEstimator {
   private static RexNode inputRef0;
   private static RexNode boolFalse;
   private static RexNode boolTrue;
-  private static ColStatistics stats;
 
   @Mock
   private RelOptSchema schemaMock;
@@ -94,12 +147,14 @@ public class TestFilterSelectivityEstimator {
   @Mock
   private RelMetadataQuery mq;
 
-  private HiveTableScan tableScan;
+  private ColStatistics stats;
   private RelNode scan;
+  private RexNode currentInputRef;
+  private int currentValuesSize;
 
   @BeforeClass
   public static void beforeClass() {
-    RelDataType integerType = TYPE_FACTORY.createSqlType(SqlTypeName.INTEGER);
+    RelDataType integerType = TYPE_FACTORY.createSqlType(INTEGER);
     intMinus1 = REX_BUILDER.makeLiteral(-1, integerType, true);
     int0 = REX_BUILDER.makeLiteral(0, integerType, true);
     int1 = REX_BUILDER.makeLiteral(1, integerType, true);
@@ -113,25 +168,58 @@ public class TestFilterSelectivityEstimator {
     int11 = REX_BUILDER.makeLiteral(11, integerType, true);
     boolFalse = REX_BUILDER.makeLiteral(false, TYPE_FACTORY.createSqlType(SqlTypeName.BOOLEAN), true);
     boolTrue = REX_BUILDER.makeLiteral(true, TYPE_FACTORY.createSqlType(SqlTypeName.BOOLEAN), true);
-    tableType = TYPE_FACTORY.createStructType(ImmutableList.of(integerType), ImmutableList.of("f1"));
+    RelDataTypeFactory.Builder b = new RelDataTypeFactory.Builder(TYPE_FACTORY);
+    b.add("f_numeric", decimalType(38, 25));
+    b.add("f_tinyint", TYPE_FACTORY.createSqlType(TINYINT));
+    b.add("f_smallint", TYPE_FACTORY.createSqlType(SMALLINT));
+    b.add("f_integer", integerType);
+    b.add("f_bigint", TYPE_FACTORY.createSqlType(BIGINT));
+    b.add("f_timestamp", SqlTypeName.TIMESTAMP);
+    b.add("f_date", SqlTypeName.DATE).build();
+    tableType = b.build();
 
     RelOptPlanner planner = CalcitePlanner.createPlanner(new HiveConf());
     relOptCluster = RelOptCluster.create(planner, REX_BUILDER);
+  }
 
-    stats = new ColStatistics();
-    stats.setHistogram(KLL.toByteArray());
+  private static ColStatistics.Range rangeOf(float[] values) {
+    float min = Float.MAX_VALUE, max = -Float.MAX_VALUE;
+    for (float v : values) {
+      min = Math.min(min, v);
+      max = Math.max(max, v);
+    }
+    return new ColStatistics.Range(min, max);
   }
 
   @Before
   public void before() {
+    currentValuesSize = VALUES.length;
     doReturn(tableType).when(tableMock).getRowType();
-    doReturn((double) VALUES.length).when(tableMock).getRowCount();
+    when(tableMock.getRowCount()).thenAnswer(a -> (double) currentValuesSize);
 
     RelBuilder relBuilder = HiveRelFactories.HIVE_BUILDER.create(relOptCluster, schemaMock);
-    tableScan = new HiveTableScan(relOptCluster, relOptCluster.traitSetOf(HiveRelNode.CONVENTION),
-        tableMock, "table", null, false, false);
+    HiveTableScan tableScan =
+        new HiveTableScan(relOptCluster, relOptCluster.traitSetOf(HiveRelNode.CONVENTION), tableMock, "table", null,
+            false, false);
     scan = relBuilder.push(tableScan).build();
     inputRef0 = REX_BUILDER.makeInputRef(scan, 0);
+    currentInputRef = inputRef0;
+
+    stats = new ColStatistics();
+    stats.setHistogram(KLL.toByteArray());
+    stats.setRange(rangeOf(VALUES));
+  }
+
+  /**
+   * Note: call this method only at the beginning of a test method.
+   */
+  private void useFieldWithValues(String fieldname, float[] values, KllFloatsSketch sketch) {
+    currentValuesSize = values.length;
+    stats.setHistogram(sketch.toByteArray());
+    stats.setRange(rangeOf(values));
+    int fieldIndex = scan.getRowType().getFieldNames().indexOf(fieldname);
+    currentInputRef = REX_BUILDER.makeInputRef(scan, fieldIndex);
+    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(fieldIndex));
   }
 
   @Test
@@ -420,7 +508,7 @@ public class TestFilterSelectivityEstimator {
 
   @Test
   public void testComputeRangePredicateSelectivityBetweenLeftEqualsRight() {
-    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    verify(tableMock, never()).getColStat(any());
     doReturn(10.0).when(mq).getDistinctRowCount(scan, ImmutableBitSet.of(0), REX_BUILDER.makeLiteral(true));
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, inputRef0, int3, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
@@ -454,7 +542,7 @@ public class TestFilterSelectivityEstimator {
 
   @Test
   public void testComputeRangePredicateSelectivityNotBetweenLeftEqualsRight() {
-    doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
+    verify(tableMock, never()).getColStat(any());
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, inputRef0, int3, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
     Assert.assertEquals(1, estimator.estimateSelectivity(filter), DELTA);
@@ -511,6 +599,371 @@ public class TestFilterSelectivityEstimator {
     doReturn(Collections.singletonList(stats)).when(tableMock).getColStat(Collections.singletonList(0));
     RexNode filter = REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, inputRef0, int1, int3);
     FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
-    Assert.assertEquals(0.55, estimator.estimateSelectivity(filter), DELTA);
+    // only the values 4, 5, 6, 7 fulfill the condition NOT BETWEEN 1 AND 3
+    // (the NULL values do not fulfill the condition)
+    Assert.assertEquals(0.2, estimator.estimateSelectivity(filter), DELTA);
+  }
+
+  @Test
+  public void testRangePredicateCastInteger() {
+    // use VALUES2, even if the tested types cannot represent its values
+    // we're only interested in whether the cast to a smaller integer type results in the default selectivity
+    useFieldWithValues("f_tinyint", VALUES2, KLL2);
+    checkSelectivity(16 / 28.f, ge(cast("f_tinyint", TINYINT), int5));
+    checkSelectivity(18 / 28.f, ge(cast("f_tinyint", SMALLINT), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_tinyint", INTEGER), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_tinyint", BIGINT), int5));
+
+    useFieldWithValues("f_smallint", VALUES2, KLL2);
+    checkSelectivity(1 / 3.f, ge(cast("f_smallint", TINYINT), int5));
+    checkSelectivity(18 / 28.f, ge(cast("f_smallint", SMALLINT), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_smallint", INTEGER), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_smallint", BIGINT), int5));
+
+    useFieldWithValues("f_integer", VALUES2, KLL2);
+    checkSelectivity(1 / 3.f, ge(cast("f_integer", TINYINT), int5));
+    checkSelectivity(1 / 3.f, ge(cast("f_integer", SMALLINT), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_integer", INTEGER), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_integer", BIGINT), int5));
+
+    useFieldWithValues("f_bigint", VALUES2, KLL2);
+    checkSelectivity(1 / 3.f, ge(cast("f_bigint", TINYINT), int5));
+    checkSelectivity(1 / 3.f, ge(cast("f_bigint", SMALLINT), int5));
+    checkSelectivity(1 / 3.f, ge(cast("f_bigint", INTEGER), int5));
+    checkSelectivity(20 / 28.f, ge(cast("f_bigint", BIGINT), int5));
+  }
+
+  @Test
+  public void testRangePredicateWithCast() {
+    useFieldWithValues("f_numeric", VALUES, KLL);
+    checkSelectivity(3 / 13.f, ge(cast("f_numeric", TINYINT), int5));
+    checkSelectivity(10 / 13.f, lt(cast("f_numeric", TINYINT), int5));
+    checkSelectivity(2 / 13.f, gt(cast("f_numeric", TINYINT), int5));
+    checkSelectivity(11 / 13.f, le(cast("f_numeric", TINYINT), int5));
+
+    checkSelectivity(12 / 13f, ge(cast("f_numeric", TINYINT), int2));
+    checkSelectivity(1 / 13f, lt(cast("f_numeric", TINYINT), int2));
+    checkSelectivity(5 / 13f, gt(cast("f_numeric", TINYINT), int2));
+    checkSelectivity(8 / 13f, le(cast("f_numeric", TINYINT), int2));
+  }
+
+  @Test
+  public void testRangePredicateWithCast2() {
+    useFieldWithValues("f_numeric", VALUES2, KLL2);
+    RelDataType decimal3s1 = decimalType(3, 1);
+    checkSelectivity(4 / 28.f, ge(cast("f_numeric", decimal3s1), literalFloat(1)));
+
+    // values from -99.94999 to 99.94999 (both inclusive)
+    checkSelectivity(7 / 28.f, lt(cast("f_numeric", decimal3s1), literalFloat(100)));
+    checkSelectivity(7 / 28.f, le(cast("f_numeric", decimal3s1), literalFloat(100)));
+    checkSelectivity(0 / 28.f, gt(cast("f_numeric", decimal3s1), literalFloat(100)));
+    checkSelectivity(0 / 28.f, ge(cast("f_numeric", decimal3s1), literalFloat(100)));
+
+    RelDataType decimal4s1 = decimalType(4, 1);
+    checkSelectivity(10 / 28.f, lt(cast("f_numeric", decimal4s1), literalFloat(100)));
+    checkSelectivity(20 / 28.f, le(cast("f_numeric", decimal4s1), literalFloat(100)));
+    checkSelectivity(3 / 28.f, gt(cast("f_numeric", decimal4s1), literalFloat(100)));
+    checkSelectivity(13 / 28.f, ge(cast("f_numeric", decimal4s1), literalFloat(100)));
+
+    RelDataType decimal2s1 = decimalType(2, 1);
+    checkSelectivity(2 / 28.f, lt(cast("f_numeric", decimal2s1), literalFloat(100)));
+    checkSelectivity(2 / 28.f, le(cast("f_numeric", decimal2s1), literalFloat(100)));
+    checkSelectivity(0 / 28.f, gt(cast("f_numeric", decimal2s1), literalFloat(100)));
+    checkSelectivity(0 / 28.f, ge(cast("f_numeric", decimal2s1), literalFloat(100)));
+
+    // expected: 100_000f
+    RelDataType decimal7s1 = decimalType(7, 1);
+    checkSelectivity(1 / 28.f, gt(cast("f_numeric", decimal7s1), literalFloat(10000)));
+
+    // expected: 10_000f, 100_000f, because CAST(1_000_000 AS DECIMAL(7,1)) = NULL, and similar for even larger values
+    checkSelectivity(2 / 28.f, ge(cast("f_numeric", decimal7s1), literalFloat(9999)));
+    checkSelectivity(2 / 28.f, ge(cast("f_numeric", decimal7s1), literalFloat(10000)));
+
+    // expected: 100_000f
+    checkSelectivity(1 / 28.f, gt(cast("f_numeric", decimal7s1), literalFloat(10000)));
+    checkSelectivity(1 / 28.f, gt(cast("f_numeric", decimal7s1), literalFloat(10001)));
+
+    // expected 1f, 10f, 99.94998f, 99.94999f
+    checkSelectivity(4 / 28.f, ge(cast("f_numeric", decimal3s1), literalFloat(1)));
+    checkSelectivity(3 / 28.f, gt(cast("f_numeric", decimal3s1), literalFloat(1)));
+    // expected -99.94999f, -99.94998f, 0f, 1f
+    checkSelectivity(4 / 28.f, le(cast("f_numeric", decimal3s1), literalFloat(1)));
+    checkSelectivity(3 / 28.f, lt(cast("f_numeric", decimal3s1), literalFloat(1)));
+
+    // the cast would apply a modulo operation to the values outside the range of the cast
+    // so instead a default selectivity should be returned
+    checkSelectivity(1 / 3.f, lt(cast("f_integer", TINYINT), literalFloat(100)));
+    checkSelectivity(1 / 3.f, lt(cast("f_integer", TINYINT), literalFloat(100)));
+  }
+
+  private void checkTimeFieldOnMidnightTimestamps(RexNode field) {
+    // note: use only values from VALUES_TIME that specify a date without hh:mm:ss!
+    checkSelectivity(7 / 7.f, ge(field, literalTimestamp("2020-11-01")));
+    checkSelectivity(5 / 7.f, ge(field, literalTimestamp("2020-11-03")));
+    checkSelectivity(1 / 7.f, ge(field, literalTimestamp("2020-11-07")));
+
+    checkSelectivity(6 / 7.f, gt(field, literalTimestamp("2020-11-01")));
+    checkSelectivity(4 / 7.f, gt(field, literalTimestamp("2020-11-03")));
+    checkSelectivity(0 / 7.f, gt(field, literalTimestamp("2020-11-07")));
+
+    checkSelectivity(1 / 7.f, le(field, literalTimestamp("2020-11-01")));
+    checkSelectivity(3 / 7.f, le(field, literalTimestamp("2020-11-03")));
+    checkSelectivity(7 / 7.f, le(field, literalTimestamp("2020-11-07")));
+
+    checkSelectivity(0 / 7.f, lt(field, literalTimestamp("2020-11-01")));
+    checkSelectivity(2 / 7.f, lt(field, literalTimestamp("2020-11-03")));
+    checkSelectivity(6 / 7.f, lt(field, literalTimestamp("2020-11-07")));
+  }
+
+  private void checkTimeFieldOnIntraDayTimestamps(RexNode field) {
+    checkSelectivity(3 / 7.f, ge(field, literalTimestamp("2020-11-05T11:23:45Z")));
+    checkSelectivity(2 / 7.f, gt(field, literalTimestamp("2020-11-05T11:23:45Z")));
+    checkSelectivity(5 / 7.f, le(field, literalTimestamp("2020-11-05T11:23:45Z")));
+    checkSelectivity(4 / 7.f, lt(field, literalTimestamp("2020-11-05T11:23:45Z")));
+  }
+
+  @Test
+  public void testRangePredicateOnTimestamp() {
+    useFieldWithValues("f_timestamp", VALUES_TIME, KLL_TIME);
+    checkTimeFieldOnMidnightTimestamps(currentInputRef);
+    checkTimeFieldOnIntraDayTimestamps(currentInputRef);
+  }
+
+  @Test
+  public void testRangePredicateOnTimestampWithCast() {
+    useFieldWithValues("f_timestamp", VALUES_TIME, KLL_TIME);
+    RexNode expr1 = cast("f_timestamp", SqlTypeName.DATE);
+    checkTimeFieldOnMidnightTimestamps(expr1);
+    checkTimeFieldOnIntraDayTimestamps(expr1);
+
+    RexNode expr2 = cast("f_timestamp", SqlTypeName.TIMESTAMP);
+    checkTimeFieldOnMidnightTimestamps(expr2);
+    checkTimeFieldOnIntraDayTimestamps(expr2);
+  }
+
+  @Test
+  public void testRangePredicateOnDate() {
+    useFieldWithValues("f_date", VALUES_TIME, KLL_TIME);
+    checkTimeFieldOnMidnightTimestamps(currentInputRef);
+
+    // it does not make sense to compare with "2020-11-05T11:23:45Z",
+    // as that value would not be stored as-is in a date column, but as "2020-11-05" instead
+  }
+
+  @Test
+  public void testRangePredicateOnDateWithCast() {
+    useFieldWithValues("f_date", VALUES_TIME, KLL_TIME);
+    checkTimeFieldOnMidnightTimestamps(cast("f_date", SqlTypeName.DATE));
+    checkTimeFieldOnMidnightTimestamps(cast("f_date", SqlTypeName.TIMESTAMP));
+
+    // it does not make sense to compare with "2020-11-05T11:23:45Z",
+    // as that value would not be stored as-is in a date column, but as "2020-11-05" instead
+  }
+
+  @Test
+  public void testBetweenWithCastToTinyIntCheckRounding() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 10; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", TINYINT);
+    // check rounding of positive numbers
+    checkBetweenSelectivity(3, universe, total, cast, 0, 10);
+    checkBetweenSelectivity(3, universe, total, cast, 0, 10.9f);
+    checkBetweenSelectivity(4, universe, total, cast, 0, 11);
+    checkBetweenSelectivity(4, universe, total, cast, 10, 20);
+    checkBetweenSelectivity(1, universe, total, cast, 10.9999f, 20);
+    checkBetweenSelectivity(1, universe, total, cast, 11, 20);
+
+    // check rounding of negative numbers
+    checkBetweenSelectivity(4, universe, total, cast, -20, -10);
+    checkBetweenSelectivity(1, universe, total, cast, -20, -10.9f);
+    checkBetweenSelectivity(1, universe, total, cast, -20, -11);
+    checkBetweenSelectivity(3, universe, total, cast, -10, 0);
+    checkBetweenSelectivity(3, universe, total, cast, -10.9999f, 0);
+    checkBetweenSelectivity(4, universe, total, cast, -11, 0);
+  }
+
+  @Test
+  public void testBetweenWithCastToTinyInt() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 10; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", TINYINT);
+    checkBetweenSelectivity(5, universe, total, cast, 0, 1e20f);
+    checkBetweenSelectivity(5, universe, total, cast, -1e20f, 0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToSmallInt() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 14; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", SMALLINT);
+    checkBetweenSelectivity(7, universe, total, cast, 0, 1e20f);
+    checkBetweenSelectivity(7, universe, total, cast, -1e20f, 0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToInteger() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 18; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", INTEGER);
+    checkBetweenSelectivity(9, universe, total, cast, 0, 1e20f);
+    checkBetweenSelectivity(9, universe, total, cast, -1e20f, 0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToBigInt() {
+    useFieldWithValues("f_numeric", VALUES3, KLL3);
+    float total = VALUES3.length;
+    float universe = 22; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", BIGINT);
+    checkBetweenSelectivity(11, universe, total, cast, 0, 1e20f);
+    checkBetweenSelectivity(11, universe, total, cast, -1e20f, 0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToSmallInt2() {
+    useFieldWithValues("f_numeric", VALUES2, KLL2);
+    float total = VALUES2.length;
+    float universe = 23; // the number of values that "survive" the cast
+    RexNode cast = cast("f_numeric", TINYINT);
+    checkBetweenSelectivity(8, universe, total, cast, 100f, 1000f);
+    checkBetweenSelectivity(17, universe, total, cast, 1f, 100f);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToDecimal2s1() {
+    useFieldWithValues("f_numeric", VALUES2, KLL2);
+    float total = VALUES2.length;
+    float universe = 2; // the number of values that "survive" the cast
+    RexNode cast = REX_BUILDER.makeCast(decimalType(2, 1), inputRef0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 1000f);
+    checkBetweenSelectivity(1, universe, total, cast, 1f, 100f);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToDecimal3s1() {
+    useFieldWithValues("f_numeric", VALUES2, KLL2);
+    float total = VALUES2.length;
+    float universe = 7; // the number of values that "survive" the cast
+    RexNode cast = REX_BUILDER.makeCast(decimalType(3, 1), inputRef0);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 1000f);
+    checkBetweenSelectivity(4, universe, total, cast, 1f, 100f);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToDecimal4s1() {
+    useFieldWithValues("f_numeric", VALUES2, KLL2);
+    float total = VALUES2.length;
+    float universe = 23; // the number of values that "survive" the cast
+    RexNode cast = REX_BUILDER.makeCast(decimalType(4, 1), inputRef0);
+    // the values between -999.94999... and 999.94999... (both inclusive) pass through the cast
+    // the values between 99.95 and 100 are rounded up to 100, so they fulfill the BETWEEN
+    checkBetweenSelectivity(13, universe, total, cast, 100, 1000);
+    checkBetweenSelectivity(14, universe, total, cast, 1f, 100f);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  @Test
+  public void testBetweenWithCastToDecimal7s1() {
+    useFieldWithValues("f_numeric", VALUES2, KLL2);
+    float total = VALUES2.length;
+    float universe = 26; // the number of values that "survive" the cast
+    RexNode cast = REX_BUILDER.makeCast(decimalType(7, 1), inputRef0);
+    checkBetweenSelectivity(14, universe, total, cast, 100, 1000);
+    checkBetweenSelectivity(14, universe, total, cast, 1f, 100f);
+    checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
+  }
+
+  private void checkSelectivity(float expectedSelectivity, RexNode filter) {
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    Assert.assertEquals(filter.toString(), expectedSelectivity, estimator.estimateSelectivity(filter), DELTA);
+
+    // convert "col OP value" to "value INVERSE_OP col", and check it
+    RexNode inverted = RexUtil.invert(REX_BUILDER, (RexCall) filter);
+    if (inverted != null) {
+      Assert.assertEquals(filter.toString(), expectedSelectivity, estimator.estimateSelectivity(inverted), DELTA);
+    }
+  }
+
+  private void checkBetweenSelectivity(float expectedEntries, float universe, float total, RexNode value, float lower,
+      float upper) {
+    RexNode betweenFilter =
+        REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolFalse, value, literalFloat(lower), literalFloat(upper));
+    FilterSelectivityEstimator estimator = new FilterSelectivityEstimator(scan, mq);
+    String between = "BETWEEN " + lower + " AND " + upper;
+    float expectedSelectivity = expectedEntries / total;
+    String message = between + ": calcite filter " + betweenFilter.toString();
+    Assert.assertEquals(message, expectedSelectivity, estimator.estimateSelectivity(betweenFilter), DELTA);
+
+    // invert the filter to a NOT BETWEEN
+    RexNode invBetween =
+        REX_BUILDER.makeCall(HiveBetween.INSTANCE, boolTrue, value, literalFloat(lower), literalFloat(upper));
+    String invMessage = "NOT " + between + ": calcite filter " + invBetween.toString();
+    float invExpectedSelectivity = (universe - expectedEntries) / total;
+    Assert.assertEquals(invMessage, invExpectedSelectivity, estimator.estimateSelectivity(invBetween), DELTA);
+  }
+
+  private RexNode cast(String fieldname, SqlTypeName typeName) {
+    return cast(fieldname, type(typeName));
+  }
+
+  private RexNode cast(String fieldname, RelDataType type) {
+    int fieldIndex = scan.getRowType().getFieldNames().indexOf(fieldname);
+    RexNode column = REX_BUILDER.makeInputRef(scan, fieldIndex);
+    return REX_BUILDER.makeCast(type, column);
+  }
+
+  private RexNode ge(RexNode expr, RexNode value) {
+    return REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN_OR_EQUAL, expr, value);
+  }
+
+  private RexNode gt(RexNode expr, RexNode value) {
+    return REX_BUILDER.makeCall(SqlStdOperatorTable.GREATER_THAN, expr, value);
+  }
+
+  private RexNode le(RexNode expr, RexNode value) {
+    return REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN_OR_EQUAL, expr, value);
+  }
+
+  private RexNode lt(RexNode expr, RexNode value) {
+    return REX_BUILDER.makeCall(SqlStdOperatorTable.LESS_THAN, expr, value);
+  }
+
+  private static RelDataType type(SqlTypeName typeName) {
+    return REX_BUILDER.getTypeFactory().createSqlType(typeName);
+  }
+
+  private static RelDataType decimalType(int precision, int scale) {
+    return REX_BUILDER.getTypeFactory().createSqlType(SqlTypeName.DECIMAL, precision, scale);
+  }
+
+  private static RexLiteral literalTimestamp(String timestamp) {
+    return REX_BUILDER.makeLiteral(timestampMillis(timestamp),
+        REX_BUILDER.getTypeFactory().createSqlType(SqlTypeName.TIMESTAMP));
+  }
+
+  private RexNode literalFloat(float f) {
+    return REX_BUILDER.makeLiteral(f, type(SqlTypeName.FLOAT));
+  }
+
+  private static long timestampMillis(String timestamp) {
+    if (!timestamp.contains(":")) {
+      return LocalDate.parse(timestamp).toEpochSecond(LocalTime.MIDNIGHT, ZoneOffset.UTC) * 1000;
+    }
+    return Instant.parse(timestamp).toEpochMilli();
+  }
+
+  private static long timestamp(String timestamp) {
+    return timestampMillis(timestamp) / 1000;
   }
 }
