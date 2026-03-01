@@ -271,12 +271,12 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       return Range.closed(-32768.996f, 32767.998f);
     case INTEGER:
       return Range.closed(-2.1474836E9f, 2.1474836E9f);
-    case BIGINT:
+    case BIGINT, DATE, TIMESTAMP:
       return Range.closed(-9.223372E18f, 9.223372E18f);
     case DECIMAL:
       return getRangeOfDecimalType(type, lowerBound, upperBound);
-    case DATE, TIMESTAMP:
-      return Range.closed((float) Long.MIN_VALUE, (float) Long.MAX_VALUE);
+    case FLOAT, DOUBLE:
+      return Range.closed(-Float.MAX_VALUE, Float.MAX_VALUE);
     default:
       throw new IllegalStateException("Unsupported type: " + type);
     }

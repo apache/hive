@@ -833,8 +833,8 @@ public class TestFilterSelectivityEstimator {
     float total = VALUES2.length;
     float universe = 23; // the number of values that "survive" the cast
     RexNode cast = cast("f_numeric", TINYINT);
-    //checkBetweenSelectivity(8, universe, total, cast, 100f, 1000f);
-    //checkBetweenSelectivity(17, universe, total, cast, 1f, 100f);
+    checkBetweenSelectivity(8, universe, total, cast, 100f, 1000f);
+    checkBetweenSelectivity(17, universe, total, cast, 1f, 100f);
     checkBetweenSelectivity(0, universe, total, cast, 100f, 0f);
   }
 
